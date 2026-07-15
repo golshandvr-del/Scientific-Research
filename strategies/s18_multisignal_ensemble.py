@@ -64,7 +64,9 @@ def primary_signals(df):
     close = df['close']; high = df['high']
     ema50 = ind.ema(close, 50); ema200 = ind.ema(close, 200)
     rsi = ind.rsi(close, 14)
-    adx = ind.adx(df, 14) if hasattr(ind, 'adx') else None
+    adx_val = None
+    if hasattr(ind, 'adx'):
+        adx_val = ind.adx(df, 14)[0]  # فقط خط ADX (نه +DI/-DI)
     hour = df['dt'].dt.hour
     powh = hour.isin(POWER_HOURS)
 
@@ -76,8 +78,8 @@ def primary_signals(df):
     # B) Trend-Continuation: شکست سقف ۱۰ کندل قبلی در روند قوی
     donch10 = high.rolling(10).max().shift(1)
     strong = uptrend
-    if adx is not None:
-        strong = strong & (adx > 20)
+    if adx_val is not None:
+        strong = strong & (adx_val > 20)
     breakout = strong & (close > donch10) & (close.shift(1) <= donch10)
 
     sigA = (pullback & powh).fillna(False)
