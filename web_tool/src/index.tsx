@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { Candle } from './indicators'
 import { analyze } from './signal'
+import { getMTF, getIntermarket, getNews } from './external'
 
 const app = new Hono()
 
@@ -92,6 +93,48 @@ app.get('/api/analysis', async (c) => {
   }
 })
 
+// --- تحلیل چند-تایم‌فریمی H1/H4/D1 و هم‌راستایی روند (User Note #2) ---
+app.get('/api/mtf', async (c) => {
+  try {
+    const mtf = await getMTF()
+    return c.json({ ok: true, ...mtf, lastUpdate: new Date().toISOString() })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e.message }, 502)
+  }
+})
+
+// --- منابع داده خارج از OHLCV: DXY + بازده اوراق (User Note #3) ---
+app.get('/api/intermarket', async (c) => {
+  try {
+    const im = await getIntermarket()
+    return c.json({ ok: true, ...im, lastUpdate: new Date().toISOString() })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e.message }, 502)
+  }
+})
+
+// --- تقویم اخبار اقتصادی USD (User Note #3) ---
+app.get('/api/news', async (c) => {
+  try {
+    const news = await getNews()
+    return c.json({ ok: true, ...news, lastUpdate: new Date().toISOString() })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e.message }, 502)
+  }
+})
+
+// --- context بنیادی ترکیبی (MTF + بین‌بازاری + اخبار) در یک فراخوان ---
+app.get('/api/context', async (c) => {
+  const [mtf, im, news] = await Promise.allSettled([getMTF(), getIntermarket(), getNews()])
+  return c.json({
+    ok: true,
+    lastUpdate: new Date().toISOString(),
+    mtf: mtf.status === 'fulfilled' ? mtf.value : { error: (mtf as any).reason?.message },
+    intermarket: im.status === 'fulfilled' ? im.value : { error: (im as any).reason?.message },
+    news: news.status === 'fulfilled' ? news.value : { error: (news as any).reason?.message },
+  })
+})
+
 // health
 app.get('/api/health', (c) => c.json({ ok: true, service: 'xauusd-live-tool', time: Date.now() }))
 
@@ -118,10 +161,14 @@ const PAGE = `<!DOCTYPE html>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
+  <!-- onnxruntime-web: اجرای واقعی مدل ربات در مرورگر (User Note #1) -->
+  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
   <link href="/static/style.css" rel="stylesheet">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
   <div id="app" class="max-w-6xl mx-auto p-4"></div>
+  <!-- ماژول کلاینت مدل ONNX (باندل esbuild: features + indicators + inference) -->
+  <script type="module" src="/static/browser-signal.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>`
