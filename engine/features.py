@@ -5,6 +5,7 @@
 import numpy as np
 import pandas as pd
 import indicators as ind
+from numba import njit
 
 
 def build_features(df):
@@ -93,41 +94,46 @@ def build_features(df):
     return f
 
 
-def make_target(df, horizon, tp_mult, sl_mult, atr, direction):
-    """
-    برچسب دودویی: آیا در «horizon» کندل آینده، TP قبل از SL لمس می‌شود؟
-    ورود فرضی در close کندل جاری. (این برای train استفاده می‌شود؛
-    در بک‌تست واقعی ورود در open بعدی است — کمی محافظه‌کارانه‌تر.)
-    """
-    n = len(df)
-    high = df['high'].values
-    low = df['low'].values
-    close = df['close'].values
-    atr_v = atr.values
+@njit(cache=True)
+def _target_loop(high, low, close, atr_v, horizon, tp_mult, sl_mult, is_long):
+    n = len(close)
     y = np.full(n, np.nan)
     for i in range(n - horizon - 1):
         entry = close[i]
         a = atr_v[i]
         if np.isnan(a):
             continue
-        if direction == 'long':
+        if is_long:
             tp = entry + tp_mult * a
             sl = entry - sl_mult * a
         else:
             tp = entry - tp_mult * a
             sl = entry + sl_mult * a
-        res = 0
+        res = 0.0
         for j in range(i+1, i+1+horizon):
-            hi, lo = high[j], low[j]
-            if direction == 'long':
+            hi = high[j]; lo = low[j]
+            if is_long:
                 hit_tp = hi >= tp; hit_sl = lo <= sl
             else:
                 hit_tp = lo <= tp; hit_sl = hi >= sl
             if hit_sl and hit_tp:
-                res = 0; break   # ابهام -> loss
+                res = 0.0; break
             if hit_tp:
-                res = 1; break
+                res = 1.0; break
             if hit_sl:
-                res = 0; break
+                res = 0.0; break
         y[i] = res
     return y
+
+
+def make_target(df, horizon, tp_mult, sl_mult, atr, direction):
+    """
+    برچسب دودویی: آیا در «horizon» کندل آینده، TP قبل از SL لمس می‌شود؟
+    ورود فرضی در close کندل جاری. (پیاده‌سازی numba برای سرعت)
+    """
+    high = df['high'].values.astype(np.float64)
+    low = df['low'].values.astype(np.float64)
+    close = df['close'].values.astype(np.float64)
+    atr_v = atr.values.astype(np.float64)
+    is_long = (direction == 'long')
+    return _target_loop(high, low, close, atr_v, horizon, tp_mult, sl_mult, is_long)
