@@ -338,6 +338,7 @@ async function runOnnxSignal() {
     const j = await r.json();
     if (!j.ok || !j.candles?.length) throw new Error(j.error || 'کندل کافی دریافت نشد');
     const sig = await window.GoldModel.computeModelSignal(j.candles);
+    console.log('[ONNX] signal:', JSON.stringify({dir:sig.direction, prob:sig.probabilityPct, regime:sig.regimeOk, n:j.candles.length}));
     renderOnnx(sig, j.candles.length);
   } catch (e) {
     body.innerHTML = `<span class="text-amber-400"><i class="fas fa-triangle-exclamation"></i> اجرای مدل ONNX ناموفق: ${e.message}</span>`;
