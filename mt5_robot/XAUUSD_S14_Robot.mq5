@@ -501,3 +501,126 @@ double EnsembleProba(const float &feat[])
    if(cnt==0) return -1.0;
    return sum / cnt;
 }
+
+//+------------------------------------------------------------------+
+//| شمارش معاملات باز این ربات                                       |
+//+------------------------------------------------------------------+
+int CountMyPositions()
+{
+   int cnt = 0;
+   for(int i=PositionsTotal()-1; i>=0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket==0) continue;
+      if(PositionGetInteger(POSITION_MAGIC)==(long)InpMagic &&
+         PositionGetString(POSITION_SYMBOL)==_Symbol)
+         cnt++;
+   }
+   return cnt;
+}
+
+//+------------------------------------------------------------------+
+//| مدیریت خروج زمانی (max-hold): بستن معاملاتی که ۴۸ کندل باز مانده‌اند|
+//+------------------------------------------------------------------+
+void ManageTimeExit()
+{
+   datetime now = iTime(_Symbol, PERIOD_M15, 0);
+   for(int i=PositionsTotal()-1; i>=0; i--)
+   {
+      ulong ticket = PositionGetTicket(i);
+      if(ticket==0) continue;
+      if(PositionGetInteger(POSITION_MAGIC)!=(long)InpMagic) continue;
+      if(PositionGetString(POSITION_SYMBOL)!=_Symbol) continue;
+      datetime open_time = (datetime)PositionGetInteger(POSITION_TIME);
+      int bars_held = iBarShift(_Symbol, PERIOD_M15, open_time);
+      if(bars_held >= InpMaxHoldBars)
+      {
+         trade.PositionClose(ticket);
+         if(InpVerbose) PrintFormat("خروج زمانی: تیکت %I64u پس از %d کندل بسته شد",
+                                     ticket, bars_held);
+      }
+   }
+}
+
+//+------------------------------------------------------------------+
+//| باز کردن معاملهٔ LONG با TP/SL مبتنی بر ATR                       |
+//+------------------------------------------------------------------+
+void OpenLong(double atr14)
+{
+   double ask = SymbolInfoDouble(_Symbol, SYMBOL_ASK);
+   double tp  = ask + InpTP_ATR * atr14;
+   double sl  = ask - InpSL_ATR * atr14;
+
+   // نرمال‌سازی به تعداد رقم اعشار نماد
+   int digits = (int)SymbolInfoInteger(_Symbol, SYMBOL_DIGITS);
+   tp = NormalizeDouble(tp, digits);
+   sl = NormalizeDouble(sl, digits);
+
+   if(trade.Buy(InpLotSize, _Symbol, ask, sl, tp, "S14-ML"))
+   {
+      if(InpVerbose)
+         PrintFormat("ورود LONG @ %.2f | SL=%.2f TP=%.2f (ATR=%.2f)", ask, sl, tp, atr14);
+   }
+   else
+   {
+      if(InpVerbose) Print("خطا در باز کردن معامله: ", trade.ResultRetcodeDescription());
+   }
+}
+
+//+------------------------------------------------------------------+
+//| OnTick — منطق اصلی (فقط روی کندل جدید ارزیابی می‌شود)             |
+//+------------------------------------------------------------------+
+void OnTick()
+{
+   // مدیریت خروج زمانی در هر تیک
+   ManageTimeExit();
+
+   // فقط یک‌بار در هر کندل جدید ارزیابی کن
+   datetime cur_bar = iTime(_Symbol, PERIOD_M15, 0);
+   if(cur_bar == g_last_bar_time) return;
+   g_last_bar_time = cur_bar;
+
+   // فیلتر اسپرد
+   double spread = (double)SymbolInfoInteger(_Symbol, SYMBOL_SPREAD);
+   if(spread > InpSpreadLimit)
+   {
+      if(InpVerbose) Print("اسپرد بالا، رد سیگنال: ", spread);
+      return;
+   }
+
+   // محدودیت تعداد معاملات همزمان
+   if(CountMyPositions() >= InpMaxPositions) return;
+
+   // سیگنال روی کندل بسته‌شده (shift=1) ارزیابی می‌شود؛ ورود در open کندل جاری
+   int sig_shift = 1;
+
+   // ---- فیلتر کاندید پایه: close > EMA50 > EMA200 ----
+   double c      = iClose(_Symbol, PERIOD_M15, sig_shift);
+   double ema50  = IndVal(h_ema50, 0, sig_shift);
+   double ema200 = IndVal(h_ema200,0, sig_shift);
+   double atr14  = IndVal(h_atr14, 0, sig_shift);
+   if(ema50==EMPTY_VALUE || ema200==EMPTY_VALUE || atr14==EMPTY_VALUE) return;
+   if(!(c > ema50 && ema50 > ema200)) return;  // فقط روند صعودی
+
+   // ---- ساخت feature و اجرای مدل ----
+   float feat[];
+   ArrayResize(feat, NUM_FEATURES);
+   if(!BuildFeatures(sig_shift, feat)) return;
+
+   double proba;
+   if(InpUseEnsemble && g_num_models > 1)
+      proba = EnsembleProba(feat);
+   else
+      proba = RunModel(g_model[0], feat);
+
+   if(proba < 0.0) return; // خطای مدل
+
+   if(InpVerbose)
+      PrintFormat("proba=%.4f (THR=%.2f) %s", proba, InpThreshold,
+                  (proba>=InpThreshold)?"→ ورود":"");
+
+   // ---- تصمیم ورود ----
+   if(proba >= InpThreshold)
+      OpenLong(atr14);
+}
+//+------------------------------------------------------------------+
