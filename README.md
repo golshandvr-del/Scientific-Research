@@ -68,15 +68,37 @@ Scientific-Research/
 │   └── XAUUSD_M15.csv         # داده خام
 ├── engine/
 │   ├── backtest.py            # موتور بک‌تست استاندارد
+│   ├── features.py            # ساخت ۵۷ feature برای مدل‌های ML
+│   ├── structure.py           # ابزار ساختار بازار (S/R)
 │   └── indicators.py          # کتابخانه اندیکاتورها
 ├── strategies/                # کد پایتون هر استراتژی
 ├── results/                   # فایل‌های MD نتایج (نام‌استراتژی_وین‌ریت.md)
+├── mt5_robot/                 # 🤖 ربات کامل MetaTrader 5
+│   ├── XAUUSD_S14_Robot.mq5   # Expert Advisor (کد MQL5)
+│   ├── xauusd_s14_model*.onnx # مدل‌های ONNX (ensemble ۳-seed)
+│   ├── train_export_final.py  # آموزش/صادرات مدل
+│   ├── validate_parity.py     # اعتبارسنجی feature-parity
+│   └── README.md              # راهنمای نصب کامل ربات
 └── README.md
 ```
 
+## 🤖 ربات MT5 ساخته شد ✅
+پس از رسیدن به استراتژی برنده (WR=۶۱.۶٪)، ربات کامل MetaTrader 5 ساخته شد:
+- **`mt5_robot/XAUUSD_S14_Robot.mq5`** — Expert Advisor کامل که ۵۷ feature را
+  دقیقاً مطابق `engine/features.py` در MQL5 بازسازی می‌کند.
+- **مدل ONNX** (ensemble ۳-seed) صادر و در برابر LightGBM **اعتبارسنجی شد**
+  (اختلاف <۱e-۴ ✅).
+- WR=۶۱.۵۸٪ روی Walk-Forward بازتولید شد (n=۱۹۴۷, exp=+۰.۳۵$, ۵.۳ معامله/روز).
+- **راهنمای نصب گام‌به‌گام** در `mt5_robot/README.md`.
+- ربات ≥۳ معامله در روز انجام می‌دهد (شرط الزامی کاربر برآورده شد ✅).
+
+> **درس مهم حین ساخت ربات:** آزمایش نشان داد زیرمجموعهٔ کوچک feature (۲۴ یا ۳۰ تا)
+> WR را به ۵۸–۵۹٪ افت می‌دهد؛ قدرت استراتژی به **مجموعهٔ کامل ۵۷ feature** (به‌ویژه
+> VWAP لنگرشده + MTF) وابسته است. پس ربات با feature کامل ساخته شد.
+
 ## وضعیت فعلی
-✅ **به هدف بازتعریف‌شده کاربر رسیدیم** — پس از ۱۴ استراتژی از ۴ مسیر
-(آماری، ML، Price Action، VWAP-Regime).
+✅ **به هدف بازتعریف‌شده کاربر رسیدیم و ربات ساخته شد** — پس از ۱۴+ استراتژی از ۴ مسیر
+(آماری، ML، Price Action، VWAP-Regime) و ساخت کامل Expert Advisor برای MT5.
 
 **هدف کاربر بازتعریف شد به WR>60٪** (چون WR>70٪ معنادار با OHLCV غیرقابل‌دسترس بود).
 با این هدف جدید، **استراتژی ۱۴ (VWAP-Regime Selective ML)** به هر ۴ معیار رسید:
