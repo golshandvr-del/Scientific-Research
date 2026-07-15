@@ -105,6 +105,26 @@ def build_features(df):
     f['above_ema200'] = (close > ema200).astype(float)
     f['dist_ema200'] = (close - ema200) / ema200
 
+    # --- VWAP روزانه لنگرشده (session-anchored) و feature‌های مشتق (جدید) ---
+    date = df['dt'].dt.date
+    tp_price = (high + low + close) / 3.0
+    pv = tp_price * vol
+    cum_pv = pv.groupby(date).cumsum()
+    cum_v = vol.groupby(date).cumsum().replace(0, np.nan)
+    vwap = cum_pv / cum_v
+    atr_v = ind.atr(df, 14)
+    f['vwap_dist'] = (close - vwap) / close                # فاصله نسبی از VWAP
+    f['vwap_dist_atr'] = (close - vwap) / atr_v            # فاصله نرمال‌شده با ATR
+    f['above_vwap'] = (close > vwap).astype(float)
+    # فاصله از EMA50 بر حسب ATR (کشش برای snapback)
+    ema50 = ind.ema(close, 50)
+    f['ema50_dist_atr'] = (close - ema50) / atr_v
+    # قدرت حجم نسبی در پنجره کوتاه
+    f['vol_z20'] = ind.zscore(vol, 20)
+    # موقعیت close در رنج کندل (بستن قوی/ضعیف)
+    rng = (high - low).replace(0, np.nan)
+    f['close_pos_in_range'] = (close - low) / rng
+
     return f
 
 
