@@ -53,21 +53,24 @@ def primary_signals(df):
       - فیلتر روند: close > EMA200 (فقط long — طلا بایاس صعودی ساختاری دارد)
     برمی‌گرداند: آرایه بولین سیگنال long.
     """
-    close = df['close']
-    lo_b, mid_b, up_b = ind.bollinger(close, 20, 2.0)
-    bb_width = (up_b - lo_b) / close
-    # آستانه‌ی squeeze: چارک پایین پهنا در پنجره‌ی ۱۰۰ کندل (فقط گذشته)
-    width_q25 = bb_width.rolling(100).quantile(0.25)
-    squeeze = bb_width <= width_q25
+    close = df['close']; high = df['high']
 
     ema200 = ind.ema(close, 200)
     ema50 = ind.ema(close, 50)
     uptrend = (close > ema200) & (ema50 > ema200)
 
-    # بریک‌اوت: کندل قبل داخل باند، کندل جاری بسته بالای سقف باند
-    broke_up = (close > up_b) & (close.shift(1) <= up_b.shift(1))
+    # بریک‌اوت دونچیان کوتاه: بسته‌شدن بالای بالاترین high ۲۰ کندل قبلی
+    donch_high = high.rolling(20).max().shift(1)
+    broke_up = close > donch_high
 
-    sig = (squeeze.shift(1).fillna(False)) & broke_up & uptrend
+    # squeeze نرم: پهنای Bollinger زیر میانه‌ی ۱۰۰ کندل (نه چارک ۲۵ سخت‌گیر)
+    lo_b, mid_b, up_b = ind.bollinger(close, 20, 2.0)
+    bb_width = (up_b - lo_b) / close
+    width_med = bb_width.rolling(100).median()
+    was_squeezed = (bb_width.shift(1) <= width_med.shift(1))
+
+    # سیگنال اولیه: بریک‌اوت صعودی از فشردگی نسبی در روند (قانون شفاف، recall بالا)
+    sig = broke_up & uptrend & was_squeezed
     return sig.fillna(False).values
 
 
@@ -117,10 +120,9 @@ def purged_walk_forward(df, X, sig_idx, labels, horizon,
     برمی‌گرداند: آرایه بولین «کدام سیگنال‌های اولیه، متا تأیید کرده» (روی کل df).
     """
     n = len(df)
-    sig_idx = np.array(sorted(sig_idx))
+    sig_idx = np.array(sorted(sig_idx))           # ایندکس اصلی روی df
     y = np.array([labels[i] for i in sig_idx])
-    feat_cols = X.columns.tolist()
-    Xv = X.values
+    Xv = X.values                                  # ردیف k متناظر با sig_idx[k]
 
     # مرزهای fold بر اساس ایندکس زمانی کل df
     start = int(n * min_train_frac)
@@ -131,18 +133,16 @@ def purged_walk_forward(df, X, sig_idx, labels, horizon,
 
     for k in range(n_folds):
         test_lo, test_hi = bounds[k], bounds[k + 1]
-        # سیگنال‌های تست در این بازه
+        # ماسک موقعیتی روی آرایه‌ی سیگنال‌ها (نه ایندکس df)
         test_mask = (sig_idx >= test_lo) & (sig_idx < test_hi)
-        # سیگنال‌های آموزش: قبل از test_lo، با purge افق و embargo
         train_cut = test_lo - horizon - embargo
         train_mask = sig_idx < train_cut
         if train_mask.sum() < 200 or test_mask.sum() == 0:
             continue
 
-        tr_rows = sig_idx[train_mask]
-        te_rows = sig_idx[test_mask]
-        Xtr = Xv[tr_rows]; ytr = y[train_mask]
-        Xte = Xv[te_rows]
+        Xtr = Xv[train_mask]; ytr = y[train_mask]
+        Xte = Xv[test_mask]
+        te_rows = sig_idx[test_mask]           # ایندکس df سیگنال‌های تست
 
         if len(np.unique(ytr)) < 2:
             continue
