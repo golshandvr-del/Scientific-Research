@@ -16,6 +16,29 @@ import { ema, rollingSlope } from './indicators'
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 
+// ============================================================================
+// قیمت spot لحظه‌ای طلا (XAU/USD) از gold-api.com — بدون کلید، تأخیر < چند ثانیه.
+// این منبع تأخیر داده را از ~۱۳ دقیقهٔ Yahoo GC=F به کمتر از ۱ دقیقه می‌رساند
+// (پاسخ به مشکل «تأخیر داده باید < ۵ دقیقه باشد»).
+// ============================================================================
+export interface SpotPrice {
+  price: number          // قیمت spot XAU/USD
+  updatedAt: string      // زمان به‌روزرسانی منبع (ISO)
+  ageSec: number         // چند ثانیه از آخرین به‌روزرسانی گذشته
+  source: string
+}
+export async function getSpotGold(): Promise<SpotPrice> {
+  const res = await fetch('https://api.gold-api.com/price/XAU', {
+    headers: { 'User-Agent': UA, 'Accept': 'application/json' },
+    cf: { cacheTtl: 20, cacheEverything: true } as any,
+  })
+  if (!res.ok) throw new Error(`Spot gold error: ${res.status}`)
+  const d: any = await res.json()
+  const updatedAt = d.updatedAt || new Date().toISOString()
+  const ageSec = Math.max(0, Math.round((Date.now() - new Date(updatedAt).getTime()) / 1000))
+  return { price: Number(d.price), updatedAt, ageSec, source: 'gold-api.com (XAU spot)' }
+}
+
 // -------------------------- کمکی: fetch کندل از Yahoo --------------------------
 async function yahooCandles(symbol: string, interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`
@@ -219,13 +242,80 @@ export interface NewsResult {
   riskWindow: boolean      // آیا الان نزدیک یک خبر پرتأثیر هستیم؟
   note: string
 }
-export async function getNews(): Promise<NewsResult> {
-  const res = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json', {
-    headers: { 'User-Agent': UA, 'Accept': 'application/json' },
-    cf: { cacheTtl: 900, cacheEverything: true } as any,
-  })
-  if (!res.ok) throw new Error(`Calendar error: ${res.status}`)
-  const raw: any[] = await res.json()
+// ---------------------------------------------------------------------------
+// دریافت خام تقویم با مقاومت در برابر 429:
+//   ۱) تلاش از چند endpoint (mirror)
+//   ۲) استفاده از Cache API لبه به‌عنوان لایهٔ پایدار (حتی وقتی مبدأ 429 می‌دهد)
+//   ۳) اگر KV در دسترس باشد (env.NEWS_KV)، آخرین پاسخ موفق را نگه می‌دارد
+// این ساختار مشکل «Calendar error: 429» و نیز تأخیر تقویم را حل می‌کند.
+// ---------------------------------------------------------------------------
+const CAL_URLS = [
+  'https://nfs.faireconomy.media/ff_calendar_thisweek.json',
+  'https://cdn-nfs.faireconomy.media/ff_calendar_thisweek.json',
+]
+// کش داخل حافظهٔ ایزوله (isolate) — بین درخواست‌های نزدیک به‌هم روی همان worker می‌ماند
+let _calMemCache: { at: number; data: any[] } | null = null
+
+async function fetchCalendarRaw(env?: any): Promise<any[]> {
+  // 0) کش حافظه‌ای تازه (< ۱۰ دقیقه)
+  if (_calMemCache && Date.now() - _calMemCache.at < 10 * 60 * 1000) {
+    return _calMemCache.data
+  }
+  // 1) Cache API لبه
+  const cacheKey = new Request('https://cache.local/ff_calendar_thisweek')
+  const edgeCache = (globalThis as any).caches?.default
+  let lastErr: any = null
+
+  // 2) تلاش از mirrorها
+  for (const url of CAL_URLS) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': UA,
+          'Accept': 'application/json,text/plain,*/*',
+          'Referer': 'https://www.forexfactory.com/',
+        },
+        cf: { cacheTtl: 1800, cacheEverything: true } as any,
+      })
+      if (res.ok) {
+        const data = await res.json() as any[]
+        _calMemCache = { at: Date.now(), data }
+        // ذخیره در Cache API و KV برای درخواست‌های بعدی
+        try {
+          if (edgeCache) {
+            const store = new Response(JSON.stringify(data), {
+              headers: { 'Content-Type': 'application/json', 'Cache-Control': 'max-age=1800' },
+            })
+            await edgeCache.put(cacheKey, store)
+          }
+        } catch {}
+        try { if (env?.NEWS_KV) await env.NEWS_KV.put('ff_thisweek', JSON.stringify({ at: Date.now(), data }), { expirationTtl: 86400 }) } catch {}
+        return data
+      }
+      lastErr = new Error(`Calendar HTTP ${res.status}`)
+    } catch (e) { lastErr = e }
+  }
+
+  // 3) مبدأ در دسترس نبود (مثلاً 429) → از کش لبه بخوان
+  try {
+    if (edgeCache) {
+      const cached = await edgeCache.match(cacheKey)
+      if (cached) { const data = await cached.json() as any[]; _calMemCache = { at: Date.now(), data }; return data }
+    }
+  } catch {}
+  // 4) از KV بخوان (پایدارترین)
+  try {
+    if (env?.NEWS_KV) {
+      const kv = await env.NEWS_KV.get('ff_thisweek')
+      if (kv) { const p = JSON.parse(kv); _calMemCache = { at: Date.now(), data: p.data }; return p.data }
+    }
+  } catch {}
+
+  throw lastErr || new Error('Calendar unavailable')
+}
+
+export async function getNews(env?: any): Promise<NewsResult> {
+  const raw: any[] = await fetchCalendarRaw(env)
   const now = Date.now()
   const events: NewsEvent[] = raw
     .filter(e => e.country === 'USD')

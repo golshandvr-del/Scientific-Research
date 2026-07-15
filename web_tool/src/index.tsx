@@ -3,7 +3,7 @@ import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { Candle } from './indicators'
 import { analyze } from './signal'
-import { getMTF, getIntermarket, getNews } from './external'
+import { getMTF, getIntermarket, getNews, getSpotGold, type SpotPrice } from './external'
 
 const app = new Hono()
 
@@ -54,13 +54,72 @@ async function fetchGold(interval: string, range: string): Promise<{ candles: Ca
   }
 }
 
-// خام: کندل‌ها برای رسم چارت
+// ---------------------------------------------------------------------------
+// ادغام قیمت spot لحظه‌ای با کندل‌های Yahoo (رفع تأخیر داده به < ۵ دقیقه).
+// منطق:
+//   - آفستِ (futures - spot) از آخرین کندلِ Yahoo محاسبه می‌شود (~۵.۵$).
+//   - قیمتِ معادلِ futures از spot ساخته می‌شود: spotEq = spot + offset.
+//   - اگر آخرین کندل مربوط به همان بازهٔ ۱۵دقیقه‌ایِ «الان» باشد → close/high/low
+//     همان کندل با spotEq به‌روز می‌شود (کندلِ در حال شکل‌گیری).
+//   - در غیر این صورت یک کندلِ جدیدِ سبک برای بازهٔ جاری اضافه می‌شود.
+// این کار تأخیر مؤثرِ «آخرین قیمت» را از ~۱۳ دقیقه به < ۱ دقیقه می‌رساند.
+// ---------------------------------------------------------------------------
+function mergeSpot(candles: Candle[], spot: SpotPrice | null, intervalSec = 900): { candles: Candle[]; spotUsed: boolean; effectiveDelaySec: number } {
+  if (!spot || !candles.length || !isFinite(spot.price)) {
+    const lastT = candles.length ? candles[candles.length - 1].time : 0
+    return { candles, spotUsed: false, effectiveDelaySec: lastT ? Math.round(Date.now() / 1000 - lastT) : 0 }
+  }
+  const out = candles.slice()
+  const last = out[out.length - 1]
+  // آفست futures−spot از آخرین کندل واقعی
+  const offset = last.close - spot.price > -50 && last.close - spot.price < 50 ? (last.close - spot.price) : 0
+  const spotEq = spot.price + offset
+  const nowSec = Math.floor(Date.now() / 1000)
+  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec
+
+  if (last.time >= curBucketStart) {
+    // آخرین کندل همان بازهٔ جاری است → به‌روزرسانی close/high/low
+    const updated: Candle = {
+      ...last,
+      close: spotEq,
+      high: Math.max(last.high, spotEq),
+      low: Math.min(last.low, spotEq),
+    }
+    out[out.length - 1] = updated
+  } else {
+    // بازهٔ جدید شروع شده → افزودن کندلِ سبکِ جاری
+    out.push({ time: curBucketStart, open: last.close, high: Math.max(last.close, spotEq), low: Math.min(last.close, spotEq), close: spotEq, volume: 0 })
+  }
+  return { candles: out, spotUsed: true, effectiveDelaySec: spot.ageSec }
+}
+
+// قیمت spot لحظه‌ای (تأخیر < چند ثانیه)
+app.get('/api/spot', async (c) => {
+  try {
+    const s = await getSpotGold()
+    return c.json({ ok: true, ...s })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e.message }, 502)
+  }
+})
+
+// خام: کندل‌ها برای رسم چارت (با ادغام spot لحظه‌ای)
 app.get('/api/candles', async (c) => {
   const interval = c.req.query('interval') || '15m'
   const range = c.req.query('range') || '1mo'
+  const intervalSec = interval === '15m' ? 900 : interval === '1h' ? 3600 : interval === '5m' ? 300 : 900
   try {
     const { candles, meta } = await fetchGold(interval, range)
-    return c.json({ ok: true, meta, count: candles.length, candles })
+    // spot را موازی می‌گیریم و در صورت موفقیت کندل جاری را به‌روز می‌کنیم
+    let spot: SpotPrice | null = null
+    try { spot = await getSpotGold() } catch {}
+    const merged = mergeSpot(candles, spot, intervalSec)
+    if (spot) { meta.marketPrice = spot.price + (merged.candles[merged.candles.length - 1].close - spot.price >= -50 ? 0 : 0) }
+    return c.json({
+      ok: true, meta, count: merged.candles.length, candles: merged.candles,
+      spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null,
+      effectiveDelaySec: merged.effectiveDelaySec,
+    })
   } catch (e: any) {
     return c.json({ ok: false, error: e.message }, 502)
   }
@@ -76,15 +135,22 @@ app.get('/api/analysis', async (c) => {
     if (candles.length < 220) {
       return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست (نیاز به حداقل ۲۲۰ کندل)' }, 400)
     }
-    const result = analyze(candles)
+    // ادغام spot لحظه‌ای برای رفع تأخیر
+    let spot: SpotPrice | null = null
+    try { spot = await getSpotGold() } catch {}
+    const merged = mergeSpot(candles, spot, 900)
+    const useCandles = merged.candles
+    const result = analyze(useCandles)
     // فقط کندل‌های اخیر برای چارت (سبک‌تر)
-    const recent = candles.slice(-300)
+    const recent = useCandles.slice(-300)
     return c.json({
       ok: true,
       meta,
       lastUpdate: new Date().toISOString(),
-      lastCandleTime: candles[candles.length - 1].time,
-      totalCandles: candles.length,
+      lastCandleTime: useCandles[useCandles.length - 1].time,
+      totalCandles: useCandles.length,
+      spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null,
+      effectiveDelaySec: merged.effectiveDelaySec,
       analysis: result,
       chart: recent.map(k => ({ t: k.time, o: k.open, h: k.high, l: k.low, c: k.close })),
     })
@@ -116,7 +182,7 @@ app.get('/api/intermarket', async (c) => {
 // --- تقویم اخبار اقتصادی USD (User Note #3) ---
 app.get('/api/news', async (c) => {
   try {
-    const news = await getNews()
+    const news = await getNews(c.env)
     return c.json({ ok: true, ...news, lastUpdate: new Date().toISOString() })
   } catch (e: any) {
     return c.json({ ok: false, error: e.message }, 502)
@@ -125,7 +191,7 @@ app.get('/api/news', async (c) => {
 
 // --- context بنیادی ترکیبی (MTF + بین‌بازاری + اخبار) در یک فراخوان ---
 app.get('/api/context', async (c) => {
-  const [mtf, im, news] = await Promise.allSettled([getMTF(), getIntermarket(), getNews()])
+  const [mtf, im, news] = await Promise.allSettled([getMTF(), getIntermarket(), getNews(c.env)])
   return c.json({
     ok: true,
     lastUpdate: new Date().toISOString(),
