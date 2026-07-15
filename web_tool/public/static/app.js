@@ -18,9 +18,12 @@ function skeleton() {
         <p class="text-xs text-slate-400">ابزار تحلیل زنده طلا — مبتنی بر استراتژی تحقیقاتی S14 (VWAP-Regime)</p>
       </div>
     </div>
-    <div class="flex items-center gap-2 text-sm">
+    <div class="flex items-center gap-2 text-sm flex-wrap">
       <span id="live-dot" class="pulse-dot text-emerald-400"><i class="fas fa-circle text-[8px]"></i></span>
       <span id="last-update" class="text-slate-400">در حال بارگذاری…</span>
+      <button id="notif-btn" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition" title="فعال‌سازی اعلان فرصت معامله">
+        <i class="fas fa-bell"></i> <span id="notif-label">اعلان</span>
+      </button>
       <button id="refresh-btn" class="bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg text-slate-200 transition">
         <i class="fas fa-rotate-right"></i> بروزرسانی
       </button>
@@ -28,10 +31,11 @@ function skeleton() {
   </header>
   <div id="content"><div class="card p-8 text-center text-slate-400"><i class="fas fa-spinner fa-spin text-2xl"></i><p class="mt-3">دریافت داده زنده از بازار…</p></div></div>
   <footer class="text-center text-xs text-slate-500 mt-8 pb-6 leading-6">
-    <p>منبع داده: Yahoo Finance (GC=F طلای آتی COMEX) — تأخیر حدود ۱۵ دقیقه</p>
+    <p>منبع کندل: Yahoo Finance (GC=F) — قیمت لحظه‌ای: gold-api.com (XAU spot) • <span id="delay-note" class="text-slate-400">…</span></p>
     <p class="text-amber-500/80"><i class="fas fa-triangle-exclamation"></i> این ابزار صرفاً برای تحقیق علمی است و توصیه مالی محسوب نمی‌شود. معامله با ریسک همراه است.</p>
   </footer>`;
   document.getElementById('refresh-btn').onclick = load;
+  setupNotifications();
 }
 
 function badge(text, cls) {
@@ -55,6 +59,17 @@ function render(d) {
   const m = d.meta;
   const up = new Date(d.lastUpdate).toLocaleTimeString('fa-IR');
   document.getElementById('last-update').textContent = 'آخرین بروزرسانی: ' + up;
+  // نمایش تأخیر مؤثر داده (هدف: < ۵ دقیقه)
+  const delaySec = d.effectiveDelaySec ?? null;
+  const dn = document.getElementById('delay-note');
+  if (dn && delaySec != null) {
+    const min = delaySec / 60;
+    const cls = min < 5 ? 'text-emerald-400' : min < 10 ? 'text-amber-400' : 'text-red-400';
+    dn.className = cls;
+    dn.textContent = d.spot
+      ? `تأخیر قیمت لحظه‌ای: ${delaySec < 90 ? delaySec + ' ثانیه' : min.toFixed(1) + ' دقیقه'} ✓`
+      : `تأخیر: ${min.toFixed(0)} دقیقه`;
+  }
 
   const isLong = a.direction === 'LONG';
   const sigColor = isLong ? 'emerald' : 'slate';
@@ -340,6 +355,7 @@ async function runOnnxSignal() {
     const sig = await window.GoldModel.computeModelSignal(j.candles);
     console.log('[ONNX] signal:', JSON.stringify({dir:sig.direction, prob:sig.probabilityPct, regime:sig.regimeOk, n:j.candles.length}));
     renderOnnx(sig, j.candles.length);
+    checkOpportunity(sig);
   } catch (e) {
     body.innerHTML = `<span class="text-amber-400"><i class="fas fa-triangle-exclamation"></i> اجرای مدل ONNX ناموفق: ${e.message}</span>`;
   }
@@ -397,6 +413,7 @@ async function loadContext() {
     renderMTF(d.mtf);
     renderIntermarket(d.intermarket);
     renderNews(d.news);
+    checkNewsRisk(d.news);
   } catch (e) {
     ['mtf-body','im-body','news-body'].forEach(id => {
       const el = document.getElementById(id);
@@ -471,7 +488,78 @@ function renderNews(n) {
     </div>`;
 }
 
+// ============================================================================
+// سیستم اعلان (Notification) — خبر دادن فرصت معامله به کاربر (User Note ارتقا)
+// چون کاربر نمی‌تواند ۲۴ ساعته سایت را باز نگه دارد، وقتی «سیگنال معتبر ورود»
+// یا «پنجرهٔ ریسک خبری» رخ می‌دهد، اعلان مرورگر (Web Notification) می‌فرستد.
+// برای جلوگیری از اسپم، از هر نوع اعلان حداکثر هر ۳۰ دقیقه یک‌بار ارسال می‌شود.
+// ============================================================================
+const NOTIF = { lastSignalKey: '', lastAt: 0, lastNewsKey: '' };
+
+function notifStatus() {
+  if (!('Notification' in window)) return 'unsupported';
+  return Notification.permission; // 'granted' | 'denied' | 'default'
+}
+
+function setupNotifications() {
+  const btn = document.getElementById('notif-btn');
+  const label = document.getElementById('notif-label');
+  if (!btn) return;
+  const refresh = () => {
+    const st = notifStatus();
+    if (st === 'unsupported') { btn.classList.add('opacity-50'); if (label) label.textContent = 'بدون اعلان'; btn.disabled = true; return; }
+    if (st === 'granted') { btn.classList.add('text-emerald-400'); if (label) label.textContent = 'اعلان فعال'; }
+    else if (st === 'denied') { btn.classList.add('opacity-60'); if (label) label.textContent = 'اعلان مسدود'; }
+    else { if (label) label.textContent = 'فعال‌سازی اعلان'; }
+  };
+  btn.onclick = async () => {
+    if (notifStatus() === 'unsupported') return;
+    try {
+      const p = await Notification.requestPermission();
+      if (p === 'granted') {
+        new Notification('XAUUSD Live', { body: 'اعلان‌ها فعال شد ✓ هنگام فرصت معامله به شما خبر می‌دهیم.', icon: '/favicon.ico' });
+      }
+    } catch (e) {}
+    refresh();
+  };
+  refresh();
+}
+
+function sendNotification(title, body, tag) {
+  if (notifStatus() !== 'granted') return;
+  const now = Date.now();
+  // ضد اسپم: از هر tag حداکثر هر ۳۰ دقیقه
+  if (tag === NOTIF.lastSignalKey && now - NOTIF.lastAt < 30 * 60 * 1000) return;
+  try {
+    const n = new Notification(title, { body, icon: '/favicon.ico', tag, requireInteraction: false });
+    n.onclick = () => { window.focus(); n.close(); };
+    NOTIF.lastSignalKey = tag; NOTIF.lastAt = now;
+  } catch (e) {}
+}
+
+// بررسی فرصت‌های اعلان بر پایهٔ سیگنال ONNX (منبع تصمیم اصلی)
+function checkOpportunity(sig) {
+  if (!sig) return;
+  if (sig.direction === 'LONG') {
+    const key = 'LONG-' + (sig.entry ? sig.entry.toFixed(1) : '');
+    sendNotification(
+      '🟢 فرصت خرید طلا (XAUUSD)',
+      `سیگنال LONG مدل ربات — احتمال ${sig.probabilityPct}٪. ورود $${(sig.entry||0).toFixed(2)} | TP $${(sig.tp||0).toFixed(2)} | SL $${(sig.sl||0).toFixed(2)}`,
+      key
+    );
+  }
+}
+
+// اعلان پنجرهٔ ریسک خبری
+function checkNewsRisk(news) {
+  if (!news || news.error) return;
+  if (news.riskWindow) {
+    const key = 'NEWSRISK';
+    sendNotification('⚠️ پنجرهٔ ریسک خبری USD', news.note || 'رویداد پرتأثیر USD نزدیک است — نوسان شدید محتمل.', key);
+  }
+}
+
 skeleton();
 load();
-// بروزرسانی خودکار هر ۶۰ ثانیه
-autoTimer = setInterval(load, 60000);
+// بروزرسانی خودکار هر ۳۰ ثانیه (برای تأخیر کمتر داده)
+autoTimer = setInterval(load, 30000);
