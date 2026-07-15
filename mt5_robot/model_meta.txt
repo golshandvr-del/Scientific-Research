@@ -1,9 +1,11 @@
-THR=0.62
+THR=0.68
 HZ=48
 TP_M=1.0
 SL_M=1.5
 BE=60.0
-WR=58.33
-EXP=-0.0885
-N_FEATURES=30
-FEATURES=ret_1,ret_2,ret_3,ret_5,ret_8,rsi_14,macd,macd_hist,atr_pct,adx,di_diff,bb_pos,bb_width,stoch_k,stoch_d,dist_ema20_atr,dist_ema50_atr,dist_ema200_atr,slope_20,body_pct,upper_wick,lower_wick,hour_sin,hour_cos,vwap_dist,vwap_dist_atr,above_vwap,ema50_dist_atr,vol_z20,close_pos_in_range
+WR=61.58
+EXP=0.3469
+TPD=5.28
+PVAL=0.0803
+N_FEATURES=57
+SEEDS=42,7,123
