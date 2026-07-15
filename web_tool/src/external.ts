@@ -181,7 +181,7 @@ async function snapshot(symbol: string, name: string): Promise<AssetSnapshot> {
 export async function getIntermarket(): Promise<IntermarketResult> {
   const [dxy, tnx] = await Promise.all([
     snapshot('DX-Y.NYB', 'شاخص دلار آمریکا (DXY)'),
-    snapshot('%5ETNX', 'بازده اوراق ۱۰سالهٔ آمریکا (US10Y)'),
+    snapshot('^TNX', 'بازده اوراق ۱۰سالهٔ آمریکا (US10Y)'),
   ])
   // منطق بنیادی کلاسیک: طلا معمولاً با DXY و بازده اوراق رابطهٔ معکوس دارد.
   //   DXY↓ و بازده↓ → حمایت‌کننده برای طلا (supportive)
