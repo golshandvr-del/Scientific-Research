@@ -53,24 +53,20 @@ def primary_signals(df):
       - فیلتر روند: close > EMA200 (فقط long — طلا بایاس صعودی ساختاری دارد)
     برمی‌گرداند: آرایه بولین سیگنال long.
     """
-    close = df['close']; high = df['high']
+    close = df['close']
 
     ema200 = ind.ema(close, 200)
     ema50 = ind.ema(close, 50)
-    uptrend = (close > ema200) & (ema50 > ema200)
+    uptrend = (close > ema50) & (ema50 > ema200)
 
-    # بریک‌اوت دونچیان کوتاه: بسته‌شدن بالای بالاترین high ۲۰ کندل قبلی
-    donch_high = high.rolling(20).max().shift(1)
-    broke_up = close > donch_high
+    # سیگنال اولیه = Pullback-Reversal در روند صعودی (recall بالا، فرکانس کافی):
+    #   RSI در ناحیه‌ی اصلاح (زیر ۵۵) و در حال چرخش به بالا (تأیید بازگشت).
+    # این سیگنال ذاتاً expectancy منفی دارد (اسپرد + RR)، اما WR پایه ~۵۵٪ است
+    # و فرکانس ~۲/روز → بستر مناسب برای meta-labeling که precision را بالا ببرد.
+    rsi = ind.rsi(close, 14)
+    pullback = (rsi < 55) & (rsi > rsi.shift(1))
 
-    # squeeze نرم: پهنای Bollinger زیر میانه‌ی ۱۰۰ کندل (نه چارک ۲۵ سخت‌گیر)
-    lo_b, mid_b, up_b = ind.bollinger(close, 20, 2.0)
-    bb_width = (up_b - lo_b) / close
-    width_med = bb_width.rolling(100).median()
-    was_squeezed = (bb_width.shift(1) <= width_med.shift(1))
-
-    # سیگنال اولیه: بریک‌اوت صعودی از فشردگی نسبی در روند (قانون شفاف، recall بالا)
-    sig = broke_up & uptrend & was_squeezed
+    sig = uptrend & pullback
     return sig.fillna(False).values
 
 
@@ -205,11 +201,12 @@ def main():
     # پیکربندی‌های RR برای جاروب (BE = SL/(TP+SL))
     configs = [
         # (tp_mult, sl_mult, horizon, threshold)
-        (1.0, 1.0, 32, 0.55),   # BE=50%
-        (1.0, 1.2, 32, 0.55),   # BE=54.5%
         (1.0, 1.5, 48, 0.58),   # BE=60%
-        (1.2, 1.2, 40, 0.58),   # BE=50%
-        (1.5, 1.5, 48, 0.60),   # BE=50%
+        (1.0, 1.5, 48, 0.62),   # BE=60% آستانه بالاتر
+        (1.0, 1.5, 48, 0.66),   # BE=60% آستانه سخت‌گیر
+        (1.2, 1.5, 48, 0.58),   # BE=55.6%
+        (1.2, 1.5, 48, 0.64),   # BE=55.6% آستانه بالاتر
+        (1.0, 1.2, 40, 0.60),   # BE=54.5%
     ]
 
     X_sig = X_full.iloc[sig_idx].reset_index(drop=True)
