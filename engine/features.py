@@ -91,6 +91,20 @@ def build_features(df):
     daily_open = df.groupby(date)['open'].transform('first')
     f['dist_daily_open'] = (close - daily_open) / daily_open
 
+    # --- ویژگی‌های چند-تایم‌فریمی (روند بزرگ‌تر) ---
+    # M15 -> H1 (۴ کندل)، H4 (۱۶ کندل)، D1 (۹۶ کندل)
+    for htf, name in [(4, 'h1'), (16, 'h4'), (96, 'd1')]:
+        ema_htf = ind.ema(close, htf*3)
+        f[f'trend_{name}'] = (close - ema_htf) / ema_htf
+        f[f'slope_{name}'] = ind.rolling_slope(close, htf) / close
+        # RSI روی close نمونه‌برداری‌شده تقریبی
+        f[f'ret_{name}'] = close.pct_change(htf)
+
+    # --- روند بلندمدت EMA200 (فیلتر رژیم) ---
+    ema200 = ind.ema(close, 200)
+    f['above_ema200'] = (close > ema200).astype(float)
+    f['dist_ema200'] = (close - ema200) / ema200
+
     return f
 
 
