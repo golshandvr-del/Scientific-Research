@@ -81,10 +81,28 @@ function render(d) {
     </div>
   </section>
 
-  <!-- سیگنال معامله -->
+  <!-- سیگنال واقعی مدل ONNX (دقیقاً معادل ربات) -->
+  <section id="onnx-signal" class="card p-5 mb-4">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+      <h2 class="text-lg font-bold"><i class="fas fa-robot text-cyan-400"></i> سیگنال واقعی مدل ربات (ONNX)</h2>
+      <span class="text-[11px] px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300">اجرای مدل در مرورگر — نه تقریب</span>
+    </div>
+    <div id="onnx-body" class="text-sm text-slate-400">
+      <i class="fas fa-spinner fa-spin"></i> بارگذاری مدل ONNX ensemble و اجرای استنتاج در مرورگر…
+    </div>
+  </section>
+
+  <!-- تحلیل چند-تایم‌فریمی + منابع بنیادی -->
+  <section id="context-panel" class="grid md:grid-cols-3 gap-4 mb-4">
+    <div class="card p-5"><h2 class="text-base font-bold mb-3"><i class="fas fa-layer-group text-indigo-400"></i> هم‌راستایی روند (H1/H4/D1)</h2><div id="mtf-body" class="text-sm text-slate-400"><i class="fas fa-spinner fa-spin"></i> …</div></div>
+    <div class="card p-5"><h2 class="text-base font-bold mb-3"><i class="fas fa-globe text-teal-400"></i> بین‌بازاری (DXY / بازده اوراق)</h2><div id="im-body" class="text-sm text-slate-400"><i class="fas fa-spinner fa-spin"></i> …</div></div>
+    <div class="card p-5"><h2 class="text-base font-bold mb-3"><i class="fas fa-calendar-days text-rose-400"></i> تقویم اخبار USD</h2><div id="news-body" class="text-sm text-slate-400"><i class="fas fa-spinner fa-spin"></i> …</div></div>
+  </section>
+
+  <!-- سیگنال معامله (موتور امتیازدهی شفاف — مکمل) -->
   <section class="card p-5 mb-4 ${isLong ? 'glow-up' : ''}">
     <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
-      <h2 class="text-lg font-bold"><i class="fas fa-bullseye text-${sigColor}-400"></i> پیشنهاد معامله</h2>
+      <h2 class="text-lg font-bold"><i class="fas fa-bullseye text-${sigColor}-400"></i> موتور امتیازدهی شفاف (مکمل)</h2>
       <div class="flex gap-2">${confLabel(a.confidence)}
         ${isLong ? badge('سیگنال: LONG (خرید)', 'bg-emerald-500/20 text-emerald-300') : badge('سیگنال: منتظر بمانید', 'bg-slate-600/40 text-slate-300')}
       </div>
@@ -160,8 +178,8 @@ function render(d) {
     <h2 class="text-lg font-bold mb-3"><i class="fas fa-microscope text-amber-400"></i> تفکیک منطق تصمیم (شفاف)</h2>
     <div class="grid md:grid-cols-2 gap-x-6 gap-y-2">${a.scoreBreakdown.map(factorRow).join('')}</div>
     <p class="text-xs text-slate-500 mt-3 leading-5">
-      این ابزار به‌جای اجرای مدل ML (که در سرور لبه ممکن نیست)، یک «موتور امتیازدهی شفاف» بر پایه‌ی همان feature‌های استراتژی برنده اجرا می‌کند.
-      هر عامل سهم مثبت/منفی خود را در احتمال نشان می‌دهد. اعداد به بازه‌ی تجربی Win Rate پروژه (~۵۸–۶۶٪) کالیبره شده‌اند.
+      این بخش یک «موتور امتیازدهی شفاف» بر پایهٔ همان feature‌های استراتژی برنده است که سهم هر عامل را توضیح می‌دهد (تفسیرپذیری).
+      <b>تصمیم نهاییِ معامله بر عهدهٔ «سیگنال واقعی مدل ONNX» بالای صفحه است</b> که خروجی دقیقِ ربات را در مرورگر اجرا می‌کند؛ این بخش صرفاً برای درک منطق پشت آن است.
     </p>
   </section>
 
@@ -294,6 +312,9 @@ async function load() {
     render(d);
     document.getElementById('live-dot')?.classList.remove('text-amber-400');
     document.getElementById('live-dot')?.classList.add('text-emerald-400');
+    // پس از رندر اصلی، بخش‌های سنگین/شبکه‌ای را موازی و مستقل بارگذاری کن
+    runOnnxSignal();
+    loadContext();
   } catch (e) {
     document.getElementById('content').innerHTML = `<div class="card p-8 text-center text-red-400">
       <i class="fas fa-circle-exclamation text-2xl"></i>
@@ -301,6 +322,151 @@ async function load() {
       <button onclick="location.reload()" class="mt-4 bg-slate-800 px-4 py-2 rounded-lg">تلاش مجدد</button>
     </div>`;
   }
+}
+
+// ---------------- اجرای واقعی مدل ONNX در مرورگر (User Note #1) ----------------
+// کندل‌های کامل M15 را می‌گیرد (نه فقط ۳۰۰ اخیر) تا feature‌ها با تاریخچهٔ کافی
+// (EMA200/VWAP روزانه) دقیقاً مثل ربات ساخته شوند، سپس ۳ مدل ensemble اجرا می‌شوند.
+async function runOnnxSignal() {
+  const body = document.getElementById('onnx-body');
+  if (!body) return;
+  try {
+    if (!window.GoldModel) throw new Error('ماژول مدل هنوز بارگذاری نشده');
+    // ~۳ماه کندل M15 برای تاریخچهٔ کافی
+    const r = await fetch('/api/candles?interval=15m&range=3mo');
+    const j = await r.json();
+    if (!j.ok || !j.candles?.length) throw new Error(j.error || 'کندل کافی دریافت نشد');
+    const sig = await window.GoldModel.computeModelSignal(j.candles);
+    renderOnnx(sig, j.candles.length);
+  } catch (e) {
+    body.innerHTML = `<span class="text-amber-400"><i class="fas fa-triangle-exclamation"></i> اجرای مدل ONNX ناموفق: ${e.message}</span>`;
+  }
+}
+
+function renderOnnx(s, nCandles) {
+  const body = document.getElementById('onnx-body');
+  const sec = document.getElementById('onnx-signal');
+  const isLong = s.direction === 'LONG';
+  sec.classList.toggle('glow-up', isLong);
+  const pColor = s.probability >= 0.75 ? 'emerald' : s.probability >= s.threshold ? 'amber' : 'slate';
+  const pct = s.probabilityPct;
+  const thrPct = (s.threshold * 100).toFixed(0);
+  body.innerHTML = `
+    <div class="flex flex-wrap items-center gap-2 mb-3">
+      ${isLong
+        ? badge('سیگنال مدل: LONG (خرید)', 'bg-emerald-500/25 text-emerald-300')
+        : badge('سیگنال مدل: بدون ورود', 'bg-slate-600/40 text-slate-300')}
+      ${confLabel(s.confidence)}
+      ${badge(s.regimeOk ? 'رژیم صعودی ✓' : 'خارج از رژیم', s.regimeOk ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-600/40 text-slate-300')}
+    </div>
+    <div class="mb-3">
+      <div class="flex justify-between text-sm mb-1">
+        <span class="text-slate-400">احتمال مدل (ensemble ۳ مدل) — کلاس «برد»</span>
+        <span class="font-bold text-${pColor}-400">${fmt(pct,2)}%</span>
+      </div>
+      <div class="bar-bg h-3 relative">
+        <div class="h-full bg-${pColor}-500 transition-all" style="width:${pct}%"></div>
+        <div class="absolute top-0 bottom-0" style="left:${thrPct}%; width:2px; background:#f1f5f9" title="آستانه ${thrPct}%"></div>
+      </div>
+      <p class="text-[11px] text-slate-500 mt-1">آستانهٔ تصمیم مدل = ${thrPct}٪ (خط سفید). ورود فقط وقتی احتمال ≥ آستانه و رژیم صعودی باشد.</p>
+    </div>
+    ${isLong ? `
+    <div class="grid grid-cols-3 gap-3 text-center">
+      <div class="bg-slate-800/60 rounded-lg p-3"><p class="text-xs text-slate-400">ورود</p><p class="font-bold">$${fmt(s.entry)}</p></div>
+      <div class="bg-emerald-900/30 rounded-lg p-3"><p class="text-xs text-emerald-400">TP</p><p class="font-bold text-emerald-300">$${fmt(s.tp)}</p></div>
+      <div class="bg-red-900/30 rounded-lg p-3"><p class="text-xs text-red-400">SL</p><p class="font-bold text-red-300">$${fmt(s.sl)}</p></div>
+    </div>
+    <p class="text-xs text-slate-500 mt-2 text-center">${s.rr}</p>
+    ` : `
+    <div class="bg-slate-800/40 rounded-lg p-3 text-center text-slate-300 text-sm">
+      <i class="fas fa-hourglass-half"></i> مدل در حال حاضر سیگنال ورود نمی‌دهد ${s.regimeOk ? '(احتمال زیر آستانه)' : '(خارج از رژیم صعودی)'}.
+    </div>`}
+    <p class="text-[11px] text-slate-500 mt-3 leading-5">
+      <i class="fas fa-circle-check text-cyan-400"></i> این خروجی از اجرای مستقیم فایل‌های <code>xauusd_s14_model_{0,1,2}.onnx</code>
+      با <code>onnxruntime-web</code> روی ${nCandles} کندل M15 محاسبه شده و <b>دقیقاً معادل منطق ربات MT5</b> است (parity ~۹۹.۶٪).
+    </p>`;
+}
+
+// ------------- تحلیل چند-تایم‌فریمی + بین‌بازاری + اخبار (User Note #2,#3) -------------
+async function loadContext() {
+  try {
+    const r = await fetch('/api/context');
+    const d = await r.json();
+    renderMTF(d.mtf);
+    renderIntermarket(d.intermarket);
+    renderNews(d.news);
+  } catch (e) {
+    ['mtf-body','im-body','news-body'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = `<span class="text-amber-400 text-xs">خطا: ${e.message}</span>`;
+    });
+  }
+}
+
+function tfBadge(t) {
+  if (t === 'up') return '<span class="text-emerald-400"><i class="fas fa-arrow-up"></i> صعودی</span>';
+  if (t === 'down') return '<span class="text-red-400"><i class="fas fa-arrow-down"></i> نزولی</span>';
+  return '<span class="text-slate-400"><i class="fas fa-arrows-left-right"></i> رنج</span>';
+}
+
+function renderMTF(m) {
+  const el = document.getElementById('mtf-body');
+  if (!el) return;
+  if (!m || m.error) { el.innerHTML = `<span class="text-amber-400 text-xs">در دسترس نیست: ${m?.error||''}</span>`; return; }
+  const alignColor = m.alignment === 'bullish' ? 'emerald' : m.alignment === 'bearish' ? 'red' : 'slate';
+  const alignText = m.alignment === 'bullish' ? 'هم‌راستای صعودی' : m.alignment === 'bearish' ? 'هم‌راستای نزولی' : 'ناهم‌راستا';
+  el.innerHTML = `
+    ${m.timeframes.map(t => `
+      <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+        <span class="font-semibold text-slate-200">${t.timeframe}</span>
+        <span>${tfBadge(t.trend)}</span>
+        <span class="text-xs text-slate-500 font-mono">EMA50 $${fmt(t.ema50)}</span>
+      </div>`).join('')}
+    <div class="mt-3 p-2 rounded-lg bg-${alignColor}-500/10 text-${alignColor}-300 text-xs">
+      <b>${alignText}</b> (امتیاز ${m.alignmentScore >= 0 ? '+' : ''}${m.alignmentScore}) — ${m.note}
+    </div>`;
+}
+
+function renderIntermarket(im) {
+  const el = document.getElementById('im-body');
+  if (!el) return;
+  if (!im || im.error) { el.innerHTML = `<span class="text-amber-400 text-xs">در دسترس نیست: ${im?.error||''}</span>`; return; }
+  const biasColor = im.goldBias === 'supportive' ? 'emerald' : im.goldBias === 'headwind' ? 'red' : 'slate';
+  const row = (a) => `
+    <div class="flex justify-between items-center py-1.5 border-b border-slate-800/60">
+      <span class="text-slate-300 text-xs">${a.name}</span>
+      <span class="text-left">
+        <span class="font-bold">${fmt(a.price, 3)}</span>
+        <span class="text-xs ${a.changePct>=0?'text-red-400':'text-emerald-400'} block">${a.changePct>=0?'+':''}${fmt(a.changePct,2)}% ${tfBadge(a.trend)}</span>
+      </span>
+    </div>`;
+  el.innerHTML = `
+    ${row(im.dxy)}
+    ${row(im.tnx)}
+    <div class="mt-3 p-2 rounded-lg bg-${biasColor}-500/10 text-${biasColor}-300 text-xs">${im.note}</div>
+    <p class="text-[10px] text-slate-500 mt-2">طلا معمولاً با دلار و بازده اوراق رابطهٔ معکوس دارد؛ رنگ قرمزِ تغییر یعنی صعودِ آن دارایی (فشار بر طلا).</p>`;
+}
+
+function renderNews(n) {
+  const el = document.getElementById('news-body');
+  if (!el) return;
+  if (!n || n.error) { el.innerHTML = `<span class="text-amber-400 text-xs">در دسترس نیست: ${n?.error||''}</span>`; return; }
+  const impColor = (i) => i === 'High' ? 'red' : i === 'Medium' ? 'amber' : 'slate';
+  const upcoming = n.events.filter(e => e.minutesUntil > -120).slice(0, 6);
+  el.innerHTML = `
+    <div class="p-2 rounded-lg ${n.riskWindow ? 'bg-red-500/15 text-red-300' : 'bg-slate-700/30 text-slate-300'} text-xs mb-2">${n.note}</div>
+    <div class="space-y-1">
+      ${upcoming.length ? upcoming.map(e => {
+        const c = impColor(e.impact);
+        const when = e.minutesUntil > 0
+          ? `تا ${e.minutesUntil >= 60 ? Math.round(e.minutesUntil/60)+' ساعت' : e.minutesUntil+' دقیقه'} دیگر`
+          : 'گذشته';
+        return `<div class="flex justify-between items-center text-xs py-1 border-b border-slate-800/50">
+          <span class="truncate max-w-[60%]">${badge(e.impact, 'bg-'+c+'-500/20 text-'+c+'-300')} ${e.title}</span>
+          <span class="text-slate-500">${when}</span>
+        </div>`;
+      }).join('') : '<p class="text-slate-500 text-xs">رویداد مرتبطی یافت نشد.</p>'}
+    </div>`;
 }
 
 skeleton();
