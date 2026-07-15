@@ -332,8 +332,9 @@ async function runOnnxSignal() {
   if (!body) return;
   try {
     if (!window.GoldModel) throw new Error('ماژول مدل هنوز بارگذاری نشده');
-    // ~۳ماه کندل M15 برای تاریخچهٔ کافی
-    const r = await fetch('/api/candles?interval=15m&range=3mo');
+    // ۶۰ روز کندل M15 (بیشترین بازهٔ مجاز Yahoo برای ۱۵دقیقه) — ~۵۷۰۰ کندل،
+    // برای EMA200 و VWAP روزانه کاملاً کافی است.
+    const r = await fetch('/api/candles?interval=15m&range=60d');
     const j = await r.json();
     if (!j.ok || !j.candles?.length) throw new Error(j.error || 'کندل کافی دریافت نشد');
     const sig = await window.GoldModel.computeModelSignal(j.candles);
