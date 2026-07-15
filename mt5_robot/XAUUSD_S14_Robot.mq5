@@ -243,3 +243,261 @@ double RollingMean(const double &arr[], int end_idx, int period)
    for(int k=0; k<period; k++) m += arr[end_idx - period + 1 + k];
    return m / period;
 }
+
+//+------------------------------------------------------------------+
+//| ساخت ۵۷ feature برای کندل بسته‌شدهٔ j" (shift از کندل جاری)       |
+//| ترتیب دقیقاً مطابق mt5_robot/feature_order.txt و features.py     |
+//| خروجی در feat[] (طول NUM_FEATURES). true اگر موفق.               |
+//+------------------------------------------------------------------+
+bool BuildFeatures(int sig_shift, float &feat[])
+{
+   // برای محاسبهٔ VWAP لنگرشده و شیب/zscore به تاریخچهٔ کافی نیاز داریم.
+   // NEED کندل تاریخی می‌گیریم (اندیس صعودی زمانی می‌سازیم).
+   int NEED = 400;  // برای ema288 و vwap روزانه کافی است
+   MqlRates rates[];
+   ArraySetAsSeries(rates, false); // اندیس ۰=قدیمی‌ترین
+   int copied = CopyRates(_Symbol, PERIOD_M15, sig_shift, NEED, rates);
+   if(copied < NEED)
+   {
+      if(InpVerbose) Print("داده کافی برای feature نیست: ", copied);
+      return false;
+   }
+   int cur = copied - 1;  // اندیس کندل سیگنال (جدیدترین در این آرایه)
+
+   // سری‌های قیمت با اندیس صعودی
+   double closeA[], highA[], lowA[], openA[], volA[], tpA[];
+   ArrayResize(closeA, copied); ArrayResize(highA, copied);
+   ArrayResize(lowA, copied);   ArrayResize(openA, copied);
+   ArrayResize(volA, copied);   ArrayResize(tpA, copied);
+   for(int i=0; i<copied; i++)
+   {
+      closeA[i] = rates[i].close;
+      highA[i]  = rates[i].high;
+      lowA[i]   = rates[i].low;
+      openA[i]  = rates[i].open;
+      volA[i]   = (double)rates[i].tick_volume;
+      tpA[i]    = (rates[i].high + rates[i].low + rates[i].close) / 3.0;
+   }
+
+   double c  = closeA[cur];
+   double h  = highA[cur];
+   double l  = lowA[cur];
+   double o  = openA[cur];
+
+   // مقادیر اندیکاتورهای MT5 (shift=sig_shift یعنی همان کندل سیگنال)
+   double ema20  = IndVal(h_ema20, 0, sig_shift);
+   double ema50  = IndVal(h_ema50, 0, sig_shift);
+   double ema100 = IndVal(h_ema100,0, sig_shift);
+   double ema200 = IndVal(h_ema200,0, sig_shift);
+   double emaH1  = IndVal(h_ema_h1,0, sig_shift);
+   double emaH4  = IndVal(h_ema_h4,0, sig_shift);
+   double emaD1  = IndVal(h_ema_d1,0, sig_shift);
+   double atr14  = IndVal(h_atr14, 0, sig_shift);
+   double rsi7   = IndVal(h_rsi7,  0, sig_shift);
+   double rsi14  = IndVal(h_rsi14, 0, sig_shift);
+   double rsi21  = IndVal(h_rsi21, 0, sig_shift);
+   double adx    = IndVal(h_adx14, 0, sig_shift);
+   double pdi    = IndVal(h_adx14, 1, sig_shift);
+   double mdi    = IndVal(h_adx14, 2, sig_shift);
+   double macd_main = IndVal(h_macd, 0, sig_shift);
+   double macd_sig  = IndVal(h_macd, 1, sig_shift);
+   double stoch_k   = IndVal(h_stoch, 0, sig_shift);
+   double stoch_d   = IndVal(h_stoch, 1, sig_shift);
+   double bb_up  = IndVal(h_bb20, 1, sig_shift); // UPPER_BAND
+   double bb_lo  = IndVal(h_bb20, 2, sig_shift); // LOWER_BAND
+
+   if(atr14==EMPTY_VALUE || ema200==EMPTY_VALUE || bb_up==EMPTY_VALUE)
+      return false;
+
+   // MACD hist مطابق features.py = macd_main - signal (خود MT5 signal را می‌دهد)
+   double macd_hist = macd_main - macd_sig;
+
+   // ---- VWAP لنگرشدهٔ روزانه (از ابتدای همان روز تا کندل سیگنال) ----
+   MqlDateTime dt_cur; TimeToStruct(rates[cur].time, dt_cur);
+   double cum_pv = 0.0, cum_v = 0.0;
+   for(int i=cur; i>=0; i--)
+   {
+      MqlDateTime dti; TimeToStruct(rates[i].time, dti);
+      if(dti.day != dt_cur.day || dti.mon != dt_cur.mon || dti.year != dt_cur.year)
+         break;
+      cum_pv += tpA[i] * volA[i];
+      cum_v  += volA[i];
+   }
+   double vwap = (cum_v > 0.0) ? cum_pv / cum_v : c;
+
+   // ---- open روزانه (اولین کندل همان روز) ----
+   double daily_open = o;
+   for(int i=cur; i>=0; i--)
+   {
+      MqlDateTime dti; TimeToStruct(rates[i].time, dti);
+      if(dti.day != dt_cur.day || dti.mon != dt_cur.mon || dti.year != dt_cur.year)
+         break;
+      daily_open = openA[i];
+   }
+
+   // ---- streak: تعداد کندل هم‌جهت اخیر (علامت‌دار) مطابق features.py ----
+   double streak = 0.0;
+   {
+      double prev_sign = 0.0;
+      int count = 0;
+      for(int i=cur; i>0; i--)
+      {
+         double diff = closeA[i] - closeA[i-1];
+         double sgn = (diff>0)?1.0:((diff<0)?-1.0:0.0);
+         if(i==cur){ prev_sign = sgn; count = 1; }
+         else { if(sgn==prev_sign && sgn!=0.0) count++; else break; }
+      }
+      streak = count * prev_sign;
+   }
+
+   // ---- range/body helpers ----
+   double rng = (h - l); if(rng==0.0) rng = 1e-9;
+
+   // ---- ATR moving-average ratio (atr_ratio) ----
+   // atr_ma = میانگین ۵۰ کندل ATR؛ ATR را برای ۵۰ کندل اخیر می‌خوانیم
+   double atr_ma = 0.0;
+   {
+      double atrbuf[];
+      if(CopyBuffer(h_atr14, 0, sig_shift, 50, atrbuf) == 50)
+      {
+         double sm=0; for(int i=0;i<50;i++) sm+=atrbuf[i];
+         atr_ma = sm/50.0;
+      }
+   }
+   double atr_ratio = (atr_ma>0.0)? atr14/atr_ma : 1.0;
+
+   // ---- ساخت آرایهٔ feature به ترتیب دقیق ----
+   int p = 0;
+   // ret_1..ret_21 (pct_change)
+   feat[p++] = (float)((c/closeA[cur-1]) - 1.0);
+   feat[p++] = (float)((c/closeA[cur-2]) - 1.0);
+   feat[p++] = (float)((c/closeA[cur-3]) - 1.0);
+   feat[p++] = (float)((c/closeA[cur-5]) - 1.0);
+   feat[p++] = (float)((c/closeA[cur-8]) - 1.0);
+   feat[p++] = (float)((c/closeA[cur-13]) - 1.0);
+   feat[p++] = (float)((c/closeA[cur-21]) - 1.0);
+   // rsi
+   feat[p++] = (float)rsi7;
+   feat[p++] = (float)rsi14;
+   feat[p++] = (float)rsi21;
+   // macd
+   feat[p++] = (float)macd_main;
+   feat[p++] = (float)macd_sig;
+   feat[p++] = (float)macd_hist;
+   // atr, atr_pct, atr_ratio, range_pct, body_pct
+   feat[p++] = (float)atr14;
+   feat[p++] = (float)(atr14 / c);
+   feat[p++] = (float)atr_ratio;
+   feat[p++] = (float)((h - l) / c);
+   feat[p++] = (float)(MathAbs(c - o) / c);
+   // adx, di_diff
+   feat[p++] = (float)adx;
+   feat[p++] = (float)(pdi - mdi);
+   // bb_pos, bb_width
+   double bb_w = (bb_up - bb_lo); if(bb_w==0.0) bb_w=1e-9;
+   feat[p++] = (float)((c - bb_lo) / bb_w);
+   feat[p++] = (float)(bb_w / c);
+   // stoch
+   feat[p++] = (float)stoch_k;
+   feat[p++] = (float)stoch_d;
+   // dist_ema20/50/100 (نسبی)
+   feat[p++] = (float)((c - ema20) / ema20);
+   feat[p++] = (float)((c - ema50) / ema50);
+   feat[p++] = (float)((c - ema100) / ema100);
+   // slope_20, slope_50 (نرمال‌شده با close)
+   feat[p++] = (float)(RollingSlope(closeA, cur, 20) / c);
+   feat[p++] = (float)(RollingSlope(closeA, cur, 50) / c);
+   // zscore_20, zscore_50
+   feat[p++] = (float)ZScore(closeA, cur, 20);
+   feat[p++] = (float)ZScore(closeA, cur, 50);
+   // vol_ratio = vol / rolling_mean(vol,20)
+   double vol_ma20 = RollingMean(volA, cur, 20);
+   feat[p++] = (float)((vol_ma20>0.0)? volA[cur]/vol_ma20 : 1.0);
+   // upper_wick, lower_wick
+   feat[p++] = (float)((h - MathMax(o,c)) / rng);
+   feat[p++] = (float)((MathMin(o,c) - l) / rng);
+   // streak
+   feat[p++] = (float)streak;
+   // hour_sin, hour_cos, dow, hour
+   int hour = dt_cur.hour;
+   int dow  = dt_cur.day_of_week; // 0=یکشنبه در MT5
+   // pandas dayofweek: دوشنبه=0..یکشنبه=6 ؛ MT5: یکشنبه=0..شنبه=6
+   int pandas_dow = (dow==0)?6:(dow-1);
+   feat[p++] = (float)MathSin(2.0*M_PI*hour/24.0);
+   feat[p++] = (float)MathCos(2.0*M_PI*hour/24.0);
+   feat[p++] = (float)pandas_dow;
+   feat[p++] = (float)hour;
+   // dist_daily_open
+   feat[p++] = (float)((c - daily_open) / daily_open);
+   // MTF: trend_h1/slope_h1/ret_h1 ، h4 ، d1
+   feat[p++] = (float)((c - emaH1) / emaH1);              // trend_h1
+   feat[p++] = (float)(RollingSlope(closeA, cur, 4) / c); // slope_h1 (htf=4)
+   feat[p++] = (float)((c/closeA[cur-4]) - 1.0);          // ret_h1
+   feat[p++] = (float)((c - emaH4) / emaH4);              // trend_h4
+   feat[p++] = (float)(RollingSlope(closeA, cur, 16) / c);// slope_h4 (htf=16)
+   feat[p++] = (float)((c/closeA[cur-16]) - 1.0);         // ret_h4
+   feat[p++] = (float)((c - emaD1) / emaD1);              // trend_d1
+   feat[p++] = (float)(RollingSlope(closeA, cur, 96) / c);// slope_d1 (htf=96)
+   feat[p++] = (float)((c/closeA[cur-96]) - 1.0);         // ret_d1
+   // above_ema200, dist_ema200
+   feat[p++] = (float)((c > ema200)?1.0:0.0);
+   feat[p++] = (float)((c - ema200) / ema200);
+   // vwap_dist, vwap_dist_atr, above_vwap
+   feat[p++] = (float)((c - vwap) / c);
+   feat[p++] = (float)((c - vwap) / atr14);
+   feat[p++] = (float)((c > vwap)?1.0:0.0);
+   // ema50_dist_atr, vol_z20, close_pos_in_range
+   feat[p++] = (float)((c - ema50) / atr14);
+   feat[p++] = (float)ZScore(volA, cur, 20);
+   feat[p++] = (float)((c - l) / rng);
+
+   if(p != NUM_FEATURES)
+   {
+      Print("خطای تعداد feature: ", p, " != ", NUM_FEATURES);
+      return false;
+   }
+   return true;
+}
+
+//+------------------------------------------------------------------+
+//| اجرای یک مدل ONNX روی feature و برگرداندن احتمال کلاس ۱          |
+//+------------------------------------------------------------------+
+double RunModel(long handle, const float &feat[])
+{
+   float in_data[];
+   ArrayResize(in_data, NUM_FEATURES);
+   for(int i=0; i<NUM_FEATURES; i++) in_data[i] = feat[i];
+
+   // خروجی‌ها: 0=label (long) ، 1=probabilities (float[1,2])
+   long   out_label[];
+   float  out_proba[];
+   ArrayResize(out_label, 1);
+   ArrayResize(out_proba, 2);
+
+   if(!OnnxRun(handle, ONNX_NO_CONVERSION, in_data, out_label, out_proba))
+   {
+      // تلاش دوم با حالت پیش‌فرض
+      if(!OnnxRun(handle, ONNX_DEFAULT, in_data, out_label, out_proba))
+      {
+         if(InpVerbose) Print("OnnxRun ناموفق. err=", GetLastError());
+         return -1.0;
+      }
+   }
+   return (double)out_proba[1]; // احتمال کلاس ۱ (موفقیت TP)
+}
+
+//+------------------------------------------------------------------+
+//| احتمال ensemble (میانگین مدل‌های بارگذاری‌شده)                    |
+//+------------------------------------------------------------------+
+double EnsembleProba(const float &feat[])
+{
+   double sum = 0.0; int cnt = 0;
+   for(int i=0; i<3; i++)
+   {
+      if(g_model[i]==INVALID_HANDLE) continue;
+      double pr = RunModel(g_model[i], feat);
+      if(pr >= 0.0){ sum += pr; cnt++; }
+   }
+   if(cnt==0) return -1.0;
+   return sum / cnt;
+}
