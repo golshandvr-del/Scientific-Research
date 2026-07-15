@@ -31,7 +31,33 @@
 ## فهرست استراتژی‌های تست‌شده
 | # | استراتژی | فایل | Win Rate | تعداد معاملات | وضعیت |
 |---|----------|------|----------|---------------|--------|
-| - | (در حال تحقیق) | - | - | - | - |
+| ۱ | BB+RSI Mean Reversion | `BB_RSI_MeanReversion_47.md` | ۴۷٪ | ۳۹۷۸ | ❌ بدون edge |
+| ۲ | تله Win Rate (عدم‌تقارن TP/SL) | `TPSL_Asymmetry_WinRateTrap_84.md` | تا ۸۴٪ | زیاد | ❌ exp منفی |
+| ۴ | LightGBM Long Walk-Forward | `ML_LightGBM_Long_WalkForward_71.md` | ۷۱.۵٪ | ۷۰۴۰ | ⚠️ exp مرزی-منفی |
+| ۶ | Session ML Long (RR متعادل) | `Session_ML_Long_Balanced_56.md` | تا ۵۶٪ | ~۵۵۰ | ❌ WR کم، exp مثبت |
+| ۷ | Session Asymmetric ML | `Session_Asymmetric_ML_Long_70.md` | ۷۰٪ | ~۱۴۰ | ⚠️ نامعنادار |
+| ۸ | Structural Golden Pullback ML | `Structural_Golden_Pullback_ML_68.md` | ۶۸٪ | ۲۱۶ | ✅ سودآور، WR<70 |
+| ۹ | Wide Candidate ML Golden | `Wide_Candidate_ML_Golden_67.md` | ۶۷٪ | ۵۰۰–۸۶۰ | ✅ سودآور، WR<70 |
+| ۱۰ | **S/R Breakout-Retest (Price Action)** | `SR_Breakout_Retest_PriceAction_47.md` | ۴۷٪ | ~۱۲۰۰۰ | ❌ بدون edge |
+| ۱۱ | **S/R Pullback + Trend + Golden (PA)** | `SR_Pullback_Trend_Golden_PriceAction_71.md` | ۷۱–۷۳٪ | ۷۸–۱۵۱ | ⚠️ نامعنادار + کم‌فرکانس |
+| ۱۲ | **Adaptive S/R Target (Price Action)** | `Adaptive_SR_Target_PriceAction_36.md` | ۲۵–۳۶٪ | ~۷۰۰ | ❌ trade-off |
+
+## کشف بنیادی پروژه ⭐
+پس از ۱۲ استراتژی از سه مسیر مستقل (آماری، یادگیری ماشین، و اکشن قیمت):
+
+> **سقف Win Rate آماری-معنادار (p<0.05، n بزرگ) با داده‌ی صرف OHLCV روی XAUUSD M15
+> حدود ۶۶–۶۸٪ است.** این بازتاب مستقیم کارایی نیمه‌قوی این بازار است.
+> - WR>70% یا با n کوچک (نامعنادار/cherry-pick) یا با RR نامتقارن (exp منفی) ممکن می‌شود.
+> - جابه‌جایی TP/SL فقط WR و RR را با هم **معاوضه** می‌کند؛ expectancy را مثبت نمی‌کند.
+
+### تضاد «WR بالا ↔ فرکانس بالا» (مانع ساخت ربات)
+استراتژی‌های با WR~۷۰٪ ذاتاً کم‌فرکانس‌اند (~۰.۰۶–۰.۴ معامله در روز)، در حالی‌که ربات
+به **≥۳ معامله در روز** نیاز دارد. باز کردن فیلترها برای فرکانس، WR را به سقف ~۶۸٪ برمی‌گرداند.
+
+### پوشش روش‌های تریدرها (Price Action) — پاسخ به User Note
+استراتژی‌های ۱۰، ۱۱، ۱۲ دقیقاً روش‌های کلاسیک تریدرها را کمی‌سازی و بک‌تست کردند
+(حمایت/مقاومت، breakout-retest، pullback، هدف‌گذاری ساختاری). نتیجه‌ی علمی: این
+روش‌ها به‌تنهایی **edge آماری معناداری ندارند** و به همان سقف ساختاری ~۶۸٪ می‌رسند.
 
 ## ساختار پروژه
 ```
@@ -47,4 +73,6 @@ Scientific-Research/
 ```
 
 ## وضعیت فعلی
-🔬 در حال تحقیق — شروع پروژه.
+🔬 در حال تحقیق — ۱۲ استراتژی از ۳ مسیر (آماری، ML، Price Action) تست شد.
+هنوز به هدف «WR>70% معنادار + سودآور + ≥۳ معامله/روز» نرسیده‌ایم.
+بهترین «استراتژی سودآور واقعی» تا کنون: استراتژی ۸/۹ (WR~۶۸٪، expectancy قویاً مثبت).
