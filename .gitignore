@@ -2,3 +2,9 @@ __pycache__/
 *.pyc
 *.log
 /tmp/
+
+# web_tool (Node/Cloudflare project)
+web_tool/node_modules/
+web_tool/dist/
+web_tool/.wrangler/
+web_tool/.dev.vars

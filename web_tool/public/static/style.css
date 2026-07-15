@@ -1,0 +1,8 @@
+body { font-family: 'Segoe UI', Tahoma, sans-serif; }
+.glow-up { box-shadow: 0 0 20px rgba(34,197,94,0.25); }
+.glow-down { box-shadow: 0 0 20px rgba(239,68,68,0.25); }
+.card { background: rgba(30,41,59,0.6); border: 1px solid rgba(51,65,85,0.6); border-radius: 1rem; }
+.pulse-dot { animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.bar-bg { background: rgba(51,65,85,0.5); border-radius: 999px; overflow: hidden; }
+canvas { max-width: 100%; }
