@@ -138,8 +138,8 @@ function render(d) {
     ` : `
     <div class="bg-slate-800/40 rounded-lg p-4 text-center text-slate-300 text-sm">
       <i class="fas fa-hourglass-half text-slate-400"></i>
-      در حال حاضر شرایط ورودِ کم‌ریسک برقرار نیست ${a.regimeOk ? '(احتمال زیر آستانه ۶۰٪)' : '(بازار خارج از رژیم صعودی استراتژی)'}.
-      استراتژی S14 فقط در روند صعودی و با اطمینان کافی وارد می‌شود.
+      در حال حاضر شرایط ورود برقرار نیست: ${a.noEntryReason || 'شرایط استراتژی کامل نیست.'}
+      <span class="block text-xs text-slate-500 mt-1">استراتژی S14 فقط در روند صعودی و با احتمال ≥ ${fmt(a.entryThreshold ?? 60, 0)}٪ وارد می‌شود.</span>
     </div>`}
   </section>
 
@@ -381,7 +381,7 @@ function renderOnnx(s, nCandles) {
     <p class="text-xs text-slate-500 mt-2 text-center">${s.rr}</p>
     ` : `
     <div class="bg-slate-800/40 rounded-lg p-3 text-center text-slate-300 text-sm">
-      <i class="fas fa-hourglass-half"></i> مدل در حال حاضر سیگنال ورود نمی‌دهد ${s.regimeOk ? '(احتمال زیر آستانه)' : '(خارج از رژیم صعودی)'}.
+      <i class="fas fa-hourglass-half"></i> مدل سیگنال ورود نمی‌دهد ${s.regimeOk ? `(احتمال مدل ${fmt(pct,1)}٪ < آستانهٔ ${thrPct}٪)` : '(بازار خارج از رژیم صعودی)'}.
     </div>`}
     <p class="text-[11px] text-slate-500 mt-3 leading-5">
       <i class="fas fa-circle-check text-cyan-400"></i> این خروجی از اجرای مستقیم فایل‌های <code>xauusd_s14_model_{0,1,2}.onnx</code>

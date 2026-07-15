@@ -36,6 +36,8 @@ export interface AnalysisResult {
   // سیگنال
   direction: 'LONG' | 'NONE'
   probability: number        // احتمال برخورد TP قبل از SL (%)
+  entryThreshold: number     // آستانهٔ ورود (٪) — برای نمایش هماهنگ در UI
+  noEntryReason: string      // دلیل دقیق عدم ورود (خالی اگر سیگنال فعال باشد)
   confidence: 'high' | 'medium' | 'low'
   scoreBreakdown: { name: string; value: number; contrib: number; note: string }[]
   entry: number | null
@@ -186,10 +188,21 @@ export function analyze(c: Candle[]): AnalysisResult {
   const probability = Math.max(30, Math.min(78, 42 + rawP * 34))
 
   // ---- تصمیم سیگنال ----
-  // آستانه معادل THR=0.68 مدل → اینجا probability >= 60 و رژیم OK
+  // اصلاح باگ ناهماهنگی: تصمیم دقیقاً بر پایهٔ همان probability نمایش‌داده‌شده است.
+  //   شرط ورود = رژیم صعودی OK  و  probability ≥ آستانهٔ ۶۰٪.
+  //   (اثر فاصلهٔ VWAP قبلاً درون خود score/probability لحاظ شده است، پس شرط
+  //    جداگانهٔ vwapContrib حذف شد تا «درصد» و «سیگنال» هرگز متناقض نباشند.)
+  const ENTRY_THRESHOLD = 60
   let direction: 'LONG' | 'NONE' = 'NONE'
   let entry: number | null = null, tp: number | null = null, sl: number | null = null
-  if (regimeOk && probability >= 60 && vwapContrib >= 0) {
+  // دلیل دقیق و صادقانهٔ عدم ورود (برای نمایش هماهنگ در UI)
+  let noEntryReason = ''
+  if (!regimeOk) {
+    noEntryReason = 'بازار خارج از رژیم صعودی استراتژی است (شرط close>EMA50>EMA200 برقرار نیست).'
+  } else if (probability < ENTRY_THRESHOLD) {
+    noEntryReason = `احتمال موفقیت (${probability.toFixed(1)}%) زیر آستانهٔ ورود ۶۰٪ است.`
+  }
+  if (regimeOk && probability >= ENTRY_THRESHOLD) {
     direction = 'LONG'
     entry = price
     tp = price + S14.TP_M * atr
@@ -246,7 +259,9 @@ export function analyze(c: Candle[]): AnalysisResult {
     price, atr, ema50: e50, ema200: e200, vwap,
     rsi14: r, adx: a, macdHist: mh,
     trend, regimeOk,
-    direction, probability: Number(probability.toFixed(1)), confidence,
+    direction, probability: Number(probability.toFixed(1)),
+    entryThreshold: ENTRY_THRESHOLD, noEntryReason,
+    confidence,
     scoreBreakdown: breakdown,
     entry, tp, sl,
     rr: `TP ${S14.TP_M}×ATR / SL ${S14.SL_M}×ATR (BE=${S14.BE}%)`,
