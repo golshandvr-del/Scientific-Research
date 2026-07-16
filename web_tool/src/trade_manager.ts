@@ -132,25 +132,47 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   const res = a.resistance
   const sup = a.support
   const nearPct = 0.25 // نزدیک اگر < ~۰.۲۵٪
+  // حداقل فاصلهٔ منطقی TP از ورود تا معامله معنی‌دار بماند (نصف ATR)
+  const minTpGap = 0.5 * atr
   if (isLong && res && distToTp > 0) {
     const dR = ((res.price - price) / price) * 100
-    if (dR > 0 && dR < nearPct && res.price < t.tp) {
+    // پیشنهاد پایین‌آوردن TP فقط وقتی معتبر است که مقاومت هم زیر TP فعلی باشد و
+    // هم به‌قدر کافی بالاتر از ورود (وگرنه TP پیشنهادی زیر ورود می‌افتد = ضرر تضمینی).
+    const suggestedTp = round2(res.price - 0.1 * atr)
+    const validTpSuggestion = res.price < t.tp && suggestedTp > t.entry + minTpGap
+    if (dR > 0 && dR < nearPct && validTpSuggestion) {
       advices.push({
         type: 'level', severity: 'warning',
         title: 'مقاومت پیش از TP',
-        detail: `یک مقاومت با ${res.touches} برخورد در ${round2(res.price)} (فاصله ${round2(dR)}٪) درست زیرِ TP توست. احتمال برگشت از این سطح هست؛ می‌توانی TP را کمی پایین‌تر از این مقاومت (${round2(res.price - 0.1 * atr)}) بگذاری تا مطمئن‌تر پر شود.`,
-        suggest: { field: 'tp', value: round2(res.price - 0.1 * atr) },
+        detail: `یک مقاومت با ${res.touches} برخورد در ${round2(res.price)} (فاصله ${round2(dR)}٪) درست زیرِ TP توست. احتمال برگشت از این سطح هست؛ می‌توانی TP را کمی پایین‌تر از این مقاومت (${suggestedTp}) بگذاری تا مطمئن‌تر پر شود.`,
+        suggest: { field: 'tp', value: suggestedTp },
+      })
+    } else if (dR >= 0 && dR < nearPct && res.price <= t.entry + minTpGap) {
+      // مقاومت زیر (یا بسیار نزدیکِ) ورودِ خرید است → پایین‌آوردن TP بی‌معناست
+      // (TP زیر ورود = ضرر). به‌جای پیشنهاد TPِ زیانده، هشدار خطر می‌دهیم.
+      advices.push({
+        type: 'level', severity: 'warning',
+        title: 'مقاومت زیرِ قیمت ورود توست',
+        detail: `یک مقاومت با ${res.touches} برخورد در ${round2(res.price)} حتی پایین‌تر از قیمت ورود تو (${round2(t.entry)}) قرار دارد. برای رسیدن به TP باید قیمت این مقاومت را بشکند. TP را پایین نیاور (زیر ورود می‌رود و ضرر می‌شود)؛ صبر کن سطح شکسته شود، یا اگر نشکست بخشی از حجم را ببند.`,
       })
     }
   }
   if (!isLong && sup && distToTp > 0) {
     const dS = ((price - sup.price) / price) * 100
-    if (dS > 0 && dS < nearPct && sup.price > t.tp) {
+    const suggestedTp = round2(sup.price + 0.1 * atr)
+    const validTpSuggestion = sup.price > t.tp && suggestedTp < t.entry - minTpGap
+    if (dS > 0 && dS < nearPct && validTpSuggestion) {
       advices.push({
         type: 'level', severity: 'warning',
         title: 'حمایت پیش از TP',
-        detail: `یک حمایت با ${sup.touches} برخورد در ${round2(sup.price)} (فاصله ${round2(dS)}٪) درست بالای TP توست. احتمال برگشت صعودی از این سطح هست؛ می‌توانی TP را کمی بالاتر از این حمایت (${round2(sup.price + 0.1 * atr)}) بگذاری.`,
-        suggest: { field: 'tp', value: round2(sup.price + 0.1 * atr) },
+        detail: `یک حمایت با ${sup.touches} برخورد در ${round2(sup.price)} (فاصله ${round2(dS)}٪) درست بالای TP توست. احتمال برگشت صعودی از این سطح هست؛ می‌توانی TP را کمی بالاتر از این حمایت (${suggestedTp}) بگذاری.`,
+        suggest: { field: 'tp', value: suggestedTp },
+      })
+    } else if (dS >= 0 && dS < nearPct && sup.price >= t.entry - minTpGap) {
+      advices.push({
+        type: 'level', severity: 'warning',
+        title: 'حمایت بالای قیمت ورود توست',
+        detail: `یک حمایت با ${sup.touches} برخورد در ${round2(sup.price)} حتی بالاتر از قیمت ورود تو (${round2(t.entry)}) قرار دارد. برای رسیدن به TP باید قیمت این حمایت را بشکند. TP را بالا نیاور (بالای ورود می‌رود و ضرر می‌شود)؛ صبر کن سطح شکسته شود، یا بخشی را ببند.`,
       })
     }
   }
@@ -194,23 +216,37 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   }
 
   // ---------- ۶) هم‌سو/مخالف بودن سیگنال مدل با معامله ----------
-  if (typeof modelProbPct === 'number' && isFinite(modelProbPct)) {
-    if (isLong && a.regimeOk && modelProbPct >= 60) {
+  // نکته: مدل ONNX فقط برای جهت LONG آموزش دیده و آستانهٔ ورودش THR=۶۸٪ است
+  //   (model_meta.txt / signal_client.ts). پس معیار قضاوت باید همان ۶۸٪ باشد،
+  //   نه ۶۰٪ یا ۴۵٪. مقادیر بالای ۶۸٪ = احتمال «بالا»، زیر آن = «کمتر از آستانه».
+  //   همچنین از a.regimeOk سرور استفاده نمی‌کنیم چون رژیمِ آن با رژیمِ خودِ مدل
+  //   (که در مرورگر با EMA50/200 لنگرشده محاسبه می‌شود) فرق دارد و باعث می‌شد
+  //   این باکس همیشه (به‌غلط) به‌عنوان «ضعف» ظاهر شود.
+  const MODEL_THR = 68 // آستانهٔ ورود مدل (٪)
+  if (isLong && typeof modelProbPct === 'number' && isFinite(modelProbPct)) {
+    if (modelProbPct >= MODEL_THR) {
       advices.push({
         type: 'info', severity: 'good',
         title: 'مدل هم‌سو با معاملهٔ توست',
-        detail: `مدل ربات احتمال ${round2(modelProbPct)}٪ برای ادامهٔ حرکت صعودی می‌دهد و رژیم صعودی برقرار است. اجازه بده معامله نفس بکشد (let it run) و SL را ترِیل کن.`,
+        detail: `مدل ربات احتمال ${round2(modelProbPct)}٪ (بالای آستانهٔ ورود ${MODEL_THR}٪) برای ادامهٔ حرکت صعودی می‌دهد — هم‌سو با معاملهٔ خرید تو. اجازه بده معامله نفس بکشد (let it run) و SL را ترِیل کن.`,
       })
-    } else if (isLong && (!a.regimeOk || modelProbPct < 45)) {
+    } else if (modelProbPct < 50) {
       advices.push({
         type: 'info', severity: 'warning',
         title: 'مدل، ضعف در ادامهٔ صعود می‌بیند',
-        detail: `مدل احتمال پایین (${round2(modelProbPct)}٪) برای ادامهٔ صعود می‌دهد${a.regimeOk ? '' : ' و رژیم صعودی هم برقرار نیست'}. برای معاملهٔ خرید، محافظه‌کارانه‌تر مدیریت کن.`,
+        detail: `مدل احتمال ${round2(modelProbPct)}٪ (زیر ۵۰٪) برای ادامهٔ صعود می‌دهد؛ یعنی تمایل بیشتر به توقف/برگشت است. برای معاملهٔ خرید، محافظه‌کارانه‌تر مدیریت کن.`,
       })
     }
+    // بازهٔ ۵۰٪..۶۸٪ = خنثی؛ نه هشدار می‌دهیم نه تأیید (از باکس گمراه‌کننده پرهیز می‌کنیم).
   }
 
   // ---------- جمع‌بندی: اقدام کلی پیشنهادی ----------
+  // مهم (رفع باگ تناقض): جمع‌بندی باید با هشدارهای فعال هم‌خوان باشد. اگر باکس‌های
+  // هشدار (warning/critical) وجود دارند، نباید بگوییم «شرایط پایدار است».
+  const hasCritical = advices.some(x => x.severity === 'critical')
+  const hasWarning = advices.some(x => x.severity === 'warning')
+  const nearLevelWarn = advices.some(x => x.type === 'level' && x.severity === 'warning')
+
   let overallAction: TradeStatus['overallAction'] = 'hold'
   let overallNote = 'شرایط پایدار است؛ طبق برنامه با TP/SL فعلی نگه‌دار.'
   if (reachedTp) { overallAction = 'close'; overallNote = 'به هدف رسیدی — سود را ثبت کن.' }
@@ -219,6 +255,21 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   else if (pnlR >= 1.5) { overallAction = 'let-run'; overallNote = 'در سود خوبی هستی — SL را ترِیل کن و بگذار سود رشد کند.' }
   else if (pnlR >= 1.0) { overallAction = 'move-sl'; overallNote = 'SL را به بریک‌ایون ببر تا معامله بی‌ریسک شود.' }
   else if (trendAgainst) { overallAction = 'tighten'; overallNote = 'روند ضعیف شده — SL را کمی محکم‌تر کن.' }
+  // اگر هیچ اقدام قوی‌ای فعال نشد اما هشدار داریم، جمع‌بندی را با هشدارها هم‌سو کن
+  // تا با باکس‌های زیرین تناقض نداشته باشد.
+  else if (hasCritical) { overallAction = 'tighten'; overallNote = 'هشدار مهم فعال است (پایین را بخوان) — مراقب باش و SL را محکم‌تر کن.' }
+  else if (nearLevelWarn && !inProfit) {
+    overallAction = 'tighten'
+    overallNote = 'قیمت به یک سطح کلیدی (حمایت/مقاومت) در وضعیت ضرر رسیده — تا شکسته‌شدن سطح، بی‌احتیاطی نکن و به بستن بخشی از حجم فکر کن.'
+  }
+  else if (nearLevelWarn) {
+    overallAction = 'hold'
+    overallNote = 'نزدیک یک سطح کلیدی هستی (پایین را بخوان)؛ همان‌جا واکنش قیمت را رصد کن و در صورت لزوم TP/SL را تنظیم کن.'
+  }
+  else if (hasWarning) {
+    overallAction = 'hold'
+    overallNote = 'یک نکتهٔ هشداری فعال است (پایین را بخوان)؛ با احتیاط و طبق پلن مدیریت کن.'
+  }
 
   return {
     side: t.side, price: round2(price), entry: round2(t.entry), tp: round2(t.tp), sl: round2(t.sl),
