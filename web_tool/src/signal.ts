@@ -33,8 +33,9 @@ export interface AnalysisResult {
   macdHist: number
   trend: 'up' | 'down' | 'range'
   regimeOk: boolean          // آیا context پایه (close>EMA50>EMA200) برقرار است؟
+  activeBrain: 'bull' | 'bear' | 'none'  // مغز فعال طبق روتر سه‌مغزی
   // سیگنال
-  direction: 'LONG' | 'NONE'
+  direction: 'LONG' | 'SHORT' | 'NONE'
   probability: number        // احتمال برخورد TP قبل از SL (%)
   entryThreshold: number     // آستانهٔ ورود (٪) — برای نمایش هماهنگ در UI
   noEntryReason: string      // دلیل دقیق عدم ورود (خالی اگر سیگنال فعال باشد)
@@ -193,25 +194,73 @@ export function analyze(c: Candle[]): AnalysisResult {
   //   (اثر فاصلهٔ VWAP قبلاً درون خود score/probability لحاظ شده است، پس شرط
   //    جداگانهٔ vwapContrib حذف شد تا «درصد» و «سیگنال» هرگز متناقض نباشند.)
   const ENTRY_THRESHOLD = 60
-  let direction: 'LONG' | 'NONE' = 'NONE'
+  let direction: 'LONG' | 'SHORT' | 'NONE' = 'NONE'
+  let activeBrain: 'bull' | 'bear' | 'none' = 'none'
   let entry: number | null = null, tp: number | null = null, sl: number | null = null
   // دلیل دقیق و صادقانهٔ عدم ورود (برای نمایش هماهنگ در UI)
   let noEntryReason = ''
-  if (!regimeOk) {
-    noEntryReason = 'بازار خارج از رژیم صعودی استراتژی است (شرط close>EMA50>EMA200 برقرار نیست).'
-  } else if (probability < ENTRY_THRESHOLD) {
-    noEntryReason = `احتمال موفقیت (${probability.toFixed(1)}%) زیر آستانهٔ ورود ۶۰٪ است.`
-  }
-  if (regimeOk && probability >= ENTRY_THRESHOLD) {
-    direction = 'LONG'
-    entry = price
-    tp = price + S14.TP_M * atr
-    sl = price - S14.SL_M * atr
+
+  // آیا رژیم نزولی برقرار است؟ (آینهٔ رژیم صعودی — مغز نزولی S31)
+  const bearRegimeOk = price < e50 && e50 < e200
+
+  // ---- امتیاز نزولی متقارن (فقط برای مغز نزولی) ----
+  // آینهٔ امتیاز صعودی: عوامل با علامت معکوس برای سیگنال SHORT.
+  let bearScore = 0.12  // بایاس پایه در روند نزولی تأییدشده
+  bearScore += bearRegimeOk ? 0.55 : -1.2
+  // فاصله از VWAP (در روند نزولی: کمی بالای VWAP = پول‌بک فروش سالم)
+  if (vwapDistAtr <= 0.5 && vwapDistAtr >= -1.0) bearScore += 0.35
+  else if (vwapDistAtr < -2.0) bearScore -= 0.30
+  // کشش از EMA50 به سمت پایین
+  if (ema50DistAtr <= 0 && ema50DistAtr >= -2.0) bearScore += 0.22
+  else if (ema50DistAtr < -3.5) bearScore -= 0.25
+  // RSI معکوس (ناحیه سالم روند نزولی)
+  if (r >= 35 && r <= 55) bearScore += 0.25
+  else if (r < 25) bearScore -= 0.30
+  else if (r > 65) bearScore -= 0.10
+  // ADX همان
+  if (a >= 20 && a <= 45) bearScore += 0.20
+  else if (a < 15) bearScore -= 0.12
+  // MACD منفی تأیید نزولی
+  bearScore += mh < 0 ? 0.15 : -0.10
+  // DI diff منفی
+  bearScore += diDiff < 0 ? 0.10 : -0.10
+  const bearRawP = sigmoid(bearScore * 1.15)
+  const bearProbability = Math.max(30, Math.min(78, 42 + bearRawP * 34))
+
+  if (regimeOk) {
+    // مغز صعودی فعال
+    activeBrain = 'bull'
+    if (probability >= ENTRY_THRESHOLD) {
+      direction = 'LONG'
+      entry = price
+      tp = price + S14.TP_M * atr
+      sl = price - S14.SL_M * atr
+    } else {
+      noEntryReason = `مغز صعودی فعال است اما احتمال (${probability.toFixed(1)}%) زیر آستانهٔ ۶۰٪ است.`
+    }
+  } else if (bearRegimeOk) {
+    // مغز نزولی فعال (S31) — پاسخ به User Note
+    activeBrain = 'bear'
+    if (bearProbability >= ENTRY_THRESHOLD) {
+      direction = 'SHORT'
+      entry = price
+      tp = price - 1.4 * atr   // مغز نزولی: TP1.4/SL1.7
+      sl = price + 1.7 * atr
+    } else {
+      noEntryReason = `مغز نزولی فعال است اما احتمال (${bearProbability.toFixed(1)}%) زیر آستانهٔ ۶۰٪ است.`
+    }
+  } else {
+    // رنج — همهٔ مغزها غیرفعال
+    activeBrain = 'none'
+    noEntryReason = 'بازار در حالت رنج/بدون‌روند است — طبق تحقیق (S32) هیچ مغزی edge پایدار ندارد؛ عدم معامله.'
   }
 
+  // احتمال نمایشی نهایی = احتمال مغزِ فعال
+  const shownProbability = activeBrain === 'bear' ? bearProbability : probability
+
   let confidence: 'high' | 'medium' | 'low' = 'low'
-  if (probability >= 66) confidence = 'high'
-  else if (probability >= 60) confidence = 'medium'
+  if (shownProbability >= 66) confidence = 'high'
+  else if (shownProbability >= 60) confidence = 'medium'
 
   // ---- سطوح حمایت/مقاومت ----
   const pivots = findPivots(c, 5, 5)
@@ -258,13 +307,15 @@ export function analyze(c: Candle[]): AnalysisResult {
   return {
     price, atr, ema50: e50, ema200: e200, vwap,
     rsi14: r, adx: a, macdHist: mh,
-    trend, regimeOk,
-    direction, probability: Number(probability.toFixed(1)),
+    trend, regimeOk, activeBrain,
+    direction, probability: Number(shownProbability.toFixed(1)),
     entryThreshold: ENTRY_THRESHOLD, noEntryReason,
     confidence,
     scoreBreakdown: breakdown,
     entry, tp, sl,
-    rr: `TP ${S14.TP_M}×ATR / SL ${S14.SL_M}×ATR (BE=${S14.BE}%)`,
+    rr: activeBrain === 'bear'
+      ? `TP 1.4×ATR / SL 1.7×ATR (مغز نزولی S31)`
+      : `TP ${S14.TP_M}×ATR / SL ${S14.SL_M}×ATR (BE=${S14.BE}%)`,
     levels, resistance, support,
     breakoutScenarios: scenarios,
   }

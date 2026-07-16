@@ -73,8 +73,11 @@ function render(d) {
 
   window.__lastPrice = a.price;   // برای دکمهٔ «پر کردن ورود با قیمت فعلی»
   const isLong = a.direction === 'LONG';
-  const sigColor = isLong ? 'emerald' : 'slate';
+  const isShort = a.direction === 'SHORT';
+  const hasSig = isLong || isShort;
+  const sigColor = isLong ? 'emerald' : isShort ? 'red' : 'slate';
   const probColor = a.probability >= 66 ? 'emerald' : (a.probability >= 60 ? 'amber' : 'slate');
+  const brainLabel = a.activeBrain === 'bull' ? 'مغز صعودی (S25)' : a.activeBrain === 'bear' ? 'مغز نزولی (S31)' : 'رنج — بدون مغز';
 
   document.getElementById('content').innerHTML = `
   <!-- نوار قیمت -->
@@ -125,11 +128,13 @@ function render(d) {
   </section>
 
   <!-- سیگنال معامله (موتور امتیازدهی شفاف — مکمل) -->
-  <section class="card p-5 mb-4 ${isLong ? 'glow-up' : ''}">
+  <section class="card p-5 mb-4 ${isLong ? 'glow-up' : isShort ? 'glow-down' : ''}">
     <div class="flex items-center justify-between flex-wrap gap-3 mb-4">
-      <h2 class="text-lg font-bold"><i class="fas fa-bullseye text-${sigColor}-400"></i> موتور امتیازدهی شفاف (مکمل)</h2>
+      <h2 class="text-lg font-bold"><i class="fas fa-bullseye text-${sigColor}-400"></i> موتور امتیازدهی شفاف (مکمل) — ${brainLabel}</h2>
       <div class="flex gap-2">${confLabel(a.confidence)}
-        ${isLong ? badge('سیگنال: LONG (خرید)', 'bg-emerald-500/20 text-emerald-300') : badge('سیگنال: منتظر بمانید', 'bg-slate-600/40 text-slate-300')}
+        ${isLong ? badge('سیگنال: LONG (خرید)', 'bg-emerald-500/20 text-emerald-300')
+          : isShort ? badge('سیگنال: SHORT (فروش)', 'bg-red-500/20 text-red-300')
+          : badge('سیگنال: منتظر بمانید', 'bg-slate-600/40 text-slate-300')}
       </div>
     </div>
 
@@ -144,10 +149,10 @@ function render(d) {
       <p class="text-[11px] text-slate-500 mt-1">نقطه سربه‌سر استراتژی = ۶۰٪ (با TP=1.0×ATR و SL=1.5×ATR). احتمال بالای ۶۰٪ یعنی لبه مثبت.</p>
     </div>
 
-    ${isLong ? `
+    ${hasSig ? `
     <div class="grid grid-cols-3 gap-3 text-center">
       <div class="bg-slate-800/60 rounded-lg p-3">
-        <p class="text-xs text-slate-400">ورود</p>
+        <p class="text-xs text-slate-400">ورود (${isShort ? 'فروش' : 'خرید'})</p>
         <p class="font-bold text-slate-100">$${fmt(a.entry)}</p>
       </div>
       <div class="bg-emerald-900/30 rounded-lg p-3">
@@ -164,7 +169,7 @@ function render(d) {
     <div class="bg-slate-800/40 rounded-lg p-4 text-center text-slate-300 text-sm">
       <i class="fas fa-hourglass-half text-slate-400"></i>
       در حال حاضر شرایط ورود برقرار نیست: ${a.noEntryReason || 'شرایط استراتژی کامل نیست.'}
-      <span class="block text-xs text-slate-500 mt-1">استراتژی S25 فقط در روند صعودی و با احتمال ≥ ${fmt(a.entryThreshold ?? 60, 0)}٪ وارد می‌شود.</span>
+      <span class="block text-xs text-slate-500 mt-1">روتر سه‌مغزی: در صعودی مغز S25 (LONG)، در نزولی مغز S31 (SHORT)، در رنج عدم معامله. آستانهٔ ورود ≥ ${fmt(a.entryThreshold ?? 60, 0)}٪.</span>
     </div>`}
   </section>
 
@@ -218,8 +223,8 @@ function render(d) {
       ${miniStat('VWAP', '$' + fmt(a.vwap), a.price > a.vwap ? 'emerald' : 'red')}
       ${miniStat('EMA50', '$' + fmt(a.ema50), 'slate')}
       ${miniStat('EMA200', '$' + fmt(a.ema200), 'slate')}
-      ${miniStat('رژیم صعودی', a.regimeOk ? 'بله' : 'خیر', a.regimeOk ? 'emerald' : 'slate')}
-      ${miniStat('جهت', isLong ? 'LONG' : 'منتظر', isLong ? 'emerald' : 'slate')}
+      ${miniStat('مغز فعال', a.activeBrain === 'bull' ? 'صعودی' : a.activeBrain === 'bear' ? 'نزولی' : 'رنج', a.activeBrain === 'bull' ? 'emerald' : a.activeBrain === 'bear' ? 'red' : 'slate')}
+      ${miniStat('جهت', isLong ? 'LONG' : isShort ? 'SHORT' : 'منتظر', isLong ? 'emerald' : isShort ? 'red' : 'slate')}
     </div>
   </section>`;
 
