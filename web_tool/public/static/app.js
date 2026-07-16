@@ -31,7 +31,7 @@ function skeleton() {
   </header>
   <div id="content"><div class="card p-8 text-center text-slate-400"><i class="fas fa-spinner fa-spin text-2xl"></i><p class="mt-3">دریافت داده زنده از بازار…</p></div></div>
   <footer class="text-center text-xs text-slate-500 mt-8 pb-6 leading-6">
-    <p>منبع کندل: Yahoo Finance (GC=F) — قیمت لحظه‌ای: gold-api.com (XAU spot) • <span id="delay-note" class="text-slate-400">…</span></p>
+    <p>ساختار کندل: Yahoo GC=F مقیاس‌شده به <b>XAU/USD spot</b> — قیمت لحظه‌ای: Swissquote/gold-api (سازگار با TradingView) • <span id="delay-note" class="text-slate-400">…</span></p>
     <p class="text-amber-500/80"><i class="fas fa-triangle-exclamation"></i> این ابزار صرفاً برای تحقیق علمی است و توصیه مالی محسوب نمی‌شود. معامله با ریسک همراه است.</p>
   </footer>`;
   document.getElementById('refresh-btn').onclick = load;
