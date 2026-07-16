@@ -96,7 +96,7 @@ export async function getSpotGold(): Promise<SpotPrice> {
 }
 
 // -------------------------- کمکی: fetch کندل از Yahoo --------------------------
-async function yahooCandles(symbol: string, interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
+export async function yahooCandles(symbol: string, interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`
   const res = await fetch(url, {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },

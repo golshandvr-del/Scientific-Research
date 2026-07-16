@@ -4,7 +4,8 @@ import { serveStatic } from 'hono/cloudflare-workers'
 import type { Candle } from './indicators'
 import { analyze } from './signal'
 import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
-import { getMTF, getIntermarket, getNews, getSpotGold, type SpotPrice } from './external'
+import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, type SpotPrice } from './external'
+import { decide } from './router'
 
 const app = new Hono()
 
@@ -282,6 +283,66 @@ app.get('/api/context', async (c) => {
     intermarket: im.status === 'fulfilled' ? im.value : { error: (im as any).reason?.message },
     news: news.status === 'fulfilled' ? news.value : { error: (news as any).reason?.message },
   })
+})
+
+// ---------------------------------------------------------------------------
+// دستیارِ تصمیمِ چند-دارایی + ماشینِ حالتِ ۴-وضعیتی (PARADIGM v2 / User Note 2)
+// ---------------------------------------------------------------------------
+// نگاشتِ دارایی‌های سایت به symbolِ Yahoo Finance. طلا از GC=F (طلای آتی) با
+// rebase به spot می‌آید؛ بقیه مستقیماً از Yahoo. منطقِ تصمیم در router.ts.
+const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number }[] = [
+  { id: 'XAUUSD', name: 'طلا / دلار (XAUUSD)', symbol: 'GC=F',     isGold: true,  decimals: 2 },
+  { id: 'DXY',    name: 'شاخص دلار آمریکا (DXY)', symbol: 'DX-Y.NYB', isGold: false, decimals: 3 },
+  { id: 'EURUSD', name: 'یورو / دلار (EURUSD)', symbol: 'EURUSD=X', isGold: false, decimals: 5 },
+  { id: 'AUDUSD', name: 'دلار استرالیا / دلار (AUDUSD)', symbol: 'AUDUSD=X', isGold: false, decimals: 5 },
+]
+
+// تصمیمِ یک دارایی: کندلِ M15 زنده → analyze → decide (۴-حالته).
+async function decideAsset(a: typeof ASSETS[number]) {
+  if (a.isGold) {
+    // طلا: همان مسیرِ /api/analysis (GC=F + rebase به spot)
+    const { candles } = await fetchGold('15m', '1mo')
+    if (candles.length < 220) throw new Error('داده کافی برای تحلیل نیست')
+    let spot: SpotPrice | null = null
+    try { spot = await getSpotGold() } catch {}
+    const merged = rebaseFuturesToSpot(candles, spot, 900)
+    const useCandles = merged.candles
+    const result = analyze(useCandles)
+    const dec = decide(result, useCandles.map(k => k.close))
+    return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
+      price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec }
+  }
+  // سایر دارایی‌ها: کندلِ خامِ Yahoo (بدون rebase)
+  const { candles } = await yahooCandles(a.symbol, '15m', '1mo')
+  if (candles.length < 220) throw new Error('داده کافی برای تحلیل نیست')
+  const result = analyze(candles)
+  const dec = decide(result, candles.map(k => k.close))
+  return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
+    price: result.price, lastCandleTime: candles[candles.length - 1].time, decision: dec }
+}
+
+// همهٔ دارایی‌ها یک‌جا (موازی، مقاوم به خطای هر دارایی)
+app.get('/api/decision', async (c) => {
+  const results = await Promise.allSettled(ASSETS.map(a => decideAsset(a)))
+  const assets = results.map((r, i) =>
+    r.status === 'fulfilled'
+      ? { ok: true, ...r.value }
+      : { ok: false, asset: ASSETS[i].id, name: ASSETS[i].name, symbol: ASSETS[i].symbol, error: (r as any).reason?.message || 'خطا' }
+  )
+  return c.json({ ok: true, lastUpdate: new Date().toISOString(), assets })
+})
+
+// یک دارایی مشخص: /api/decision/:asset
+app.get('/api/decision/:asset', async (c) => {
+  const id = (c.req.param('asset') || '').toUpperCase()
+  const a = ASSETS.find(x => x.id === id)
+  if (!a) return c.json({ ok: false, error: `دارایی ناشناخته: ${id}` }, 404)
+  try {
+    const out = await decideAsset(a)
+    return c.json({ ok: true, lastUpdate: new Date().toISOString(), ...out })
+  } catch (e: any) {
+    return c.json({ ok: false, asset: a.id, name: a.name, error: e.message }, 502)
+  }
 })
 
 // health
