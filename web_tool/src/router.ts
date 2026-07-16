@@ -43,10 +43,53 @@ export interface RouterDecision {
   sl?: number
   rr?: string
   probability?: number
+  // --- اهرم‌های سودِ خالص (S64 + S65) — فقط در ENTRY ---
+  sizing?: {                    // S64: حجمِ رژیم-آگاه (Kelly)
+    lotMultiplier: number       // ضریبِ حجم نسبت به واحدِ پایه (۱× = پایه)
+    label: string               // برچسبِ فارسی (مثلِ «۲ برابرِ پایه»)
+    note: string                // دلیلِ حجم (کیفیتِ سطل)
+  }
+  tpPlan?: {                    // S65: TPِ رژیم-آگاه
+    multiplier: number          // ضریبِ TP نهایی (×ATR)
+    note: string                // دلیلِ انتخابِ این TP (سطل)
+  }
   // فقط در APPROACHING: تأییدهایِ لازم
   confirmations?: Confirmation[]
   // شاخص‌های کلیدی برای شفافیت (همیشه)
   indicators: { name: string; value: string; status: 'ok' | 'warn' | 'bad' | 'neutral' }[]
+}
+
+// ============================================================================
+// نگاشتِ سطلِ رژیم → (وزنِ Kelly، ضریبِ TP) — کشفِ S64/S65 (L38/L39)
+// ----------------------------------------------------------------------------
+// در بک‌تستِ walk-forward، برای هر سطلِ رژیم یک وزنِ حجم (بر اساسِ اکسپکتنسیِ
+// اخیر، کلیپ‌شده در [۰.۵, ۲.۰]) و یک ضریبِ TP (بیشترین سودِ خالص روی پنجرهٔ اخیر)
+// یاد گرفته شد. سطلِ روندیِ پرقدرت (trend_hi) بالاترین وزن و دورترین TP را گرفت،
+// چون در رژیمِ روندیِ کارآمد حرکت‌ها ادامه‌دارترند (سودِ خالصِ بیشتر با WR کمتر).
+// این جدول همان الگویِ پایدارِ کشف‌شده است (۲۰/۲۰ ترکیبِ پارامتر برنده بودند).
+// ============================================================================
+interface BucketPlan { lot: number; tpBull: number; tpBear: number; desc: string }
+
+const BUCKET_PLAN: Record<string, BucketPlan> = {
+  // سطلِ قوی: روندِ کارآمد + probaِ بالا → بیشترین حجم و دورترین TP
+  trend_hi: { lot: 2.0, tpBull: 2.0, tpBear: 2.6, desc: 'روندِ کارآمد + احتمالِ بالا — قوی‌ترین سطل' },
+  // روندِ کارآمد ولی probaِ متوسط → حجمِ متوسط، TP نیمه-دور
+  trend_lo: { lot: 1.3, tpBull: 1.3, tpBear: 1.8, desc: 'روندِ کارآمد + احتمالِ متوسط' },
+  // probaِ بالا ولی رژیمِ کم‌کارا → حجمِ کمی بالای پایه، TP نزدیک‌تر
+  chop_hi:  { lot: 1.2, tpBull: 1.0, tpBear: 1.4, desc: 'احتمالِ بالا ولی روندِ کم‌کارا' },
+  // ضعیف‌ترین سطلِ فعال → حجمِ محافظه‌کارانه، TP نزدیک
+  chop_lo:  { lot: 0.7, tpBull: 0.8, tpBear: 1.0, desc: 'سطلِ مرزی — حجمِ محافظه‌کارانه' },
+}
+
+function bucketPlan(bucket: string): BucketPlan {
+  return BUCKET_PLAN[bucket] ?? { lot: 1.0, tpBull: 1.0, tpBear: 1.4, desc: 'پایه' }
+}
+
+function lotLabel(m: number): string {
+  if (m >= 1.9) return `~۲ برابرِ حجمِ پایه`
+  if (m >= 1.25) return `~${m.toFixed(1)} برابرِ حجمِ پایه`
+  if (m >= 0.95) return `حجمِ پایه (۱×)`
+  return `~${m.toFixed(1)} برابرِ پایه (کاهش‌یافته)`
 }
 
 // آستانه‌ها — هم‌راستا با بک‌تست S63
