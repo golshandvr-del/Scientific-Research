@@ -100,7 +100,7 @@ export async function yahooCandles(symbol: string, interval: string, range: stri
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`
   const res = await fetch(url, {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },
-    cf: { cacheTtl: 60, cacheEverything: true } as any,
+    cf: { cacheTtl: 30, cacheEverything: true } as any,
   })
   if (!res.ok) throw new Error(`Yahoo ${symbol} error: ${res.status}`)
   const data: any = await res.json()
@@ -120,9 +120,59 @@ export async function yahooCandles(symbol: string, interval: string, range: stri
       symbol: r.meta?.symbol,
       name: r.meta?.shortName,
       price: r.meta?.regularMarketPrice,
+      marketTime: r.meta?.regularMarketTime,   // زمانِ آخرین قیمتِ زنده (Unix)
       previousClose: r.meta?.previousClose,
     },
   }
+}
+
+// ============================================================================
+// قیمتِ زندهٔ سبک برای هر دارایی (نه‌فقط طلا) — پاسخ به User Note (نکتهٔ اول):
+//   «چرا قیمتِ سه ارز دیگر با قیمتِ لحظه‌ای فرق دارد؟»
+// ----------------------------------------------------------------------------
+// راهکار: به‌جای فقط کندلِ 15m (که چند دقیقه تأخیر دارد)، از endpointِ سبکِ
+// Yahoo (`interval=1m&range=1d`) استفاده می‌کنیم که `regularMarketPrice` و
+// `regularMarketTime`ِ به‌روز (تأخیر معمولاً < ۲ دقیقه) دارد. این تابع سبک است
+// (پاسخِ کوچک) و برای پُلینگِ هر ۲ ثانیه در `/api/spots` مناسب است.
+//
+// برای طلا (isGold) از همان getSpotGold استفاده می‌شود (spotِ واقعی XAU/USD).
+// ============================================================================
+export interface LiveQuote {
+  symbol: string
+  price: number
+  updatedAt: string
+  ageSec: number
+  source: string
+}
+
+// کشِ کوتاه‌مدتِ حافظه‌ای برای جلوگیری از فشار روی Yahoo هنگام پُلینگِ سریع
+const _quoteMem: Record<string, { at: number; q: LiveQuote }> = {}
+
+export async function getLiveQuote(symbol: string): Promise<LiveQuote> {
+  // کشِ ۱.۵ ثانیه‌ای: چند کاربر/چند تبِ هم‌زمان به یک fetch ختم می‌شوند
+  const cached = _quoteMem[symbol]
+  if (cached && Date.now() - cached.at < 1500) {
+    return { ...cached.q, ageSec: cached.q.ageSec + Math.round((Date.now() - cached.at) / 1000) }
+  }
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1m&range=1d`
+  const res = await fetch(url, {
+    headers: { 'User-Agent': UA, 'Accept': 'application/json' },
+    cf: { cacheTtl: 2, cacheEverything: true } as any,
+  })
+  if (!res.ok) throw new Error(`Yahoo quote ${symbol} error: ${res.status}`)
+  const data: any = await res.json()
+  const m = data?.chart?.result?.[0]?.meta
+  if (!m || !isFinite(m.regularMarketPrice)) throw new Error(`No live quote for ${symbol}`)
+  const mt = m.regularMarketTime ? m.regularMarketTime * 1000 : Date.now()
+  const q: LiveQuote = {
+    symbol,
+    price: Number(m.regularMarketPrice),
+    updatedAt: new Date(mt).toISOString(),
+    ageSec: Math.max(0, Math.round((Date.now() - mt) / 1000)),
+    source: 'Yahoo (regularMarketPrice)',
+  }
+  _quoteMem[symbol] = { at: Date.now(), q }
+  return q
 }
 
 // ------------------- تجمیع H1 → H4 (چون Yahoo H4 مستقیم ندارد) -------------------
