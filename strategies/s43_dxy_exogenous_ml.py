@@ -60,28 +60,34 @@ early_atr=df['early'].values/(atr_daily+1e-9)
 day_w=df['dow'].map({0:0.2,1:0.3,2:0.5,3:1.0,4:0.9,5:0,6:0}).values
 weekly_rev = -np.sign(df['early'].values) * np.clip(np.abs(early_atr),0,3) * day_w
 
+_ARM_PRE = sys.argv[1] if len(sys.argv)>1 else 'both'
 print("گزارش پوشش DXY:", dxy_coverage_report(df))
 print("ساخت featureهای پایه (S25) ...")
 feats=build_features(df)
 feats_s25=feats.copy()
 feats_s25['weekly_rev']=weekly_rev
 feats_s25['early_atr']=early_atr
+base_cols=list(feats_s25.columns)          # S25 خالص
 
 print("ساخت featureهای برون‌زای DXY (هم‌ترازی as-of، بدون look-ahead) ...")
 exo=build_exogenous_features(df)
 exo_cols=list(exo.columns)
 print(f"  {len(exo_cols)} feature برون‌زا: {exo_cols}")
 
-feats_aug=feats_s25.copy()
-for col in exo_cols:
-    feats_aug[col]=exo[col].values
+# feats_aug را فقط اگر بازوی augmented لازم است می‌سازیم (صرفه‌جویی حافظه)
+if _ARM_PRE in ('augmented','both'):
+    feats_aug=feats_s25.copy()
+    for col in exo_cols:
+        feats_aug[col]=exo[col].values
+    if _ARM_PRE=='augmented':
+        del feats_s25; gc.collect()   # baseline لازم نیست
+else:
+    feats_aug=None
+aug_cols =base_cols+exo_cols                # + DXY
 
 # کاندید پایه مثل S25: روند صعودی long-only
 cand=(c>ema50)&(ema50>ema200)&~np.isnan(atr.values)
 print(f"کاندید پایه (uptrend long): {int(cand.sum())}")
-
-base_cols=list(feats_s25.columns)          # S25 خالص
-aug_cols =base_cols+exo_cols                # + DXY
 
 def walk_forward(feature_df, fc, seed=42, keep_last=False):
     y=make_target(df,HZ,TP_M,SL_M,atr,'long')
@@ -121,13 +127,19 @@ def evaluate(proba, label):
           f"PF={pf:.3f} pnl={s['total_pnl']:+.1f}$ tpd={tpd:.2f} p(WR>{be:.0f})={pv:.4f}")
     return dict(n=nt,wr=s['win_rate'],exp=s['expectancy'],pf=pf,pnl=s['total_pnl'],tpd=tpd,pv=pv)
 
-print("\n=== A/B با ensemble 3-seed (baseline S25 در برابر augmented +DXY) ===")
+# ---- انتخاب بازو از آرگومان خط‌فرمان تا حافظهٔ هر بازو مستقل آزاد شود ----
+# (این sandbox فقط ~۱GB RAM دارد؛ اجرای هر دو بازو با هم OOM می‌شود.)
+ARM = sys.argv[1] if len(sys.argv)>1 else 'both'
+arms=[]
+if ARM in ('baseline','both'): arms.append(('BASELINE (S25)      ', feats_s25, base_cols, False))
+if ARM in ('augmented','both'): arms.append(('AUGMENTED (+DXY)    ', feats_aug, aug_cols, True))
+
+print(f"\n=== A/B با ensemble 3-seed | ARM={ARM} ===")
 last_model=None
-for label, fdf, cols in [('BASELINE (S25)      ', feats_s25, base_cols),
-                          ('AUGMENTED (+DXY)    ', feats_aug, aug_cols)]:
+for label, fdf, cols, is_aug in arms:
     ens=np.zeros(n); cnt=np.zeros(n)
     for si,sd in enumerate(SEEDS):
-        keep = (label.strip().startswith('AUGMENTED') and si==len(SEEDS)-1)
+        keep = (is_aug and si==len(SEEDS)-1)
         pr,m=walk_forward(fdf,cols,seed=sd,keep_last=keep)
         if keep: last_model=m
         mask=~np.isnan(pr); ens[mask]+=pr[mask]; cnt[mask]+=1
@@ -135,6 +147,10 @@ for label, fdf, cols in [('BASELINE (S25)      ', feats_s25, base_cols),
     ens=np.where(cnt>0, ens/np.maximum(cnt,1), np.nan)
     evaluate(ens,label)
     gc.collect()
+
+if last_model is None:
+    print("\n(این بازو baseline بود — گزارش اهمیت DXY فقط در بازوی augmented.)")
+    print("\nتمام."); sys.exit(0)
 
 # اهمیت featureها (از آخرین مدل augmented)
 print("\n=== رتبهٔ اهمیت featureهای DXY در مدل augmented ===")
