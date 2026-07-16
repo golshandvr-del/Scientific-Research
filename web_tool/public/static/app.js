@@ -190,6 +190,14 @@ function renderEntry(a, d) {
         </div>
         <p class="text-[11px] text-emerald-100/70 leading-relaxed mt-1">${d.tpPlan.note}</p>
       </div>` : ''}
+      ${d.slPlan ? `
+      <div class="mt-2 rounded-lg bg-rose-500/10 border border-rose-500/30 p-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-rose-300 font-bold"><i class="fas fa-shield-halved ml-1"></i>حدِ ضررِ رژیم-محور (اهرمِ چهارم)</span>
+          <span class="text-sm font-extrabold text-rose-200 tabular-nums" dir="ltr">${d.slPlan.multiplier}×ATR</span>
+        </div>
+        <p class="text-[11px] text-rose-100/70 leading-relaxed mt-1">${d.slPlan.note}</p>
+      </div>` : ''}
     </div>
     ${renderIndicators(d)}
     <button class="btn-register mt-3 w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-white transition"
