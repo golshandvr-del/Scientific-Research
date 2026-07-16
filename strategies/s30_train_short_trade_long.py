@@ -140,4 +140,23 @@ for label, proba in [('BASELINE (long-only train)', pb),
         ent = cand & ~np.isnan(proba) & (proba >= thr)
         B.eval_entries(df, atr, ent, label=f'  thr={thr}')
 
+# =====================================================================
+# مقایسهٔ منصفانهٔ iso-frequency: هر دو مدل را در آستانه‌ای می‌سنجیم که
+# *همان تعداد سیگنال* بدهند. این تشخیص می‌دهد آیا augmentation واقعاً رتبه‌بندی
+# بهتری ساخته یا فقط thr مؤثر را جابه‌جا کرده.
+# =====================================================================
+print("\n=== مقایسهٔ iso-frequency (همان تعداد سیگنال، رتبه‌بندی خالص) ===")
+def top_k_entries(proba, k):
+    valid = cand & ~np.isnan(proba)
+    vals = proba[valid]
+    if len(vals) <= k: 
+        return valid
+    cut = np.sort(vals)[::-1][k-1]
+    return valid & (proba >= cut)
+
+for k in [1600, 2200, 3000]:
+    print(f"\n-- top-{k} سیگنال --")
+    B.eval_entries(df, atr, top_k_entries(pb, k), label=f'  BASELINE top-{k}')
+    B.eval_entries(df, atr, top_k_entries(pa, k), label=f'  AUGMENTED top-{k}')
+
 print("\nتمام P31.")
