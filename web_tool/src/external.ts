@@ -22,21 +22,77 @@ const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 // (پاسخ به مشکل «تأخیر داده باید < ۵ دقیقه باشد»).
 // ============================================================================
 export interface SpotPrice {
-  price: number          // قیمت spot XAU/USD
+  price: number          // قیمت spot XAU/USD (mid)
+  bid?: number
+  ask?: number
   updatedAt: string      // زمان به‌روزرسانی منبع (ISO)
   ageSec: number         // چند ثانیه از آخرین به‌روزرسانی گذشته
   source: string
 }
-export async function getSpotGold(): Promise<SpotPrice> {
+
+// --- منبع ۱: Swissquote (نزدیک‌ترین به TradingView/OANDA spot، bid/ask زنده) ---
+async function spotFromSwissquote(): Promise<SpotPrice> {
+  const res = await fetch('https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD', {
+    headers: { 'User-Agent': UA, 'Accept': 'application/json' },
+    cf: { cacheTtl: 10, cacheEverything: true } as any,
+  })
+  if (!res.ok) throw new Error(`Swissquote error: ${res.status}`)
+  const arr: any = await res.json()
+  // نزدیک‌ترین اسپرد (elite) را ترجیح می‌دهیم؛ mid = (bid+ask)/2
+  let bid = NaN, ask = NaN, ts = Date.now()
+  for (const tier of arr) {
+    const prices = tier?.spreadProfilePrices || []
+    // elite کمترین اسپرد → نزدیک‌ترین به قیمت مرجع
+    const p = prices.find((x: any) => x.spreadProfile === 'elite') || prices[0]
+    if (p && isFinite(p.bid) && isFinite(p.ask)) { bid = p.bid; ask = p.ask; ts = tier.ts || ts; break }
+  }
+  if (!isFinite(bid) || !isFinite(ask)) throw new Error('Swissquote: no valid quote')
+  const price = (bid + ask) / 2
+  const updatedAt = new Date(ts).toISOString()
+  const ageSec = Math.max(0, Math.round((Date.now() - ts) / 1000))
+  return { price, bid, ask, updatedAt, ageSec, source: 'Swissquote (XAU/USD spot)' }
+}
+
+// --- منبع ۲: gold-api.com (fallback) ---
+async function spotFromGoldApi(): Promise<SpotPrice> {
   const res = await fetch('https://api.gold-api.com/price/XAU', {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },
     cf: { cacheTtl: 20, cacheEverything: true } as any,
   })
-  if (!res.ok) throw new Error(`Spot gold error: ${res.status}`)
+  if (!res.ok) throw new Error(`gold-api error: ${res.status}`)
   const d: any = await res.json()
   const updatedAt = d.updatedAt || new Date().toISOString()
   const ageSec = Math.max(0, Math.round((Date.now() - new Date(updatedAt).getTime()) / 1000))
   return { price: Number(d.price), updatedAt, ageSec, source: 'gold-api.com (XAU spot)' }
+}
+
+// آخرین spot معتبر در حافظهٔ isolate (fallback در صورت قطعی هر دو منبع)
+let _spotMemCache: { at: number; spot: SpotPrice } | null = null
+
+// ============================================================================
+// قیمت spot لحظه‌ای طلا (XAU/USD) — سازگار با TradingView (OANDA spot).
+// استراتژی مقاوم:
+//   ۱) Swissquote (نزدیک‌ترین به مرجع، bid/ask زنده)
+//   ۲) در صورت خطا: gold-api.com
+//   ۳) اعتبارسنجی محدوده (۵۰۰..۱۵۰۰۰) تا از داده خراب جلوگیری شود
+//   ۴) در صورت قطعی هر دو: آخرین مقدار معتبر < ۵ دقیقه از کش حافظه
+// این تابع دیگر قیمت futures (GC=F) را برنمی‌گرداند؛ خروجی همیشه spot است.
+// ============================================================================
+export async function getSpotGold(): Promise<SpotPrice> {
+  const validate = (s: SpotPrice) => isFinite(s.price) && s.price > 500 && s.price < 15000
+  const sources = [spotFromSwissquote, spotFromGoldApi]
+  for (const src of sources) {
+    try {
+      const s = await src()
+      if (validate(s)) { _spotMemCache = { at: Date.now(), spot: s }; return s }
+    } catch { /* منبع بعدی */ }
+  }
+  // fallback: آخرین مقدار معتبر تازه
+  if (_spotMemCache && Date.now() - _spotMemCache.at < 5 * 60 * 1000) {
+    const s = _spotMemCache.spot
+    return { ...s, ageSec: Math.round((Date.now() - _spotMemCache.at) / 1000) + s.ageSec, source: s.source + ' (cache)' }
+  }
+  throw new Error('Spot gold unavailable from all sources')
 }
 
 // -------------------------- کمکی: fetch کندل از Yahoo --------------------------
