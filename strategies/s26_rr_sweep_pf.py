@@ -34,7 +34,7 @@ MIN_TRAIN_FRAC = 0.40
 EMBARGO = 50          # purge/embargo بین train و test هر fold (L6)
 HZ = 48              # افق برچسب و max_hold اجرا
 SPREAD = 0.20
-SEEDS = [42, 7, 123]  # ensemble 3-seed
+SEEDS = [42, 7]       # ensemble 2-seed (سرعت؛ 3-seed در تأیید نهایی)
 
 print("بارگذاری داده ...")
 df = load_data()
@@ -83,9 +83,9 @@ def walk_forward_proba(label_tp, label_sl, seed):
         if te_start >= te_end:
             continue
         m = lgb.LGBMClassifier(
-            n_estimators=500, learning_rate=0.025, num_leaves=32, max_depth=6,
+            n_estimators=300, learning_rate=0.04, num_leaves=32, max_depth=6,
             subsample=0.8, colsample_bytree=0.75, min_child_samples=80,
-            reg_lambda=2.0, random_state=seed, verbose=-1)
+            reg_lambda=2.0, random_state=seed, verbose=-1, n_jobs=-1)
         m.fit(X[:tr_end], Y[:tr_end])
         proba[idx[te_start:te_end]] = m.predict_proba(X[te_start:te_end])[:, 1]
     return proba
@@ -124,11 +124,14 @@ print("\n" + "=" * 70)
 print("مرحله ۱: منحنی WR(TP)/PF(TP) — برچسب بازتولیدشده برای هر RR (thr=0.62 ثابت)")
 print("=" * 70)
 SL_FIX = 1.5
-TP_GRID = [1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.8]
+TP_GRID = [1.0, 1.2, 1.3, 1.4, 1.5, 1.8]
 THR_FIX = 0.62
+proba_cache = {}
 curve = []
 for tp in TP_GRID:
-    proba = ens_proba(tp, SL_FIX)     # برچسب = همان RR اجرا
+    key = (tp, SL_FIX)
+    proba_cache[key] = ens_proba(tp, SL_FIX)     # برچسب = همان RR اجرا
+    proba = proba_cache[key]
     r = eval_point(proba, THR_FIX, tp, SL_FIX)
     if r is None:
         print(f"TP={tp:.1f} SL={SL_FIX}: <30 trade"); continue
@@ -143,11 +146,11 @@ for tp in TP_GRID:
 print("\n" + "=" * 70)
 print("مرحله ۲: جاروب (TP,SL,thr) با هدف PF>1.3 و WR>60 و tpd≥5")
 print("=" * 70)
+# SL=1.5 ثابت (فرضیهٔ اصلی P01: افزایش TP). چند SL جایگزین هم برای کامل‌بودن.
 TP_S = [1.2, 1.3, 1.4, 1.5]
-SL_S = [1.3, 1.5, 1.7]
+SL_S = [1.5, 1.7]
 THR_S = [0.55, 0.58, 0.60, 0.62, 0.65, 0.68]
 results = []
-proba_cache = {}
 for tp in TP_S:
     for sl in SL_S:
         key = (tp, sl)
