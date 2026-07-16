@@ -1,25 +1,27 @@
 // ============================================================================
-// ماژول کلاینت (مرورگر) — اجرای واقعی مدل ONNX ربات با onnxruntime-web.
+// ماژول کلاینت (مرورگر) — اجرای واقعی مدل ONNX استراتژی ۲۵ با onnxruntime-web.
 // این فایل با esbuild به public/static/browser-signal.js باندل می‌شود و در
 // مرورگر توسط app.js فراخوانی می‌گردد. onnxruntime-web از CDN بارگذاری می‌شود
 // (به‌صورت global `ort`) تا باندل سبک بماند.
 //
 // جریان کار:
-//   candles (از API) → buildFeatures (هم‌ارز features.py) → ۳ مدل ONNX ensemble
-//   → میانگین احتمال کلاس long-win → تصمیم LONG/NONE با آستانه THR=0.68 + رژیم.
-// خروجی «دقیقاً معادل ربات MT5» است (نه تقریب امتیازدهی).
+//   candles (از API) → buildFeatures (۵۹ feature، هم‌ارز features.py با feature
+//   های زمانی S25) → ۳ مدل ONNX ensemble S25 → میانگین احتمال کلاس long-win →
+//   تصمیم LONG/NONE با آستانه THR=0.68 + رژیم.
+// خروجی «دقیقاً معادل استراتژی برندهٔ ۲۵» است (نه تقریب امتیازدهی).
 // ============================================================================
 import type { Candle } from '../indicators'
-import { buildFeatures } from '../features'
+import { buildFeatures, FEATURE_ORDER } from '../features'
 
 declare const ort: any // از CDN لود می‌شود (onnxruntime-web)
 
-const THR = 0.68           // آستانه اطمینان مدل (model_meta.txt)
+const N_FEATURES = FEATURE_ORDER.length  // ۵۹ (S25)
+const THR = 0.68           // آستانه اطمینان مدل (model_meta_s25.txt)
 const TP_M = 1.0, SL_M = 1.5, HZ = 48, BE = 60.0
 const MODEL_URLS = [
-  '/static/models/xauusd_s14_model_0.onnx',
-  '/static/models/xauusd_s14_model_1.onnx',
-  '/static/models/xauusd_s14_model_2.onnx',
+  '/static/models/xauusd_s25_model_0.onnx',
+  '/static/models/xauusd_s25_model_1.onnx',
+  '/static/models/xauusd_s25_model_2.onnx',
 ]
 
 let sessions: any[] | null = null
@@ -49,7 +51,7 @@ async function loadModels(): Promise<any[]> {
 // احتمال ensemble کلاس ۱ (long-win) برای یک بردار feature ۵۷تایی
 async function ensembleProba(vec: Float32Array): Promise<number> {
   const s = await loadModels()
-  const tensor = new ort.Tensor('float32', vec, [1, 57])
+  const tensor = new ort.Tensor('float32', vec, [1, N_FEATURES])
   let sum = 0
   for (const sess of s) {
     const feeds: any = {}
@@ -76,7 +78,7 @@ export interface ModelSignal {
   atr: number
   rr: string
   confidence: 'high' | 'medium' | 'low'
-  source: 'onnx-ensemble'     // نشانگر: این سیگنالِ واقعیِ مدل است
+  source: 'onnx-ensemble-s25' // نشانگر: سیگنالِ واقعیِ مدل استراتژی ۲۵
 }
 
 // محاسبهٔ سیگنال واقعی مدل روی آخرین کندلِ معتبر
@@ -108,7 +110,7 @@ export async function computeModelSignal(candles: Candle[]): Promise<ModelSignal
     entry, tp, sl, atr,
     rr: `TP ${TP_M}×ATR / SL ${SL_M}×ATR (BE=${BE}%)`,
     confidence,
-    source: 'onnx-ensemble',
+    source: 'onnx-ensemble-s25',
   }
 }
 
