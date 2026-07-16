@@ -45,6 +45,7 @@
 | ۱۴ | **⭐ VWAP-Regime Selective ML (BE60)** | `VWAP_Regime_Selective_ML_BE60_62.md` | **۶۱.۶٪** | ۱۹۴۷ | ✅ **هدف کاربر: WR>60 + سودآور + ۵.۳ معامله/روز** |
 | ۲۰ | **Squeeze-Breakout + Chandelier Trailing** | `Squeeze_Chandelier_TrailingExit_30.md` | ۳۰٪ (سودآور) / ۶۰٪ (exp≈۰) | ۲۳۰۲ | ❌ WR↔exp↔فرکانس هم‌زمان برآورده نشد؛ سود وابسته به رژیم |
 | ۲۱ | **Session Opening-Range Breakout + Coiled-Spring** | `Session_ORB_CoiledSpring_47.md` | ۴۷٪ (معنادار) / تا ۷۴٪ (تله‌ی RR) | ۱۴۵–۱۶۴۵ | ❌ WR بالا فقط با RR نامتقارن؛ exp مثبت فقط با فرکانس ۰.۰۹/روز |
+| ۲۲ | **Streak-Reversal (serial dependence)** | `Streak_Reversal_MeanRev_58.md` | تا ۵۹.۵٪ | ۴۱۰–۵۵۰۲ | ❌ edge خام ~۵۴٪ واقعی اما بسیار ضعیف؛ WR<60 و exp/فرکانس در تضاد |
 
 ## کشف بنیادی پروژه ⭐
 پس از ۱۳+ استراتژی از پنج مسیر مستقل (آماری، یادگیری ماشین، اکشن قیمت،
