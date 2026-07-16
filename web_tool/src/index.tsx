@@ -375,21 +375,13 @@ const PAGE = `<!DOCTYPE html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>XAUUSD Live — ابزار تحلیل زنده طلا</title>
+  <title>دستیارِ تصمیمِ معاملات — چند دارایی</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3.4.4/build/global/luxon.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js"></script>
-  <!-- onnxruntime-web: اجرای واقعی مدل ربات در مرورگر (User Note #1) -->
-  <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/ort.min.js"></script>
   <link href="/static/style.css" rel="stylesheet">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
-  <div id="app" class="max-w-6xl mx-auto p-4"></div>
-  <!-- ماژول کلاینت مدل ONNX (باندل esbuild: features + indicators + inference) -->
-  <script type="module" src="/static/browser-signal.js"></script>
+  <div id="app" class="max-w-5xl mx-auto p-4"></div>
   <script src="/static/app.js"></script>
 </body>
 </html>`
