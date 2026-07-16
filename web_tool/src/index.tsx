@@ -55,42 +55,68 @@ async function fetchGold(interval: string, range: string): Promise<{ candles: Ca
 }
 
 // ---------------------------------------------------------------------------
-// ادغام قیمت spot لحظه‌ای با کندل‌های Yahoo (رفع تأخیر داده به < ۵ دقیقه).
-// منطق:
-//   - آفستِ (futures - spot) از آخرین کندلِ Yahoo محاسبه می‌شود (~۵.۵$).
-//   - قیمتِ معادلِ futures از spot ساخته می‌شود: spotEq = spot + offset.
-//   - اگر آخرین کندل مربوط به همان بازهٔ ۱۵دقیقه‌ایِ «الان» باشد → close/high/low
-//     همان کندل با spotEq به‌روز می‌شود (کندلِ در حال شکل‌گیری).
-//   - در غیر این صورت یک کندلِ جدیدِ سبک برای بازهٔ جاری اضافه می‌شود.
-// این کار تأخیر مؤثرِ «آخرین قیمت» را از ~۱۳ دقیقه به < ۱ دقیقه می‌رساند.
+// رفعِ باگِ اصلی «اختلاف ~۲۰ دلاری قیمت»:
+//   داده کندل از Yahoo GC=F (طلای آتی COMEX) می‌آید که به‌طور ساختاری چند تا چند‌ده
+//   دلار بالاتر از XAU/USD spot (مرجع TradingView/OANDA) است. قبلاً فقط «آخرین کندل»
+//   با spot تنظیم می‌شد و بقیهٔ چارت + همهٔ اندیکاتورها/سطوح S/R روی مقیاس futures
+//   می‌ماندند → کاربر اختلاف بزرگ می‌دید.
+//
+// راه‌حل صحیح (rebase کامل به مقیاس spot):
+//   ۱) آفستِ پایدار = میانگینِ (close_futures − spot) روی چند کندل اخیر همتراز زمانی.
+//      (اگر spot تازه است، از خودِ آخرین کندل هم استفاده می‌شود.)
+//   ۲) این آفست از open/high/low/close «همهٔ کندل‌ها» کم می‌شود → کل سری روی مقیاس spot.
+//   ۳) کندلِ در حال شکل‌گیری با قیمت spot لحظه‌ای به‌روز/ساخته می‌شود.
+//   نتیجه: قیمت نمایشی، سطوح حمایت/مقاومت، و سیگنال همگی روی مقیاس XAUUSD spot
+//   و سازگار با TradingView خواهند بود.
 // ---------------------------------------------------------------------------
-function mergeSpot(candles: Candle[], spot: SpotPrice | null, intervalSec = 900): { candles: Candle[]; spotUsed: boolean; effectiveDelaySec: number } {
+function rebaseFuturesToSpot(candles: Candle[], spot: SpotPrice | null, intervalSec = 900): {
+  candles: Candle[]; spotUsed: boolean; effectiveDelaySec: number; offset: number
+} {
+  const lastT0 = candles.length ? candles[candles.length - 1].time : 0
   if (!spot || !candles.length || !isFinite(spot.price)) {
-    const lastT = candles.length ? candles[candles.length - 1].time : 0
-    return { candles, spotUsed: false, effectiveDelaySec: lastT ? Math.round(Date.now() / 1000 - lastT) : 0 }
+    return { candles, spotUsed: false, effectiveDelaySec: lastT0 ? Math.round(Date.now() / 1000 - lastT0) : 0, offset: 0 }
   }
-  const out = candles.slice()
-  const last = out[out.length - 1]
-  // آفست futures−spot از آخرین کندل واقعی
-  const offset = last.close - spot.price > -50 && last.close - spot.price < 50 ? (last.close - spot.price) : 0
-  const spotEq = spot.price + offset
+
+  // آفستِ پایدار futures−spot: میانگینِ close آخرین N کندل منهای spot فعلی.
+  // (spot لحظه‌ای است؛ close چند کندل اخیر مبنای پایدارِ سطحِ futures را می‌دهد.)
+  const N = Math.min(4, candles.length)
+  let sum = 0
+  for (let i = candles.length - N; i < candles.length; i++) sum += candles[i].close
+  let offset = sum / N - spot.price
+  // محدودسازی امن: آفست معقول طلا معمولاً بین -60..+60 دلار است.
+  if (!isFinite(offset) || Math.abs(offset) > 80) offset = 0
+
+  // rebase کل سری به مقیاس spot
+  const rebased: Candle[] = candles.map(k => ({
+    time: k.time,
+    open: k.open - offset,
+    high: k.high - offset,
+    low: k.low - offset,
+    close: k.close - offset,
+    volume: k.volume,
+  }))
+
+  // کندلِ در حال شکل‌گیری را با spot لحظه‌ای دقیق‌تر می‌کنیم
   const nowSec = Math.floor(Date.now() / 1000)
   const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec
-
+  const last = rebased[rebased.length - 1]
   if (last.time >= curBucketStart) {
-    // آخرین کندل همان بازهٔ جاری است → به‌روزرسانی close/high/low
-    const updated: Candle = {
+    rebased[rebased.length - 1] = {
       ...last,
-      close: spotEq,
-      high: Math.max(last.high, spotEq),
-      low: Math.min(last.low, spotEq),
+      close: spot.price,
+      high: Math.max(last.high, spot.price),
+      low: Math.min(last.low, spot.price),
     }
-    out[out.length - 1] = updated
   } else {
-    // بازهٔ جدید شروع شده → افزودن کندلِ سبکِ جاری
-    out.push({ time: curBucketStart, open: last.close, high: Math.max(last.close, spotEq), low: Math.min(last.close, spotEq), close: spotEq, volume: 0 })
+    rebased.push({
+      time: curBucketStart,
+      open: last.close, close: spot.price,
+      high: Math.max(last.close, spot.price),
+      low: Math.min(last.close, spot.price),
+      volume: 0,
+    })
   }
-  return { candles: out, spotUsed: true, effectiveDelaySec: spot.ageSec }
+  return { candles: rebased, spotUsed: true, effectiveDelaySec: spot.ageSec, offset }
 }
 
 // قیمت spot لحظه‌ای (تأخیر < چند ثانیه)
@@ -110,11 +136,12 @@ app.get('/api/candles', async (c) => {
   const intervalSec = interval === '15m' ? 900 : interval === '1h' ? 3600 : interval === '5m' ? 300 : 900
   try {
     const { candles, meta } = await fetchGold(interval, range)
-    // spot را موازی می‌گیریم و در صورت موفقیت کندل جاری را به‌روز می‌کنیم
+    // spot را موازی می‌گیریم و کل سری را به مقیاس spot می‌آوریم
     let spot: SpotPrice | null = null
     try { spot = await getSpotGold() } catch {}
-    const merged = mergeSpot(candles, spot, intervalSec)
-    if (spot) { meta.marketPrice = spot.price + (merged.candles[merged.candles.length - 1].close - spot.price >= -50 ? 0 : 0) }
+    const merged = rebaseFuturesToSpot(candles, spot, intervalSec)
+    // قیمت نمایشیِ متا نیز روی مقیاس spot (سازگار با TradingView)
+    if (spot) { meta.marketPrice = spot.price; meta.priceScale = 'spot'; meta.futuresOffset = Number(merged.offset.toFixed(2)) }
     return c.json({
       ok: true, meta, count: merged.candles.length, candles: merged.candles,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null,
@@ -135,11 +162,12 @@ app.get('/api/analysis', async (c) => {
     if (candles.length < 220) {
       return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست (نیاز به حداقل ۲۲۰ کندل)' }, 400)
     }
-    // ادغام spot لحظه‌ای برای رفع تأخیر
+    // rebase کل سری به مقیاس spot (رفع باگ اختلاف قیمت) — همهٔ اندیکاتورها/سطوح روی spot
     let spot: SpotPrice | null = null
     try { spot = await getSpotGold() } catch {}
-    const merged = mergeSpot(candles, spot, 900)
+    const merged = rebaseFuturesToSpot(candles, spot, 900)
     const useCandles = merged.candles
+    if (spot) { meta.marketPrice = spot.price; meta.priceScale = 'spot'; meta.futuresOffset = Number(merged.offset.toFixed(2)) }
     const result = analyze(useCandles)
     // فقط کندل‌های اخیر برای چارت (سبک‌تر)
     const recent = useCandles.slice(-300)
