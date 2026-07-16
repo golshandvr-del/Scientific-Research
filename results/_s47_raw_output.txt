@@ -1,0 +1,35 @@
+بارگذاری داده و ساخت feature ...
+کاندید پایه (uptrend long): 55512
+ساخت featureهای تأییدِ چند-جفت‌ارزی (merge_asof، بدون look-ahead) ...
+پوشش گیتِ چند-جفت‌ارزی: 100.0%
+
+آموزش ensemble ۳-seed (S25) ...
+سیگنال‌های خام مدل (thr=0.68): 7266
+سیگنال‌های پس از گیتِ چند-جفت‌ارزی: 3470 (47.8% حفظ شد)
+
+================ آزمونِ ۲×۲ ================
+
+--- خروجِ ثابت (S25 استاندارد) ---
+  A0 بی‌گیت ثابت : n=2208 WR=62.27% exp=+0.536$ PF=1.202 pnl=+1183$ | tpd=1.33
+         روزانه: win_days=49.8% avg=+2.36$ sharpe=0.135 dPF=1.61 tpd_cal=1.67
+  B0 +گیت   ثابت : n=1375 WR=62.62% exp=+0.706$ PF=1.272 pnl=+971$ | tpd=0.83
+         روزانه: win_days=51.5% avg=+2.27$ sharpe=0.156 dPF=1.69 tpd_cal=1.04
+
+--- خروجِ پویا (scale-out 50% + BE + ATR trail) ---
+  A1 بی‌گیت پویا : n=1565 WR=60.51% exp=+0.894$ PF=1.336 pnl=+1400$ avgR=+0.087 | tpd=0.94
+         روزانه: win_days=51.8% avg=+2.82$ sharpe=0.155 dPF=1.76 tpd_cal=1.18
+  B1 +گیت   پویا : n=1010 WR=62.28% exp=+1.391$ PF=1.554 pnl=+1405$ avgR=+0.122 | tpd=0.61
+         روزانه: win_days=55.7% avg=+3.36$ sharpe=0.208 dPF=2.06 tpd_cal=0.76
+
+--- جاروبِ پارامترهای خروجِ پویا (روی سیگنالِ گیت‌دار B) ---
+  scale=0.3 trail=1.0: WR=61.7% PF=1.598 exp=+1.532$ dPF=2.23 avg_daily=+4.02$ win_days=54.6%
+  scale=0.3 trail=1.5: WR=62.3% PF=1.672 exp=+1.688$ dPF=2.23 avg_daily=+4.08$ win_days=55.3%
+  scale=0.3 trail=2.5: WR=61.3% PF=1.786 exp=+1.979$ dPF=2.28 avg_daily=+4.25$ win_days=55.9%
+  scale=0.5 trail=1.0: WR=61.7% PF=1.501 exp=+1.284$ dPF=2.05 avg_daily=+3.37$ win_days=54.4%
+  scale=0.5 trail=1.5: WR=62.3% PF=1.554 exp=+1.391$ dPF=2.06 avg_daily=+3.36$ win_days=55.7%
+  scale=0.5 trail=2.5: WR=61.3% PF=1.623 exp=+1.568$ dPF=2.07 avg_daily=+3.37$ win_days=55.9%
+  scale=0.7 trail=1.0: WR=61.7% PF=1.404 exp=+1.036$ dPF=1.86 avg_daily=+2.72$ win_days=54.1%
+  scale=0.7 trail=1.5: WR=62.3% PF=1.436 exp=+1.094$ dPF=1.86 avg_daily=+2.64$ win_days=56.5%
+  scale=0.7 trail=2.5: WR=61.3% PF=1.460 exp=+1.158$ dPF=1.82 avg_daily=+2.49$ win_days=56.3%
+
+تمام.
