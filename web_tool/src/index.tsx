@@ -213,13 +213,24 @@ app.post('/api/trade/advice', async (c) => {
       return c.json({ ok: false, error: 'برای معاملهٔ فروش باید TP پایین‌تر از ورود و SL بالاتر از ورود باشد.' }, 400)
     }
 
-    // داده‌ی زنده + تحلیل (همان مسیر /api/analysis)
-    const { candles, meta } = await fetchGold('15m', '1mo')
-    if (candles.length < 220) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
-    let spot: SpotPrice | null = null
-    try { spot = await getSpotGold() } catch {}
-    const merged = rebaseFuturesToSpot(candles, spot, 900)
-    const a = analyze(merged.candles)
+    // دارایی هدف (پیش‌فرض طلا برای سازگاری با نسخهٔ قبل)
+    const assetId = (body.asset ? String(body.asset).toUpperCase() : 'XAUUSD')
+    const meta_asset = ASSETS.find(x => x.id === assetId) || ASSETS[0]
+
+    // داده‌ی زنده + تحلیل مخصوص همان دارایی
+    let a
+    if (meta_asset.isGold) {
+      const { candles } = await fetchGold('15m', '1mo')
+      if (candles.length < 220) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
+      let spot: SpotPrice | null = null
+      try { spot = await getSpotGold() } catch {}
+      const merged = rebaseFuturesToSpot(candles, spot, 900)
+      a = analyze(merged.candles)
+    } else {
+      const { candles } = await yahooCandles(meta_asset.symbol, '15m', '1mo')
+      if (candles.length < 220) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
+      a = analyze(candles)
+    }
 
     const trade: OpenTrade = { side, entry, tp, sl, openedAt: tr.openedAt }
     const modelProbPct = typeof body.modelProbPct === 'number' ? body.modelProbPct : undefined
