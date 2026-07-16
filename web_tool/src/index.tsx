@@ -3,6 +3,7 @@ import { cors } from 'hono/cors'
 import { serveStatic } from 'hono/cloudflare-workers'
 import type { Candle } from './indicators'
 import { analyze } from './signal'
+import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
 import { getMTF, getIntermarket, getNews, getSpotGold, type SpotPrice } from './external'
 
 const app = new Hono()
@@ -181,6 +182,60 @@ app.get('/api/analysis', async (c) => {
       effectiveDelaySec: merged.effectiveDelaySec,
       analysis: result,
       chart: recent.map(k => ({ t: k.time, o: k.open, h: k.high, l: k.low, c: k.close })),
+    })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e.message }, 502)
+  }
+})
+
+// ---------------------------------------------------------------------------
+// مدیریت معاملهٔ باز کاربر (Trade Advisor) — پاسخ به User Note
+// کاربر معاملهٔ باز خود (side/entry/tp/sl) را می‌فرستد؛ سرور با تحلیل زندهٔ بازار
+// (همان موتور S14 + S/R) توصیه‌های مدیریتی برمی‌گرداند. کاملاً stateless است؛
+// خودِ معامله در localStorage مرورگر ذخیره می‌شود (با رفرش از دست نمی‌رود).
+// ---------------------------------------------------------------------------
+app.post('/api/trade/advice', async (c) => {
+  try {
+    const body = await c.req.json().catch(() => null) as any
+    if (!body || !body.trade) return c.json({ ok: false, error: 'داده‌ی معامله ارسال نشده' }, 400)
+    const tr = body.trade
+    const side = (tr.side === 'short' ? 'short' : 'long') as Side
+    const entry = Number(tr.entry), tp = Number(tr.tp), sl = Number(tr.sl)
+    if (![entry, tp, sl].every(x => isFinite(x) && x > 0)) {
+      return c.json({ ok: false, error: 'ورود/TP/SL نامعتبر است' }, 400)
+    }
+    // اعتبارسنجی منطقی جهت TP/SL نسبت به ورود
+    if (side === 'long' && !(tp > entry && sl < entry)) {
+      return c.json({ ok: false, error: 'برای معاملهٔ خرید باید TP بالاتر از ورود و SL پایین‌تر از ورود باشد.' }, 400)
+    }
+    if (side === 'short' && !(tp < entry && sl > entry)) {
+      return c.json({ ok: false, error: 'برای معاملهٔ فروش باید TP پایین‌تر از ورود و SL بالاتر از ورود باشد.' }, 400)
+    }
+
+    // داده‌ی زنده + تحلیل (همان مسیر /api/analysis)
+    const { candles, meta } = await fetchGold('15m', '1mo')
+    if (candles.length < 220) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
+    let spot: SpotPrice | null = null
+    try { spot = await getSpotGold() } catch {}
+    const merged = rebaseFuturesToSpot(candles, spot, 900)
+    const a = analyze(merged.candles)
+
+    const trade: OpenTrade = { side, entry, tp, sl, openedAt: tr.openedAt }
+    const modelProbPct = typeof body.modelProbPct === 'number' ? body.modelProbPct : undefined
+    const status = evaluateTrade(trade, a, modelProbPct)
+
+    return c.json({
+      ok: true,
+      lastUpdate: new Date().toISOString(),
+      price: a.price,
+      spot: spot ? { price: spot.price, ageSec: spot.ageSec } : null,
+      market: {
+        trend: a.trend, atr: a.atr, rsi14: a.rsi14, adx: a.adx, macdHist: a.macdHist,
+        vwap: a.vwap, ema50: a.ema50, ema200: a.ema200, regimeOk: a.regimeOk,
+        resistance: a.resistance, support: a.support,
+        breakoutScenarios: a.breakoutScenarios,
+      },
+      status,
     })
   } catch (e: any) {
     return c.json({ ok: false, error: e.message }, 502)
