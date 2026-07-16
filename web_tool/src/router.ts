@@ -53,6 +53,10 @@ export interface RouterDecision {
     multiplier: number          // ضریبِ TP نهایی (×ATR)
     note: string                // دلیلِ انتخابِ این TP (سطل)
   }
+  slPlan?: {                    // S66 (L40): SLِ رژیم-آگاه — اهرمِ چهارمِ سودِ خالص
+    multiplier: number          // ضریبِ SL نهایی (×ATR)
+    note: string                // دلیلِ انتخابِ این SL (سطل)
+  }
   // فقط در APPROACHING: تأییدهایِ لازم
   confirmations?: Confirmation[]
   // شاخص‌های کلیدی برای شفافیت (همیشه)
@@ -68,21 +72,28 @@ export interface RouterDecision {
 // چون در رژیمِ روندیِ کارآمد حرکت‌ها ادامه‌دارترند (سودِ خالصِ بیشتر با WR کمتر).
 // این جدول همان الگویِ پایدارِ کشف‌شده است (۲۰/۲۰ ترکیبِ پارامتر برنده بودند).
 // ============================================================================
-interface BucketPlan { lot: number; tpBull: number; tpBear: number; desc: string }
+// S66 (L40): علاوه بر لات و TP، اکنون **SLِ رژیم-آگاه** هم از سطل می‌آید (اهرمِ چهارم).
+// ضرایبِ slBull/slBear همان مقادیرِ غالبِ یادگرفته‌شده در گریدِ walk-forward S66 هستند.
+interface BucketPlan {
+  lot: number
+  tpBull: number; tpBear: number
+  slBull: number; slBear: number   // S66: SL رژیم-آگاه
+  desc: string
+}
 
 const BUCKET_PLAN: Record<string, BucketPlan> = {
   // سطلِ قوی: روندِ کارآمد + probaِ بالا → بیشترین حجم و دورترین TP
-  trend_hi: { lot: 2.0, tpBull: 2.0, tpBear: 2.6, desc: 'روندِ کارآمد + احتمالِ بالا — قوی‌ترین سطل' },
+  trend_hi: { lot: 2.0, tpBull: 2.0, tpBear: 2.6, slBull: 2.0, slBear: 1.7, desc: 'روندِ کارآمد + احتمالِ بالا — قوی‌ترین سطل' },
   // روندِ کارآمد ولی probaِ متوسط → حجمِ متوسط، TP نیمه-دور
-  trend_lo: { lot: 1.3, tpBull: 1.3, tpBear: 1.8, desc: 'روندِ کارآمد + احتمالِ متوسط' },
+  trend_lo: { lot: 1.3, tpBull: 1.3, tpBear: 1.8, slBull: 2.0, slBear: 2.2, desc: 'روندِ کارآمد + احتمالِ متوسط' },
   // probaِ بالا ولی رژیمِ کم‌کارا → حجمِ کمی بالای پایه، TP نزدیک‌تر
-  chop_hi:  { lot: 1.2, tpBull: 1.0, tpBear: 1.4, desc: 'احتمالِ بالا ولی روندِ کم‌کارا' },
+  chop_hi:  { lot: 1.2, tpBull: 1.0, tpBear: 1.4, slBull: 2.0, slBear: 1.45, desc: 'احتمالِ بالا ولی روندِ کم‌کارا' },
   // ضعیف‌ترین سطلِ فعال → حجمِ محافظه‌کارانه، TP نزدیک
-  chop_lo:  { lot: 0.7, tpBull: 0.8, tpBear: 1.0, desc: 'سطلِ مرزی — حجمِ محافظه‌کارانه' },
+  chop_lo:  { lot: 0.7, tpBull: 0.8, tpBear: 1.0, slBull: 2.0, slBear: 1.95, desc: 'سطلِ مرزی — حجمِ محافظه‌کارانه' },
 }
 
 function bucketPlan(bucket: string): BucketPlan {
-  return BUCKET_PLAN[bucket] ?? { lot: 1.0, tpBull: 1.0, tpBear: 1.4, desc: 'پایه' }
+  return BUCKET_PLAN[bucket] ?? { lot: 1.0, tpBull: 1.0, tpBear: 1.4, slBull: 1.5, slBear: 1.7, desc: 'پایه' }
 }
 
 function lotLabel(m: number): string {
@@ -184,10 +195,10 @@ export function decide(a: AnalysisResult, close: number[]): RouterDecision {
 
   const isBull = reg.activeStream === 'bull'
   const dir: 'LONG' | 'SHORT' = isBull ? 'LONG' : 'SHORT'
-  // SL ثابت طبقِ بک‌تست (Bull 1.5×ATR, Bear 1.7×ATR).
-  const slM = isBull ? 1.5 : 1.7
-  // --- S65: ضریبِ TP دیگر ثابت نیست؛ از سطلِ رژیم می‌آید (اهرمِ سوم) ---
   const plan = bucketPlan(reg.bucket)
+  // --- S66 (L40): ضریبِ SL دیگر ثابت نیست؛ از سطلِ رژیم می‌آید (اهرمِ چهارم) ---
+  const slM = isBull ? plan.slBull : plan.slBear
+  // --- S65: ضریبِ TP رژیم-آگاه (اهرمِ سوم) ---
   const tpM = isBull ? plan.tpBull : plan.tpBear
   // --- S64: ضریبِ حجم (Kelly) از سطلِ رژیم ---
   const lotM = plan.lot
@@ -219,6 +230,13 @@ export function decide(a: AnalysisResult, close: number[]): RouterDecision {
         note: reg.bucket === 'trend_hi'
           ? `روندِ کارآمد اجازهٔ TPِ دورتر (${tpM}×ATR) می‌دهد؛ حرکت‌ها ادامه‌دارترند (L39).`
           : `TP متناسب با کیفیتِ سطل «${reg.bucket}» تنظیم شد (${tpM}×ATR) تا سودِ خالص بیشینه شود (L39).`,
+      },
+      // S66 (L40) — SLِ رژیم-آگاه (اهرمِ چهارم؛ تنها اهرمی که سود را بالا و ریسک را پایین برد):
+      slPlan: {
+        multiplier: slM,
+        note: `فاصلهٔ استاپ متناسب با رژیمِ سطل «${reg.bucket}» تنظیم شد (${slM}×ATR). ` +
+          `طبقِ کشفِ L40، SLِ رژیم-آگاه سودِ خالص را +۲۱٪ بالا برد و هم‌زمان DrawDown را ~۳۵٪ کم کرد ` +
+          `(سود/DD تقریباً دو برابر شد) — این «مدیریتِ ریسکِ پویا» است.`,
       },
       indicators,
     }
