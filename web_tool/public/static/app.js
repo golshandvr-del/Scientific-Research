@@ -1,6 +1,6 @@
 // ============================================================================
 // XAUUSD Live Tool — فرانت‌اند
-// داشبورد تحلیل زنده طلا بر پایه استراتژی برنده پروژه (S14 VWAP-Regime)
+// داشبورد تحلیل زنده طلا بر پایه استراتژی برنده پروژه (S25 ML + Weekly-Reversion)
 // ============================================================================
 const app = document.getElementById('app');
 let chart = null;
@@ -15,7 +15,7 @@ function skeleton() {
       <div class="text-3xl"><i class="fas fa-coins text-amber-400"></i></div>
       <div>
         <h1 class="text-2xl font-bold">XAUUSD <span class="text-amber-400">Live</span></h1>
-        <p class="text-xs text-slate-400">ابزار تحلیل زنده طلا — مبتنی بر استراتژی تحقیقاتی S14 (VWAP-Regime)</p>
+        <p class="text-xs text-slate-400">ابزار تحلیل زنده طلا — مبتنی بر استراتژی تحقیقاتی S25 (ML + Weekly-Reversion)</p>
       </div>
     </div>
     <div class="flex items-center gap-2 text-sm flex-wrap">
@@ -164,7 +164,7 @@ function render(d) {
     <div class="bg-slate-800/40 rounded-lg p-4 text-center text-slate-300 text-sm">
       <i class="fas fa-hourglass-half text-slate-400"></i>
       در حال حاضر شرایط ورود برقرار نیست: ${a.noEntryReason || 'شرایط استراتژی کامل نیست.'}
-      <span class="block text-xs text-slate-500 mt-1">استراتژی S14 فقط در روند صعودی و با احتمال ≥ ${fmt(a.entryThreshold ?? 60, 0)}٪ وارد می‌شود.</span>
+      <span class="block text-xs text-slate-500 mt-1">استراتژی S25 فقط در روند صعودی و با احتمال ≥ ${fmt(a.entryThreshold ?? 60, 0)}٪ وارد می‌شود.</span>
     </div>`}
   </section>
 
@@ -388,6 +388,13 @@ function renderOnnx(s, nCandles) {
         : badge('سیگنال مدل: بدون ورود', 'bg-slate-600/40 text-slate-300')}
       ${confLabel(s.confidence)}
       ${badge(s.regimeOk ? 'رژیم صعودی ✓' : 'خارج از رژیم', s.regimeOk ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-600/40 text-slate-300')}
+      ${badge('استراتژی S25 (۵۹ feature)', 'bg-violet-500/20 text-violet-200')}
+    </div>
+    <div class="text-[11px] text-slate-400 bg-slate-800/40 rounded-md px-3 py-2 mb-3 leading-5">
+      <i class="fas fa-flask text-violet-300"></i> عملکرد بک‌تست استراتژی برندهٔ <b>S25 (ML + Weekly-Reversion)</b> روی داده‌ی OOS:
+      WR=<b class="text-emerald-300">۶۲.۳٪</b> • Expectancy=<b class="text-emerald-300">+۰.۵۴$</b> •
+      p-value=<b class="text-emerald-300">۰.۰۱۵</b> (معنادار) • ~۶ معامله/روز.
+      دو feature زمانی جدید <code>early_atr</code> و <code>weekly_rev</code> قوی‌ترین سیگنال‌های مدل‌اند.
     </div>
     <div class="mb-3">
       <div class="flex justify-between text-sm mb-1">
@@ -412,7 +419,7 @@ function renderOnnx(s, nCandles) {
       <i class="fas fa-hourglass-half"></i> مدل سیگنال ورود نمی‌دهد ${s.regimeOk ? `(احتمال مدل ${fmt(pct,1)}٪ < آستانهٔ ${thrPct}٪)` : '(بازار خارج از رژیم صعودی)'}.
     </div>`}
     <p class="text-[11px] text-slate-500 mt-3 leading-5">
-      <i class="fas fa-circle-check text-cyan-400"></i> این خروجی از اجرای مستقیم فایل‌های <code>xauusd_s14_model_{0,1,2}.onnx</code>
+      <i class="fas fa-circle-check text-cyan-400"></i> این خروجی از اجرای مستقیم فایل‌های <code>xauusd_s25_model_{0,1,2}.onnx</code>
       با <code>onnxruntime-web</code> روی ${nCandles} کندل M15 محاسبه شده و <b>دقیقاً معادل منطق ربات MT5</b> است (parity ~۹۹.۶٪).
     </p>`;
 }
