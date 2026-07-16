@@ -106,9 +106,8 @@ def run_asset(a, probas):
                                     allow_overlap=False)
         if len(tr) == 0: continue
         tr = tr.copy()
-        # نرمال‌سازی pnl به R (R = SL_M*ATR_mean بر حسبِ دلار)
-        R = SL_M * atr_mean
-        tr['pnl_R'] = tr['pnl'] / R
+        # ستونِ r_mult موتور از قبل مقیاس‌ناپذیر است (pnl بر حسبِ R) — مقایسهٔ منصفانه
+        tr['pnl_R'] = tr['r_mult']
         tr['asset'] = a; tr['dir'] = d
         tr['dt'] = df['dt'].iloc[tr['entry_bar'].values].values
         frames.append(tr[['asset', 'dir', 'dt', 'pnl_R', 'n_actions']]
