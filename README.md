@@ -49,6 +49,7 @@
 | ۲۳ | **Weekly Mean-Reversion (Thursday)** | `Weekly_MeanReversion_Thursday_57.md` | ۵۷.۴٪ | ۱۶۸۳ | ❌ اثر هفتگی معنادار (corr=-0.217,p<0.001) اما خام WR<60 + exp منفی |
 | ۲۴ | **Hourly-Drift Pockets** | `Hourly_Drift_Pockets_OOS_Fail_43.md` | TRAIN ~۶۰ / OOS ۴۳–۵۴ | ~۵۰۰ | ❌ overfitting کلاسیک؛ روی OOS مستقل فروپاشید |
 | ۲۵ | **⭐⭐ ML + Weekly-Reversion Context** | `ML_WeeklyReversion_Context_62.md` | **۶۲.۰۴٪** | ۲۱۸۴ | ✅✅ **برندهٔ جدید: S14 را بهبود داد — exp+0.53$, PnL+73%, p=0.027 (معنادار!), ≥۳ معامله/روز** |
+| ۲۶ | **RR-Sweep با هدف PF (طرح P01)** | `RR_Sweep_PF_Objective_P01_60.md` | **۶۰.۴٪** | ۱۵۸۳ | ⚠️ **PF حل شد (PF=1.353, exp+1.08$, p<0.001) اما فرکانس ~۰.۹۵/روز — تأیید تضاد WR↔فرکانس درون-استراتژی** |
 
 ## 🏆 برندهٔ فعلی: استراتژی ۲۵ (ML + Weekly-Reversion Context)
 پس از پاسخ به User Note دوم (الگوهای زمانی روز-هفته)، یک **بهبود واقعی** بر برندهٔ
