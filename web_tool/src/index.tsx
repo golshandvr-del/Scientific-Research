@@ -240,7 +240,6 @@ app.post('/api/trade/advice', async (c) => {
       ok: true,
       lastUpdate: new Date().toISOString(),
       price: a.price,
-      spot: spot ? { price: spot.price, ageSec: spot.ageSec } : null,
       market: {
         trend: a.trend, atr: a.atr, rsi14: a.rsi14, adx: a.adx, macdHist: a.macdHist,
         vwap: a.vwap, ema50: a.ema50, ema200: a.ema200, regimeOk: a.regimeOk,
