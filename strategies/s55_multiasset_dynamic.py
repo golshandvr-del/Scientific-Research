@@ -97,8 +97,9 @@ def run_asset(a, probas):
     frames = []
     for d, cand in [('long', cL), ('short', cS)]:
         p = probas[f'{a}_{d}']
-        entries = np.where(cand & (p >= THRESH))[0]
-        if len(entries) == 0: continue
+        # موتور یک ماسکِ بولیِ هم‌طولِ df می‌خواهد (نه آرایهٔ ایندکس)
+        entries = cand & (p >= THRESH) & ~np.isnan(p)
+        if entries.sum() == 0: continue
         _stats, tr = run_multistep_backtest(df, entries, d, atr,
                                     sl_mult=SL_M, tp_mults=(0.8, 1.5, 2.5),
                                     tp_fracs=(0.34, 0.33, 0.33), trail_mult=1.5,
