@@ -108,8 +108,8 @@ function renderCard(a) {
       </div>
       <div class="p-4">
         <div class="flex items-baseline justify-between mb-3">
-          <span class="text-slate-400 text-xs">قیمتِ فعلی</span>
-          <span class="text-lg font-bold text-slate-100 tabular-nums" dir="ltr">${d || trade ? fmt(s.price ?? (d && d.price) ?? (trade && trade.entry), a.decimals) : '—'}</span>
+          <span class="text-slate-400 text-xs">قیمتِ فعلی <span id="price-age-${a.id}" class="text-slate-600"></span></span>
+          <span id="price-${a.id}" class="text-lg font-bold text-slate-100 tabular-nums" dir="ltr">${d || trade ? fmt(s.price ?? (d && d.price) ?? (trade && trade.entry), a.decimals) : '—'}</span>
         </div>
         ${body}
       </div>
@@ -383,10 +383,58 @@ async function refreshAdvice(asset) {
 }
 
 // ============================================================================
+// پُلینگِ سریعِ قیمتِ زنده (هر ~۲ ثانیه) — پاسخ به User Note (نکتهٔ اول)
+// ----------------------------------------------------------------------------
+// فقط عددِ قیمتِ کارت‌ها را به‌روز می‌کند (نه سیگنال/تصمیم که سنگین است). این کار
+// حسِ «قیمتِ زندهٔ لحظه‌ای» را می‌دهد بدونِ فشار به سرور. سیگنال/تصمیم همچنان با
+// REFRESH_MS از /api/decision می‌آید. تغییرِ قیمت با فلاشِ سبز/قرمز نشان داده می‌شود.
+// ============================================================================
+const SPOT_MS = 2000
+const lastSpot = {}   // آخرین قیمتِ هر دارایی برای تشخیصِ جهتِ تغییر
+
+function applySpot(asset, price, ageSec, decimals) {
+  const el = document.getElementById('price-' + asset)
+  if (!el || price == null || !isFinite(price)) return
+  const prev = lastSpot[asset]
+  el.textContent = fmt(price, decimals)
+  // فلاشِ رنگ بر اساسِ جهتِ تغییر
+  if (prev != null && price !== prev) {
+    const up = price > prev
+    el.classList.remove('price-up', 'price-down')
+    void el.offsetWidth   // ری‌استارتِ انیمیشن
+    el.classList.add(up ? 'price-up' : 'price-down')
+  }
+  lastSpot[asset] = price
+  // سنِ قیمت (اگر تازه نبود هشدار بده)
+  const ageEl = document.getElementById('price-age-' + asset)
+  if (ageEl) {
+    if (ageSec != null && ageSec > 180) ageEl.textContent = `(${Math.round(ageSec/60)} دقیقه تأخیر)`
+    else ageEl.textContent = ''
+  }
+  // قیمتِ زنده را در store هم نگه می‌داریم تا render بعدی از آن استفاده کند
+  if (store[asset]) store[asset].price = price
+}
+
+async function refreshSpots() {
+  try {
+    const res = await fetch('/api/spots')
+    const data = await res.json()
+    if (!data.ok) return
+    const decMap = {}
+    assetsMeta.forEach(a => { decMap[a.id] = a.decimals })
+    data.spots.forEach(s => {
+      if (s.ok) applySpot(s.asset, s.price, s.ageSec, decMap[s.asset] ?? 2)
+    })
+  } catch { /* بی‌صدا؛ پُلینگِ بعدی دوباره تلاش می‌کند */ }
+}
+
+// ============================================================================
 // شروع
 // ============================================================================
 refreshAll()
 setInterval(refreshAll, REFRESH_MS)
+// پُلینگِ سریعِ قیمت (هر ۲ ثانیه) — سبک، فقط قیمت
+setInterval(refreshSpots, SPOT_MS)
 // هر ثانیه فقط متنِ «چند ثانیه پیش» را زنده به‌روز می‌کنیم (بدون فراخوانِ سرور).
 setInterval(() => {
   const lu = document.getElementById('last-update')
