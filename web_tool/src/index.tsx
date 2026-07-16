@@ -4,7 +4,7 @@ import { serveStatic } from 'hono/cloudflare-workers'
 import type { Candle } from './indicators'
 import { analyze } from './signal'
 import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
-import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, type SpotPrice } from './external'
+import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuote, type SpotPrice } from './external'
 import { decide } from './router'
 
 const app = new Hono()
@@ -119,6 +119,44 @@ function rebaseFuturesToSpot(candles: Candle[], spot: SpotPrice | null, interval
     })
   }
   return { candles: rebased, spotUsed: true, effectiveDelaySec: spot.ageSec, offset }
+}
+
+// ---------------------------------------------------------------------------
+// به‌روزکردنِ کندلِ جاریِ هر دارایی (غیرِ طلا) با قیمتِ زندهٔ Yahoo.
+// پاسخ به User Note (نکتهٔ اول): «قیمتِ سه ارزِ دیگر با قیمتِ لحظه‌ای فرق می‌کند».
+// علت: کندلِ 15m چند دقیقه تأخیر دارد؛ اینجا کندلِ در حالِ شکل‌گیری با
+// regularMarketPrice (تأخیر < ۲ دقیقه) به‌روز می‌شود تا سطوح/سیگنال روی قیمتِ
+// واقعیِ لحظه‌ای محاسبه شوند (منطقِ سبک‌ترِ rebaseِ طلا).
+// ---------------------------------------------------------------------------
+function mergeLiveQuote(candles: Candle[], livePrice: number | null, intervalSec = 900): {
+  candles: Candle[]; livePriceUsed: boolean
+} {
+  if (!candles.length || livePrice == null || !isFinite(livePrice)) {
+    return { candles, livePriceUsed: false }
+  }
+  const nowSec = Math.floor(Date.now() / 1000)
+  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec
+  const out = candles.slice()
+  const last = out[out.length - 1]
+  if (last.time >= curBucketStart) {
+    // کندلِ جاری در حالِ شکل‌گیری است → close را با قیمتِ زنده به‌روز کن
+    out[out.length - 1] = {
+      ...last,
+      close: livePrice,
+      high: Math.max(last.high, livePrice),
+      low: Math.min(last.low, livePrice),
+    }
+  } else {
+    // کندلِ جدیدِ در حالِ شکل‌گیری بساز
+    out.push({
+      time: curBucketStart,
+      open: last.close, close: livePrice,
+      high: Math.max(last.close, livePrice),
+      low: Math.min(last.close, livePrice),
+      volume: 0,
+    })
+  }
+  return { candles: out, livePriceUsed: true }
 }
 
 // قیمت spot لحظه‌ای (تأخیر < چند ثانیه)
@@ -320,15 +358,22 @@ async function decideAsset(a: typeof ASSETS[number]) {
     const result = analyze(useCandles)
     const dec = decide(result, useCandles.map(k => k.close))
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
-      price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec }
+      price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
+      spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
   }
-  // سایر دارایی‌ها: کندلِ خامِ Yahoo (بدون rebase)
+  // سایر دارایی‌ها: کندلِ Yahoo + به‌روزرسانیِ کندلِ جاری با قیمتِ زنده
+  // (رفعِ اختلافِ قیمتِ لحظه‌ای — User Note نکتهٔ اول)
   const { candles } = await yahooCandles(a.symbol, '15m', '1mo')
   if (candles.length < 220) throw new Error('داده کافی برای تحلیل نیست')
-  const result = analyze(candles)
-  const dec = decide(result, candles.map(k => k.close))
+  let live: number | null = null, liveAge = 0, liveSrc = ''
+  try { const q = await getLiveQuote(a.symbol); live = q.price; liveAge = q.ageSec; liveSrc = q.source } catch {}
+  const merged = mergeLiveQuote(candles, live, 900)
+  const useCandles = merged.candles
+  const result = analyze(useCandles)
+  const dec = decide(result, useCandles.map(k => k.close))
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
-    price: result.price, lastCandleTime: candles[candles.length - 1].time, decision: dec }
+    price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
+    spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
 }
 
 // همهٔ دارایی‌ها یک‌جا (موازی، مقاوم به خطای هر دارایی)
@@ -353,6 +398,31 @@ app.get('/api/decision/:asset', async (c) => {
   } catch (e: any) {
     return c.json({ ok: false, asset: a.id, name: a.name, error: e.message }, 502)
   }
+})
+
+// ---------------------------------------------------------------------------
+// endpointِ سبکِ قیمتِ زندهٔ همهٔ دارایی‌ها — برای پُلینگِ سریع (هر ~۲ ثانیه).
+// پاسخ به User Note (نکتهٔ اول): «سایت خودکار هر ۲ ثانیه قیمت‌ها را به‌روز کند».
+// این endpoint هیچ محاسبهٔ سنگینی (اندیکاتور/سیگنال) ندارد؛ فقط قیمتِ لحظه‌ای هر
+// دارایی را می‌دهد تا فرانت‌اند عددِ نمایشیِ کارت‌ها را زنده نگه دارد. سیگنال/تصمیم
+// همچنان با نرخِ آهسته‌تر (هر ۳۰ ثانیه) از /api/decision می‌آید.
+// getLiveQuote کشِ ۱.۵ ثانیه‌ای دارد → فشارِ Yahoo کنترل‌شده می‌ماند.
+// ---------------------------------------------------------------------------
+app.get('/api/spots', async (c) => {
+  const jobs = ASSETS.map(async (a) => {
+    try {
+      if (a.isGold) {
+        const s = await getSpotGold()
+        return { asset: a.id, ok: true, price: Number(s.price.toFixed(a.decimals)), ageSec: s.ageSec, source: s.source }
+      }
+      const q = await getLiveQuote(a.symbol)
+      return { asset: a.id, ok: true, price: Number(q.price.toFixed(a.decimals)), ageSec: q.ageSec, source: q.source }
+    } catch (e: any) {
+      return { asset: a.id, ok: false, error: e?.message || 'خطا' }
+    }
+  })
+  const spots = await Promise.all(jobs)
+  return c.json({ ok: true, at: Date.now(), spots })
 })
 
 // health
