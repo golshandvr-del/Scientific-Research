@@ -191,6 +191,56 @@ if w_total > flat_total:
 else:
     print("△ مقیاس‌بندیِ Kelly سودِ خالص را بالا نبرد؛ باید کارایی سرمایه را سنجید.", flush=True)
 
+# ---------------------------------------------------------------------------
+# تحلیلِ ریسک-تعدیل‌شده: آیا بهبود واقعی است یا صرفاً ریسکِ بیشتر؟
+# منحنیِ سرمایه (equity) هر دو سیستم را می‌سازیم و max-drawdown + Sharpe مقایسه می‌کنیم.
+# ---------------------------------------------------------------------------
+def equity_curve(direction, sig, weights, sl_s, tp_s, use_weight):
+    s = sig & eval_mask
+    st, tr = run_backtest(df, s, None, None, direction, spread=SPREAD, max_hold=HZ,
+                          sl_series=sl_s, tp_series=tp_s)
+    if len(tr) == 0:
+        return pd.DataFrame(columns=['exit_bar', 'pnl'])
+    w = np.ones(len(tr))
+    if use_weight:
+        w = weights[tr['signal_bar'].values]; w[w == 0] = 1.0
+    out = tr[['exit_bar']].copy()
+    out['pnl'] = tr['pnl'].values * w
+    return out
+
+
+def risk_stats(curve):
+    """max-drawdown و Sharpه سرانه از یک منحنیِ pnlِ مرتب‌شده بر حسبِ زمانِ خروج."""
+    if len(curve) == 0:
+        return 0.0, 0.0
+    c = curve.sort_values('exit_bar')
+    eq = c['pnl'].cumsum().values
+    peak = np.maximum.accumulate(eq)
+    dd = (eq - peak).min()          # عمقِ افتِ حداکثری ($)
+    r = c['pnl'].values
+    sharpe = (r.mean() / r.std() * np.sqrt(len(r))) if r.std() > 0 else 0.0
+    return dd, sharpe
+
+# منحنیِ ترکیبیِ هر سیستم (long+short)
+flat_curve = pd.concat([equity_curve('long', entL, wL, slL, tpL, False),
+                        equity_curve('short', entS, wS, slS, tpS, False)])
+w_curve = pd.concat([equity_curve('long', entL, wL, slL, tpL, True),
+                     equity_curve('short', entS, wS, slS, tpS, True)])
+flat_dd, flat_sh = risk_stats(flat_curve)
+w_dd, w_sh = risk_stats(w_curve)
+
+print("\n--- تحلیلِ ریسک-تعدیل‌شده (آیا بهبود واقعی است؟) ---", flush=True)
+print(f"baseline S63: MaxDD={flat_dd:8.1f}$  Sharpe={flat_sh:.2f}  "
+      f"سود/|DD|={flat_total/abs(flat_dd) if flat_dd else 0:.2f}", flush=True)
+print(f"★ S64:        MaxDD={w_dd:8.1f}$  Sharpe={w_sh:.2f}  "
+      f"سود/|DD|={w_total/abs(w_dd) if w_dd else 0:.2f}", flush=True)
+# نکتهٔ کلیدی: اگر «سود/|DD|» و Sharpe هم بهتر شوند، بهبود واقعی است نه صرفاً اهرم.
+if abs(w_dd) > 0 and abs(flat_dd) > 0:
+    if (w_total/abs(w_dd)) >= (flat_total/abs(flat_dd)) * 0.98:
+        print("✅ بازدهِ ریسک-تعدیل‌شده (سود/DD) حفظ/بهتر شد → بهبودِ واقعیِ تخصیصِ سرمایه.", flush=True)
+    else:
+        print("⚠️ سود بالا رفت ولی به قیمتِ DDِ بیشتر (اهرمِ خام) — با احتیاط.", flush=True)
+
 print("\n--- نمونهٔ وزنِ سطل‌های روشنِ Bull (هر ۵ بلوک) ---", flush=True)
 for k, (start, on) in enumerate(logL):
     if k % 5 == 0:
