@@ -14,8 +14,8 @@ function skeleton() {
     <div class="flex items-center gap-3">
       <div class="text-3xl"><i class="fas fa-coins text-amber-400"></i></div>
       <div>
-        <h1 class="text-2xl font-bold">XAUUSD <span class="text-amber-400">Live</span></h1>
-        <p class="text-xs text-slate-400">ابزار تحلیل زنده طلا — مبتنی بر استراتژی تحقیقاتی S25 (ML + Weekly-Reversion)</p>
+        <h1 class="text-2xl font-bold">XAUUSD <span class="text-amber-400">Live</span> <span class="text-[11px] align-middle px-2 py-0.5 rounded-md bg-cyan-500/15 text-cyan-300">روتر سه‌مغزی</span></h1>
+        <p class="text-xs text-slate-400">تشخیص روند → مغز صعودی (S25/LONG) • مغز نزولی (S31/SHORT) • رنج (عدم معامله)</p>
       </div>
     </div>
     <div class="flex items-center gap-2 text-sm flex-wrap">
@@ -369,7 +369,7 @@ async function runOnnxSignal() {
     const j = await r.json();
     if (!j.ok || !j.candles?.length) throw new Error(j.error || 'کندل کافی دریافت نشد');
     const sig = await window.GoldModel.computeModelSignal(j.candles);
-    console.log('[ONNX] signal:', JSON.stringify({dir:sig.direction, prob:sig.probabilityPct, regime:sig.regimeOk, n:j.candles.length}));
+    console.log('[ONNX] signal:', JSON.stringify({dir:sig.direction, prob:sig.probabilityPct, regime:sig.regime, brain:sig.activeBrain, n:j.candles.length}));
     renderOnnx(sig, j.candles.length);
     checkOpportunity(sig);
   } catch (e) {
