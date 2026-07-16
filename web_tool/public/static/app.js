@@ -226,9 +226,78 @@ function render(d) {
       ${miniStat('مغز فعال', a.activeBrain === 'bull' ? 'صعودی' : a.activeBrain === 'bear' ? 'نزولی' : 'رنج', a.activeBrain === 'bull' ? 'emerald' : a.activeBrain === 'bear' ? 'red' : 'slate')}
       ${miniStat('جهت', isLong ? 'LONG' : isShort ? 'SHORT' : 'منتظر', isLong ? 'emerald' : isShort ? 'red' : 'slate')}
     </div>
-  </section>`;
+  </section>
+
+  ${researchStatusPanel()}`;
 
   drawChart(d);
+}
+
+// ============================================================================
+// پنل وضعیت تحقیق علمی — به‌روزرسانی زندهٔ آخرین دستاوردها (تا استراتژی ۴۲)
+// این بخش تصویر صادقانه و به‌روز پروژه را نشان می‌دهد: چه به دست آمد، چه نه، و چرا.
+// ============================================================================
+function researchStatusPanel() {
+  // هدف سه‌گانهٔ کاربر و بهترین نتیجهٔ ثبت‌شده برای هر قید (از فایل‌های results/)
+  const goals = [
+    { name: 'Win Rate > 60%', best: 'S25: ۶۲.۰٪ (p=0.027 معنادار)', ok: true },
+    { name: 'Profit Factor > 1.3', best: 'S26: ۱.۳۵ • S36: ۱.۳۳', ok: true },
+    { name: 'Expectancy مثبت پایدار', best: 'S26: +۱.۰۸$ • S36: +۱.۱۴$', ok: true },
+    { name: '≥ ۵ معامله در روز', best: 'S36: ۴.۲۴ (رکورد پروژه)', ok: false },
+    { name: 'هر ۴ قید هم‌زمان', best: 'روی OHLCV صرف: برآورده نشد (L21)', ok: false },
+  ];
+  const goalRows = goals.map(g => `
+    <div class="flex items-center justify-between py-2 border-b border-slate-800/60 text-sm">
+      <span class="flex items-center gap-2">
+        <i class="fas ${g.ok ? 'fa-circle-check text-emerald-400' : 'fa-circle-xmark text-amber-400'}"></i>
+        <span class="text-slate-200">${g.name}</span>
+      </span>
+      <span class="text-xs text-slate-400 text-left">${g.best}</span>
+    </div>`).join('');
+
+  // قوانین بنیادی کشف‌شده (تقطیر ۴۲ استراتژی)
+  const laws = [
+    ['L1', 'اطلاعات > معماری — فقط دادهٔ ورودی جدید سقف را جابه‌جا می‌کند.'],
+    ['L7', 'سقف WR با OHLCV صرفِ M15: ~۶۶–۶۸٪ (فرکانس کم)، ~۶۲–۶۳٪ (فرکانس بالا).'],
+    ['L15', 'دیوار هم‌ارزی WR↔PF: کوچک‌کردن TP، WR را بالا می‌برد ولی PF را دقیقاً به همان نسبت پایین.'],
+    ['L17', 'edge در رژیم پرنوسان ~۷× قوی‌تر — بهترین اهرم PF/exp پروژه (S38).'],
+    ['L20/L21', 'مرز پارتوی WR↔PF↔فرکانس: این سه هرگز هم‌زمان روی داده صرف برآورده نشدند.'],
+  ];
+  const lawRows = laws.map(([id, t]) => `
+    <div class="flex gap-2 py-1.5 text-xs border-b border-slate-800/40">
+      <span class="font-mono font-bold text-cyan-300 shrink-0">${id}</span>
+      <span class="text-slate-300 leading-5">${t}</span>
+    </div>`).join('');
+
+  return `
+  <section id="research-status" class="card p-5 mb-4">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+      <h2 class="text-lg font-bold"><i class="fas fa-flask-vial text-violet-400"></i> وضعیت تحقیق علمی — به‌روز تا استراتژی ۴۲</h2>
+      <span class="text-[11px] px-2 py-0.5 rounded-md bg-violet-500/15 text-violet-300">۴۲ استراتژی • ۲۱ قانون کشف‌شده</span>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-5">
+      <div>
+        <h3 class="text-sm font-bold text-slate-200 mb-2"><i class="fas fa-bullseye text-amber-400"></i> پیشرفت نسبت به هدف سه‌گانهٔ کاربر</h3>
+        ${goalRows}
+        <p class="text-[11px] text-slate-500 mt-2 leading-5">
+          هر قید به‌تنهایی حل شد، اما <b class="text-amber-300">هر چهار قید هم‌زمان</b> روی دادهٔ صرف OHLCV
+          برآورده نشد (قانون L21 — انحصار متقابل). این یک نتیجهٔ علمی معتبر است، نه شکست مهندسی.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-sm font-bold text-slate-200 mb-2"><i class="fas fa-scale-balanced text-cyan-400"></i> قوانین بنیادی کشف‌شده</h3>
+        ${lawRows}
+      </div>
+    </div>
+
+    <div class="mt-4 bg-slate-800/40 rounded-lg p-3 text-xs text-slate-300 leading-6">
+      <b class="text-emerald-300"><i class="fas fa-route"></i> مسیر باقی‌مانده برای عبور از سقف:</b>
+      تنها راهِ اثبات‌شده برای برآوردنِ هم‌زمانِ هر چهار قید، افزودن <b>دادهٔ برون‌زای جهت‌دار</b>
+      (گروه G — شاخص دلار DXY، بازده اوراق US10Y، تقویم اخبار) است — که هم‌اکنون در پنل «بین‌بازاری»
+      و «تقویم اخبار» همین صفحه به‌صورت زنده دریافت و نمایش داده می‌شود.
+    </div>
+  </section>`;
 }
 
 function srRow(label, lvl, price, color) {
