@@ -125,6 +125,55 @@ def build_features(df):
     rng = (high - low).replace(0, np.nan)
     f['close_pos_in_range'] = (close - low) / rng
 
+    # --- ویژگی‌های زمانی هفتگی (mean-reversion هفتگی، استراتژی ۲۵) ---
+    # پایه علمی: corr(early_move[Mon-Wed], thu_fri_chg) = -0.217, p<0.001
+    # early_atr و weekly_rev قوی‌ترین feature های زمانی شدند (رتبه #1 و #9 از ۵۹).
+    f = _add_weekly_reversion_features(df, f, atr)
+
+    return f
+
+
+def _add_weekly_reversion_features(df, f, atr):
+    """
+    دو feature زمانی می‌سازد:
+      early_atr  : حرکت اوایل هفته (open دوشنبه تا close چهارشنبه) نرمال‌شده با ATR روزانه.
+      weekly_rev : «فشار برگشت هفتگی» = -sign(early)*|early_atr|*day_weight
+                   (در Thu/Fri وزن بالاتر، چون اثر برگشت آنجا قوی‌تر است).
+    هر دو فقط از اطلاعات گذشته/جاری هفته استفاده می‌کنند (no look-ahead:
+    early_move تا پایان چهارشنبه قطعی است و برای Thu/Fri در دسترس).
+    """
+    dt = df['dt']
+    dow = dt.dt.dayofweek
+    date = dt.dt.date
+    iso = dt.dt.isocalendar()
+    iso_year = iso['year'].values
+    iso_week = iso['week'].values
+
+    tmp = pd.DataFrame({'date': date, 'dow': dow.values,
+                        'open': df['open'].values, 'close': df['close'].values,
+                        'iy': iso_year, 'iw': iso_week})
+    daily = tmp.groupby('date').agg(dow=('dow', 'first'),
+                                    d_open=('open', 'first'),
+                                    d_close=('close', 'last'),
+                                    iy=('iy', 'first'),
+                                    iw=('iw', 'first')).reset_index()
+    early_map = {}
+    for (yr, wk), g in daily.groupby(['iy', 'iw']):
+        g = g.sort_values('date')
+        e = g[g['dow'].isin([0, 1, 2])]
+        if len(e) == 0:
+            continue
+        early_map[(yr, wk)] = e['d_close'].iloc[-1] - e['d_open'].iloc[0]
+    key = list(zip(iso_year, iso_week))
+    early = np.array([early_map.get(k, np.nan) for k in key])
+
+    atr_daily = atr.rolling(96).mean().values
+    early_atr = early / (atr_daily + 1e-9)
+    day_w = dow.map({0: 0.2, 1: 0.3, 2: 0.5, 3: 1.0, 4: 0.9, 5: 0.0, 6: 0.0}).values
+    weekly_rev = -np.sign(early) * np.clip(np.abs(early_atr), 0, 3) * day_w
+
+    f['early_atr'] = early_atr
+    f['weekly_rev'] = weekly_rev
     return f
 
 
