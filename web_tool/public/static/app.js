@@ -377,50 +377,90 @@ function renderOnnx(s, nCandles) {
   const sec = document.getElementById('onnx-signal');
   tmLastModelProb = s.probabilityPct;   // برای هم‌سو/مخالف بودن با معاملهٔ کاربر
   const isLong = s.direction === 'LONG';
+  const isShort = s.direction === 'SHORT';
   sec.classList.toggle('glow-up', isLong);
-  const pColor = s.probability >= 0.75 ? 'emerald' : s.probability >= s.threshold ? 'amber' : 'slate';
+  sec.classList.toggle('glow-down', isShort);
+  const pColor = s.regime === 'range' ? 'slate'
+    : s.probability >= s.threshold + 0.07 ? (isShort ? 'red' : 'emerald')
+    : s.probability >= s.threshold ? 'amber' : 'slate';
   const pct = s.probabilityPct;
   const thrPct = (s.threshold * 100).toFixed(0);
-  body.innerHTML = `
-    <div class="flex flex-wrap items-center gap-2 mb-3">
-      ${isLong
-        ? badge('سیگنال مدل: LONG (خرید)', 'bg-emerald-500/25 text-emerald-300')
-        : badge('سیگنال مدل: بدون ورود', 'bg-slate-600/40 text-slate-300')}
-      ${confLabel(s.confidence)}
-      ${badge(s.regimeOk ? 'رژیم صعودی ✓' : 'خارج از رژیم', s.regimeOk ? 'bg-emerald-500/15 text-emerald-300' : 'bg-slate-600/40 text-slate-300')}
-      ${badge('استراتژی S25 (۵۹ feature)', 'bg-violet-500/20 text-violet-200')}
+
+  // نشان رژیم/مغز فعال
+  const regimeMap = {
+    bull: { txt: 'روند صعودی — مغز صعودی (S25) فعال', cls: 'bg-emerald-500/20 text-emerald-300', icon: 'fa-arrow-trend-up' },
+    bear: { txt: 'روند نزولی — مغز نزولی (S31) فعال', cls: 'bg-red-500/20 text-red-300', icon: 'fa-arrow-trend-down' },
+    range: { txt: 'بازار رنج — همهٔ مغزها غیرفعال', cls: 'bg-slate-600/40 text-slate-300', icon: 'fa-arrows-left-right' },
+  };
+  const rg = regimeMap[s.regime] || regimeMap.range;
+
+  // بنر توضیح مغز فعال (پاسخ به User Note)
+  let brainInfo = '';
+  if (s.regime === 'bull') {
+    brainInfo = `<i class="fas fa-flask text-violet-300"></i> <b>مغز صعودی (S25)</b> — بک‌تست OOS:
+      WR=<b class="text-emerald-300">۶۲.۳٪</b> • Exp=<b class="text-emerald-300">+۰.۵۴$</b> • p=<b class="text-emerald-300">۰.۰۱۵</b> • فقط LONG.`;
+  } else if (s.regime === 'bear') {
+    brainInfo = `<i class="fas fa-flask text-violet-300"></i> <b>مغز نزولی (S31)</b> — بک‌تست OOS:
+      PF=<b class="text-red-300">۱.۴۹</b> • Exp=<b class="text-red-300">+۱.۷۱$</b> • WR=<b class="text-amber-300">۵۸.۴٪</b> • p=<b class="text-emerald-300">۰.۰۱۵</b> • فقط SHORT.
+      این مغز پاسخ مستقیم به درخواست شماست: دیگر در روند نزولی سکوت نمی‌کنیم.`;
+  } else {
+    brainInfo = `<i class="fas fa-circle-info text-slate-300"></i> در رنج، تحقیق (استراتژی ۳۲) نشان داد هیچ مغزی edge پایدار ندارد؛
+      <b>تصمیم علمیِ صحیح = عدم معامله</b> تا شکل‌گیری روند.`;
+  }
+
+  const sigBadge = isLong ? badge('سیگنال: LONG (خرید)', 'bg-emerald-500/25 text-emerald-300')
+    : isShort ? badge('سیگنال: SHORT (فروش)', 'bg-red-500/25 text-red-300')
+    : badge('سیگنال: بدون ورود', 'bg-slate-600/40 text-slate-300');
+
+  // کارت ورود/TP/SL
+  let tradeCard = '';
+  if (isLong || isShort) {
+    const tpCls = 'bg-emerald-900/30', tpTxt = 'text-emerald-300', tpLbl = 'text-emerald-400';
+    tradeCard = `
+    <div class="grid grid-cols-3 gap-3 text-center">
+      <div class="bg-slate-800/60 rounded-lg p-3"><p class="text-xs text-slate-400">ورود</p><p class="font-bold">$${fmt(s.entry)}</p></div>
+      <div class="${tpCls} rounded-lg p-3"><p class="text-xs ${tpLbl}">TP</p><p class="font-bold ${tpTxt}">$${fmt(s.tp)}</p></div>
+      <div class="bg-red-900/30 rounded-lg p-3"><p class="text-xs text-red-400">SL</p><p class="font-bold text-red-300">$${fmt(s.sl)}</p></div>
     </div>
-    <div class="text-[11px] text-slate-400 bg-slate-800/40 rounded-md px-3 py-2 mb-3 leading-5">
-      <i class="fas fa-flask text-violet-300"></i> عملکرد بک‌تست استراتژی برندهٔ <b>S25 (ML + Weekly-Reversion)</b> روی داده‌ی OOS:
-      WR=<b class="text-emerald-300">۶۲.۳٪</b> • Expectancy=<b class="text-emerald-300">+۰.۵۴$</b> •
-      p-value=<b class="text-emerald-300">۰.۰۱۵</b> (معنادار) • ~۶ معامله/روز.
-      دو feature زمانی جدید <code>early_atr</code> و <code>weekly_rev</code> قوی‌ترین سیگنال‌های مدل‌اند.
-    </div>
+    <p class="text-xs text-slate-500 mt-2 text-center">${s.rr}</p>`;
+  } else {
+    tradeCard = `
+    <div class="bg-slate-800/40 rounded-lg p-3 text-center text-slate-300 text-sm">
+      <i class="fas fa-hourglass-half"></i> ${s.reason || 'مدل سیگنال ورود نمی‌دهد.'}
+    </div>`;
+  }
+
+  // نوار احتمال (فقط وقتی مغزی فعال است)
+  let probBar = '';
+  if (s.regime !== 'range') {
+    probBar = `
     <div class="mb-3">
       <div class="flex justify-between text-sm mb-1">
-        <span class="text-slate-400">احتمال مدل (ensemble ۳ مدل) — کلاس «برد»</span>
+        <span class="text-slate-400">احتمال مغزِ فعال (ensemble ۳ مدل) — کلاس «برد»</span>
         <span class="font-bold text-${pColor}-400">${fmt(pct,2)}%</span>
       </div>
       <div class="bar-bg h-3 relative">
         <div class="h-full bg-${pColor}-500 transition-all" style="width:${pct}%"></div>
         <div class="absolute top-0 bottom-0" style="left:${thrPct}%; width:2px; background:#f1f5f9" title="آستانه ${thrPct}%"></div>
       </div>
-      <p class="text-[11px] text-slate-500 mt-1">آستانهٔ تصمیم مدل = ${thrPct}٪ (خط سفید). ورود فقط وقتی احتمال ≥ آستانه و رژیم صعودی باشد.</p>
+      <p class="text-[11px] text-slate-500 mt-1">آستانهٔ تصمیم = ${thrPct}٪ (خط سفید). ورود فقط وقتی احتمال ≥ آستانه باشد.</p>
+    </div>`;
+  }
+
+  body.innerHTML = `
+    <div class="flex flex-wrap items-center gap-2 mb-3">
+      ${sigBadge}
+      ${confLabel(s.confidence)}
+      ${badge(`<i class="fas ${rg.icon} mr-1"></i>${rg.txt}`, rg.cls)}
     </div>
-    ${isLong ? `
-    <div class="grid grid-cols-3 gap-3 text-center">
-      <div class="bg-slate-800/60 rounded-lg p-3"><p class="text-xs text-slate-400">ورود</p><p class="font-bold">$${fmt(s.entry)}</p></div>
-      <div class="bg-emerald-900/30 rounded-lg p-3"><p class="text-xs text-emerald-400">TP</p><p class="font-bold text-emerald-300">$${fmt(s.tp)}</p></div>
-      <div class="bg-red-900/30 rounded-lg p-3"><p class="text-xs text-red-400">SL</p><p class="font-bold text-red-300">$${fmt(s.sl)}</p></div>
+    <div class="text-[11px] text-slate-400 bg-slate-800/40 rounded-md px-3 py-2 mb-3 leading-5">
+      ${brainInfo}
     </div>
-    <p class="text-xs text-slate-500 mt-2 text-center">${s.rr}</p>
-    ` : `
-    <div class="bg-slate-800/40 rounded-lg p-3 text-center text-slate-300 text-sm">
-      <i class="fas fa-hourglass-half"></i> مدل سیگنال ورود نمی‌دهد ${s.regimeOk ? `(احتمال مدل ${fmt(pct,1)}٪ < آستانهٔ ${thrPct}٪)` : '(بازار خارج از رژیم صعودی)'}.
-    </div>`}
+    ${probBar}
+    ${tradeCard}
     <p class="text-[11px] text-slate-500 mt-3 leading-5">
-      <i class="fas fa-circle-check text-cyan-400"></i> این خروجی از اجرای مستقیم فایل‌های <code>xauusd_s25_model_{0,1,2}.onnx</code>
-      با <code>onnxruntime-web</code> روی ${nCandles} کندل M15 محاسبه شده و <b>دقیقاً معادل منطق ربات MT5</b> است (parity ~۹۹.۶٪).
+      <i class="fas fa-circle-check text-cyan-400"></i> روتر سه‌مغزی: ابتدا روند تشخیص داده می‌شود، سپس مغز تخصصیِ همان روند
+      (فایل‌های ONNX واقعی با <code>onnxruntime-web</code>) روی ${nCandles} کندل M15 اجرا می‌شود.
     </p>`;
 }
 
@@ -563,7 +603,14 @@ function checkOpportunity(sig) {
     const key = 'LONG-' + (sig.entry ? sig.entry.toFixed(1) : '');
     sendNotification(
       '🟢 فرصت خرید طلا (XAUUSD)',
-      `سیگنال LONG مدل ربات — احتمال ${sig.probabilityPct}٪. ورود $${(sig.entry||0).toFixed(2)} | TP $${(sig.tp||0).toFixed(2)} | SL $${(sig.sl||0).toFixed(2)}`,
+      `سیگنال LONG (مغز صعودی S25) — احتمال ${sig.probabilityPct}٪. ورود $${(sig.entry||0).toFixed(2)} | TP $${(sig.tp||0).toFixed(2)} | SL $${(sig.sl||0).toFixed(2)}`,
+      key
+    );
+  } else if (sig.direction === 'SHORT') {
+    const key = 'SHORT-' + (sig.entry ? sig.entry.toFixed(1) : '');
+    sendNotification(
+      '🔴 فرصت فروش طلا (XAUUSD)',
+      `سیگنال SHORT (مغز نزولی S31) — احتمال ${sig.probabilityPct}٪. ورود $${(sig.entry||0).toFixed(2)} | TP $${(sig.tp||0).toFixed(2)} | SL $${(sig.sl||0).toFixed(2)}`,
       key
     );
   }
