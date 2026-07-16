@@ -1,0 +1,26 @@
+بارگذاری داده و ساخت feature ...
+کاندید long (uptrend): 55512  |  کاندید short (downtrend): 43415
+ساخت featureهای تأییدِ چند-جفت‌ارزی ...
+
+آموزش ensemble ۳-seed برای جریانِ LONG ...
+آموزش ensemble ۳-seed برای جریانِ SHORT ...
+
+سیگنال‌ها: L=3470  Lf=8305  S=2882
+
+================ جریان‌های منفرد (خروجِ پویا) ================
+  L  (long thr0.68) : n=1010 WR=62.28% exp=+1.391$ PF=1.554 pnl=+1405$ | tpd=0.61
+         روزانه: win_days=55.7% avg=+3.36$ sharpe=0.208 dPF=2.06 tpd_cal=0.76
+  Lf (long thr0.60) : n=2087 WR=59.56% exp=+0.691$ PF=1.280 pnl=+1442$ | tpd=1.26
+         روزانه: win_days=50.4% avg=+2.55$ sharpe=0.140 dPF=1.60 tpd_cal=1.57
+  S  (short thr0.66): n=997 WR=58.58% exp=+0.720$ PF=1.242 pnl=+718$ | tpd=0.60
+         روزانه: win_days=47.1% avg=+1.88$ sharpe=0.093 dPF=1.49 tpd_cal=0.69
+
+================ پرتفویِ ادغام‌شده ================
+  L+S       (long+short)   : n=2007 WR=60.44% exp=+1.057$ PF=1.386 pnl=+2122$ | tpd=1.21
+         روزانه: win_days=52.7% avg=+2.84$ sharpe=0.150 dPF=1.78 tpd_cal=1.39
+  Lf+S      (long_freq+short): n=3084 WR=59.24% exp=+0.700$ PF=1.266 pnl=+2160$ | tpd=1.85
+         روزانه: win_days=50.5% avg=+2.49$ sharpe=0.126 dPF=1.58 tpd_cal=2.14
+  Lf        (فقط long_freq)  : n=2087 WR=59.56% exp=+0.691$ PF=1.280 pnl=+1442$ | tpd=1.26
+         روزانه: win_days=50.4% avg=+2.55$ sharpe=0.140 dPF=1.60 tpd_cal=1.57
+
+تمام.
