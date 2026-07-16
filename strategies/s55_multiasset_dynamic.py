@@ -94,6 +94,7 @@ def run_asset(a, probas):
     cS = (c < ema50) & (ema50 < ema200) & ~np.isnan(atr.values)
     atr_mean = np.nanmean(atr.values)
     spread = SPREAD_ATR * atr_mean       # اسپردِ دلاری هم‌مقیاسِ ATR
+    be_off = 0.10 * atr_mean             # بریک‌ایون‌آفست باید هم‌مقیاسِ ATR باشد (نه ۰.۱۵$ ثابتِ طلا!)
     frames = []
     for d, cand in [('long', cL), ('short', cS)]:
         p = probas[f'{a}_{d}']
@@ -103,7 +104,7 @@ def run_asset(a, probas):
         _stats, tr = run_multistep_backtest(df, entries, d, atr,
                                     sl_mult=SL_M, tp_mults=(0.8, 1.5, 2.5),
                                     tp_fracs=(0.34, 0.33, 0.33), trail_mult=1.5,
-                                    be_offset=0.15, spread=spread, max_hold=200,
+                                    be_offset=be_off, spread=spread, max_hold=200,
                                     allow_overlap=False)
         if len(tr) == 0: continue
         tr = tr.copy()
