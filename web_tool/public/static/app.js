@@ -174,6 +174,22 @@ function renderEntry(a, d) {
         <span>ریسک به ریوارد: ${d.rr || '—'}</span>
         <span>احتمالِ مدل: ${fmt(d.probability, 1)}%</span>
       </div>
+      ${d.sizing ? `
+      <div class="mt-3 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-amber-300 font-bold"><i class="fas fa-coins ml-1"></i>حجمِ پیشنهادی (اهرمِ سودِ خالص)</span>
+          <span class="text-sm font-extrabold text-amber-200 tabular-nums">${d.sizing.label}</span>
+        </div>
+        <p class="text-[11px] text-amber-100/70 leading-relaxed mt-1">${d.sizing.note}</p>
+      </div>` : ''}
+      ${d.tpPlan ? `
+      <div class="mt-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-2.5">
+        <div class="flex items-center justify-between">
+          <span class="text-xs text-emerald-300 font-bold"><i class="fas fa-bullseye ml-1"></i>هدفِ سودِ رژیم-محور</span>
+          <span class="text-sm font-extrabold text-emerald-200 tabular-nums" dir="ltr">${d.tpPlan.multiplier}×ATR</span>
+        </div>
+        <p class="text-[11px] text-emerald-100/70 leading-relaxed mt-1">${d.tpPlan.note}</p>
+      </div>` : ''}
     </div>
     ${renderIndicators(d)}
     <button class="btn-register mt-3 w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-white transition"
