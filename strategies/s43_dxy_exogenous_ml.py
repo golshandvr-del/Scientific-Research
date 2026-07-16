@@ -18,7 +18,7 @@ featureهای DXY (همه بدون look-ahead، هم‌ترازِ merge_asof bac
 
 هدف: آیا DXY، WR/PF/expectancy را نسبت به S25 خالص بهبود می‌دهد؟
 """
-import sys; sys.path.insert(0, 'engine')
+import sys, gc; sys.path.insert(0, 'engine')
 import numpy as np, pandas as pd
 import lightgbm as lgb
 from scipy import stats
@@ -83,21 +83,26 @@ print(f"کاندید پایه (uptrend long): {int(cand.sum())}")
 base_cols=list(feats_s25.columns)          # S25 خالص
 aug_cols =base_cols+exo_cols                # + DXY
 
-def walk_forward(feature_df, fc, seed=42):
+def walk_forward(feature_df, fc, seed=42, keep_last=False):
     y=make_target(df,HZ,TP_M,SL_M,atr,'long')
-    data=feature_df.copy(); data['y']=y; data['cand']=cand
+    data=feature_df[fc].copy(); data['y']=y; data['cand']=cand
     valid=data.dropna(subset=fc+['y']); valid=valid[valid['cand']]
-    X=valid[fc].values; Y=valid['y'].values.astype(int); idx=valid.index.values
+    X=valid[fc].values.astype(np.float32); Y=valid['y'].values.astype(int); idx=valid.index.values
+    del data, valid; gc.collect()
     N=len(X); mt=int(N*MIN_TRAIN_FRAC); fold=(N-mt)//N_FOLDS
-    proba=np.full(n,np.nan)
+    proba=np.full(n,np.nan); last_m=None
     for k in range(N_FOLDS):
         tr_end=mt+k*fold; te_end=tr_end+fold if k<N_FOLDS-1 else N
         m=lgb.LGBMClassifier(n_estimators=500,learning_rate=0.025,num_leaves=32,
             max_depth=6,subsample=0.8,colsample_bytree=0.75,min_child_samples=80,
-            reg_lambda=2.0,random_state=seed,verbose=-1)
+            reg_lambda=2.0,random_state=seed,verbose=-1,n_jobs=1)
         m.fit(X[:tr_end],Y[:tr_end])
         proba[idx[tr_end:te_end]]=m.predict_proba(X[tr_end:te_end])[:,1]
-    return proba, m
+        if keep_last and k==N_FOLDS-1: last_m=m
+        else: del m
+        gc.collect()
+    del X,Y; gc.collect()
+    return proba, last_m
 
 def evaluate(proba, label):
     ent=cand & ~np.isnan(proba) & (proba>=THRESH)
@@ -120,10 +125,16 @@ print("\n=== A/B با ensemble 3-seed (baseline S25 در برابر augmented +D
 last_model=None
 for label, fdf, cols in [('BASELINE (S25)      ', feats_s25, base_cols),
                           ('AUGMENTED (+DXY)    ', feats_aug, aug_cols)]:
-    outs=[walk_forward(fdf,cols,seed=s) for s in SEEDS]
-    probas=[o[0] for o in outs]; last_model=outs[-1][1]
-    ens=np.nanmean(np.vstack(probas),axis=0)
+    ens=np.zeros(n); cnt=np.zeros(n)
+    for si,sd in enumerate(SEEDS):
+        keep = (label.strip().startswith('AUGMENTED') and si==len(SEEDS)-1)
+        pr,m=walk_forward(fdf,cols,seed=sd,keep_last=keep)
+        if keep: last_model=m
+        mask=~np.isnan(pr); ens[mask]+=pr[mask]; cnt[mask]+=1
+        del pr; gc.collect()
+    ens=np.where(cnt>0, ens/np.maximum(cnt,1), np.nan)
     evaluate(ens,label)
+    gc.collect()
 
 # اهمیت featureها (از آخرین مدل augmented)
 print("\n=== رتبهٔ اهمیت featureهای DXY در مدل augmented ===")
