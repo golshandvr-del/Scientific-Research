@@ -44,10 +44,11 @@
 | ۱۳ | Range BB Mean-Reversion Scalp | `Range_BB_MeanReversion_Scalp_58.md` | ۵۸٪ | ~۵۰۰۰ | ❌ exp منفی (درس متد) |
 | ۱۴ | **⭐ VWAP-Regime Selective ML (BE60)** | `VWAP_Regime_Selective_ML_BE60_62.md` | **۶۱.۶٪** | ۱۹۴۷ | ✅ **هدف کاربر: WR>60 + سودآور + ۵.۳ معامله/روز** |
 | ۲۰ | **Squeeze-Breakout + Chandelier Trailing** | `Squeeze_Chandelier_TrailingExit_30.md` | ۳۰٪ (سودآور) / ۶۰٪ (exp≈۰) | ۲۳۰۲ | ❌ WR↔exp↔فرکانس هم‌زمان برآورده نشد؛ سود وابسته به رژیم |
+| ۲۱ | **Session Opening-Range Breakout + Coiled-Spring** | `Session_ORB_CoiledSpring_47.md` | ۴۷٪ (معنادار) / تا ۷۴٪ (تله‌ی RR) | ۱۴۵–۱۶۴۵ | ❌ WR بالا فقط با RR نامتقارن؛ exp مثبت فقط با فرکانس ۰.۰۹/روز |
 
 ## کشف بنیادی پروژه ⭐
-پس از ۱۲+ استراتژی از چهار مسیر مستقل (آماری، یادگیری ماشین، اکشن قیمت، و
-نوسان/trailing-exit):
+پس از ۱۳+ استراتژی از پنج مسیر مستقل (آماری، یادگیری ماشین، اکشن قیمت،
+نوسان/trailing-exit، و breakout زمان‌محورِ سشن):
 
 > **سقف Win Rate آماری-معنادار (p<0.05، n بزرگ) با داده‌ی صرف OHLCV روی XAUUSD M15
 > حدود ۶۶–۶۸٪ است.** این بازتاب مستقیم کارایی نیمه‌قوی این بازار است.
