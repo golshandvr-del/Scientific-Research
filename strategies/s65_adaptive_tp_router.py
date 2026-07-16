@@ -132,21 +132,46 @@ def evaluate(direction, entries, weights, tp_mult_arr, sl_s):
 
 print("=== S65: Adaptive-TP Rolling Router (معیار: سودِ خالص) ===\n", flush=True)
 
-def run_config(name, adaptive_tp, use_kelly):
+def eval_curve(direction, entries, weights, tp_mult_arr, sl_s):
+    s = entries & eval_mask
+    tp_series = np.where(tp_mult_arr > 0, tp_mult_arr * atrv, atrv)
+    st, tr = run_backtest(df, s, None, None, direction, spread=SPREAD, max_hold=HZ,
+                          sl_series=sl_s, tp_series=tp_series)
+    if len(tr) == 0:
+        return pd.DataFrame(columns=['exit_bar', 'pnl'])
+    w = weights[tr['signal_bar'].values]; w[w == 0] = 1.0
+    out = tr[['exit_bar']].copy(); out['pnl'] = tr['pnl'].values * w
+    return out
+
+def risk_stats(curve):
+    if len(curve) == 0: return 0.0, 0.0
+    c = curve.sort_values('exit_bar'); eq = c['pnl'].cumsum().values
+    dd = (eq - np.maximum.accumulate(eq)).min()
+    r = c['pnl'].values
+    sh = (r.mean() / r.std() * np.sqrt(len(r))) if r.std() > 0 else 0.0
+    return dd, sh
+
+def run_config(name, adaptive_tp, use_kelly, show_risk=False):
     eL, wL_, tpL_, _ = build_router('long', labL, slL, TP_CANDS_L, adaptive_tp, use_kelly)
     eS, wS_, tpS_, _ = build_router('short', labS, slS, TP_CANDS_S, adaptive_tp, use_kelly)
     pL_, nL_, wrL_ = evaluate('long', eL, wL_, tpL_, slL)
     pS_, nS_, wrS_ = evaluate('short', eS, wS_, tpS_, slS)
     tot = pL_ + pS_; nn = nL_ + nS_
     wr = (wrL_ * nL_ + wrS_ * nS_) / nn if nn else 0
-    print(f"{name:44s} n={nn:5d}  WR={wr:5.1f}%  سودِخالص={tot:9.1f}$", flush=True)
+    line = f"{name:44s} n={nn:5d}  WR={wr:5.1f}%  سودِخالص={tot:9.1f}$"
+    if show_risk:
+        curve = pd.concat([eval_curve('long', eL, wL_, tpL_, slL),
+                           eval_curve('short', eS, wS_, tpS_, slS)])
+        dd, sh = risk_stats(curve)
+        line += f"  MaxDD={dd:8.1f}$  Sharpe={sh:.2f}  سود/|DD|={tot/abs(dd) if dd else 0:.2f}"
+    print(line, flush=True)
     return tot
 
 print(f"baseline S63 (TP ثابت، حجمِ ثابت) = {BASELINE_S63:.0f}$", flush=True)
 print(f"baseline S64 (TP ثابت، حجمِ Kelly) = {BASELINE_S64:.0f}$\n", flush=True)
 
-p_tponly = run_config('TP تطبیقی + حجمِ ثابت', True, False)
-p_full = run_config('★ S65: TP تطبیقی + حجمِ Kelly', True, True)
+p_tponly = run_config('TP تطبیقی + حجمِ ثابت', True, False, show_risk=True)
+p_full = run_config('★ S65: TP تطبیقی + حجمِ Kelly', True, True, show_risk=True)
 
 print(f"\nاثرِ تنهای TP تطبیقی (بر S63): {p_tponly - BASELINE_S63:+.1f}$ "
       f"({(p_tponly/BASELINE_S63-1)*100:+.1f}%)", flush=True)
