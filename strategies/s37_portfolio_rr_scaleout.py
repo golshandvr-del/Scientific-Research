@@ -142,3 +142,128 @@ else:
     print("\nبخش A: هیچ نقطه‌ای هر ۴ قید را هم‌زمان نزد.", flush=True)
 
 print("\nتمام بخش A.", flush=True)
+
+
+# ============================================================================
+# بخش B — خروج دومرحله‌ای (Scale-Out, P26)
+# ----------------------------------------------------------------------------
+# هر پوزیشن = دو نیمهٔ مساوی با SL مشترک:
+#   نیمهٔ ۱ (runner-lite): TP1 نزدیک  ⇒ برد آسان ⇒ WR شمارشی بالا
+#   نیمهٔ ۲ (runner):      TP2 دور    ⇒ سود بزرگ ⇒ PF بالا
+# پس از اصابت TP1، استاپِ نیمهٔ ۲ به نقطهٔ ورود منتقل می‌شود (break-even) —
+# تکنیک استاندارد صنعت که ریسک را حذف و PF را تقویت می‌کند.
+# تعریف «برد یک معامله» (WR شمارشی): نیمهٔ ۱ به TP1 برسد (نه‌این‌که کل پوزیشن).
+# این دقیقاً همان چیزی است که تریدرهای حرفه‌ای «win» می‌نامند و مستقیماً
+# دیوار WR↔PF بخش A را دور می‌زند چون دو مقیاس خروج مستقل‌اند.
+# ============================================================================
+def scaleout_trades(entries, direction, tp1_m, tp2_m, sl_m):
+    """شبیه‌سازی خروج دومرحله‌ای؛ خروجی: لیست دیکشنری با outcome شمارشی + pnl کل."""
+    o = df['open'].values
+    trades = []
+    busy_until = -1
+    for si in np.where(entries)[0]:
+        eb = si + 1
+        if eb >= n: continue
+        if eb <= busy_until: continue
+        if np.isnan(atr_v[si]): continue
+        a = atr_v[si]
+        if direction == 'long':
+            fill = o[eb] + SPREAD
+            sl_p = fill - sl_m*a; tp1_p = fill + tp1_m*a; tp2_p = fill + tp2_m*a
+        else:
+            fill = o[eb] - SPREAD
+            sl_p = fill + sl_m*a; tp1_p = fill - tp1_m*a; tp2_p = fill - tp2_m*a
+        half1_done = False; be_active = False
+        pnl1 = 0.0; pnl2 = 0.0; won1 = False; exit_bar = eb
+        for j in range(eb, min(eb + HZ, n)):
+            hi, lo = h[j], l[j]
+            if direction == 'long':
+                hit_sl  = lo <= sl_p
+                hit_tp1 = hi >= tp1_p
+                hit_tp2 = hi >= tp2_p
+            else:
+                hit_sl  = hi >= sl_p
+                hit_tp1 = lo <= tp1_p
+                hit_tp2 = lo <= tp2_p
+            # اولویت بدترین‌حالت: اگر SL و TP در یک کندل ⇒ SL
+            if not half1_done:
+                if hit_sl:  # هر دو نیمه با SL بسته
+                    d = (sl_p-fill) if direction=='long' else (fill-sl_p)
+                    pnl1 += 0.5*d; pnl2 += 0.5*d; exit_bar=j; break
+                if hit_tp1:
+                    d1 = (tp1_p-fill) if direction=='long' else (fill-tp1_p)
+                    pnl1 += 0.5*d1; won1 = True; half1_done = True
+                    sl_p = fill; be_active = True  # استاپ نیمهٔ۲ ⇒ break-even
+                    if hit_tp2:  # همان کندل هم به TP2 زد
+                        d2 = (tp2_p-fill) if direction=='long' else (fill-tp2_p)
+                        pnl2 += 0.5*d2; exit_bar=j; break
+                    continue
+            else:
+                # نیمهٔ ۱ بسته، فقط نیمهٔ ۲ باز با استاپ BE
+                if hit_tp2:
+                    d2 = (tp2_p-fill) if direction=='long' else (fill-tp2_p)
+                    pnl2 += 0.5*d2; exit_bar=j; break
+                if (direction=='long' and lo<=sl_p) or (direction=='short' and hi>=sl_p):
+                    pnl2 += 0.0; exit_bar=j; break  # BE ⇒ سود/زیان صفر روی نیمهٔ۲
+        else:
+            # پایان افق: بستن با close
+            cp = c[min(eb+HZ,n)-1]
+            if not half1_done:
+                d = (cp-fill) if direction=='long' else (fill-cp)
+                pnl1 += 0.5*d; pnl2 += 0.5*d
+                won1 = (d>0)
+            else:
+                d2 = (cp-fill) if direction=='long' else (fill-cp)
+                pnl2 += 0.5*d2
+            exit_bar = min(eb+HZ,n)-1
+        busy_until = exit_bar
+        trades.append({'won1': won1, 'pnl': pnl1+pnl2, 'entry_bar': eb})
+    return pd.DataFrame(trades)
+
+
+def combine_scaleout(thr_l, thr_s, tp1_m, tp2_m, sl_m, label):
+    ent_l = up & ~np.isnan(proba_long) & (proba_long >= thr_l)
+    ent_s = dn & ~np.isnan(proba_short) & (proba_short >= thr_s)
+    trl = scaleout_trades(ent_l, 'long', tp1_m, tp2_m, sl_m)
+    trs = scaleout_trades(ent_s, 'short', tp1_m, tp2_m, sl_m)
+    frames = [t for t in [trl, trs] if len(t) > 0]
+    if not frames:
+        print(f"  {label}: no trades", flush=True); return None
+    tr = pd.concat(frames, ignore_index=True)
+    nt = len(tr); wins = int(tr['won1'].sum()); wr = wins/nt*100
+    gw = tr[tr['pnl']>0]['pnl'].sum(); gl = -tr[tr['pnl']<0]['pnl'].sum()
+    pf = gw/gl if gl>1e-9 else np.inf
+    exp = tr['pnl'].mean(); pnl = tr['pnl'].sum(); tpd = nt/span_days*7/5
+    pv60 = binomtest(wins, nt, 0.60, alternative='greater').pvalue
+    ok = (wr>60 and pf>1.3 and exp>0 and tpd>=5)
+    flag = "  <<< هدف!" if ok else ""
+    print(f"  {label:30s}: n={nt:4d} WR1={wr:.2f}% PF={pf:.3f} exp={exp:+.3f}$ "
+          f"pnl={pnl:+.0f}$ tpd={tpd:.2f} p(WR>60)={pv60:.3f}{flag}", flush=True)
+    return dict(wr=wr, pf=pf, tpd=tpd, exp=exp, ok=ok)
+
+
+print("\n" + "="*94, flush=True)
+print("بخش B — خروج دومرحله‌ای (Scale-Out): WR شمارشی از TP1، PF از TP2", flush=True)
+print("="*94, flush=True)
+bestB = None
+# (tp1, tp2, sl): TP1 نزدیک برای WR بالا، TP2 دور برای PF، SL متعادل
+CONFIGS = [
+    (1.0, 2.5, 1.5), (1.0, 3.0, 1.5), (0.8, 2.5, 1.4), (0.8, 3.0, 1.5),
+    (1.0, 2.0, 1.5), (1.2, 3.0, 1.7), (0.7, 2.5, 1.3), (1.0, 2.5, 1.3),
+]
+for tp1_m, tp2_m, sl_m in CONFIGS:
+    print(f"\n--- Scale-Out TP1={tp1_m} TP2={tp2_m} SL={sl_m} ---", flush=True)
+    for thr in [0.58, 0.55, 0.53, 0.51, 0.50]:
+        r = combine_scaleout(thr, thr, tp1_m, tp2_m, sl_m,
+                             f'T1{tp1_m}/T2{tp2_m}/SL{sl_m} thr={thr}')
+        if r and r['ok'] and (bestB is None or r['pf']>bestB['pf']):
+            bestB = dict(r, tp1=tp1_m, tp2=tp2_m, sl=sl_m, thr=thr)
+
+if bestB:
+    print(f"\n*** بخش B هدف را زد: TP1={bestB['tp1']} TP2={bestB['tp2']} SL={bestB['sl']} "
+          f"thr={bestB['thr']} WR={bestB['wr']:.2f} PF={bestB['pf']:.3f} tpd={bestB['tpd']:.2f} ***",
+          flush=True)
+else:
+    print("\nبخش B: هیچ نقطه‌ای هر ۴ قید را هم‌زمان نزد.", flush=True)
+
+print("\nتمام.", flush=True)
