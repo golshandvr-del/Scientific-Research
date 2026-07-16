@@ -36,8 +36,11 @@ l = df['low'].values
 print(f"داده: {n} کندل XAUUSD M15")
 
 atr = ind.atr(df, 14).values
-adx_df = ind.adx(df, 14)
-adx = adx_df['adx'].values if isinstance(adx_df, pd.DataFrame) else np.asarray(adx_df)
+# ind.adx برمی‌گرداند: (adx, plus_di, minus_di) — عنصرِ اول را می‌گیریم.
+adx_series, plus_di, minus_di = ind.adx(df, 14)
+adx = adx_series.values
+plus_di = plus_di.values
+minus_di = minus_di.values
 
 # آستانهٔ رنج: ADX پایین
 for ADX_TH in (18, 20, 22, 25):
@@ -45,22 +48,41 @@ for ADX_TH in (18, 20, 22, 25):
     print(f"\nADX<{ADX_TH}: {int(np.nansum(range_regime))} کندل ({np.nanmean(range_regime)*100:.1f}%)")
 
 # افقِ سنجشِ حرکتِ مطلوب (کندل)
-HORIZON = 16   # ۴ ساعت
+HORIZON = 24   # ۶ ساعت — کافی برای برگشت به میانهٔ کانال
 EDGE_FRAC = 0.20
 
-def fav_rate(sig_idx, is_long):
-    """نرخِ حرکتِ مطلوب: بعد از سیگنال، آیا قیمت h کندل بعد در جهتِ معامله رفت؟
-       معیارِ ساده: close[i+HORIZON] بهتر از close[i] در جهتِ معامله."""
+def fav_rate(sig_idx, is_long, tp_dist_arr, sl_dist_arr):
+    """معیارِ درست: بعد از ورود در open کندلِ بعد، اول TP خورد یا SL؟
+       (شبیه‌سازیِ ساده‌ی first-touch؛ در ابهامِ یک کندل، محافظه‌کارانه SL).
+       TP/SL بر حسبِ فاصلهٔ ATR (نه drift مطلق) → مستقل از روندِ بلندمدت.
+       این معیار همان چیزی است که drift صعودیِ طلا را خنثی می‌کند."""
     good = 0; tot = 0
     for i in sig_idx:
-        if i + HORIZON >= n:
+        eb = i + 1
+        if eb + HORIZON >= n:
             continue
-        move = c[i + HORIZON] - c[i]
-        if is_long:
-            good += 1 if move > 0 else 0
-        else:
-            good += 1 if move < 0 else 0
-        tot += 1
+        entry = c[i]   # تقریبِ ورود (open کندلِ بعد ≈ close فعلی)
+        tp = tp_dist_arr[i]; sl = sl_dist_arr[i]
+        if tp <= 0 or sl <= 0:
+            continue
+        hit = None
+        for j in range(eb, eb + HORIZON):
+            hi = h[j]; lo = l[j]
+            if is_long:
+                tp_hit = hi >= entry + tp
+                sl_hit = lo <= entry - sl
+            else:
+                tp_hit = lo <= entry - tp
+                sl_hit = hi >= entry + sl
+            if tp_hit and sl_hit:
+                hit = 'sl'; break   # ابهام → محافظه‌کارانه SL
+            if tp_hit:
+                hit = 'tp'; break
+            if sl_hit:
+                hit = 'sl'; break
+        if hit is not None:
+            good += 1 if hit == 'tp' else 0
+            tot += 1
     return (good / tot * 100 if tot else 0.0), tot
 
 ADX_TH = 22
@@ -83,7 +105,17 @@ for DON in (20, 32, 48, 64):
     long_sig = np.where(valid & (dist_from_low < EDGE_FRAC))[0]
     short_sig = np.where(valid & (dist_from_high < EDGE_FRAC))[0]
 
-    lr, ln = fav_rate(long_sig, True)
-    sr, sn = fav_rate(short_sig, False)
-    print(f"Donchian={DON}: LONG(کف→بالا) n={ln} fav={lr:.1f}%  |  "
-          f"SHORT(سقف→پایین) n={sn} fav={sr:.1f}%")
+    # رنج‌بونس با TP/SL متعادلِ ATR (نه نیم‌عرضِ دور). چند نسبت را می‌سنجیم تا
+    # ببینیم برگشتِ کوتاه از لبه winrate بالای break-even دارد یا نه.
+    for tp_m, sl_m in [(1.0, 1.0), (1.0, 1.5), (0.75, 1.0), (1.5, 1.0)]:
+        be = sl_m / (tp_m + sl_m) * 100   # نرخِ سربه‌سر
+        tp_dist = tp_m * atr
+        sl_dist = sl_m * atr
+        lr, ln = fav_rate(long_sig, True, tp_dist, sl_dist)
+        sr, sn = fav_rate(short_sig, False, tp_dist, sl_dist)
+        flag = ''
+        if sr > be + 2: flag = ' ←SHORT edge!'
+        if lr > be + 2: flag += ' ←LONG edge!'
+        print(f"  DON={DON} TP={tp_m}×SL={sl_m}× (BE={be:.0f}%): "
+              f"LONG WR={lr:.1f}%(n{ln}) SHORT WR={sr:.1f}%(n{sn}){flag}")
+    print()
