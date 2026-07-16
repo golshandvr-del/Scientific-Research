@@ -27,9 +27,16 @@ const store = {}   // { XAUUSD: { decision, adviceStatus, error } , ... }
 let assetsMeta = []
 
 const fmt = (x, d = 2) => (x == null || !isFinite(x)) ? '—' : Number(x).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
-const timeAgo = (iso) => {
-  if (!iso) return ''
-  const s = Math.round((Date.now() - new Date(iso).getTime()) / 1000)
+// زمانِ دریافتِ آخرین پاسخِ موفق از سرور — بر پایهٔ ساعتِ خودِ مرورگر ثبت می‌شود.
+// (رفع باگِ «-۳۶۲۱ ثانیه پیش»: قبلاً lastUpdateِ سرور با Date.now()ِ مرورگر مقایسه
+//  می‌شد؛ اگر ساعتِ دستگاهِ کاربر با سرور اختلاف داشت — مثلاً به‌خاطرِ تایم‌زون/ساعتِ
+//  اشتباهِ سیستم — عددِ منفی می‌شد. حالا سن را نسبت به لحظهٔ دریافتِ همان پاسخ در
+//  مرورگر می‌سنجیم؛ کاملاً مستقل از ساعتِ سرور و همیشه ≥ ۰.)
+let lastFetchAt = 0
+const timeAgoSince = (baseMs) => {
+  if (!baseMs) return ''
+  let s = Math.round((Date.now() - baseMs) / 1000)
+  if (s < 0) s = 0                      // هرگز منفی نشود
   if (s < 60) return s + ' ثانیه پیش'
   return Math.round(s / 60) + ' دقیقه پیش'
 }
@@ -314,7 +321,9 @@ async function refreshAll() {
       }
     })
     render()
-    document.getElementById('last-update').textContent = 'آخرین به‌روزرسانی: ' + timeAgo(data.lastUpdate)
+    lastFetchAt = Date.now()   // لحظهٔ دریافتِ این پاسخ (ساعتِ خودِ مرورگر)
+    const lu = document.getElementById('last-update')
+    if (lu) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
     // برای دارایی‌هایی که کاربر معامله دارد، advice را هم به‌روز کن
     assetsMeta.forEach(a => { if (getTrade(a.id)) refreshAdvice(a.id) })
   } catch (e) {
@@ -354,3 +363,8 @@ async function refreshAdvice(asset) {
 // ============================================================================
 refreshAll()
 setInterval(refreshAll, REFRESH_MS)
+// هر ثانیه فقط متنِ «چند ثانیه پیش» را زنده به‌روز می‌کنیم (بدون فراخوانِ سرور).
+setInterval(() => {
+  const lu = document.getElementById('last-update')
+  if (lu && lastFetchAt) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
+}, 1000)
