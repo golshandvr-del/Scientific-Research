@@ -184,9 +184,13 @@ export function decide(a: AnalysisResult, close: number[]): RouterDecision {
 
   const isBull = reg.activeStream === 'bull'
   const dir: 'LONG' | 'SHORT' = isBull ? 'LONG' : 'SHORT'
-  // R:R طبقِ همان جریانِ بک‌تست: Bull TP1.0/SL1.5 ، Bear TP1.4/SL1.7
-  const tpM = isBull ? 1.0 : 1.4
+  // SL ثابت طبقِ بک‌تست (Bull 1.5×ATR, Bear 1.7×ATR).
   const slM = isBull ? 1.5 : 1.7
+  // --- S65: ضریبِ TP دیگر ثابت نیست؛ از سطلِ رژیم می‌آید (اهرمِ سوم) ---
+  const plan = bucketPlan(reg.bucket)
+  const tpM = isBull ? plan.tpBull : plan.tpBear
+  // --- S64: ضریبِ حجم (Kelly) از سطلِ رژیم ---
+  const lotM = plan.lot
 
   // --------- حالتِ ۳: ورود — همهٔ شرایط (رژیمِ روندی + proba کافی) ---------
   if (p >= P_MIN) {
@@ -202,6 +206,20 @@ export function decide(a: AnalysisResult, close: number[]): RouterDecision {
       direction: dir, entry, tp, sl,
       rr: `TP ${tpM}×ATR / SL ${slM}×ATR (≈ 1:${(tpM / slM).toFixed(2)})`,
       probability: p,
+      // S64 — حجمِ پیشنهادی (Kelly رژیم-آگاه):
+      sizing: {
+        lotMultiplier: lotM,
+        label: lotLabel(lotM),
+        note: `سطلِ رژیم «${reg.bucket}» (${plan.desc}). طبقِ کشفِ L38، حجمِ بیشتر در ` +
+          `سطل‌های باکیفیت‌تر سودِ خالص را ~۸۳٪ بالا برد — این «تخصیصِ سرمایه» است نه اهرمِ خام.`,
+      },
+      // S65 — TPِ رژیم-آگاه:
+      tpPlan: {
+        multiplier: tpM,
+        note: reg.bucket === 'trend_hi'
+          ? `روندِ کارآمد اجازهٔ TPِ دورتر (${tpM}×ATR) می‌دهد؛ حرکت‌ها ادامه‌دارترند (L39).`
+          : `TP متناسب با کیفیتِ سطل «${reg.bucket}» تنظیم شد (${tpM}×ATR) تا سودِ خالص بیشینه شود (L39).`,
+      },
       indicators,
     }
   }
