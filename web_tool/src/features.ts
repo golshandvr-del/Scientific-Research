@@ -1,7 +1,9 @@
 // ============================================================================
-// بازتولید دقیق engine/features.py در TypeScript — ۵۷ feature به ترتیب
-// feature_order.txt. این خروجی مستقیماً به مدل ONNX (onnxruntime-web) داده می‌شود
-// تا سیگنال «دقیقاً معادل ربات» در مرورگر تولید شود (نه تقریب).
+// بازتولید دقیق engine/features.py در TypeScript — ۵۹ feature به ترتیب
+// feature_order_s25.txt (شامل دو feature زمانی جدید early_atr و weekly_rev که
+// در استراتژی برندهٔ ۲۵ افزوده شدند). این خروجی مستقیماً به مدل ONNX S25
+// (onnxruntime-web) داده می‌شود تا سیگنال «دقیقاً معادل استراتژی ۲۵» در مرورگر
+// تولید شود (نه تقریب).
 //
 // نکات هم‌ارزی حیاتی با پایتون:
 //   - hour/dow از زمان UTC گرفته می‌شوند (features.py با pd.to_datetime(unit='s')
@@ -13,7 +15,8 @@
 import type { Candle } from './indicators'
 import * as ind from './indicators'
 
-// ترتیب دقیق ۵۷ feature (مطابق mt5_robot/feature_order.txt)
+// ترتیب دقیق ۵۹ feature (مطابق mt5_robot/feature_order_s25.txt)
+// دو feature پایانی (early_atr, weekly_rev) نوآوری استراتژی برندهٔ ۲۵ هستند.
 export const FEATURE_ORDER: string[] = [
   'ret_1', 'ret_2', 'ret_3', 'ret_5', 'ret_8', 'ret_13', 'ret_21',
   'rsi_7', 'rsi_14', 'rsi_21',
@@ -35,6 +38,7 @@ export const FEATURE_ORDER: string[] = [
   'above_ema200', 'dist_ema200',
   'vwap_dist', 'vwap_dist_atr', 'above_vwap',
   'ema50_dist_atr', 'vol_z20', 'close_pos_in_range',
+  'early_atr', 'weekly_rev',   // ← استراتژی ۲۵ (weekly mean-reversion context)
 ]
 
 const NaNArr = (n: number) => new Array<number>(n).fill(NaN)
@@ -93,6 +97,79 @@ function dailyOpen(c: Candle[]): number[] {
     out[i] = firstOpen
   }
   return out
+}
+
+// شمارهٔ (سال، هفتهٔ) ISO — دقیقاً معادل pandas dt.isocalendar().year/week.
+// الگوریتم استاندارد ISO-8601: پنجشنبهٔ همان هفته سالِ ISO را تعیین می‌کند.
+function isoYearWeek(unixSec: number): [number, number] {
+  const d = new Date(unixSec * 1000)
+  // به UTC نیمه‌شب همان روز
+  const dt = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()))
+  // ISO day: دوشنبه=1 ... یکشنبه=7
+  const dayNum = (dt.getUTCDay() + 6) % 7 + 1
+  // پنجشنبهٔ همان هفته
+  dt.setUTCDate(dt.getUTCDate() + 4 - dayNum)
+  const isoYear = dt.getUTCFullYear()
+  const yearStart = new Date(Date.UTC(isoYear, 0, 1))
+  const week = Math.ceil((((dt.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
+  return [isoYear, week]
+}
+
+// ---- دو feature زمانی استراتژی ۲۵ (weekly mean-reversion context) ----
+// early_atr  : حرکت اوایل هفته (open دوشنبه → close چهارشنبه) نرمال‌شده با ATR روزانه.
+// weekly_rev : -sign(early)·clip(|early_atr|,0,3)·day_weight  (Thu/Fri وزن بالا).
+// بدون look-ahead: early_move تا پایان چهارشنبه قطعی است و فقط برای Thu/Fri
+// (و با وزن کم برای Mon-Wed) به‌کار می‌رود.
+// atrDaily = میانگین متحرک ۹۶ کندلیِ ATR (معادل atr.rolling(96).mean() پایتون).
+function weeklyReversionFeatures(
+  c: Candle[], dow: number[], atr: number[], atrDaily: number[],
+): { earlyAtr: number[]; weeklyRev: number[] } {
+  const n = c.length
+  // تاریخ UTC (روز تقویمی) هر کندل
+  const dayIdx = c.map(k => Math.floor(k.time / 86400))
+  // تجمیع روزانه: اولین open و آخرین close هر روز، به‌همراه dow و (isoYear,isoWeek)
+  type DayAgg = { day: number; dow: number; open: number; close: number; iy: number; iw: number }
+  const days: DayAgg[] = []
+  let cur = -1
+  for (let i = 0; i < n; i++) {
+    if (dayIdx[i] !== cur) {
+      cur = dayIdx[i]
+      const [iy, iw] = isoYearWeek(c[i].time)
+      days.push({ day: cur, dow: dow[i], open: c[i].open, close: c[i].close, iy, iw })
+    } else {
+      days[days.length - 1].close = c[i].close // آخرین close همان روز
+    }
+  }
+  // early_move هر (iy,iw): close آخرین روزِ Mon-Wed منهای open اولین روزِ Mon-Wed
+  const earlyMap = new Map<string, number>()
+  const byWeek = new Map<string, DayAgg[]>()
+  for (const d of days) {
+    const key = d.iy + '-' + d.iw
+    if (!byWeek.has(key)) byWeek.set(key, [])
+    byWeek.get(key)!.push(d)
+  }
+  for (const [key, arr] of byWeek) {
+    arr.sort((a, b) => a.day - b.day)
+    const early = arr.filter(d => d.dow === 0 || d.dow === 1 || d.dow === 2) // Mon,Tue,Wed
+    if (early.length === 0) continue
+    earlyMap.set(key, early[early.length - 1].close - early[0].open)
+  }
+  // نگاشت هر کندل به early هفتهٔ خودش
+  const dayWeight: Record<number, number> = { 0: 0.2, 1: 0.3, 2: 0.5, 3: 1.0, 4: 0.9, 5: 0.0, 6: 0.0 }
+  const earlyAtr = NaNArr(n)
+  const weeklyRev = NaNArr(n)
+  for (let i = 0; i < n; i++) {
+    const [iy, iw] = isoYearWeek(c[i].time)
+    const early = earlyMap.get(iy + '-' + iw)
+    if (early === undefined) continue
+    const ad = atrDaily[i]
+    const ea = early / ((isNaN(ad) ? NaN : ad) + 1e-9)
+    earlyAtr[i] = ea
+    const sgn = early > 0 ? 1 : (early < 0 ? -1 : 0)
+    const clipped = Math.min(Math.max(Math.abs(ea), 0), 3)
+    weeklyRev[i] = -sgn * clipped * (dayWeight[dow[i]] ?? 0)
+  }
+  return { earlyAtr, weeklyRev }
 }
 
 // streak علامت‌دار: طول دنباله‌ی هم‌علامتِ diff(close)، ضرب در علامت.
@@ -229,6 +306,10 @@ export function buildFeatures(c: Candle[]): FeatureMatrix {
     return rng === 0 ? NaN : (close[i] - low[i]) / rng
   })
 
+  // ویژگی‌های زمانی هفتگی (استراتژی ۲۵) — atrDaily = rolling(96).mean(atr)
+  const atrDaily = rollingMean(atr, 96)
+  const { earlyAtr, weeklyRev } = weeklyReversionFeatures(c, dowArr, atr, atrDaily)
+
   // نگاشت نام → آرایه، سپس ساخت ماتریس به ترتیب FEATURE_ORDER
   const map: Record<string, number[]> = {
     ret_1: ret[1], ret_2: ret[2], ret_3: ret[3], ret_5: ret[5],
@@ -252,6 +333,7 @@ export function buildFeatures(c: Candle[]): FeatureMatrix {
     above_ema200: aboveEma200, dist_ema200: distEma200,
     vwap_dist: vwapDist, vwap_dist_atr: vwapDistAtr, above_vwap: aboveVwap,
     ema50_dist_atr: ema50DistAtr, vol_z20: volZ20, close_pos_in_range: closePos,
+    early_atr: earlyAtr, weekly_rev: weeklyRev,
   }
 
   const rows: Float32Array[] = []
