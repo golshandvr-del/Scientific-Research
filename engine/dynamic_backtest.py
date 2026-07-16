@@ -46,6 +46,10 @@ def _sim_dynamic(o, h, l, c, sig_idx, entry_bars,
     pnl = np.zeros(m)
     exit_bar_out = np.zeros(m, dtype=np.int64)
     r_mult = np.zeros(m)  # PnL بر حسب R (نسبت به ریسک اولیه = sl_dist)
+    # تعدادِ «رویدادِ اجرایی» که کاربر انجام می‌دهد: ۱ ورود + ۱ خروجِ نهایی؛
+    # اگر scale-out در TP1 رخ دهد، +۱ (بستنِ جزئی). طبقِ User Note این‌ها همان
+    # اکشن‌هایی هستند که کاربر در سایت ثبت/اجرا می‌کند.
+    n_actions_out = np.zeros(m, dtype=np.int64)
 
     for k in range(m):
         eb = entry_bars[k]
@@ -165,8 +169,13 @@ def _sim_dynamic(o, h, l, c, sig_idx, entry_bars,
 
         pnl[k] = realized
         r_mult[k] = realized / risk
+        # ورود + خروجِ نهایی = ۲ اکشن؛ اگر scale-out رخ داد، یک اکشنِ اضافه.
+        if scaled:
+            n_actions_out[k] = 3
+        else:
+            n_actions_out[k] = 2
 
-    return pnl, exit_bar_out, r_mult
+    return pnl, exit_bar_out, r_mult, n_actions_out
 
 
 def run_dynamic_backtest(df, entries, direction, atr,
@@ -204,7 +213,7 @@ def run_dynamic_backtest(df, entries, direction, atr,
     tp1_dist = tp1_mult * atr_arr[sig_all]
 
     is_long = (direction == 'long')
-    pnl, exit_bars, r_mult = _sim_dynamic(
+    pnl, exit_bars, r_mult, n_actions = _sim_dynamic(
         o, h, l, c, sig_all.astype(np.int64), entry_bars.astype(np.int64),
         sl_dist, tp1_dist, atr_arr, is_long, spread,
         scale_frac, trail_mult, be_offset, max_hold)
@@ -230,6 +239,7 @@ def run_dynamic_backtest(df, entries, direction, atr,
             'r_mult': r_mult[idx],
             'outcome': 'win' if pnl[idx] > 0 else 'loss',
             'bars_held': int(xb - eb),
+            'n_actions': int(n_actions[idx]),
         })
 
     tr = pd.DataFrame(rows)
@@ -274,7 +284,7 @@ def daily_pnl_stats(trades_df):
     gross_neg = -neg_days['sum'].sum()
     n_days = len(daily)
     total_days_span = (tr['day'].max() - tr['day'].min()).days + 1
-    return {
+    out = {
         'n_active_days': n_days,
         'calendar_days': total_days_span,
         'daily_win_rate': len(pos_days) / n_days * 100 if n_days else 0.0,
@@ -285,3 +295,11 @@ def daily_pnl_stats(trades_df):
         'trades_per_active_day': daily['count'].mean(),
         'trades_per_calendar_day': len(tr) / total_days_span if total_days_span else 0.0,
     }
+    # نرخِ «رویدادِ اجرایی» طبقِ User Note: هر معامله = ورود + (scale-out) + خروج.
+    # این همان تعدادِ اکشن‌هایی است که کاربر در سایت اجرا می‌کند.
+    if 'n_actions' in tr.columns:
+        total_actions = tr['n_actions'].sum()
+        act_daily = tr.groupby('day')['n_actions'].sum()
+        out['actions_per_calendar_day'] = total_actions / total_days_span if total_days_span else 0.0
+        out['actions_per_active_day'] = act_daily.mean()
+    return out
