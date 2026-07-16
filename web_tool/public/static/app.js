@@ -71,6 +71,7 @@ function render(d) {
       : `تأخیر: ${min.toFixed(0)} دقیقه`;
   }
 
+  window.__lastPrice = a.price;   // برای دکمهٔ «پر کردن ورود با قیمت فعلی»
   const isLong = a.direction === 'LONG';
   const sigColor = isLong ? 'emerald' : 'slate';
   const probColor = a.probability >= 66 ? 'emerald' : (a.probability >= 60 ? 'amber' : 'slate');
@@ -105,6 +106,15 @@ function render(d) {
     <div id="onnx-body" class="text-sm text-slate-400">
       <i class="fas fa-spinner fa-spin"></i> بارگذاری مدل ONNX ensemble و اجرای استنتاج در مرورگر…
     </div>
+  </section>
+
+  <!-- مدیریت معاملهٔ باز کاربر (Trade Advisor) — User Note -->
+  <section id="trade-manager" class="card p-5 mb-4">
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-3">
+      <h2 class="text-lg font-bold"><i class="fas fa-hand-holding-dollar text-amber-400"></i> مدیریت معاملهٔ من</h2>
+      <span class="text-[11px] px-2 py-0.5 rounded-md bg-amber-500/15 text-amber-300">راهنمای زندهٔ مدیریت معامله</span>
+    </div>
+    <div id="tm-body" class="text-sm text-slate-300"></div>
   </section>
 
   <!-- تحلیل چند-تایم‌فریمی + منابع بنیادی -->
@@ -330,6 +340,7 @@ async function load() {
     // پس از رندر اصلی، بخش‌های سنگین/شبکه‌ای را موازی و مستقل بارگذاری کن
     runOnnxSignal();
     loadContext();
+    renderTradeManager();   // بخش مدیریت معاملهٔ کاربر (User Note)
   } catch (e) {
     document.getElementById('content').innerHTML = `<div class="card p-8 text-center text-red-400">
       <i class="fas fa-circle-exclamation text-2xl"></i>
@@ -364,6 +375,7 @@ async function runOnnxSignal() {
 function renderOnnx(s, nCandles) {
   const body = document.getElementById('onnx-body');
   const sec = document.getElementById('onnx-signal');
+  tmLastModelProb = s.probabilityPct;   // برای هم‌سو/مخالف بودن با معاملهٔ کاربر
   const isLong = s.direction === 'LONG';
   sec.classList.toggle('glow-up', isLong);
   const pColor = s.probability >= 0.75 ? 'emerald' : s.probability >= s.threshold ? 'amber' : 'slate';
@@ -557,6 +569,233 @@ function checkNewsRisk(news) {
     const key = 'NEWSRISK';
     sendNotification('⚠️ پنجرهٔ ریسک خبری USD', news.note || 'رویداد پرتأثیر USD نزدیک است — نوسان شدید محتمل.', key);
   }
+}
+
+// ============================================================================
+// مدیریت معاملهٔ باز کاربر (Trade Manager) — پاسخ به User Note
+// - کاربر یک معامله (long/short + ورود + TP + SL) وارد می‌کند.
+// - معامله در localStorage ذخیره می‌شود → با رفرش/بستن مرورگر از دست نمی‌رود.
+// - فقط «یک» معامله هم‌زمان می‌توان داشت.
+// - سایت با تحلیل زنده، advice مدیریتی می‌دهد (جابه‌جایی TP/SL، هشدار S/R، …).
+// - معامله فقط با دکمهٔ «بستن معامله» حذف می‌شود.
+// ============================================================================
+const TM_KEY = 'xau_open_trade_v1';
+let tmTimer = null;
+let tmLastModelProb = null;   // آخرین احتمال مدل ONNX برای هم‌سو/مخالف بودن
+
+function tmLoad() {
+  try { return JSON.parse(localStorage.getItem(TM_KEY) || 'null'); } catch { return null; }
+}
+function tmSave(t) { localStorage.setItem(TM_KEY, JSON.stringify(t)); }
+function tmClear() { localStorage.removeItem(TM_KEY); }
+
+// نقطهٔ ورود اصلی رندر بخش مدیریت معامله
+function renderTradeManager() {
+  const t = tmLoad();
+  if (!t) { renderTradeForm(); }
+  else { renderTradeStatusShell(t); refreshTradeAdvice(); }
+}
+
+// --- حالت ۱: هنوز معامله‌ای وارد نشده → فرم ورود ---
+function renderTradeForm(prefill) {
+  const body = document.getElementById('tm-body');
+  if (!body) return;
+  const p = prefill || {};
+  body.innerHTML = `
+    <p class="text-xs text-slate-400 mb-3">
+      معامله‌ای که در حساب دمو باز کرده‌ای را این‌جا وارد کن تا سایت آن را به‌صورت زنده «مدیریت» کند:
+      توصیهٔ جابه‌جایی حد سود/ضرر، هشدار نزدیکی به حمایت/مقاومت، و تغییر شرایط بازار.
+    </p>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">جهت</label>
+        <select id="tm-side" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100">
+          <option value="long">خرید (LONG)</option>
+          <option value="short">فروش (SHORT)</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-xs text-slate-400 mb-1">قیمت ورود</label>
+        <input id="tm-entry" type="number" step="0.01" placeholder="مثلاً 3350.00" value="${p.entry ?? ''}"
+          class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-100">
+      </div>
+      <div>
+        <label class="block text-xs text-emerald-400 mb-1">حد سود (TP)</label>
+        <input id="tm-tp" type="number" step="0.01" placeholder="TP" value="${p.tp ?? ''}"
+          class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-emerald-300">
+      </div>
+      <div>
+        <label class="block text-xs text-red-400 mb-1">حد ضرر (SL)</label>
+        <input id="tm-sl" type="number" step="0.01" placeholder="SL" value="${p.sl ?? ''}"
+          class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-red-300">
+      </div>
+      <div class="flex items-end">
+        <button id="tm-open-btn" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-900 font-bold rounded-lg px-3 py-2 transition">
+          <i class="fas fa-plus"></i> ثبت معامله
+        </button>
+      </div>
+    </div>
+    <div class="flex items-center gap-2 mt-3">
+      <button id="tm-fill-price" class="text-xs text-slate-400 hover:text-amber-300"><i class="fas fa-wand-magic-sparkles"></i> پر کردن ورود با قیمت فعلی بازار</button>
+    </div>
+    <p id="tm-err" class="text-xs text-red-400 mt-2"></p>`;
+
+  document.getElementById('tm-open-btn').onclick = tmSubmit;
+  document.getElementById('tm-fill-price').onclick = () => {
+    const el = document.getElementById('tm-entry');
+    const price = window.__lastPrice;
+    if (el && price) el.value = price.toFixed(2);
+  };
+}
+
+function tmSubmit() {
+  const side = document.getElementById('tm-side').value;
+  const entry = parseFloat(document.getElementById('tm-entry').value);
+  const tp = parseFloat(document.getElementById('tm-tp').value);
+  const sl = parseFloat(document.getElementById('tm-sl').value);
+  const err = document.getElementById('tm-err');
+  err.textContent = '';
+  if (![entry, tp, sl].every(x => isFinite(x) && x > 0)) { err.textContent = 'همهٔ مقادیر ورود/TP/SL باید عدد معتبر باشند.'; return; }
+  if (side === 'long' && !(tp > entry && sl < entry)) { err.textContent = 'برای خرید: TP باید بالاتر و SL پایین‌تر از ورود باشد.'; return; }
+  if (side === 'short' && !(tp < entry && sl > entry)) { err.textContent = 'برای فروش: TP باید پایین‌تر و SL بالاتر از ورود باشد.'; return; }
+  const trade = { side, entry, tp, sl, openedAt: Math.floor(Date.now() / 1000), initialTp: tp, initialSl: sl };
+  tmSave(trade);
+  renderTradeManager();
+}
+
+// --- حالت ۲: معامله فعال → پوستهٔ نمایش (سپس advice زنده) ---
+function renderTradeStatusShell(t) {
+  const body = document.getElementById('tm-body');
+  if (!body) return;
+  const sideBadge = t.side === 'long'
+    ? badge('خرید (LONG)', 'bg-emerald-500/25 text-emerald-300')
+    : badge('فروش (SHORT)', 'bg-red-500/25 text-red-300');
+  body.innerHTML = `
+    <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+      <div class="flex items-center gap-2">${sideBadge}
+        <span class="text-xs text-slate-400">ورود <b class="text-slate-200">$${fmt(t.entry)}</b></span>
+      </div>
+      <button id="tm-close-btn" class="bg-red-600/80 hover:bg-red-500 text-white text-sm rounded-lg px-3 py-1.5 transition">
+        <i class="fas fa-xmark"></i> بستن معامله
+      </button>
+    </div>
+    <div id="tm-status"><div class="text-slate-400 text-sm"><i class="fas fa-spinner fa-spin"></i> دریافت تحلیل زنده برای مدیریت معامله…</div></div>`;
+  document.getElementById('tm-close-btn').onclick = () => {
+    if (confirm('آیا معامله بسته شود و از سایت حذف گردد؟')) { tmClear(); if (tmTimer) clearInterval(tmTimer); tmTimer = null; renderTradeManager(); }
+  };
+  // بروزرسانی خودکار advice هر ۳۰ ثانیه (مستقل از رفرش کل صفحه)
+  if (tmTimer) clearInterval(tmTimer);
+  tmTimer = setInterval(refreshTradeAdvice, 30000);
+}
+
+// دریافت advice زنده از سرور برای معاملهٔ ذخیره‌شده
+async function refreshTradeAdvice() {
+  const t = tmLoad();
+  const el = document.getElementById('tm-status');
+  if (!t || !el) return;
+  try {
+    const r = await fetch('/api/trade/advice', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ trade: t, modelProbPct: tmLastModelProb }),
+    });
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || 'خطا در تحلیل معامله');
+    renderTradeStatus(d, t);
+  } catch (e) {
+    el.innerHTML = `<span class="text-amber-400 text-xs"><i class="fas fa-triangle-exclamation"></i> ${e.message}</span>`;
+  }
+}
+
+function adviceCard(ad) {
+  const map = {
+    critical: { c: 'red', icon: 'fa-circle-exclamation' },
+    warning: { c: 'amber', icon: 'fa-triangle-exclamation' },
+    good: { c: 'emerald', icon: 'fa-circle-check' },
+    info: { c: 'sky', icon: 'fa-circle-info' },
+  };
+  const s = map[ad.severity] || map.info;
+  const btn = ad.suggest
+    ? `<button class="tm-apply mt-2 text-xs bg-${s.c}-500/20 hover:bg-${s.c}-500/35 text-${s.c}-200 rounded-md px-2 py-1 transition"
+         data-field="${ad.suggest.field}" data-value="${ad.suggest.value}">
+         <i class="fas fa-check"></i> اعمال ${ad.suggest.field === 'tp' ? 'TP' : 'SL'} = $${fmt(ad.suggest.value)}
+       </button>`
+    : '';
+  return `<div class="bg-${s.c}-500/10 border border-${s.c}-500/30 rounded-lg p-3">
+    <div class="flex items-start gap-2">
+      <i class="fas ${s.icon} text-${s.c}-400 mt-0.5"></i>
+      <div class="flex-1">
+        <p class="font-semibold text-${s.c}-200 text-sm">${ad.title}</p>
+        <p class="text-xs text-slate-300 mt-0.5 leading-5">${ad.detail}</p>
+        ${btn}
+      </div>
+    </div>
+  </div>`;
+}
+
+function actionLabel(action) {
+  const m = {
+    'hold': ['نگه‌داری', 'slate'], 'move-sl': ['انتقال SL به بریک‌ایون', 'amber'],
+    'let-run': ['اجازهٔ رشد سود (Trail)', 'emerald'], 'take-partial': ['بستن بخشی', 'amber'],
+    'close': ['بستن معامله', 'red'], 'tighten': ['محکم‌کردن SL', 'amber'],
+  };
+  const [txt, c] = m[action] || m['hold'];
+  return badge(txt, `bg-${c}-500/20 text-${c}-300`);
+}
+
+function renderTradeStatus(d, t) {
+  const el = document.getElementById('tm-status');
+  if (!el) return;
+  const s = d.status;
+  const pnlColor = s.inProfit ? 'emerald' : (s.pnlR < 0 ? 'red' : 'slate');
+  const progClamped = Math.max(0, Math.min(100, s.progressToTp));
+  const closed = s.reachedTp || s.reachedSl;
+  el.innerHTML = `
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
+      <div class="bg-slate-800/60 rounded-lg p-3"><p class="text-xs text-slate-400">قیمت فعلی</p><p class="font-bold text-amber-400">$${fmt(s.price)}</p></div>
+      <div class="bg-slate-800/60 rounded-lg p-3"><p class="text-xs text-slate-400">سود/زیان</p><p class="font-bold text-${pnlColor}-400">${s.pnlUsd >= 0 ? '+' : ''}$${fmt(s.pnlUsd)} <span class="text-xs">(${s.pnlR >= 0 ? '+' : ''}${fmt(s.pnlR, 2)}R)</span></p></div>
+      <div class="bg-emerald-900/30 rounded-lg p-3"><p class="text-xs text-emerald-400">TP فعلی</p><p class="font-bold text-emerald-300">$${fmt(s.tp)} <span class="text-[10px] text-slate-500">(${s.distToTpPct >= 0 ? '' : ''}${fmt(s.distToTpPct,2)}%)</span></p></div>
+      <div class="bg-red-900/30 rounded-lg p-3"><p class="text-xs text-red-400">SL فعلی</p><p class="font-bold text-red-300">$${fmt(s.sl)} <span class="text-[10px] text-slate-500">(${fmt(s.distToSlPct,2)}%)</span></p></div>
+    </div>
+
+    <div class="mb-3">
+      <div class="flex justify-between text-xs mb-1"><span class="text-slate-400">پیشرفت به سمت TP</span><span class="text-slate-300">${fmt(s.progressToTp,0)}%</span></div>
+      <div class="bar-bg h-2.5"><div class="h-full bg-${pnlColor}-500 transition-all" style="width:${progClamped}%"></div></div>
+      <p class="text-[11px] text-slate-500 mt-1">${s.riskReward} • روند بازار: ${d.market.trend === 'up' ? 'صعودی' : d.market.trend === 'down' ? 'نزولی' : 'رنج'} • ATR $${fmt(d.market.atr)}</p>
+    </div>
+
+    <div class="p-3 rounded-lg bg-slate-800/40 border border-slate-700/50 mb-3 flex items-center justify-between flex-wrap gap-2">
+      <span class="text-sm"><i class="fas fa-compass text-amber-400"></i> <b>اقدام پیشنهادی:</b> ${s.overallNote}</span>
+      ${actionLabel(s.overallAction)}
+    </div>
+
+    <div class="space-y-2">
+      ${s.advices.length ? s.advices.map(adviceCard).join('') : '<div class="text-slate-400 text-sm p-2"><i class="fas fa-check text-emerald-400"></i> شرایط پایدار است؛ توصیهٔ خاصی وجود ندارد. طبق پلن ادامه بده.</div>'}
+    </div>
+
+    ${closed ? `<p class="text-xs text-slate-400 mt-3"><i class="fas fa-flag-checkered"></i> معامله به ${s.reachedTp ? 'TP' : 'SL'} رسیده — پس از بستن در بروکر، این‌جا هم دکمهٔ «بستن معامله» را بزن.</p>` : ''}
+    <p class="text-[11px] text-slate-500 mt-3">آخرین بروزرسانی مدیریت: ${new Date(d.lastUpdate).toLocaleTimeString('fa-IR')} • این معامله در مرورگر شما ذخیره شده و فقط با دکمهٔ «بستن معامله» حذف می‌شود.</p>`;
+
+  // فعال‌سازی دکمه‌های «اعمال TP/SL پیشنهادی»
+  el.querySelectorAll('.tm-apply').forEach(b => {
+    b.onclick = () => {
+      const field = b.getAttribute('data-field');
+      const value = parseFloat(b.getAttribute('data-value'));
+      const cur = tmLoad(); if (!cur) return;
+      cur[field] = value;
+      tmSave(cur);
+      refreshTradeAdvice();
+    };
+  });
+
+  // اعلان مرورگر برای رویدادهای مهم مدیریت معامله
+  tmNotify(s);
+}
+
+function tmNotify(s) {
+  if (s.reachedTp) sendNotification('🎯 معاملهٔ شما به TP رسید', `قیمت به حد سود ${fmt(s.tp)} رسید. سود را ثبت کن.`, 'TM-TP-' + s.tp);
+  else if (s.reachedSl) sendNotification('🛑 معاملهٔ شما به SL رسید', `قیمت به حد ضرر ${fmt(s.sl)} رسید.`, 'TM-SL-' + s.sl);
+  else if (s.overallAction === 'close') sendNotification('⚠️ توصیهٔ بستن معامله', s.overallNote, 'TM-CLOSE');
+  else if (s.overallAction === 'move-sl') sendNotification('🔒 معامله را بی‌ریسک کن', s.overallNote, 'TM-BE');
 }
 
 skeleton();
