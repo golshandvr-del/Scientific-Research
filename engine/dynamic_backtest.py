@@ -303,3 +303,181 @@ def daily_pnl_stats(trades_df):
         out['actions_per_calendar_day'] = total_actions / total_days_span if total_days_span else 0.0
         out['actions_per_active_day'] = act_daily.mean()
     return out
+
+
+# ============================================================================
+# موتورِ scale-out چند-پله‌ای — پیاده‌سازیِ کاملِ مدلِ User Note
+# ============================================================================
+# User Note: «ربات بفهمه تغییر روند نزدیکه، به کاربر بگه n% از معامله رو ببنده...
+#  بعد مطمئن شد روند تموم می‌شه، بگه تمام معامله رو ببنده... در روز ۴-۵ بار.»
+# اینجا به‌جای یک TP1، چند سطحِ TP تعریف می‌شود؛ در هر سطح کسری بسته می‌شود
+# (یک «اکشنِ اجرایی» برای کاربر). پس از اولین سطح، SL→BE و سپس تریلینگِ ATR.
+# هر ورود + هر بستنِ جزئی + خروجِ نهایی = یک اکشن که کاربر در سایت ثبت می‌کند.
+
+@njit(cache=True)
+def _sim_multistep(o, h, l, c, sig_idx, entry_bars,
+                   sl_dist, atr_arr, is_long, spread,
+                   tp_mults, tp_fracs, trail_mult, be_offset, max_hold):
+    m = len(sig_idx)
+    n = len(c)
+    nlev = len(tp_mults)
+    pnl = np.zeros(m)
+    exit_bar_out = np.zeros(m, dtype=np.int64)
+    r_mult = np.zeros(m)
+    n_actions_out = np.zeros(m, dtype=np.int64)   # ورود + بستن‌های جزئی + خروجِ نهایی
+
+    for k in range(m):
+        eb = entry_bars[k]
+        if eb >= n:
+            exit_bar_out[k] = -1
+            continue
+        entry = o[eb]
+        fill = entry + spread if is_long else entry - spread
+        risk = sl_dist[k]
+        if risk <= 0:
+            exit_bar_out[k] = -1
+            continue
+
+        a0 = atr_arr[sig_idx[k]]
+        if a0 != a0:
+            a0 = risk
+        # سطوحِ TP (دلاری) و کسرها
+        sl = fill - risk if is_long else fill + risk
+        remaining = 1.0
+        realized = 0.0
+        best = fill
+        lev = 0                      # سطحِ بعدیِ TP که هنوز نخورده
+        partial_events = 0           # تعدادِ بستن‌های جزئی رخ‌داده
+        end = eb + max_hold
+        if end > n:
+            end = n
+        closed = False
+        j = eb
+        while j < end:
+            hi = h[j]; lo = l[j]
+            if is_long:
+                if hi > best: best = hi
+            else:
+                if lo < best: best = lo
+
+            # ۱) SL اول (بدترین حالت)
+            hit_sl = (lo <= sl) if is_long else (hi >= sl)
+            if hit_sl:
+                part = (sl - fill) * remaining if is_long else (fill - sl) * remaining
+                realized += part
+                closed = True
+                exit_bar_out[k] = j
+                break
+
+            # ۲) سطوحِ TP چندگانه (ممکن است چند سطح در یک کندل خورده شود)
+            while lev < nlev:
+                tp_px = fill + tp_mults[lev] * a0 if is_long else fill - tp_mults[lev] * a0
+                hit = (hi >= tp_px) if is_long else (lo <= tp_px)
+                if not hit:
+                    break
+                frac = tp_fracs[lev]
+                if frac > remaining:
+                    frac = remaining
+                part = (tp_px - fill) * frac if is_long else (fill - tp_px) * frac
+                realized += part
+                remaining -= frac
+                partial_events += 1
+                # پس از اولین سطح: SL → بریک‌ایون
+                if lev == 0:
+                    sl = fill + be_offset if is_long else fill - be_offset
+                lev += 1
+                if remaining <= 1e-9:
+                    closed = True
+                    exit_bar_out[k] = j
+                    break
+            if closed:
+                break
+
+            # ۳) تریلینگِ ATR پس از اولین بستنِ جزئی
+            if partial_events > 0:
+                if is_long:
+                    new_sl = best - trail_mult * a0
+                    if new_sl > sl: sl = new_sl
+                else:
+                    new_sl = best + trail_mult * a0
+                    if new_sl < sl: sl = new_sl
+            j += 1
+
+        if not closed:
+            jx = end - 1
+            if jx < eb: jx = eb
+            px = c[jx]
+            part = (px - fill) * remaining if is_long else (fill - px) * remaining
+            realized += part
+            exit_bar_out[k] = jx
+
+        pnl[k] = realized
+        r_mult[k] = realized / risk
+        # اکشن‌ها: ۱ ورود + partial_events بستنِ جزئی + ۱ خروجِ نهایی
+        n_actions_out[k] = 2 + partial_events
+
+    return pnl, exit_bar_out, r_mult, n_actions_out
+
+
+def run_multistep_backtest(df, entries, direction, atr,
+                           sl_mult=1.5, tp_mults=(0.8, 1.5, 2.5),
+                           tp_fracs=(0.34, 0.33, 0.33), trail_mult=1.5,
+                           be_offset=0.15, spread=0.20, max_hold=200,
+                           allow_overlap=False):
+    """
+    مدیریتِ خروجِ چند-پله‌ای طبقِ User Note. tp_mults/tp_fracs سطوح و کسرها.
+    خروجی: (stats, trades_df) — trades_df ستونِ n_actions دارد.
+    """
+    o = df['open'].values.astype(np.float64)
+    h = df['high'].values.astype(np.float64)
+    l = df['low'].values.astype(np.float64)
+    c = df['close'].values.astype(np.float64)
+    atr_arr = atr.values.astype(np.float64)
+    n = len(df)
+    entries = np.asarray(entries, dtype=bool)
+    sig_all = np.where(entries)[0]
+    entry_bars = sig_all + 1
+    sl_dist = sl_mult * atr_arr[sig_all]
+    is_long = (direction == 'long')
+
+    pnl, exit_bars, r_mult, n_actions = _sim_multistep(
+        o, h, l, c, sig_all.astype(np.int64), entry_bars.astype(np.int64),
+        sl_dist, atr_arr, is_long, spread,
+        np.array(tp_mults, dtype=np.float64), np.array(tp_fracs, dtype=np.float64),
+        trail_mult, be_offset, max_hold)
+
+    rows = []
+    busy_until = -1
+    for idx in range(len(sig_all)):
+        si = sig_all[idx]; eb = entry_bars[idx]; xb = exit_bars[idx]
+        if xb < 0 or eb >= n:
+            continue
+        if not allow_overlap and eb <= busy_until:
+            continue
+        busy_until = xb
+        rows.append({
+            'signal_bar': int(si), 'entry_bar': int(eb), 'exit_bar': int(xb),
+            'dt': df['dt'].values[eb], 'direction': direction,
+            'pnl': pnl[idx], 'r_mult': r_mult[idx],
+            'outcome': 'win' if pnl[idx] > 0 else 'loss',
+            'bars_held': int(xb - eb), 'n_actions': int(n_actions[idx]),
+        })
+    tr = pd.DataFrame(rows)
+    if len(tr) == 0:
+        return {'n_trades': 0, 'win_rate': 0.0, 'total_pnl': 0.0,
+                'expectancy': 0.0, 'profit_factor': 0.0}, tr
+    wins = tr[tr['pnl'] > 0]; losses = tr[tr['pnl'] <= 0]
+    gw = wins['pnl'].sum(); gl = -losses['pnl'].sum()
+    stats = {
+        'n_trades': len(tr),
+        'win_rate': len(wins) / len(tr) * 100,
+        'total_pnl': tr['pnl'].sum(),
+        'expectancy': tr['pnl'].mean(),
+        'avg_win': wins['pnl'].mean() if len(wins) else 0.0,
+        'avg_loss': losses['pnl'].mean() if len(losses) else 0.0,
+        'profit_factor': (gw / gl) if gl > 1e-9 else np.inf,
+        'avg_bars_held': tr['bars_held'].mean(),
+        'avg_r': tr['r_mult'].mean(),
+        'total_actions': int(tr['n_actions'].sum()),
+    }
+    return stats, tr
