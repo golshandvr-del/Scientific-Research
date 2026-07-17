@@ -54,7 +54,12 @@ EVAL_START = 24000            # هم‌راستا با LOOKBACK؛ ارزیابی
 
 LGB = dict(objective='binary', n_estimators=200, learning_rate=0.05,
            num_leaves=31, max_depth=6, min_child_samples=80,
-           subsample=0.8, colsample_bytree=0.8, reg_lambda=1.0, verbose=-1, n_jobs=2)
+           subsample=0.8, colsample_bytree=0.8, reg_lambda=1.0, verbose=-1, n_jobs=1)
+
+# ضریبِ ATR-نسبیِ آستانهٔ «روشن‌شدنِ سطل». برای XAUUSD، EXP_MIN=0.10 معادلِ
+# 0.10/meanATR(=3.83) ≈ 0.026×meanATR است. همین ضریب را برای همهٔ دارایی‌ها به‌کار
+# می‌بریم تا معیارِ کیفیتِ سطل scale-invariant شود (باگِ مقیاسِ کشف‌شدهٔ S69).
+EXP_MIN_ATR_RATIO = 0.026
 
 # --- مشخصاتِ قراردادِ هر دارایی (هم‌راستا با ASSET_SPECS در router.ts) ---
 # spread به «واحدِ قیمتِ همان دارایی». برای فارکس اسپردِ تقریبیِ ۱ پیپ = 0.0001 است.
@@ -146,10 +151,15 @@ def run_one_asset(name, cfg):
 
     eval_mask = np.zeros(n, dtype=bool); eval_mask[EVAL_START:] = True
 
+    # آستانهٔ exp_minِ ATR-نسبی: برای XAUUSD عملاً همان EXP_MIN=0.10، برای فارکس/DXY
+    # متناسب با مقیاسِ قیمتِ خودشان (جلوگیری از باگِ صفر-معامله).
+    mean_atr = float(np.nanmean(atrv))
+    exp_min = EXP_MIN_ATR_RATIO * mean_atr
+    print(f"  meanATR={mean_atr:.6f}  → exp_min(ATR-نسبی)={exp_min:.6f}", flush=True)
     print("  ساختِ TP/SL-Plan (Bull) ...", flush=True)
-    planL = build_plan('long', labL, atrv, df, run_backtest, spread=cfg['spread'], max_hold=HZ)
+    planL = build_plan('long', labL, atrv, df, run_backtest, spread=cfg['spread'], max_hold=HZ, exp_min=exp_min)
     print("  ساختِ TP/SL-Plan (Bear) ...", flush=True)
-    planS = build_plan('short', labS, atrv, df, run_backtest, spread=cfg['spread'], max_hold=HZ)
+    planS = build_plan('short', labS, atrv, df, run_backtest, spread=cfg['spread'], max_hold=HZ, exp_min=exp_min)
 
     def get_trades(direction, plan):
         s = plan.entries & eval_mask
@@ -216,12 +226,41 @@ def run_one_asset(name, cfg):
                 h1=halves['H1'], h2=halves['H2'], eq=eq, tradable=cfg['tradable'])
 
 
+RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'results')
+
+
+def run_single_to_json(name):
+    """یک دارایی را اجرا و نتیجه را در results/_s69_<name>.json می‌ریزد (برای اجرای کم-مموری در subprocess)."""
+    cfg = ASSETS[name]
+    r = run_one_asset(name, cfg)
+    out = {k: (v if not isinstance(v, np.ndarray) else None) for k, v in r.items() if k != 'eq'}
+    with open(os.path.join(RES_DIR, f'_s69_{name}.json'), 'w') as fh:
+        json.dump(out, fh, ensure_ascii=False, indent=2, default=float)
+    print(f"\n[{name}] ذخیره شد در _s69_{name}.json", flush=True)
+
+
 def main():
+    """Orchestrator: هر دارایی در یک subprocessِ جدا اجرا می‌شود (سقفِ مموریِ ~۱GB)."""
+    import subprocess
     print("=== S69: پرتفویِ چهار-ارزیِ سرمایه‌محور (تعریفِ جدیدِ سودِ خالص) ===", flush=True)
     print(f"قانونِ #۱: فقط سودِ خالص. سرمایهٔ هر دارایی={INITIAL_CAPITAL:.0f}$، ریسک={RISK_PCT}%، ریسکِ ثابت.", flush=True)
+    print("هر دارایی در subprocessِ جدا اجرا می‌شود تا مموری آزاد شود.\n", flush=True)
+    for name in ASSETS:
+        print(f"\n>>> اجرای subprocess برای {name} ...", flush=True)
+        rc = subprocess.call([sys.executable, os.path.abspath(__file__), name])
+        if rc != 0:
+            print(f"!!! {name} با کدِ {rc} خطا داد (احتمالاً مموری). ادامه می‌دهیم.", flush=True)
+
+    # جمع‌آوریِ نتایجِ JSON هر دارایی
     results = {}
-    for name, cfg in ASSETS.items():
-        results[name] = run_one_asset(name, cfg)
+    for name in ASSETS:
+        p = os.path.join(RES_DIR, f'_s69_{name}.json')
+        if os.path.exists(p):
+            with open(p) as fh:
+                results[name] = json.load(fh)
+        else:
+            results[name] = dict(name=name, n=0, net=0.0, ret=0.0, dd=0.0, pf=0.0,
+                                  wr=0.0, n_bull=0, n_bear=0, net_comp=0.0, tradable=True)
 
     print(f"\n\n{'#'*90}\n### جمع‌بندیِ پرتفوی — تعریفِ جدیدِ «سودِ خالص» = جمعِ چهار دارایی\n{'#'*90}", flush=True)
     print(f"{'دارایی':10s} {'n':>5s} {'Bull':>5s} {'Bear':>5s} {'netP$':>11s} {'بازده%':>9s} "
@@ -243,14 +282,16 @@ def main():
     print(f"  مقایسه: برندهٔ قبلی S67 (فقط XAUUSD) = +37,156$", flush=True)
 
     # ذخیرهٔ خلاصه برای گزارش
-    out = {name: {k: (v if not isinstance(v, np.ndarray) else None)
-                  for k, v in results[name].items() if k != 'eq'} for name in ASSETS}
+    out = {name: results[name] for name in ASSETS}
     out['_portfolio'] = dict(total_net=total_net, total_net_comp=total_net_comp,
                              total_n=total_n, tradable_net_no_dxy=tradable_net)
-    with open(os.path.join(os.path.dirname(__file__), '..', 'results', '_s69_summary.json'), 'w') as fh:
+    with open(os.path.join(RES_DIR, '_s69_summary.json'), 'w') as fh:
         json.dump(out, fh, ensure_ascii=False, indent=2, default=float)
     print("\nخلاصه در results/_s69_summary.json ذخیره شد. تمام.", flush=True)
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1 and sys.argv[1] in ASSETS:
+        run_single_to_json(sys.argv[1])
+    else:
+        main()
