@@ -107,6 +107,8 @@ export function analyze(c: Candle[]): AnalysisResult {
   const atr = atrArr[i]
   const e50 = ema50[i], e200 = ema200[i], e100 = ema100[i], e20 = ema20[i]
   const vwap = vwapArr[i]
+  // ساعتِ UTC آخرین کندل — برای فیلترِ سشن (پاسخِ اثبات‌شده به User Note 2؛ S83).
+  const utcHour = Math.floor(c[i].time / 3600) % 24
 
   // ---- تشخیص روند ----
   let trend: 'up' | 'down' | 'range' = 'range'
