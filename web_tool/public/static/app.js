@@ -31,6 +31,34 @@ function getRisk() { const v = parseFloat(localStorage.getItem(RISK_KEY)); retur
 function setCapital(v) { localStorage.setItem(CAP_KEY, String(v)) }
 function setRisk(v) { localStorage.setItem(RISK_KEY, String(v)) }
 
+// ============================================================================
+// 🔒 قفلِ سیگنالِ ورود (Signal Latch) — رفعِ باگِ User Note
+// ----------------------------------------------------------------------------
+// باگی که کاربر دید: «پیشنهادِ معامله داد، تا در دمو باز کردم دوباره خنثی شد»
+// و «هر بار TP/SL فرق می‌کرد». ریشه: سرور stateless است و هر ۳۰ ثانیه سیگنال را
+// از صفر و روی «قیمتِ لحظه‌ایِ همان لحظه» می‌سازد؛ پس:
+//   ۱) entry/tp/sl هر tick عوض می‌شود (در تستِ زنده: ۲۴ offerِ متفاوت، اختلاف ۷.۹۴$).
+//   ۲) وقتی ER دقیقاً روی مرزِ ۰.۱۵ نوسان می‌کند، حالت بینِ ENTRY↔NEUTRAL می‌پرد (flicker).
+//
+// راه‌حل (بدونِ دست‌زدن به منطقِ برندهٔ بک‌تست): وقتی سایت «اولین بار» ENTRY می‌دهد،
+// همان offer (جهت/entry/TP/SL) را **قفل** می‌کنیم و تا وقتی سیگنال واقعاً باطل نشده
+// ثابت نگه می‌داریم. قیمتِ زنده فقط برای نمایشِ «فاصله تا ورود» به‌روز می‌شود.
+// قفل فقط در این حالت‌ها باطل می‌شود (hysteresis):
+//   • جهتِ سیگنال برعکس شود (LONG↔SHORT)  → سیگنالِ قبلی دیگر معتبر نیست.
+//   • حالت برای «۳ نمونهٔ متوالی» NEUTRAL بماند (نه یک نوسانِ گذرا روی مرز).
+//   • قیمت از entry بیش از یک آستانه دور شود (سیگنال منقضی — دیگر «همان‌جا» نیست).
+// این کاری است که هر تریدرِ منطقی می‌کند: با هر تیکِ قیمت، planِ ورودش را عوض نمی‌کند.
+// ============================================================================
+const NEUTRAL_TOLERANCE = 3         // چند نمونهٔ متوالیِ NEUTRAL تا ابطالِ قفل
+const LATCH_KEY = (asset) => 'latch_' + asset
+function getLatch(asset) {
+  try { return JSON.parse(localStorage.getItem(LATCH_KEY(asset)) || 'null') } catch { return null }
+}
+function setLatch(asset, latch) {
+  if (latch) localStorage.setItem(LATCH_KEY(asset), JSON.stringify(latch))
+  else localStorage.removeItem(LATCH_KEY(asset))
+}
+
 // آخرین دادهٔ decision و advice برای هر دارایی
 const store = {}   // { XAUUSD: { decision, adviceStatus, error } , ... }
 let assetsMeta = []
@@ -186,11 +214,22 @@ function renderEntry(a, d) {
   const dirColor = isLong ? 'text-emerald-400' : 'text-rose-400'
   const dirBg = isLong ? 'bg-emerald-500/15 border-emerald-500/40' : 'bg-rose-500/15 border-rose-500/40'
   const dirFa = isLong ? 'خرید (LONG)' : 'فروش (SHORT)'
+  // 🔒 بنرِ قفلِ سیگنال (شفافیت با کاربر — رفعِ باگِ «offer ناپایدار»)
+  const latchBanner = d._latched ? `
+      <div class="mb-2 flex items-center gap-2 rounded-md ${d._fading ? 'bg-amber-500/15 border-amber-500/40' : 'bg-slate-800/70 border-slate-600/60'} border px-2.5 py-1.5 text-[11px]">
+        <i class="fas fa-lock ${d._fading ? 'text-amber-400' : 'text-slate-400'}"></i>
+        <span class="${d._fading ? 'text-amber-200' : 'text-slate-300'}">
+          ${d._fading
+            ? 'سیگنالِ قفل‌شده — شاخص‌ها لحظه‌ای زیرِ آستانه‌اند ولی پیشنهادِ اولیه پابرجاست (ضدِ نوسان).'
+            : 'این پیشنهاد قفل شده و با نوسانِ کوچکِ قیمت جابه‌جا نمی‌شود (TP/SL ثابت می‌ماند).'}
+        </span>
+      </div>` : ''
   return `
     <div class="rounded-lg ${dirBg} border p-3 mb-3">
       <p class="font-bold ${dirColor} mb-1 text-base">
         <i class="fas ${isLong ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'} ml-1"></i>${d.headline}
       </p>
+      ${latchBanner}
       <p class="text-sm text-slate-300 leading-relaxed mb-3">${d.reason}</p>
       <div class="grid grid-cols-3 gap-2 text-center" dir="ltr">
         <div class="bg-slate-800/70 rounded-lg p-2">
@@ -382,6 +421,7 @@ function bindEvents() {
         openedAt: Math.floor(Date.now() / 1000),
       }
       setTrade(d.asset, trade)
+      setLatch(d.asset, null)   // 🔒 معامله ثبت شد → قفلِ سیگنال دیگر لازم نیست (MANAGE فرمان است)
       store[d.asset] = store[d.asset] || {}
       store[d.asset].adviceStatus = null
       render()
@@ -410,6 +450,33 @@ function bindEvents() {
 }
 
 // ============================================================================
+// 🔒 هستهٔ قفلِ سیگنال — تبدیلِ decisionِ خامِ سرور به تصمیمِ «پایدار»
+// ----------------------------------------------------------------------------
+// اگر معاملهٔ ثبت‌شده داریم، اصلاً دخالت نمی‌کنیم (MANAGE مستقل است).
+// در غیرِ این صورت:
+//   • اگر قفلی نداریم و سرور ENTRY داد → قفل می‌کنیم (offer را تثبیت).
+//   • اگر قفل داریم:
+//       - سرور ENTRYِ هم‌جهت داد → همان offerِ قفل‌شده را نگه می‌داریم (نه offerِ جدید!)
+//         و شمارندهٔ NEUTRAL را صفر می‌کنیم.
+//       - سرور جهتِ مخالف داد → قفلِ قبلی باطل، قفلِ جدید ساخته می‌شود.
+//       - سرور NEUTRAL/APPROACHING داد → شمارنده +۱؛ تا نرسیدن به NEUTRAL_TOLERANCE،
+//         همچنان offerِ قفل‌شده را «ENTRYِ پایدار» نشان می‌دهیم (ضدِ flicker).
+//         با عبور از آستانه، قفل باطل و همان تصمیمِ خامِ سرور نمایش داده می‌شود.
+// خروجی: یک RouterDecision با فیلدِ افزودهٔ `_latched` (برای UI) و offerِ ثابت.
+// ============================================================================
+function applyLatch(asset, raw) {
+  // از ماژولِ مشترکِ signal_latch.js استفاده می‌کنیم تا «همان منطقی» اجرا شود که
+  // ابزارِ تستِ کیفیت (harness) تست می‌کند — منبعِ واحدِ حقیقت.
+  const hasTrade = !!getTrade(asset)
+  const cur = getLatch(asset)
+  const SL = (typeof window !== 'undefined' && window.SignalLatch) ? window.SignalLatch : null
+  if (!SL) return raw   // اگر ماژول بارگذاری نشد، رفتارِ خام (fail-safe)
+  const { decision, latch } = SL.computeLatched(cur, raw, hasTrade, Date.now())
+  setLatch(asset, latch)
+  return decision
+}
+
+// ============================================================================
 // دریافتِ داده
 // ============================================================================
 async function refreshAll() {
@@ -423,7 +490,8 @@ async function refreshAll() {
     data.assets.forEach(a => {
       store[a.asset] = store[a.asset] || {}
       if (a.ok) {
-        store[a.asset].decision = a.decision
+        // 🔒 اعمالِ قفلِ سیگنال: decisionِ خام را به تصمیمِ «پایدار» تبدیل می‌کند.
+        store[a.asset].decision = applyLatch(a.asset, a.decision)
         store[a.asset].price = a.price
         store[a.asset].error = null
       } else {

@@ -501,6 +501,7 @@ const PAGE = `<!DOCTYPE html>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
   <div id="app" class="max-w-5xl mx-auto p-4"></div>
+  <script src="/static/signal_latch.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>`
