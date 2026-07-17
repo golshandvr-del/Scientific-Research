@@ -59,8 +59,8 @@ def build_fingerprint(df):
     atr14 = ind.atr(df, 14)
     fp = pd.DataFrame(index=df.index)
     # 1) قدرت/جهتِ روند (ADX + شیب)
-    adx_df = ind.adx(df, 14)
-    fp['adx'] = adx_df['adx'] if isinstance(adx_df, pd.DataFrame) else adx_df
+    adx_, _pdi, _mdi = ind.adx(df, 14)
+    fp['adx'] = adx_.values
     fp['slope50'] = ind.rolling_slope(c, 50) / atr14           # شیبِ نرمال‌شده با نوسان
     # 2) رژیمِ نوسان (ATR نسبی + z-نوسان)
     fp['atr_pct'] = (atr14 / c) * 100.0
