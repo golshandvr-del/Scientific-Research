@@ -52,9 +52,17 @@ import pandas as pd
 #   spread_pip : اسپردِ نوعیِ رفت‌وبرگشت بر حسبِ pip
 #   comm       : کمیسیونِ رفت‌وبرگشت به‌ازای هر لاتِ استاندارد (دلار)
 #   slip_pip   : اسلیپیجِ نوعی (هر طرف) بر حسبِ pip
+#
+# ⚠️ مشخصاتِ طلا از «حسابِ واقعیِ کاربر» گرفته شده (User Note 2 — ۲۰۲۶/۰۷/۱۷):
+#   • حجمِ ۰.۰۱ لات → مارجینِ ۰.۴۰$ (leverage بسیار بالا؛ در بک‌تستِ ۱۰k$ محدودیتِ
+#     مارجین اصلاً فعال نمی‌شود، پس نادیده گرفته می‌شود).
+#   • اسپردِ کلِ طلا = ۴۰ pip بر تعریفِ بروکر (۱pip=۰.۰۱$ حرکت) = ۰.۴۰$ حرکتِ قیمت.
+#     چون در موتور pip=0.10 است، این معادلِ ۴.۰ pipِ موتور است (۴×۱۰$=۴۰$ برای ۱ لات).
+#   • کمیسیونِ طلا = صفر.
+#   این جایگزینِ فرضِ قدیمیِ (spread=2, comm=7) شد؛ اکنون بدبینانه‌تر و واقعی‌تر است.
 # ------------------------------------------------------------------------------
 ASSETS = {
-    'XAUUSD': dict(file='data/XAUUSD_M15.csv', pip=0.10,   contract=100.0,     pip_value=10.0, spread_pip=2.0, comm=7.0, slip_pip=0.5),
+    'XAUUSD': dict(file='data/XAUUSD_M15.csv', pip=0.10,   contract=100.0,     pip_value=10.0, spread_pip=4.0, comm=0.0, slip_pip=0.5),
     'EURUSD': dict(file='data/EURUSD_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.0, comm=7.0, slip_pip=0.3),
     'AUDUSD': dict(file='data/AUDUSD_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.2, comm=7.0, slip_pip=0.3),
     'USDCHF': dict(file='data/USDCHF_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.4, comm=7.0, slip_pip=0.3),
