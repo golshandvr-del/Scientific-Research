@@ -134,6 +134,8 @@ function renderCard(a) {
           <h2 class="font-bold text-slate-100">${a.name}</h2>
           ${a.layer === 'scalp'
             ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 font-bold" title="سبک: اسکالپِ کوتاه‌مدت روی M5"><i class="fas fa-bolt"></i> اسکالپ</span>'
+            : a.layer === 'swing-m30'
+            ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold" title="سبک: نوسان‌گیریِ میان‌مدت روی M30 (نگهداریِ تا ۳ روز، R:R بالا)"><i class="fas fa-mountain"></i> نوسانی M30</span>'
             : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold" title="سبک: معاملهٔ نوسانی روی M15"><i class="fas fa-wave-square"></i> نوسانی</span>'}
         </div>
         <span class="text-xs px-2.5 py-1 rounded-full font-bold ${sm.chip}">

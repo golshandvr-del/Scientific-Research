@@ -8,6 +8,7 @@ import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuot
 import { decide, assetSpec } from './router'
 import { decideEurusd } from './eurusd_router'
 import { decideGoldM5 } from './gold_m5_router'
+import { decideGoldM30 } from './gold_m30_router'
 
 const app = new Hono()
 
@@ -344,38 +345,50 @@ app.get('/api/context', async (c) => {
 //   طلا اسپرد ۰.۴۰$ (۴ pip)/کمیسیون ۰ ، EURUSD اسپرد ۱.۵ pip/کمیسیون ۰.
 //   • XAUUSD (M15) — موتورِ برندهٔ S67 (+۳۰٬۴۹۰$)، منطقِ decide()ِ عمومی.
 //   • XAUUSD (M5)  — لایهٔ اسکالپِ نوِ S79 (Trend-Pullback، +۴٬۲۵۶$، منطقِ decideGoldM5).
+//   • XAUUSD (M30) — لایهٔ نوسانیِ نوِ S81 (Swing Trend-Pullback، +۱۴٬۳۲۷$، منطقِ decideGoldM30).
+//                    جایگزینِ لایهٔ H1/S80 شد (corr(M30,H1)=+۰.۷۵؛ M30 قوی‌تر).
 //   • EURUSD (M15) — استراتژیِ نوِ S73 (Session-Open Drift، +۹٬۲۲۳$، منطقِ decideEurusd).
 // DXY و AUDUSD حذف شدند چون هیچ لبهٔ سوددهی روی آن‌ها یافت نشد (S69–S72 زیان‌ده).
 //
 // 🎯 قانونِ شمارهٔ ۱ پروژه: هدف فقط «سودِ خالصِ بیشتر» است، نه Win-Rate.
 // تعریفِ رسمیِ سودِ خالص = جمعِ سودِ XAUUSD + EURUSD.
-// سودِ خالصِ کل (هزینهٔ واقعی) = (S67+S79) + S73 = +۳۴٬۷۴۶$ + +۹٬۲۲۳$ = +۴۳٬۹۶۸$.
+// سودِ خالصِ کل (هزینهٔ واقعی) = (S67+S79+S81) + S73 = +۴۹٬۰۷۳$ + +۹٬۲۲۳$ = +۵۸٬۲۹۵$.
 //
-// فیلدِ `layer`: 'swing' = نوسانی/میان‌مدت (M15) ، 'scalp' = اسکالپِ کوتاه (M5).
+// فیلدِ `layer`: 'swing' = نوسانی/میان‌مدت (M15) ، 'scalp' = اسکالپِ کوتاه (M5) ،
+//   'swing-m30' = نوسان‌گیریِ M30 (S81 — نگهداریِ تا ۳ روز، R:R بالا).
 // این برچسب در UI به کاربر نشان داده می‌شود تا بداند پیشنهاد از کدام سبک آمده است.
-const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' }[] = [
-  { id: 'XAUUSD',    name: 'طلا / دلار — نوسانی (M15)', symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing' },
-  { id: 'XAUUSD-M5', name: 'طلا / دلار — اسکالپ (M5)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
-  { id: 'EURUSD',    name: 'یورو / دلار (EURUSD)',      symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'swing' },
+// هر کارت داده/منطق/localStorageِ مستقل دارد ⇒ کارت‌ها هیچ تداخلی با هم ندارند.
+const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' }[] = [
+  { id: 'XAUUSD',     name: 'طلا / دلار — نوسانی (M15)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing' },
+  { id: 'XAUUSD-M5',  name: 'طلا / دلار — اسکالپ (M5)',    symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
+  { id: 'XAUUSD-M30', name: 'طلا / دلار — نوسانی (M30)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing-m30' },
+  { id: 'EURUSD',     name: 'یورو / دلار (EURUSD)',        symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'swing' },
 ]
 
 // تصمیمِ یک دارایی: کندلِ زنده → analyze → decide (۴-حالته).
 async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 1.0) {
   if (a.isGold) {
     const isM5 = a.id === 'XAUUSD-M5'
-    // طلا: کندلِ GC=F + rebase به spot. لایهٔ اسکالپِ M5 کندلِ ۵ دقیقه‌ای می‌گیرد،
-    // لایهٔ نوسانیِ M15 کندلِ ۱۵ دقیقه‌ای. (منطقِ M15/S67 دست‌نخورده می‌ماند.)
-    const gapSec = isM5 ? 300 : 900
-    const { candles } = await fetchGold(isM5 ? '5m' : '15m', isM5 ? '5d' : '1mo')
+    const isM30 = a.id === 'XAUUSD-M30'
+    // طلا: کندلِ GC=F + rebase به spot. هر لایه تایم‌فریمِ مستقلِ خودش را می‌گیرد:
+    //   M5 → ۵دقیقه‌ای، M30 → ۳۰دقیقه‌ای، M15 → ۱۵دقیقه‌ای. (منطقِ M15/S67 دست‌نخورده.)
+    // نکته: Yahoo برای interval=30m فقط range تا ~۶۰ روز می‌دهد؛ 1mo امن است (~۴۸۰ کندل).
+    const gapSec = isM5 ? 300 : (isM30 ? 1800 : 900)
+    const interval = isM5 ? '5m' : (isM30 ? '30m' : '15m')
+    const range = isM5 ? '5d' : '1mo'
+    const { candles } = await fetchGold(interval, range)
     if (candles.length < 220) throw new Error('داده کافی برای تحلیل نیست')
     let spot: SpotPrice | null = null
     try { spot = await getSpotGold() } catch {}
     const merged = rebaseFuturesToSpot(candles, spot, gapSec)
     const useCandles = merged.candles
     const result = analyze(useCandles)
-    // لایهٔ اسکالپِ M5 → منطقِ مخصوصِ S79؛ لایهٔ نوسانیِ M15 → decide()ِ عمومیِ S67.
+    // هر لایه منطقِ استراتژیِ مخصوصِ خودش را دارد (کاملاً مستقل):
+    //   M5 → S79 (decideGoldM5) ، M30 → S81 (decideGoldM30) ، M15 → S67 (decide عمومی).
     const dec = isM5
       ? decideGoldM5(result, useCandles.map(k => k.close), capital, riskPct)
+      : isM30
+      ? decideGoldM30(result, useCandles.map(k => k.close), capital, riskPct)
       : decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec('XAUUSD'))
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
