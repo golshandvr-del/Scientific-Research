@@ -47,9 +47,18 @@ MIN_N = 15
 W_MIN, W_MAX, W_BASE, W_SLOPE = 0.5, 2.0, 1.0, 1.2
 
 
-def kelly_weight(exp):
-    """وزنِ حجمِ Kelly-کسری بر اساسِ اکسپکتنسیِ اخیرِ سطل."""
-    return float(np.clip(W_BASE + W_SLOPE * (exp - EXP_MIN), W_MIN, W_MAX))
+def kelly_weight(exp, exp_min=None, atr_scale=None):
+    """
+    وزنِ حجمِ Kelly-کسری بر اساسِ اکسپکتنسیِ اخیرِ سطل.
+    exp_min   : مبنای صفرِ وزن (پیش‌فرض EXP_MIN سراسری — رفتارِ تاریخیِ XAUUSD).
+    atr_scale : اگر داده شود، (exp - exp_min) بر حسبِ ATR نرمال می‌شود تا وزن‌دهی
+                برای دارایی‌های با مقیاسِ قیمتِ متفاوت هم درست باشد (S69).
+    """
+    if exp_min is None:
+        exp_min = EXP_MIN
+    if atr_scale and atr_scale > 0:
+        return float(np.clip(W_BASE + W_SLOPE * ((exp - exp_min) / atr_scale), W_MIN, W_MAX))
+    return float(np.clip(W_BASE + W_SLOPE * (exp - exp_min), W_MIN, W_MAX))
 
 
 class TPSLPlan:
@@ -86,18 +95,26 @@ def build_plan(direction, base_lab, atrv, df, run_backtest,
                spread=0.20, max_hold=48,
                sl_cands=None, tp_cands=None,
                adaptive_sl=True, adaptive_tp=True, use_kelly=True,
-               step=STEP, lookback=LOOKBACK):
+               step=STEP, lookback=LOOKBACK, exp_min=None):
     """
     برنامهٔ SL/TP/وزنِ رژیم-آگاه را به‌صورتِ رولینگ و forward-safe می‌سازد.
 
     برای هر بلوکِ [start, start+step):
       • فقط از پنجرهٔ [start-lookback, start) یاد می‌گیریم.
-      • هر سطلِ رژیم که اکسپکتنسیِ اخیرش ≥ EXP_MIN و n ≥ MIN_N باشد «روشن» است.
+      • هر سطلِ رژیم که اکسپکتنسیِ اخیرش ≥ exp_min و n ≥ MIN_N باشد «روشن» است.
       • جست‌وجوی مشترکِ (SL, TP) روی گرید، انتخابِ جفتی با بیشترین سودِ خالصِ اخیر.
       • وزنِ Kelly از اکسپکتنسیِ همان جفتِ بهینه.
 
+    exp_min : آستانهٔ اکسپکتنسیِ «روشن‌شدنِ سطل» به «واحدِ قیمتِ همان دارایی».
+              اگر None → EXP_MIN سراسری (=۰.۱۰) — رفتارِ تاریخیِ XAUUSD دست‌نخورده
+              (سازگاریِ عقب‌رو با S67). ⚠️ برای دارایی‌های با مقیاسِ قیمتِ متفاوت
+              (فارکس ~۱.۱ ، DXY ~۱۰۰) این عدد باید ATR-نسبی باشد (~۰.۰۲۶×میانگینِ ATR)،
+              وگرنه هیچ سطلی روشن نمی‌شود و صفر معامله تولید می‌گردد (باگِ مقیاسِ کشف‌شده در S69).
+
     این تابع به backtest.run_backtest وابسته است (تزریق‌شده تا ماژول مستقل بماند).
     """
+    if exp_min is None:
+        exp_min = EXP_MIN
     n = len(df)
     if sl_cands is None:
         sl_cands = DEFAULT_SL_CANDS_L if direction == 'long' else DEFAULT_SL_CANDS_S
@@ -126,7 +143,7 @@ def build_plan(direction, base_lab, atrv, df, run_backtest,
         for bk in BUCKETS:
             # آیا سطل روشن است؟ (با SL/TP پایه، مطابق قاعدهٔ روشن/خاموشِ برنده)
             exp0, ntr0, _ = bucket_bt(bk, lb_lo, start, base_sl, base_tp)
-            if exp0 is None or ntr0 < MIN_N or exp0 < EXP_MIN:
+            if exp0 is None or ntr0 < MIN_N or exp0 < exp_min:
                 continue
             sl_grid = sl_cands if adaptive_sl else [base_sl]
             tp_grid = tp_cands if adaptive_tp else [base_tp]
@@ -136,7 +153,13 @@ def build_plan(direction, base_lab, atrv, df, run_backtest,
                     e, nt, pnl = bucket_bt(bk, lb_lo, start, slc, tpc)
                     if e is not None and nt >= MIN_N and pnl > best_pnl:
                         best_pnl, best_sl, best_tp, best_exp = pnl, slc, tpc, e
-            w = kelly_weight(best_exp) if use_kelly else 1.0
+            # atr_scale: میانگینِ ATR روی پنجرهٔ یادگیری (برای نرمال‌سازیِ ATR-نسبیِ وزن).
+            # فقط وقتی exp_min صریح داده شده (S69) اعمال می‌شود؛ برای XAUUSDِ پیش‌فرض None.
+            atr_scale = None
+            if exp_min != EXP_MIN:
+                seg_atr = atrv[lb_lo:start]
+                atr_scale = float(np.nanmean(seg_atr)) if len(seg_atr) else None
+            w = kelly_weight(best_exp, exp_min=exp_min, atr_scale=atr_scale) if use_kelly else 1.0
             chosen.append((bk, best_sl, best_tp, w))
         for bk, slc, tpc, w in chosen:
             seg = (base_lab == bk)
