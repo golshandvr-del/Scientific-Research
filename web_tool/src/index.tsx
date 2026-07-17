@@ -7,6 +7,7 @@ import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
 import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuote, type SpotPrice } from './external'
 import { decide, assetSpec } from './router'
 import { decideEurusd } from './eurusd_router'
+import { decideGoldM5 } from './gold_m5_router'
 
 const app = new Hono()
 
@@ -338,29 +339,45 @@ app.get('/api/context', async (c) => {
 // دستیارِ تصمیمِ چند-دارایی + ماشینِ حالتِ ۴-وضعیتی (PARADIGM v2 / User Note 2)
 // ---------------------------------------------------------------------------
 // rebase به spot می‌آید؛ بقیه مستقیماً از Yahoo. منطقِ تصمیم در router.ts.
-// طبقِ User Note: سایت به «فقط دو داراییِ دارای لبهٔ اثبات‌شده» کاهش یافت:
-//   • XAUUSD — موتورِ برندهٔ S67 (رکوردِ +۳۷٬۱۵۶$)، کاملاً دست‌نخورده (decide()ِ عمومی).
-//   • EURUSD — استراتژیِ نوِ S73 (Session-Open Drift، +۷٬۳۰۲$، منطقِ مخصوصِ decideEurusd).
+// طبقِ User Note: سایت بخش‌های داراییِ دارای لبهٔ اثبات‌شده را نمایش می‌دهد.
+// همهٔ اعداد با «هزینهٔ واقعیِ حسابِ کاربر» (User Note 2) بازآزمایی شده‌اند:
+//   طلا اسپرد ۰.۴۰$ (۴ pip)/کمیسیون ۰ ، EURUSD اسپرد ۱.۵ pip/کمیسیون ۰.
+//   • XAUUSD (M15) — موتورِ برندهٔ S67 (+۳۰٬۴۹۰$)، منطقِ decide()ِ عمومی.
+//   • XAUUSD (M5)  — لایهٔ اسکالپِ نوِ S79 (Trend-Pullback، +۴٬۲۵۶$، منطقِ decideGoldM5).
+//   • EURUSD (M15) — استراتژیِ نوِ S73 (Session-Open Drift، +۹٬۲۲۳$، منطقِ decideEurusd).
 // DXY و AUDUSD حذف شدند چون هیچ لبهٔ سوددهی روی آن‌ها یافت نشد (S69–S72 زیان‌ده).
-// سودِ خالصِ کل = XAUUSD + EURUSD = +۴۴٬۴۵۸$.
-const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number }[] = [
-  { id: 'XAUUSD', name: 'طلا / دلار (XAUUSD)', symbol: 'GC=F',     isGold: true,  decimals: 2 },
-  { id: 'EURUSD', name: 'یورو / دلار (EURUSD)', symbol: 'EURUSD=X', isGold: false, decimals: 5 },
+//
+// 🎯 قانونِ شمارهٔ ۱ پروژه: هدف فقط «سودِ خالصِ بیشتر» است، نه Win-Rate.
+// تعریفِ رسمیِ سودِ خالص = جمعِ سودِ XAUUSD + EURUSD.
+// سودِ خالصِ کل (هزینهٔ واقعی) = (S67+S79) + S73 = +۳۴٬۷۴۶$ + +۹٬۲۲۳$ = +۴۳٬۹۶۸$.
+//
+// فیلدِ `layer`: 'swing' = نوسانی/میان‌مدت (M15) ، 'scalp' = اسکالپِ کوتاه (M5).
+// این برچسب در UI به کاربر نشان داده می‌شود تا بداند پیشنهاد از کدام سبک آمده است.
+const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' }[] = [
+  { id: 'XAUUSD',    name: 'طلا / دلار — نوسانی (M15)', symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing' },
+  { id: 'XAUUSD-M5', name: 'طلا / دلار — اسکالپ (M5)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
+  { id: 'EURUSD',    name: 'یورو / دلار (EURUSD)',      symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'swing' },
 ]
 
-// تصمیمِ یک دارایی: کندلِ M15 زنده → analyze → decide (۴-حالته).
+// تصمیمِ یک دارایی: کندلِ زنده → analyze → decide (۴-حالته).
 async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 1.0) {
   if (a.isGold) {
-    // طلا: همان مسیرِ /api/analysis (GC=F + rebase به spot)
-    const { candles } = await fetchGold('15m', '1mo')
+    const isM5 = a.id === 'XAUUSD-M5'
+    // طلا: کندلِ GC=F + rebase به spot. لایهٔ اسکالپِ M5 کندلِ ۵ دقیقه‌ای می‌گیرد،
+    // لایهٔ نوسانیِ M15 کندلِ ۱۵ دقیقه‌ای. (منطقِ M15/S67 دست‌نخورده می‌ماند.)
+    const gapSec = isM5 ? 300 : 900
+    const { candles } = await fetchGold(isM5 ? '5m' : '15m', isM5 ? '5d' : '1mo')
     if (candles.length < 220) throw new Error('داده کافی برای تحلیل نیست')
     let spot: SpotPrice | null = null
     try { spot = await getSpotGold() } catch {}
-    const merged = rebaseFuturesToSpot(candles, spot, 900)
+    const merged = rebaseFuturesToSpot(candles, spot, gapSec)
     const useCandles = merged.candles
     const result = analyze(useCandles)
-    const dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
-    return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
+    // لایهٔ اسکالپِ M5 → منطقِ مخصوصِ S79؛ لایهٔ نوسانیِ M15 → decide()ِ عمومیِ S67.
+    const dec = isM5
+      ? decideGoldM5(result, useCandles.map(k => k.close), capital, riskPct)
+      : decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec('XAUUSD'))
+    return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
   }
@@ -382,7 +399,7 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   } else {
     dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
   }
-  return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
+  return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
     price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
 }
