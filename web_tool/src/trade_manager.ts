@@ -71,7 +71,35 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   const rawMove = isLong ? (price - t.entry) : (t.entry - price)
   const pnlUsd = round2(rawMove)
   const pnlR = round2(rawMove / riskDist)
-  const inProfit = rawMove > 0
+
+  // ==========================================================================
+  // 🔧 رفعِ باگِ User Note #3 (توصیه‌های گمراه‌کننده «فوراً ببند»)
+  // --------------------------------------------------------------------------
+  // شکایتِ کاربر: «همین که معامله را باز کردم گفت ببند، در حالی‌که فقط به‌خاطرِ
+  // اسپرد کمی در ضرر بودم!» دو ریشه داشت:
+  //   ۱) هیچ «ناحیهٔ خنثیِ نویز/اسپرد» نبود؛ افتِ ناچیزِ اول = «ضرر» تلقی می‌شد.
+  //   ۲) هیچ «دورهٔ تنفس (grace)» بعد از ورود نبود؛ توصیهٔ بحرانی فوراً فعال می‌شد.
+  //
+  // راه‌حل:
+  //   • ناحیهٔ خنثی = max(نصفِ اسپردِ تخمینی، ~۰.۱۲R). داخلِ این ناحیه معامله
+  //     «تازه/نزدیکِ ورود» است، نه «در سود» و نه «در ضرر». هیچ توصیهٔ ترس‌آور نمی‌دهیم.
+  //   • دورهٔ تنفس: تا ۳ کندلِ اول (۴۵ دقیقه) یا تا وقتی حرکت از ناحیهٔ خنثی خارج نشده،
+  //     فقط پیام «به معامله فرصت بده» می‌دهیم؛ هیچ «ببند/بستنِ بخشی» صادر نمی‌شود.
+  // ==========================================================================
+  // اسپردِ تخمینیِ هر دارایی بر حسبِ واحدِ قیمت (برای XAUUSD ~۰.۳$؛ فارکس ~۰.۰۰۰۲).
+  // اگر ATR بزرگ باشد اسپرد نسبیِ کوچکی است؛ ناحیهٔ خنثی را از هر دو می‌گیریم.
+  const spreadEst = price >= 100 ? 0.35 : price >= 5 ? 0.03 : 0.0002
+  // ناحیهٔ خنثی: بزرگ‌ترِ (اسپرد، ۰.۱۲R، ۰.۱۵×ATR) — تا نویز/اسپرد «ضرر» شمرده نشود.
+  const neutralBand = Math.max(spreadEst, 0.12 * riskDist, 0.15 * atr)
+  // فاصلهٔ زمانی از باز شدنِ معامله (ثانیه) — برای دورهٔ تنفس.
+  const ageSec = t.openedAt ? Math.max(0, Math.floor(Date.now() / 1000) - t.openedAt) : Infinity
+  const withinGraceTime = ageSec < 45 * 60         // < ۴۵ دقیقه (۳ کندلِ M15)
+  const withinNeutralBand = Math.abs(rawMove) <= neutralBand
+  // «تازه‌بودنِ معامله»: هم زمانِ کوتاه و هم هنوز داخلِ ناحیهٔ خنثی → فرصت بده.
+  const isFresh = withinGraceTime && withinNeutralBand
+  // «در سود/ضررِ واقعی» فقط وقتی از ناحیهٔ خنثی خارج شده‌ایم.
+  const inProfit = rawMove > neutralBand
+  const inRealLoss = rawMove < -neutralBand
 
   // پیشرفت به سمت TP (۱۰۰٪ یعنی رسیده به TP)
   const progressToTp = round2((rawMove / rewardDist) * 100)
@@ -86,6 +114,32 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   const reachedSl = isLong ? price <= t.sl : price >= t.sl
 
   const advices: Advice[] = []
+
+  // ---------- ۰) دورهٔ تنفسِ ابتدایی (رفعِ باگِ «فوراً ببند») ----------
+  // اگر معامله تازه است و هنوز داخلِ ناحیهٔ خنثی/اسپرد مانده (و به TP/SL نرسیده)،
+  // هیچ توصیهٔ ترس‌آوری نمی‌دهیم — فقط توضیح می‌دهیم که این افت/نوسانِ ناچیز طبیعی است.
+  if (isFresh && !reachedTp && !reachedSl) {
+    const moveTxt = rawMove < 0
+      ? `افتِ فعلی (${round2(Math.abs(rawMove))} واحدِ قیمت) در حدِ اسپرد/نویزِ طبیعیِ ورود است`
+      : `حرکتِ فعلی هنوز ناچیز است`
+    advices.push({
+      type: 'info', severity: 'info',
+      title: 'معامله تازه باز شده — به آن فرصت بده',
+      detail: `${moveTxt}. این یعنی «ضرر» نیست؛ صرفاً معامله هنوز از محدودهٔ ورود فاصله نگرفته. ` +
+        `تا وقتی قیمت از این ناحیه خارج نشده، طبقِ پلن با همان TP/SLِ اولیه صبور بمان — بستنِ زودهنگام فقط اسپرد را ضرر می‌کند.`,
+    })
+    return {
+      side: t.side, price: round2(price), entry: round2(t.entry), tp: round2(t.tp), sl: round2(t.sl),
+      inProfit, pnlUsd, pnlR, progressToTp,
+      distToSlPct: round2(((isLong ? price - t.sl : t.sl - price) / price) * 100),
+      distToTpPct: round2(((isLong ? t.tp - price : price - t.tp) / price) * 100),
+      riskReward: `R:R اولیه ≈ 1:${round2(rewardDist / riskDist)}`,
+      reachedTp: false, reachedSl: false,
+      advices,
+      overallAction: 'hold',
+      overallNote: 'معامله تازه باز شده و هنوز در محدودهٔ ورود است — طبقِ پلن صبور بمان، عجله برای بستن نکن.',
+    }
+  }
 
   // ---------- ۱) رسیدن به TP یا SL ----------
   if (reachedTp) {
@@ -176,24 +230,25 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
       })
     }
   }
-  // نزدیکی قیمت به سطحی که برخلاف معامله عمل می‌کند (خطر برگشت روی ضرر)
+  // نزدیکی قیمت به سطحی که برخلاف معامله عمل می‌کند (خطر برگشت روی ضررِ واقعی)
+  // ⚠️ فقط وقتی «در ضررِ واقعی» (خارج از ناحیهٔ خنثی/اسپرد) هستیم — نه صرفِ نبودِ سود.
   if (isLong && res) {
     const dR = ((res.price - price) / price) * 100
-    if (dR >= 0 && dR < nearPct && !inProfit) {
+    if (dR >= 0 && dR < nearPct && inRealLoss) {
       advices.push({
         type: 'level', severity: 'warning',
-        title: 'برخورد به مقاومت در ضرر',
-        detail: `قیمت به مقاومت ${round2(res.price)} رسیده و معامله در سود نیست. اگر این مقاومت رد نشود احتمال برگشت به SL بالاست — مراقب باش یا بخشی را ببند.`,
+        title: 'مقاومت پیشِ رو در حالِ ضرر',
+        detail: `قیمت به مقاومت ${round2(res.price)} رسیده و معامله در ضرر است. این سطح می‌تواند مانعِ ادامهٔ صعود شود؛ واکنشِ قیمت به آن را رصد کن. اگر با کندلِ برگشتی رد شد، طبقِ پلن با SLِ خودت مدیریت کن (نیازی به بستنِ عجولانه نیست).`,
       })
     }
   }
   if (!isLong && sup) {
     const dS = ((price - sup.price) / price) * 100
-    if (dS >= 0 && dS < nearPct && !inProfit) {
+    if (dS >= 0 && dS < nearPct && inRealLoss) {
       advices.push({
         type: 'level', severity: 'warning',
-        title: 'برخورد به حمایت در ضرر',
-        detail: `قیمت به حمایت ${round2(sup.price)} رسیده و معامله در سود نیست. اگر این حمایت نشکند احتمال برگشت به SL بالاست — مراقب باش یا بخشی را ببند.`,
+        title: 'حمایت پیشِ رو در حالِ ضرر',
+        detail: `قیمت به حمایت ${round2(sup.price)} رسیده و معامله در ضرر است. این سطح می‌تواند مانعِ ادامهٔ نزول شود؛ واکنشِ قیمت به آن را رصد کن. اگر با کندلِ برگشتی نگه‌داشت، طبقِ پلن با SLِ خودت مدیریت کن (نیازی به بستنِ عجولانه نیست).`,
       })
     }
   }
@@ -202,12 +257,20 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   const trendAgainst = (isLong && a.trend === 'down') || (!isLong && a.trend === 'up')
   const macdAgainst = (isLong && a.macdHist < 0) || (!isLong && a.macdHist > 0)
   if (trendAgainst) {
+    // شدت: در سود → هشدار (سود را حفظ کن)؛ در ضررِ واقعی → بحرانی (بستن را جدی بگیر)؛
+    // در ناحیهٔ خنثی (تازه/نزدیکِ ورود) → فقط اطلاع‌رسانی، نه ترساندن.
     advices.push({
-      type: 'reversal', severity: inProfit ? 'warning' : 'critical',
-      title: 'روند برخلاف معامله شد',
-      detail: `روند کلی بازار اکنون ${a.trend === 'up' ? 'صعودی' : 'نزولی'} است که مخالف معاملهٔ ${isLong ? 'خرید' : 'فروش'} توست. ${inProfit ? 'سود موجود را با کشیدن SL محافظت کن.' : 'ریسک ادامهٔ ضرر بالاست؛ به بستن معامله فکر کن.'}`,
+      type: 'reversal',
+      severity: inProfit ? 'warning' : (inRealLoss ? 'critical' : 'info'),
+      title: 'روند کلی برخلاف جهتِ معامله شد',
+      detail: `روند کلی بازار اکنون ${a.trend === 'up' ? 'صعودی' : 'نزولی'} است که مخالف معاملهٔ ${isLong ? 'خرید' : 'فروش'} توست. ` +
+        (inProfit
+          ? 'در سود هستی — SL را جلو بکش تا سود قفل شود.'
+          : inRealLoss
+            ? 'و در ضرر هستی؛ اگر با SLِ خودت هم‌خوان نیست، بستن را جدی بگیر.'
+            : 'اما هنوز نزدیکِ نقطهٔ ورودی و ضررِ معناداری نداری — چند کندل واکنشِ قیمت را ببین، عجله برای بستن نکن.'),
     })
-  } else if (macdAgainst && !inProfit) {
+  } else if (macdAgainst && inRealLoss) {
     advices.push({
       type: 'momentum', severity: 'info',
       title: 'مومنتوم کوتاه‌مدت مخالف است',
@@ -251,24 +314,35 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   let overallNote = 'شرایط پایدار است؛ طبق برنامه با TP/SL فعلی نگه‌دار.'
   if (reachedTp) { overallAction = 'close'; overallNote = 'به هدف رسیدی — سود را ثبت کن.' }
   else if (reachedSl) { overallAction = 'close'; overallNote = 'به حد ضرر رسیدی — طبق پلن خارج شو.' }
-  else if (trendAgainst && !inProfit) { overallAction = 'close'; overallNote = 'روند برخلاف تو و در ضرر هستی — بستن را جدی بگیر.' }
+  // «بستن» فقط وقتی روند معکوس شده و در ضررِ واقعی (خارج از ناحیهٔ اسپرد) هستیم.
+  else if (trendAgainst && inRealLoss) { overallAction = 'close'; overallNote = 'روند برخلاف تو شده و در ضررِ واقعی هستی — بستن را جدی بگیر.' }
   else if (pnlR >= 1.5) { overallAction = 'let-run'; overallNote = 'در سود خوبی هستی — SL را ترِیل کن و بگذار سود رشد کند.' }
   else if (pnlR >= 1.0) { overallAction = 'move-sl'; overallNote = 'SL را به بریک‌ایون ببر تا معامله بی‌ریسک شود.' }
-  else if (trendAgainst) { overallAction = 'tighten'; overallNote = 'روند ضعیف شده — SL را کمی محکم‌تر کن.' }
+  else if (trendAgainst && inProfit) { overallAction = 'tighten'; overallNote = 'روند ضعیف شده ولی در سودی — SL را جلو بکش تا سود حفظ شود.' }
   // اگر هیچ اقدام قوی‌ای فعال نشد اما هشدار داریم، جمع‌بندی را با هشدارها هم‌سو کن
   // تا با باکس‌های زیرین تناقض نداشته باشد.
   else if (hasCritical) { overallAction = 'tighten'; overallNote = 'هشدار مهم فعال است (پایین را بخوان) — مراقب باش و SL را محکم‌تر کن.' }
-  else if (nearLevelWarn && !inProfit) {
-    overallAction = 'tighten'
-    overallNote = 'قیمت به یک سطح کلیدی (حمایت/مقاومت) در وضعیت ضرر رسیده — تا شکسته‌شدن سطح، بی‌احتیاطی نکن و به بستن بخشی از حجم فکر کن.'
+  // برخورد به سطح در ضررِ واقعی → رصد کن، نه بستنِ عجولانه.
+  else if (nearLevelWarn && inRealLoss) {
+    overallAction = 'hold'
+    overallNote = 'قیمت به یک سطح کلیدی (حمایت/مقاومت) رسیده و کمی در ضرری — واکنشِ قیمت به این سطح را رصد کن و طبقِ SLِ خودت مدیریت کن؛ نیازی به بستنِ عجولانه نیست.'
   }
   else if (nearLevelWarn) {
     overallAction = 'hold'
     overallNote = 'نزدیک یک سطح کلیدی هستی (پایین را بخوان)؛ همان‌جا واکنش قیمت را رصد کن و در صورت لزوم TP/SL را تنظیم کن.'
   }
+  else if (inRealLoss && trendAgainst) {
+    overallAction = 'tighten'
+    overallNote = 'در ضرری و روند مساعد نیست — SL را محکم‌تر کن یا طبقِ پلن آماده خروج باش.'
+  }
   else if (hasWarning) {
     overallAction = 'hold'
     overallNote = 'یک نکتهٔ هشداری فعال است (پایین را بخوان)؛ با احتیاط و طبق پلن مدیریت کن.'
+  }
+  else if (!inProfit && !inRealLoss) {
+    // ناحیهٔ خنثی (نزدیکِ ورود، بعد از دورهٔ تنفس): پیامِ آرامش‌بخش، نه ترس.
+    overallAction = 'hold'
+    overallNote = 'قیمت هنوز نزدیکِ نقطهٔ ورودِ توست (در محدودهٔ اسپرد/نویز) — این ضرر نیست؛ طبقِ پلن با TP/SLِ فعلی صبور بمان.'
   }
 
   return {
