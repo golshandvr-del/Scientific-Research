@@ -103,8 +103,10 @@ function lotLabel(m: number): string {
   return `~${m.toFixed(1)} برابرِ پایه (کاهش‌یافته)`
 }
 
-// آستانه‌ها — هم‌راستا با بک‌تست S63
-const ER_TREND_THR = 0.30       // ER بالاتر = روندی (سطلِ trend)
+// آستانه‌ها — هم‌راستا با بک‌تستِ برندهٔ فعلی S66/L40 (راهکار A از User Note)
+// کاهش از ۰.۳۰ به ۰.۱۵ سودِ خالص را +۱۲.۲٪ بالا برد (۶۰۸۲$ → ۶۸۲۳$) و در هر دو
+// نیمهٔ walk-forward بهتر بود. رجوع: results/ER_Threshold_Sweep_NetProfit_UserNoteA_L40_50.md
+const ER_TREND_THR = 0.15       // ER بالاتر = روندی (سطلِ trend)
 const P_HI = 66                 // قدرتِ بالای proba (٪) — سطلِ hi
 const P_MIN = 58                // حداقلِ probaِ ورود (٪)
 const P_APPROACH = 52           // آستانهٔ «نزدیک‌شدن» (٪)
