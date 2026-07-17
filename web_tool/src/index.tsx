@@ -6,6 +6,7 @@ import { analyze } from './signal'
 import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
 import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuote, type SpotPrice } from './external'
 import { decide, assetSpec } from './router'
+import { decideEurusd } from './eurusd_router'
 
 const app = new Hono()
 
@@ -336,13 +337,15 @@ app.get('/api/context', async (c) => {
 // ---------------------------------------------------------------------------
 // دستیارِ تصمیمِ چند-دارایی + ماشینِ حالتِ ۴-وضعیتی (PARADIGM v2 / User Note 2)
 // ---------------------------------------------------------------------------
-// نگاشتِ دارایی‌های سایت به symbolِ Yahoo Finance. طلا از GC=F (طلای آتی) با
 // rebase به spot می‌آید؛ بقیه مستقیماً از Yahoo. منطقِ تصمیم در router.ts.
+// طبقِ User Note: سایت به «فقط دو داراییِ دارای لبهٔ اثبات‌شده» کاهش یافت:
+//   • XAUUSD — موتورِ برندهٔ S67 (رکوردِ +۳۷٬۱۵۶$)، کاملاً دست‌نخورده (decide()ِ عمومی).
+//   • EURUSD — استراتژیِ نوِ S73 (Session-Open Drift، +۷٬۳۰۲$، منطقِ مخصوصِ decideEurusd).
+// DXY و AUDUSD حذف شدند چون هیچ لبهٔ سوددهی روی آن‌ها یافت نشد (S69–S72 زیان‌ده).
+// سودِ خالصِ کل = XAUUSD + EURUSD = +۴۴٬۴۵۸$.
 const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number }[] = [
   { id: 'XAUUSD', name: 'طلا / دلار (XAUUSD)', symbol: 'GC=F',     isGold: true,  decimals: 2 },
-  { id: 'DXY',    name: 'شاخص دلار آمریکا (DXY)', symbol: 'DX-Y.NYB', isGold: false, decimals: 3 },
   { id: 'EURUSD', name: 'یورو / دلار (EURUSD)', symbol: 'EURUSD=X', isGold: false, decimals: 5 },
-  { id: 'AUDUSD', name: 'دلار استرالیا / دلار (AUDUSD)', symbol: 'AUDUSD=X', isGold: false, decimals: 5 },
 ]
 
 // تصمیمِ یک دارایی: کندلِ M15 زنده → analyze → decide (۴-حالته).
@@ -370,7 +373,15 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   const merged = mergeLiveQuote(candles, live, 900)
   const useCandles = merged.candles
   const result = analyze(useCandles)
-  const dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
+  // EURUSD: منطقِ مخصوصِ S73 (Session-Open Drift) — نه decide()ِ عمومیِ طلا.
+  let dec
+  if (a.id === 'EURUSD') {
+    const lastT = useCandles[useCandles.length - 1].time
+    const nowUtcHour = new Date(lastT * 1000).getUTCHours()
+    dec = decideEurusd(result, useCandles.map(k => k.close), nowUtcHour, capital, riskPct)
+  } else {
+    dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
+  }
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
     price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
