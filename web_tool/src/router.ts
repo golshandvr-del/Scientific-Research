@@ -305,6 +305,8 @@ export function decide(a: AnalysisResult, close: number[],
       // ---- ورودِ SHORT (ماشهٔ MA-confluence شلیک کرد) ----
       const entry = a.price
       const sl = entry + slDist
+      // TP اسمیِ دور (۲۰۰pip) فقط به‌عنوانِ «سقفِ» ایمنی؛ خروجِ واقعی با trailing است.
+      const tpNominal = entry - 200 * pip
       const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1.0, spec)
       const rd = Math.round(riskDollars * 100) / 100
       const qualNote = sm.dnStack
@@ -318,8 +320,8 @@ export function decide(a: AnalysisResult, close: number[],
           `«سریع» مدیریت می‌کنیم: پس از ۸ پیپ سود، حد ضرر به سربه‌سر می‌آید و با فاصلهٔ ۸ پیپ ` +
           `سود را دنبال می‌کند (میانگینِ نگه‌داری ~۲ کندل). طبقِ قانونِ شمارهٔ ۱، هدف سودِ خالصِ ` +
           `بیشتر است نه وین‌ریتِ بالا (این استراتژی WR پایین اما PF=1.12 دارد).`,
-        direction: 'SHORT', entry, sl,
-        rr: `SL ثابت ۴۰pip (${slDist.toFixed(2)}$) + خروجِ پویا: BE=۸pip، trailing=۸pip، حداکثر ۱۲ کندل`,
+        direction: 'SHORT', entry, tp: tpNominal, sl,
+        rr: `SL ثابت ۴۰pip (${slDist.toFixed(2)}$) + خروجِ پویا: BE=۸pip، trailing=۸pip، حداکثر ۱۲ کندل (TP سقفِ ۲۰۰pip)`,
         probability: sm.dnStack ? 62 : 55,
         sizing: {
           lotMultiplier: 1.0,
@@ -333,6 +335,12 @@ export function decide(a: AnalysisResult, close: number[],
           capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
             `(ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. ` +
             `اگر SL (فاصلهٔ ${slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        tpPlan: {
+          multiplier: 200,
+          note: `این استراتژی TPِ ثابت ندارد؛ عددِ ۲۰۰pip فقط «سقفِ ایمنی» است. خروجِ اصلی ` +
+            `با trailing انجام می‌شود: سود را با فاصلهٔ ۸pip دنبال کنید تا شتابِ نزولی تمام شود. ` +
+            `هدف سودِ کوچکِ سریع است (میانگین ~۲ کندل) — دقیقاً همان «۳-۴ دلار سودِ سریع» که خواستید.`,
         },
         slPlan: {
           multiplier: DEFAULT_SHORT_MA.slPip,
