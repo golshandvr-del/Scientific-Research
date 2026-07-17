@@ -190,6 +190,13 @@ def simulate_trades(df, long_sig, short_sig, sl_pip, tp_pip, asset,
                 outcome = 'loss'; exit_bar = j; exit_price = cur_sl; break
 
             # به‌روزرسانیِ peak_favor و trailing/BE برای کندلِ بعدی (پس از چکِ exit)
+            # ⚠️ اصلاحِ دومِ باگِ look-ahead: در *کندلِ ورود* trailing/BE فعال نمی‌شود.
+            # درونِ همان کندلی که وارد شده‌ایم، ترتیبِ برخوردِ high/low نامعلوم است؛
+            # اگر peak_favor را با extremumِ همین کندل به‌روز کنیم و trailing را جابجا
+            # کنیم، سودِ جعلی (bars_held=0 با pnl نجومی) رخ می‌دهد. پس trailing فقط
+            # از کندلِ *بعد* از ورود اثر می‌کند (استانداردِ صحیحِ بک‌تست).
+            if j == entry_bar:
+                continue
             if direction == 'long':
                 favor = hi - fill
                 if favor > peak_favor:
