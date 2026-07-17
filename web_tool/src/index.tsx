@@ -419,7 +419,7 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
 
 // خواندنِ سرمایه/ریسکِ کاربر از query (پیش‌فرض ۱۰k$ ، ۱٪) — کشفِ L41 (S67)
 function readCapitalParams(c: any): [number, number] {
-  const cap = Math.max(100, Math.min(10_000_000, parseFloat(c.req.query('capital')) || 10000))
+  const cap = Math.max(50, Math.min(10_000_000, parseFloat(c.req.query('capital')) || 10000))
   const risk = Math.max(0.1, Math.min(5, parseFloat(c.req.query('risk')) || 1.0))
   return [cap, risk]
 }
