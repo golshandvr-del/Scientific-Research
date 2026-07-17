@@ -12,6 +12,7 @@
 //   MANAGE     (مدیریتِ معامله)   — پس از ثبتِ معاملهٔ کاربر (در trade_manager).
 // ============================================================================
 import type { AnalysisResult } from './signal'
+import { computeShortMA, DEFAULT_SHORT_MA } from './short_ma_confluence'
 
 export type RouterState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 export type Regime = 'trend_up' | 'trend_down' | 'range'
@@ -271,6 +272,94 @@ export function decide(a: AnalysisResult, close: number[],
     { name: 'RSI(14)', value: a.rsi14.toFixed(1), status: 'neutral' },
     { name: 'ATR', value: atr.toFixed(2) + '$', status: 'neutral' },
   ]
+
+  // ========================================================================
+  // لایهٔ SHORTِ مستقل (S97–S102 / پاسخِ User Note: «چرا سیگنالِ نزولی نمی‌دهی؟»)
+  // ------------------------------------------------------------------------
+  // قانونِ شمارهٔ ۱: فقط «سودِ خالصِ بیشتر» مهم است — WR مهم نیست.
+  // این لایه فقط برای XAUUSD فعال است (کشف روی همان اعتبارسنجی شده) و *مکملِ*
+  // منطقِ ML است: وقتی مدلِ صعودی ساکت است ولی قیمت خطِ میانهٔ سه میانگین
+  // [EMA50,EMA100,SMA200] را از بالا رو به پایین قطع می‌کند، به‌جای «علاف‌کردنِ»
+  // کاربر، یک سیگنالِ SHORTِ سریع (خروجِ trailing، سودِ کوچکِ ~۲ کندلی) می‌دهد.
+  // اعتبار: کلِ ۱۵۰k +14,979$، PF 1.12، همبستگیِ روزانه با long −0.114 (مکمل).
+  // جزئیات: results/ShortMAConfluence_Trailing_NetProfit_76082.md
+  // ========================================================================
+  if (spec.id === 'XAUUSD' && reg.activeStream !== 'bull') {
+    const sm = computeShortMA(close, DEFAULT_SHORT_MA)
+    const pip = 0.1                     // طلا: ۱ pip = ۰.۱ واحدِ قیمت
+    const slDist = DEFAULT_SHORT_MA.slPip * pip     // ۴۰pip = ۴.۰$
+    const trailDist = DEFAULT_SHORT_MA.trailPip * pip
+    const beDist = DEFAULT_SHORT_MA.bePip * pip
+
+    const shortInd: RouterDecision['indicators'] = [
+      { name: 'خطِ میانهٔ MA (EMA50/EMA100/SMA200)', value: isFinite(sm.mid) ? sm.mid.toFixed(2) + '$' : '—',
+        status: sm.active ? 'ok' : (sm.approaching ? 'warn' : 'neutral') },
+      { name: 'چیدمانِ نزولیِ MA (EMA50<EMA100<SMA200)', value: sm.dnStack ? 'بله ✓' : 'خیر',
+        status: sm.dnStack ? 'ok' : 'neutral' },
+      { name: 'فاصلهٔ قیمت از میانه', value: sm.distPct.toFixed(2) + '%',
+        status: sm.distPct < 0 ? 'ok' : 'neutral' },
+      ...indicators,
+    ]
+
+    if (sm.active) {
+      // ---- ورودِ SHORT (ماشهٔ MA-confluence شلیک کرد) ----
+      const entry = a.price
+      const sl = entry + slDist
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      const qualNote = sm.dnStack
+        ? 'چیدمانِ میانگین‌ها کاملاً نزولی است (EMA50<EMA100<SMA200) — سیگنالِ باکیفیت.'
+        : 'هشدار: چیدمانِ میانگین‌ها هنوز کاملاً نزولی نیست؛ حجم را محافظه‌کارانه بگیرید.'
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'ورود فروش (SHORT) — قیمت خطِ میانهٔ میانگین‌ها را از بالا شکست',
+        reason: `${sm.reason} این همان الگویی است که «خطِ چارت، خطوطِ MA را از بالا قطع می‌کند» — ` +
+          `شتابِ نزولیِ کوتاه‌مدت. ${qualNote} چون طلا V-recovery دارد، این معامله را ` +
+          `«سریع» مدیریت می‌کنیم: پس از ۸ پیپ سود، حد ضرر به سربه‌سر می‌آید و با فاصلهٔ ۸ پیپ ` +
+          `سود را دنبال می‌کند (میانگینِ نگه‌داری ~۲ کندل). طبقِ قانونِ شمارهٔ ۱، هدف سودِ خالصِ ` +
+          `بیشتر است نه وین‌ریتِ بالا (این استراتژی WR پایین اما PF=1.12 دارد).`,
+        direction: 'SHORT', entry, sl,
+        rr: `SL ثابت ۴۰pip (${slDist.toFixed(2)}$) + خروجِ پویا: BE=۸pip، trailing=۸pip، حداکثر ۱۲ کندل`,
+        probability: sm.dnStack ? 62 : 55,
+        sizing: {
+          lotMultiplier: 1.0,
+          label: sm.dnStack ? 'کیفیتِ بالا (چیدمانِ نزولیِ کامل)' : 'کیفیتِ متوسط',
+          note: `استراتژیِ SHORT-MA-Confluence (S102). ورودِ open کندلِ بعد، اسپرد ۴pip لحاظ شده. ` +
+            `همبستگیِ روزانه با جریانِ long = −0.11 ⇒ این معامله مکملِ سبدِ long است و سودِ خالصِ ` +
+            `کل را افزایش می‌دهد (رکورد: +۶۱٬۱۰۲$ → +۷۶٬۰۸۲$).`,
+          lots: lots ?? undefined,
+          riskDollars: rd,
+          capital, riskPct,
+          capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+            `(ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. ` +
+            `اگر SL (فاصلهٔ ${slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        slPlan: {
+          multiplier: DEFAULT_SHORT_MA.slPip,
+          note: `SL ثابت ۴۰pip (${slDist.toFixed(2)}$). پس از رسیدن به ۸pip سود، به سربه‌سر منتقل کنید؛ ` +
+            `سپس با trailing ۸pip (${trailDist.toFixed(2)}$) سود را دنبال کنید. این خروجِ سریع، شتابِ نزولی ` +
+            `را «می‌دزدد» و پیش از بازگشتِ طلا خارج می‌شود (کلیدِ سوددهیِ SHORT روی طلا — L53/L55).`,
+        },
+        indicators: shortInd,
+      }
+    }
+
+    if (sm.approaching && reg.activeStream !== 'bear') {
+      // ---- نزدیک‌شدن به سیگنالِ SHORT ----
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'نزدیک‌شدن به سیگنالِ فروش (SHORT) — منتظرِ عبور از میانه',
+        reason: sm.reason,
+        confirmations: [
+          { label: 'قیمت از خطِ میانهٔ MA رو به پایین عبور کند', met: false,
+            detail: `اکنون ${sm.distPct.toFixed(2)}% بالای میانه است و رو به کاهش.` },
+          { label: 'چیدمانِ نزولیِ میانگین‌ها (EMA50<EMA100<SMA200)', met: sm.dnStack,
+            detail: sm.dnStack ? 'برقرار است ✓' : 'هنوز کامل نیست — برای کیفیتِ بالاتر منتظر بمانید.' },
+        ],
+        indicators: shortInd,
+      }
+    }
+  }
 
   // --------- حالتِ ۱: رنج / بی‌روند → خنثی (کلیدِ سودِ خالص طبقِ L36) ---------
   // رفعِ باگ (User Note): رژیمِ «رنج» اینجا از سرِ ساختارِ EMA50/200 تعیین می‌شود،
