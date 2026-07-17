@@ -7,7 +7,7 @@ import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
 import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuote, type SpotPrice } from './external'
 import { decide, assetSpec } from './router'
 import { decideEurusd } from './eurusd_router'
-import { decideGoldM5 } from './gold_m5_router'
+import { decideGoldM5, manageGoldM5Scalp } from './gold_m5_router'
 import { decideGoldM30 } from './gold_m30_router'
 
 const app = new Hono()
@@ -288,6 +288,42 @@ app.post('/api/trade/advice', async (c) => {
         breakoutScenarios: a.breakoutScenarios,
       },
       status,
+    })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e.message }, 502)
+  }
+})
+
+// --- مدیریتِ لحظه‌ایِ اسکالپِ M5 طلا (User Note) ---
+// بدونِ TP/SL/حجم. خروجی فقط: take_profit / wrong / hold + پیامِ فارسی.
+// ورودی: { action: 'BUY'|'SELL', refPrice: number }  (قیمتِ ورودِ کاربر)
+app.post('/api/scalp/manage', async (c) => {
+  try {
+    const body = await c.req.json().catch(() => null) as any
+    if (!body) return c.json({ ok: false, error: 'داده ارسال نشده' }, 400)
+    const action = (body.action === 'SELL' ? 'SELL' : 'BUY') as 'BUY' | 'SELL'
+    const refPrice = Number(body.refPrice)
+    if (!isFinite(refPrice) || refPrice <= 0) {
+      return c.json({ ok: false, error: 'قیمتِ ورود (refPrice) نامعتبر است' }, 400)
+    }
+
+    // دادهٔ زندهٔ M5 طلا (هم‌راستا با decideGoldM5)
+    const { candles } = await fetchGold('5m', '5d')
+    if (candles.length < 120) return c.json({ ok: false, error: 'داده کافی برای مدیریت نیست' }, 400)
+    let spot: SpotPrice | null = null
+    try { spot = await getSpotGold() } catch {}
+    const merged = rebaseFuturesToSpot(candles, spot, 300)
+    const close = merged.candles.map(k => k.close)
+    const livePrice = spot?.price ?? close[close.length - 1]
+
+    const res = manageGoldM5Scalp({ action, refPrice, livePrice, close })
+
+    return c.json({
+      ok: true,
+      lastUpdate: new Date().toISOString(),
+      livePrice: Number(livePrice.toFixed(2)),
+      state: res.state,       // 'take_profit' | 'wrong' | 'hold'
+      message: res.message,   // پیامِ فارسیِ لحظه‌ای (فقط وقتی take_profit/wrong)
     })
   } catch (e: any) {
     return c.json({ ok: false, error: e.message }, 502)
