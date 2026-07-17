@@ -343,6 +343,53 @@ def run_capital(trades, asset, initial_capital=DEFAULT_CAPITAL,
     return stats, eq_curve
 
 
+def run_capital_pertrade(trades, asset, df=None, initial_capital=DEFAULT_CAPITAL,
+                         risk_pct=DEFAULT_RISK_PCT, compounding=False, weights=None):
+    """
+    مثلِ run_capital اما علاوه بر (stats, equity) یک DataFrameِ per-trade با
+    ستون‌های ['exit_bar', 'net_usd', 'dt'] برمی‌گرداند تا تحلیلِ سودِ خالصِ
+    روزانه/هفتگی/ماهانه (engine/periodic_pnl.py) ممکن شود.
+
+    اگر df داده شود و ستونِ 'time' (unix) داشته باشد، 'dt' از exit_bar استخراج می‌شود.
+    این تابع منطقِ حسابداری را دقیقاً از run_capital کپی می‌کند تا هیچ ناهمگامی
+    عددی با run_capital نداشته باشد (پاسخ به User Note: «سایت و تست هم‌گام شوند»).
+    """
+    cfg = ASSETS[asset]
+    pip_value = cfg['pip_value']; comm = cfg['comm']
+    if trades is None or len(trades) == 0:
+        empty = pd.DataFrame(columns=['exit_bar', 'net_usd', 'dt'])
+        return _empty_stats(initial_capital), np.array([initial_capital]), empty
+
+    stats, eq_curve = run_capital(trades, asset, initial_capital=initial_capital,
+                                  risk_pct=risk_pct, compounding=compounding, weights=weights)
+
+    tr = trades.sort_values('exit_bar').reset_index(drop=True)
+    n = len(tr)
+    w = np.ones(n) if weights is None else np.where(np.asarray(weights, float) > 0,
+                                                    np.asarray(weights, float), 1.0)
+    equity = initial_capital
+    rows = []
+    for i in range(n):
+        pnl_pip = tr['pnl_pip'].iloc[i]; sl_p = tr['sl_pip'].iloc[i]
+        risk_base = equity if compounding else initial_capital
+        risk_dollars = risk_base * (risk_pct * w[i]) / 100.0
+        loss_per_lot = sl_p * pip_value
+        lots = MIN_LOT if loss_per_lot <= 0 else risk_dollars / loss_per_lot
+        lot_cap = MAX_LOTS_PER_10K * (equity / 10_000.0)
+        lots = min(lots, max(lot_cap, MIN_LOT))
+        lots = float(np.clip(round(lots, 2), MIN_LOT, MAX_LOT))
+        net = pnl_pip * pip_value * lots - comm * lots
+        equity += net
+        rows.append({'exit_bar': int(tr['exit_bar'].iloc[i]), 'net_usd': float(net)})
+        if equity <= 0:
+            break
+    pt = pd.DataFrame(rows)
+    if df is not None and 'time' in df.columns and len(pt):
+        idx = np.clip(pt['exit_bar'].values, 0, len(df) - 1)
+        pt['dt'] = pd.to_datetime(df['time'].values[idx], unit='s', utc=True)
+    return stats, eq_curve, pt
+
+
 def _empty_stats(initial_capital):
     return {
         'asset': '-', 'initial_capital': initial_capital, 'final_equity': initial_capital,
