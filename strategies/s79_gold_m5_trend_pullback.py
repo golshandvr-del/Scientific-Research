@@ -46,9 +46,11 @@ import numpy as np
 import pandas as pd
 from engine import scalp_engine as SE
 
-# مشخصاتِ M5 طلا (همان طلا؛ فایلِ M5). اسپردِ محافظه‌کارانهٔ ۲pip.
+# مشخصاتِ M5 طلا (همان طلا؛ فایلِ M5).
+# ⚠️ مشخصاتِ هزینه از «حسابِ واقعیِ کاربر» (User Note 2): اسپردِ کلِ طلا = ۰.۴۰$ حرکت
+# = ۴.۰ pipِ موتور (pip=0.10)، کمیسیون = صفر. (جایگزینِ فرضِ قدیمیِ spread=2/comm=7.)
 SE.ASSETS['XAUUSD_M5'] = dict(file='data/XAUUSD_M5.csv', pip=0.10, contract=100.0,
-                              pip_value=10.0, spread_pip=2.0, comm=7.0, slip_pip=0.5)
+                              pip_value=10.0, spread_pip=4.0, comm=0.0, slip_pip=0.5)
 ASSET = 'XAUUSD_M5'
 
 # پارامترهای نهایی (وسطِ منطقهٔ پایدار — انتخابِ محافظه‌کارانه برای پرهیز از overfit)
@@ -114,11 +116,17 @@ def main():
         print(f"    Q{qi+1}: net={sq['net_profit']:+7.0f}$  n={sq['n_trades']:4d}  "
               f"WR={sq['win_rate']:.0f}%  PF={sq['profit_factor']:.2f}")
 
+    # اعداد با «هزینهٔ واقعیِ حسابِ کاربر» (User Note 2): طلا spread=0.40$/comm=0،
+    # EURUSD spread=1.5pip/comm=0. همهٔ استراتژی‌ها با همین معیار بازآزمایی شدند.
+    S67_REAL = 30490   # S67 با هزینهٔ واقعی (قبلاً با هزینهٔ خوش‌بینانه +37,156$ بود)
+    S73_REAL = 9223    # S73 با هزینهٔ واقعی (comm=0 → از +7,302$ بهبود یافت)
     print("\n" + "-" * 96)
-    print(f"  سودِ خالصِ S79 (تنها، XAUUSD M5) = {s['net_profit']:+.0f}$")
-    print(f"  رکوردِ قبلی: XAUUSD S67 (+37,156$) + EURUSD S73 (+7,302$) = +44,458$")
-    print(f"  رکوردِ جدید: XAUUSD [S67+S79 = {37156 + s['net_profit']:+.0f}$] + EURUSD [+7,302$] "
-          f"= {37156 + s['net_profit'] + 7302:+.0f}$")
+    print(f"  سودِ خالصِ S79 (تنها، XAUUSD M5، هزینهٔ واقعی) = {s['net_profit']:+.0f}$")
+    print(f"  --- مقایسهٔ منصفانه با «هزینهٔ واقعیِ یکسان» ---")
+    print(f"  بدونِ S79: S67({S67_REAL:+d}$) + S73({S73_REAL:+d}$) = {S67_REAL + S73_REAL:+d}$")
+    print(f"  با S79   : XAUUSD [S67+S79 = {S67_REAL + int(s['net_profit']):+d}$] + EURUSD [{S73_REAL:+d}$] "
+          f"= {S67_REAL + int(s['net_profit']) + S73_REAL:+d}$")
+    print(f"  بهبود از افزودنِ S79 = {int(s['net_profit']):+d}$")
     print("=" * 96)
 
 
