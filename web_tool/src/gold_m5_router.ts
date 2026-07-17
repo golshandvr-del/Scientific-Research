@@ -1,35 +1,49 @@
 // ============================================================================
-// XAUUSD M5 Trend-Pullback Router — ماشینِ حالتِ ۴-وضعیتیِ مخصوصِ لایهٔ اسکالپِ M5 طلا
+// XAUUSD M5 Scalp Router — بازنگریِ بخشِ اسکالپ (پاسخِ User Note)
 // ----------------------------------------------------------------------------
-// این ماژول منطقِ استراتژیِ S79 را زنده اجرا می‌کند (نه منطقِ عمومیِ طلا/S67).
-// منبع: strategies/s79_gold_m5_trend_pullback.py و
-//        results/S79_Gold_M5_TrendPullback_NetProfit_4256.md
+// این ماژول لایهٔ اسکالپِ M5 طلا را طبقِ User Note بازنویسی می‌کند:
 //
-// منطقِ S79 (کاملاً forward-safe، فقط Long):
-//   ورود:  EMA(20) > EMA(100)   ← روندِ کلانِ صعودی
-//          AND  RSI(21) < 35     ← pullback (نقطهٔ ورودِ ارزان در روند)
-//   SL = 50 pip (۵$)   ,   TP = 120 pip (۱۲$)   → R:R ≈ ۱:۲.۴
-//   max_hold = ۷۲ کندلِ M5 (۶ ساعت)
+//   • هیچ TP/SL/حجمی به کاربر نمایش داده نمی‌شود.
+//   • در حالتِ ENTRY فقط یک تصمیمِ صریح داده می‌شود: **BUY** (یا در آینده SELL).
+//   • کاربر با یک دکمه تأیید می‌کند که معاملهٔ دمو را باز کرده است.
+//   • سپس سایت به حالتِ «مدیریت» می‌رود و **فقط لحظه‌ای** یکی از دو پیام را می‌دهد:
+//       - «ما سودمونو گرفتیم، سریع معامله رو ببند»       (سود گرفته شد)
+//       - «متاسفم تشخیصم اشتباه بود، سریع معامله رو ببند» (اشتباه بود)
+//   • یک دکمه که کاربر بزند و بگوید معامله را بست.
 //
-// ⚠️ هزینهٔ واقعیِ حسابِ کاربر (User Note 2): اسپردِ طلا ۰.۴۰$، کمیسیون صفر.
-// ⚠️ قانونِ طراحیِ سایت (User Note 2، بند ۳): فقط اطلاعاتی نمایش داده می‌شود که به
-//    کاربر در «باز کردن و مدیریتِ معامله» کمک کند. هیچ ارجاعی به شماره‌ی آزمایش‌ها
-//    (L41/S67/…) یا آمارِ داخلیِ تحقیق در متنِ کاربر نمی‌آید.
+// منطقِ زیربنایی (اثباتِ سودِ خالص روی ۲۰۰k کندلِ واقعیِ M5):
+//   results/Scalp_SignalExit_HiddenTarget_NetProfit_10044.md  →  +۱۰٬۰۴۴$ لایهٔ M5
+//   (بهبودِ +۲٬۸۰۷$ نسبت به S79). PF=۱.۳۲، هر دو نیمه مثبت، MaxDD ~۱۳٪.
+//
+//   ورود:  EMA(20) > EMA(100)  ← روندِ کلانِ صعودیِ M5 (long-bias ساختاریِ طلا؛ L51)
+//          AND  RSI(21) < 35    ← پولبک (خریدِ ارزان در روند)
+//   «هدفِ پنهان» (به کاربر نمایش داده نمی‌شود — فقط منطقِ داخلیِ خروج):
+//          hiddenTpPip = ۱۲۰    ← رسیدنِ سود به این حرکت ⇒ «سودمونو گرفتیم، ببند»
+//          hiddenSlPip =  ۸۰    ← رسیدنِ ضرر به این حرکت ⇒ «اشتباه بود، ببند»
+//          + شکستِ روند (EMA20<EMA100) در حالِ ضرر ⇒ «اشتباه بود، ببند»
+//
+// ⚠️ قانونِ شمارهٔ ۱ پروژه: معیارِ همه‌چیز «سودِ خالص» است، نه WR.
+//    سودِ خالص = XAUUSD + EURUSD.
+// ⚠️ قانونِ طراحیِ سایت: هیچ ارجاعی به شماره‌ی آزمایش‌ها (S79/L41/…) یا آمارِ
+//    داخلیِ تحقیق در متنِ نمایشیِ کاربر نمی‌آید.
 // ============================================================================
 
 import type { AnalysisResult } from './signal'
 import type { RouterDecision, RegimeInfo, Confirmation } from './router'
-import { computeLots, assetSpec } from './router'
 import * as ind from './indicators'
 
-// پارامترهای نهاییِ S79 (وسطِ منطقهٔ پایدار — پرهیز از overfit)
+// پارامترهای ورودِ S79 (وسطِ منطقهٔ پایدار — پرهیز از overfit)
 const EMA_FAST = 20
 const EMA_SLOW = 100
 const RSI_PERIOD = 21
 const RSI_ENTRY = 35          // آستانهٔ ورود (pullback)
-const RSI_APPROACH = 42       // آستانهٔ «نزدیک‌شدن» (کمی بالاتر از ورود)
-const SL_DOLLARS = 5.0        // ۵۰ pip × ۰.۱۰$
-const TP_DOLLARS = 12.0       // ۱۲۰ pip × ۰.۱۰$
+const RSI_APPROACH = 42       // آستانهٔ «نزدیک‌شدن»
+
+// «هدفِ پنهان» — کشفِ s94/s95 (بهترین سودِ خالص، هر دو نیمه مثبت).
+// این اعداد فقط داخلِ منطقِ سایت‌اند و هرگز به کاربر نمایش داده نمی‌شوند.
+export const HIDDEN_TP_PIP = 120   // ۱ pip طلا = ۰.۰۱$ ⇒ ۱۲۰ pip = ۱.۲۰$ حرکتِ قیمت
+export const HIDDEN_SL_PIP = 80    // ۸۰ pip = ۰.۸۰$ حرکتِ قیمت
+const PIP = 0.01                   // ارزشِ یک pip روی XAUUSD (اندازهٔ قیمت)
 
 /** رژیمِ سبک برای این لایه (فقط برای سازگاریِ ساختاری با RouterDecision). */
 function m5Regime(emaFast: number, emaSlow: number): RegimeInfo {
@@ -45,11 +59,11 @@ function m5Regime(emaFast: number, emaSlow: number): RegimeInfo {
 }
 
 /**
- * تصمیمِ زندهٔ لایهٔ M5 طلا (S79). ورودی: نتیجهٔ analyze + سریِ close (کندلِ M5).
+ * تصمیمِ زندهٔ لایهٔ اسکالپِ M5 طلا (بازنگری‌شده — بدونِ TP/SL/حجمِ نمایشی).
+ * خروجی در ENTRY فقط جهت (BUY) + آستانه‌های پنهان (برای موتورِ مدیریت) دارد.
  */
 export function decideGoldM5(a: AnalysisResult, close: number[],
-                             capital = 10000, riskPct = 1.0): RouterDecision {
-  const spec = assetSpec('XAUUSD')
+                             _capital = 10000, _riskPct = 1.0): RouterDecision {
   const price = a.price
 
   // شاخص‌های زنده (بدونِ آینده — تا آخرین کندلِ بسته)
@@ -74,7 +88,7 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
   ]
 
   // --------- حالتِ ۱: روندِ M5 صعودی نیست → خنثی ---------
-  // (این لایه فقط Long است؛ بدونِ روندِ صعودیِ M5 اصلاً وارد نمی‌شود.)
+  // (این لایه فقط BUY است؛ بدونِ روندِ صعودیِ M5 اصلاً وارد نمی‌شود — L51 long-bias طلا.)
   if (!trendUp) {
     return {
       state: 'NEUTRAL', regime: reg,
@@ -85,38 +99,22 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
     }
   }
 
-  // روند صعودی هست. حالا عمقِ پولبک را می‌سنجیم.
   // --------- حالتِ ۳: ورود — روندِ صعودی + پولبک کافی (RSI<35) ---------
+  // فقط BUY/SELL — بدونِ TP/SL/حجم. آستانه‌های پنهان در فیلدِ scalp حمل می‌شوند.
   if (rsi < RSI_ENTRY) {
-    const entry = price
-    const tp = entry + TP_DOLLARS
-    const sl = entry - SL_DOLLARS
-    const slDist = SL_DOLLARS
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1.0, spec)
-    const rd = Math.round(riskDollars * 100) / 100
-    const lotsTxt = lots != null ? lots.toFixed(2) : '—'
     return {
       state: 'ENTRY', regime: reg,
-      headline: 'ورود خرید (LONG) — پولبک در روندِ صعودیِ M5',
-      reason: `روندِ کوتاه‌مدتِ طلا صعودی است و قیمت الان یک پولبک زده (RSI(21)=${rsi.toFixed(1)} ` +
-        `زیرِ ${RSI_ENTRY}). این «خریدِ ارزان در روندِ صعودی» است. سفارشِ خرید را باز کنید.`,
-      direction: 'LONG', entry, tp, sl,
-      rr: `SL ۵$ / TP ۱۲$ (R:R ≈ ۱:۲.۴)`,
-      probability: undefined,
-      sizing: {
-        lotMultiplier: 1.0,
-        label: 'حجمِ پایه',
-        note: `اسکالپِ M5 با حجمِ محافظه‌کارانه.`,
-        lots: lots ?? undefined,
-        riskDollars: rd,
-        capital,
-        riskPct,
-        capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
-          `(${rd.toLocaleString('en-US')}$)، حجمِ پیشنهادی ${lotsTxt} لات (۱۰۰ اونس) است. ` +
-          `اگر SL بخورد حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید — همان ریسکی که تعیین کردید.`,
+      headline: 'BUY — همین حالا خرید کن',
+      reason: `روندِ کوتاه‌مدتِ طلا صعودی است و قیمت یک پولبک زده. تشخیصِ من: خرید (BUY). ` +
+        `معاملهٔ خرید را در حسابِ دمو باز کن و بعد دکمهٔ تأیید را بزن تا مدیریتِ لحظه‌ای شروع شود. ` +
+        `نیازی به تعیینِ حد سود/ضرر یا حجم نیست — من لحظه‌به‌لحظه بهت می‌گویم کِی ببندی.`,
+      scalp: {
+        isScalp: true,
+        action: 'BUY',
+        hiddenTpPip: HIDDEN_TP_PIP,
+        hiddenSlPip: HIDDEN_SL_PIP,
+        refPrice: price,
       },
-      tpPlan: { multiplier: 0, note: `TP ثابتِ ۱۲$ بالاتر از ورود (۱۲۰ pip).` },
-      slPlan: { multiplier: 0, note: `SL ثابتِ ۵$ پایین‌تر از ورود (۵۰ pip).` },
       indicators,
     }
   }
@@ -132,8 +130,8 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
       state: 'APPROACHING', regime: reg,
       headline: 'نزدیکِ سیگنالِ خرید — منتظرِ پولبکِ عمیق‌تر',
       reason: `روندِ کوتاه‌مدت صعودی است، اما قیمت هنوز به‌اندازهٔ کافی پولبک نزده ` +
-        `(RSI(21)=${rsi.toFixed(1)}). اگر RSI به زیرِ ${RSI_ENTRY} برسد، سیگنالِ خرید صادر می‌شود. ` +
-        `فعلاً منتظر بمانید و معامله باز نکنید.`,
+        `(RSI(21)=${rsi.toFixed(1)}). اگر RSI به زیرِ ${RSI_ENTRY} برسد، BUY صادر می‌شود. ` +
+        `فعلاً منتظر بمان و معامله باز نکن.`,
       confirmations,
       indicators,
     }
@@ -147,4 +145,54 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
       `این لایه فقط هنگامِ پولبک وارد می‌شود؛ الان دنبالِ خرید در این قیمت نمی‌رویم و صبر می‌کنیم.`,
     indicators,
   }
+}
+
+// ============================================================================
+// موتورِ مدیریتِ لحظه‌ایِ اسکالپ (User Note) — «هدفِ پنهان»
+// ----------------------------------------------------------------------------
+// پس از اینکه کاربر تأیید کرد معاملهٔ دمو را باز کرده، سایت هر چند ثانیه این تابع
+// را صدا می‌زند. خروجی فقط یکی از سه حالت است:
+//   'take_profit' → «ما سودمونو گرفتیم، سریع معامله رو ببند»
+//   'wrong'       → «متاسفم تشخیصم اشتباه بود، سریع معامله رو ببند»
+//   'hold'        → هنوز نگه‌دار (سایت هیچ پیامِ خروجی نمی‌دهد)
+// هیچ عدد/TP/SL/حجمی در خروجی نیست — فقط تصمیم و پیام.
+// ============================================================================
+
+export type ScalpManageState = 'take_profit' | 'wrong' | 'hold'
+
+export interface ScalpManageInput {
+  action: 'BUY' | 'SELL'   // جهتِ معاملهٔ باز
+  refPrice: number         // قیمتِ ورودِ کاربر (یا قیمتِ مرجعِ سیگنال)
+  livePrice: number        // قیمتِ زندهٔ فعلی
+  close: number[]          // سریِ close کندلِ M5 (برای شکستِ روند)
+}
+
+export interface ScalpManageResult {
+  state: ScalpManageState
+  message: string          // پیامِ فارسیِ لحظه‌ای (فقط وقتی take_profit/wrong)
+  favorPip: number         // حرکتِ مطلوب به pip (فقط برای دیباگ/داخلی — به کاربر نمایش داده نمی‌شود)
+}
+
+export function manageGoldM5Scalp(inp: ScalpManageInput): ScalpManageResult {
+  const dir = inp.action === 'BUY' ? 1 : -1
+  // حرکتِ «مطلوب» به pip: برای BUY وقتی قیمت بالا رفت مثبت است، برای SELL برعکس.
+  const favorPip = (dir * (inp.livePrice - inp.refPrice)) / PIP
+
+  // شکستِ روندِ M5 (EMA20 زیرِ EMA100) در حالِ ضرر → خروجِ «اشتباه بود».
+  const emaF = ind.ema(inp.close, EMA_FAST)
+  const emaS = ind.ema(inp.close, EMA_SLOW)
+  const ef = emaF[emaF.length - 1]
+  const es = emaS[emaS.length - 1]
+  const trendBroke = inp.action === 'BUY' ? ef < es : ef > es
+
+  if (favorPip >= HIDDEN_TP_PIP) {
+    return { state: 'take_profit', message: 'ما سودمونو گرفتیم، سریع معامله رو ببند', favorPip }
+  }
+  if (favorPip <= -HIDDEN_SL_PIP) {
+    return { state: 'wrong', message: 'متاسفم تشخیصم اشتباه بود، سریع معامله رو ببند', favorPip }
+  }
+  if (trendBroke && favorPip <= 0) {
+    return { state: 'wrong', message: 'متاسفم تشخیصم اشتباه بود، سریع معامله رو ببند', favorPip }
+  }
+  return { state: 'hold', message: '', favorPip }
 }
