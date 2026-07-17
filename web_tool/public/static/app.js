@@ -139,15 +139,17 @@ function renderCard(a) {
   const state = trade ? 'MANAGE' : (d ? d.state : 'LOADING')
   const sm = STATE_META[state] || STATE_META.NEUTRAL
 
+  const isScalp = a.layer === 'scalp'
   let body = ''
   if (s.error) {
     body = `<div class="text-rose-400 text-sm p-3"><i class="fas fa-triangle-exclamation ml-1"></i>خطا در دریافت داده: ${s.error}</div>`
   } else if (!d && !trade) {
     body = `<div class="text-slate-500 text-sm p-4 text-center"><i class="fas fa-spinner fa-spin ml-2"></i>در حال تحلیل...</div>`
   } else if (trade) {
-    body = renderManage(a, trade, s)
+    // بخشِ اسکالپ (User Note): مدیریتِ مینیمالِ لحظه‌ای بدونِ TP/SL/عدد.
+    body = isScalp ? renderScalpManage(a, trade, s) : renderManage(a, trade, s)
   } else if (state === 'ENTRY') {
-    body = renderEntry(a, d)
+    body = isScalp ? renderScalpEntry(a, d) : renderEntry(a, d)
   } else if (state === 'APPROACHING') {
     body = renderApproaching(a, d)
   } else {
@@ -295,6 +297,71 @@ function renderEntry(a, d) {
     <p class="text-[11px] text-slate-500 mt-1.5 text-center">تا معامله را ثبت نکنی، به مرحلهٔ مدیریت نمی‌رویم.</p>`
 }
 
+// ==========================================================================
+// بخشِ اسکالپ (User Note) — بدونِ TP/SL/حجم
+// --------------------------------------------------------------------------
+// ورود: فقط BUY/SELL صریح + یک دکمهٔ تأیید («معامله را در دمو باز کردم»).
+// مدیریت: فقط پیامِ لحظه‌ایِ خروج (سود گرفتیم / اشتباه بود) + دکمهٔ «معامله را بستم».
+// هیچ عدد/TP/SL/حجم/جدولِ اضافه‌ای نمایش داده نمی‌شود.
+// ==========================================================================
+function renderScalpEntry(a, d) {
+  const sc = d.scalp || {}
+  const action = sc.action || 'BUY'
+  const isBuy = action === 'BUY'
+  const color = isBuy ? 'emerald' : 'rose'
+  const icon = isBuy ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'
+  const refPrice = sc.refPrice != null ? sc.refPrice : d.price
+  return `
+    <div class="rounded-lg bg-${color}-500/15 border-2 border-${color}-500/50 p-4 mb-3 text-center">
+      <p class="text-4xl font-extrabold text-${color}-300 mb-1 tracking-wide">
+        <i class="fas ${icon} ml-2"></i>${action}
+      </p>
+      <p class="text-sm text-slate-300 leading-relaxed mt-2">${d.reason}</p>
+    </div>
+    ${renderIndicators(d)}
+    <button class="btn-scalp-register mt-3 w-full py-3 rounded-lg bg-${color}-600 hover:bg-${color}-500 font-bold text-white transition"
+      data-asset="${a.id}" data-action="${action}" data-ref="${refPrice}">
+      <i class="fas fa-check ml-2"></i>معاملهٔ ${action} را در دمو باز کردم
+    </button>
+    <p class="text-[11px] text-slate-500 mt-1.5 text-center">پس از تأیید، فقط لحظه‌ای بهت می‌گویم کِی ببندی — نه حد سود، نه حد ضرر، نه حجم.</p>`
+}
+
+function renderScalpManage(a, trade, s) {
+  const isBuy = trade.action === 'BUY'
+  const color = isBuy ? 'emerald' : 'rose'
+  const st = s.scalpManage   // { state, message } از /api/scalp/manage
+  let inner
+  if (s.scalpError) {
+    inner = `<p class="text-rose-400 text-sm p-3 text-center">${s.scalpError}</p>`
+  } else if (!st || st.state === 'hold') {
+    // حالتِ نگه‌داری: بدونِ هیچ متن/دکمهٔ اضافه — فقط یک نشانگرِ ساکتِ «در حال پایش».
+    inner = `
+      <div class="rounded-lg bg-slate-800/40 p-5 text-center">
+        <p class="text-slate-400 text-sm"><i class="fas fa-satellite-dish fa-beat-fade ml-2 text-${color}-400"></i>در حال پایشِ لحظه‌ایِ معامله…</p>
+        <p class="text-[11px] text-slate-600 mt-1">هر لحظه لازم شد، فرمانِ بستن را می‌دهم.</p>
+      </div>`
+  } else {
+    // فرمانِ خروج: سود گرفتیم (سبز) یا اشتباه بود (قرمز) — با تأکیدِ بصریِ بالا.
+    const win = st.state === 'take_profit'
+    const c2 = win ? 'emerald' : 'rose'
+    const ic = win ? 'fa-circle-check' : 'fa-circle-xmark'
+    inner = `
+      <div class="rounded-xl bg-${c2}-500/20 border-2 border-${c2}-500/60 p-5 text-center animate-pulse">
+        <p class="text-2xl font-extrabold text-${c2}-200 leading-snug">
+          <i class="fas ${ic} ml-2"></i>${st.message}
+        </p>
+      </div>`
+  }
+  return `
+    <div class="rounded-lg bg-${color}-500/10 border border-${color}-500/30 p-3 mb-3 text-center">
+      <p class="font-bold text-${color}-300"><i class="fas fa-bolt ml-1"></i>مدیریتِ اسکالپِ ${trade.action}</p>
+    </div>
+    ${inner}
+    <button class="btn-scalp-close mt-3 w-full py-3 rounded-lg bg-slate-700 hover:bg-slate-600 font-bold text-white transition" data-asset="${a.id}">
+      <i class="fas fa-xmark ml-2"></i>معامله را بستم
+    </button>`
+}
+
 // -------------------------- حالت ۴: مدیریتِ معامله --------------------------
 function renderManage(a, trade, s) {
   const st = s.adviceStatus
@@ -437,6 +504,33 @@ function bindEvents() {
       }
     }
   })
+  // --- بخشِ اسکالپ (User Note): ثبتِ معاملهٔ اسکالپ (بدونِ TP/SL/حجم) ---
+  document.querySelectorAll('.btn-scalp-register').forEach(btn => {
+    btn.onclick = () => {
+      const d = btn.dataset
+      const trade = {
+        scalp: true,
+        action: d.action,                 // 'BUY' | 'SELL'
+        entry: Number(d.ref),             // قیمتِ مرجعِ ورود (فقط داخلی — به کاربر نمایش داده نمی‌شود)
+        openedAt: Math.floor(Date.now() / 1000),
+      }
+      setTrade(d.asset, trade)
+      setLatch(d.asset, null)
+      store[d.asset] = store[d.asset] || {}
+      store[d.asset].scalpManage = null
+      store[d.asset].scalpError = null
+      render()
+      refreshScalpManage(d.asset)
+    }
+  })
+  // --- بخشِ اسکالپ: بستنِ معامله ---
+  document.querySelectorAll('.btn-scalp-close').forEach(btn => {
+    btn.onclick = () => {
+      setTrade(btn.dataset.asset, null)
+      const s = store[btn.dataset.asset]; if (s) { s.scalpManage = null; s.scalpError = null }
+      render()
+    }
+  })
   document.querySelectorAll('.btn-apply').forEach(btn => {
     btn.onclick = () => {
       const asset = btn.dataset.asset
@@ -511,9 +605,37 @@ async function refreshAll() {
   }
 }
 
+// --- بخشِ اسکالپ (User Note): مدیریتِ لحظه‌ای ---
+// هر ~۲ ثانیه صدا زده می‌شود تا فرمانِ خروج (سود گرفتیم/اشتباه بود) لحظه‌ای برسد.
+async function refreshScalpManage(asset) {
+  const trade = getTrade(asset)
+  if (!trade || !trade.scalp) return
+  try {
+    const res = await fetch('/api/scalp/manage', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: trade.action, refPrice: trade.entry }),
+    })
+    const data = await res.json()
+    store[asset] = store[asset] || {}
+    if (data.ok) {
+      store[asset].scalpManage = { state: data.state, message: data.message }
+      store[asset].price = data.livePrice
+      store[asset].scalpError = null
+    } else {
+      store[asset].scalpError = data.error
+    }
+    render()
+  } catch (e) {
+    store[asset] = store[asset] || {}
+    store[asset].scalpError = e.message
+    render()
+  }
+}
+
 async function refreshAdvice(asset) {
   const trade = getTrade(asset)
   if (!trade) return
+  if (trade.scalp) return refreshScalpManage(asset)
   try {
     const res = await fetch('/api/trade/advice', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -589,6 +711,17 @@ refreshAll()
 setInterval(refreshAll, REFRESH_MS)
 // پُلینگِ سریعِ قیمت (هر ۲ ثانیه) — سبک، فقط قیمت
 setInterval(refreshSpots, SPOT_MS)
+// پُلینگِ مدیریتِ اسکالپ (هر ۵ ثانیه) — فرمانِ خروجِ «لحظه‌ای» (User Note).
+// فقط وقتی یک معاملهٔ بازِ اسکالپ داریم، /api/scalp/manage را صدا می‌زنیم.
+const SCALP_MS = 5000
+setInterval(() => {
+  assetsMeta.forEach(a => {
+    if (a.layer === 'scalp') {
+      const t = getTrade(a.id)
+      if (t && t.scalp) refreshScalpManage(a.id)
+    }
+  })
+}, SCALP_MS)
 // هر ثانیه فقط متنِ «چند ثانیه پیش» را زنده به‌روز می‌کنیم (بدون فراخوانِ سرور).
 setInterval(() => {
   const lu = document.getElementById('last-update')
