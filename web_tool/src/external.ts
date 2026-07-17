@@ -145,15 +145,39 @@ export interface LiveQuote {
   source: string
 }
 
-// کشِ کوتاه‌مدتِ حافظه‌ای برای جلوگیری از فشار روی Yahoo هنگام پُلینگِ سریع
+// کشِ کوتاه‌مدتِ حافظه‌ای برای جلوگیری از فشار روی منابع هنگام پُلینگِ سریع
 const _quoteMem: Record<string, { at: number; q: LiveQuote }> = {}
 
-export async function getLiveQuote(symbol: string): Promise<LiveQuote> {
-  // کشِ ۱.۵ ثانیه‌ای: چند کاربر/چند تبِ هم‌زمان به یک fetch ختم می‌شوند
-  const cached = _quoteMem[symbol]
-  if (cached && Date.now() - cached.at < 1500) {
-    return { ...cached.q, ageSec: cached.q.ageSec + Math.round((Date.now() - cached.at) / 1000) }
+// ============================================================================
+// منبعِ سریع/معتبرِ فارکس از Swissquote (پاسخ به User Note: «قیمتِ AUDUSD را از
+// جای معتبرترِ سریع‌تر بگیر»). همان endpointِ زندهٔ طلا، برای جفت‌ارزها.
+// خروجی: mid = (bid+ask)/2 با پروفایلِ elite (نزدیک‌ترین به قیمتِ مرجع/OANDA)،
+// همراهِ timestampِ واقعی (ts). تأخیر معمولاً < چند ثانیه (در برابرِ ~۱۵–۲۰ دقیقهٔ
+// AUDUSD=X یاهو). نگاشتِ symbolِ Yahoo → جفتِ Swissquote در SWISSQUOTE_FX.
+// ============================================================================
+const SWISSQUOTE_FX: Record<string, { base: string; quote: string }> = {
+  'EURUSD=X': { base: 'EUR', quote: 'USD' },
+  'AUDUSD=X': { base: 'AUD', quote: 'USD' },
+}
+
+async function forexFromSwissquote(base: string, quote: string): Promise<{ price: number; ts: number }> {
+  const res = await fetch(`https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/${base}/${quote}`, {
+    headers: { 'User-Agent': UA, 'Accept': 'application/json' },
+    cf: { cacheTtl: 2, cacheEverything: true } as any,
+  })
+  if (!res.ok) throw new Error(`Swissquote ${base}/${quote} error: ${res.status}`)
+  const arr: any = await res.json()
+  let bid = NaN, ask = NaN, ts = Date.now()
+  for (const tier of arr) {
+    const prices = tier?.spreadProfilePrices || []
+    const p = prices.find((x: any) => x.spreadProfile === 'elite') || prices[0]
+    if (p && isFinite(p.bid) && isFinite(p.ask)) { bid = p.bid; ask = p.ask; ts = tier.ts || ts; break }
   }
+  if (!isFinite(bid) || !isFinite(ask)) throw new Error(`Swissquote ${base}/${quote}: no valid quote`)
+  return { price: (bid + ask) / 2, ts }
+}
+
+async function quoteFromYahoo(symbol: string): Promise<LiveQuote> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1m&range=1d`
   const res = await fetch(url, {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },
@@ -164,13 +188,43 @@ export async function getLiveQuote(symbol: string): Promise<LiveQuote> {
   const m = data?.chart?.result?.[0]?.meta
   if (!m || !isFinite(m.regularMarketPrice)) throw new Error(`No live quote for ${symbol}`)
   const mt = m.regularMarketTime ? m.regularMarketTime * 1000 : Date.now()
-  const q: LiveQuote = {
+  return {
     symbol,
     price: Number(m.regularMarketPrice),
     updatedAt: new Date(mt).toISOString(),
     ageSec: Math.max(0, Math.round((Date.now() - mt) / 1000)),
     source: 'Yahoo (regularMarketPrice)',
   }
+}
+
+export async function getLiveQuote(symbol: string): Promise<LiveQuote> {
+  // کشِ ۱.۵ ثانیه‌ای: چند کاربر/چند تبِ هم‌زمان به یک fetch ختم می‌شوند
+  const cached = _quoteMem[symbol]
+  if (cached && Date.now() - cached.at < 1500) {
+    return { ...cached.q, ageSec: cached.q.ageSec + Math.round((Date.now() - cached.at) / 1000) }
+  }
+
+  // اولویت ۱: Swissquote برای جفت‌ارزهای فارکس (سریع/معتبر، تأخیرِ چند ثانیه)
+  const fx = SWISSQUOTE_FX[symbol]
+  if (fx) {
+    try {
+      const { price, ts } = await forexFromSwissquote(fx.base, fx.quote)
+      if (isFinite(price) && price > 0) {
+        const q: LiveQuote = {
+          symbol,
+          price,
+          updatedAt: new Date(ts).toISOString(),
+          ageSec: Math.max(0, Math.round((Date.now() - ts) / 1000)),
+          source: `Swissquote (${fx.base}/${fx.quote} spot)`,
+        }
+        _quoteMem[symbol] = { at: Date.now(), q }
+        return q
+      }
+    } catch { /* افتادن به Yahoo */ }
+  }
+
+  // اولویت ۲ (fallback): Yahoo regularMarketPrice
+  const q = await quoteFromYahoo(symbol)
   _quoteMem[symbol] = { at: Date.now(), q }
   return q
 }
