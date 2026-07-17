@@ -170,26 +170,15 @@ def simulate_trades(df, long_sig, short_sig, sl_pip, tp_pip, asset,
         for j in range(entry_bar, end):
             hi, lo = h[j], l[j]
 
-            # به‌روزرسانیِ BE / trailing بر اساسِ high/low کندلِ جاری (forward-safe:
-            # فقط از دادهٔ همین کندل که در حالِ رخ‌دادن است استفاده می‌کنیم، محافظه‌کارانه)
+            # ⚠️ اصلاحِ باگِ look-ahead (نشستِ SHORT-MA):
+            # ابتدا exit را با cur_sl/tp که از کندلِ *قبلی* تعیین شده چک می‌کنیم؛
+            # سپس در انتهای کندل، peak_favor و trailing/BE را برای کندل‌های *بعدی*
+            # به‌روز می‌کنیم. در غیرِ این‌صورت trailing روی extremumِ همان کندل قفل
+            # می‌شد و خروجِ سودِ نجومیِ جعلی در همان کندل رخ می‌داد (look-ahead).
             if direction == 'long':
-                favor = hi - fill
-                if favor > peak_favor:
-                    peak_favor = favor
-                if be_trigger_pip is not None and peak_favor >= be_trigger_pip * pip:
-                    cur_sl = max(cur_sl, fill)
-                if trail_pip is not None and peak_favor > 0:
-                    cur_sl = max(cur_sl, fill + peak_favor - trail_pip * pip)
                 hit_sl = lo <= cur_sl
                 hit_tp = hi >= tp_price
             else:
-                favor = fill - lo
-                if favor > peak_favor:
-                    peak_favor = favor
-                if be_trigger_pip is not None and peak_favor >= be_trigger_pip * pip:
-                    cur_sl = min(cur_sl, fill)
-                if trail_pip is not None and peak_favor > 0:
-                    cur_sl = min(cur_sl, fill - peak_favor + trail_pip * pip)
                 hit_sl = hi >= cur_sl
                 hit_tp = lo <= tp_price
 
@@ -199,6 +188,24 @@ def simulate_trades(df, long_sig, short_sig, sl_pip, tp_pip, asset,
                 outcome = 'win'; exit_bar = j; exit_price = tp_price; break
             elif hit_sl:
                 outcome = 'loss'; exit_bar = j; exit_price = cur_sl; break
+
+            # به‌روزرسانیِ peak_favor و trailing/BE برای کندلِ بعدی (پس از چکِ exit)
+            if direction == 'long':
+                favor = hi - fill
+                if favor > peak_favor:
+                    peak_favor = favor
+                if be_trigger_pip is not None and peak_favor >= be_trigger_pip * pip:
+                    cur_sl = max(cur_sl, fill)
+                if trail_pip is not None and peak_favor > 0:
+                    cur_sl = max(cur_sl, fill + peak_favor - trail_pip * pip)
+            else:
+                favor = fill - lo
+                if favor > peak_favor:
+                    peak_favor = favor
+                if be_trigger_pip is not None and peak_favor >= be_trigger_pip * pip:
+                    cur_sl = min(cur_sl, fill)
+                if trail_pip is not None and peak_favor > 0:
+                    cur_sl = min(cur_sl, fill - peak_favor + trail_pip * pip)
 
         if outcome is None:
             exit_bar = end - 1
