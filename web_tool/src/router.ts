@@ -67,6 +67,18 @@ export interface RouterDecision {
   confirmations?: Confirmation[]
   // شاخص‌های کلیدی برای شفافیت (همیشه)
   indicators: { name: string; value: string; status: 'ok' | 'warn' | 'bad' | 'neutral' }[]
+
+  // --- بخشِ اسکالپ (User Note) — بدونِ TP/SL/حجمِ نمایشی ---
+  // در لایهٔ اسکالپِ M5 هیچ عددی (TP/SL/lot) به کاربر نمایش داده نمی‌شود.
+  // فقط جهت (BUY/SELL) و سپس پیامِ لحظه‌ایِ خروج. آستانه‌های پنهان اینجا حمل می‌شوند
+  // تا موتورِ مدیریت (manageGoldM5Scalp) بتواند لحظه‌ای «سود گرفتیم/اشتباه بود» بگوید.
+  scalp?: {
+    isScalp: true
+    action?: 'BUY' | 'SELL'      // فقط در ENTRY — جهتِ پیشنهادی (بدونِ عدد)
+    hiddenTpPip: number          // هدفِ سودِ پنهان (px واحدِ pip؛ به کاربر نمایش داده نمی‌شود)
+    hiddenSlPip: number          // حدِ ضررِ پنهان (px واحدِ pip؛ به کاربر نمایش داده نمی‌شود)
+    refPrice?: number            // قیمتِ مرجعِ سیگنال (برای محاسبهٔ فاصلهٔ pip در مدیریت)
+  }
 }
 
 // ============================================================================
