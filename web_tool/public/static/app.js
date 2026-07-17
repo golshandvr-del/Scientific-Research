@@ -132,6 +132,9 @@ function renderCard(a) {
         <div class="flex items-center gap-2">
           <span class="inline-block w-2.5 h-2.5 rounded-full ${sm.dot} animate-pulse"></span>
           <h2 class="font-bold text-slate-100">${a.name}</h2>
+          ${a.layer === 'scalp'
+            ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 font-bold" title="سبک: اسکالپِ کوتاه‌مدت روی M5"><i class="fas fa-bolt"></i> اسکالپ</span>'
+            : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold" title="سبک: معاملهٔ نوسانی روی M15"><i class="fas fa-wave-square"></i> نوسانی</span>'}
         </div>
         <span class="text-xs px-2.5 py-1 rounded-full font-bold ${sm.chip}">
           <i class="fas ${sm.icon} ml-1"></i>${sm.fa}
@@ -413,7 +416,7 @@ async function refreshAll() {
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'خطای سرور')
     if (!assetsMeta.length) {
-      assetsMeta = data.assets.map(a => ({ id: a.asset, name: a.name, decimals: a.decimals || 2 }))
+      assetsMeta = data.assets.map(a => ({ id: a.asset, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing' }))
     }
     data.assets.forEach(a => {
       store[a.asset] = store[a.asset] || {}
