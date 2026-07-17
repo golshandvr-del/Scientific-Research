@@ -48,6 +48,12 @@ export interface RouterDecision {
     lotMultiplier: number       // ضریبِ حجم نسبت به واحدِ پایه (۱× = پایه)
     label: string               // برچسبِ فارسی (مثلِ «۲ برابرِ پایه»)
     note: string                // دلیلِ حجم (کیفیتِ سطل)
+    // --- S67 (L41): حجمِ لاتِ واقعی بر اساسِ سرمایه + ریسکِ درصدی + فاصلهٔ SL ---
+    lots?: number               // حجمِ لاتِ استانداردِ پیشنهادی (۱ لات = ۱۰۰ اونس)
+    riskDollars?: number        // مبلغِ ریسکِ دلاری (اگر SL بخورد چقدر ضرر)
+    capital?: number            // سرمایهٔ کاربر (ورودی)
+    riskPct?: number            // درصدِ ریسکِ پایه (ورودی)
+    capitalNote?: string        // توضیحِ محاسبهٔ لاتِ سرمایه‌محور
   }
   tpPlan?: {                    // S65: TPِ رژیم-آگاه
     multiplier: number          // ضریبِ TP نهایی (×ATR)
@@ -103,6 +109,41 @@ function lotLabel(m: number): string {
   return `~${m.toFixed(1)} برابرِ پایه (کاهش‌یافته)`
 }
 
+// ============================================================================
+// S67 (L41): مدلِ سرمایه — حجمِ لاتِ واقعی بر اساسِ سرمایه + ریسکِ درصدی + SL
+// ----------------------------------------------------------------------------
+// کشفِ L41: «سودِ خالص» بدونِ مدلِ سرمایه یک عددِ بی‌مقیاس است. اکنون سایت حجمِ
+// لاتِ واقعی را طوری پیشنهاد می‌دهد که اگر SL بخورد، دقیقاً `riskPct%` از سرمایهٔ
+// کاربر از دست برود. مدلِ لاتِ واقعیِ XAUUSD: ۱ لات = ۱۰۰ اونس ⇒ حرکتِ ۱$ = ۱۰۰$/لات.
+// رجوع: results/TPSL_Plan_CapitalEngine_NetProfit_37156.md · engine/capital_engine.py
+// ============================================================================
+export const CONTRACT_SIZE = 100         // ۱ لات = ۱۰۰ اونس
+export const DEFAULT_CAPITAL = 10_000
+export const DEFAULT_RISK_PCT = 1.0
+const COMMISSION_PER_LOT = 7.0
+const MIN_LOT = 0.01
+const MAX_LOT = 100.0
+const MAX_EFFECTIVE_RISK_PCT = 5.0
+
+/**
+ * حجمِ لاتِ واقعی: طوری که اگر SL بخورد، `riskPct% × lotMultiplier` از سرمایه برود.
+ * @param capital سرمایهٔ کاربر ($)
+ * @param riskPct درصدِ ریسکِ پایه
+ * @param slDist  فاصلهٔ SL به دلار (|entry − sl|)
+ * @param lotMult ضریبِ Kelly رژیم-آگاه (S64) — به‌عنوانِ ضریبِ مقیاسِ ریسک
+ */
+export function computeLots(capital: number, riskPct: number, slDist: number, lotMult: number) {
+  const effRiskPct = Math.min(riskPct * lotMult, MAX_EFFECTIVE_RISK_PCT)
+  const riskDollars = capital * effRiskPct / 100
+  let lots = MIN_LOT
+  if (slDist > 0) {
+    const lossPerLotAtSl = slDist * CONTRACT_SIZE + COMMISSION_PER_LOT
+    lots = riskDollars / lossPerLotAtSl
+  }
+  lots = Math.min(Math.max(Math.round(lots * 100) / 100, MIN_LOT), MAX_LOT)
+  return { lots, riskDollars, effRiskPct }
+}
+
 // آستانه‌ها — هم‌راستا با بک‌تستِ برندهٔ فعلی S66/L40 (راهکار A از User Note)
 // کاهش از ۰.۳۰ به ۰.۱۵ سودِ خالص را +۱۲.۲٪ بالا برد (۶۰۸۲$ → ۶۸۲۳$) و در هر دو
 // نیمهٔ walk-forward بهتر بود. رجوع: results/ER_Threshold_Sweep_NetProfit_UserNoteA_L40_50.md
@@ -153,7 +194,9 @@ export function computeRegime(a: AnalysisResult, close: number[]): RegimeInfo {
  *   - رنج/بی‌روند → NEUTRAL (همان رفتاری که در بک‌تست سودِ خالص را نجات داد).
  *   - نزدیکِ آستانه ولی هنوز نه → APPROACHING با ذکرِ تأییدهایِ لازم.
  */
-export function decide(a: AnalysisResult, close: number[]): RouterDecision {
+export function decide(a: AnalysisResult, close: number[],
+                       capital: number = DEFAULT_CAPITAL,
+                       riskPct: number = DEFAULT_RISK_PCT): RouterDecision {
   const reg = computeRegime(a, close)
   const p = a.probability
   const atr = a.atr || 1
@@ -210,6 +253,9 @@ export function decide(a: AnalysisResult, close: number[]): RouterDecision {
     const entry = a.price
     const tp = isBull ? entry + tpM * atr : entry - tpM * atr
     const sl = isBull ? entry - slM * atr : entry + slM * atr
+    // --- S67 (L41): حجمِ لاتِ واقعیِ سرمایه‌محور ---
+    const slDist = Math.abs(entry - sl)
+    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, lotM)
     return {
       state: 'ENTRY', regime: reg,
       headline: `ورود ${isBull ? 'خرید (LONG)' : 'فروش (SHORT)'} — رژیمِ روندیِ ${isBull ? 'صعودی' : 'نزولی'} تأیید شد`,
@@ -225,6 +271,16 @@ export function decide(a: AnalysisResult, close: number[]): RouterDecision {
         label: lotLabel(lotM),
         note: `سطلِ رژیم «${reg.bucket}» (${plan.desc}). طبقِ کشفِ L38، حجمِ بیشتر در ` +
           `سطل‌های باکیفیت‌تر سودِ خالص را ~۸۳٪ بالا برد — این «تخصیصِ سرمایه» است نه اهرمِ خام.`,
+        // S67 (L41): لاتِ واقعیِ سرمایه‌محور
+        lots,
+        riskDollars: Math.round(riskDollars * 100) / 100,
+        capital,
+        riskPct,
+        capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+          `(× ضریبِ کیفیتِ سطل ${lotM} ⇒ ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ` +
+          `${lots.toFixed(2)} لات است. اگر SL (فاصلهٔ ${slDist.toFixed(2)}$) بخورد، حدودِ ` +
+          `${(Math.round(riskDollars * 100) / 100).toLocaleString('en-US')}$ ضرر می‌کنید — دقیقاً ` +
+          `همان ریسکی که تعیین کردید. (کشفِ L41: سودِ خالص فقط با مدلِ سرمایه معنا دارد.)`,
       },
       // S65 — TPِ رژیم-آگاه:
       tpPlan: {

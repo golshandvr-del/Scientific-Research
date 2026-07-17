@@ -346,7 +346,7 @@ const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decim
 ]
 
 // تصمیمِ یک دارایی: کندلِ M15 زنده → analyze → decide (۴-حالته).
-async function decideAsset(a: typeof ASSETS[number]) {
+async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 1.0) {
   if (a.isGold) {
     // طلا: همان مسیرِ /api/analysis (GC=F + rebase به spot)
     const { candles } = await fetchGold('15m', '1mo')
@@ -356,7 +356,7 @@ async function decideAsset(a: typeof ASSETS[number]) {
     const merged = rebaseFuturesToSpot(candles, spot, 900)
     const useCandles = merged.candles
     const result = analyze(useCandles)
-    const dec = decide(result, useCandles.map(k => k.close))
+    const dec = decide(result, useCandles.map(k => k.close), capital, riskPct)
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
@@ -370,15 +370,23 @@ async function decideAsset(a: typeof ASSETS[number]) {
   const merged = mergeLiveQuote(candles, live, 900)
   const useCandles = merged.candles
   const result = analyze(useCandles)
-  const dec = decide(result, useCandles.map(k => k.close))
+  const dec = decide(result, useCandles.map(k => k.close), capital, riskPct)
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
     price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
 }
 
+// خواندنِ سرمایه/ریسکِ کاربر از query (پیش‌فرض ۱۰k$ ، ۱٪) — کشفِ L41 (S67)
+function readCapitalParams(c: any): [number, number] {
+  const cap = Math.max(100, Math.min(10_000_000, parseFloat(c.req.query('capital')) || 10000))
+  const risk = Math.max(0.1, Math.min(5, parseFloat(c.req.query('risk')) || 1.0))
+  return [cap, risk]
+}
+
 // همهٔ دارایی‌ها یک‌جا (موازی، مقاوم به خطای هر دارایی)
 app.get('/api/decision', async (c) => {
-  const results = await Promise.allSettled(ASSETS.map(a => decideAsset(a)))
+  const [capital, riskPct] = readCapitalParams(c)
+  const results = await Promise.allSettled(ASSETS.map(a => decideAsset(a, capital, riskPct)))
   const assets = results.map((r, i) =>
     r.status === 'fulfilled'
       ? { ok: true, ...r.value }
@@ -393,7 +401,8 @@ app.get('/api/decision/:asset', async (c) => {
   const a = ASSETS.find(x => x.id === id)
   if (!a) return c.json({ ok: false, error: `دارایی ناشناخته: ${id}` }, 404)
   try {
-    const out = await decideAsset(a)
+    const [capital, riskPct] = readCapitalParams(c)
+    const out = await decideAsset(a, capital, riskPct)
     return c.json({ ok: true, lastUpdate: new Date().toISOString(), ...out })
   } catch (e: any) {
     return c.json({ ok: false, asset: a.id, name: a.name, error: e.message }, 502)
