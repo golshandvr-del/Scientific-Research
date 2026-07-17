@@ -182,6 +182,56 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
     }
   }
 
+  // ==========================================================================
+  // ۳الف) مدیریتِ سریعِ SHORT-اسکالپ (S102 / پاسخِ User Note: «سودِ سریعِ short»)
+  // --------------------------------------------------------------------------
+  // معاملهٔ SHORTِ MA-Confluence روی طلا حدضررِ تنگ (~۴$ = ۴۰pip) دارد و کلیدِ
+  // سوددهی‌اش «خروجِ سریع» است، نه صبر تا ۱.۵R. اگر معاملهٔ short با SLِ تنگ باشد
+  // (نسبت به قیمتِ طلا کوچک)، منطقِ سریعِ اختصاصی را اعمال می‌کنیم:
+  //   • پس از ~۸pip (۰.۸$) سود  → فوراً بریک‌ایون (بدونِ صبر تا ۱R).
+  //   • پس از آن → trailing تنگِ ۸pip تا شتابِ نزولی تمام شود.
+  //   • چون طلا V-recovery دارد، اگر شتاب کند شد، پیشنهادِ بستنِ سریعِ سود.
+  // این دقیقاً همان «۳-۴ دلار سودِ سریع» است که کاربر خواست.
+  // ==========================================================================
+  const isGoldPrice = price >= 100
+  const tightShortScalp = !isLong && isGoldPrice && riskDist <= 6.0   // SL کوچک ≈ اسکالپِ short
+  if (tightShortScalp && !reachedTp && !reachedSl) {
+    const profitDollars = rawMove            // برای short: entry - price
+    const BE_TRIG = 0.8                       // ۸pip سود → بریک‌ایون
+    const TRAIL = 0.8                         // trailing ۸pip
+    if (profitDollars >= BE_TRIG && !isSlBeyondEntry(t) && Math.abs(t.sl - t.entry) >= 0.05) {
+      advices.push({
+        type: 'sl', severity: 'good',
+        title: '⚡ SHORTِ سریع: فوراً بی‌ریسک کن (بریک‌ایون)',
+        detail: `به ${round2(profitDollars)}$ (~${Math.round(profitDollars * 10)}pip) سود رسیدی. این یک SHORTِ ` +
+          `اسکالپِ سریع است — SL را همین حالا به قیمتِ ورود (${round2(t.entry)}) ببر تا معامله بدون‌ریسک شود. ` +
+          `صبر برای ۱R لازم نیست؛ کلیدِ سوددهیِ SHORT روی طلا «قفلِ سریعِ سود» است.`,
+        suggest: { field: 'sl', value: round2(t.entry) },
+      })
+    }
+    if (profitDollars >= BE_TRIG + TRAIL) {
+      const trail = round2(price + TRAIL)
+      if (trail < t.sl) {
+        advices.push({
+          type: 'sl', severity: 'good',
+          title: '⚡ SHORTِ سریع: trailingِ تنگِ ۸pip',
+          detail: `شتابِ نزولی ادامه دارد. SL را به ${trail} (۸pip پشتِ قیمت) بکش. تا وقتی قیمت پایین می‌رود ` +
+            `این کار را تکرار کن؛ به‌محضِ برخوردِ trailing، سود قفل و خارج می‌شوی — پیش از بازگشتِ (V-recovery) طلا.`,
+          suggest: { field: 'sl', value: trail },
+        })
+      }
+    }
+    // اگر شتابِ نزولی ضعیف شد (روندِ زنده دیگر down نیست) و در سودیم → بستنِ سریع
+    if (profitDollars >= BE_TRIG && a.trend !== 'down') {
+      advices.push({
+        type: 'close', severity: 'warning',
+        title: '⚡ SHORTِ سریع: شتاب کم شد — سود را بردار',
+        detail: `شتابِ نزولی در حالِ تضعیف است (روندِ زنده دیگر «نزولیِ قوی» نیست) و تو ${round2(profitDollars)}$ در سودی. ` +
+          `چون این معامله برای سودِ کوچکِ سریع باز شده، بستنِ همین حالا منطقی است — منتظرِ بازگشتِ طلا نمان.`,
+      })
+    }
+  }
+
   // ---------- ۴) نزدیکی به مقاومت/حمایت (رفتار نمودار با S/R) ----------
   const res = a.resistance
   const sup = a.support
