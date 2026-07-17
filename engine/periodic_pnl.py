@@ -43,7 +43,9 @@ def build_pnl_events(trades, pnl_col, time_col, df=None, bar_index_col=None):
         dt = pd.to_datetime(unix, unit='s', utc=True)
     else:
         col = t[time_col]
-        if np.issubdtype(col.dtype, np.number):
+        if pd.api.types.is_datetime64_any_dtype(col):
+            dt = pd.to_datetime(col, utc=True)
+        elif pd.api.types.is_numeric_dtype(col):
             dt = pd.to_datetime(col, unit='s', utc=True)
         else:
             dt = pd.to_datetime(col, utc=True)
