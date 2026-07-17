@@ -114,34 +114,80 @@ function lotLabel(m: number): string {
 // ----------------------------------------------------------------------------
 // کشفِ L41: «سودِ خالص» بدونِ مدلِ سرمایه یک عددِ بی‌مقیاس است. اکنون سایت حجمِ
 // لاتِ واقعی را طوری پیشنهاد می‌دهد که اگر SL بخورد، دقیقاً `riskPct%` از سرمایهٔ
-// کاربر از دست برود. مدلِ لاتِ واقعیِ XAUUSD: ۱ لات = ۱۰۰ اونس ⇒ حرکتِ ۱$ = ۱۰۰$/لات.
+// کاربر از دست برود.
+//
+// ⚠️ رفعِ باگِ User Note (نکتهٔ اول): مدلِ لاتِ قبلی «مخصوصِ XAUUSD» بود
+// (CONTRACT_SIZE = ۱۰۰ ثابت) ولی روی همهٔ دارایی‌ها اعمال می‌شد. برای AUDUSD/EURUSD
+// که قیمتشان ~۰.۶۵–۱.۱ است و فاصلهٔ SL بسیار کوچک (به «واحدِ قیمت») است، تقسیم بر
+// contract-sizeِ طلا (۱۰۰) لاتِ غول‌آسا (مثلِ ۲۸.۳۸) می‌داد. راه‌حل: هر دارایی
+// «مشخصاتِ قراردادِ خودش» را دارد (`AssetSpec`)، و «ارزشِ حرکتِ یک واحدِ قیمت به ازای
+// هر لات» از همان مشخصات می‌آید — نه از عددِ ثابتِ طلا.
+//
+//   دارایی   | ۱ لاتِ استاندارد | ارزشِ حرکتِ ۱.۰ واحدِ قیمت / لات
+//   ---------|------------------|--------------------------------
+//   XAUUSD   | ۱۰۰ اونس         | ۱۰۰$   (حرکتِ ۱$ طلا)
+//   EURUSD   | ۱۰۰٬۰۰۰ یورو     | ۱۰۰٬۰۰۰$ (حرکتِ ۱.۰؛ هر پیپ ۰.۰۰۰۱ = ۱۰$)
+//   AUDUSD   | ۱۰۰٬۰۰۰ AUD      | ۱۰۰٬۰۰۰$ (همان)
+//   DXY      | شاخص (غیرقابلِ‌معاملهٔ مستقیم) → لات پیشنهاد نمی‌شود
+//
 // رجوع: results/TPSL_Plan_CapitalEngine_NetProfit_37156.md · engine/capital_engine.py
 // ============================================================================
-export const CONTRACT_SIZE = 100         // ۱ لات = ۱۰۰ اونس
+
+/** مشخصاتِ قراردادِ هر دارایی برای محاسبهٔ درستِ حجمِ لات. */
+export interface AssetSpec {
+  id: string
+  /** ارزشِ دلاریِ حرکتِ «۱.۰ واحدِ قیمت» به ازای هر لاتِ استاندارد. */
+  valuePerPricePerLot: number
+  /** آیا این دارایی اصلاً قابلِ محاسبهٔ لات است؟ (DXY شاخص است → false) */
+  tradableLots: boolean
+  /** کمیسیونِ رفت‌وبرگشتِ تقریبی به ازای هر لات ($). */
+  commissionPerLot: number
+  minLot: number
+  maxLot: number
+  /** واحدِ نمایشِ لات در UI (فارسی) */
+  lotUnitFa: string
+}
+
+// نگاشتِ مشخصاتِ قراردادِ استاندارد. XAUUSD همان مدلِ برندهٔ S67 است (بدونِ تغییرِ عددی).
+export const ASSET_SPECS: Record<string, AssetSpec> = {
+  XAUUSD: { id: 'XAUUSD', valuePerPricePerLot: 100,     tradableLots: true,  commissionPerLot: 7.0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰ اونس)' },
+  EURUSD: { id: 'EURUSD', valuePerPricePerLot: 100_000, tradableLots: true,  commissionPerLot: 7.0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰k)' },
+  AUDUSD: { id: 'AUDUSD', valuePerPricePerLot: 100_000, tradableLots: true,  commissionPerLot: 7.0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰k)' },
+  DXY:    { id: 'DXY',    valuePerPricePerLot: 0,       tradableLots: false, commissionPerLot: 0,   minLot: 0.01, maxLot: 100, lotUnitFa: '—' },
+}
+
+export function assetSpec(id?: string): AssetSpec {
+  return (id && ASSET_SPECS[id]) || ASSET_SPECS.XAUUSD
+}
+
 export const DEFAULT_CAPITAL = 10_000
 export const DEFAULT_RISK_PCT = 1.0
-const COMMISSION_PER_LOT = 7.0
-const MIN_LOT = 0.01
-const MAX_LOT = 100.0
 const MAX_EFFECTIVE_RISK_PCT = 5.0
 
 /**
  * حجمِ لاتِ واقعی: طوری که اگر SL بخورد، `riskPct% × lotMultiplier` از سرمایه برود.
+ * اکنون «مشخصاتِ قراردادِ همان دارایی» را می‌گیرد تا لات برای فارکس هم درست باشد.
  * @param capital سرمایهٔ کاربر ($)
  * @param riskPct درصدِ ریسکِ پایه
- * @param slDist  فاصلهٔ SL به دلار (|entry − sl|)
+ * @param slDist  فاصلهٔ SL به «واحدِ قیمتِ همان دارایی» (|entry − sl|)
  * @param lotMult ضریبِ Kelly رژیم-آگاه (S64) — به‌عنوانِ ضریبِ مقیاسِ ریسک
+ * @param spec    مشخصاتِ قراردادِ دارایی (ارزشِ حرکت، کمیسیون، min/max)
  */
-export function computeLots(capital: number, riskPct: number, slDist: number, lotMult: number) {
+export function computeLots(capital: number, riskPct: number, slDist: number, lotMult: number, spec: AssetSpec) {
   const effRiskPct = Math.min(riskPct * lotMult, MAX_EFFECTIVE_RISK_PCT)
   const riskDollars = capital * effRiskPct / 100
-  let lots = MIN_LOT
+  // دارایی‌های غیرقابلِ‌معامله (شاخص مثلِ DXY): لات معنا ندارد.
+  if (!spec.tradableLots || spec.valuePerPricePerLot <= 0) {
+    return { lots: null as number | null, riskDollars, effRiskPct }
+  }
+  let lots = spec.minLot
   if (slDist > 0) {
-    const lossPerLotAtSl = slDist * CONTRACT_SIZE + COMMISSION_PER_LOT
+    // ضررِ دلاریِ هر لات اگر SL بخورد = فاصلهٔ SL × ارزشِ حرکتِ همان دارایی + کمیسیون
+    const lossPerLotAtSl = slDist * spec.valuePerPricePerLot + spec.commissionPerLot
     lots = riskDollars / lossPerLotAtSl
   }
-  lots = Math.min(Math.max(Math.round(lots * 100) / 100, MIN_LOT), MAX_LOT)
-  return { lots, riskDollars, effRiskPct }
+  lots = Math.min(Math.max(Math.round(lots * 100) / 100, spec.minLot), spec.maxLot)
+  return { lots: lots as number | null, riskDollars, effRiskPct }
 }
 
 // آستانه‌ها — هم‌راستا با بک‌تستِ برندهٔ فعلی S66/L40 (راهکار A از User Note)
@@ -196,7 +242,8 @@ export function computeRegime(a: AnalysisResult, close: number[]): RegimeInfo {
  */
 export function decide(a: AnalysisResult, close: number[],
                        capital: number = DEFAULT_CAPITAL,
-                       riskPct: number = DEFAULT_RISK_PCT): RouterDecision {
+                       riskPct: number = DEFAULT_RISK_PCT,
+                       spec: AssetSpec = ASSET_SPECS.XAUUSD): RouterDecision {
   const reg = computeRegime(a, close)
   const p = a.probability
   const atr = a.atr || 1
@@ -253,9 +300,21 @@ export function decide(a: AnalysisResult, close: number[],
     const entry = a.price
     const tp = isBull ? entry + tpM * atr : entry - tpM * atr
     const sl = isBull ? entry - slM * atr : entry + slM * atr
-    // --- S67 (L41): حجمِ لاتِ واقعیِ سرمایه‌محور ---
+    // --- S67 (L41): حجمِ لاتِ واقعیِ سرمایه‌محور (اکنون per-asset — رفعِ باگِ لات) ---
     const slDist = Math.abs(entry - sl)
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, lotM)
+    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, lotM, spec)
+    const rd = Math.round(riskDollars * 100) / 100
+    // متنِ توضیحِ لات؛ برای دارایی‌های غیرقابلِ‌معامله (DXY) لات نمایش داده نمی‌شود.
+    const capitalNote = (lots == null)
+      ? `«${spec.id}» یک شاخص است و مستقیماً با لات معامله نمی‌شود؛ پس حجمِ لات ` +
+        `پیشنهاد نمی‌دهیم. با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+        `(ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، ریسکِ دلاریِ هدف ${rd.toLocaleString('en-US')}$ است — ` +
+        `این دارایی را برای «جهتِ کلانِ دلار» به‌کار ببرید، نه برای اجرای مستقیمِ معامله.`
+      : `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+        `(× ضریبِ کیفیتِ سطل ${lotM} ⇒ ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ` +
+        `${lots.toFixed(2)} ${spec.lotUnitFa} است. اگر SL (فاصلهٔ ${slDist.toFixed(spec.id === 'XAUUSD' ? 2 : 5)} واحدِ قیمت) بخورد، حدودِ ` +
+        `${rd.toLocaleString('en-US')}$ ضرر می‌کنید — دقیقاً همان ریسکی که تعیین کردید. ` +
+        `(رفعِ باگ: مدلِ لات اکنون مخصوصِ «${spec.id}» است، نه ثابتِ طلا؛ کشفِ L41: سودِ خالص فقط با مدلِ سرمایه معنا دارد.)`
     return {
       state: 'ENTRY', regime: reg,
       headline: `ورود ${isBull ? 'خرید (LONG)' : 'فروش (SHORT)'} — رژیمِ روندیِ ${isBull ? 'صعودی' : 'نزولی'} تأیید شد`,
@@ -271,16 +330,12 @@ export function decide(a: AnalysisResult, close: number[],
         label: lotLabel(lotM),
         note: `سطلِ رژیم «${reg.bucket}» (${plan.desc}). طبقِ کشفِ L38، حجمِ بیشتر در ` +
           `سطل‌های باکیفیت‌تر سودِ خالص را ~۸۳٪ بالا برد — این «تخصیصِ سرمایه» است نه اهرمِ خام.`,
-        // S67 (L41): لاتِ واقعیِ سرمایه‌محور
-        lots,
-        riskDollars: Math.round(riskDollars * 100) / 100,
+        // S67 (L41): لاتِ واقعیِ سرمایه‌محور (per-asset — رفعِ باگِ لات)
+        lots: lots ?? undefined,
+        riskDollars: rd,
         capital,
         riskPct,
-        capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
-          `(× ضریبِ کیفیتِ سطل ${lotM} ⇒ ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ` +
-          `${lots.toFixed(2)} لات است. اگر SL (فاصلهٔ ${slDist.toFixed(2)}$) بخورد، حدودِ ` +
-          `${(Math.round(riskDollars * 100) / 100).toLocaleString('en-US')}$ ضرر می‌کنید — دقیقاً ` +
-          `همان ریسکی که تعیین کردید. (کشفِ L41: سودِ خالص فقط با مدلِ سرمایه معنا دارد.)`,
+        capitalNote,
       },
       // S65 — TPِ رژیم-آگاه:
       tpPlan: {

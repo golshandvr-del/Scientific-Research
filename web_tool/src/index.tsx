@@ -5,7 +5,7 @@ import type { Candle } from './indicators'
 import { analyze } from './signal'
 import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
 import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuote, type SpotPrice } from './external'
-import { decide } from './router'
+import { decide, assetSpec } from './router'
 
 const app = new Hono()
 
@@ -356,7 +356,7 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     const merged = rebaseFuturesToSpot(candles, spot, 900)
     const useCandles = merged.candles
     const result = analyze(useCandles)
-    const dec = decide(result, useCandles.map(k => k.close), capital, riskPct)
+    const dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
@@ -370,7 +370,7 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   const merged = mergeLiveQuote(candles, live, 900)
   const useCandles = merged.candles
   const result = analyze(useCandles)
-  const dec = decide(result, useCandles.map(k => k.close), capital, riskPct)
+  const dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals,
     price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
