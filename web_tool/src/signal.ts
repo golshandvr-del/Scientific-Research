@@ -241,16 +241,23 @@ export function analyze(c: Candle[]): AnalysisResult {
       noEntryReason = `مغز صعودی فعال است اما احتمال (${probability.toFixed(1)}%) زیر آستانهٔ ۶۰٪ است.`
     }
   } else if (bearRegimeOk) {
-    // مغز نزولی فعال (S31) — پاسخ به User Note
+    // مغز نزولی فعال (رژیم نزولی تشخیص داده شد) — اما SHORT دیگر Entry نمی‌دهد.
+    //
+    // ⚠️ هم‌گام‌سازی با تحقیق (کشفِ S83 — پاسخ به User Note):
+    //   جریانِ SHORTِ دستیِ سایت (همین bearScore) روی ۱۵۰k کندلِ تاریخی بک‌تست شد و
+    //   ثابت شد لبهٔ سودِ خالصِ معناداری ندارد: exp ≈ +۰.۱۴$/معامله (تقریباً صفر)، و
+    //   با هزینهٔ واقعیِ طلا (اسپرد ۰.۴$) عملاً منفی می‌شود. این جریان هرگز بخشی از
+    //   رکوردِ رسمیِ سودِ خالص (+۵۸٬۲۹۵$ = فقط لایه‌های Long) نبوده است.
+    //   کاربر نیز دو معاملهٔ SHORT با SL=15 گرفت و هر دو ضرر کردند — دقیقاً همان
+    //   رفتارِ شکنندهٔ پیش‌بینی‌شده.
+    //
+    // قانونِ شمارهٔ ۱ پروژه: فقط «سودِ خالصِ بیشتر». چون SHORT سود خالص اضافه نمی‌کند،
+    //   سایت آن را به‌عنوان Entry پیشنهاد نمی‌دهد و صادقانه دلیل را اعلام می‌کند.
     activeBrain = 'bear'
-    if (bearProbability >= ENTRY_THRESHOLD) {
-      direction = 'SHORT'
-      entry = price
-      tp = price - 1.4 * atr   // مغز نزولی: TP1.4/SL1.7
-      sl = price + 1.7 * atr
-    } else {
-      noEntryReason = `مغز نزولی فعال است اما احتمال (${bearProbability.toFixed(1)}%) زیر آستانهٔ ۶۰٪ است.`
-    }
+    direction = 'NONE'
+    noEntryReason = `رژیم نزولی تشخیص داده شد (قیمت < EMA50 < EMA200)، اما طبقِ تحقیقِ S83 ` +
+      `جریانِ SHORT لبهٔ سودِ خالص ندارد (exp≈+۰.۱۴$، با اسپرد منفی). ` +
+      `پس سایت وارد فروش نمی‌شود — استراتژیِ اثبات‌شده فقط Long است. منتظرِ بازگشتِ رژیم صعودی بمانید.`
   } else {
     // رنج — همهٔ مغزها غیرفعال
     activeBrain = 'none'
@@ -316,7 +323,7 @@ export function analyze(c: Candle[]): AnalysisResult {
     scoreBreakdown: breakdown,
     entry, tp, sl,
     rr: activeBrain === 'bear'
-      ? `TP 1.4×ATR / SL 1.7×ATR (مغز نزولی S31)`
+      ? `رژیم نزولی — بدون معامله (SHORT طبق S83 لبهٔ سود خالص ندارد)`
       : `TP ${S14.TP_M}×ATR / SL ${S14.SL_M}×ATR (BE=${S14.BE}%)`,
     levels, resistance, support,
     breakoutScenarios: scenarios,
