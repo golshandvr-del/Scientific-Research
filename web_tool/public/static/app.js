@@ -22,6 +22,15 @@ function setTrade(asset, trade) {
   else localStorage.removeItem(TRADE_KEY(asset))
 }
 
+// --- S67/L41: سرمایه و ریسکِ کاربر (پایدار در localStorage) ---
+// کشفِ L41: سودِ خالص فقط با مدلِ سرمایه معنا دارد؛ سایت حجمِ لاتِ واقعی را از این
+// دو مقدار می‌سازد و به /api/decision پاس می‌دهد.
+const CAP_KEY = 'user_capital', RISK_KEY = 'user_risk'
+function getCapital() { const v = parseFloat(localStorage.getItem(CAP_KEY)); return (isFinite(v) && v >= 100) ? v : 10000 }
+function getRisk() { const v = parseFloat(localStorage.getItem(RISK_KEY)); return (isFinite(v) && v > 0) ? v : 1.0 }
+function setCapital(v) { localStorage.setItem(CAP_KEY, String(v)) }
+function setRisk(v) { localStorage.setItem(RISK_KEY, String(v)) }
+
 // آخرین دادهٔ decision و advice برای هر دارایی
 const store = {}   // { XAUUSD: { decision, adviceStatus, error } , ... }
 let assetsMeta = []
@@ -61,6 +70,23 @@ function render() {
       </h1>
       <p class="text-slate-400 text-sm mt-1">تصمیمِ نهاییِ چند-دارایی بر پایهٔ Routerِ رژیم-محور — معیار: سودِ خالص</p>
       <p id="last-update" class="text-slate-500 text-xs mt-1"></p>
+      <div id="capital-panel" class="mt-3 inline-flex flex-wrap items-center justify-center gap-3 rounded-xl bg-slate-800/60 border border-slate-700 px-4 py-2.5">
+        <span class="text-xs text-slate-400 font-bold"><i class="fas fa-wallet ml-1"></i>مدلِ سرمایه (L41):</span>
+        <label class="flex items-center gap-1.5 text-xs text-slate-300">
+          سرمایه ($)
+          <input id="cap-input" type="number" min="100" step="100" value="${getCapital()}"
+            class="w-24 rounded bg-slate-900 border border-slate-600 px-2 py-1 text-amber-200 font-bold text-center tabular-nums focus:outline-none focus:border-amber-500" dir="ltr">
+        </label>
+        <label class="flex items-center gap-1.5 text-xs text-slate-300">
+          ریسک هر معامله (٪)
+          <input id="risk-input" type="number" min="0.1" max="5" step="0.1" value="${getRisk()}"
+            class="w-16 rounded bg-slate-900 border border-slate-600 px-2 py-1 text-rose-200 font-bold text-center tabular-nums focus:outline-none focus:border-rose-500" dir="ltr">
+        </label>
+        <button id="cap-apply" class="rounded bg-amber-500/90 hover:bg-amber-400 text-slate-900 font-bold text-xs px-3 py-1.5 transition">
+          اعمال
+        </button>
+      </div>
+      <p class="text-[11px] text-slate-500 mt-1.5 max-w-xl mx-auto">حجمِ لاتِ پیشنهادی طوری محاسبه می‌شود که اگر SL بخورد، دقیقاً همین درصدِ ریسک از سرمایه‌تان کم شود. (بک‌تستِ برنده S67: با ۱۰٬۰۰۰$ و ریسکِ ۱٪ ⇒ سودِ خالص +۳۷٬۱۵۶$)</p>
     </header>`
 
   const cards = assetsMeta.map(a => renderCard(a)).join('')
@@ -180,7 +206,19 @@ function renderEntry(a, d) {
           <span class="text-xs text-amber-300 font-bold"><i class="fas fa-coins ml-1"></i>حجمِ پیشنهادی (اهرمِ سودِ خالص)</span>
           <span class="text-sm font-extrabold text-amber-200 tabular-nums">${d.sizing.label}</span>
         </div>
-        <p class="text-[11px] text-amber-100/70 leading-relaxed mt-1">${d.sizing.note}</p>
+        ${d.sizing.lots != null ? `
+        <div class="mt-2 grid grid-cols-2 gap-2">
+          <div class="rounded bg-amber-500/15 px-2 py-1.5 text-center">
+            <div class="text-[10px] text-amber-300/80">حجمِ لاتِ واقعی</div>
+            <div class="text-base font-extrabold text-amber-100 tabular-nums" dir="ltr">${fmt(d.sizing.lots, 2)} <span class="text-[10px] font-normal">لات</span></div>
+          </div>
+          <div class="rounded bg-rose-500/15 px-2 py-1.5 text-center">
+            <div class="text-[10px] text-rose-300/80">ریسکِ دلاری (اگر SL بخورد)</div>
+            <div class="text-base font-extrabold text-rose-100 tabular-nums" dir="ltr">${fmt(d.sizing.riskDollars, 2)}$</div>
+          </div>
+        </div>
+        <p class="text-[11px] text-amber-100/70 leading-relaxed mt-1.5">${d.sizing.capitalNote}</p>
+        ` : `<p class="text-[11px] text-amber-100/70 leading-relaxed mt-1">${d.sizing.note}</p>`}
       </div>` : ''}
       ${d.tpPlan ? `
       <div class="mt-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 p-2.5">
@@ -286,6 +324,18 @@ function renderIndicators(d) {
 // رویدادها
 // ============================================================================
 function bindEvents() {
+  // --- L41: اعمالِ سرمایه/ریسک ---
+  const applyBtn = document.getElementById('cap-apply')
+  if (applyBtn) {
+    applyBtn.onclick = () => {
+      const cap = parseFloat(document.getElementById('cap-input').value)
+      const risk = parseFloat(document.getElementById('risk-input').value)
+      if (isFinite(cap) && cap >= 100) setCapital(cap)
+      if (isFinite(risk) && risk >= 0.1 && risk <= 5) setRisk(risk)
+      applyBtn.textContent = 'در حال محاسبه…'
+      refreshAll().then(() => { const b = document.getElementById('cap-apply'); if (b) b.textContent = 'اعمال' })
+    }
+  }
   document.querySelectorAll('.btn-register').forEach(btn => {
     btn.onclick = () => {
       const d = btn.dataset
@@ -328,7 +378,7 @@ function bindEvents() {
 // ============================================================================
 async function refreshAll() {
   try {
-    const res = await fetch('/api/decision')
+    const res = await fetch(`/api/decision?capital=${getCapital()}&risk=${getRisk()}`)
     const data = await res.json()
     if (!data.ok) throw new Error(data.error || 'خطای سرور')
     if (!assetsMeta.length) {
