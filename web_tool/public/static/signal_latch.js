@@ -79,10 +79,12 @@ function computeLatched(latch, raw, hasTrade, now) {
   return { decision: raw, latch: null }
 }
 
-// پشتیبانی از هر دو محیط: ماژولِ ES (Node/harness) و اسکریپتِ سراسری (مرورگر)
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { computeLatched, NEUTRAL_TOLERANCE }
-}
+// پشتیبانی از هر دو محیط:
+//   • مرورگر: این فایل با <script type="module"> بارگذاری می‌شود؛ برای سازگاری با
+//     app.js (که window.SignalLatch را صدا می‌زند) شیء را روی window هم می‌گذاریم.
+//   • Node/harness: با `import` بارگذاری می‌شود و از `export` زیر استفاده می‌کند.
 if (typeof window !== 'undefined') {
   window.SignalLatch = { computeLatched, NEUTRAL_TOLERANCE }
 }
+
+export { computeLatched, NEUTRAL_TOLERANCE }
