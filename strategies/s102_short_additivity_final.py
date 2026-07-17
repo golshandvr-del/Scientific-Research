@@ -125,6 +125,10 @@ def main():
     print(f"   Δ = {new_total - RECORD_TOTAL:+.0f}$  "
           f"({(new_total/RECORD_TOTAL-1)*100:+.1f}%)")
 
+    # نکتهٔ صداقتی: دو باگِ look-ahead در موتورِ trailing رفع شد (engine fix #1, #2)؛
+    # سودِ SHORT از عددِ اغراق‌آمیزِ +30,853$ به عددِ واقع‌بینانهٔ ~+14,979$ کاهش یافت.
+    # همچنین پنجرهٔ W2 (بازارِ رنجِ ۲۰۲۱–۲۰۲۳) منفی است — ذاتِ شکنندهٔ SHORT روی طلا
+    # (تأییدِ L53)، اما ۳ از ۴ پنجره و کلِ داده مثبت است.
     verdict = (add > 0) and (abs(corr) < 0.35) and (new_total > RECORD_TOTAL)
     print("\n" + "=" * 74)
     if verdict:
