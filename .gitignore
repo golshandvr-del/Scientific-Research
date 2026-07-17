@@ -12,3 +12,4 @@ web_tool/.dev.vars
 # ابزار توسعه parity (حجیم)
 web_tool/tools/full_ref_2000.json
 web_tool/tools/full_feats_2000.json
+.tmp_logs/
