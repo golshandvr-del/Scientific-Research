@@ -75,6 +75,8 @@ INITIAL_CAPITAL = 10_000.0
 RISK_PCT = 1.0
 COMMISSION = 7.0
 
+RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'results')
+
 
 def efficiency_ratio(close, win):
     close = pd.Series(close)
@@ -184,6 +186,13 @@ def run_one_asset(name, cfg):
     all_tr = all_tr.iloc[order].reset_index(drop=True)
     all_sl = all_sl[order]; all_w = all_w[order]
 
+    # ذخیرهٔ معاملات + sl_dist + weight برای تحلیل‌های بعدی (مثلِ گیتِ سودآوریِ S70)
+    # بدونِ نیاز به اجرای مجددِ ML سنگین.
+    tr_out = all_tr.copy()
+    tr_out['sl_dist'] = all_sl
+    tr_out['kelly_w'] = all_w
+    tr_out.to_csv(os.path.join(RES_DIR, f'_s69_trades_{name}.csv'), index=False)
+
     # موتورِ سرمایه با contract مخصوصِ همان دارایی (ریسکِ ثابت — صادقانه)
     s_fixed, eq = run_capital_backtest(all_tr, all_sl, weights=all_w,
                                        initial_capital=INITIAL_CAPITAL, risk_pct=RISK_PCT,
@@ -224,9 +233,6 @@ def run_one_asset(name, cfg):
                 net_comp=s_comp['net_profit'],
                 n_bull=len(trL), n_bear=len(trS),
                 h1=halves['H1'], h2=halves['H2'], eq=eq, tradable=cfg['tradable'])
-
-
-RES_DIR = os.path.join(os.path.dirname(__file__), '..', 'results')
 
 
 def run_single_to_json(name):
