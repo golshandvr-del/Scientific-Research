@@ -69,7 +69,12 @@ function render() {
         <i class="fas fa-compass ml-2"></i>دستیارِ تصمیمِ معاملات
       </h1>
       <p class="text-slate-400 text-sm mt-1">تصمیمِ نهاییِ چند-دارایی بر پایهٔ Routerِ رژیم-محور — معیار: سودِ خالص</p>
-      <p id="last-update" class="text-slate-500 text-xs mt-1"></p>
+      <div class="flex items-center justify-center gap-3 mt-2">
+        <p id="last-update" class="text-slate-500 text-xs"></p>
+        <button id="manual-refresh" class="inline-flex items-center gap-1.5 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs px-3 py-1.5 transition disabled:opacity-60">
+          <i class="fas fa-rotate-right"></i><span>بروزرسانیِ دستیِ داده‌ها</span>
+        </button>
+      </div>
       <div id="capital-panel" class="mt-3 inline-flex flex-wrap items-center justify-center gap-3 rounded-xl bg-slate-800/60 border border-slate-700 px-4 py-2.5">
         <span class="text-xs text-slate-400 font-bold"><i class="fas fa-wallet ml-1"></i>مدلِ سرمایه (L41):</span>
         <label class="flex items-center gap-1.5 text-xs text-slate-300">
@@ -324,6 +329,32 @@ function renderIndicators(d) {
 // رویدادها
 // ============================================================================
 function bindEvents() {
+  // --- باگ #۲: دکمهٔ بروزرسانیِ دستیِ داده‌ها (User Note) ---
+  // هم تصمیم/سیگنال (/api/decision) و هم قیمتِ زندهٔ کارت‌ها (/api/spots) را فوراً
+  // به‌روز می‌کند و بازخوردِ بصری می‌دهد؛ مستقل از تایمرِ خودکارِ ۳۰ ثانیه.
+  const refreshBtn = document.getElementById('manual-refresh')
+  if (refreshBtn) {
+    refreshBtn.onclick = async () => {
+      const span = refreshBtn.querySelector('span')
+      const icon = refreshBtn.querySelector('i')
+      refreshBtn.disabled = true
+      if (icon) icon.classList.add('fa-spin')
+      if (span) span.textContent = 'در حال بروزرسانی…'
+      try {
+        await Promise.all([refreshAll(), refreshSpots()])
+      } finally {
+        // render() داخلِ refreshAll دوباره دکمه را می‌سازد؛ پس المانِ تازه را می‌گیریم.
+        const b = document.getElementById('manual-refresh')
+        if (b) {
+          b.disabled = false
+          const s = b.querySelector('span'), ic = b.querySelector('i')
+          if (ic) ic.classList.remove('fa-spin')
+          if (s) s.textContent = 'بروزرسانیِ دستیِ داده‌ها'
+        }
+      }
+    }
+  }
+
   // --- L41: اعمالِ سرمایه/ریسک ---
   const applyBtn = document.getElementById('cap-apply')
   if (applyBtn) {
