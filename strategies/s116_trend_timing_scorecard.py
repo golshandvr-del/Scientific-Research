@@ -40,6 +40,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'engine'))
 import numpy as np
 import pandas as pd
 import indicators as ind
+import scalp_engine as se
 
 DATA = os.path.join(os.path.dirname(__file__), '..', 'data', 'XAUUSD_M15.csv')
 RESULTS = os.path.join(os.path.dirname(__file__), '..', 'results')
@@ -57,54 +58,43 @@ def load():
 # ==============================================================================
 def zigzag_trends(close, high, low, threshold_usd):
     """
-    ZigZag ساده مبتنی بر آستانهٔ دلاری.
-    یک روند صعودی = از یک کفِ تأییدشده تا سقفِ تأییدشدهٔ بعدی که ≥ threshold باشد.
-    خروجی: فهرستِ روندها هرکدام dict(dir, i_start, i_end, p_start, p_end, move_usd).
-    نقاطِ اکسترمم بر اساسِ high/low (کف=low، سقف=high) تعیین می‌شوند.
+    ZigZag استانداردِ مبتنی بر آستانهٔ دلاری (روی close، با ثبتِ اکسترممِ واقعی).
+
+    منطق: یک اکسترممِ جاری نگه می‌داریم. تا وقتی قیمت در جهتِ فعلی پیش می‌رود،
+    اکسترمم را به‌روز می‌کنیم. به‌محضِ آنکه قیمت از اکسترممِ جاری به اندازهٔ
+    threshold در خلافِ جهت برگردد، یک pivot تأیید می‌شود و جهت عوض می‌شود.
+    این تضمین می‌کند روندها چندکندلی و معنادارند (نه یک‌کندلیِ intrabar).
+
+    خروجی: فهرستِ روندها dict(dir, i_start, i_end, p_start, p_end, move_usd).
     """
     n = len(close)
-    c = close
-    # پیدا کردنِ نقاطِ چرخشِ ZigZag
+    if n < 3:
+        return []
     pivots = []  # (index, price, type)  type: 'H' or 'L'
-    # از اولین کندل شروع؛ جهتِ اولیه را با اولین حرکتِ ≥ threshold تعیین می‌کنیم
-    last_pivot_idx = 0
-    last_pivot_price = c[0]
-    direction = 0  # +1 up-leg در حال شکل‌گیری، -1 down-leg، 0 نامعلوم
-    cur_ext_idx = 0
-    cur_ext_price = c[0]
+    direction = 0            # +1 = در حالِ ساختنِ سقف، -1 = در حالِ ساختنِ کف
+    ext_idx = 0
+    ext_price = close[0]
 
     for i in range(1, n):
+        price = close[i]
         if direction >= 0:
-            # در up-leg، بالاترین high را دنبال کن
-            if high[i] > cur_ext_price:
-                cur_ext_price = high[i]; cur_ext_idx = i
-            # آیا از سقفِ فعلی به اندازهٔ threshold برگشته؟ ⇒ تأییدِ یک سقف
-            if cur_ext_price - low[i] >= threshold_usd and direction > 0:
-                pivots.append((cur_ext_idx, cur_ext_price, 'H'))
+            # جهتِ صعودی (یا نامعلوم): بالاترین close را دنبال کن
+            if price > ext_price:
+                ext_price = price; ext_idx = i
+            # برگشتِ ≥ threshold از سقف ⇒ سقف تأیید شد
+            if ext_price - price >= threshold_usd:
+                pivots.append((ext_idx, ext_price, 'H'))
                 direction = -1
-                last_pivot_idx = cur_ext_idx; last_pivot_price = cur_ext_price
-                cur_ext_price = low[i]; cur_ext_idx = i
-            elif direction == 0 and cur_ext_price - low[i] >= threshold_usd:
-                # اولین سقف تأیید شد
-                pivots.append((cur_ext_idx, cur_ext_price, 'H'))
-                direction = -1
-                last_pivot_idx = cur_ext_idx; last_pivot_price = cur_ext_price
-                cur_ext_price = low[i]; cur_ext_idx = i
+                ext_price = price; ext_idx = i
         if direction <= 0:
-            if low[i] < cur_ext_price:
-                cur_ext_price = low[i]; cur_ext_idx = i
-            if high[i] - cur_ext_price >= threshold_usd and direction < 0:
-                pivots.append((cur_ext_idx, cur_ext_price, 'L'))
+            if price < ext_price:
+                ext_price = price; ext_idx = i
+            if price - ext_price >= threshold_usd:
+                pivots.append((ext_idx, ext_price, 'L'))
                 direction = 1
-                last_pivot_idx = cur_ext_idx; last_pivot_price = cur_ext_price
-                cur_ext_price = high[i]; cur_ext_idx = i
-            elif direction == 0 and high[i] - cur_ext_price >= threshold_usd:
-                pivots.append((cur_ext_idx, cur_ext_price, 'L'))
-                direction = 1
-                last_pivot_idx = cur_ext_idx; last_pivot_price = cur_ext_price
-                cur_ext_price = high[i]; cur_ext_idx = i
+                ext_price = price; ext_idx = i
 
-    # از دنبالهٔ pivotها روندها را بساز (هر جفتِ متوالیِ L→H = صعودی، H→L = نزولی)
+    # از دنبالهٔ pivotها روندها را بساز
     trends = []
     for k in range(1, len(pivots)):
         i0, p0, t0 = pivots[k - 1]
@@ -147,62 +137,59 @@ def build_signals(df):
 # ==============================================================================
 # ۳) امتیازِ دقتِ زمان‌بندی (معیارِ نوِ User Note)
 # ==============================================================================
-def timing_scores(trend, sig_bars, tol_bars=8):
+def score_trade_vs_trend(trend, entry_bar, exit_bar, close):
     """
-    برای یک روند و مجموعه‌کندل‌هایی که یک استراتژی سیگنال داده، محاسبه می‌کند:
+    معیارِ نوِ User Note — امتیازِ دقتِ زمان‌بندیِ یک *معاملهٔ واقعی* در برابرِ یک روند.
 
-      detected       : آیا حداقل یک سیگنال در پنجرهٔ روند (با تحملِ tol_bars) هست؟
-      entry_bar      : اولین سیگنالِ مرتبط با این روند.
-      start_score    : دقتِ کشفِ نقطهٔ شروع (۱۰۰ = دقیقاً روی کفِ روند؛ کاهش هرچه دیرتر).
-                       بر حسبِ درصدِ دامنهٔ روند که در لحظهٔ ورود «باقی مانده» بود.
-      end_score      : دقتِ کشفِ نقطهٔ پایان — اینجا با «آخرین سیگنالِ داخلِ روند»
-                       به‌عنوان تخمینِ پایان سنجیده می‌شود (چقدر نزدیک به سقفِ واقعی).
-      captured_pct   : درصدِ دامنهٔ روند که بینِ اولین و آخرین سیگنال پوشش داده شد.
+    ورودی: یک روند + معاملهٔ واقعیِ استراتژی (entry_bar از سیگنال، exit_bar از موتورِ
+    TP/SL/trailing/max_hold — یعنی جایی که استراتژی *واقعاً* بست).
 
-    منطق (برای روندِ صعودی):
-      دامنه = p_end - p_start (بر حسبِ $). اگر استراتژی در کندلِ b وارد شود، قیمتِ
-      ورود ≈ close[b]. کسرِ روند که «هنوز مانده» = (p_end - close[b]) / range.
-      start_score = ۱۰۰ × کسرِ باقی‌مانده در لحظهٔ اولین سیگنال (زودتر = بهتر).
-      end_score   = ۱۰۰ × (۱ − |p_end - close[last_sig]| / range)  (نزدیک‌تر به سقف = بهتر).
+    سه امتیاز (۰ تا ۱۰۰):
+      start_score : دقتِ کشفِ نقطهٔ «شروع». ۱۰۰ = ورود دقیقاً روی کفِ واقعیِ روند.
+                    هرچه دیرتر (کسرِ کمتری از روند باقی مانده) ⇒ امتیازِ کمتر.
+                    = ۱۰۰ × (کسرِ دامنه که هنگامِ ورود هنوز مانده بود).
+      end_score   : دقتِ کشفِ نقطهٔ «پایان». ۱۰۰ = خروج دقیقاً روی سقفِ واقعیِ روند.
+                    = ۱۰۰ × (۱ − |قیمتِ خروج − سقفِ روند| / دامنه).
+      captured_pct: درصدِ دامنهٔ روند که معامله واقعاً گرفت (بینِ قیمتِ ورود و خروج).
+
+    برای روندِ صعودی: کف = p_start، سقف = p_end (خرید).
+    برای روندِ نزولی: سقف = p_start، کف = p_end (فروش) — «شروع» = بالا، «پایان» = پایین.
     """
-    i0, i1 = trend['i_start'], trend['i_end']
     rng = abs(trend['p_end'] - trend['p_start'])
     if rng <= 0:
         return None
-    lo = max(0, i0 - tol_bars)
-    hi = i1 + tol_bars
-    rel = [b for b in sig_bars if lo <= b <= hi]
-    if not rel:
-        return dict(detected=False, entry_bar=None, start_score=0.0,
-                    end_score=0.0, captured_pct=0.0, n_sig=0)
-    return dict(detected=True, entry_bar=int(rel[0]), last_bar=int(rel[-1]),
-                n_sig=len(rel), _range=rng, _trend=trend, _rel=rel)
-
-
-def finalize_scores(sc, close):
-    """محاسبهٔ start/end/captured با استفاده از close واقعی در کندل‌های سیگنال."""
-    if not sc.get('detected'):
-        return sc
-    t = sc['_trend']; rng = sc['_range']
-    up = (t['dir'] == 'up')
-    first_b = sc['entry_bar']; last_b = sc['last_bar']
-    c_first = close[first_b]; c_last = close[last_b]
+    up = (trend['dir'] == 'up')
+    c_in = close[entry_bar]
+    c_out = close[exit_bar]
     if up:
-        remaining_at_entry = (t['p_end'] - c_first) / rng      # هرچه بیشتر، زودتر وارد شده
-        end_closeness = 1.0 - abs(t['p_end'] - c_last) / rng   # هرچه نزدیک‌تر به سقف
+        remaining_at_entry = (trend['p_end'] - c_in) / rng
+        end_closeness = 1.0 - abs(trend['p_end'] - c_out) / rng
+        captured = (c_out - c_in) / rng
     else:
-        remaining_at_entry = (c_first - t['p_end']) / rng
-        end_closeness = 1.0 - abs(t['p_end'] - c_last) / rng
-    start_score = float(np.clip(remaining_at_entry, 0, 1) * 100)
-    end_score = float(np.clip(end_closeness, 0, 1) * 100)
-    captured = float(np.clip(abs(c_last - c_first) / rng, 0, 1) * 100)
-    sc['start_score'] = start_score
-    sc['end_score'] = end_score
-    sc['captured_pct'] = captured
-    # پاک‌سازیِ فیلدهای داخلی برای JSON
-    for k in ('_range', '_trend', '_rel'):
-        sc.pop(k, None)
-    return sc
+        remaining_at_entry = (c_in - trend['p_end']) / rng
+        end_closeness = 1.0 - abs(trend['p_end'] - c_out) / rng
+        captured = (c_in - c_out) / rng
+    return dict(start=float(np.clip(remaining_at_entry, 0, 1) * 100),
+                end=float(np.clip(end_closeness, 0, 1) * 100),
+                captured=float(np.clip(captured, -1, 1) * 100))
+
+
+def attribute_trades_to_trend(trend, trades, tol_frac=0.25):
+    """
+    معاملاتِ (واقعیِ) یک استراتژی را که *درونِ محدودهٔ روند* آغاز شده‌اند پیدا می‌کند.
+    یک معامله به روند نسبت داده می‌شود اگر entry_bar آن در بازهٔ
+    [i_start - tol, i_end] باشد (tol = کسری از طولِ روند، حداقل ۲ کندل).
+    خروجی: فهرستِ (entry_bar, exit_bar) معاملاتِ مرتبط، مرتب بر اساسِ entry.
+    """
+    i0, i1 = trend['i_start'], trend['i_end']
+    dur = max(1, i1 - i0)
+    tol = int(np.clip(round(dur * tol_frac), 2, 20))
+    lo, hi = max(0, i0 - tol), i1 + tol
+    rel = [(int(r['entry_bar']), int(r['exit_bar']))
+           for _, r in trades.iterrows()
+           if lo <= int(r['entry_bar']) <= hi]
+    rel.sort()
+    return rel
 
 
 # ==============================================================================
@@ -243,45 +230,67 @@ def find_window_with_n_trends(df, target_dir, target_n=50, win=5000):
     return start, win, tr
 
 
+def simulate_brain(seg, sig, direction, sl_pip, tp_pip, max_hold,
+                   be_trigger_pip=None, trail_pip=None):
+    """معاملاتِ واقعیِ یک مغز را با موتورِ scalp_engine شبیه‌سازی می‌کند."""
+    n = len(seg)
+    long_sig = sig if direction == 'long' else np.zeros(n, bool)
+    short_sig = sig if direction == 'short' else np.zeros(n, bool)
+    tr = se.simulate_trades(seg, long_sig, short_sig, sl_pip=sl_pip, tp_pip=tp_pip,
+                            asset='XAUUSD', max_hold=max_hold, allow_overlap=False,
+                            be_trigger_pip=be_trigger_pip, trail_pip=trail_pip)
+    return tr if tr is not None else pd.DataFrame(columns=['entry_bar', 'exit_bar'])
+
+
 def run_for_direction(df, seg, trends, sigs, dna, target_dir):
-    """اجرا و امتیازدهی برای یک جهت (up یا down)."""
-    dir_trends = [t for t in trends if t['dir'] == target_dir]
-    # فقط ~۵۰ روندِ اول را نگه دار
-    dir_trends = dir_trends[:50]
+    """اجرا و امتیازدهی برای یک جهت (up یا down) با معاملاتِ *واقعیِ* موتور."""
+    dir_trends = [t for t in trends if t['dir'] == target_dir][:50]
     close = seg['close'].values
 
-    # کدام مغزها برای این جهت مرتبط‌اند
+    # مغزها با پارامترهای واقعیِ رکورد (pip؛ pip=0.10$ ⇒ ۱۰pip=۱$):
+    #   LONG swing (S81): SL=120pip, TP=1200pip (R:R≈1:10), نگهداریِ بلند.
+    #   SCALP (S91): SL=80pip, TP=120pip, نگهداریِ کوتاه.
+    #   SHORT (رکورد recent3y): SL=60, BE=6, trail=6, max_hold=8.
     if target_dir == 'up':
-        brains = {'LONG_midcross': sigs['LONG_midcross'],
-                  'SCALP_long': sigs['SCALP_long']}
+        brain_trades = {
+            'LONG_midcross': simulate_brain(seg, sigs['LONG_midcross'], 'long',
+                                            sl_pip=120, tp_pip=1200, max_hold=288),
+            'SCALP_long':    simulate_brain(seg, sigs['SCALP_long'], 'long',
+                                            sl_pip=80, tp_pip=120, max_hold=32),
+        }
     else:
-        brains = {'SHORT_midcross': sigs['SHORT_midcross']}
-
-    brain_bars = {name: list(np.where(sig)[0]) for name, sig in brains.items()}
+        brain_trades = {
+            'SHORT_midcross': simulate_brain(seg, sigs['SHORT_midcross'], 'short',
+                                             sl_pip=60, tp_pip=600, max_hold=8,
+                                             be_trigger_pip=6, trail_pip=6),
+        }
 
     rows = []
     for idx, t in enumerate(dir_trends, 1):
+        i0 = t['i_start']
         row = dict(num=idx, dir=target_dir, i_start=t['i_start'], i_end=t['i_end'],
                    move_usd=round(t['move_usd'], 2),
                    len_bars=t['i_end'] - t['i_start'],
-                   p_start=round(t['p_start'], 1), p_end=round(t['p_end'], 1))
-        # DNA در نقطهٔ شروعِ روند
-        i0 = t['i_start']
-        row['adx'] = round(float(dna['adx'][i0]), 1) if not np.isnan(dna['adx'][i0]) else None
-        row['rsi'] = round(float(dna['rsi'][i0]), 1) if not np.isnan(dna['rsi'][i0]) else None
-        row['dist200'] = round(float(dna['dist200'][i0]), 2) if not np.isnan(dna['dist200'][i0]) else None
-        row['detected_by'] = []
-        row['scores'] = {}
-        for name, bars in brain_bars.items():
-            sc = timing_scores(t, bars)
-            sc = finalize_scores(sc, close)
-            if sc.get('detected'):
-                row['detected_by'].append(name)
-                row['scores'][name] = dict(
-                    start=round(sc['start_score'], 1),
-                    end=round(sc['end_score'], 1),
-                    captured=round(sc['captured_pct'], 1),
-                    n_sig=sc['n_sig'])
+                   p_start=round(t['p_start'], 1), p_end=round(t['p_end'], 1),
+                   adx=round(float(dna['adx'][i0]), 1) if not np.isnan(dna['adx'][i0]) else None,
+                   rsi=round(float(dna['rsi'][i0]), 1) if not np.isnan(dna['rsi'][i0]) else None,
+                   dist200=round(float(dna['dist200'][i0]), 2) if not np.isnan(dna['dist200'][i0]) else None,
+                   detected_by=[], scores={})
+        for name, trades in brain_trades.items():
+            rel = attribute_trades_to_trend(t, trades)
+            if not rel:
+                continue
+            # اولین معاملهٔ مرتبط = تخمینِ شروع؛ خروجِ آخرین معامله = تخمینِ پایان
+            entry_bar = rel[0][0]
+            exit_bar = rel[-1][1]
+            sc = score_trade_vs_trend(t, entry_bar, exit_bar, close)
+            if sc is None:
+                continue
+            row['detected_by'].append(name)
+            row['scores'][name] = dict(start=round(sc['start'], 1),
+                                       end=round(sc['end'], 1),
+                                       captured=round(sc['captured'], 1),
+                                       n_trades=len(rel))
         row['detected'] = len(row['detected_by']) > 0
         rows.append(row)
     return rows
