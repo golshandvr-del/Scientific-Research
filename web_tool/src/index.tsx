@@ -511,6 +511,26 @@ app.get('/api/spots', async (c) => {
   return c.json({ ok: true, at: Date.now(), spots })
 })
 
+// پروکسیِ عمومیِ CORS-safe — برای APK/WebView تا دادهٔ چند-دارایی از Yahoo بگیرد
+// (سرورِ سایت محدودیتِ CORS مرورگر را ندارد). فقط دامنه‌های مالیِ مجاز.
+app.get('/api/proxy', async (c) => {
+  const target = c.req.query('url') || ''
+  const allow = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com', 'finance.yahoo.com']
+  let host = ''
+  try { host = new URL(target).hostname } catch { return c.json({ ok: false, error: 'bad url' }, 400) }
+  if (!allow.includes(host)) return c.json({ ok: false, error: 'host not allowed' }, 403)
+  try {
+    const r = await fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } })
+    const body = await r.text()
+    return new Response(body, {
+      status: r.status,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+    })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e.message }, 502)
+  }
+})
+
 // health
 app.get('/api/health', (c) => c.json({ ok: true, service: 'xauusd-live-tool', time: Date.now() }))
 
