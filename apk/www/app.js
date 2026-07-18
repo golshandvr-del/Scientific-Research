@@ -183,21 +183,39 @@ async function fetchCandles(asset) {
   return fetchYahoo(asset, base);
 }
 
+// آیا داخلِ APK (Capacitor/WebView) اجرا می‌شویم؟
+// اگر بله، CapacitorHttp فعال است و fetch از native عبور می‌کند ⇒ CORS دور زده
+// می‌شود و می‌توانیم مستقیم و «بدونِ کمترین تأخیر» از Yahoo بگیریم (بدونِ پروکسی).
+function isNativeApp() {
+  try {
+    return !!(window.Capacitor && (window.Capacitor.isNativePlatform
+      ? window.Capacitor.isNativePlatform() : window.Capacitor.isNative));
+  } catch (e) { return false; }
+}
+
 async function fetchYahoo(asset, base) {
   base = base != null ? base : effectiveApiBase();
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(asset.yahoo)}` +
               `?interval=15m&range=60d`;
-  // در WebViewِ اندروید (APK) درخواستِ مستقیم بدونِ محدودیتِ CORS کار می‌کند.
-  // در مرورگرِ معمولی از پروکسی‌ها استفاده می‌شود. سرورِ سایت بهترین منبع است.
-  const proxies = [
-    url,
-    'https://corsproxy.io/?url=' + encodeURIComponent(url),
-    'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
-    'https://thingproxy.freeboard.io/fetch/' + url,
-  ];
-  // اگر سرورِ سایت در دسترس است، پروکسیِ CORS-safeِ آن را در اولویت بگذار
-  if (base) {
-    proxies.unshift(base + '/api/proxy?url=' + encodeURIComponent(url));
+  let proxies;
+  if (isNativeApp()) {
+    // داخلِ APK: مستقیم از Yahoo (CapacitorHttp ⇒ بدونِ CORS، کمترین تأخیر).
+    // پروکسی‌ها فقط به‌عنوانِ fallbackِ اضطراری در انتها.
+    proxies = [
+      url,
+      `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(asset.yahoo)}?interval=15m&range=60d`,
+    ];
+    if (base) proxies.push(base + '/api/proxy?url=' + encodeURIComponent(url));
+  } else {
+    // مرورگرِ معمولی: به‌خاطرِ CORS باید از پروکسی/سرورِ سایت استفاده کرد.
+    proxies = [
+      url,
+      'https://corsproxy.io/?url=' + encodeURIComponent(url),
+      'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+      'https://thingproxy.freeboard.io/fetch/' + url,
+    ];
+    // اگر سرورِ سایت در دسترس است، پروکسیِ CORS-safeِ آن را در اولویت بگذار
+    if (base) proxies.unshift(base + '/api/proxy?url=' + encodeURIComponent(url));
   }
   for (const p of proxies) {
     try {
