@@ -65,10 +65,11 @@
         <div class="font-bold text-sm mb-1"><i class="fab fa-python text-blue-400"></i> موتورِ برندهٔ فعال</div>
         <div id="active-engine-name" class="text-xs text-slate-400 mb-2">موتورِ داخلی (پیش‌فرض)</div>
         <p class="text-[11px] text-slate-400 leading-relaxed mb-3">
-          این اپ یک مفسرِ واقعیِ پایتون (Pyodide) درونِ خود دارد. شما می‌توانید
-          <b>فایلِ پایتونِ موتورِ برنده</b> را وارد کنید و اپ همان کدِ شما را
-          <b>واقعاً اجرا</b> کند. موتور باید تابعِ <code class="bg-slate-800 px-1 rounded">decide(candles, asset, capital, risk_pct)</code>
-          و (اختیاری) <code class="bg-slate-800 px-1 rounded">backtest_long_m15(candles)</code> داشته باشد.
+          این اپ یک مفسرِ واقعیِ پایتون (Pyodide) با <b>numpy و pandas</b> درونِ خود دارد و
+          موتورِ <b>واقعیِ پروژه</b> (engine/ + s118 + s73، بدونِ بازنویسی) را اجرا می‌کند.
+          شما می‌توانید <b>فایلِ پایتونِ موتورِ برندهٔ خودتان</b> را وارد کنید و اپ همان کد را
+          <b>واقعاً اجرا</b> کند. موتور باید تابعِ <code class="bg-slate-800 px-1 rounded">live_decision(df, asset, open_position=None)</code>
+          و (اختیاری) <code class="bg-slate-800 px-1 rounded">reproduce_record(xau_df, eur_df)</code> داشته باشد.
         </p>
         <div class="flex flex-col gap-2">
           <label class="text-xs">
