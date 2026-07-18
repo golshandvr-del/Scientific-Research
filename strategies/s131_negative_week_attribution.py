@@ -166,17 +166,35 @@ def main():
 def plot(port, chosen, layer_ev, all_weeks, base_neg, tot):
     base = 100_000.0
     port_w = weekly_series(port)
-    fig, ax = plt.subplots(figsize=(14, 6))
-    ax.plot(np.arange(len(port_w)), (base + port_w.cumsum()).values,
-            color='#94a3b8', lw=2.0, label=f'Baseline (neg weeks {base_neg}/{tot})')
     cw = chosen['w']
     ctag = chosen.get('tag', chosen['name'])
+    fig, axes = plt.subplots(2, 1, figsize=(14, 9))
+
+    # --- بالا: هر دو منحنیِ Equity (خط‌چینِ باریک برای پایه تا هر دو دیده شوند) ---
+    ax = axes[0]
+    ax.plot(np.arange(len(port_w)), (base + port_w.cumsum()).values,
+            color='#1e3a8a', lw=3.2, alpha=0.9, label=f'Baseline all-5 (neg {base_neg}/{tot})')
     ax.plot(np.arange(len(cw)), (base + cw.cumsum()).values,
-            color='#dc2626', lw=2.4, label=f"{ctag} (neg {chosen['neg']}/{tot})")
-    ax.axhline(base, color='gray', ls='--', lw=0.8)
+            color='#f59e0b', lw=1.6, ls='--', label=f"{ctag} (neg {chosen['neg']}/{tot})")
+    ax.axhline(base, color='gray', ls=':', lw=0.8)
     ax.set_title('Equity Curve — Baseline vs Chosen Fix (recent 4y, weekly cum.)', fontsize=13)
-    ax.set_ylabel('Cumulative Net Profit ($)'); ax.set_xlabel('week index')
+    ax.set_ylabel('Cumulative Net Profit ($)')
     ax.legend(loc='upper left'); ax.grid(alpha=0.3)
+
+    # --- پایین: تفاوتِ تجمعی (chosen منهای پایه) تا اثرِ واقعیِ راهکار دیده شود ---
+    ax = axes[1]
+    diff = (cw.cumsum() - port_w.cumsum()).values
+    ax.fill_between(np.arange(len(diff)), 0, diff,
+                    where=(diff >= 0), color='#16a34a', alpha=0.6, label='fix better')
+    ax.fill_between(np.arange(len(diff)), 0, diff,
+                    where=(diff < 0), color='#dc2626', alpha=0.6, label='fix worse')
+    ax.axhline(0, color='black', lw=0.8)
+    ax.set_title(f'Cumulative Difference (Chosen − Baseline) — final = '
+                 f'{diff[-1]:+,.0f}$  |  net {chosen["net"]:+,.0f}$ vs {float(port_w.sum()):+,.0f}$',
+                 fontsize=13)
+    ax.set_ylabel('Δ Cumulative ($)'); ax.set_xlabel('week index')
+    ax.legend(loc='upper left'); ax.grid(alpha=0.3)
+
     plt.tight_layout()
     path = os.path.join(RES, '_s131_fix_compare.png')
     plt.savefig(path, dpi=110, bbox_inches='tight'); plt.close()
