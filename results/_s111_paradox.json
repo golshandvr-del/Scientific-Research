@@ -1,0 +1,29 @@
+{
+  "window": "3y_recent",
+  "n_bars": 70729,
+  "n_trends_total": 4275,
+  "n_up": 2137,
+  "n_dn": 2138,
+  "layers": {
+    "LONG (تعقیبِ روند)": {
+      "n_entries": 1371,
+      "coverage_pct": 15.9,
+      "covered": 339,
+      "dir_trends": 2137,
+      "win_rate": 25.1,
+      "avg_win_pip": 104.28,
+      "avg_loss_pip": -44.13,
+      "net_pip": -9451.4
+    },
+    "SHORT (اسکالپِ trailing)": {
+      "n_entries": 1695,
+      "coverage_pct": 28.4,
+      "covered": 608,
+      "dir_trends": 2138,
+      "win_rate": 46.6,
+      "avg_win_pip": 44.84,
+      "avg_loss_pip": -31.97,
+      "net_pip": 6490.7
+    }
+  }
+}
