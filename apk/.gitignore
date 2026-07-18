@@ -1,0 +1,11 @@
+# Capacitor / Node
+node_modules/
+package-lock.json
+
+# پلتفرمِ اندروید (خودکار توسط `cap add android` ساخته می‌شود — commit نمی‌شود)
+android/
+
+# خروجی‌ها
+*.apk
+*.aab
+*.bak

@@ -1,0 +1,18 @@
+{
+  "appId": "ir.scientificresearch.goldassistant",
+  "appName": "دستیار طلا",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "plugins": {
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
+}
