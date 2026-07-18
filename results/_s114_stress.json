@@ -1,0 +1,14 @@
+{
+  "candidate": {
+    "sl_pip": 60,
+    "tp_pip": 200,
+    "max_hold": 8,
+    "be_trigger_pip": 6,
+    "trail_pip": 6
+  },
+  "bars_held0_win_share_pct": 9.5,
+  "suspicious_lookahead": false,
+  "net_150k_candidate": 127423.84999996648,
+  "net_150k_baseline": 26371.099999977545,
+  "net_3y_candidate": 70595.4699999763
+}
