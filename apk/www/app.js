@@ -25,16 +25,16 @@ const DEFAULT_CFG = {
   apiBase: '',            // خالی ⇒ Yahoo مستقیم
   capital: 10000,
   risk: 1.0,
-  interval: 30,
+  interval: 15,           // به‌روزرسانیِ لحظه‌ای (طبقِ User Note) — پیش‌فرضِ ۱۵ ثانیه
 };
 let CFG = loadCfg();
 
-// دارایی‌های تحتِ پوشش (طبقِ فایل‌های DATA پروژه)
+// دارایی‌های تحتِ پوشش (طبقِ User Note: فقط دو ارزِ دارای لبهٔ اثبات‌شده،
+// دقیقاً مطابقِ سایت — XAUUSD و EURUSD. DXY/AUDUSD حذف شدند چون لبهٔ سوددهی
+// نداشتند و تعریفِ رسمیِ سودِ خالصِ پروژه = XAUUSD + EURUSD است.)
 const ASSETS = [
   { id: 'XAUUSD', label: 'طلا (XAU/USD)', yahoo: 'GC=F', icon: 'fa-coins', color: 'text-amber-400' },
   { id: 'EURUSD', label: 'یورو/دلار (EUR/USD)', yahoo: 'EURUSD=X', icon: 'fa-euro-sign', color: 'text-blue-400' },
-  { id: 'DXY',    label: 'شاخصِ دلار (DXY)', yahoo: 'DX-Y.NYB', icon: 'fa-dollar-sign', color: 'text-emerald-400' },
-  { id: 'AUDUSD', label: 'دلار استرالیا (AUD/USD)', yahoo: 'AUDUSD=X', icon: 'fa-a', color: 'text-rose-400' },
 ];
 
 let pyodide = null;
@@ -349,28 +349,23 @@ async function refreshAll() {
     `<div class="card p-4 text-xs text-slate-400" id="loading-${a.id}"><i class="fas fa-spinner fa-spin ${a.color}"></i> دریافتِ دادهٔ ${a.label}…</div>`).join('');
   $('conn-status').innerHTML = '<span class="text-amber-400">در حالِ دریافت…</span>';
 
-  // دریافتِ ترتیبی (نه موازی) با تأخیرِ کوتاه — پایدارتر و بدونِ نرخ‌محدودیِ منبع داده.
-  const results = [];
-  for (const a of ASSETS) {
+  // دریافتِ موازیِ هر دو دارایی — «بدونِ کمترین تأخیر» (طبقِ User Note).
+  // چون فقط دو دارایی داریم (XAUUSD + EURUSD) خطرِ نرخ‌محدودی ناچیز است، پس
+  // به‌جای دریافتِ ترتیبیِ ۳۵۰ms قبلی، هر دو هم‌زمان دریافت و رندر می‌شوند.
+  const results = await Promise.all(ASSETS.map(async (a) => {
     try {
       const candles = await fetchCandles(a);
       const d = await runEngineDecision(a, candles);
-      results.push({ a, d, err: null });
-    } catch (e) { results.push({ a, d: null, err: e.message }); }
-    // به‌روزرسانیِ تدریجیِ کارت‌ها هرچه داده می‌رسد
-    container.innerHTML = ASSETS.map(x => {
-      const r = results.find(y => y.a.id === x.id);
-      return r ? renderAssetCard(r.a, r.d, r.err)
-               : `<div class="card p-4 text-xs text-slate-400" id="loading-${x.id}"><i class="fas fa-spinner fa-spin ${x.color}"></i> دریافتِ دادهٔ ${x.label}…</div>`;
-    }).join('');
-    await new Promise(res => setTimeout(res, 350));
-  }
+      return { a, d, err: null };
+    } catch (e) { return { a, d: null, err: e.message }; }
+  }));
 
   container.innerHTML = results.map(r => renderAssetCard(r.a, r.d, r.err)).join('');
   const okCount = results.filter(r => !r.err).length;
+  const now = new Date().toLocaleTimeString('fa-IR');
   $('conn-status').innerHTML = okCount
-    ? `<span class="text-emerald-400"><i class="fas fa-circle text-[6px]"></i> آنلاین (${okCount}/${ASSETS.length})</span>`
-    : '<span class="text-rose-400">آفلاین</span>';
+    ? `<span class="text-emerald-400"><i class="fas fa-circle text-[6px]"></i> آنلاین (${okCount}/${ASSETS.length}) · ${now}</span>`
+    : '<span class="text-rose-400">آفلاین (بازار احتمالاً بسته است)</span>';
 }
 
 // اجرای بک‌تستِ سودِ خالص روی دادهٔ نمونه (بازتولیدِ رکورد با موتورِ واقعی)
