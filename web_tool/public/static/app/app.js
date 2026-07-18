@@ -349,13 +349,22 @@ async function refreshAll() {
     `<div class="card p-4 text-xs text-slate-400" id="loading-${a.id}"><i class="fas fa-spinner fa-spin ${a.color}"></i> دریافتِ دادهٔ ${a.label}…</div>`).join('');
   $('conn-status').innerHTML = '<span class="text-amber-400">در حالِ دریافت…</span>';
 
-  const results = await Promise.all(ASSETS.map(async (a) => {
+  // دریافتِ ترتیبی (نه موازی) با تأخیرِ کوتاه — پایدارتر و بدونِ نرخ‌محدودیِ منبع داده.
+  const results = [];
+  for (const a of ASSETS) {
     try {
       const candles = await fetchCandles(a);
       const d = await runEngineDecision(a, candles);
-      return { a, d, err: null };
-    } catch (e) { return { a, d: null, err: e.message }; }
-  }));
+      results.push({ a, d, err: null });
+    } catch (e) { results.push({ a, d: null, err: e.message }); }
+    // به‌روزرسانیِ تدریجیِ کارت‌ها هرچه داده می‌رسد
+    container.innerHTML = ASSETS.map(x => {
+      const r = results.find(y => y.a.id === x.id);
+      return r ? renderAssetCard(r.a, r.d, r.err)
+               : `<div class="card p-4 text-xs text-slate-400" id="loading-${x.id}"><i class="fas fa-spinner fa-spin ${x.color}"></i> دریافتِ دادهٔ ${x.label}…</div>`;
+    }).join('');
+    await new Promise(res => setTimeout(res, 350));
+  }
 
   container.innerHTML = results.map(r => renderAssetCard(r.a, r.d, r.err)).join('');
   const okCount = results.filter(r => !r.err).length;
