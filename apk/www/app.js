@@ -158,34 +158,46 @@ importlib.reload(ENGINE)
 // ---------------------------------------------------------------------------
 // دریافتِ دادهٔ آنلاینِ کندل
 // ---------------------------------------------------------------------------
+// مبنای API مؤثر: اگر کاربر apiBase نداد، origin فعلیِ صفحه را امتحان کن
+// (وقتی APK کنارِ سرورِ سایت مستقر است یا در حالتِ مرورگر روی همان دامنه).
+function effectiveApiBase() {
+  if (CFG.apiBase) return CFG.apiBase.replace(/\/$/, '');
+  try {
+    const o = location.origin;
+    if (o && /^https?:/.test(o)) return o;
+  } catch (e) {}
+  return '';
+}
+
 async function fetchCandles(asset) {
-  // اولویت: سرورِ سایت (اگر تنظیم شده) — همان API که سایت استفاده می‌کند.
-  // نکته: endpointِ /api/candles سایت فقط طلا (XAUUSD) را می‌دهد؛ بقیه از Yahoo.
-  if (CFG.apiBase && asset.id === 'XAUUSD') {
+  const base = effectiveApiBase();
+  // اولویت: endpointِ اختصاصیِ طلا در سرورِ سایت (با ادغامِ spot لحظه‌ای)
+  if (base && asset.id === 'XAUUSD') {
     try {
-      const u = CFG.apiBase.replace(/\/$/, '') + `/api/candles?interval=15m&range=2mo`;
+      const u = base + `/api/candles?interval=15m&range=2mo`;
       const j = await fetch(u).then(r => r.json());
       if (j && j.ok && j.candles && j.candles.length) return normalizeCandles(j.candles);
     } catch (e) { log(`سرورِ سایت پاسخ نداد (${asset.id})؛ تلاش با Yahoo…`); }
   }
-  // fallback: Yahoo Finance مستقیم
-  return fetchYahoo(asset);
+  // fallback: Yahoo Finance (از طریق پروکسیِ سرورِ سایت یا پروکسی‌های عمومی)
+  return fetchYahoo(asset, base);
 }
 
-async function fetchYahoo(asset) {
+async function fetchYahoo(asset, base) {
+  base = base != null ? base : effectiveApiBase();
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(asset.yahoo)}` +
               `?interval=15m&range=60d`;
   // در WebViewِ اندروید (APK) درخواستِ مستقیم بدونِ محدودیتِ CORS کار می‌کند.
-  // در مرورگرِ معمولی از پروکسی‌ها استفاده می‌شود. سرورِ سایت (apiBase) بهترین منبع است.
+  // در مرورگرِ معمولی از پروکسی‌ها استفاده می‌شود. سرورِ سایت بهترین منبع است.
   const proxies = [
     url,
     'https://corsproxy.io/?url=' + encodeURIComponent(url),
     'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
     'https://thingproxy.freeboard.io/fetch/' + url,
   ];
-  // اگر سرورِ سایت تنظیم شده، پروکسیِ CORS-safeِ آن را در اولویت بگذار
-  if (CFG.apiBase) {
-    proxies.unshift(CFG.apiBase.replace(/\/$/, '') + '/api/proxy?url=' + encodeURIComponent(url));
+  // اگر سرورِ سایت در دسترس است، پروکسیِ CORS-safeِ آن را در اولویت بگذار
+  if (base) {
+    proxies.unshift(base + '/api/proxy?url=' + encodeURIComponent(url));
   }
   for (const p of proxies) {
     try {
