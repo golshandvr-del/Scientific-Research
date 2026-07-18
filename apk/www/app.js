@@ -175,11 +175,18 @@ async function fetchCandles(asset) {
 async function fetchYahoo(asset) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(asset.yahoo)}` +
               `?interval=15m&range=60d`;
+  // در WebViewِ اندروید (APK) درخواستِ مستقیم بدونِ محدودیتِ CORS کار می‌کند.
+  // در مرورگرِ معمولی از پروکسی‌ها استفاده می‌شود. سرورِ سایت (apiBase) بهترین منبع است.
   const proxies = [
     url,
     'https://corsproxy.io/?url=' + encodeURIComponent(url),
     'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
+    'https://thingproxy.freeboard.io/fetch/' + url,
   ];
+  // اگر سرورِ سایت تنظیم شده، پروکسیِ CORS-safeِ آن را در اولویت بگذار
+  if (CFG.apiBase) {
+    proxies.unshift(CFG.apiBase.replace(/\/$/, '') + '/api/proxy?url=' + encodeURIComponent(url));
+  }
   for (const p of proxies) {
     try {
       const j = await fetch(p).then(r => r.json());
