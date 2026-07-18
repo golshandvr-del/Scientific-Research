@@ -110,17 +110,22 @@ def main():
 
     cands = []
     cands.append(report('پایه (همهٔ ۵ لایه)', port_w))
+    cands[-1]['tag'] = 'Baseline (all 5 layers)'
     names = list(lay_w.keys())
+    tags = {'S67': 'drop S67', 'ScalpV2': 'drop ScalpV2 (M5)', 'S81': 'drop S81',
+            'SHORT': 'drop SHORT', 'S73': 'drop S73'}
     for drop in names:
         w = sum((lay_w[n] for n in names if n != drop), start=pd.Series(0.0, index=all_weeks))
-        cands.append(report(f'حذفِ: {drop}', w))
+        c = report(f'حذفِ: {drop}', w)
+        c['tag'] = next((v for k, v in tags.items() if k in drop), 'drop layer')
     # کاهش‌وزنِ ScalpV2 (نوسانی‌ترین) به نصف
     sc = [n for n in names if 'ScalpV2' in n]
     if sc:
         scn = sc[0]
         w = sum((lay_w[n]*(0.5 if n == scn else 1.0) for n in names),
                 start=pd.Series(0.0, index=all_weeks))
-        cands.append(report('کاهش‌وزنِ ScalpV2 به ۵۰٪', w))
+        c = report('کاهش‌وزنِ ScalpV2 به ۵۰٪', w)
+        c['tag'] = 'ScalpV2 weight 50%'
 
     # انتخابِ بهترین طبقِ قانونِ #۱: بیشترین سودِ خالص، سپس کمترین %منفی
     # (اگر دو کاندید سودِ نزدیک داشتند، آنکه هفتهٔ منفیِ کمتری دارد برنده است)
@@ -165,8 +170,9 @@ def plot(port, chosen, layer_ev, all_weeks, base_neg, tot):
     ax.plot(np.arange(len(port_w)), (base + port_w.cumsum()).values,
             color='#94a3b8', lw=2.0, label=f'Baseline (neg weeks {base_neg}/{tot})')
     cw = chosen['w']
+    ctag = chosen.get('tag', chosen['name'])
     ax.plot(np.arange(len(cw)), (base + cw.cumsum()).values,
-            color='#dc2626', lw=2.4, label=f"{chosen['name']} (neg {chosen['neg']}/{tot})")
+            color='#dc2626', lw=2.4, label=f"{ctag} (neg {chosen['neg']}/{tot})")
     ax.axhline(base, color='gray', ls='--', lw=0.8)
     ax.set_title('Equity Curve — Baseline vs Chosen Fix (recent 4y, weekly cum.)', fontsize=13)
     ax.set_ylabel('Cumulative Net Profit ($)'); ax.set_xlabel('week index')
