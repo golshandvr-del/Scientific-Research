@@ -14,6 +14,9 @@ const app = new Hono()
 
 app.use('/api/*', cors())
 app.use('/static/*', serveStatic({ root: './public' }))
+// نسخهٔ وبِ اپلیکیشنِ APK زیرِ /static/app/ سرو می‌شود (مسیرِ استاتیکِ کارآمد).
+// میان‌بر: /app ⇒ ری‌دایرکت به صفحهٔ اپ.
+app.get('/app', (c) => c.redirect('/static/app/index.html'))
 
 // ---------------------------------------------------------------------------
 // دریافت داده زنده طلا از Yahoo Finance (GC=F = طلای آتی COMEX، بدون نیاز به کلید)
@@ -513,22 +516,50 @@ app.get('/api/spots', async (c) => {
 
 // پروکسیِ عمومیِ CORS-safe — برای APK/WebView تا دادهٔ چند-دارایی از Yahoo بگیرد
 // (سرورِ سایت محدودیتِ CORS مرورگر را ندارد). فقط دامنه‌های مالیِ مجاز.
+// دارای کشِ کوتاه‌مدت + retry، تا درخواست‌های همزمانِ چند-دارایی Yahoo را نرخ‌محدود نکند.
+const _proxyCache = new Map<string, { at: number; status: number; body: string }>()
+const _PROXY_TTL = 60_000  // ۶۰ ثانیه (کندلِ M15 تا دقایق تازه می‌ماند)
+
 app.get('/api/proxy', async (c) => {
   const target = c.req.query('url') || ''
   const allow = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com', 'finance.yahoo.com']
   let host = ''
   try { host = new URL(target).hostname } catch { return c.json({ ok: false, error: 'bad url' }, 400) }
   if (!allow.includes(host)) return c.json({ ok: false, error: 'host not allowed' }, 403)
-  try {
-    const r = await fetch(target, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } })
-    const body = await r.text()
-    return new Response(body, {
-      status: r.status,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+
+  const cached = _proxyCache.get(target)
+  const now = Date.now()
+  if (cached && now - cached.at < _PROXY_TTL && cached.status === 200) {
+    return new Response(cached.body, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'X-Proxy-Cache': 'hit' },
     })
-  } catch (e: any) {
-    return c.json({ ok: false, error: e.message }, 502)
   }
+  // تلاش با query1 و query2 و چند retry برای دورزدنِ نرخ‌محدودیِ لحظه‌ای
+  const hosts = [target, target.replace('query1.', 'query2.')]
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const u = hosts[attempt % hosts.length]
+    try {
+      const r = await fetch(u, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } })
+      const body = await r.text()
+      if (r.status === 200) {
+        _proxyCache.set(target, { at: now, status: 200, body })
+        return new Response(body, {
+          status: 200,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'X-Proxy-Cache': 'miss' },
+        })
+      }
+    } catch (e) { /* retry بعدی */ }
+    await new Promise((res) => setTimeout(res, 250 * (attempt + 1)))
+  }
+  // اگر همه تلاش‌ها ناموفق بود ولی کشِ قدیمی داریم، همان را بده (stale-while-error)
+  if (cached && cached.status === 200) {
+    return new Response(cached.body, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'X-Proxy-Cache': 'stale' },
+    })
+  }
+  return c.json({ ok: false, error: 'upstream unavailable' }, 502)
 })
 
 // health
