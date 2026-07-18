@@ -228,8 +228,13 @@ def simulate_trades(df, long_sig, short_sig, sl_pip, tp_pip, asset,
 
         # سود/زیانِ خالص بر حسبِ pip = حرکتِ قیمت/pip − اسپرد (اسلیپیج قبلاً در fill لحاظ شد)
         pnl_pip = gross_price / pip - spread
-        if outcome is None:
-            outcome = 'win' if pnl_pip > 0 else 'loss'
+        # ⚠️ اصلاحِ باگِ گزارشیِ WR (s117/s118): برچسبِ outcome باید بر اساسِ *سود/زیانِ
+        # واقعی* باشد، نه صرفِ اینکه کدام سطح (TP/SL) خورد. یک trailing-stop یا max_hold
+        # که در ناحیهٔ سود بسته می‌شود یک «برد» است، نه «باخت». پیش از این، هر خروجِ
+        # غیرِ TP به‌غلط 'loss' برچسب می‌خورد و با TPِ بزرگ WR گزارشی ≈۰ می‌شد (در حالی
+        # که سودِ خالص مثبت بود). این فقط عددِ گزارشیِ WR را تصحیح می‌کند؛ سودِ خالص و
+        # منطقِ معامله دست‌نخورده‌اند (net از pnl_pip می‌آید، نه از outcome).
+        outcome = 'win' if pnl_pip > 0 else 'loss'
 
         busy_until = exit_bar
         trades.append({

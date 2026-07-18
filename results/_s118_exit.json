@@ -1,0 +1,24 @@
+{
+  "baseline_full": 27851.949999999677,
+  "baseline_h1": 5160.860000004541,
+  "baseline_h2": 22648.41999999502,
+  "record_total": 88955.0,
+  "best_params": {
+    "sl_pip": 70,
+    "tp_pip": 800,
+    "max_hold": 48,
+    "be_trigger_pip": 6,
+    "trail_pip": 6
+  },
+  "best_net_short": 34541.639999998726,
+  "new_total": 95644.63999999873,
+  "wf": [
+    5556.460000001931,
+    1223.880000001709,
+    6361.45999999949,
+    21149.239999995614
+  ],
+  "wf_all_pos": true,
+  "corr": 0.16241732866315328,
+  "verdict": true
+}

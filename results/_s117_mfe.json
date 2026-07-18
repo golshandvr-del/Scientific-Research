@@ -1,0 +1,17 @@
+{
+  "record_exit": {
+    "sl_pip": 60,
+    "tp_pip": 200,
+    "max_hold": 8,
+    "be_trigger_pip": 6,
+    "trail_pip": 6
+  },
+  "net_short": 27851.949999999677,
+  "n": 3448,
+  "mean_realized": 4.751595127610051,
+  "mean_mfe": 69.31461716937314,
+  "mean_mae": 59.90507540603289,
+  "mean_left_on_table": 64.56302204176309,
+  "mean_bar_of_mfe": 3.163863109048724,
+  "give_backs_frac": 0.42935779816513764
+}
