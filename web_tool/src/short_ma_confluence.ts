@@ -10,14 +10,18 @@
 //   از بالا رو به پایین قطع کند (کندلِ قبل بالای میانه، کندلِ فعلی زیرِ میانه).
 //   این دقیقاً «خطِ چارت خطوطِ MA را از بالا قطع می‌کند» است که تریدرِ کاربر گفت.
 //
-// خروجِ سریع (کلیدِ سوددهی): SL=40pip، BE=8pip، trailing=8pip، max_hold=12 کندل.
-//   میانگینِ نگه‌داری ~۲ کندل ⇒ سودِ کوچکِ سریع (خواستهٔ صریحِ کاربر).
+// خروجِ «بگذار بردها بدوند» (بازطراحیِ s117–s118 — کلیدِ رکوردِ +$95,645):
+//   SL=70pip، TP سقفِ ۸۰۰pip، BE=6pip، trailing=6pip، max_hold=48 کندل.
+//   کشفِ MFE (s117): خروجِ قدیمی (40/8/8/12) میانگین فقط +4.8pip می‌گرفت درحالی‌که
+//   MFE=69.3pip در دسترس بود (۶۴.۶pip روی میز جامانده). ترِیلِ تنگ و max_hold کوتاه
+//   حرکتِ نزولیِ بزرگ را زودهنگام قطع می‌کرد. با اجازه‌دادن به بردها که تا ۴۸ کندل
+//   بدوند و TP دور، سهمِ SHORT از +$27,852 به +$34,542 رسید (Δ +$6,690).
 //
-// اعتبار (engine اصلاح‌شده، پس از رفعِ دو باگِ look-ahead):
-//   کلِ ۱۵۰k: +14,979$ | PF 1.12 | DD −18.3% | همبستگیِ روزانه با long = −0.114
-//   ۳ از ۴ پنجرهٔ walk-forward مثبت (W2 رنجِ ۲۰۲۱–۲۳ منفی — ذاتِ شکنندهٔ طلا، L53).
-//   افزایشی به رکورد: +61,102$ → +76,082$.
-// جزئیات: results/ShortMAConfluence_Trailing_NetProfit_76082.md
+// اعتبار (engine اصلاح‌شده، جهتِ موتور = SHORT، پس از رفعِ باگِ «موتورِ long اشتباه» s117):
+//   کلِ ۱۵۰k سهمِ SHORT: +34,542$ | هر دو نیمهٔ داده مثبت (h1 +5,161$، h2 +22,648$)
+//   walk-forward هر ۴ پنجره مثبت | همبستگیِ روزانه با long = +0.16 (مکمل/غیرِهم‌بسته).
+//   افزایشی به رکورد: +88,955$ → +95,645$.
+// جزئیات: results/ShortExitLetWinnersRun_NetProfit_95645.md
 // ============================================================================
 
 import { ema, sma } from './indicators'
@@ -26,15 +30,17 @@ export interface ShortMAConfig {
   emaFast: number      // 50
   emaMid: number       // 100
   smaSlow: number      // 200
-  slPip: number        // 40  (× pipSize واحدِ قیمت)
-  bePip: number        // 8
-  trailPip: number     // 8
-  maxHold: number      // 12
+  slPip: number        // 70  (× pipSize واحدِ قیمت)
+  bePip: number        // 6
+  trailPip: number     // 6
+  maxHold: number      // 48
+  tpPip: number        // 800 (سقفِ ایمنی؛ خروجِ اصلی با trailing/max_hold)
 }
 
+// پارامترِ رکورد s118 «بگذار بردها بدوند» — منبعِ حقیقتِ واحد برای سایت و APK.
 export const DEFAULT_SHORT_MA: ShortMAConfig = {
   emaFast: 50, emaMid: 100, smaSlow: 200,
-  slPip: 40, bePip: 8, trailPip: 8, maxHold: 12,
+  slPip: 70, bePip: 6, trailPip: 6, maxHold: 48, tpPip: 800,
 }
 
 export interface ShortMASignal {

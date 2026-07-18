@@ -18,6 +18,7 @@ export interface OpenTrade {
   tp: number             // حد سود اولیه
   sl: number             // حد ضرر اولیه
   openedAt?: number      // زمان باز کردن (ثانیه) — اختیاری
+  barsHeld?: number      // تعداد کندلِ M15 که معامله باز بوده (برای سقفِ نگه‌داریِ SHORT s118)
 }
 
 export interface Advice {
@@ -183,29 +184,32 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   }
 
   // ==========================================================================
-  // ۳الف) مدیریتِ سریعِ SHORT-اسکالپ (S102 / پاسخِ User Note: «سودِ سریعِ short»)
+  // ۳الف) مدیریتِ SHORT-MA-Confluence «بگذار بردها بدوند» (بازطراحیِ s118)
   // --------------------------------------------------------------------------
-  // معاملهٔ SHORTِ MA-Confluence روی طلا حدضررِ تنگ (~۴$ = ۴۰pip) دارد و کلیدِ
-  // سوددهی‌اش «خروجِ سریع» است، نه صبر تا ۱.۵R. اگر معاملهٔ short با SLِ تنگ باشد
-  // (نسبت به قیمتِ طلا کوچک)، منطقِ سریعِ اختصاصی را اعمال می‌کنیم:
-  //   • پس از ~۸pip (۰.۸$) سود  → فوراً بریک‌ایون (بدونِ صبر تا ۱R).
-  //   • پس از آن → trailing تنگِ ۸pip تا شتابِ نزولی تمام شود.
-  //   • چون طلا V-recovery دارد، اگر شتاب کند شد، پیشنهادِ بستنِ سریعِ سود.
-  // این دقیقاً همان «۳-۴ دلار سودِ سریع» است که کاربر خواست.
+  // کشفِ MFE (s117): منطقِ قدیمی (BE۸/trail۸/۱۲کندل، SL۴۰pip) بردهای بزرگِ نزولی را
+  // زودهنگام قطع می‌کرد؛ میانگین فقط +۴.۸pip می‌گرفت درحالی‌که MFE=۶۹.۳pip در دسترس بود.
+  // منطقِ رکورد (s118، سهمِ SHORT +$34,542):
+  //   • SL ثابت ۷۰pip (~۷$).
+  //   • پس از ~۶pip (۰.۶$) سود  → بریک‌ایون.
+  //   • سپس trailing ۶pip، اما **اجازه بده معامله تا ۴۸ کندل بدود** (نه بستنِ زودهنگام).
+  //   • تنها وقتی می‌بندیم که trailing بخورد یا حداکثرِ نگه‌داری (۴۸ کندل) برسد.
+  // این «بگذار بردها بدوند» کلیدِ افزایشِ رکورد از +۸۸٬۹۵۵$ به +۹۵٬۶۴۵$ بود.
   // ==========================================================================
   const isGoldPrice = price >= 100
-  const tightShortScalp = !isLong && isGoldPrice && riskDist <= 6.0   // SL کوچک ≈ اسکالپِ short
-  if (tightShortScalp && !reachedTp && !reachedSl) {
+  // SLِ رکوردِ s118 = ۷۰pip = ۷$؛ بازهٔ تشخیص را حولِ آن می‌گیریم (۵$..۹$).
+  const isMaShort = !isLong && isGoldPrice && riskDist >= 5.0 && riskDist <= 9.0
+  if (isMaShort && !reachedTp && !reachedSl) {
     const profitDollars = rawMove            // برای short: entry - price
-    const BE_TRIG = 0.8                       // ۸pip سود → بریک‌ایون
-    const TRAIL = 0.8                         // trailing ۸pip
+    const BE_TRIG = 0.6                       // ۶pip سود → بریک‌ایون
+    const TRAIL = 0.6                         // trailing ۶pip
+    const MAX_HOLD_BARS = 48                  // «بگذار بردها بدوند» تا ۴۸ کندل
     if (profitDollars >= BE_TRIG && !isSlBeyondEntry(t) && Math.abs(t.sl - t.entry) >= 0.05) {
       advices.push({
         type: 'sl', severity: 'good',
-        title: '⚡ SHORTِ سریع: فوراً بی‌ریسک کن (بریک‌ایون)',
-        detail: `به ${round2(profitDollars)}$ (~${Math.round(profitDollars * 10)}pip) سود رسیدی. این یک SHORTِ ` +
-          `اسکالپِ سریع است — SL را همین حالا به قیمتِ ورود (${round2(t.entry)}) ببر تا معامله بدون‌ریسک شود. ` +
-          `صبر برای ۱R لازم نیست؛ کلیدِ سوددهیِ SHORT روی طلا «قفلِ سریعِ سود» است.`,
+        title: '🟢 SHORT (بگذار بردها بدوند): بی‌ریسک کن (بریک‌ایون)',
+        detail: `به ${round2(profitDollars)}$ (~${Math.round(profitDollars * 10)}pip) سود رسیدی. ` +
+          `SL را به قیمتِ ورود (${round2(t.entry)}) ببر تا معامله بدون‌ریسک شود؛ ولی **معامله را نبند** — ` +
+          `طبقِ کشفِ MFE (s117) بردهای بزرگِ نزولی زودهنگام قطع می‌شدند. بگذار حرکت ادامه یابد.`,
         suggest: { field: 'sl', value: round2(t.entry) },
       })
     }
@@ -214,20 +218,21 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
       if (trail < t.sl) {
         advices.push({
           type: 'sl', severity: 'good',
-          title: '⚡ SHORTِ سریع: trailingِ تنگِ ۸pip',
-          detail: `شتابِ نزولی ادامه دارد. SL را به ${trail} (۸pip پشتِ قیمت) بکش. تا وقتی قیمت پایین می‌رود ` +
-            `این کار را تکرار کن؛ به‌محضِ برخوردِ trailing، سود قفل و خارج می‌شوی — پیش از بازگشتِ (V-recovery) طلا.`,
+          title: '🟢 SHORT: trailingِ ۶pip — بگذار برد بدود',
+          detail: `شتابِ نزولی ادامه دارد. SL را به ${trail} (۶pip پشتِ قیمت) بکش و همین کار را تکرار کن. ` +
+            `تا وقتی قیمت پایین می‌رود، اجازه بده معامله ادامه یابد (تا ۴۸ کندل)؛ فقط با برخوردِ trailing خارج شو. ` +
+            `این «اجازه‌دادن به بردها» کلیدِ رکوردِ +۹۵٬۶۴۵$ است — دیگر سودِ کوچکِ زودهنگام نمی‌گیریم.`,
           suggest: { field: 'sl', value: trail },
         })
       }
     }
-    // اگر شتابِ نزولی ضعیف شد (روندِ زنده دیگر down نیست) و در سودیم → بستنِ سریع
-    if (profitDollars >= BE_TRIG && a.trend !== 'down') {
+    // تنها محرکِ بستن: رسیدن به حداکثرِ نگه‌داری (۴۸ کندل). شتابِ کند دیگر دلیلِ بستن نیست.
+    if (typeof t.barsHeld === 'number' && t.barsHeld >= MAX_HOLD_BARS) {
       advices.push({
         type: 'close', severity: 'warning',
-        title: '⚡ SHORTِ سریع: شتاب کم شد — سود را بردار',
-        detail: `شتابِ نزولی در حالِ تضعیف است (روندِ زنده دیگر «نزولیِ قوی» نیست) و تو ${round2(profitDollars)}$ در سودی. ` +
-          `چون این معامله برای سودِ کوچکِ سریع باز شده، بستنِ همین حالا منطقی است — منتظرِ بازگشتِ طلا نمان.`,
+        title: '⏱ SHORT: به حداکثرِ نگه‌داری (۴۸ کندل) رسید — ببند',
+        detail: `این معامله ${t.barsHeld} کندل باز بوده و به سقفِ نگه‌داریِ منطقِ رکورد (۴۸ کندل) رسیده است. ` +
+          `طبقِ s118 اینجا معامله را می‌بندیم تا سرمایه آزاد شود؛ سودِ فعلی ${round2(profitDollars)}$.`,
       })
     }
   }

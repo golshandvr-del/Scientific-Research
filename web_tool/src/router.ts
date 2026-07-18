@@ -280,14 +280,15 @@ export function decide(a: AnalysisResult, close: number[],
   // این لایه فقط برای XAUUSD فعال است (کشف روی همان اعتبارسنجی شده) و *مکملِ*
   // منطقِ ML است: وقتی مدلِ صعودی ساکت است ولی قیمت خطِ میانهٔ سه میانگین
   // [EMA50,EMA100,SMA200] را از بالا رو به پایین قطع می‌کند، به‌جای «علاف‌کردنِ»
-  // کاربر، یک سیگنالِ SHORTِ سریع (خروجِ trailing، سودِ کوچکِ ~۲ کندلی) می‌دهد.
-  // اعتبار: کلِ ۱۵۰k +14,979$، PF 1.12، همبستگیِ روزانه با long −0.114 (مکمل).
-  // جزئیات: results/ShortMAConfluence_Trailing_NetProfit_76082.md
+  // کاربر، یک سیگنالِ SHORT می‌دهد و اجازه می‌دهد بردها بدوند (خروجِ s118).
+  // اعتبار: سهمِ SHORT +34,542$، هر دو نیمهٔ داده مثبت، WF هر ۴ پنجره مثبت،
+  //   همبستگیِ روزانه با long +0.16 (مکمل). افزایشی: +88,955$ → +95,645$.
+  // جزئیات: results/ShortExitLetWinnersRun_NetProfit_95645.md
   // ========================================================================
   if (spec.id === 'XAUUSD' && reg.activeStream !== 'bull') {
     const sm = computeShortMA(close, DEFAULT_SHORT_MA)
     const pip = 0.1                     // طلا: ۱ pip = ۰.۱ واحدِ قیمت
-    const slDist = DEFAULT_SHORT_MA.slPip * pip     // ۴۰pip = ۴.۰$
+    const slDist = DEFAULT_SHORT_MA.slPip * pip     // ۷۰pip = ۷.۰$
     const trailDist = DEFAULT_SHORT_MA.trailPip * pip
     const beDist = DEFAULT_SHORT_MA.bePip * pip
 
@@ -305,8 +306,8 @@ export function decide(a: AnalysisResult, close: number[],
       // ---- ورودِ SHORT (ماشهٔ MA-confluence شلیک کرد) ----
       const entry = a.price
       const sl = entry + slDist
-      // TP اسمیِ دور (۲۰۰pip) فقط به‌عنوانِ «سقفِ» ایمنی؛ خروجِ واقعی با trailing است.
-      const tpNominal = entry - 200 * pip
+      // TP اسمیِ دور (۸۰۰pip) فقط به‌عنوانِ «سقفِ» ایمنی؛ خروجِ واقعی با trailing/max_hold است.
+      const tpNominal = entry - DEFAULT_SHORT_MA.tpPip * pip
       const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1.0, spec)
       const rd = Math.round(riskDollars * 100) / 100
       const qualNote = sm.dnStack
@@ -316,19 +317,20 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'ENTRY', regime: reg,
         headline: 'ورود فروش (SHORT) — قیمت خطِ میانهٔ میانگین‌ها را از بالا شکست',
         reason: `${sm.reason} این همان الگویی است که «خطِ چارت، خطوطِ MA را از بالا قطع می‌کند» — ` +
-          `شتابِ نزولیِ کوتاه‌مدت. ${qualNote} چون طلا V-recovery دارد، این معامله را ` +
-          `«سریع» مدیریت می‌کنیم: پس از ۸ پیپ سود، حد ضرر به سربه‌سر می‌آید و با فاصلهٔ ۸ پیپ ` +
-          `سود را دنبال می‌کند (میانگینِ نگه‌داری ~۲ کندل). طبقِ قانونِ شمارهٔ ۱، هدف سودِ خالصِ ` +
-          `بیشتر است نه وین‌ریتِ بالا (این استراتژی WR پایین اما PF=1.12 دارد).`,
+          `شتابِ نزولیِ کوتاه‌مدت. ${qualNote} طبقِ کشفِ MFE (s117)، بردهای بزرگِ نزولی را ` +
+          `زودهنگام قطع نمی‌کنیم: پس از ۶ پیپ سود، حد ضرر به سربه‌سر می‌آید و با فاصلهٔ ۶ پیپ ` +
+          `سود را دنبال می‌کند، اما اجازه می‌دهیم معامله تا ۴۸ کندل بدود (بگذار بردها بدوند). ` +
+          `طبقِ قانونِ شمارهٔ ۱، هدف سودِ خالصِ بیشتر است نه وین‌ریتِ بالا (این استراتژی WR پایین ` +
+          `اما سودِ خالصِ بالا دارد — سهمِ +۳۴٬۵۴۲$).`,
         direction: 'SHORT', entry, tp: tpNominal, sl,
-        rr: `SL ثابت ۴۰pip (${slDist.toFixed(2)}$) + خروجِ پویا: BE=۸pip، trailing=۸pip، حداکثر ۱۲ کندل (TP سقفِ ۲۰۰pip)`,
+        rr: `SL ثابت ۷۰pip (${slDist.toFixed(2)}$) + خروجِ پویا: BE=۶pip، trailing=۶pip، حداکثر ۴۸ کندل (TP سقفِ ۸۰۰pip)`,
         probability: sm.dnStack ? 62 : 55,
         sizing: {
           lotMultiplier: 1.0,
           label: sm.dnStack ? 'کیفیتِ بالا (چیدمانِ نزولیِ کامل)' : 'کیفیتِ متوسط',
-          note: `استراتژیِ SHORT-MA-Confluence (S102). ورودِ open کندلِ بعد، اسپرد ۴pip لحاظ شده. ` +
-            `همبستگیِ روزانه با جریانِ long = −0.11 ⇒ این معامله مکملِ سبدِ long است و سودِ خالصِ ` +
-            `کل را افزایش می‌دهد (رکورد: +۶۱٬۱۰۲$ → +۷۶٬۰۸۲$).`,
+          note: `استراتژیِ SHORT-MA-Confluence (خروجِ بازطراحی‌شدهٔ s118). ورودِ open کندلِ بعد، اسپرد ۴pip لحاظ شده. ` +
+            `همبستگیِ روزانه با جریانِ long = +0.16 ⇒ این معامله مکملِ سبدِ long است و سودِ خالصِ ` +
+            `کل را افزایش می‌دهد (رکورد: +۸۸٬۹۵۵$ → +۹۵٬۶۴۵$).`,
           lots: lots ?? undefined,
           riskDollars: rd,
           capital, riskPct,
@@ -337,16 +339,16 @@ export function decide(a: AnalysisResult, close: number[],
             `اگر SL (فاصلهٔ ${slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
         },
         tpPlan: {
-          multiplier: 200,
-          note: `این استراتژی TPِ ثابت ندارد؛ عددِ ۲۰۰pip فقط «سقفِ ایمنی» است. خروجِ اصلی ` +
-            `با trailing انجام می‌شود: سود را با فاصلهٔ ۸pip دنبال کنید تا شتابِ نزولی تمام شود. ` +
-            `هدف سودِ کوچکِ سریع است (میانگین ~۲ کندل) — دقیقاً همان «۳-۴ دلار سودِ سریع» که خواستید.`,
+          multiplier: DEFAULT_SHORT_MA.tpPip,
+          note: `این استراتژی TPِ ثابت ندارد؛ عددِ ۸۰۰pip فقط «سقفِ ایمنی» است. خروجِ اصلی ` +
+            `با trailing و max_hold انجام می‌شود: سود را با فاصلهٔ ۶pip دنبال کنید و اجازه دهید معامله ` +
+            `تا ۴۸ کندل بدود. طبقِ کشفِ MFE (s117) «بگذار بردها بدوند» سودِ خالص را بیشینه می‌کند.`,
         },
         slPlan: {
           multiplier: DEFAULT_SHORT_MA.slPip,
-          note: `SL ثابت ۴۰pip (${slDist.toFixed(2)}$). پس از رسیدن به ۸pip سود، به سربه‌سر منتقل کنید؛ ` +
-            `سپس با trailing ۸pip (${trailDist.toFixed(2)}$) سود را دنبال کنید. این خروجِ سریع، شتابِ نزولی ` +
-            `را «می‌دزدد» و پیش از بازگشتِ طلا خارج می‌شود (کلیدِ سوددهیِ SHORT روی طلا — L53/L55).`,
+          note: `SL ثابت ۷۰pip (${slDist.toFixed(2)}$). پس از رسیدن به ۶pip سود، به سربه‌سر منتقل کنید؛ ` +
+            `سپس با trailing ۶pip (${trailDist.toFixed(2)}$) سود را دنبال کنید و بگذارید حرکتِ نزولیِ بزرگ ` +
+            `ادامه یابد (تا ۴۸ کندل). این «اجازه‌دادن به بردها» کلیدِ رکوردِ +۹۵٬۶۴۵$ است (s118).`,
         },
         indicators: shortInd,
       }
