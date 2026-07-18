@@ -1,0 +1,22 @@
+{
+ "UP": {
+  "direction": "UP",
+  "n": 57,
+  "ema_in_trend": 27,
+  "rsi_in_trend": 20,
+  "both_in_trend": 1,
+  "pct_ema_active": 43.67,
+  "pct_rsi_active": 8.89,
+  "pct_both_active": 0.11
+ },
+ "DOWN": {
+  "direction": "DOWN",
+  "n": 57,
+  "ema_in_trend": 41,
+  "rsi_in_trend": 12,
+  "both_in_trend": 3,
+  "pct_ema_active": 56.28,
+  "pct_rsi_active": 4.44,
+  "pct_both_active": 0.33
+ }
+}
