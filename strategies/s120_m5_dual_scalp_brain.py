@@ -54,11 +54,30 @@ def atr(h, l, c, p=14):
 
 
 def build_signals(df):
-    """چند خانوادهٔ ماشهٔ دوطرفه تولید کن. خروجی: dict[name] = (long_bool, short_bool)."""
+    """چند خانوادهٔ ماشهٔ دوطرفه تولید کن. خروجی: dict[name] = (long_bool, short_bool).
+
+    کشفِ کلیدیِ نسخهٔ اول (همه در h1 ضرر، در h2 سودِ نجومی):
+      اسکالپِ M5 با تعدادِ زیادِ معامله در بازارِ رنج/بی‌روند (به‌خاطرِ اسپردِ ۴pipِ طلا)
+      نابود می‌شود؛ ولی در رژیمِ روندی سودِ عظیم می‌دهد. پس ماشه باید با **فیلترِ رژیم**
+      (ADX + گسترشِ ATR) گیت شود تا فقط در رژیمِ پرنوسان/روندی فایر کند و تعدادِ معامله
+      شدیداً کاهش یابد (کیفیت بر کمیت). این پاسخِ فلسفیِ «محلِ درستِ استفاده» است.
+    """
     c = df['close'].values.astype(float)
     h = df['high'].values.astype(float); l = df['low'].values.astype(float)
-    e9=ema(c,9); e21=ema(c,21); e50=ema(c,50); e100=ema(c,100)
+    e9=ema(c,9); e21=ema(c,21); e50=ema(c,50); e100=ema(c,100); e200=ema(c,200)
     r7=rsi(c,7); r14=rsi(c,14)
+    at = atr(h,l,c,14)
+    at_med = pd.Series(at).rolling(200).median().values      # ATRِ نرمالِ بلندمدت
+    # ADXِ سبک (بدونِ وابستگی به indicators.py برای سرعت)
+    up = np.diff(h, prepend=h[0]); dn = -np.diff(l, prepend=l[0])
+    plus = np.where((up>dn)&(up>0), up, 0.0); minus = np.where((dn>up)&(dn>0), dn, 0.0)
+    trv = np.maximum.reduce([h-l, np.abs(h-np.roll(c,1)), np.abs(l-np.roll(c,1))]); trv[0]=h[0]-l[0]
+    atrv = pd.Series(trv).ewm(alpha=1/14, adjust=False).mean().values
+    pdi = 100*pd.Series(plus).ewm(alpha=1/14, adjust=False).mean().values/np.where(atrv==0,np.nan,atrv)
+    mdi = 100*pd.Series(minus).ewm(alpha=1/14, adjust=False).mean().values/np.where(atrv==0,np.nan,atrv)
+    dx = 100*np.abs(pdi-mdi)/np.where((pdi+mdi)==0,np.nan,(pdi+mdi))
+    adx = pd.Series(dx).ewm(alpha=1/14, adjust=False).mean().values
+
     slope9 = e9 - np.roll(e9,3)
     hi10 = pd.Series(h).rolling(10).max().shift(1).values
     lo10 = pd.Series(l).rolling(10).min().shift(1).values
@@ -67,32 +86,31 @@ def build_signals(df):
 
     def clean(x): return np.nan_to_num(x, nan=0).astype(bool)
 
+    # فیلترِ رژیم: فقط وقتی روند/نوسان کافی است اجازهٔ ورود بده
+    trend_ok = (adx > 25) & (at > at_med)          # رژیمِ روندیِ پرنوسان
+    strong_trend = (adx > 30) & (at > 1.2*at_med)  # سخت‌گیرتر
+
     sigs = {}
 
-    # B) EMA9/EMA21 cross در جهتِ ساختارِ e50
-    ec  = (e9>e21) & (np.roll(e9,1)<=np.roll(e21,1)) & (c>e50)
-    ecs = (e9<e21) & (np.roll(e9,1)>=np.roll(e21,1)) & (c<e50)
-    sigs['B_ema_cross'] = (clean(ec), clean(ecs))
+    # J) Breakout10 فقط در رژیمِ روندی (فیلترِ ADX+ATR)
+    j_l = (c>hi10) & (e9>e21) & (c>e50) & trend_ok
+    j_s = (c<lo10) & (e9<e21) & (c<e50) & trend_ok
+    sigs['J_break10_regime'] = (clean(j_l), clean(j_s))
 
-    # D) Breakout ۱۰ کندلی + جهتِ EMA
-    d_l = (c>hi10) & (e9>e21)
-    d_s = (c<lo10) & (e9<e21)
-    sigs['D_break10'] = (clean(d_l), clean(d_s))
+    # K) Breakout20 فقط در رژیمِ روندیِ قوی (کمترین معامله، بالاترین کیفیت)
+    k_l = (c>hi20) & (slope9>0) & (c>e50) & strong_trend
+    k_s = (c<lo20) & (slope9<0) & (c<e50) & strong_trend
+    sigs['K_break20_strongreg'] = (clean(k_l), clean(k_s))
 
-    # F) slope-flip در جهتِ e50
-    sfu = (slope9>0) & (np.roll(slope9,1)<=0) & (c>e50)
-    sfd = (slope9<0) & (np.roll(slope9,1)>=0) & (c<e50)
-    sigs['F_slope_flip'] = (clean(sfu), clean(sfd))
+    # L) EMA9/21 cross فقط در رژیمِ روندی
+    ec  = (e9>e21) & (np.roll(e9,1)<=np.roll(e21,1)) & (c>e50) & trend_ok
+    ecs = (e9<e21) & (np.roll(e9,1)>=np.roll(e21,1)) & (c<e50) & trend_ok
+    sigs['L_emacross_regime'] = (clean(ec), clean(ecs))
 
-    # H) Breakout ۲۰ کندلی + شیبِ همسو (کندتر، دقتِ شروعِ بهتر)
-    h_l = (c>hi20) & (slope9>0)
-    h_s = (c<lo20) & (slope9<0)
-    sigs['H_break20'] = (clean(h_l), clean(h_s))
-
-    # I) ترکیبِ breakout10 با فیلترِ momentum RSI (اجتناب از ورودِ خیلی کش‌دار)
-    i_l = (c>hi10) & (e9>e21) & (r14>50) & (r14<75)
-    i_s = (c<lo10) & (e9<e21) & (r14<50) & (r14>25)
-    sigs['I_break10_rsi'] = (clean(i_l), clean(i_s))
+    # M) HTF-aligned breakout: علاوه بر رژیم، همسو با روندِ کندِ EMA200
+    m_l = (c>hi20) & (e50>e200) & strong_trend & (r14>50)
+    m_s = (c<lo20) & (e50<e200) & strong_trend & (r14<50)
+    sigs['M_htf_break20'] = (clean(m_l), clean(m_s))
 
     return sigs
 
