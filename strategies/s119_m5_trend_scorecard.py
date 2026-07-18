@@ -234,7 +234,7 @@ def main():
     print(f"داده: {len(df)} کندلِ M5 طلا  ({df['dt'].iloc[0]} → {df['dt'].iloc[-1]})")
 
     # پنجره‌ای با ~۵۰ روندِ صعودی پیدا کن
-    a, b = find_window_with_50_up(df, target=50, win=6000)
+    a, b = find_window_with_50_up(df, target=50)
     seg = df.iloc[a:b].reset_index(drop=True)
     c = seg['close'].values.astype(float)
     print(f"\nپنجرهٔ انتخابی: barها [{a},{b}] — {seg['dt'].iloc[0]} → {seg['dt'].iloc[-1]}")
