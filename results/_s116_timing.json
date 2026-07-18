@@ -1,0 +1,1896 @@
+{
+  "min_move_usd": 8.0,
+  "up": {
+    "window": [
+      145000,
+      150000
+    ],
+    "date": [
+      "2026-04-21",
+      "2026-07-07"
+    ],
+    "rows": [
+      {
+        "num": 1,
+        "dir": "up",
+        "i_start": 5,
+        "i_end": 32,
+        "move_usd": 91.34,
+        "len_bars": 27,
+        "p_start": 4671.3,
+        "p_end": 4762.6,
+        "adx": 96.8,
+        "rsi": 65.1,
+        "dist200": null,
+        "detected_by": [
+          "LONG_midcross"
+        ],
+        "scores": {
+          "LONG_midcross": {
+            "start": 62.5,
+            "end": 19.2,
+            "captured": -18.3,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 2,
+        "dir": "up",
+        "i_start": 38,
+        "i_end": 42,
+        "move_usd": 13.07,
+        "len_bars": 4,
+        "p_start": 4754.4,
+        "p_end": 4767.4,
+        "adx": 49.0,
+        "rsi": 67.9,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 3,
+        "dir": "up",
+        "i_start": 59,
+        "i_end": 62,
+        "move_usd": 10.68,
+        "len_bars": 3,
+        "p_start": 4748.5,
+        "p_end": 4759.2,
+        "adx": 27.6,
+        "rsi": 42.6,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 4,
+        "dir": "up",
+        "i_start": 71,
+        "i_end": 73,
+        "move_usd": 12.81,
+        "len_bars": 2,
+        "p_start": 4742.3,
+        "p_end": 4755.1,
+        "adx": 22.5,
+        "rsi": 37.5,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 5,
+        "dir": "up",
+        "i_start": 84,
+        "i_end": 96,
+        "move_usd": 17.39,
+        "len_bars": 12,
+        "p_start": 4726.8,
+        "p_end": 4744.2,
+        "adx": 31.8,
+        "rsi": 33.9,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 6,
+        "dir": "up",
+        "i_start": 111,
+        "i_end": 114,
+        "move_usd": 48.71,
+        "len_bars": 3,
+        "p_start": 4699.2,
+        "p_end": 4747.9,
+        "adx": 16.4,
+        "rsi": 24.4,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 7,
+        "dir": "up",
+        "i_start": 122,
+        "i_end": 137,
+        "move_usd": 15.96,
+        "len_bars": 15,
+        "p_start": 4698.8,
+        "p_end": 4714.8,
+        "adx": 23.2,
+        "rsi": 36.7,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 8,
+        "dir": "up",
+        "i_start": 140,
+        "i_end": 142,
+        "move_usd": 13.04,
+        "len_bars": 2,
+        "p_start": 4705.9,
+        "p_end": 4718.9,
+        "adx": 26.7,
+        "rsi": 43.7,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 9,
+        "dir": "up",
+        "i_start": 152,
+        "i_end": 162,
+        "move_usd": 53.73,
+        "len_bars": 10,
+        "p_start": 4686.5,
+        "p_end": 4740.2,
+        "adx": 28.3,
+        "rsi": 32.6,
+        "dist200": null,
+        "detected_by": [
+          "LONG_midcross"
+        ],
+        "scores": {
+          "LONG_midcross": {
+            "start": 20.5,
+            "end": 55.1,
+            "captured": -24.4,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 10,
+        "dir": "up",
+        "i_start": 163,
+        "i_end": 165,
+        "move_usd": 8.5,
+        "len_bars": 2,
+        "p_start": 4726.1,
+        "p_end": 4734.6,
+        "adx": 28.7,
+        "rsi": 58.6,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 11,
+        "dir": "up",
+        "i_start": 167,
+        "i_end": 170,
+        "move_usd": 9.38,
+        "len_bars": 3,
+        "p_start": 4724.3,
+        "p_end": 4733.6,
+        "adx": 28.0,
+        "rsi": 55.0,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 12,
+        "dir": "up",
+        "i_start": 175,
+        "i_end": 177,
+        "move_usd": 14.63,
+        "len_bars": 2,
+        "p_start": 4719.4,
+        "p_end": 4734.1,
+        "adx": 25.8,
+        "rsi": 47.9,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 13,
+        "dir": "up",
+        "i_start": 181,
+        "i_end": 184,
+        "move_usd": 39.29,
+        "len_bars": 3,
+        "p_start": 4677.1,
+        "p_end": 4716.4,
+        "adx": 24.0,
+        "rsi": 28.8,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 14,
+        "dir": "up",
+        "i_start": 192,
+        "i_end": 207,
+        "move_usd": 20.02,
+        "len_bars": 15,
+        "p_start": 4689.2,
+        "p_end": 4709.2,
+        "adx": 30.7,
+        "rsi": 39.6,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 15,
+        "dir": "up",
+        "i_start": 209,
+        "i_end": 210,
+        "move_usd": 8.62,
+        "len_bars": 1,
+        "p_start": 4690.4,
+        "p_end": 4699.0,
+        "adx": 22.1,
+        "rsi": 42.6,
+        "dist200": -0.79,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 16,
+        "dir": "up",
+        "i_start": 220,
+        "i_end": 226,
+        "move_usd": 26.88,
+        "len_bars": 6,
+        "p_start": 4659.3,
+        "p_end": 4686.2,
+        "adx": 33.1,
+        "rsi": 29.7,
+        "dist200": -1.39,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 17,
+        "dir": "up",
+        "i_start": 228,
+        "i_end": 239,
+        "move_usd": 23.91,
+        "len_bars": 11,
+        "p_start": 4671.2,
+        "p_end": 4695.1,
+        "adx": 29.2,
+        "rsi": 42.0,
+        "dist200": -1.08,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 18,
+        "dir": "up",
+        "i_start": 246,
+        "i_end": 248,
+        "move_usd": 38.01,
+        "len_bars": 2,
+        "p_start": 4677.3,
+        "p_end": 4715.3,
+        "adx": 15.1,
+        "rsi": 44.0,
+        "dist200": -0.81,
+        "detected_by": [
+          "LONG_midcross"
+        ],
+        "scores": {
+          "LONG_midcross": {
+            "start": 26.4,
+            "end": 77.3,
+            "captured": 3.7,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 19,
+        "dir": "up",
+        "i_start": 256,
+        "i_end": 259,
+        "move_usd": 35.02,
+        "len_bars": 3,
+        "p_start": 4696.7,
+        "p_end": 4731.7,
+        "adx": 22.2,
+        "rsi": 52.0,
+        "dist200": -0.34,
+        "detected_by": [
+          "LONG_midcross"
+        ],
+        "scores": {
+          "LONG_midcross": {
+            "start": 82.8,
+            "end": 0.0,
+            "captured": -50.3,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 20,
+        "dir": "up",
+        "i_start": 293,
+        "i_end": 309,
+        "move_usd": 51.4,
+        "len_bars": 16,
+        "p_start": 4676.7,
+        "p_end": 4728.1,
+        "adx": 33.8,
+        "rsi": 24.0,
+        "dist200": -0.64,
+        "detected_by": [
+          "LONG_midcross"
+        ],
+        "scores": {
+          "LONG_midcross": {
+            "start": 55.7,
+            "end": 31.9,
+            "captured": -12.4,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 21,
+        "dir": "up",
+        "i_start": 358,
+        "i_end": 387,
+        "move_usd": 27.87,
+        "len_bars": 29,
+        "p_start": 4669.8,
+        "p_end": 4697.7,
+        "adx": 27.0,
+        "rsi": 29.7,
+        "dist200": -0.71,
+        "detected_by": [
+          "LONG_midcross"
+        ],
+        "scores": {
+          "LONG_midcross": {
+            "start": 21.2,
+            "end": 2.6,
+            "captured": -76.2,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 22,
+        "dir": "up",
+        "i_start": 409,
+        "i_end": 411,
+        "move_usd": 15.85,
+        "len_bars": 2,
+        "p_start": 4624.6,
+        "p_end": 4640.4,
+        "adx": 38.9,
+        "rsi": 20.2,
+        "dist200": -1.5,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 23,
+        "dir": "up",
+        "i_start": 419,
+        "i_end": 422,
+        "move_usd": 9.37,
+        "len_bars": 3,
+        "p_start": 4620.1,
+        "p_end": 4629.4,
+        "adx": 44.9,
+        "rsi": 29.8,
+        "dist200": -1.54,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 24,
+        "dir": "up",
+        "i_start": 426,
+        "i_end": 429,
+        "move_usd": 8.34,
+        "len_bars": 3,
+        "p_start": 4604.6,
+        "p_end": 4613.0,
+        "adx": 44.1,
+        "rsi": 26.6,
+        "dist200": -1.83,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 25,
+        "dir": "up",
+        "i_start": 434,
+        "i_end": 438,
+        "move_usd": 31.35,
+        "len_bars": 4,
+        "p_start": 4562.4,
+        "p_end": 4593.8,
+        "adx": 51.0,
+        "rsi": 18.5,
+        "dist200": -2.66,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 26,
+        "dir": "up",
+        "i_start": 445,
+        "i_end": 457,
+        "move_usd": 34.98,
+        "len_bars": 12,
+        "p_start": 4563.9,
+        "p_end": 4598.9,
+        "adx": 39.5,
+        "rsi": 32.6,
+        "dist200": -2.51,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 27,
+        "dir": "up",
+        "i_start": 477,
+        "i_end": 479,
+        "move_usd": 18.05,
+        "len_bars": 2,
+        "p_start": 4589.7,
+        "p_end": 4607.7,
+        "adx": 10.2,
+        "rsi": 44.8,
+        "dist200": -1.54,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 28,
+        "dir": "up",
+        "i_start": 484,
+        "i_end": 491,
+        "move_usd": 21.5,
+        "len_bars": 7,
+        "p_start": 4580.2,
+        "p_end": 4601.7,
+        "adx": 15.6,
+        "rsi": 38.7,
+        "dist200": -1.65,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 29,
+        "dir": "up",
+        "i_start": 493,
+        "i_end": 498,
+        "move_usd": 11.03,
+        "len_bars": 5,
+        "p_start": 4593.5,
+        "p_end": 4604.6,
+        "adx": 11.3,
+        "rsi": 49.1,
+        "dist200": -1.28,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 30,
+        "dir": "up",
+        "i_start": 511,
+        "i_end": 515,
+        "move_usd": 8.87,
+        "len_bars": 4,
+        "p_start": 4565.1,
+        "p_end": 4574.0,
+        "adx": 23.5,
+        "rsi": 26.4,
+        "dist200": -1.67,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 31,
+        "dir": "up",
+        "i_start": 518,
+        "i_end": 520,
+        "move_usd": 15.91,
+        "len_bars": 2,
+        "p_start": 4555.6,
+        "p_end": 4571.6,
+        "adx": 29.1,
+        "rsi": 27.0,
+        "dist200": -1.76,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 32,
+        "dir": "up",
+        "i_start": 533,
+        "i_end": 544,
+        "move_usd": 45.5,
+        "len_bars": 11,
+        "p_start": 4514.6,
+        "p_end": 4560.1,
+        "adx": 27.7,
+        "rsi": 21.7,
+        "dist200": -2.4,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 33,
+        "dir": "up",
+        "i_start": 553,
+        "i_end": 555,
+        "move_usd": 27.23,
+        "len_bars": 2,
+        "p_start": 4520.3,
+        "p_end": 4547.5,
+        "adx": 23.4,
+        "rsi": 36.2,
+        "dist200": -1.94,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 34,
+        "dir": "up",
+        "i_start": 557,
+        "i_end": 576,
+        "move_usd": 40.3,
+        "len_bars": 19,
+        "p_start": 4539.4,
+        "p_end": 4579.7,
+        "adx": 24.5,
+        "rsi": 47.3,
+        "dist200": -1.47,
+        "detected_by": [
+          "LONG_midcross"
+        ],
+        "scores": {
+          "LONG_midcross": {
+            "start": 8.8,
+            "end": 56.2,
+            "captured": -35.0,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 35,
+        "dir": "up",
+        "i_start": 590,
+        "i_end": 612,
+        "move_usd": 101.57,
+        "len_bars": 22,
+        "p_start": 4542.0,
+        "p_end": 4643.6,
+        "adx": 22.4,
+        "rsi": 34.9,
+        "dist200": -0.97,
+        "detected_by": [
+          "LONG_midcross"
+        ],
+        "scores": {
+          "LONG_midcross": {
+            "start": 67.4,
+            "end": 0.0,
+            "captured": -33.1,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 36,
+        "dir": "up",
+        "i_start": 621,
+        "i_end": 623,
+        "move_usd": 15.23,
+        "len_bars": 2,
+        "p_start": 4625.9,
+        "p_end": 4641.1,
+        "adx": 56.0,
+        "rsi": 58.2,
+        "dist200": 1.02,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 37,
+        "dir": "up",
+        "i_start": 626,
+        "i_end": 632,
+        "move_usd": 11.97,
+        "len_bars": 6,
+        "p_start": 4611.0,
+        "p_end": 4623.0,
+        "adx": 49.3,
+        "rsi": 44.8,
+        "dist200": 0.69,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 38,
+        "dir": "up",
+        "i_start": 638,
+        "i_end": 647,
+        "move_usd": 16.59,
+        "len_bars": 9,
+        "p_start": 4607.6,
+        "p_end": 4624.2,
+        "adx": 28.1,
+        "rsi": 42.0,
+        "dist200": 0.58,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 39,
+        "dir": "up",
+        "i_start": 651,
+        "i_end": 657,
+        "move_usd": 15.46,
+        "len_bars": 6,
+        "p_start": 4616.2,
+        "p_end": 4631.6,
+        "adx": 15.1,
+        "rsi": 47.6,
+        "dist200": 0.71,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 40,
+        "dir": "up",
+        "i_start": 668,
+        "i_end": 671,
+        "move_usd": 14.57,
+        "len_bars": 3,
+        "p_start": 4616.4,
+        "p_end": 4630.9,
+        "adx": 17.7,
+        "rsi": 40.6,
+        "dist200": 0.66,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 41,
+        "dir": "up",
+        "i_start": 702,
+        "i_end": 712,
+        "move_usd": 40.34,
+        "len_bars": 10,
+        "p_start": 4562.5,
+        "p_end": 4602.8,
+        "adx": 48.3,
+        "rsi": 23.4,
+        "dist200": -0.54,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 42,
+        "dir": "up",
+        "i_start": 716,
+        "i_end": 719,
+        "move_usd": 66.86,
+        "len_bars": 3,
+        "p_start": 4589.0,
+        "p_end": 4655.9,
+        "adx": 37.6,
+        "rsi": 53.5,
+        "dist200": 0.03,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 43,
+        "dir": "up",
+        "i_start": 722,
+        "i_end": 725,
+        "move_usd": 11.42,
+        "len_bars": 3,
+        "p_start": 4631.9,
+        "p_end": 4643.3,
+        "adx": 44.8,
+        "rsi": 64.1,
+        "dist200": 0.92,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 44,
+        "dir": "up",
+        "i_start": 735,
+        "i_end": 739,
+        "move_usd": 10.44,
+        "len_bars": 4,
+        "p_start": 4615.6,
+        "p_end": 4626.0,
+        "adx": 35.9,
+        "rsi": 45.7,
+        "dist200": 0.45,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 45,
+        "dir": "up",
+        "i_start": 742,
+        "i_end": 749,
+        "move_usd": 18.11,
+        "len_bars": 7,
+        "p_start": 4609.8,
+        "p_end": 4627.9,
+        "adx": 24.7,
+        "rsi": 41.5,
+        "dist200": 0.26,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 46,
+        "dir": "up",
+        "i_start": 760,
+        "i_end": 762,
+        "move_usd": 18.64,
+        "len_bars": 2,
+        "p_start": 4594.4,
+        "p_end": 4613.0,
+        "adx": 16.8,
+        "rsi": 34.5,
+        "dist200": -0.21,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 47,
+        "dir": "up",
+        "i_start": 764,
+        "i_end": 770,
+        "move_usd": 22.04,
+        "len_bars": 6,
+        "p_start": 4592.8,
+        "p_end": 4614.8,
+        "adx": 15.8,
+        "rsi": 38.5,
+        "dist200": -0.27,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 48,
+        "dir": "up",
+        "i_start": 788,
+        "i_end": 791,
+        "move_usd": 8.88,
+        "len_bars": 3,
+        "p_start": 4574.9,
+        "p_end": 4583.8,
+        "adx": 29.0,
+        "rsi": 32.5,
+        "dist200": -0.75,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 49,
+        "dir": "up",
+        "i_start": 795,
+        "i_end": 799,
+        "move_usd": 23.56,
+        "len_bars": 4,
+        "p_start": 4541.6,
+        "p_end": 4565.2,
+        "adx": 36.1,
+        "rsi": 22.3,
+        "dist200": -1.48,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 50,
+        "dir": "up",
+        "i_start": 801,
+        "i_end": 805,
+        "move_usd": 16.59,
+        "len_bars": 4,
+        "p_start": 4553.2,
+        "p_end": 4569.8,
+        "adx": 37.6,
+        "rsi": 35.6,
+        "dist200": -1.21,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      }
+    ],
+    "summary": {
+      "n": 50,
+      "detected": 8,
+      "missed": 42,
+      "mean_start": 43.1625,
+      "mean_end": 30.2875,
+      "mean_captured": -30.75,
+      "dna_det": {
+        "adx": 33.762499999999996,
+        "rsi": 41.199999999999996,
+        "dist200": -0.8233333333333333,
+        "len_bars": 16.0,
+        "move": 54.905
+      },
+      "dna_miss": {
+        "adx": 30.25714285714285,
+        "rsi": 38.74523809523809,
+        "dist200": -0.8226666666666665,
+        "len_bars": 5.071428571428571,
+        "move": 20.037380952380953
+      }
+    }
+  },
+  "down": {
+    "window": [
+      145000,
+      150000
+    ],
+    "date": [
+      "2026-04-21",
+      "2026-07-07"
+    ],
+    "rows": [
+      {
+        "num": 1,
+        "dir": "down",
+        "i_start": 4,
+        "i_end": 5,
+        "move_usd": 42.49,
+        "len_bars": 1,
+        "p_start": 4713.8,
+        "p_end": 4671.3,
+        "adx": 100.0,
+        "rsi": 97.9,
+        "dist200": null,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 18.8,
+            "end": 81.2,
+            "captured": 0.0,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 2,
+        "dir": "down",
+        "i_start": 32,
+        "i_end": 38,
+        "move_usd": 8.27,
+        "len_bars": 6,
+        "p_start": 4762.6,
+        "p_end": 4754.4,
+        "adx": 51.1,
+        "rsi": 79.5,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 3,
+        "dir": "down",
+        "i_start": 42,
+        "i_end": 59,
+        "move_usd": 18.92,
+        "len_bars": 17,
+        "p_start": 4767.4,
+        "p_end": 4748.5,
+        "adx": 50.7,
+        "rsi": 75.7,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 4,
+        "dir": "down",
+        "i_start": 62,
+        "i_end": 71,
+        "move_usd": 16.89,
+        "len_bars": 9,
+        "p_start": 4759.2,
+        "p_end": 4742.3,
+        "adx": 24.1,
+        "rsi": 54.6,
+        "dist200": null,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 44.7,
+            "end": 55.3,
+            "captured": 0.0,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 5,
+        "dir": "down",
+        "i_start": 73,
+        "i_end": 84,
+        "move_usd": 28.32,
+        "len_bars": 11,
+        "p_start": 4755.1,
+        "p_end": 4726.8,
+        "adx": 23.3,
+        "rsi": 52.9,
+        "dist200": null,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 81.4,
+            "end": 68.6,
+            "captured": 50.1,
+            "n_trades": 2
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 6,
+        "dir": "down",
+        "i_start": 96,
+        "i_end": 111,
+        "move_usd": 45.02,
+        "len_bars": 15,
+        "p_start": 4744.2,
+        "p_end": 4699.2,
+        "adx": 21.7,
+        "rsi": 55.6,
+        "dist200": null,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 100.0,
+            "end": 41.2,
+            "captured": 41.2,
+            "n_trades": 3
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 7,
+        "dir": "down",
+        "i_start": 114,
+        "i_end": 122,
+        "move_usd": 49.08,
+        "len_bars": 8,
+        "p_start": 4747.9,
+        "p_end": 4698.8,
+        "adx": 14.5,
+        "rsi": 57.6,
+        "dist200": null,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 70.2,
+            "end": 29.8,
+            "captured": 0.0,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 8,
+        "dir": "down",
+        "i_start": 137,
+        "i_end": 140,
+        "move_usd": 8.88,
+        "len_bars": 3,
+        "p_start": 4714.8,
+        "p_end": 4705.9,
+        "adx": 29.4,
+        "rsi": 51.0,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 9,
+        "dir": "down",
+        "i_start": 142,
+        "i_end": 152,
+        "move_usd": 32.47,
+        "len_bars": 10,
+        "p_start": 4718.9,
+        "p_end": 4686.5,
+        "adx": 25.0,
+        "rsi": 54.7,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 10,
+        "dir": "down",
+        "i_start": 162,
+        "i_end": 163,
+        "move_usd": 14.07,
+        "len_bars": 1,
+        "p_start": 4740.2,
+        "p_end": 4726.1,
+        "adx": 29.2,
+        "rsi": 71.6,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 11,
+        "dir": "down",
+        "i_start": 165,
+        "i_end": 167,
+        "move_usd": 10.36,
+        "len_bars": 2,
+        "p_start": 4734.6,
+        "p_end": 4724.3,
+        "adx": 28.2,
+        "rsi": 63.2,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 12,
+        "dir": "down",
+        "i_start": 170,
+        "i_end": 175,
+        "move_usd": 14.2,
+        "len_bars": 5,
+        "p_start": 4733.6,
+        "p_end": 4719.4,
+        "adx": 28.2,
+        "rsi": 60.5,
+        "dist200": null,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 0.0,
+            "end": 0.0,
+            "captured": -100.0,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 13,
+        "dir": "down",
+        "i_start": 177,
+        "i_end": 181,
+        "move_usd": 56.93,
+        "len_bars": 4,
+        "p_start": 4734.1,
+        "p_end": 4677.1,
+        "adx": 24.6,
+        "rsi": 58.6,
+        "dist200": null,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 74.3,
+            "end": 43.8,
+            "captured": 18.1,
+            "n_trades": 2
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 14,
+        "dir": "down",
+        "i_start": 184,
+        "i_end": 192,
+        "move_usd": 27.25,
+        "len_bars": 8,
+        "p_start": 4716.4,
+        "p_end": 4689.2,
+        "adx": 25.9,
+        "rsi": 49.5,
+        "dist200": null,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 15,
+        "dir": "down",
+        "i_start": 207,
+        "i_end": 209,
+        "move_usd": 18.78,
+        "len_bars": 2,
+        "p_start": 4709.2,
+        "p_end": 4690.4,
+        "adx": 24.1,
+        "rsi": 56.3,
+        "dist200": -0.4,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 16,
+        "dir": "down",
+        "i_start": 210,
+        "i_end": 220,
+        "move_usd": 39.77,
+        "len_bars": 10,
+        "p_start": 4699.0,
+        "p_end": 4659.3,
+        "adx": 21.6,
+        "rsi": 49.0,
+        "dist200": -0.61,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 17,
+        "dir": "down",
+        "i_start": 226,
+        "i_end": 228,
+        "move_usd": 15.0,
+        "len_bars": 2,
+        "p_start": 4686.2,
+        "p_end": 4671.2,
+        "adx": 31.2,
+        "rsi": 52.2,
+        "dist200": -0.78,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 18,
+        "dir": "down",
+        "i_start": 239,
+        "i_end": 246,
+        "move_usd": 17.79,
+        "len_bars": 7,
+        "p_start": 4695.1,
+        "p_end": 4677.3,
+        "adx": 21.8,
+        "rsi": 59.0,
+        "dist200": -0.49,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 19,
+        "dir": "down",
+        "i_start": 248,
+        "i_end": 256,
+        "move_usd": 18.57,
+        "len_bars": 8,
+        "p_start": 4715.3,
+        "p_end": 4696.7,
+        "adx": 18.2,
+        "rsi": 68.6,
+        "dist200": 0.01,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 20.8,
+            "end": 39.1,
+            "captured": -40.1,
+            "n_trades": 2
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 20,
+        "dir": "down",
+        "i_start": 259,
+        "i_end": 293,
+        "move_usd": 55.06,
+        "len_bars": 34,
+        "p_start": 4731.7,
+        "p_end": 4676.7,
+        "adx": 24.5,
+        "rsi": 69.2,
+        "dist200": 0.42,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 43.4,
+            "end": 43.1,
+            "captured": -13.5,
+            "n_trades": 3
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 21,
+        "dir": "down",
+        "i_start": 309,
+        "i_end": 358,
+        "move_usd": 58.25,
+        "len_bars": 49,
+        "p_start": 4728.1,
+        "p_end": 4669.8,
+        "adx": 31.8,
+        "rsi": 70.2,
+        "dist200": 0.51,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 61.2,
+            "end": 48.7,
+            "captured": 9.9,
+            "n_trades": 4
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 22,
+        "dir": "down",
+        "i_start": 387,
+        "i_end": 409,
+        "move_usd": 73.14,
+        "len_bars": 22,
+        "p_start": 4697.7,
+        "p_end": 4624.6,
+        "adx": 25.2,
+        "rsi": 66.1,
+        "dist200": 0.01,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 100.0,
+            "end": 14.1,
+            "captured": 14.1,
+            "n_trades": 2
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 23,
+        "dir": "down",
+        "i_start": 411,
+        "i_end": 419,
+        "move_usd": 20.32,
+        "len_bars": 8,
+        "p_start": 4640.4,
+        "p_end": 4620.1,
+        "adx": 42.7,
+        "rsi": 34.2,
+        "dist200": -1.15,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 24,
+        "dir": "down",
+        "i_start": 422,
+        "i_end": 426,
+        "move_usd": 24.84,
+        "len_bars": 4,
+        "p_start": 4629.4,
+        "p_end": 4604.6,
+        "adx": 43.3,
+        "rsi": 38.0,
+        "dist200": -1.33,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 25,
+        "dir": "down",
+        "i_start": 429,
+        "i_end": 434,
+        "move_usd": 50.55,
+        "len_bars": 5,
+        "p_start": 4613.0,
+        "p_end": 4562.4,
+        "adx": 44.8,
+        "rsi": 35.0,
+        "dist200": -1.63,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 26,
+        "dir": "down",
+        "i_start": 438,
+        "i_end": 445,
+        "move_usd": 29.84,
+        "len_bars": 7,
+        "p_start": 4593.8,
+        "p_end": 4563.9,
+        "adx": 47.5,
+        "rsi": 41.5,
+        "dist200": -1.95,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 27,
+        "dir": "down",
+        "i_start": 457,
+        "i_end": 477,
+        "move_usd": 9.21,
+        "len_bars": 20,
+        "p_start": 4598.9,
+        "p_end": 4589.7,
+        "adx": 23.5,
+        "rsi": 56.7,
+        "dist200": -1.61,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 28,
+        "dir": "down",
+        "i_start": 479,
+        "i_end": 484,
+        "move_usd": 27.53,
+        "len_bars": 5,
+        "p_start": 4607.7,
+        "p_end": 4580.2,
+        "adx": 11.3,
+        "rsi": 64.3,
+        "dist200": -1.12,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 29,
+        "dir": "down",
+        "i_start": 491,
+        "i_end": 493,
+        "move_usd": 8.18,
+        "len_bars": 2,
+        "p_start": 4601.7,
+        "p_end": 4593.5,
+        "adx": 12.3,
+        "rsi": 55.1,
+        "dist200": -1.12,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 30,
+        "dir": "down",
+        "i_start": 498,
+        "i_end": 511,
+        "move_usd": 39.46,
+        "len_bars": 13,
+        "p_start": 4604.6,
+        "p_end": 4565.1,
+        "adx": 11.2,
+        "rsi": 57.1,
+        "dist200": -1.0,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 31,
+        "dir": "down",
+        "i_start": 515,
+        "i_end": 518,
+        "move_usd": 18.32,
+        "len_bars": 3,
+        "p_start": 4574.0,
+        "p_end": 4555.6,
+        "adx": 28.7,
+        "rsi": 39.6,
+        "dist200": -1.41,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 32,
+        "dir": "down",
+        "i_start": 520,
+        "i_end": 533,
+        "move_usd": 56.99,
+        "len_bars": 13,
+        "p_start": 4571.6,
+        "p_end": 4514.6,
+        "adx": 27.7,
+        "rsi": 45.2,
+        "dist200": -1.39,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 33,
+        "dir": "down",
+        "i_start": 544,
+        "i_end": 553,
+        "move_usd": 39.78,
+        "len_bars": 9,
+        "p_start": 4560.1,
+        "p_end": 4520.3,
+        "adx": 25.4,
+        "rsi": 55.3,
+        "dist200": -1.23,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 34,
+        "dir": "down",
+        "i_start": 555,
+        "i_end": 557,
+        "move_usd": 8.14,
+        "len_bars": 2,
+        "p_start": 4547.5,
+        "p_end": 4539.4,
+        "adx": 24.7,
+        "rsi": 51.2,
+        "dist200": -1.32,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 35,
+        "dir": "down",
+        "i_start": 576,
+        "i_end": 590,
+        "move_usd": 37.63,
+        "len_bars": 14,
+        "p_start": 4579.7,
+        "p_end": 4542.0,
+        "adx": 24.3,
+        "rsi": 69.8,
+        "dist200": -0.34,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 53.1,
+            "end": 39.9,
+            "captured": -7.0,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 36,
+        "dir": "down",
+        "i_start": 612,
+        "i_end": 621,
+        "move_usd": 17.75,
+        "len_bars": 9,
+        "p_start": 4643.6,
+        "p_end": 4625.9,
+        "adx": 51.1,
+        "rsi": 81.1,
+        "dist200": 1.41,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 37,
+        "dir": "down",
+        "i_start": 623,
+        "i_end": 626,
+        "move_usd": 30.05,
+        "len_bars": 3,
+        "p_start": 4641.1,
+        "p_end": 4611.0,
+        "adx": 55.3,
+        "rsi": 66.1,
+        "dist200": 1.35,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 38,
+        "dir": "down",
+        "i_start": 632,
+        "i_end": 638,
+        "move_usd": 15.4,
+        "len_bars": 6,
+        "p_start": 4623.0,
+        "p_end": 4607.6,
+        "adx": 33.7,
+        "rsi": 52.2,
+        "dist200": 0.94,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 39,
+        "dir": "down",
+        "i_start": 647,
+        "i_end": 651,
+        "move_usd": 8.01,
+        "len_bars": 4,
+        "p_start": 4624.2,
+        "p_end": 4616.2,
+        "adx": 19.3,
+        "rsi": 57.1,
+        "dist200": 0.9,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 40,
+        "dir": "down",
+        "i_start": 657,
+        "i_end": 668,
+        "move_usd": 15.28,
+        "len_bars": 11,
+        "p_start": 4631.6,
+        "p_end": 4616.4,
+        "adx": 16.7,
+        "rsi": 63.0,
+        "dist200": 1.03,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 41,
+        "dir": "down",
+        "i_start": 671,
+        "i_end": 702,
+        "move_usd": 68.47,
+        "len_bars": 31,
+        "p_start": 4630.9,
+        "p_end": 4562.5,
+        "adx": 17.6,
+        "rsi": 60.6,
+        "dist200": 0.97,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 56.7,
+            "end": 55.1,
+            "captured": 11.8,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 42,
+        "dir": "down",
+        "i_start": 712,
+        "i_end": 716,
+        "move_usd": 13.81,
+        "len_bars": 4,
+        "p_start": 4602.8,
+        "p_end": 4589.0,
+        "adx": 38.6,
+        "rsi": 65.5,
+        "dist200": 0.34,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 14.1,
+            "end": 100.0,
+            "captured": 14.1,
+            "n_trades": 1
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 43,
+        "dir": "down",
+        "i_start": 719,
+        "i_end": 722,
+        "move_usd": 23.97,
+        "len_bars": 3,
+        "p_start": 4655.9,
+        "p_end": 4631.9,
+        "adx": 42.2,
+        "rsi": 79.3,
+        "dist200": 1.47,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 44,
+        "dir": "down",
+        "i_start": 725,
+        "i_end": 735,
+        "move_usd": 27.74,
+        "len_bars": 10,
+        "p_start": 4643.3,
+        "p_end": 4615.6,
+        "adx": 43.2,
+        "rsi": 68.0,
+        "dist200": 1.15,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 45,
+        "dir": "down",
+        "i_start": 739,
+        "i_end": 742,
+        "move_usd": 16.2,
+        "len_bars": 3,
+        "p_start": 4626.0,
+        "p_end": 4609.8,
+        "adx": 27.7,
+        "rsi": 52.8,
+        "dist200": 0.64,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 46,
+        "dir": "down",
+        "i_start": 749,
+        "i_end": 760,
+        "move_usd": 33.54,
+        "len_bars": 11,
+        "p_start": 4627.9,
+        "p_end": 4594.4,
+        "adx": 18.7,
+        "rsi": 56.9,
+        "dist200": 0.6,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 33.2,
+            "end": 44.4,
+            "captured": -22.4,
+            "n_trades": 2
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 47,
+        "dir": "down",
+        "i_start": 762,
+        "i_end": 764,
+        "move_usd": 20.25,
+        "len_bars": 2,
+        "p_start": 4613.0,
+        "p_end": 4592.8,
+        "adx": 16.9,
+        "rsi": 50.2,
+        "dist200": 0.18,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 8.0,
+            "end": 37.0,
+            "captured": -55.0,
+            "n_trades": 2
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 48,
+        "dir": "down",
+        "i_start": 770,
+        "i_end": 788,
+        "move_usd": 39.91,
+        "len_bars": 18,
+        "p_start": 4614.8,
+        "p_end": 4574.9,
+        "adx": 12.6,
+        "rsi": 53.2,
+        "dist200": 0.17,
+        "detected_by": [
+          "SHORT_midcross"
+        ],
+        "scores": {
+          "SHORT_midcross": {
+            "start": 100.0,
+            "end": 28.3,
+            "captured": 28.3,
+            "n_trades": 2
+          }
+        },
+        "detected": true
+      },
+      {
+        "num": 49,
+        "dir": "down",
+        "i_start": 791,
+        "i_end": 795,
+        "move_usd": 42.19,
+        "len_bars": 4,
+        "p_start": 4583.8,
+        "p_end": 4541.6,
+        "adx": 32.3,
+        "rsi": 42.5,
+        "dist200": -0.57,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      },
+      {
+        "num": 50,
+        "dir": "down",
+        "i_start": 799,
+        "i_end": 801,
+        "move_usd": 11.9,
+        "len_bars": 2,
+        "p_start": 4565.2,
+        "p_end": 4553.2,
+        "adx": 38.2,
+        "rsi": 41.2,
+        "dist200": -0.96,
+        "detected_by": [],
+        "scores": {},
+        "detected": false
+      }
+    ],
+    "summary": {
+      "n": 50,
+      "detected": 17,
+      "missed": 33,
+      "mean_start": 51.75882352941177,
+      "mean_end": 45.27058823529411,
+      "mean_captured": -2.964705882352941,
+      "dna_det": {
+        "adx": 27.341176470588238,
+        "rsi": 62.8235294117647,
+        "dist200": 0.287,
+        "len_bars": 14.470588235294118,
+        "move": 39.50352941176471
+      },
+      "dna_miss": {
+        "adx": 31.545454545454547,
+        "rsi": 55.7030303030303,
+        "dist200": -0.43,
+        "len_bars": 6.484848484848484,
+        "move": 22.82454545454545
+      }
+    }
+  }
+}
