@@ -1,0 +1,17 @@
+{
+  "root_files": [
+    "numba.py",
+    "live_engine.py"
+  ],
+  "engine": [
+    "indicators.py",
+    "scalp_engine.py",
+    "capital_engine.py",
+    "backtest.py"
+  ],
+  "strategies": [
+    "s118_short_exit_letwinnersrun.py",
+    "s73_eurusd_session_drift.py"
+  ],
+  "note": "موتورِ واقعیِ پروژه؛ در Pyodide با numpy+pandas اجرا می‌شود."
+}
