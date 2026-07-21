@@ -237,78 +237,12 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
     }
   }
 
-  // ---------- ۴) نزدیکی به مقاومت/حمایت (رفتار نمودار با S/R) ----------
-  const res = a.resistance
-  const sup = a.support
-  const nearPct = 0.25 // نزدیک اگر < ~۰.۲۵٪
-  // حداقل فاصلهٔ منطقی TP از ورود تا معامله معنی‌دار بماند (نصف ATR)
-  const minTpGap = 0.5 * atr
-  if (isLong && res && distToTp > 0) {
-    const dR = ((res.price - price) / price) * 100
-    // پیشنهاد پایین‌آوردن TP فقط وقتی معتبر است که مقاومت هم زیر TP فعلی باشد و
-    // هم به‌قدر کافی بالاتر از ورود (وگرنه TP پیشنهادی زیر ورود می‌افتد = ضرر تضمینی).
-    const suggestedTp = round2(res.price - 0.1 * atr)
-    const validTpSuggestion = res.price < t.tp && suggestedTp > t.entry + minTpGap
-    if (dR > 0 && dR < nearPct && validTpSuggestion) {
-      advices.push({
-        type: 'level', severity: 'warning',
-        title: 'مقاومت پیش از TP',
-        detail: `یک مقاومت با ${res.touches} برخورد در ${round2(res.price)} (فاصله ${round2(dR)}٪) درست زیرِ TP توست. احتمال برگشت از این سطح هست؛ می‌توانی TP را کمی پایین‌تر از این مقاومت (${suggestedTp}) بگذاری تا مطمئن‌تر پر شود.`,
-        suggest: { field: 'tp', value: suggestedTp },
-      })
-    } else if (dR >= 0 && dR < nearPct && res.price <= t.entry + minTpGap) {
-      // مقاومت زیر (یا بسیار نزدیکِ) ورودِ خرید است → پایین‌آوردن TP بی‌معناست
-      // (TP زیر ورود = ضرر). به‌جای پیشنهاد TPِ زیانده، هشدار خطر می‌دهیم.
-      advices.push({
-        type: 'level', severity: 'warning',
-        title: 'مقاومت زیرِ قیمت ورود توست',
-        detail: `یک مقاومت با ${res.touches} برخورد در ${round2(res.price)} حتی پایین‌تر از قیمت ورود تو (${round2(t.entry)}) قرار دارد. برای رسیدن به TP باید قیمت این مقاومت را بشکند. TP را پایین نیاور (زیر ورود می‌رود و ضرر می‌شود)؛ صبر کن سطح شکسته شود، یا اگر نشکست بخشی از حجم را ببند.`,
-      })
-    }
-  }
-  if (!isLong && sup && distToTp > 0) {
-    const dS = ((price - sup.price) / price) * 100
-    const suggestedTp = round2(sup.price + 0.1 * atr)
-    const validTpSuggestion = sup.price > t.tp && suggestedTp < t.entry - minTpGap
-    if (dS > 0 && dS < nearPct && validTpSuggestion) {
-      advices.push({
-        type: 'level', severity: 'warning',
-        title: 'حمایت پیش از TP',
-        detail: `یک حمایت با ${sup.touches} برخورد در ${round2(sup.price)} (فاصله ${round2(dS)}٪) درست بالای TP توست. احتمال برگشت صعودی از این سطح هست؛ می‌توانی TP را کمی بالاتر از این حمایت (${suggestedTp}) بگذاری.`,
-        suggest: { field: 'tp', value: suggestedTp },
-      })
-    } else if (dS >= 0 && dS < nearPct && sup.price >= t.entry - minTpGap) {
-      advices.push({
-        type: 'level', severity: 'warning',
-        title: 'حمایت بالای قیمت ورود توست',
-        detail: `یک حمایت با ${sup.touches} برخورد در ${round2(sup.price)} حتی بالاتر از قیمت ورود تو (${round2(t.entry)}) قرار دارد. برای رسیدن به TP باید قیمت این حمایت را بشکند. TP را بالا نیاور (بالای ورود می‌رود و ضرر می‌شود)؛ صبر کن سطح شکسته شود، یا بخشی را ببند.`,
-      })
-    }
-  }
-  // نزدیکی قیمت به سطحی که برخلاف معامله عمل می‌کند (خطر برگشت روی ضررِ واقعی)
-  // ⚠️ فقط وقتی «در ضررِ واقعی» (خارج از ناحیهٔ خنثی/اسپرد) هستیم — نه صرفِ نبودِ سود.
-  if (isLong && res) {
-    const dR = ((res.price - price) / price) * 100
-    if (dR >= 0 && dR < nearPct && inRealLoss) {
-      advices.push({
-        type: 'level', severity: 'warning',
-        title: 'مقاومت پیشِ رو در حالِ ضرر',
-        detail: `قیمت به مقاومت ${round2(res.price)} رسیده و معامله در ضرر است. این سطح می‌تواند مانعِ ادامهٔ صعود شود؛ واکنشِ قیمت به آن را رصد کن. اگر با کندلِ برگشتی رد شد، طبقِ پلن با SLِ خودت مدیریت کن (نیازی به بستنِ عجولانه نیست).`,
-      })
-    }
-  }
-  if (!isLong && sup) {
-    const dS = ((price - sup.price) / price) * 100
-    if (dS >= 0 && dS < nearPct && inRealLoss) {
-      advices.push({
-        type: 'level', severity: 'warning',
-        title: 'حمایت پیشِ رو در حالِ ضرر',
-        detail: `قیمت به حمایت ${round2(sup.price)} رسیده و معامله در ضرر است. این سطح می‌تواند مانعِ ادامهٔ نزول شود؛ واکنشِ قیمت به آن را رصد کن. اگر با کندلِ برگشتی نگه‌داشت، طبقِ پلن با SLِ خودت مدیریت کن (نیازی به بستنِ عجولانه نیست).`,
-      })
-    }
-  }
-
-  // ---------- ۵) معکوس‌شدن روند/مومنتوم برخلاف معامله ----------
+  // ---------- ۴) معکوس‌شدن روند/مومنتوم برخلاف معامله ----------
+  // نکتهٔ طراحی (User Note): توصیه‌های مبتنی بر خطوطِ حمایت/مقاومت حذف شدند.
+  // استراتژی‌های واقعیِ این پروژه (S67, Squeeze, Overnight Drift, ...) هیچ‌کدام
+  // از S/R استفاده نمی‌کنند؛ نمایشِ آن‌ها فقط اطلاعاتِ نامرتبط و استرس‌زا بود.
+  // مدیریتِ معامله اکنون فقط بر پایهٔ سیگنال‌های واقعیِ همان استراتژی است:
+  // روند/مومنتوم، سود/زیانِ R، تریلِ SL و سقفِ نگه‌داری.
   const trendAgainst = (isLong && a.trend === 'down') || (!isLong && a.trend === 'up')
   const macdAgainst = (isLong && a.macdHist < 0) || (!isLong && a.macdHist > 0)
   if (trendAgainst) {
@@ -363,7 +297,6 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   // هشدار (warning/critical) وجود دارند، نباید بگوییم «شرایط پایدار است».
   const hasCritical = advices.some(x => x.severity === 'critical')
   const hasWarning = advices.some(x => x.severity === 'warning')
-  const nearLevelWarn = advices.some(x => x.type === 'level' && x.severity === 'warning')
 
   let overallAction: TradeStatus['overallAction'] = 'hold'
   let overallNote = 'شرایط پایدار است؛ طبق برنامه با TP/SL فعلی نگه‌دار.'
@@ -377,15 +310,6 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   // اگر هیچ اقدام قوی‌ای فعال نشد اما هشدار داریم، جمع‌بندی را با هشدارها هم‌سو کن
   // تا با باکس‌های زیرین تناقض نداشته باشد.
   else if (hasCritical) { overallAction = 'tighten'; overallNote = 'هشدار مهم فعال است (پایین را بخوان) — مراقب باش و SL را محکم‌تر کن.' }
-  // برخورد به سطح در ضررِ واقعی → رصد کن، نه بستنِ عجولانه.
-  else if (nearLevelWarn && inRealLoss) {
-    overallAction = 'hold'
-    overallNote = 'قیمت به یک سطح کلیدی (حمایت/مقاومت) رسیده و کمی در ضرری — واکنشِ قیمت به این سطح را رصد کن و طبقِ SLِ خودت مدیریت کن؛ نیازی به بستنِ عجولانه نیست.'
-  }
-  else if (nearLevelWarn) {
-    overallAction = 'hold'
-    overallNote = 'نزدیک یک سطح کلیدی هستی (پایین را بخوان)؛ همان‌جا واکنش قیمت را رصد کن و در صورت لزوم TP/SL را تنظیم کن.'
-  }
   else if (inRealLoss && trendAgainst) {
     overallAction = 'tighten'
     overallNote = 'در ضرری و روند مساعد نیست — SL را محکم‌تر کن یا طبقِ پلن آماده خروج باش.'

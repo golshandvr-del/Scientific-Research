@@ -285,10 +285,10 @@ app.post('/api/trade/advice', async (c) => {
       lastUpdate: new Date().toISOString(),
       price: a.price,
       market: {
+        // نکتهٔ طراحی (User Note): سطوحِ حمایت/مقاومت و سناریوهای شکست از این payload
+        // حذف شدند؛ هیچ استراتژیِ واقعیِ پروژه از S/R استفاده نمی‌کند و UI آن‌ها را نمایش نمی‌داد.
         trend: a.trend, atr: a.atr, rsi14: a.rsi14, adx: a.adx, macdHist: a.macdHist,
         vwap: a.vwap, ema50: a.ema50, ema200: a.ema200, regimeOk: a.regimeOk,
-        resistance: a.resistance, support: a.support,
-        breakoutScenarios: a.breakoutScenarios,
       },
       status,
     })
