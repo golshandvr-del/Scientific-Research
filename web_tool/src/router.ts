@@ -20,6 +20,9 @@ import {
 import {
   computeMonday, MONDAY_MAX_HOLD, MONDAY_SL_PIP, MONDAY_TP_PIP,
 } from './monday_drift'
+import {
+  computeTurnOfMonth, TOM_MAX_HOLD, TOM_SL_PIP, TOM_TP_PIP,
+} from './turn_of_month_drift'
 
 export type RouterState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 export type Regime = 'trend_up' | 'trend_down' | 'range'
@@ -267,7 +270,8 @@ export function decide(a: AnalysisResult, close: number[],
                        high?: number[],
                        low?: number[],
                        utcHour?: number,
-                       utcDay?: number): RouterDecision {
+                       utcDay?: number,
+                       times?: number[]): RouterDecision {
   const reg = computeRegime(a, close)
   const p = a.probability
   const atr = a.atr || 1
@@ -423,6 +427,78 @@ export function decide(a: AnalysisResult, close: number[],
       }
     }
     // mo.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
+  }
+
+  // ========================================================================
+  // لایهٔ «Turn-of-the-Month Drift» (S141) — سیگنالِ زمان-محورِ تقویمی (روزِ ماه)
+  // ------------------------------------------------------------------------
+  // قانونِ شمارهٔ ۱: فقط «سودِ خالصِ بیشتر» مهم است. طلا در «اولین روزِ معاملاتیِ هر
+  // ماه» (ساعاتِ ۷–۱۲ UTC، سشنِ لندن) درایوِ صعودیِ ساختاری دارد (اثرِ چرخشِ ماه؛
+  // tom_rel=1 با t=+9.66 = قوی‌ترین t-stat کلِ پروژه). سهمِ محافظه‌کارانهٔ +$4,162،
+  // افزایشی به رکورد (corr +0.09 با Overnight، +0.06 با Monday، +0.13 با S67 — پایین‌ترین
+  // در پروژه). این پنجره (۷–۱۲) با Overnight (۲۲–۲۳) و Monday (۱۸–۲۱) هم‌پوشانی ندارد.
+  if (spec.id === 'XAUUSD' && typeof utcHour === 'number' && Array.isArray(times) && times.length > 1) {
+    const tom = computeTurnOfMonth(times, utcHour)
+    const tomInd: RouterDecision['indicators'] = [
+      { name: 'روزِ ماه (لایهٔ چرخشِ ماه)', value: tom.isFirstTradingDay ? 'اولین روزِ معاملاتیِ ماه ✓' : 'میانهٔ ماه',
+        status: tom.state === 'ENTRY' ? 'ok' : tom.state === 'APPROACHING' ? 'warn' : 'neutral' },
+      { name: 'پنجرهٔ درایوِ اولِ ماه (اولین روزِ ماه، ۷–۱۲ UTC)',
+        value: tom.state === 'ENTRY' ? 'باز ✓' : tom.state === 'APPROACHING' ? 'در حالِ باز شدن' : 'بسته',
+        status: tom.state === 'ENTRY' ? 'ok' : tom.state === 'APPROACHING' ? 'warn' : 'neutral' },
+      ...indicators,
+    ]
+    if (tom.state === 'ENTRY') {
+      const entry = a.price
+      const sl = entry - tom.slDist
+      const tp = entry + tom.tpDist
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, tom.slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'ورود خرید (LONG) — درایوِ چرخشِ ماهِ طلا (اولین روزِ معاملاتیِ ماه)',
+        reason: tom.reason,
+        direction: 'LONG', entry, tp, sl,
+        rr: `SL ثابت ${TOM_SL_PIP}pip (${tom.slDist.toFixed(2)}$) / TP ${TOM_TP_PIP}pip ` +
+          `(${tom.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(TOM_TP_PIP / TOM_SL_PIP).toFixed(1)} (بگذار بردها بدوند)`,
+        probability: 57,
+        sizing: {
+          lotMultiplier: 1.0,
+          label: 'Turn-of-the-Month Drift (لایهٔ زمان-محورِ S141)',
+          note: `استراتژیِ S141 (کشفِ نو، زمان-محورِ روزِ تقویمیِ ماه × ساعت — بدونِ اندیکاتور). ورودِ open کندلِ بعد. ` +
+            `همبستگیِ روزانه +۰.۰۹ با Overnight، +۰.۰۶ با Monday و +۰.۱۳ با S67 (پایین‌ترین در پروژه) ⇒ جریانِ ناهمبسته که سودِ خالصِ کل را بالا می‌برد.`,
+          lots: lots ?? undefined,
+          riskDollars: rd,
+          capital, riskPct,
+          capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+            `(ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. ` +
+            `اگر SL (فاصلهٔ ${tom.slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        tpPlan: {
+          multiplier: TOM_TP_PIP,
+          note: `TP دورِ ${TOM_TP_PIP}pip. درایوِ چرخشِ ماه معمولاً در طولِ سشنِ لندن ادامه دارد؛ ` +
+            `TP دور اجازه می‌دهد حرکتِ صعودی کامل استخراج شود. تا ${TOM_MAX_HOLD} کندل (۲۴ ساعت) نگه دارید یا تا برخورد به TP/SL.`,
+        },
+        slPlan: {
+          multiplier: TOM_SL_PIP,
+          note: `SL ثابت ${TOM_SL_PIP}pip (${tom.slDist.toFixed(2)}$). اگر درایوِ اولِ ماه شکل نگرفت، ` +
+            `این SL ضرر را محدود می‌کند؛ اما بردهای واقعی به‌مراتب بزرگ‌ترند (R:R ۱:۷).`,
+        },
+        indicators: tomInd,
+      }
+    }
+    if (tom.state === 'APPROACHING') {
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ چرخشِ ماه در حالِ باز شدن',
+        reason: tom.reason,
+        confirmations: [
+          { label: 'رسیدنِ ساعتِ UTC به ۷:۰۰ در اولین روزِ معاملاتیِ ماه (ورودِ پنجرهٔ درایوِ اولِ ماه)', met: false,
+            detail: 'با بسته‌شدنِ کندلِ ساعتِ ۷ UTC در اولین روزِ ماه، سیگنالِ ورودِ خرید صادر می‌شود.' },
+        ],
+        indicators: tomInd,
+      }
+    }
+    // tom.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
   }
 
   // ========================================================================

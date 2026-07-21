@@ -424,14 +424,16 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     const result = analyze(useCandles)
     // هر لایه منطقِ استراتژیِ مخصوصِ خودش را دارد (کاملاً مستقل):
     //   M5 → S79 (decideGoldM5) ، M30 → S81 (decideGoldM30) ، M15 → S67 (decide عمومی).
-    // ساعت و روزِ UTCِ کندلِ جاری — برای لایه‌های زمان-محورِ Overnight (S139) و Monday (S140) روی طلا M15.
+    // ساعت و روزِ UTCِ کندلِ جاری — برای لایه‌های زمان-محورِ Overnight (S139)، Monday (S140) و Turn-of-Month (S141) روی طلا M15.
     const goldUtcHour = new Date(useCandles[useCandles.length - 1].time * 1000).getUTCHours()
     const goldUtcDay = new Date(useCandles[useCandles.length - 1].time * 1000).getUTCDay()
+    // آرایهٔ زمانِ کندل‌ها — برای تشخیصِ «اولین روزِ معاملاتیِ ماه» در لایهٔ Turn-of-Month (S141).
+    const goldTimes = useCandles.map(k => k.time)
     const dec = isM5
       ? decideGoldM5(result, useCandles.map(k => k.close), capital, riskPct)
       : isM30
       ? decideGoldM30(result, useCandles.map(k => k.close), capital, riskPct)
-      : decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high), useCandles.map(k => k.low), goldUtcHour, goldUtcDay)
+      : decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high), useCandles.map(k => k.low), goldUtcHour, goldUtcDay, goldTimes)
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
