@@ -50,16 +50,21 @@ YEARS_BACK = S130.YEARS_BACK  # 4
 SQZ_TP = 300.0
 SQZ_SL = 90.0
 SQZ_MAX_HOLD = 96         # ۲۴ ساعت روی M15 (مثلِ s132)
+# ماشهٔ برندهٔ s133 (روی کلِ ۱۵۰k جاروب شد). برای سنجشِ robustness یک ماشهٔ
+# دیگر (پیش‌فرضِ s132) هم به‌طورِ جدا آزموده می‌شود.
+SQZ_PCT = 0.25
+SQZ_BRK = 6
 
 
-def build_squeeze_layer():
+def build_squeeze_layer(sqz_pct=SQZ_PCT, breakout_lookback=SQZ_BRK):
     """لایهٔ Squeeze با تنظیماتِ کاملاً هم‌تراز با ۵ لایهٔ رکورد (s130)."""
     asset = 'XAUUSD'   # M15 = دارایی پیش‌فرضِ XAUUSD در ASSETS
     df = SE.load_data(SE.ASSETS[asset]['file'])
     n = len(df)
 
     # ماشهٔ ورود (long-only) → آرایهٔ بولین برای simulate_trades
-    entries = build_entries_squeeze(df, sqz_pct=0.15, breakout_lookback=10,
+    entries = build_entries_squeeze(df, sqz_pct=sqz_pct,
+                                    breakout_lookback=breakout_lookback,
                                     trend_gate=True)
     long_sig = np.zeros(n, dtype=bool)
     for (i, side) in entries:
@@ -115,10 +120,26 @@ def main():
     ]
     print("  ✓ ۵ لایه ساخته شد.", flush=True)
 
-    # ۲) ساختِ لایهٔ جدید Squeeze
+    # ۲) ساختِ لایهٔ جدید Squeeze — دو ماشه (برندهٔ s133 + پیش‌فرض) برای robustness
     print("\n── ساختِ لایهٔ نو: S132 Squeeze→Breakout (طلا M15) ──", flush=True)
-    sq = build_squeeze_layer()
-    print(f"  ✓ لایهٔ Squeeze ساخته شد: {len(sq['pt'])} معامله (کلِ تاریخچه).", flush=True)
+    triggers = [
+        ('برندهٔ s133', 0.25, 6),
+        ('پیش‌فرض (robustness)', 0.15, 10),
+    ]
+    robustness = {}
+    sq = None
+    for tag, pct, brk in triggers:
+        cand = build_squeeze_layer(sqz_pct=pct, breakout_lookback=brk)
+        # محاسبهٔ Δ برای این ماشه
+        pt_recent = S130.filter_recent(cand['pt'], years=YEARS_BACK)
+        net_recent = float(pt_recent['net_usd'].sum()) if len(pt_recent) else 0.0
+        robustness[tag] = dict(sqz_pct=pct, breakout_lookback=brk,
+                               n_all=int(len(cand['pt'])), net_recent=net_recent)
+        print(f"  • {tag:22s} (pct={pct}, brk={brk}): {len(cand['pt'])} معامله، "
+              f"net(۴سال)={net_recent:+,.0f}$", flush=True)
+        if tag == 'برندهٔ s133':
+            sq = cand
+    print(f"  ✓ لایهٔ اصلی (برندهٔ s133): {len(sq['pt'])} معامله (کلِ تاریخچه).", flush=True)
 
     # هم‌ترازیِ cutoff: مثلِ s130 از آخرین dtِ همهٔ لایه‌ها
     all_layers = base_layers + [sq]
@@ -170,6 +191,7 @@ def main():
                            net_recent=float(sq_pt['net_usd'].sum()) if len(sq_pt) else 0.0),
         per_layer=full_per,
         additive=bool(delta > 0),
+        robustness=robustness,
     )
     os.makedirs(os.path.join(ROOT, 'results'), exist_ok=True)
     with open(os.path.join(ROOT, 'results', '_s134_squeeze_additivity.json'), 'w') as f:
