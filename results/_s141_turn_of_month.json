@@ -1,0 +1,41 @@
+{
+  "strategy": "Gold Turn-of-the-Month Drift (S141)",
+  "tom_rel": 1,
+  "tom_hours": [
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "best_exit": {
+    "sl": 100,
+    "tp": 700,
+    "mh": 96
+  },
+  "net_layer_max": 7891.0,
+  "net_layer_conservative": 4162.0,
+  "n_both_combos": 18,
+  "wr": 41.6,
+  "pf": 1.9,
+  "maxdd_pct": -14.4,
+  "sharpe": 2.48,
+  "n_trades": 113,
+  "both_halves": [
+    1248.0,
+    5982.0
+  ],
+  "walk_forward": [
+    74.0,
+    1156.0,
+    1838.0,
+    3147.0
+  ],
+  "corr_overnight": 0.09,
+  "corr_monday": 0.06,
+  "corr_s67": 0.135,
+  "gates_ok": true,
+  "record_prev": 175246.0,
+  "record_new": 179408.0
+}
