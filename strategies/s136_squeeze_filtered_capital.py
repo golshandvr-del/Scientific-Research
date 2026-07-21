@@ -32,15 +32,38 @@ ROOT = os.path.dirname(HERE)
 sys.path.insert(0, ROOT)
 
 from engine import scalp_engine as se
-from strategies.s91_scalp_signal_exit import paper_broker
+from strategies.s91_scalp_signal_exit import paper_broker, ema, atr
 from strategies.s94_scalp_hidden_target import make_hidden_exit
 from strategies.s132_squeeze_breakout_m15 import build_entries_squeeze, DATA, MAX_HOLD_M15
-from strategies.s135_squeeze_loss_filter import build_entries_with_features
 
 RESULTS = os.path.join(ROOT, 'results')
 
 # ماشهٔ برنده + خروجِ برندهٔ سرمایه‌محورِ s133 (ثابت — بدونِ جاروبِ دوباره)
 TP, SL, TB = 300.0, 90.0, False
+# پارامترِ ماشهٔ برندهٔ s133 (منطبق با s132/s133 — نه بازپیاده‌سازی)
+TRIG = dict(sqz_pct=0.25, breakout_lookback=6)
+
+
+def brk_strength_for_entries(df, entries):
+    """
+    قدرتِ شکست را *دقیقاً* برای همان entriesِ s132 محاسبه می‌کند (بدونِ بازپیاده‌سازیِ
+    منطقِ squeeze). brk_strength[i] = (close[i] - priorHigh[i]) / ATR[i]
+    که priorHigh با همان فرمولِ s132 (h[i-brk:i].max()) و ATR14 محاسبه می‌شود.
+    برمی‌گرداند dict {i: brk_strength}.
+    """
+    c = df['close'].values.astype(np.float64)
+    h = df['high'].values.astype(np.float64)
+    atr14 = atr(df, 14)
+    brk = TRIG['breakout_lookback']
+    out = {}
+    for (i, _side) in entries:
+        prior_high = h[i - brk:i].max() if i >= brk else np.nan
+        a = atr14[i] if (np.isfinite(atr14[i]) and atr14[i] > 0) else np.nan
+        if np.isfinite(prior_high) and np.isfinite(a):
+            out[i] = float((c[i] - prior_high) / a)
+        else:
+            out[i] = 0.0
+    return out
 
 
 def cap_net(df, entries, cat_sl=400.0):
@@ -75,11 +98,12 @@ def gross_loss_lot(tr):
 
 
 def filter_entries(df, thr):
-    """ورودهای Squeeze با featureها؛ فقط آن‌هایی که brk_strength>=thr نگه داشته می‌شوند."""
-    entries, feat = build_entries_with_features(df)
+    """ورودهای *اصلیِ s132* (نه بازپیاده‌سازی)؛ فقط آن‌هایی که brk_strength>=thr می‌مانند."""
+    entries = build_entries_squeeze(df, **TRIG)
     if thr is None:
         return entries
-    return [(i, s) for (i, s) in entries if feat.get(i, {}).get('brk_strength', 0) >= thr]
+    bs = brk_strength_for_entries(df, entries)
+    return [(i, s) for (i, s) in entries if bs.get(i, 0) >= thr]
 
 
 def eval_thr(df, thr):
