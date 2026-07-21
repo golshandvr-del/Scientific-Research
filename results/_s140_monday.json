@@ -1,0 +1,35 @@
+{
+  "strategy": "Gold Monday Week-Start Drift (S140)",
+  "monday_hours": [
+    18,
+    19,
+    20,
+    21
+  ],
+  "best": {
+    "sl": 100,
+    "tp": 300,
+    "mh": 96
+  },
+  "net_layer": 6326.0,
+  "wr": 39.7,
+  "pf": 1.18,
+  "maxdd_pct": -15.3,
+  "sharpe": 1.68,
+  "n_trades": 438,
+  "both_halves": [
+    970.0,
+    5005.0
+  ],
+  "walk_forward": [
+    183.0,
+    733.0,
+    1594.0,
+    2803.0
+  ],
+  "corr_overnight": 0.214,
+  "corr_s67": 0.149,
+  "gates_ok": true,
+  "record_prev": 171738.0,
+  "record_new": 178064.0
+}
