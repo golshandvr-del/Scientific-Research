@@ -63,21 +63,33 @@ def atr_np(df, period=14):
     return atr
 
 
-def gen_signals(df, jump_thr=3.0, med_win=96, cooldown=8):
-    """سیگنالِ خرید پس از افتِ تیزِ عمودی. فقط LONG (buy-the-dip)."""
+def _ema(x, span):
+    return pd.Series(x).ewm(span=span, adjust=False).mean().values
+
+
+def gen_signals(df, jump_thr=3.0, med_win=96, cooldown=8, regime_both=False):
+    """سیگنالِ خرید پس از افتِ تیزِ عمودی. فقط LONG (buy-the-dip).
+
+    regime_both=True ⇒ فیلترِ رژیمِ صعودیِ دولایه: قیمت بالای EMA(400) و EMA(100)>EMA(400).
+    این فیلتر (کشفِ چرخهٔ s147) DD را از −16٪ به −9٪ و PF را از 1.17 به 1.33 می‌بَرد.
+    """
     o = df['open'].values; c = df['close'].values
     h = df['high'].values; l = df['low'].values
     rng = h - l
     med = pd.Series(rng).rolling(med_win, min_periods=20).median().values
     jr = rng / (med + 1e-9)
     n = len(df)
+    ema_slow = _ema(c, 400); ema_mid = _ema(c, 100)
+    start = max(med_win, 400 if regime_both else med_win)
     sig = np.zeros(n, dtype=np.int8)
     last = -10**9
-    for i in range(med_win, n - 1):
+    for i in range(start, n - 1):
         if i - last < cooldown:
             continue
         # افتِ تیزِ عمودی: کندلِ بزرگِ نزولی
         if jr[i] > jump_thr and c[i] < o[i]:
+            if regime_both and not (c[i] > ema_slow[i] and ema_mid[i] > ema_slow[i]):
+                continue
             sig[i] = 1  # خرید در کندلِ بعد
             last = i
     return sig
@@ -169,7 +181,23 @@ if __name__ == '__main__':
     n = len(df); mid = n // 2
     print(f"داده: {n} کندلِ M15")
 
-    print("\n--- جاروبِ پارامتر (jump_thr × SL/TP/trail) ---")
+    # --- کانفیگِ نهاییِ برنده (regime-both, jt2.5, SL3/TP12/tr5/mh160) ---
+    print("\n=== کانفیگِ نهاییِ برنده: regime_both jt2.5 SL3/TP12/be2/tr5/mh160 ===")
+    sig_w = gen_signals(df, jump_thr=2.5, cooldown=8, regime_both=True)
+    trd_w, sld_w = backtest_trail(df, sig_w, atr, 3.0, 12.0, 2.0, 5.0, 160)
+    sw = ev(trd_w, sld_w)
+    m1 = trd_w['signal_bar'] < mid
+    h1 = ev(trd_w[m1].reset_index(drop=True), sld_w[m1.values])
+    h2 = ev(trd_w[~m1].reset_index(drop=True), sld_w[(~m1).values])
+    folds_w = wf_folds(trd_w, sld_w, n)
+    py_w = per_year(df, trd_w, sld_w)
+    print(f"  net={sw['net_profit']:+.0f}$ n={sw['n_trades']} WR={sw['win_rate']:.0f}% "
+          f"PF={sw['profit_factor']:.2f} DD={sw['max_dd_pct']:.0f}% Sharpe={sw.get('sharpe',0):.2f}")
+    print(f"  h1={h1['net_profit']:+.0f} h2={h2['net_profit']:+.0f} "
+          f"WF=[{','.join(f'{f:+.0f}' for f in folds_w)}]")
+    print(f"  per-year: {dict((y, round(v)) for y, v in py_w.items())}")
+
+    print("\n--- جاروبِ پارامترِ کامل (برای شفافیت) ---")
     best = None
     grid = []
     for jt in [2.5, 3.0, 3.5, 4.0]:
