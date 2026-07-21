@@ -237,10 +237,12 @@ def correlation_with_s67(df, d_over):
     all_tr = pd.concat([trL, trS], ignore_index=True)
     if len(all_tr) == 0:
         return None
+    # run_backtest ستونِ سود را 'pnl' (بر حسبِ قیمت) می‌نامد (نه 'pnl_pip').
+    pnl_col = 'pnl' if 'pnl' in all_tr.columns else 'pnl_pip'
     exit_bar = np.clip(all_tr['exit_bar'].values.astype(int), 0, ng - 1)
     dt = pd.to_datetime(dfg['time'].values[exit_bar], unit='s')
     day = pd.to_datetime(dt.date)
-    d_s67 = pd.Series(all_tr['pnl_pip'].values, index=day).groupby(level=0).sum()
+    d_s67 = pd.Series(all_tr[pnl_col].values, index=day).groupby(level=0).sum()
 
     idx = d_over.index.union(d_s67.index)
     a = d_over.reindex(idx).fillna(0.0)
