@@ -73,9 +73,12 @@ CORR_MAX = 0.35
 
 # روزهای پیش از پایانِ ماه (از اکتشاف). خوشهٔ پایدارِ both-halves + هر ۴ چارک مثبت.
 # from_end = -1 یعنی آخرین روزِ معاملاتیِ ماه؛ -6/-7 یعنی ۶/۷ روز مانده به پایان.
-PRE_END_DAYS = [-6, -7, -3]
-# پنجرهٔ ساعتیِ عصر (۱۶–۲۱ UTC) — محافظه‌کارانه، جدا از Overnight (۲۲–۲۳).
-PRE_END_HOURS = [16, 17, 18, 19, 20, 21]
+# جاروبِ پایداریِ WF (explore_gold_eom_wf_stability.py) نشان داد خوشهٔ {-6,-7,-8}
+# با پنجرهٔ ساعتیِ ۱۹–۲۳ پایدارترین WF را دارد (هر ۴ پنجره راحت مثبت) و از نظر
+# corr هم متعامد می‌ماند. این انتخابِ از-پیش-تعیین‌شده است (نه بهینه‌سازیِ کور).
+PRE_END_DAYS = [-6, -7, -8]
+# پنجرهٔ ساعتیِ عصر/شب (۱۹–۲۳ UTC) — سشنِ آمریکا. WF اینجا پایدار شد.
+PRE_END_HOURS = [19, 20, 21, 22, 23]
 
 
 def load():
@@ -205,7 +208,7 @@ def main():
     print(f"{'SL':>5}{'TP':>6}{'mh':>5}{'net$':>12}{'PF':>7}{'WR%':>7}{'N':>7}  both")
     combos = []
     for sl in [100, 150, 200]:
-        for tp in [300, 500, 700]:
+        for tp in [300, 400, 500, 700]:
             for mh in [48, 96]:
                 ls, ss = build_eom_signals(df, PRE_END_DAYS, PRE_END_HOURS)
                 st, tr = run_layer(df, ls, ss, sl, tp, mh)
@@ -216,20 +219,26 @@ def main():
                 s2 = se.run_capital(trh2, 'XAUUSD', initial_capital=CAP, risk_pct=RISK, compounding=True)[0] if len(trh2) else None
                 both = (net_of(s1) > 0 and net_of(s2) > 0)
                 net = net_of(st)
-                print(f"{sl:>5}{tp:>6}{mh:>5}{net:>12,.0f}{st['profit_factor']:>7.2f}{st['win_rate']:>7.1f}{st['n_trades']:>7}  {'✓' if both else ''}")
-                combos.append((net, sl, tp, mh, both))
+                # گیتِ سخت‌گیرانه‌تر از S142/S143: WF هم داخلِ حلقه چک می‌شود.
+                wfc = walk_forward(df, PRE_END_DAYS, PRE_END_HOURS, sl, tp, mh)
+                allwf = all(x > 0 for x in wfc)
+                qualified = both and allwf
+                mark = ('✓' if both else '') + ('✅' if allwf else '')
+                print(f"{sl:>5}{tp:>6}{mh:>5}{net:>12,.0f}{st['profit_factor']:>7.2f}{st['win_rate']:>7.1f}{st['n_trades']:>7}  {mark}")
+                combos.append((net, sl, tp, mh, both, allwf, qualified))
 
-    both_combos = [c for c in combos if c[4]]
-    if not both_combos:
-        print("\n❌ هیچ ترکیبی both-halves-positive نبود ⇒ رکورد دست‌نخورده.")
+    # واجدِ شرایط = هم both-halves و هم هر ۴ پنجرهٔ WF مثبت (سخت‌گیرانه‌تر از رکوردهای قبل)
+    qual_combos = [c for c in combos if c[6]]
+    if not qual_combos:
+        print("\n❌ هیچ ترکیبی both-halves + allWF نبود ⇒ رکورد دست‌نخورده.")
         _save(None)
         return
 
-    best = max(both_combos, key=lambda c: c[0])
-    net_best, sl, tp, mh, _ = best
-    layer_net_conservative = float(np.mean([c[0] for c in both_combos]))
-    print(f"\n🏅 برندهٔ جاروب: SL{sl}/TP{tp}/mh{mh} ⇒ net=${net_best:,.0f}")
-    print(f"📉 سودِ محافظه‌کارانهٔ لایه (میانگینِ {len(both_combos)} ترکیبِ both✓) = ${layer_net_conservative:,.0f}")
+    best = max(qual_combos, key=lambda c: c[0])
+    net_best, sl, tp, mh = best[0], best[1], best[2], best[3]
+    layer_net_conservative = float(np.mean([c[0] for c in qual_combos]))
+    print(f"\n🏅 برندهٔ جاروب (واجدِ شرایط): SL{sl}/TP{tp}/mh{mh} ⇒ net=${net_best:,.0f}")
+    print(f"📉 سودِ محافظه‌کارانهٔ لایه (میانگینِ {len(qual_combos)} ترکیبِ both✓+allWF✅) = ${layer_net_conservative:,.0f}")
 
     # --- گیت‌های ضدِ overfit روی برنده ---
     ls, ss = build_eom_signals(df, PRE_END_DAYS, PRE_END_HOURS)
@@ -281,7 +290,7 @@ def main():
         'best_exit': {'sl': sl, 'tp': tp, 'mh': mh},
         'net_layer_max': round(net_best, 0),
         'net_layer_conservative': round(layer_net_conservative, 0),
-        'n_both_combos': len(both_combos),
+        'n_qualified_combos': len(qual_combos),
         'wr': round(st['win_rate'], 1), 'pf': round(st['profit_factor'], 2),
         'maxdd_pct': round(st['max_dd_pct'], 1), 'sharpe': round(st['sharpe'], 2),
         'n_trades': int(st['n_trades']),
