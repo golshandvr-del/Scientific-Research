@@ -91,7 +91,7 @@ def main():
     print(f"{'='*70}")
     print(f"{'from_end':>9}{'t-stat':>10}{'mean pip':>11}{'N':>8}   note")
     rows = []
-    for fe in [-1, -2, -3, -4, -5, -6, -7]:
+    for fe in [-1, -2, -3, -4, -5, -6, -7, -8, -9, -10]:
         mask = (df['from_end'].values == fe)
         t, m, cnt = tstat(fwd[mask])
         note = ''
@@ -112,9 +112,9 @@ def main():
         'last1 {-1}': [-1],
         'last2 {-1,-2}': [-1, -2],
         'last3 {-1,-2,-3}': [-1, -2, -3],
-        'last4 {-1,-2,-3,-4}': [-1, -2, -3, -4],
-        'mid-late {-2,-3}': [-2, -3],
-        'deep {-3,-4,-5}': [-3, -4, -5],
+        'pre-end {-6,-7}': [-6, -7],
+        'pre-end3 {-6,-7,-3}': [-6, -7, -3],
+        'pre-end-wide {-5,-6,-7,-8}': [-5, -6, -7, -8],
     }
     cluster_rows = []
     for name, fes in clusters.items():
