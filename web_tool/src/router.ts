@@ -17,6 +17,9 @@ import { computeSqueeze, DEFAULT_SQUEEZE } from './squeeze_breakout'
 import {
   computeOvernight, OVERNIGHT_MAX_HOLD, OVERNIGHT_SL_PIP, OVERNIGHT_TP_PIP,
 } from './overnight_drift'
+import {
+  computeMonday, MONDAY_MAX_HOLD, MONDAY_SL_PIP, MONDAY_TP_PIP,
+} from './monday_drift'
 
 export type RouterState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 export type Regime = 'trend_up' | 'trend_down' | 'range'
@@ -263,7 +266,8 @@ export function decide(a: AnalysisResult, close: number[],
                        spec: AssetSpec = ASSET_SPECS.XAUUSD,
                        high?: number[],
                        low?: number[],
-                       utcHour?: number): RouterDecision {
+                       utcHour?: number,
+                       utcDay?: number): RouterDecision {
   const reg = computeRegime(a, close)
   const p = a.probability
   const atr = a.atr || 1
@@ -348,6 +352,77 @@ export function decide(a: AnalysisResult, close: number[],
       }
     }
     // ov.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
+  }
+
+  // ========================================================================
+  // لایهٔ «Monday Week-Start Drift» (S140) — سیگنالِ زمان-محورِ روز×ساعت
+  // ------------------------------------------------------------------------
+  // قانونِ شمارهٔ ۱: فقط «سودِ خالصِ بیشتر» مهم است. طلا در عصرِ دوشنبه (۱۸–۲۱ UTC)
+  // درایوِ صعودیِ ابتدای هفته دارد (اثرِ روزِ هفته؛ دوشنبه t=+6.11 قوی‌ترین روز).
+  // سهمِ محافظه‌کارانهٔ +$3,508، افزایشی به رکورد (corr +0.214 با Overnight، +0.149 با S67).
+  // این پنجره (۱۸–۲۱) با پنجرهٔ Overnight (۲۲–۲۳) هم‌پوشانی ندارد ⇒ تداخلِ ترتیبی نیست.
+  if (spec.id === 'XAUUSD' && typeof utcHour === 'number' && typeof utcDay === 'number') {
+    const mo = computeMonday(utcDay, utcHour)
+    const moInd: RouterDecision['indicators'] = [
+      { name: 'روزِ هفته (لایهٔ ابتدای هفته)', value: utcDay === 1 ? 'دوشنبه ✓' : 'غیرِ دوشنبه',
+        status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
+      { name: 'پنجرهٔ درایوِ ابتدای هفته (دوشنبه ۱۸–۲۱ UTC)',
+        value: mo.state === 'ENTRY' ? 'باز ✓' : mo.state === 'APPROACHING' ? 'در حالِ باز شدن' : 'بسته',
+        status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
+      ...indicators,
+    ]
+    if (mo.state === 'ENTRY') {
+      const entry = a.price
+      const sl = entry - mo.slDist
+      const tp = entry + mo.tpDist
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, mo.slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'ورود خرید (LONG) — درایوِ ابتدای هفتهٔ طلا (عصرِ دوشنبه)',
+        reason: mo.reason,
+        direction: 'LONG', entry, tp, sl,
+        rr: `SL ثابت ${MONDAY_SL_PIP}pip (${mo.slDist.toFixed(2)}$) / TP ${MONDAY_TP_PIP}pip ` +
+          `(${mo.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(MONDAY_TP_PIP / MONDAY_SL_PIP).toFixed(1)} (بگذار بردها بدوند)`,
+        probability: 55,
+        sizing: {
+          lotMultiplier: 1.0,
+          label: 'Monday Week-Start Drift (لایهٔ زمان-محورِ S140)',
+          note: `استراتژیِ S140 (کشفِ نو، زمان-محورِ روز×ساعت — بدونِ اندیکاتور). ورودِ open کندلِ بعد. ` +
+            `همبستگیِ روزانه +۰.۲۱ با Overnight و +۰.۱۵ با S67 ⇒ جریانِ ناهمبسته که سودِ خالصِ کل را بالا می‌برد.`,
+          lots: lots ?? undefined,
+          riskDollars: rd,
+          capital, riskPct,
+          capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+            `(ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. ` +
+            `اگر SL (فاصلهٔ ${mo.slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        tpPlan: {
+          multiplier: MONDAY_TP_PIP,
+          note: `TP دورِ ${MONDAY_TP_PIP}pip. درایوِ ابتدای هفته معمولاً چند ساعت ادامه دارد؛ ` +
+            `TP دور اجازه می‌دهد حرکتِ صعودی کامل استخراج شود. تا ${MONDAY_MAX_HOLD} کندل (۲۴ ساعت) نگه دارید یا تا برخورد به TP/SL.`,
+        },
+        slPlan: {
+          multiplier: MONDAY_SL_PIP,
+          note: `SL ثابت ${MONDAY_SL_PIP}pip (${mo.slDist.toFixed(2)}$). اگر درایوِ ابتدای هفته شکل نگرفت، ` +
+            `این SL ضرر را محدود می‌کند؛ اما بردهای واقعی به‌مراتب بزرگ‌ترند.`,
+        },
+        indicators: moInd,
+      }
+    }
+    if (mo.state === 'APPROACHING') {
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ ابتدای هفته در حالِ باز شدن',
+        reason: mo.reason,
+        confirmations: [
+          { label: 'رسیدنِ ساعتِ UTC به ۱۸:۰۰ در روزِ دوشنبه (ورودِ پنجرهٔ درایوِ ابتدای هفته)', met: false,
+            detail: 'با بسته‌شدنِ کندلِ دوشنبه ساعتِ ۱۸ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
+        ],
+        indicators: moInd,
+      }
+    }
+    // mo.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
   }
 
   // ========================================================================
