@@ -34,7 +34,9 @@ from strategies.s145_mtf_structure_scalp import (
     PIP, CONTRACT, COST_PRICE, INITIAL_CAPITAL, RISK_PCT)
 
 
-def gen_breakout_long(m5, ctx, lookback=20, cooldown=12):
+def gen_breakout_long(m5, ctx, lookback=20, cooldown=12, ts=None, ts_thr=None):
+    """اگر ts (قدرتِ روندِ M15) و ts_thr داده شود، فقط breakoutهایی که در روندِ
+    به‌اندازهٔ کافی قوی رخ دهند پذیرفته می‌شوند (فیلترِ کیفیت اثبات‌شده در ممیزیِ MFE)."""
     n = len(m5)
     close = m5['close'].values; openv = m5['open'].values; high = m5['high'].values
     trend = ctx['m15_trend'].values
@@ -44,11 +46,27 @@ def gen_breakout_long(m5, ctx, lookback=20, cooldown=12):
         if i - last < cooldown:
             continue
         if trend[i] == 1:
+            if ts is not None and ts_thr is not None:
+                if np.isnan(ts[i]) or ts[i] < ts_thr:
+                    continue
             hh = high[i-lookback:i].max()
             if close[i] > hh and close[i] > openv[i]:
                 sig[i] = 1
                 last = i
     return sig
+
+
+def build_trendstr(m5, m15):
+    """قدرتِ روندِ M15 = (EMA50-EMA200)/EMA200، forward-safe map به M5."""
+    ef = ema_np(m15['close'].values, 50)
+    es = ema_np(m15['close'].values, 200)
+    ts15 = (ef - es) / es
+    close_time = m15['time'].values + 15 * 60
+    idx = np.searchsorted(close_time, m5['time'].values, side='right') - 1
+    ts = np.full(len(m5), np.nan)
+    valid = idx >= 0
+    ts[valid] = ts15[idx[valid]]
+    return ts
 
 
 def backtest_long(m5, sig, atr_arr, tp_mult, sl_mult, max_hold=60):
@@ -110,38 +128,42 @@ if __name__ == '__main__':
     m5 = load('XAUUSD', 'M5'); m15 = load('XAUUSD', 'M15')
     ctx15 = build_m15_context(m15); ctx = map_m15_to_m5(m5, ctx15)
     atr_arr = atr_np(m5, 14)
+    ts = build_trendstr(m5, m15)
     n = len(m5); mid = n // 2
 
-    print("\n=== SWEEP: MTF trend-aligned breakout LONG ===")
+    print("\n=== SWEEP: MTF trend-aligned breakout LONG (+ strong-trend quality filter) ===")
     best = None
-    for lb in [12, 20, 30, 40]:
-        for cd in [6, 12, 24]:
-            sig = gen_breakout_long(m5, ctx, lookback=lb, cooldown=cd)
-            if (sig != 0).sum() < 50:
-                continue
-            for tp in [1.0, 1.5, 2.0, 3.0]:
-                for slm in [1.0, 1.5, 2.0, 3.0]:
-                    full, folds = wf_eval(m5, sig, atr_arr, tp, slm, 60)
-                    if full is None:
-                        continue
-                    tr, sld = backtest_long(m5, sig, atr_arr, tp, slm, 60)
-                    m1 = tr['signal_bar'] < mid
-                    h1 = ev(tr[m1].reset_index(drop=True), sld[m1.values]) if m1.sum() else None
-                    h2 = ev(tr[~m1].reset_index(drop=True), sld[(~m1).values]) if (~m1).sum() else None
-                    both = h1 and h2 and h1['net_profit'] > 0 and h2['net_profit'] > 0
-                    wf_ok = all(f is not None and f > 0 for f in folds)
-                    gate = both and wf_ok and full['net_profit'] > 0 and not full['ruined']
-                    if gate:
-                        print(f"✅ lb={lb} cd={cd} tp={tp} sl={slm} n={full['n_trades']} "
-                              f"netP={full['net_profit']:+.0f}$ WR={full['win_rate']:.0f}% "
-                              f"PF={full['profit_factor']:.2f} DD={full['max_dd_pct']:.0f}% "
-                              f"Sharpe={full['sharpe']:.2f}")
-                        if best is None or full['net_profit'] > best[0]['net_profit']:
-                            best = (full, lb, cd, tp, slm)
+    for lb in [20, 30, 40]:
+        for cd in [12, 24]:
+            for ts_q in [0.5, 0.6, 0.7]:
+                # آستانهٔ قدرتِ روند از چارکِ toیِ کلِ دادهٔ در-روند (نه lookahead: ثابت سراسری)
+                ts_thr = np.nanquantile(ts[ts > 0], ts_q) if np.isfinite(np.nanmax(ts)) else 0.0
+                sig = gen_breakout_long(m5, ctx, lookback=lb, cooldown=cd, ts=ts, ts_thr=ts_thr)
+                if (sig != 0).sum() < 50:
+                    continue
+                for tp in [1.5, 2.0, 3.0, 4.0]:
+                    for slm in [2.0, 2.5, 3.0]:
+                        full, folds = wf_eval(m5, sig, atr_arr, tp, slm, 60)
+                        if full is None:
+                            continue
+                        tr, sld = backtest_long(m5, sig, atr_arr, tp, slm, 60)
+                        m1 = tr['signal_bar'] < mid
+                        h1 = ev(tr[m1].reset_index(drop=True), sld[m1.values]) if m1.sum() else None
+                        h2 = ev(tr[~m1].reset_index(drop=True), sld[(~m1).values]) if (~m1).sum() else None
+                        both = h1 and h2 and h1['net_profit'] > 0 and h2['net_profit'] > 0
+                        wf_ok = all(f is not None and f > 0 for f in folds)
+                        gate = both and wf_ok and full['net_profit'] > 0 and not full['ruined']
+                        if gate:
+                            print(f"✅ lb={lb} cd={cd} tsq={ts_q} tp={tp} sl={slm} n={full['n_trades']} "
+                                  f"netP={full['net_profit']:+.0f}$ WR={full['win_rate']:.0f}% "
+                                  f"PF={full['profit_factor']:.2f} DD={full['max_dd_pct']:.0f}% "
+                                  f"Sharpe={full['sharpe']:.2f}")
+                            if best is None or full['net_profit'] > best[0]['net_profit']:
+                                best = (full, lb, cd, ts_q, tp, slm)
     print("\n=== BEST (all gates green) ===")
     if best:
-        s, lb, cd, tp, slm = best
-        print(f"lb={lb} cd={cd} tp_mult={tp} sl_mult={slm}")
+        s, lb, cd, ts_q, tp, slm = best
+        print(f"lb={lb} cd={cd} ts_q={ts_q} tp_mult={tp} sl_mult={slm}")
         print(f"netP={s['net_profit']:+.0f}$ n={s['n_trades']} WR={s['win_rate']:.1f}% "
               f"PF={s['profit_factor']:.2f} DD={s['max_dd_pct']:.1f}% Sharpe={s['sharpe']:.2f}")
     else:
