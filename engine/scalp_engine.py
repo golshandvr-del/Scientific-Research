@@ -62,7 +62,10 @@ import pandas as pd
 #   این جایگزینِ فرضِ قدیمیِ (spread=2, comm=7) شد؛ اکنون بدبینانه‌تر و واقعی‌تر است.
 # ------------------------------------------------------------------------------
 ASSETS = {
-    'XAUUSD': dict(file='data/XAUUSD_M15.csv', pip=0.10,   contract=100.0,     pip_value=10.0, spread_pip=4.0, comm=0.0, slip_pip=0.5),
+    # ⭐ کالیبراسیونِ واقعیِ حسابِ کاربر (User Note): اسپردِ طلا = 0.33$/oz = 3.3 pip،
+    #    کمیسیون صفر، slippage صفر (اسپردِ گزارش‌شده رفت‌وبرگشتِ کامل است).
+    #    مدلِ قدیم spread_pip=4.0/slip=0.5 (=5.0pip) بود که ~۱.۵× بدبینانه‌تر از واقعیت بود.
+    'XAUUSD': dict(file='data/XAUUSD_M15.csv', pip=0.10,   contract=100.0,     pip_value=10.0, spread_pip=3.3, comm=0.0, slip_pip=0.0),
     'EURUSD': dict(file='data/EURUSD_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.0, comm=7.0, slip_pip=0.3),
     'AUDUSD': dict(file='data/AUDUSD_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.2, comm=7.0, slip_pip=0.3),
     'USDCHF': dict(file='data/USDCHF_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.4, comm=7.0, slip_pip=0.3),

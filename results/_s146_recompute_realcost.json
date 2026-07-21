@@ -1,0 +1,30 @@
+{
+  "user_note_spec": {
+    "contract_size": 100,
+    "xau_spread_pip": 3.3,
+    "xau_cost_usd_oz": 0.33,
+    "commission": 0.0,
+    "margin_per_lot": 40.0
+  },
+  "old_cost_pip": 5.0,
+  "real_cost_pip": 3.3,
+  "layers_old": {
+    "Overnight (S139)": 43412.9999999975,
+    "Monday (S140)": 3693.419999999782,
+    "TurnOfMonth (S141)": 7891.119999999824,
+    "MidMonth (S142)": 24539.8899999993,
+    "EndOfMonth (S144)": 1257.4099999998325,
+    "TrendBase (S67px)": 1512.1199999988712,
+    "_TOTAL_XAU_layers": 82306.9599999951
+  },
+  "layers_real": {
+    "Overnight (S139)": 52871.81000000015,
+    "Monday (S140)": 4332.900000000109,
+    "TurnOfMonth (S141)": 8157.539999999986,
+    "MidMonth (S142)": 26461.19000000003,
+    "EndOfMonth (S144)": 2220.1900000000714,
+    "TrendBase (S67px)": 3524.20000000025,
+    "_TOTAL_XAU_layers": 97567.8300000006
+  },
+  "xau_layer_improvement_ratio": 1.185414088917953
+}
