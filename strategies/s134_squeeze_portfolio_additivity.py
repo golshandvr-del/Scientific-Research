@@ -128,23 +128,28 @@ def main():
     ]
     robustness = {}
     sq = None
+    sq_cands = {}
     for tag, pct, brk in triggers:
         cand = build_squeeze_layer(sqz_pct=pct, breakout_lookback=brk)
-        # محاسبهٔ Δ برای این ماشه
-        pt_recent = S130.filter_recent(cand['pt'], years=YEARS_BACK)
-        net_recent = float(pt_recent['net_usd'].sum()) if len(pt_recent) else 0.0
-        robustness[tag] = dict(sqz_pct=pct, breakout_lookback=brk,
-                               n_all=int(len(cand['pt'])), net_recent=net_recent)
-        print(f"  • {tag:22s} (pct={pct}, brk={brk}): {len(cand['pt'])} معامله، "
-              f"net(۴سال)={net_recent:+,.0f}$", flush=True)
+        sq_cands[tag] = (cand, pct, brk)
         if tag == 'برندهٔ s133':
             sq = cand
+    # cutoff مشترک بر اساسِ بیشترین زمانِ همهٔ لایه‌ها (هم‌تراز با s130)
+    all_layers0 = base_layers + [sq]
+    max_dt = max(L['pt']['dt'].max() for L in all_layers0 if len(L['pt']))
+    cutoff = max_dt - pd.DateOffset(years=YEARS_BACK)
+    for tag, (cand, pct, brk) in sq_cands.items():
+        pt_recent = S130.filter_recent(cand['pt'], cutoff=cutoff)
+        net_recent = float(pt_recent['net_usd'].sum()) if len(pt_recent) else 0.0
+        robustness[tag] = dict(sqz_pct=pct, breakout_lookback=brk,
+                               n_all=int(len(cand['pt'])),
+                               n_recent=int(len(pt_recent)), net_recent=net_recent)
+        print(f"  • {tag:22s} (pct={pct}, brk={brk}): {len(cand['pt'])} معامله، "
+              f"net(۴سال)={net_recent:+,.0f}$", flush=True)
     print(f"  ✓ لایهٔ اصلی (برندهٔ s133): {len(sq['pt'])} معامله (کلِ تاریخچه).", flush=True)
 
-    # هم‌ترازیِ cutoff: مثلِ s130 از آخرین dtِ همهٔ لایه‌ها
+    # هم‌ترازیِ cutoff قبلاً (بالاتر) محاسبه شد؛ لایهٔ اصلی sq همان برندهٔ s133 است.
     all_layers = base_layers + [sq]
-    max_dt = max(L['pt']['dt'].max() for L in all_layers if len(L['pt']))
-    cutoff = max_dt - pd.DateOffset(years=YEARS_BACK)
 
     # ۳) سودِ خالصِ پایه (۵ لایه) و ۶-لایه
     base_net, base_per, base_dt = portfolio_net(base_layers, cutoff=cutoff)
