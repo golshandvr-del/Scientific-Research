@@ -65,10 +65,13 @@ ASSETS = {
     # ⭐ کالیبراسیونِ واقعیِ حسابِ کاربر (User Note): اسپردِ طلا = 0.33$/oz = 3.3 pip،
     #    کمیسیون صفر، slippage صفر (اسپردِ گزارش‌شده رفت‌وبرگشتِ کامل است).
     #    مدلِ قدیم spread_pip=4.0/slip=0.5 (=5.0pip) بود که ~۱.۵× بدبینانه‌تر از واقعیت بود.
+    # ⭐ به‌روزرسانیِ User Note جدید (S154): «کمیسیونِ جداگانه ندارد» ویژگیِ کلِ حساب است،
+    #    نه فقط طلا ⇒ کمیسیونِ همهٔ فارکس‌ها هم به صفر به‌روز شد (قبلاً comm=7.0 بود که
+    #    ~۲۳٪ از سودِ خالصِ واقعی را پنهان می‌کرد؛ جزئیات: RealCost_FullRecompute_NewSpec_NetProfit_241487.md).
     'XAUUSD': dict(file='data/XAUUSD_M15.csv', pip=0.10,   contract=100.0,     pip_value=10.0, spread_pip=3.3, comm=0.0, slip_pip=0.0),
-    'EURUSD': dict(file='data/EURUSD_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.0, comm=7.0, slip_pip=0.3),
-    'AUDUSD': dict(file='data/AUDUSD_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.2, comm=7.0, slip_pip=0.3),
-    'USDCHF': dict(file='data/USDCHF_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.4, comm=7.0, slip_pip=0.3),
+    'EURUSD': dict(file='data/EURUSD_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.0, comm=0.0, slip_pip=0.3),
+    'AUDUSD': dict(file='data/AUDUSD_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.2, comm=0.0, slip_pip=0.3),
+    'USDCHF': dict(file='data/USDCHF_M15.csv', pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.4, comm=0.0, slip_pip=0.3),
     # DXY داراییِ قابلِ‌معاملهٔ مستقیم نیست؛ به‌عنوانِ دارایی چهارم از AUDUSD استفاده می‌کنیم
     # مگر کاربر خلافش را بخواهد. (طبقِ DATA، چهار داراییِ اصلی: XAU/EUR/AUD + یکی از این‌ها.)
 }
