@@ -89,16 +89,20 @@ def evaluate(df, long_sig, short_sig, sl_pip, tp_pip, be_trig, trail_pip, max_ho
 
 
 def net_of(cap):
-    """سودِ خالصِ نهایی از خروجیِ run_capital (سازگار با کلید/ساختارهای مختلف)."""
+    """سودِ خالصِ نهایی از خروجیِ run_capital.
+    run_capital یک tuple برمی‌گرداند: (stats_dict, equity_curve[, pertrade]).
+    stats_dict شاملِ کلیدِ 'net_profit' است."""
     if cap is None:
         return 0.0
-    if isinstance(cap, dict):
+    # unpack tuple خروجیِ run_capital
+    if isinstance(cap, tuple):
+        stats = cap[0]
+    else:
+        stats = cap
+    if isinstance(stats, dict):
         for k in ('net_profit', 'total_pnl', 'final_pnl', 'profit'):
-            if k in cap:
-                return float(cap[k])
-        if 'equity' in cap:
-            eq = cap['equity']
-            return float(eq[-1] - eq[0])
+            if k in stats:
+                return float(stats[k])
     return 0.0
 
 
