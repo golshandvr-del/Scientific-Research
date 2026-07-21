@@ -36,7 +36,7 @@
 > - اعدادِ کوچک‌ترِ تاریخی (`+$43,968`، `+$95,645`، `+$128,325`، `+$171,738` …) صرفاً
 >   **نقاطِ عطفِ مسیرِ رکورد**اند و در متنِ پایین به‌عنوانِ تاریخچه نگه داشته می‌شوند.
 >
-> **مرجعِ محاسبه:** [`results/RealCost_Recompute_Full_NewSpec_NetProfit_241487.md`](./results/RealCost_Recompute_Full_NewSpec_NetProfit_241487.md)
+> **مرجعِ محاسبه:** [`results/RealCost_FullRecompute_NewSpec_NetProfit_241487.md`](./results/RealCost_FullRecompute_NewSpec_NetProfit_241487.md)
 > · کد: `strategies/s154_recompute_full_newspec.py` · داده: `results/_s154_recompute_full.json`
 >
 > **احیای استراتژی‌های ضررده (User Note):** دو آزمایشِ جامع انجام شد —
