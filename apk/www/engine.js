@@ -124,17 +124,21 @@ function atr(highs, lows, closes, period = 14) {
   return out;
 }
 
-// میانهٔ سه‌MA (mid-MA) — معادلِ live_engine.mid_ma3: میانگینِ EMA20/EMA50/SMA100
+// میانهٔ سه‌MA (mid-MA) — پورتِ دقیقِ live_engine._mid_ma:
+//   میانگینِ EMA50, EMA100, SMA200 با np.nanmean (یعنی NaNها نادیده گرفته می‌شوند،
+//   و فقط اگر هر سه NaN باشند خروجی NaN است).
 function midMA(closes) {
-  const e20 = ema(closes, 20);
   const e50 = ema(closes, 50);
-  const s100 = sma(closes, 100);
+  const e100 = ema(closes, 100);
+  const s200 = sma(closes, 200);
   const n = closes.length;
   const out = new Array(n).fill(NaN);
   for (let i = 0; i < n; i++) {
-    if (!Number.isNaN(e20[i]) && !Number.isNaN(e50[i]) && !Number.isNaN(s100[i])) {
-      out[i] = (e20[i] + e50[i] + s100[i]) / 3;
-    }
+    let sum = 0, cnt = 0;
+    if (!Number.isNaN(e50[i]))  { sum += e50[i];  cnt++; }
+    if (!Number.isNaN(e100[i])) { sum += e100[i]; cnt++; }
+    if (!Number.isNaN(s200[i])) { sum += s200[i]; cnt++; }
+    out[i] = cnt > 0 ? sum / cnt : NaN;
   }
   return out;
 }
