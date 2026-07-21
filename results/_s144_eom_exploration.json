@@ -1,0 +1,180 @@
+{
+  "exploration": "Gold End-of-Month Drift",
+  "horizon_bars": 16,
+  "per_day": [
+    {
+      "from_end": -1,
+      "t": -1.56,
+      "mean_pip": -3.91,
+      "N": 7016
+    },
+    {
+      "from_end": -2,
+      "t": 0.66,
+      "mean_pip": 1.43,
+      "N": 7105
+    },
+    {
+      "from_end": -3,
+      "t": 1.79,
+      "mean_pip": 3.68,
+      "N": 7101
+    },
+    {
+      "from_end": -4,
+      "t": -1.05,
+      "mean_pip": -1.57,
+      "N": 7130
+    },
+    {
+      "from_end": -5,
+      "t": -1.99,
+      "mean_pip": -3.08,
+      "N": 7034
+    },
+    {
+      "from_end": -6,
+      "t": 3.64,
+      "mean_pip": 6.79,
+      "N": 7003
+    },
+    {
+      "from_end": -7,
+      "t": 3.45,
+      "mean_pip": 7.46,
+      "N": 6974
+    },
+    {
+      "from_end": -8,
+      "t": 2.61,
+      "mean_pip": 4.79,
+      "N": 6933
+    },
+    {
+      "from_end": -9,
+      "t": -4.81,
+      "mean_pip": -9.42,
+      "N": 6949
+    },
+    {
+      "from_end": -10,
+      "t": -3.07,
+      "mean_pip": -5.12,
+      "N": 6886
+    }
+  ],
+  "clusters": [
+    {
+      "cluster": "last1 {-1}",
+      "fes": [
+        -1
+      ],
+      "t": -1.56,
+      "mean_pip": -3.91,
+      "N": 7016,
+      "h1_mean": -2.28,
+      "h2_mean": -5.54,
+      "both": false
+    },
+    {
+      "cluster": "last2 {-1,-2}",
+      "fes": [
+        -1,
+        -2
+      ],
+      "t": -0.74,
+      "mean_pip": -1.22,
+      "N": 14121,
+      "h1_mean": -1.06,
+      "h2_mean": -1.39,
+      "both": false
+    },
+    {
+      "cluster": "last3 {-1,-2,-3}",
+      "fes": [
+        -1,
+        -2,
+        -3
+      ],
+      "t": 0.32,
+      "mean_pip": 0.42,
+      "N": 21222,
+      "h1_mean": -1.58,
+      "h2_mean": 2.4,
+      "both": false
+    },
+    {
+      "cluster": "pre-end {-6,-7}",
+      "fes": [
+        -6,
+        -7
+      ],
+      "t": 4.99,
+      "mean_pip": 7.13,
+      "N": 13977,
+      "h1_mean": 3.33,
+      "h2_mean": 10.94,
+      "both": true
+    },
+    {
+      "cluster": "pre-end3 {-6,-7,-3}",
+      "fes": [
+        -6,
+        -7,
+        -3
+      ],
+      "t": 5.08,
+      "mean_pip": 5.97,
+      "N": 21078,
+      "h1_mean": 1.34,
+      "h2_mean": 10.6,
+      "both": true
+    },
+    {
+      "cluster": "pre-end-wide {-5,-6,-7,-8}",
+      "fes": [
+        -5,
+        -6,
+        -7,
+        -8
+      ],
+      "t": 4.26,
+      "mean_pip": 3.98,
+      "N": 27944,
+      "h1_mean": 3.28,
+      "h2_mean": 4.68,
+      "both": true
+    }
+  ],
+  "best_cluster": {
+    "cluster": "pre-end3 {-6,-7,-3}",
+    "fes": [
+      -6,
+      -7,
+      -3
+    ],
+    "t": 5.08,
+    "mean_pip": 5.97,
+    "N": 21078,
+    "h1_mean": 1.34,
+    "h2_mean": 10.6,
+    "both": true
+  },
+  "good_hours": [
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "quarter_means": [
+    9.09,
+    5.68,
+    5.22,
+    44.8
+  ],
+  "all_quarters_positive": true
+}
