@@ -258,7 +258,8 @@ export function decide(a: AnalysisResult, close: number[],
                        capital: number = DEFAULT_CAPITAL,
                        riskPct: number = DEFAULT_RISK_PCT,
                        spec: AssetSpec = ASSET_SPECS.XAUUSD,
-                       high?: number[]): RouterDecision {
+                       high?: number[],
+                       low?: number[]): RouterDecision {
   const reg = computeRegime(a, close)
   const p = a.probability
   const atr = a.atr || 1
@@ -386,7 +387,7 @@ export function decide(a: AnalysisResult, close: number[],
   // جزئیات: results/SqueezeBreakout_NetProfit_121694.md
   // ========================================================================
   if (spec.id === 'XAUUSD' && high && high.length === close.length) {
-    const sq = computeSqueeze(close, high, DEFAULT_SQUEEZE)
+    const sq = computeSqueeze(close, high, DEFAULT_SQUEEZE, low)
     const pip = 0.1                              // طلا: ۱ pip = ۰.۱ واحدِ قیمت
     const slDist = DEFAULT_SQUEEZE.slPip * pip   // ۹۰pip = ۹.۰$
     const tpDist = DEFAULT_SQUEEZE.tpPip * pip   // ۳۰۰pip = ۳۰.۰$
@@ -398,6 +399,9 @@ export function decide(a: AnalysisResult, close: number[],
         status: sq.active ? 'ok' : 'neutral' },
       { name: 'گیتِ روندِ صعودی (EMA50>EMA200)', value: sq.trendUp ? 'بله ✓' : 'خیر',
         status: sq.trendUp ? 'ok' : 'neutral' },
+      { name: 'قدرتِ شکست (S136، آستانه ≥ ۰.۳۰)',
+        value: isFinite(sq.brkStrength) ? sq.brkStrength.toFixed(2) : '—',
+        status: sq.active ? 'ok' : (sq.strongBreak ? 'neutral' : 'warn') },
       ...indicators,
     ]
 

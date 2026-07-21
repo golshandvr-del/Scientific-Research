@@ -20,9 +20,29 @@
 //   robust در دو ماشهٔ مستقل (0.25/6 و 0.15/10 هر دو افزایشی).
 //   افزایشی به رکورد: +$101,259 → +$121,694 (+۲۰.۲٪).
 // جزئیات: results/SqueezeBreakout_NetProfit_121694.md
+//
+// ----------------------------------------------------------------------------
+// ★ فیلترِ «قدرتِ شکست» (S136 — رکوردِ +$126,118) — کاهشِ سیگنالِ غلط
+// ----------------------------------------------------------------------------
+// همهٔ شکست‌ها یکسان نیستند. شکستِ ضعیف (close فقط کمی بالای priorHigh) اغلب
+// «شکستِ کاذب» است ⇒ ضررِ کوچکِ پرتکرار (سیگنالِ غلط). معیارِ کمّیِ کیفیت:
+//     brk_strength = (close[i] − priorHigh[i]) / ATR14[i]
+// تقسیم بر ATR شکست را مقیاس‌ناپذیر از رژیمِ نوسان می‌کند. فیلتر (گیتِ کیفیت):
+//     فقط اگر brk_strength ≥ 0.30 ⇒ ورود.  (در غیرِ این‌صورت سیگنال صادر نمی‌شود)
+// اثرِ بک‌تست (موتورِ سرمایهٔ رکورد، ۱۵۰k کندل): لایهٔ Squeeze از +$20,435 به
+//   +$24,859 رسید (Δ +$4,424) با حذفِ ۱۲۲۷ سیگنالِ غلط و کاهشِ $1,056 ضرر.
+//   گیت‌ها: هر دو نیمهٔ داده مثبت + هر ۴ پنجرهٔ WF مثبت + robust در ۳ آستانه.
+//   رکوردِ کل: +$121,694 → +$126,118 (+۳.۶٪).
+// این «کاشفِ نو» نیست؛ یک گیتِ کیفیت است ⇒ مطابقِ قانونِ #۱، WR تقریباً ثابت
+//   می‌ماند ولی با حذفِ ورودهای بی‌کیفیت، ضرر کم و سودِ خالص زیاد می‌شود.
+// جزئیات: results/SqueezeBreakoutFilter_NetProfit_126118.md
 // ============================================================================
 
-import { ema, bollinger } from './indicators'
+import { ema, bollinger, atr, type Candle } from './indicators'
+
+// آستانهٔ برندهٔ S136 (robust: هر سه آستانهٔ 0.15/0.20/0.30 مثبت بودند؛ 0.30 بیشترین
+// سودِ خالص و بیشترین کاهشِ ضرر را هم‌زمان داد). منبعِ حقیقتِ واحد با بک‌تست.
+export const BRK_STRENGTH_MIN = 0.30
 
 export interface SqueezeConfig {
   bbPeriod: number         // 20
@@ -54,6 +74,8 @@ export interface SqueezeSignal {
   emaFast: number
   emaSlow: number
   trendUp: boolean         // گیتِ روندِ صعودی EMA50>EMA200
+  brkStrength: number      // قدرتِ شکست = (close−priorHigh)/ATR14 (S136)
+  strongBreak: boolean     // آیا شکست به‌اندازهٔ کافی قوی است؟ (≥ BRK_STRENGTH_MIN)
   reason: string
 }
 
@@ -63,6 +85,7 @@ export interface SqueezeSignal {
  */
 export function computeSqueeze(
   close: number[], high: number[], cfg: SqueezeConfig = DEFAULT_SQUEEZE,
+  low?: number[],
 ): SqueezeSignal {
   const n = close.length
   const need = cfg.bbPeriod + cfg.sqzLookback + 2
@@ -71,6 +94,7 @@ export function computeSqueeze(
       active: false, approaching: false, squeezed: false,
       bandwidth: NaN, bwPct: 1, priorHigh: NaN,
       emaFast: NaN, emaSlow: NaN, trendUp: false,
+      brkStrength: NaN, strongBreak: false,
       reason: 'دادهٔ کافی برای باندِ بولینگر / پنجرهٔ فشردگی موجود نیست.',
     }
   }
@@ -109,16 +133,40 @@ export function computeSqueeze(
 
   const trendUp = isFinite(ef[i]) && isFinite(es[i]) && ef[i] > es[i]
 
-  const active = squeezed && breakout && trendUp
+  // ── فیلترِ «قدرتِ شکست» (S136) — کاهشِ سیگنالِ غلط ──
+  // brk_strength = (close − priorHigh) / ATR14 ؛ فقط شکست‌های قاطع (≥ 0.30) پذیرفته می‌شوند.
+  // ATR14 به low نیاز دارد؛ اگر low در دسترس نباشد (سازگاریِ عقب‌رو) فیلتر خنثی می‌ماند.
+  let brkStrength = NaN
+  if (low && low.length === n && isFinite(priorHigh) && isFinite(close[i])) {
+    const candles: Candle[] = new Array(n)
+    for (let k = 0; k < n; k++) {
+      candles[k] = { time: 0, open: close[k], high: high[k], low: low[k], close: close[k], volume: 0 }
+    }
+    const atr14 = atr(candles, 14)
+    const a = atr14[i]
+    if (isFinite(a) && a > 0) brkStrength = (close[i] - priorHigh) / a
+  }
+  // اگر brk_strength قابل‌محاسبه نبود (low نداریم) ⇒ به‌طورِ محافظه‌کارانه شکست را قوی فرض کن
+  // تا رفتارِ عقب‌رو حفظ شود؛ اما وقتی low داریم (حالتِ سایت) فیلتر واقعاً اعمال می‌شود.
+  const strongBreak = !isFinite(brkStrength) || brkStrength >= BRK_STRENGTH_MIN
+
+  const active = squeezed && breakout && trendUp && strongBreak
   // «نزدیک‌شدن»: فشرده هست و روند صعودی، ولی شکست هنوز رخ نداده (قیمت زیرِ سقف)
   const approaching = squeezed && trendUp && !breakout
 
+  const bsTxt = isFinite(brkStrength) ? brkStrength.toFixed(2) : '—'
   let reason: string
   if (active) {
     reason =
       `فنرِ فشرده رها شد: پهنای باندِ بولینگر در کفِ محلی بود (صدک ${(bwPct * 100).toFixed(0)}٪ ≤ ` +
       `${(cfg.sqzPct * 100).toFixed(0)}٪) و قیمت سقفِ ${cfg.breakoutLookback} کندلِ اخیر (${priorHigh.toFixed(2)}) را ` +
-      `رو به بالا شکست — انفجارِ صعودی هم‌سو با روند (EMA50>EMA200).`
+      `با قدرت شکست (قدرتِ شکست=${bsTxt} ≥ ${BRK_STRENGTH_MIN}) — انفجارِ صعودیِ قاطع هم‌سو با روند (EMA50>EMA200).`
+  } else if (squeezed && breakout && trendUp && !strongBreak) {
+    // شکست رخ داد ولی ضعیف بود ⇒ فیلترِ S136 آن را به‌عنوانِ «سیگنالِ غلطِ محتمل» رد کرد.
+    reason =
+      `شکستِ صعودی رخ داد اما ضعیف بود (قدرتِ شکست=${bsTxt} < ${BRK_STRENGTH_MIN}؛ close فقط کمی بالای ` +
+      `سقفِ ${priorHigh.toFixed(2)}). طبقِ فیلترِ کاهشِ سیگنالِ غلط (S136)، شکست‌های کم‌قدرت اغلب کاذب‌اند و ` +
+      `ضررِ کوچکِ پرتکرار می‌سازند ⇒ ورود انجام نمی‌شود (منتظرِ شکستِ قاطع‌تر بمانید).`
   } else if (approaching) {
     reason =
       `بازار فشرده است (صدکِ پهنای باند ${(bwPct * 100).toFixed(0)}٪) و روند صعودی؛ ` +
@@ -133,6 +181,7 @@ export function computeSqueeze(
     active, approaching, squeezed,
     bandwidth: isFinite(bwPrev) ? bwPrev : NaN,
     bwPct, priorHigh: isFinite(priorHigh) ? priorHigh : NaN,
-    emaFast: ef[i], emaSlow: es[i], trendUp, reason,
+    emaFast: ef[i], emaSlow: es[i], trendUp,
+    brkStrength, strongBreak, reason,
   }
 }
