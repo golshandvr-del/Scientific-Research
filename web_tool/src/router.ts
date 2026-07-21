@@ -402,6 +402,9 @@ export function decide(a: AnalysisResult, close: number[],
       { name: 'قدرتِ شکست (S136، آستانه ≥ ۰.۳۰)',
         value: isFinite(sq.brkStrength) ? sq.brkStrength.toFixed(2) : '—',
         status: sq.active ? 'ok' : (sq.strongBreak ? 'neutral' : 'warn') },
+      { name: 'RSI۱۴ اشباعِ خرید (S138، آستانه ≤ ۷۵)',
+        value: isFinite(sq.rsi14) ? sq.rsi14.toFixed(1) : '—',
+        status: sq.notOverbought ? (sq.active ? 'ok' : 'neutral') : 'warn' },
       ...indicators,
     ]
 

@@ -36,13 +36,34 @@
 // این «کاشفِ نو» نیست؛ یک گیتِ کیفیت است ⇒ مطابقِ قانونِ #۱، WR تقریباً ثابت
 //   می‌ماند ولی با حذفِ ورودهای بی‌کیفیت، ضرر کم و سودِ خالص زیاد می‌شود.
 // جزئیات: results/SqueezeBreakoutFilter_NetProfit_126118.md
+// ----------------------------------------------------------------------------
+// ★★ فیلترِ دوم «RSI اشباعِ خرید» (S138 — رکوردِ +$128,325) — کاهشِ سیگنالِ غلط
+// ----------------------------------------------------------------------------
+// حتی پس از گیتِ brk_strength≥0.30، در میانِ ورودهای باقی‌مانده هنوز یک الگوی ضرر
+// هست: شکستِ صعودی وقتی RSI14 > 75 (اشباعِ خریدِ شدید) رخ می‌دهد، اغلب «شکستِ خسته/
+// پایانِ حرکت» است که سریع برمی‌گردد ⇒ سیگنالِ غلطِ پرتکرار. فیلترِ دوم:
+//     فقط اگر RSI14(close) ≤ 75 ⇒ ورود.
+// اثرِ بک‌تست (موتورِ سرمایهٔ رکورد، ۱۵۰k کندل): لایهٔ Squeeze از +$24,859 به
+//   +$27,066 رسید (Δ +$2,207) با حذفِ سیگنال‌های غلطِ اشباعِ خرید و کاهشِ ضرر.
+//   گیت‌ها: هر دو نیمهٔ داده مثبت (h1 +$2,481، h2 +$19,478) + هر ۴ پنجرهٔ WF مثبت
+//   [+1,366, +902, +4,723, +10,191] + robust در چند فیلترِ مستقل (RSI≤75, RSI≥50,
+//   dist_ema200≤3, atr_pct≤0.4 همه افزایشی).
+//   رکوردِ کل: +$126,118 → +$128,325 (+۱.۷٪).
+// (یافتهٔ مکمل S137: لایهٔ SHORT هیچ امضای ضررِ قابل‌بهره‌برداری نداشت ⇒ فیلتر روی
+//  Squeeze اعمال شد، نه SHORT. جزئیات: results/ShortLossFilter_NoEdge_NetProfit_34959.md)
+// جزئیات: results/SqueezeSecondFilter_RSI_NetProfit_128325.md
 // ============================================================================
 
-import { ema, bollinger, atr, type Candle } from './indicators'
+import { ema, bollinger, atr, rsi, type Candle } from './indicators'
 
 // آستانهٔ برندهٔ S136 (robust: هر سه آستانهٔ 0.15/0.20/0.30 مثبت بودند؛ 0.30 بیشترین
 // سودِ خالص و بیشترین کاهشِ ضرر را هم‌زمان داد). منبعِ حقیقتِ واحد با بک‌تست.
 export const BRK_STRENGTH_MIN = 0.30
+
+// آستانهٔ برندهٔ S138 (فیلترِ دوم): شکست فقط اگر RSI14 ≤ 75 پذیرفته شود (حذفِ شکستِ
+// اشباعِ خریدِ شدید که اغلب کاذب است). robust: RSI≤75, RSI≥50, dist_ema200≤3,
+// atr_pct≤0.4 همه افزایشی بودند؛ RSI≤75 بیشترین سودِ خالص و کاهشِ ضرر را داد.
+export const RSI_OVERBOUGHT_MAX = 75
 
 export interface SqueezeConfig {
   bbPeriod: number         // 20
@@ -76,6 +97,8 @@ export interface SqueezeSignal {
   trendUp: boolean         // گیتِ روندِ صعودی EMA50>EMA200
   brkStrength: number      // قدرتِ شکست = (close−priorHigh)/ATR14 (S136)
   strongBreak: boolean     // آیا شکست به‌اندازهٔ کافی قوی است؟ (≥ BRK_STRENGTH_MIN)
+  rsi14: number            // RSI14 در کندلِ فعلی (S138)
+  notOverbought: boolean   // آیا RSI ≤ 75 است؟ (فیلترِ دومِ S138)
   reason: string
 }
 
@@ -95,6 +118,7 @@ export function computeSqueeze(
       bandwidth: NaN, bwPct: 1, priorHigh: NaN,
       emaFast: NaN, emaSlow: NaN, trendUp: false,
       brkStrength: NaN, strongBreak: false,
+      rsi14: NaN, notOverbought: true,
       reason: 'دادهٔ کافی برای باندِ بولینگر / پنجرهٔ فشردگی موجود نیست.',
     }
   }
@@ -150,7 +174,13 @@ export function computeSqueeze(
   // تا رفتارِ عقب‌رو حفظ شود؛ اما وقتی low داریم (حالتِ سایت) فیلتر واقعاً اعمال می‌شود.
   const strongBreak = !isFinite(brkStrength) || brkStrength >= BRK_STRENGTH_MIN
 
-  const active = squeezed && breakout && trendUp && strongBreak
+  // ── فیلترِ دوم «RSI اشباعِ خرید» (S138) — کاهشِ سیگنالِ غلط ──
+  // شکست وقتی RSI14 > 75 است اغلب «شکستِ خسته» است ⇒ رد می‌شود.
+  const rsiArr = rsi(close, 14)
+  const rsi14 = rsiArr[i]
+  const notOverbought = !isFinite(rsi14) || rsi14 <= RSI_OVERBOUGHT_MAX
+
+  const active = squeezed && breakout && trendUp && strongBreak && notOverbought
   // «نزدیک‌شدن»: فشرده هست و روند صعودی، ولی شکست هنوز رخ نداده (قیمت زیرِ سقف)
   const approaching = squeezed && trendUp && !breakout
 
@@ -167,6 +197,12 @@ export function computeSqueeze(
       `شکستِ صعودی رخ داد اما ضعیف بود (قدرتِ شکست=${bsTxt} < ${BRK_STRENGTH_MIN}؛ close فقط کمی بالای ` +
       `سقفِ ${priorHigh.toFixed(2)}). طبقِ فیلترِ کاهشِ سیگنالِ غلط (S136)، شکست‌های کم‌قدرت اغلب کاذب‌اند و ` +
       `ضررِ کوچکِ پرتکرار می‌سازند ⇒ ورود انجام نمی‌شود (منتظرِ شکستِ قاطع‌تر بمانید).`
+  } else if (squeezed && breakout && trendUp && strongBreak && !notOverbought) {
+    // شکستِ قوی بود ولی در اشباعِ خریدِ شدید ⇒ فیلترِ دومِ S138 آن را رد کرد.
+    reason =
+      `شکستِ صعودیِ قوی رخ داد اما در حالتِ اشباعِ خریدِ شدید (RSI14=${isFinite(rsi14) ? rsi14.toFixed(1) : '—'} > ${RSI_OVERBOUGHT_MAX}). ` +
+      `طبقِ فیلترِ دومِ کاهشِ سیگنالِ غلط (S138)، شکست در اوجِ اشباع اغلب «شکستِ خسته» است که سریع ` +
+      `برمی‌گردد ⇒ ورود انجام نمی‌شود (منتظرِ خنک‌شدنِ RSI یا ستاپِ بعدی بمانید).`
   } else if (approaching) {
     reason =
       `بازار فشرده است (صدکِ پهنای باند ${(bwPct * 100).toFixed(0)}٪) و روند صعودی؛ ` +
@@ -182,6 +218,6 @@ export function computeSqueeze(
     bandwidth: isFinite(bwPrev) ? bwPrev : NaN,
     bwPct, priorHigh: isFinite(priorHigh) ? priorHigh : NaN,
     emaFast: ef[i], emaSlow: es[i], trendUp,
-    brkStrength, strongBreak, reason,
+    brkStrength, strongBreak, rsi14, notOverbought, reason,
   }
 }
