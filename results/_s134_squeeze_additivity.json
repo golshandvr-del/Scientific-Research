@@ -1,0 +1,58 @@
+{
+ "eval_years": 4,
+ "cutoff": "2022-07-16",
+ "base_net": 78452.77977938516,
+ "full_net": 88457.9397793843,
+ "delta": 10005.15999999913,
+ "daily_corr": 0.2792920965089222,
+ "squeeze_layer": {
+  "tp": 300.0,
+  "sl": 90.0,
+  "max_hold": 96,
+  "n_trades_recent": 627,
+  "net_recent": 10005.159999999136
+ },
+ "per_layer": {
+  "S67 (طلا M15 router)": {
+   "net": 37155.51977939174,
+   "n": 1651
+  },
+  "ScalpV2 (طلا M5 · D3_MACD)": {
+   "net": -1241.5200000044497,
+   "n": 2005
+  },
+  "S81 (طلا M30 swing)": {
+   "net": 13112.799999999723,
+   "n": 259
+  },
+  "SHORT (طلا M15 confluence)": {
+   "net": 27062.139999995732,
+   "n": 2120
+  },
+  "S73 (یورو M15 drift)": {
+   "net": 2363.8400000024053,
+   "n": 559
+  },
+  "S132 (طلا M15 · Squeeze→Breakout)": {
+   "net": 10005.159999999136,
+   "n": 627
+  }
+ },
+ "additive": true,
+ "robustness": {
+  "برندهٔ s133": {
+   "sqz_pct": 0.25,
+   "breakout_lookback": 6,
+   "n_all": 899,
+   "n_recent": 627,
+   "net_recent": 10005.159999999136
+  },
+  "پیش‌فرض (robustness)": {
+   "sqz_pct": 0.15,
+   "breakout_lookback": 10,
+   "n_all": 645,
+   "n_recent": 442,
+   "net_recent": 5858.929999999399
+  }
+ }
+}
