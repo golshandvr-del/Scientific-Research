@@ -6,8 +6,11 @@
   <title>دستیارِ معاملاتِ طلا — اپلیکیشن (موتورِ پایتون)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- Pyodide: مفسرِ واقعیِ CPython درونِ WebView (اجرای فایلِ پایتونِ موتور در APK) -->
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+  <!-- توجه: Pyodide دیگر در startup لود نمی‌شود (علتِ گیر کردنِ نسخهٔ قبلی روی
+       «بارگذاریِ مفسرِ پایتون» همین بود). موتورِ تصمیم اکنون JS خالص است و
+       بلافاصله بالا می‌آید. Pyodide فقط در صورتِ آپلودِ عمدیِ موتورِ .py و
+       به‌صورتِ lazy توسطِ app.js تزریق می‌شود. -->
+  <script src="engine.js"></script>
   <style>
     body { font-family: -apple-system, "Segoe UI", Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
     .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; }
@@ -30,7 +33,7 @@
         <i class="fas fa-coins text-amber-400 text-xl"></i>
         <div>
           <div class="font-bold text-sm">دستیارِ تصمیمِ معاملات</div>
-          <div id="engine-status" class="text-[10px] text-slate-400">در حالِ بارگذاریِ موتور…</div>
+          <div id="engine-status" class="text-[10px] text-slate-400">آماده‌سازیِ موتورِ JS…</div>
         </div>
       </div>
       <div class="text-left">
@@ -62,14 +65,18 @@
     <!-- ============ تبِ موتورِ پایتون ============ -->
     <section id="tab-engine" class="hidden space-y-3">
       <div class="card p-4">
-        <div class="font-bold text-sm mb-1"><i class="fab fa-python text-blue-400"></i> موتورِ برندهٔ فعال</div>
-        <div id="active-engine-name" class="text-xs text-slate-400 mb-2">موتورِ داخلی (پیش‌فرض)</div>
+        <div class="font-bold text-sm mb-1"><i class="fas fa-bolt text-emerald-400"></i> موتورِ تصمیمِ فعال</div>
+        <div id="active-engine-name" class="text-xs text-slate-400 mb-2">موتورِ داخلی (JS خالص — پیش‌فرض)</div>
         <p class="text-[11px] text-slate-400 leading-relaxed mb-3">
-          این اپ یک مفسرِ واقعیِ پایتون (Pyodide) با <b>numpy و pandas</b> درونِ خود دارد و
-          موتورِ <b>واقعیِ پروژه</b> (engine/ + s118 + s73، بدونِ بازنویسی) را اجرا می‌کند.
-          شما می‌توانید <b>فایلِ پایتونِ موتورِ برندهٔ خودتان</b> را وارد کنید و اپ همان کد را
-          <b>واقعاً اجرا</b> کند. موتور باید تابعِ <code class="bg-slate-800 px-1 rounded">live_decision(df, asset, open_position=None)</code>
-          و (اختیاری) <code class="bg-slate-800 px-1 rounded">reproduce_record(xau_df, eur_df)</code> داشته باشد.
+          موتورِ پیش‌فرضِ این اپ اکنون <b>JavaScriptِ خالص</b> است (پورتِ دقیقِ
+          <code class="bg-slate-800 px-1 rounded">live_engine.py</code>: EMA/SMA/RSI/ATR + ماشینِ حالتِ ۴-وضعیتی).
+          این موتور <b>فوری، آفلاین و بدونِ هیچ دانلودِ سنگین</b> کار می‌کند —
+          دیگر روی «بارگذاریِ مفسرِ پایتون» گیر نمی‌کند.
+          <br><br>
+          <b>اختیاری (نیاز به اینترنت):</b> اگر بخواهید می‌توانید <b>فایلِ پایتونِ موتورِ خودتان</b>
+          را وارد کنید؛ فقط در این حالت مفسرِ پایتون (Pyodide + numpy/pandas) به‌صورتِ
+          <b>lazy</b> و با timeout بارگذاری می‌شود. موتور باید تابعِ
+          <code class="bg-slate-800 px-1 rounded">live_decision(df, asset, open_position=None)</code> داشته باشد.
         </p>
         <div class="flex flex-col gap-2">
           <label class="text-xs">
@@ -86,7 +93,7 @@
             </button>
           </div>
           <button id="btn-run-backtest" class="bg-blue-600 hover:bg-blue-500 rounded-lg py-2 text-xs font-bold">
-            <i class="fas fa-flask"></i> اجرای بک‌تستِ سودِ خالص روی دادهٔ نمونه
+            <i class="fas fa-flask"></i> آزمونِ سلامتِ موتور روی دادهٔ زندهٔ اخیر
           </button>
         </div>
         <pre id="engine-log" class="mt-3 text-[10px] bg-black/40 rounded-lg p-2 max-h-52 overflow-auto whitespace-pre-wrap text-emerald-300"></pre>
@@ -124,8 +131,10 @@
       </div>
       <div class="card p-4 text-[11px] text-slate-400 leading-relaxed">
         <div class="font-bold text-slate-200 mb-1 text-xs">دربارهٔ ابزار</div>
-        نسخهٔ APK — موتور روی دستگاه با Pyodide اجرا می‌شود. رکوردِ رسمیِ پروژه
-        (سودِ خالصِ کل): <b class="text-emerald-400">+۹۵٬۶۴۵$</b> = XAUUSD + EURUSD.
+        نسخهٔ APK — موتورِ تصمیم روی دستگاه با <b>JavaScriptِ خالص</b> اجرا می‌شود
+        (فوری و آفلاین، بدونِ مفسرِ پایتون). رکوردِ رسمیِ پروژه
+        (سودِ خالصِ کل): <b class="text-emerald-400">+۹۵٬۶۴۵$</b> = XAUUSD + EURUSD
+        (قانونِ شمارهٔ ۱: فقط سودِ خالصِ بیشتر — نه WR).
       </div>
     </section>
   </main>
