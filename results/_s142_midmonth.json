@@ -1,0 +1,52 @@
+{
+  "strategy": "Gold Mid-Month Drift (S142)",
+  "midmonth_days": [
+    10,
+    13,
+    20
+  ],
+  "hours": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "best_exit": {
+    "sl": 100,
+    "tp": 500,
+    "mh": 96
+  },
+  "net_layer_max": 24540.0,
+  "net_layer_conservative": 10494.0,
+  "n_both_combos": 17,
+  "wr": 39.5,
+  "pf": 1.64,
+  "maxdd_pct": -13.4,
+  "sharpe": 3.63,
+  "n_trades": 286,
+  "both_halves": [
+    3240.0,
+    16101.0
+  ],
+  "walk_forward": [
+    1852.0,
+    1112.0,
+    1421.0,
+    12775.0
+  ],
+  "corr_overnight": 0.15,
+  "corr_monday": 0.063,
+  "corr_tom": -0.038,
+  "corr_s67": 0.133,
+  "gates_ok": true,
+  "record_prev": 179408.0,
+  "record_new": 189902.0
+}
