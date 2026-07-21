@@ -190,8 +190,22 @@ function isNativeApp() {
   } catch (e) { return false; }
 }
 
+// آیا آخرین دریافت از دادهٔ نمونهٔ آفلاین بود؟ (برای نمایشِ برچسب)
+let usedSampleData = { XAUUSD: false, EURUSD: false };
+let SAMPLE_CACHE = null;
+
+// بارگذاریِ دادهٔ نمونهٔ آفلاینِ بسته‌شده در APK (آخرین ~۴۲۰ کندلِ واقعی)
+async function loadSampleData() {
+  if (SAMPLE_CACHE) return SAMPLE_CACHE;
+  try {
+    SAMPLE_CACHE = await fetch('sample_data.json').then(r => r.json());
+  } catch (e) { SAMPLE_CACHE = null; }
+  return SAMPLE_CACHE;
+}
+
 async function fetchCandles(asset) {
   const base = effectiveApiBase();
+  usedSampleData[asset.id] = false;
   if (base && asset.id === 'XAUUSD') {
     try {
       const u = base + `/api/candles?interval=15m&range=2mo`;
@@ -199,7 +213,18 @@ async function fetchCandles(asset) {
       if (j && j.ok && j.candles && j.candles.length) return normalizeCandles(j.candles);
     } catch (e) { log(`سرورِ سایت پاسخ نداد (${asset.id})؛ تلاش با Yahoo…`); }
   }
-  return fetchYahoo(asset, base);
+  try {
+    return await fetchYahoo(asset, base);
+  } catch (e) {
+    // آخرین سنگر: دادهٔ نمونهٔ آفلاین تا اپ هرگز «خالی» نماند و موتور نمایش داده شود.
+    const s = await loadSampleData();
+    if (s && s[asset.id] && s[asset.id].length) {
+      usedSampleData[asset.id] = true;
+      log(`دادهٔ آنلاینِ ${asset.id} در دسترس نبود؛ نمایشِ موتور روی دادهٔ نمونهٔ آفلاین.`);
+      return s[asset.id];
+    }
+    throw e;
+  }
 }
 
 async function fetchYahoo(asset, base) {
@@ -314,11 +339,15 @@ function renderAssetCard(asset, d, err) {
         `<div class="bg-slate-900/60 rounded p-1 text-center"><div class="opacity-60">${k}</div><div class="text-slate-200">${ind[k]}</div></div>`).join('')}
     </div>` : '';
 
+  const sampleTag = usedSampleData[asset.id]
+    ? `<div class="mt-1 text-[10px] text-amber-400/90"><i class="fas fa-circle-info"></i> دادهٔ نمونهٔ آفلاین (اینترنت در دسترس نیست) — منطقِ موتور واقعی است.</div>`
+    : '';
   return `<div class="card p-4">
     <div class="flex items-center justify-between">
       <div class="font-bold text-sm"><i class="fas ${asset.icon} ${asset.color}"></i> ${asset.label}</div>
       ${stateBadge(d.state, d.side)}
     </div>
+    ${sampleTag}
     <div class="mt-1 text-xs text-slate-200 font-semibold">${d.headline || ''}</div>
     ${body}
     ${indHtml}
@@ -358,10 +387,15 @@ async function refreshAll() {
 
   container.innerHTML = results.map(r => renderAssetCard(r.a, r.d, r.err)).join('');
   const okCount = results.filter(r => !r.err).length;
+  const sampleCount = ASSETS.filter(a => usedSampleData[a.id]).length;
   const now = new Date().toLocaleTimeString('fa-IR');
-  $('conn-status').innerHTML = okCount
-    ? `<span class="text-emerald-400"><i class="fas fa-circle text-[6px]"></i> آنلاین (${okCount}/${ASSETS.length}) · ${now}</span>`
-    : '<span class="text-rose-400">آفلاین (بازار احتمالاً بسته است)</span>';
+  if (sampleCount > 0 && okCount) {
+    $('conn-status').innerHTML = `<span class="text-amber-400"><i class="fas fa-circle text-[6px]"></i> نمونهٔ آفلاین · ${now}</span>`;
+  } else if (okCount) {
+    $('conn-status').innerHTML = `<span class="text-emerald-400"><i class="fas fa-circle text-[6px]"></i> آنلاین (${okCount}/${ASSETS.length}) · ${now}</span>`;
+  } else {
+    $('conn-status').innerHTML = '<span class="text-rose-400">آفلاین (بازار احتمالاً بسته است)</span>';
+  }
 }
 
 // بک‌تستِ سبک روی دادهٔ زندهٔ اخیر با موتورِ JS (نمایشی — تأییدِ سلامتِ موتور)
