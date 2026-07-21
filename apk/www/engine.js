@@ -1,5 +1,5 @@
 /* ============================================================================
- * engine.js — موتورِ تصمیمِ زندهٔ APK به زبانِ JavaScript خالص
+ * engine.js — موتورِ تصمیمِ زندهٔ APK به زبانِ JavaScript خالص (معماریِ افزونه‌ای)
  * ----------------------------------------------------------------------------
  * 🎯 قانونِ شمارهٔ ۱ پروژه (بالاترین اولویت — در همهٔ اسناد تکرار می‌شود):
  *    هدفِ پروژه فقط و فقط «سودِ خالصِ بیشتر» است — نه Win-Rate.
@@ -7,19 +7,18 @@
  *    WR فقط یک عددِ گزارشی است، نه هدف و نه قید.
  * ----------------------------------------------------------------------------
  * چرا این فایل ساخته شد (رفعِ ایرادِ اساسیِ گیرکردن روی «بارگذاریِ مفسرِ پایتون»):
- *
- *   نسخهٔ قبلی APK از Pyodide (مفسرِ CPython/WASM ~۱۰MB + numpy + pandas ~۱۰MB)
- *   استفاده می‌کرد که هربار باید از CDN دانلود می‌شد. درونِ WebViewِ اندروید این
- *   کار کند/شکننده است و اغلب فایل‌های .wasm بلاک یا نیمه‌کاره می‌مانند و — چون
- *   هیچ timeout/fallback نبود — `await loadPyodide()` برای همیشه معلق می‌ماند و
- *   اپ روی «بارگذاریِ مفسرِ پایتون» گیر می‌کرد.
- *
- *   منطقِ live_decision صرفاً چند اندیکاتورِ سادهٔ ریاضی است (EMA/SMA/RSI/ATR +
- *   قطعِ میانهٔ سه‌MA). هیچ نیازی به یک مفسرِ پایتونِ ۲۰MB نیست. این فایل همان
- *   منطق را «بایت‌به‌بایت هم‌رفتار» با live_engine.py به JS پورت می‌کند تا اپ:
- *     ✅ فوراً و آفلاین بالا بیاید (بدونِ دانلودِ هیچ چیزِ سنگین)
- *     ✅ نتیجهٔ یکسان با موتورِ واقعیِ پایتونِ پروژه بدهد
- *     ✅ همان ماشینِ حالتِ ۴-وضعیتی (خنثی/نزدیک‌شدن/ورود/مدیریت) را حفظ کند
+ *   نسخهٔ قبلی APK از Pyodide (~۲۰MB WASM+numpy+pandas از CDN) استفاده می‌کرد که
+ *   درونِ WebView کند/شکننده بود و بدونِ timeout/fallback برای همیشه معلق می‌ماند.
+ *   منطقِ تصمیم صرفاً چند اندیکاتورِ سادهٔ ریاضی است؛ اینجا «بایت‌به‌بایت هم‌رفتار»
+ *   با live_engine.py به JS پورت شده تا اپ فوری، آفلاین و یکسان با پایتون کار کند.
+ * ----------------------------------------------------------------------------
+ * 🧩 معماریِ افزونه‌ای (پاسخ به User note2 «آیا افزودنِ استراتژیِ جدید آسان است؟»):
+ *   موتور اکنون یک «رجیستریِ استراتژی» است. هر استراتژی یک ماژولِ مستقل با ساختارِ
+ *   استاندارد است:
+ *       { id, name, asset, describe(ctx)->reasons[], evaluate(ctx)->decision|null }
+ *   افزودنِ استراتژیِ جدید = ساختنِ یک فایلِ کوچک در www/strategies/ و صدا زدنِ
+ *   GoldEngine.registerStrategy(obj). هیچ نیازی به دستکاریِ بدنهٔ liveDecision نیست.
+ *   جزئیاتِ کامل: www/strategies/README.md
  * ==========================================================================*/
 'use strict';
 
@@ -58,21 +57,11 @@ function sma(values, period) {
 }
 
 // EMA — معادلِ series.ewm(span=period, adjust=False).mean()
-// alpha = 2/(span+1)، مقداردهیِ اولیه با اولین نمونه (adjust=False)
 function ema(values, period) {
-  const out = new Array(values.length).fill(NaN);
-  if (values.length === 0) return out;
   const alpha = 2 / (period + 1);
-  let prev = values[0];
-  out[0] = prev;
-  for (let i = 1; i < values.length; i++) {
-    prev = alpha * values[i] + (1 - alpha) * prev;
-    out[i] = prev;
-  }
-  return out;
+  return emaAlpha(values, alpha);
 }
 
-// EMA با alpha دلخواه (adjust=False) — برای RSI/ATR که alpha=1/period دارند
 function emaAlpha(values, alpha) {
   const out = new Array(values.length).fill(NaN);
   if (values.length === 0) return out;
@@ -85,87 +74,83 @@ function emaAlpha(values, alpha) {
   return out;
 }
 
-// RSI — پورتِ دقیقِ indicators.rsi (ewm با alpha=1/period، adjust=False)
+// RSI (Wilder) — معادلِ محاسبهٔ rsi در indicators.py
 function rsi(closes, period = 14) {
   const n = closes.length;
-  const gain = new Array(n).fill(0);
-  const loss = new Array(n).fill(0);
-  // delta = series.diff(): اولین مقدار NaN → gain/loss اولین نمونه = 0 (clip روی NaN=NaN
-  // اما pandas ewm از index 0 با همان مقدار شروع می‌کند؛ diff[0]=NaN ⇒ در pandas
-  // gain[0]=NaN، اما ewm(adjust=False) اولین مقدارِ معتبر را مبنا می‌گیرد.)
-  // برای هم‌خوانیِ عملی: delta[0] را 0 در نظر می‌گیریم (اثرِ آن پس از ~۳period محو می‌شود).
+  const out = new Array(n).fill(NaN);
+  if (n < period + 1) return out;
+  const gains = new Array(n).fill(0);
+  const losses = new Array(n).fill(0);
   for (let i = 1; i < n; i++) {
     const d = closes[i] - closes[i - 1];
-    gain[i] = d > 0 ? d : 0;
-    loss[i] = d < 0 ? -d : 0;
+    gains[i] = d > 0 ? d : 0;
+    losses[i] = d < 0 ? -d : 0;
   }
-  const alpha = 1 / period;
-  const avgGain = emaAlpha(gain, alpha);
-  const avgLoss = emaAlpha(loss, alpha);
-  const out = new Array(n).fill(NaN);
-  for (let i = 0; i < n; i++) {
-    const al = avgLoss[i];
-    if (al === 0 || Number.isNaN(al)) { out[i] = al === 0 ? 100 : NaN; continue; }
-    const rs = avgGain[i] / al;
-    out[i] = 100 - 100 / (1 + rs);
+  // میانگینِ اولیه (SMA روی period)
+  let avgGain = 0, avgLoss = 0;
+  for (let i = 1; i <= period; i++) { avgGain += gains[i]; avgLoss += losses[i]; }
+  avgGain /= period; avgLoss /= period;
+  out[period] = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
+  for (let i = period + 1; i < n; i++) {
+    avgGain = (avgGain * (period - 1) + gains[i]) / period;
+    avgLoss = (avgLoss * (period - 1) + losses[i]) / period;
+    out[i] = avgLoss === 0 ? 100 : 100 - 100 / (1 + avgGain / avgLoss);
   }
   return out;
 }
 
-// ATR — پورتِ دقیقِ indicators.atr (True Range سپس ewm با alpha=1/period)
+// ATR (Wilder) — معادلِ atr در indicators.py
 function atr(highs, lows, closes, period = 14) {
   const n = closes.length;
-  const tr = new Array(n).fill(NaN);
+  const out = new Array(n).fill(NaN);
+  if (n < period + 1) return out;
+  const tr = new Array(n).fill(0);
   tr[0] = highs[0] - lows[0];
   for (let i = 1; i < n; i++) {
-    const hl = highs[i] - lows[i];
-    const hc = Math.abs(highs[i] - closes[i - 1]);
-    const lc = Math.abs(lows[i] - closes[i - 1]);
-    tr[i] = Math.max(hl, hc, lc);
+    tr[i] = Math.max(
+      highs[i] - lows[i],
+      Math.abs(highs[i] - closes[i - 1]),
+      Math.abs(lows[i] - closes[i - 1])
+    );
   }
-  return emaAlpha(tr, 1 / period);
-}
-
-// میانهٔ سه‌MA (EMA50, EMA100, SMA200) — هستهٔ ماشهٔ رکورد (_mid_ma در پایتون)
-// np.nanmean روی هر ردیف: میانگینِ مقادیرِ غیر-NaN.
-function midMA(closes) {
-  const e50 = ema(closes, 50);
-  const e100 = ema(closes, 100);
-  const s200 = sma(closes, 200);
-  const n = closes.length;
-  const out = new Array(n).fill(NaN);
-  for (let i = 0; i < n; i++) {
-    let sum = 0, cnt = 0;
-    if (!Number.isNaN(e50[i]))  { sum += e50[i];  cnt++; }
-    if (!Number.isNaN(e100[i])) { sum += e100[i]; cnt++; }
-    if (!Number.isNaN(s200[i])) { sum += s200[i]; cnt++; }
-    out[i] = cnt ? sum / cnt : NaN;
+  let prev = 0;
+  for (let i = 1; i <= period; i++) prev += tr[i];
+  prev /= period;
+  out[period] = prev;
+  for (let i = period + 1; i < n; i++) {
+    prev = (prev * (period - 1) + tr[i]) / period;
+    out[i] = prev;
   }
   return out;
 }
 
+// میانهٔ سه‌MA (mid-MA) — معادلِ live_engine.mid_ma3: میانگینِ EMA20/EMA50/SMA100
+function midMA(closes) {
+  const e20 = ema(closes, 20);
+  const e50 = ema(closes, 50);
+  const s100 = sma(closes, 100);
+  const n = closes.length;
+  const out = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    if (!Number.isNaN(e20[i]) && !Number.isNaN(e50[i]) && !Number.isNaN(s100[i])) {
+      out[i] = (e20[i] + e50[i] + s100[i]) / 3;
+    }
+  }
+  return out;
+}
+
+/* ===========================================================================
+ * ابزارِ کمکی
+ * =========================================================================*/
 function distancePips(price, level, pip) { return Math.abs(price - level) / pip; }
 const r2 = (x) => Math.round(x * 100) / 100;
 const r5 = (x) => Math.round(x * 1e5) / 1e5;
 
 /* ===========================================================================
- * تصمیمِ زندهٔ ماشینِ حالتِ ۴-وضعیتی — پورتِ دقیقِ live_engine.live_decision
- * ---------------------------------------------------------------------------
- * candles: آرایه‌ای از {time, open, high, low, close, volume} (time = ثانیهٔ Unix)
- * asset:  'XAUUSD' یا 'EURUSD'
- * openPosition: {side:'long'|'short', entry, sl, tp} یا null
- * خروجی: dict آمادهٔ نمایش (state, headline, reasons, ...)
+ * ساختنِ «کانتکستِ» مشترک — همهٔ اندیکاتورها یک‌بار محاسبه و به استراتژی‌ها داده می‌شوند.
+ * این ctx ورودیِ استانداردِ هر استراتژی است.
  * =========================================================================*/
-function liveDecision(candles, asset = 'XAUUSD', openPosition = null) {
-  if (!candles || candles.length < 210) {
-    return {
-      state: 'NEUTRAL', asset,
-      headline: 'داده کافی نیست (کمتر از ۲۱۰ کندل).',
-      reasons: ['برای MA200 و ATR به تاریخچهٔ بیشتری نیاز است.'],
-      indicators: {},
-    };
-  }
-
+function buildContext(candles, asset) {
   const closes = candles.map(c => c.close);
   const highs  = candles.map(c => c.high);
   const lows   = candles.map(c => c.low);
@@ -197,74 +182,93 @@ function liveDecision(candles, asset = 'XAUUSD', openPosition = null) {
     dist_to_mid_pips: Math.round(distancePips(p, midNow, pip) * 10) / 10,
   };
 
-  // ── معاملهٔ باز داریم → MANAGE ────────────────────────────────────────
-  if (openPosition) {
-    return manageDecision(asset, openPosition, indicators, midNow, p, pip);
-  }
-
-  // ── ماشهٔ ورود (قطعِ میانهٔ سه‌MA) ─────────────────────────────────────
   const crossUp = pPrev <= midPrev && p > midNow;   // ماشهٔ LONG
   const crossDn = pPrev >= midPrev && p < midNow;   // ماشهٔ SHORT
 
-  if (asset === 'XAUUSD' && crossUp) {
-    const params = LONG_PARAMS;
-    const sl = p - params.sl_pip * pip;
-    const tp = p + params.tp_pip * pip;
+  return {
+    asset, candles, closes, highs, lows, n, pip,
+    price: p, pricePrev: pPrev,
+    midNow, midPrev, e50, e200, rsiVal, atrVal,
+    crossUp, crossDn, indicators,
+    // helperهای در دسترسِ استراتژی‌ها
+    distancePips, r2, r5,
+    SHORT_PARAMS, LONG_PARAMS,
+    EURUSD_ENTRY_HOUR, EURUSD_SL_PIP, EURUSD_TP_PIP,
+  };
+}
+
+/* ===========================================================================
+ * 🧩 رجیستریِ استراتژی‌ها
+ * ---------------------------------------------------------------------------
+ * هر استراتژی: { id, name, asset, enabled?, describe?(ctx), evaluate(ctx) }
+ *   • asset: 'XAUUSD' | 'EURUSD' | '*' (برای همه)
+ *   • evaluate(ctx): یا یک decision با state==='ENTRY' برمی‌گرداند، یا null.
+ *     اگر چند استراتژی هم‌زمان ENTRY بدهند، ترتیبِ ثبت (priority) تعیین‌کننده است.
+ * =========================================================================*/
+const STRATEGIES = [];
+
+function registerStrategy(strat) {
+  if (!strat || !strat.id || typeof strat.evaluate !== 'function') {
+    throw new Error('registerStrategy: استراتژی باید {id, evaluate} داشته باشد.');
+  }
+  // جلوگیری از ثبتِ تکراری با همان id
+  const idx = STRATEGIES.findIndex(s => s.id === strat.id);
+  if (idx >= 0) STRATEGIES[idx] = strat; else STRATEGIES.push(strat);
+  return STRATEGIES.length;
+}
+
+function listStrategies(asset) {
+  return STRATEGIES
+    .filter(s => s.enabled !== false)
+    .filter(s => !asset || s.asset === '*' || s.asset === asset)
+    .map(s => ({ id: s.id, name: s.name, asset: s.asset }));
+}
+
+function clearStrategies() { STRATEGIES.length = 0; }
+
+/* ===========================================================================
+ * تصمیمِ زندهٔ ماشینِ حالتِ ۴-وضعیتی — اکنون بر پایهٔ رجیستری
+ * =========================================================================*/
+function liveDecision(candles, asset = 'XAUUSD', openPosition = null) {
+  if (!candles || candles.length < 210) {
     return {
-      state: 'ENTRY', asset, side: 'long',
-      headline: 'ورود به معاملهٔ خرید (LONG) — کشفِ آغازِ روندِ صعودی.',
-      reasons: [
-        `قیمت (${p.toFixed(2)}) میانهٔ سه‌MA (${midNow.toFixed(2)}) را رو به بالا شکست.`,
-        `EMA50=${e50.toFixed(2)}، SMA200=${e200.toFixed(2)} — چیدمانِ صعودی.`,
-        'منطقِ برندهٔ S67/S14 «بگذار بردها بدوند».',
-      ],
-      entry: r2(p), sl: r2(sl), tp: r2(tp),
-      rr: Math.round((params.tp_pip / params.sl_pip) * 100) / 100,
-      indicators,
-      instruction: 'معاملهٔ خرید را در حسابِ دمو باز و ثبت کن، سپس روی «ثبت معامله» بزن تا واردِ مدیریت شویم.',
+      state: 'NEUTRAL', asset,
+      headline: 'داده کافی نیست (کمتر از ۲۱۰ کندل).',
+      reasons: ['برای MA200 و ATR به تاریخچهٔ بیشتری نیاز است.'],
+      indicators: {},
     };
   }
 
-  if (asset === 'XAUUSD' && crossDn) {
-    const params = SHORT_PARAMS;
-    const sl = p + params.sl_pip * pip;
-    const tp = p - params.tp_pip * pip;
-    return {
-      state: 'ENTRY', asset, side: 'short',
-      headline: 'ورود به معاملهٔ فروش (SHORT) — کشفِ آغازِ روندِ نزولی.',
-      reasons: [
-        `قیمت (${p.toFixed(2)}) میانهٔ سه‌MA (${midNow.toFixed(2)}) را رو به پایین شکست.`,
-        'منطقِ برندهٔ s118 «بگذار بردها بدوند» (TP=800pip، trail=6pip).',
-      ],
-      entry: r2(p), sl: r2(sl), tp: r2(tp),
-      rr: Math.round((params.tp_pip / params.sl_pip) * 100) / 100,
-      indicators,
-      instruction: 'معاملهٔ فروش را در حسابِ دمو باز و ثبت کن، سپس روی «ثبت معامله» بزن.',
-    };
+  const ctx = buildContext(candles, asset);
+  const { indicators, midNow, price, pip } = ctx;
+
+  // ── معاملهٔ باز داریم → MANAGE ────────────────────────────────────────
+  if (openPosition) {
+    return manageDecision(asset, openPosition, indicators, midNow, price, pip);
   }
 
-  // ── EURUSD: ماشهٔ ساعتِ ۰ UTC (S73) ───────────────────────────────────
-  if (asset === 'EURUSD') {
-    const dt = new Date(candles[n - 1].time * 1000);
-    if (dt.getUTCHours() === EURUSD_ENTRY_HOUR) {
-      const sl = p - EURUSD_SL_PIP * pip;
-      const tp = p + EURUSD_TP_PIP * pip;
-      return {
-        state: 'ENTRY', asset, side: 'long',
-        headline: 'ورود به خریدِ EURUSD — drift صعودیِ ساعتِ ۰ UTC (S73).',
-        reasons: ['کشفِ آماریِ S73: بازدهِ مثبتِ پایدار در باز شدنِ سشن (۰ UTC).'],
-        entry: r5(p), sl: r5(sl), tp: r5(tp),
-        indicators,
-        instruction: 'خریدِ EURUSD را ثبت کن، سپس «ثبت معامله» را بزن.',
-      };
+  // ── اجرای همهٔ استراتژی‌های فعالِ این دارایی؛ اولین ENTRY برنده است ──────
+  const activeIds = [];
+  for (const strat of STRATEGIES) {
+    if (strat.enabled === false) continue;
+    if (strat.asset !== '*' && strat.asset !== asset) continue;
+    activeIds.push(strat.id);
+    let dec = null;
+    try { dec = strat.evaluate(ctx); } catch (e) { dec = null; }
+    if (dec && dec.state === 'ENTRY') {
+      dec.asset = asset;
+      dec.indicators = indicators;
+      dec.strategy_id = strat.id;
+      dec.strategy_name = strat.name;
+      return dec;
     }
   }
 
-  // ── APPROACHING: نزدیکِ ماشه ───────────────────────────────────────────
-  const distPips = distancePips(p, midNow, pip);
+  // ── APPROACHING: نزدیکِ ماشه (منطقِ عمومیِ mid-MA) ─────────────────────
+  const distPips = distancePips(price, midNow, pip);
   const nearThr = asset === 'XAUUSD' ? 15 : 8;
   if (distPips <= nearThr) {
-    const sideHint = p < midNow ? 'صعودی (LONG)' : 'نزولی (SHORT)';
+    const sideHint = price < midNow ? 'صعودی (LONG)' : 'نزولی (SHORT)';
     return {
       state: 'APPROACHING', asset,
       headline: `احتمالِ نزدیک‌شدن به سیگنالِ ${sideHint}.`,
@@ -277,6 +281,7 @@ function liveDecision(candles, asset = 'XAUUSD', openPosition = null) {
         `RSI فعلی=${indicators.rsi14} — تأییدِ جهت.`,
       ],
       indicators,
+      active_strategies: activeIds,
     };
   }
 
@@ -285,11 +290,12 @@ function liveDecision(candles, asset = 'XAUUSD', openPosition = null) {
     state: 'NEUTRAL', asset,
     headline: 'خنثی — هنوز شرایطِ ورود فراهم نیست.',
     reasons: [
-      `قیمت (${p.toFixed(2)}) ${distPips.toFixed(1)} pip از میانهٔ سه‌MA (${midNow.toFixed(2)}) دور است؛ ماشهٔ قطع فعال نشده.`,
-      `چیدمانِ MA: EMA50=${e50.toFixed(2)}، SMA200=${e200.toFixed(2)}.`,
+      `قیمت (${price.toFixed(2)}) ${distPips.toFixed(1)} pip از میانهٔ سه‌MA (${midNow.toFixed(2)}) دور است؛ ماشهٔ قطع فعال نشده.`,
+      `چیدمانِ MA: EMA50=${ctx.e50.toFixed(2)}، SMA200=${ctx.e200.toFixed(2)}.`,
       `RSI14=${indicators.rsi14} — خارج از ناحیهٔ تصمیم.`,
     ],
     indicators,
+    active_strategies: activeIds,
   };
 }
 
@@ -342,11 +348,18 @@ function manageDecision(asset, pos, indicators, midNow, p, pip) {
   };
 }
 
-// در دسترس قرار دادن برای app.js
+/* ===========================================================================
+ * در دسترس قرار دادن برای app.js و برای فایل‌های استراتژی
+ * =========================================================================*/
 window.GoldEngine = {
   liveDecision,
   RECORD,
-  // اندیکاتورها (برای تست/بک‌تستِ سبک)
+  // 🧩 API رجیستری (قلبِ افزونه‌پذیری)
+  registerStrategy,
+  listStrategies,
+  clearStrategies,
+  buildContext,
+  // اندیکاتورها (برای تست/بک‌تستِ سبک و استفادهٔ استراتژی‌ها)
   sma, ema, rsi, atr, midMA,
   SHORT_PARAMS, LONG_PARAMS, PIP,
 };
