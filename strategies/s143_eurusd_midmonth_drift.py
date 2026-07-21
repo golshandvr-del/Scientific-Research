@@ -137,12 +137,16 @@ def main():
     print(f"ماشه: روزهای تقویمیِ {MM_DAYS}، ساعاتِ {MM_HOURS} UTC (بدونِ ۰ ⇒ تعامد با S73)\n")
 
     # --- جاروبِ سبکِ خروج (EURUSD: TP/SL کوچک‌تر چون نوسانِ کمتر) ---
-    print(f"{'='*74}\n۱) جاروبِ سبکِ خروج (SL/TP/max_hold بر حسبِ pip)\n{'='*74}")
-    print(f"{'SL':>5}{'TP':>6}{'mh':>5}{'net$':>12}{'PF':>7}{'WR%':>7}{'N':>7}  both")
+    # نکتهٔ علمی: به‌جای انتخابِ صرفِ «بیشترین net» (که ممکن است در پنجرهٔ رنجِ
+    # ۲۰۲۱–۲۰۲۲ منفی شود)، فقط ترکیب‌هایی را واجدِ شرایط می‌دانیم که **هم**
+    # both-halves مثبت **و هم** هر ۴ پنجرهٔ walk-forward مثبت باشند — سخت‌گیرانه‌تر
+    # از S142. سودِ محافظه‌کارانهٔ لایه = میانگینِ همین ترکیب‌های واجدِ شرایط.
+    print(f"{'='*74}\n۱) جاروبِ سبکِ خروج (SL/TP/max_hold بر حسبِ pip) + WF هر ترکیب\n{'='*74}")
+    print(f"{'SL':>5}{'TP':>6}{'mh':>5}{'net$':>11}{'PF':>6}{'WR%':>6}{'N':>6}  both  allWF")
     combos = []
     for sl in [15, 20, 30]:
-        for tp in [30, 50, 80]:
-            for mh in [48, 96]:
+        for tp in [30, 50, 80, 120]:
+            for mh in [48, 96, 144]:
                 ls, ss = build_mm_signals(df, MM_DAYS, MM_HOURS)
                 st, tr = run_layer(df, ls, ss, sl, tp, mh)
                 if st is None:
@@ -151,20 +155,24 @@ def main():
                 s1 = se.run_capital(trh1, 'EURUSD', initial_capital=CAP, risk_pct=RISK, compounding=True)[0] if len(trh1) else None
                 s2 = se.run_capital(trh2, 'EURUSD', initial_capital=CAP, risk_pct=RISK, compounding=True)[0] if len(trh2) else None
                 both = (net_of(s1) > 0 and net_of(s2) > 0)
+                w = walk_forward(df, MM_DAYS, MM_HOURS, sl, tp, mh)
+                allwf = all(x > 0 for x in w)
                 net = net_of(st)
-                print(f"{sl:>5}{tp:>6}{mh:>5}{net:>12,.0f}{st['profit_factor']:>7.2f}{st['win_rate']:>7.1f}{st['n_trades']:>7}  {'✓' if both else ''}")
-                combos.append((net, sl, tp, mh, both))
+                qualified = both and allwf
+                if both:
+                    print(f"{sl:>5}{tp:>6}{mh:>5}{net:>11,.0f}{st['profit_factor']:>6.2f}{st['win_rate']:>6.1f}{st['n_trades']:>6}  {'✓':>4}  {'✅' if allwf else '❌'}")
+                combos.append((net, sl, tp, mh, qualified))
 
-    both_combos = [c for c in combos if c[4]]
-    if not both_combos:
-        print("\n❌ هیچ ترکیبی both-halves-positive نبود ⇒ رکورد دست‌نخورده.")
+    qual_combos = [c for c in combos if c[4]]
+    if not qual_combos:
+        print("\n❌ هیچ ترکیبی هم both هم هرWF مثبت نبود ⇒ رکورد دست‌نخورده.")
         return
 
-    best = max(both_combos, key=lambda c: c[0])
+    best = max(qual_combos, key=lambda c: c[0])
     net_best, sl, tp, mh, _ = best
-    layer_net_conservative = float(np.mean([c[0] for c in both_combos]))
-    print(f"\n🏅 برندهٔ جاروب: SL{sl}/TP{tp}/mh{mh} ⇒ net=${net_best:,.0f}")
-    print(f"📉 سودِ محافظه‌کارانهٔ لایه (میانگینِ {len(both_combos)} ترکیبِ both✓) = ${layer_net_conservative:,.0f}")
+    layer_net_conservative = float(np.mean([c[0] for c in qual_combos]))
+    print(f"\n🏅 برندهٔ جاروب (both+هرWF مثبت): SL{sl}/TP{tp}/mh{mh} ⇒ net=${net_best:,.0f}")
+    print(f"📉 سودِ محافظه‌کارانهٔ لایه (میانگینِ {len(qual_combos)} ترکیبِ واجدِ شرایط) = ${layer_net_conservative:,.0f}")
 
     # --- گیت‌های ضدِ overfit روی برنده ---
     ls, ss = build_mm_signals(df, MM_DAYS, MM_HOURS)
@@ -203,7 +211,7 @@ def main():
         'best_exit': {'sl': sl, 'tp': tp, 'mh': mh},
         'net_layer_max': round(net_best, 0),
         'net_layer_conservative': round(layer_net_conservative, 0),
-        'n_both_combos': len(both_combos),
+        'n_qualified_combos': len(qual_combos),
         'wr': round(st['win_rate'], 1), 'pf': round(st['profit_factor'], 2),
         'maxdd_pct': round(st['max_dd_pct'], 1), 'sharpe': round(st['sharpe'], 2),
         'n_trades': int(st['n_trades']),

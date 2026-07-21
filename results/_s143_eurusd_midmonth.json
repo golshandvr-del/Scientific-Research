@@ -1,0 +1,47 @@
+{
+  "strategy": "EURUSD Mid-Month Drift (S143)",
+  "mm_days": [
+    3,
+    9,
+    20
+  ],
+  "hours": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    11,
+    12,
+    13,
+    14,
+    15
+  ],
+  "best_exit": {
+    "sl": 20,
+    "tp": 120,
+    "mh": 96
+  },
+  "net_layer_max": 9097.0,
+  "net_layer_conservative": 5367.0,
+  "n_qualified_combos": 17,
+  "wr": 36.7,
+  "pf": 1.24,
+  "maxdd_pct": -17.3,
+  "sharpe": 1.88,
+  "n_trades": 381,
+  "both_halves": [
+    4710.0,
+    2981.0
+  ],
+  "walk_forward": [
+    4274.0,
+    294.0,
+    1521.0,
+    1271.0
+  ],
+  "corr_s73": 0.143,
+  "gates_ok": true,
+  "record_prev": 189902.0,
+  "record_new": 195269.0
+}
