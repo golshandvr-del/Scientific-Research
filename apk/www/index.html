@@ -11,6 +11,12 @@
        بلافاصله بالا می‌آید. Pyodide فقط در صورتِ آپلودِ عمدیِ موتورِ .py و
        به‌صورتِ lazy توسطِ app.js تزریق می‌شود. -->
   <script src="engine.js"></script>
+  <!-- 🧩 استراتژی‌های افزونه‌ای — هر فایل مستقل است و خودش را در رجیستری ثبت می‌کند.
+       افزودنِ استراتژیِ جدید = ساختنِ یک فایل در strategies/ + یک خطِ <script> اینجا.
+       راهنمای کامل: strategies/README.md -->
+  <script src="strategies/xau_midma_long.js"></script>
+  <script src="strategies/xau_midma_short.js"></script>
+  <script src="strategies/eurusd_session_drift.js"></script>
   <style>
     body { font-family: -apple-system, "Segoe UI", Tahoma, sans-serif; -webkit-tap-highlight-color: transparent; }
     .card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; }
