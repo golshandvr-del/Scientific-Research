@@ -14,6 +14,9 @@
 import type { AnalysisResult } from './signal'
 import { computeShortMA, DEFAULT_SHORT_MA } from './short_ma_confluence'
 import { computeSqueeze, DEFAULT_SQUEEZE } from './squeeze_breakout'
+import {
+  computeOvernight, OVERNIGHT_MAX_HOLD, OVERNIGHT_SL_PIP, OVERNIGHT_TP_PIP,
+} from './overnight_drift'
 
 export type RouterState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 export type Regime = 'trend_up' | 'trend_down' | 'range'
@@ -259,7 +262,8 @@ export function decide(a: AnalysisResult, close: number[],
                        riskPct: number = DEFAULT_RISK_PCT,
                        spec: AssetSpec = ASSET_SPECS.XAUUSD,
                        high?: number[],
-                       low?: number[]): RouterDecision {
+                       low?: number[],
+                       utcHour?: number): RouterDecision {
   const reg = computeRegime(a, close)
   const p = a.probability
   const atr = a.atr || 1
@@ -275,6 +279,76 @@ export function decide(a: AnalysisResult, close: number[],
     { name: 'RSI(14)', value: a.rsi14.toFixed(1), status: 'neutral' },
     { name: 'ATR', value: atr.toFixed(2) + '$', status: 'neutral' },
   ]
+
+  // ========================================================================
+  // لایهٔ «Overnight Drift» (S139) — سیگنالِ زمان-محورِ خالص، بالاترین اولویت
+  // ------------------------------------------------------------------------
+  // قانونِ شمارهٔ ۱: فقط «سودِ خالصِ بیشتر» مهم است. این لایه فقط برای XAUUSD و
+  // فقط وقتی ساعتِ UTCِ کندلِ جاری در دست است فعال می‌شود. درایوِ صعودیِ ساختاریِ
+  // ابتدای سشنِ آسیا (۲۲–۲۳ UTC) کشفِ بک‌تست است (+$43,413 مستقل، افزایشی به رکورد).
+  if (spec.id === 'XAUUSD' && typeof utcHour === 'number') {
+    const ov = computeOvernight(utcHour)
+    const ovInd: RouterDecision['indicators'] = [
+      { name: 'ساعتِ UTC (لایهٔ شبانه)', value: `${utcHour}:00`,
+        status: ov.state === 'ENTRY' ? 'ok' : ov.state === 'APPROACHING' ? 'warn' : 'neutral' },
+      { name: 'پنجرهٔ درایوِ شبانه (۲۲–۲۳ UTC)',
+        value: ov.state === 'ENTRY' ? 'باز ✓' : ov.state === 'APPROACHING' ? 'در حالِ باز شدن' : 'بسته',
+        status: ov.state === 'ENTRY' ? 'ok' : ov.state === 'APPROACHING' ? 'warn' : 'neutral' },
+      ...indicators,
+    ]
+    if (ov.state === 'ENTRY') {
+      const entry = a.price
+      const sl = entry - ov.slDist
+      const tp = entry + ov.tpDist
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, ov.slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'ورود خرید (LONG) — درایوِ شبانهٔ طلا (ابتدای سشنِ آسیا)',
+        reason: ov.reason,
+        direction: 'LONG', entry, tp, sl,
+        rr: `SL ثابت ${OVERNIGHT_SL_PIP}pip (${ov.slDist.toFixed(2)}$) / TP ${OVERNIGHT_TP_PIP}pip ` +
+          `(${ov.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(OVERNIGHT_TP_PIP / OVERNIGHT_SL_PIP).toFixed(1)} (بگذار بردها بدوند)`,
+        probability: 56,
+        sizing: {
+          lotMultiplier: 1.0,
+          label: 'Overnight Drift (لایهٔ زمان-محورِ S139)',
+          note: `استراتژیِ S139 (کشفِ نو، زمان-محورِ خالص — بدونِ اندیکاتور). ورودِ open کندلِ بعد. ` +
+            `همبستگیِ روزانه +۰.۱۳ با S67 و +۰.۲۷ با Squeeze ⇒ جریانِ ناهمبسته که سودِ خالصِ کل را بالا می‌برد.`,
+          lots: lots ?? undefined,
+          riskDollars: rd,
+          capital, riskPct,
+          capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+            `(ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. ` +
+            `اگر SL (فاصلهٔ ${ov.slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        tpPlan: {
+          multiplier: OVERNIGHT_TP_PIP,
+          note: `TP دورِ ${OVERNIGHT_TP_PIP}pip. درایوِ شبانه معمولاً چند ساعت ادامه دارد؛ ` +
+            `TP دور اجازه می‌دهد حرکتِ صعودی کامل استخراج شود. تا ${OVERNIGHT_MAX_HOLD} کندل (۲۴ ساعت) نگه دارید یا تا برخورد به TP/SL.`,
+        },
+        slPlan: {
+          multiplier: OVERNIGHT_SL_PIP,
+          note: `SL ثابت ${OVERNIGHT_SL_PIP}pip (${ov.slDist.toFixed(2)}$). اگر درایوِ شبانه شکل نگرفت، ` +
+            `این SL ضرر را محدود می‌کند؛ اما بردهای واقعی به‌مراتب بزرگ‌ترند.`,
+        },
+        indicators: ovInd,
+      }
+    }
+    if (ov.state === 'APPROACHING') {
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ شبانه در حالِ باز شدن',
+        reason: ov.reason,
+        confirmations: [
+          { label: 'رسیدنِ ساعتِ UTC به ۲۲:۰۰ (ورودِ پنجرهٔ درایوِ شبانه)', met: false,
+            detail: 'با بسته‌شدنِ کندلِ ساعتِ ۲۲ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
+        ],
+        indicators: ovInd,
+      }
+    }
+    // ov.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
+  }
 
   // ========================================================================
   // لایهٔ SHORTِ مستقل (S97–S102 / پاسخِ User Note: «چرا سیگنالِ نزولی نمی‌دهی؟»)
