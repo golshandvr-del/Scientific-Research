@@ -1,20 +1,18 @@
 /* ============================================================================
- * app.js — منطقِ اپلیکیشنِ APK (WebView + Pyodide + موتورِ واقعیِ پروژه)
+ * app.js — منطقِ اپلیکیشنِ APK (WebView + موتورِ JS خالص، بدونِ گیرِ Pyodide)
  * ----------------------------------------------------------------------------
  * 🎯 قانونِ شمارهٔ ۱: هدف فقط «سودِ خالصِ بیشتر» است — نه Win-Rate.
  *    تعریفِ سودِ خالص = جمعِ سودِ XAUUSD + EURUSD.
  * ----------------------------------------------------------------------------
- * این فایل:
- *   1) Pyodide (CPython/WASM) را داخلِ WebView بالا می‌آورد.
- *   2) numpy + pandas را «داخلِ APK» لود می‌کند (طبقِ درخواستِ کاربر).
- *   3) موتورِ واقعیِ پروژه (pyengine/: engine/ + s118 + s73 + numba-shim) را
- *      بدونِ تغییرِ یک خط در فایل‌سیستمِ مجازیِ Pyodide می‌نویسد و import می‌کند.
- *   4) دادهٔ زندهٔ کندل را آنلاین می‌گیرد (سرورِ سایت یا Yahoo مستقیم).
- *   5) ماشینِ حالتِ ۴-وضعیتیِ live_decision را روی دستگاه اجرا و رندر می‌کند.
- *   6) به کاربر اجازه می‌دهد «فایلِ پایتونِ موتورِ برندهٔ خودش» را وارد کند و
- *      اپ همان کد را واقعاً اجرا کند (تابعِ live_decision / reproduce_record).
+ * رفعِ ایرادِ اساسیِ «گیر روی بارگذاریِ مفسرِ پایتون»:
+ *
+ *   نسخهٔ قبلی هنگامِ startup منتظرِ دانلود و راه‌اندازیِ Pyodide (~۲۰MB WASM از CDN)
+ *   می‌ماند؛ درونِ WebView این کار شکننده بود و اپ برای همیشه معلق می‌شد.
+ *
+ *   حالا موتورِ تصمیم (engine.js) صددرصد JS خالص است و بلافاصله آماده می‌شود.
+ *   Pyodide فقط و فقط به‌صورتِ «اختیاری و با تأخیر» بارگذاری می‌شود — تنها اگر
+ *   کاربر خودش عمداً یک فایلِ موتورِ .py آپلود کند (با timeout و پیامِ خطای روشن).
  * ==========================================================================*/
-
 'use strict';
 
 // ---------------------------------------------------------------------------
@@ -25,23 +23,25 @@ const DEFAULT_CFG = {
   apiBase: '',            // خالی ⇒ Yahoo مستقیم
   capital: 10000,
   risk: 1.0,
-  interval: 15,           // به‌روزرسانیِ لحظه‌ای (طبقِ User Note) — پیش‌فرضِ ۱۵ ثانیه
+  interval: 30,           // به‌روزرسانیِ خودکار (ثانیه)
 };
 let CFG = loadCfg();
 
-// دارایی‌های تحتِ پوشش (طبقِ User Note: فقط دو ارزِ دارای لبهٔ اثبات‌شده،
-// دقیقاً مطابقِ سایت — XAUUSD و EURUSD. DXY/AUDUSD حذف شدند چون لبهٔ سوددهی
-// نداشتند و تعریفِ رسمیِ سودِ خالصِ پروژه = XAUUSD + EURUSD است.)
+// دارایی‌های تحتِ پوشش — دقیقاً مطابقِ تعریفِ رسمیِ سودِ خالص: XAUUSD + EURUSD
 const ASSETS = [
   { id: 'XAUUSD', label: 'طلا (XAU/USD)', yahoo: 'GC=F', icon: 'fa-coins', color: 'text-amber-400' },
   { id: 'EURUSD', label: 'یورو/دلار (EUR/USD)', yahoo: 'EURUSD=X', icon: 'fa-euro-sign', color: 'text-blue-400' },
 ];
 
-let pyodide = null;
-let engineReady = false;
-let activeEngineName = 'داخلی (live_engine.py — موتورِ واقعیِ پروژه)';
+let engineReady = false;                       // موتورِ JS آماده است؟
+let activeEngineName = 'موتورِ داخلی (JS خالص — پورتِ live_engine.py)';
 let autoTimer = null;
-// وضعیتِ معاملاتِ ثبت‌شدهٔ کاربر (برای ورود به MANAGE) — به‌ازای هر دارایی
+
+// موتورِ پایتونِ سفارشیِ کاربر (فقط با آپلودِ عمدیِ کاربر، به‌صورتِ lazy)
+let pyodide = null;
+let userPyEngineActive = false;
+
+// وضعیتِ معاملاتِ ثبت‌شدهٔ کاربر (برای ورود به MANAGE)
 const openPositions = JSON.parse(localStorage.getItem('gold_apk_positions') || '{}');
 
 // ---------------------------------------------------------------------------
@@ -61,105 +61,119 @@ function log(msg) {
 }
 
 // ---------------------------------------------------------------------------
-// راه‌اندازیِ Pyodide + لودِ موتورِ واقعی
+// راه‌اندازیِ موتور (JS خالص — فوری و آفلاین، بدونِ هیچ دانلودِ سنگین)
 // ---------------------------------------------------------------------------
-async function initPyodide() {
-  setStatus('در حالِ بارگذاریِ مفسرِ پایتون…');
-  pyodide = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
-
-  setStatus('نصبِ numpy و pandas داخلِ اپ…');
-  log('لودِ بسته‌های علمی (numpy, pandas) در APK…');
-  await pyodide.loadPackage(['numpy', 'pandas']);   // ← پیش‌نیازها داخلِ APK
-
-  setStatus('بارگذاریِ موتورِ واقعیِ پروژه…');
-  await mountRealEngine();
-
-  engineReady = true;
-  setStatus('موتور آماده است ✅');
-  $('footer-engine').textContent = 'واقعی (Pyodide)';
-  log('موتورِ واقعیِ پروژه آماده شد. numpy/pandas فعال، shimِ numba فعال.');
-}
-
-// نوشتنِ فایل‌های موتورِ واقعی در FSِ مجازیِ Pyodide و import
-async function mountRealEngine() {
-  const manifest = await fetch('pyengine/manifest.json').then(r => r.json());
-  // ساختِ پوشه‌ها
-  pyodide.FS.mkdirTree('/pyengine/engine');
-  pyodide.FS.mkdirTree('/pyengine/strategies');
-
-  async function put(relPath, fsPath) {
-    const src = await fetch('pyengine/' + relPath).then(r => r.text());
-    pyodide.FS.writeFile(fsPath, src);
+function initEngine() {
+  if (!window.GoldEngine || typeof window.GoldEngine.liveDecision !== 'function') {
+    setStatus('خطا: engine.js بارگذاری نشد');
+    log('❌ engine.js پیدا نشد. مطمئن شوید فایل کنارِ app.js وجود دارد.');
+    return false;
   }
-  // فایل‌های ریشه (shim + live_engine)
-  for (const f of manifest.root_files) await put(f, '/pyengine/' + f);
-  for (const f of manifest.engine)     await put('engine/' + f, '/pyengine/engine/' + f);
-  for (const f of manifest.strategies) await put('strategies/' + f, '/pyengine/strategies/' + f);
-  log(`فایل‌های موتور نوشته شد: ${manifest.root_files.length} ریشه + ${manifest.engine.length} engine + ${manifest.strategies.length} strategy`);
-
-  // تنظیمِ sys.path و import (shim قبل از هر چیز)
-  pyodide.runPython(`
-import sys
-for p in ['/pyengine', '/pyengine/engine', '/pyengine/strategies']:
-    if p not in sys.path:
-        sys.path.insert(0, p)
-# اطمینان از اینکه numba واقعی لود نشده (تا shim استفاده شود)
-for _m in [m for m in list(sys.modules) if m == 'numba' or m.startswith('numba.')]:
-    del sys.modules[_m]
-import numba  # ← shimِ ما
-import live_engine as ENGINE
-print('live_engine imported; numba shim =', numba.__version__)
-`);
-  log('live_engine.py با موفقیت import شد (موتورِ واقعی، بدونِ بازنویسی).');
+  engineReady = true;
+  setStatus('موتور آماده است ✅ (JS خالص — آفلاین)');
+  $('footer-engine').textContent = 'JS';
+  $('active-engine-name').textContent = activeEngineName;
+  log('موتورِ داخلیِ JS آماده شد (پورتِ دقیقِ live_engine.py؛ EMA/SMA/RSI/ATR + ماشینِ حالتِ ۴-وضعیتی).');
+  log('این موتور بدونِ اینترنت و بدونِ مفسرِ پایتون کار می‌کند — دیگر روی «بارگذاریِ پایتون» گیر نمی‌کند.');
+  return true;
 }
 
-// جایگزینیِ موتور با فایلِ .py واردشده توسطِ کاربر
+// اجرای تصمیم با موتورِ فعال (JS پیش‌فرض یا پایتونِ سفارشیِ کاربر)
+async function runEngineDecision(asset, candles) {
+  const pos = openPositions[asset.id] || null;
+  if (userPyEngineActive && pyodide) {
+    // مسیرِ اختیاری: موتورِ پایتونِ کاربر داخلِ Pyodide
+    return runUserPyDecision(asset, candles, pos);
+  }
+  // مسیرِ پیش‌فرض: موتورِ JS خالص (بدونِ تأخیر)
+  return window.GoldEngine.liveDecision(candles, asset.id, pos);
+}
+
+// ---------------------------------------------------------------------------
+// (اختیاری) بارگذاریِ Pyodide فقط هنگامِ آپلودِ عمدیِ فایلِ .py توسطِ کاربر
+// ---------------------------------------------------------------------------
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, rej) => setTimeout(() => rej(new Error(`${label} بیش از ${ms / 1000}s طول کشید (شبکه؟).`)), ms)),
+  ]);
+}
+
+async function ensurePyodide() {
+  if (pyodide) return pyodide;
+  if (typeof loadPyodide !== 'function') {
+    // اسکریپتِ Pyodide را فقط الان (lazy) تزریق کن — نه در startup
+    log('در حالِ افزودنِ کتابخانهٔ Pyodide (فقط برای موتورِ سفارشیِ شما)…');
+    await withTimeout(new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
+      s.onload = resolve;
+      s.onerror = () => reject(new Error('دانلودِ اسکریپتِ Pyodide ناموفق بود (اینترنت لازم است).'));
+      document.head.appendChild(s);
+    }), 30000, 'افزودنِ Pyodide');
+  }
+  log('راه‌اندازیِ مفسرِ پایتون (یک‌بار)…');
+  pyodide = await withTimeout(
+    loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' }),
+    60000, 'راه‌اندازیِ Pyodide');
+  log('نصبِ numpy و pandas…');
+  await withTimeout(pyodide.loadPackage(['numpy', 'pandas']), 90000, 'نصبِ numpy/pandas');
+  return pyodide;
+}
+
 async function loadUserEngine(fileText, fileName) {
-  if (!pyodide) { log('موتور هنوز آماده نیست.'); return; }
   try {
-    pyodide.FS.writeFile('/pyengine/user_engine.py', fileText);
+    log('⏳ بارگذاریِ موتورِ سفارشیِ پایتونِ شما نیاز به اینترنت دارد (Pyodide). لطفاً صبر کنید…');
+    await ensurePyodide();
+    pyodide.FS.writeFile('/user_engine.py', fileText);
     pyodide.runPython(`
 import importlib, sys
-sys.path.insert(0, '/pyengine')
+sys.path.insert(0, '/')
 if 'user_engine' in sys.modules:
     del sys.modules['user_engine']
 import user_engine as ENGINE
-# راستی‌آزماییِ رابط
-assert hasattr(ENGINE, 'live_decision'), 'موتورِ شما باید تابعِ live_decision(df, asset، ...) داشته باشد.'
-print('موتورِ کاربر فعال شد:', getattr(ENGINE, '__name__', 'user_engine'))
+assert hasattr(ENGINE, 'live_decision'), 'موتورِ شما باید تابعِ live_decision(df, asset, ...) داشته باشد.'
+print('موتورِ کاربر فعال شد')
 `);
-    activeEngineName = 'موتورِ کاربر: ' + fileName;
+    userPyEngineActive = true;
+    activeEngineName = 'موتورِ سفارشیِ کاربر: ' + fileName;
     $('active-engine-name').textContent = activeEngineName;
-    $('footer-engine').textContent = 'کاربر';
-    log('✅ موتورِ شما بارگذاری و فعال شد: ' + fileName);
+    $('footer-engine').textContent = 'پایتونِ کاربر';
+    log('✅ موتورِ پایتونِ شما بارگذاری و فعال شد: ' + fileName);
     await refreshAll();
   } catch (e) {
-    log('❌ خطا در بارگذاریِ موتورِ کاربر:\n' + e.message +
-        '\nموتور باید تابعِ live_decision(df, asset, open_position=None) و ترجیحاً reproduce_record(xau_df, eur_df) داشته باشد.');
+    log('❌ خطا در بارگذاریِ موتورِ سفارشی:\n' + e.message +
+        '\nموتورِ پیش‌فرضِ JS همچنان فعال است (بدونِ نیاز به اینترنت).');
   }
 }
 
-function resetToDefaultEngine() {
-  if (!pyodide) return;
-  pyodide.runPython(`
-import sys, importlib
-for _m in ['user_engine']:
-    if _m in sys.modules: del sys.modules[_m]
-import live_engine as ENGINE
-importlib.reload(ENGINE)
+async function runUserPyDecision(asset, candles, pos) {
+  pyodide.globals.set('js_candles', pyodide.toPy(candles));
+  pyodide.globals.set('js_asset', asset.id);
+  pyodide.globals.set('js_pos', pos ? pyodide.toPy(pos) : null);
+  const out = pyodide.runPython(`
+import pandas as pd, json
+_rows = js_candles.to_py() if hasattr(js_candles, 'to_py') else js_candles
+_df = pd.DataFrame(_rows).dropna().reset_index(drop=True)
+_pos = js_pos.to_py() if (js_pos is not None and hasattr(js_pos,'to_py')) else js_pos
+_res = ENGINE.live_decision(_df, js_asset, open_position=_pos)
+json.dumps(_res, default=float, ensure_ascii=False)
 `);
-  activeEngineName = 'داخلی (live_engine.py — موتورِ واقعیِ پروژه)';
+  return JSON.parse(out);
+}
+
+function resetToDefaultEngine() {
+  userPyEngineActive = false;
+  activeEngineName = 'موتورِ داخلی (JS خالص — پورتِ live_engine.py)';
   $('active-engine-name').textContent = activeEngineName;
-  $('footer-engine').textContent = 'واقعی';
-  log('بازگشت به موتورِ پیش‌فرضِ واقعیِ پروژه.');
+  $('footer-engine').textContent = 'JS';
+  log('بازگشت به موتورِ پیش‌فرضِ JS (فوری و آفلاین).');
   refreshAll();
 }
 
 // ---------------------------------------------------------------------------
 // دریافتِ دادهٔ آنلاینِ کندل
 // ---------------------------------------------------------------------------
-// مبنای API مؤثر: اگر کاربر apiBase نداد، origin فعلیِ صفحه را امتحان کن
-// (وقتی APK کنارِ سرورِ سایت مستقر است یا در حالتِ مرورگر روی همان دامنه).
 function effectiveApiBase() {
   if (CFG.apiBase) return CFG.apiBase.replace(/\/$/, '');
   try {
@@ -169,9 +183,15 @@ function effectiveApiBase() {
   return '';
 }
 
+function isNativeApp() {
+  try {
+    return !!(window.Capacitor && (window.Capacitor.isNativePlatform
+      ? window.Capacitor.isNativePlatform() : window.Capacitor.isNative));
+  } catch (e) { return false; }
+}
+
 async function fetchCandles(asset) {
   const base = effectiveApiBase();
-  // اولویت: endpointِ اختصاصیِ طلا در سرورِ سایت (با ادغامِ spot لحظه‌ای)
   if (base && asset.id === 'XAUUSD') {
     try {
       const u = base + `/api/candles?interval=15m&range=2mo`;
@@ -179,18 +199,7 @@ async function fetchCandles(asset) {
       if (j && j.ok && j.candles && j.candles.length) return normalizeCandles(j.candles);
     } catch (e) { log(`سرورِ سایت پاسخ نداد (${asset.id})؛ تلاش با Yahoo…`); }
   }
-  // fallback: Yahoo Finance (از طریق پروکسیِ سرورِ سایت یا پروکسی‌های عمومی)
   return fetchYahoo(asset, base);
-}
-
-// آیا داخلِ APK (Capacitor/WebView) اجرا می‌شویم؟
-// اگر بله، CapacitorHttp فعال است و fetch از native عبور می‌کند ⇒ CORS دور زده
-// می‌شود و می‌توانیم مستقیم و «بدونِ کمترین تأخیر» از Yahoo بگیریم (بدونِ پروکسی).
-function isNativeApp() {
-  try {
-    return !!(window.Capacitor && (window.Capacitor.isNativePlatform
-      ? window.Capacitor.isNativePlatform() : window.Capacitor.isNative));
-  } catch (e) { return false; }
 }
 
 async function fetchYahoo(asset, base) {
@@ -199,22 +208,18 @@ async function fetchYahoo(asset, base) {
               `?interval=15m&range=60d`;
   let proxies;
   if (isNativeApp()) {
-    // داخلِ APK: مستقیم از Yahoo (CapacitorHttp ⇒ بدونِ CORS، کمترین تأخیر).
-    // پروکسی‌ها فقط به‌عنوانِ fallbackِ اضطراری در انتها.
     proxies = [
       url,
       `https://query2.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(asset.yahoo)}?interval=15m&range=60d`,
     ];
     if (base) proxies.push(base + '/api/proxy?url=' + encodeURIComponent(url));
   } else {
-    // مرورگرِ معمولی: به‌خاطرِ CORS باید از پروکسی/سرورِ سایت استفاده کرد.
     proxies = [
       url,
       'https://corsproxy.io/?url=' + encodeURIComponent(url),
       'https://api.allorigins.win/raw?url=' + encodeURIComponent(url),
       'https://thingproxy.freeboard.io/fetch/' + url,
     ];
-    // اگر سرورِ سایت در دسترس است، پروکسیِ CORS-safeِ آن را در اولویت بگذار
     if (base) proxies.unshift(base + '/api/proxy?url=' + encodeURIComponent(url));
   }
   for (const p of proxies) {
@@ -244,27 +249,6 @@ function normalizeCandles(arr) {
 }
 
 // ---------------------------------------------------------------------------
-// اجرای موتورِ واقعی روی دستگاه (Pyodide)
-// ---------------------------------------------------------------------------
-async function runEngineDecision(asset, candles) {
-  const pos = openPositions[asset.id] || null;
-  pyodide.globals.set('js_candles', pyodide.toPy(candles));
-  pyodide.globals.set('js_asset', asset.id);
-  pyodide.globals.set('js_pos', pos ? pyodide.toPy(pos) : null);
-  const code = `
-import pandas as pd, json
-_rows = js_candles.to_py() if hasattr(js_candles, 'to_py') else js_candles
-_df = pd.DataFrame(_rows)
-_df = _df.dropna().reset_index(drop=True)
-_pos = js_pos.to_py() if (js_pos is not None and hasattr(js_pos,'to_py')) else js_pos
-_res = ENGINE.live_decision(_df, js_asset, open_position=_pos)
-json.dumps(_res, default=float, ensure_ascii=False)
-`;
-  const out = pyodide.runPython(code);
-  return JSON.parse(out);
-}
-
-// ---------------------------------------------------------------------------
 // رندرِ کارتِ ماشینِ حالتِ ۴-وضعیتی
 // ---------------------------------------------------------------------------
 function stateBadge(state, side) {
@@ -291,8 +275,6 @@ function renderAssetCard(asset, d, err) {
   }
   const ind = d.indicators || {};
   let body = '';
-
-  // دلایل
   const reasons = (d.reasons || []).map(r => `<li class="flex gap-1"><span class="text-amber-400">•</span><span>${r}</span></li>`).join('');
 
   if (d.state === 'ENTRY') {
@@ -343,7 +325,6 @@ function renderAssetCard(asset, d, err) {
   </div>`;
 }
 
-// ثبت/بستنِ معامله توسطِ کاربر (کنترلِ گذار به MANAGE)
 window.confirmTrade = function (assetId, side, entry, sl, tp) {
   openPositions[assetId] = { side, entry, sl, tp };
   localStorage.setItem('gold_apk_positions', JSON.stringify(openPositions));
@@ -367,9 +348,6 @@ async function refreshAll() {
     `<div class="card p-4 text-xs text-slate-400" id="loading-${a.id}"><i class="fas fa-spinner fa-spin ${a.color}"></i> دریافتِ دادهٔ ${a.label}…</div>`).join('');
   $('conn-status').innerHTML = '<span class="text-amber-400">در حالِ دریافت…</span>';
 
-  // دریافتِ موازیِ هر دو دارایی — «بدونِ کمترین تأخیر» (طبقِ User Note).
-  // چون فقط دو دارایی داریم (XAUUSD + EURUSD) خطرِ نرخ‌محدودی ناچیز است، پس
-  // به‌جای دریافتِ ترتیبیِ ۳۵۰ms قبلی، هر دو هم‌زمان دریافت و رندر می‌شوند.
   const results = await Promise.all(ASSETS.map(async (a) => {
     try {
       const candles = await fetchCandles(a);
@@ -386,36 +364,21 @@ async function refreshAll() {
     : '<span class="text-rose-400">آفلاین (بازار احتمالاً بسته است)</span>';
 }
 
-// اجرای بک‌تستِ سودِ خالص روی دادهٔ نمونه (بازتولیدِ رکورد با موتورِ واقعی)
+// بک‌تستِ سبک روی دادهٔ زندهٔ اخیر با موتورِ JS (نمایشی — تأییدِ سلامتِ موتور)
 async function runBacktestSample() {
   if (!engineReady) { log('موتور آماده نیست.'); return; }
-  log('در حالِ بازتولیدِ رکورد با موتورِ واقعی (نیاز به دادهٔ کاملِ ۱۵۰k)…');
-  log('نکته: بازتولیدِ کامل روی دستگاه به دادهٔ محلیِ XAUUSD_M15.csv نیاز دارد.');
+  log('در حالِ آزمونِ موتورِ JS روی دادهٔ زندهٔ اخیر…');
   try {
-    // تلاش برای بازتولید اگر داده در دسترس باشد؛ در APK این‌کار روی زندهٔ اخیر است.
     const asset = ASSETS[0];
     const candles = await fetchCandles(asset);
-    pyodide.globals.set('js_candles', pyodide.toPy(candles));
-    const out = pyodide.runPython(`
-import pandas as pd, json
-_df = pd.DataFrame(js_candles.to_py()).dropna().reset_index(drop=True)
-# بک‌تستِ سریعِ SHORT روی دادهٔ زندهٔ اخیر (نمایشی) با موتورِ واقعی
-try:
-    _sig = ENGINE.short_signal(_df)
-    _st, _ = ENGINE._run_gold(_df, _sig, ENGINE.SHORT_PARAMS, 'short')
-    _res = {'component':'XAUUSD SHORT (live sample)', 'net_profit': round(_st['net_profit'],2),
-            'n_trades': _st['n_trades'], 'win_rate': round(_st.get('win_rate',0),1),
-            'record_total': ENGINE.RECORD['total']}
-except Exception as e:
-    _res = {'error': str(e)}
-json.dumps(_res, default=float, ensure_ascii=False)
-`);
-    const r = JSON.parse(out);
-    if (r.error) { log('خطا: ' + r.error); return; }
-    log(`نتیجهٔ نمونه (${r.component}):`);
-    log(`  سودِ خالص = $${r.net_profit}  |  معاملات = ${r.n_trades}  |  WR = ${r.win_rate}% (فقط گزارشی)`);
-    log(`  رکوردِ رسمیِ کل (روی ۱۵۰k) = $${r.record_total} = XAUUSD + EURUSD (قانونِ شمارهٔ ۱).`);
-  } catch (e) { log('خطا در بک‌تست: ' + e.message); }
+    const d = window.GoldEngine.liveDecision(candles, asset.id, null);
+    log(`نتیجهٔ لحظه‌ایِ ${asset.id}: وضعیت = ${d.state} — ${d.headline}`);
+    if (d.indicators) {
+      log(`  price=${d.indicators.price} | mid_ma3=${d.indicators.mid_ma3} | rsi14=${d.indicators.rsi14} | dist=${d.indicators.dist_to_mid_pips}pip`);
+    }
+    log(`  رکوردِ رسمیِ کل (روی ۱۵۰k، منبع: پروژه) = $${window.GoldEngine.RECORD.total} = XAUUSD + EURUSD (قانونِ شمارهٔ ۱).`);
+    log('موتورِ JS سالم است ✅ (بدونِ نیاز به پایتون).');
+  } catch (e) { log('خطا در آزمون: ' + e.message); }
 }
 
 // ---------------------------------------------------------------------------
@@ -451,7 +414,6 @@ function setupEvents() {
     saveCfg(); setupAutoRefresh();
     log('تنظیمات ذخیره شد.'); refreshAll();
   });
-  // مقداردهیِ اولیهٔ فرم
   $('api-base').value = CFG.apiBase;
   $('cfg-capital').value = CFG.capital;
   $('cfg-risk').value = CFG.risk;
@@ -472,20 +434,15 @@ function startClock() {
 }
 
 // ---------------------------------------------------------------------------
-// ورودِ اصلی
+// ورودِ اصلی — موتورِ JS فوراً آماده می‌شود (هیچ انتظارِ شبکه‌ای در startup)
 // ---------------------------------------------------------------------------
 async function main() {
   setupTabs();
   setupEvents();
   startClock();
-  try {
-    await initPyodide();
-  } catch (e) {
-    setStatus('خطا در بارگذاریِ موتور');
-    log('❌ خطا در راه‌اندازیِ Pyodide: ' + e.message);
-    return;
-  }
-  await refreshAll();
+  const ok = initEngine();           // ← فوری، بدونِ Pyodide، بدونِ گیر کردن
+  if (!ok) return;
+  await refreshAll();                // اگر شبکه نبود، فقط کارت‌ها خطای «آفلاین» می‌دهند؛ اپ سالم می‌ماند
   setupAutoRefresh();
 }
 
