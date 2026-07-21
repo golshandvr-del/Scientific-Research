@@ -13,6 +13,7 @@
 // ============================================================================
 import type { AnalysisResult } from './signal'
 import { computeShortMA, DEFAULT_SHORT_MA } from './short_ma_confluence'
+import { computeSqueeze, DEFAULT_SQUEEZE } from './squeeze_breakout'
 
 export type RouterState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 export type Regime = 'trend_up' | 'trend_down' | 'range'
@@ -256,7 +257,8 @@ export function computeRegime(a: AnalysisResult, close: number[]): RegimeInfo {
 export function decide(a: AnalysisResult, close: number[],
                        capital: number = DEFAULT_CAPITAL,
                        riskPct: number = DEFAULT_RISK_PCT,
-                       spec: AssetSpec = ASSET_SPECS.XAUUSD): RouterDecision {
+                       spec: AssetSpec = ASSET_SPECS.XAUUSD,
+                       high?: number[]): RouterDecision {
   const reg = computeRegime(a, close)
   const p = a.probability
   const atr = a.atr || 1
@@ -367,6 +369,94 @@ export function decide(a: AnalysisResult, close: number[],
             detail: sm.dnStack ? 'برقرار است ✓' : 'هنوز کامل نیست — برای کیفیتِ بالاتر منتظر بمانید.' },
         ],
         indicators: shortInd,
+      }
+    }
+  }
+
+  // ========================================================================
+  // لایهٔ LONGِ مستقلِ Squeeze→Breakout (کشفِ S132 — رکوردِ +$121,694)
+  // ------------------------------------------------------------------------
+  // قانونِ شمارهٔ ۱: فقط «سودِ خالصِ بیشتر» مهم است — WR مهم نیست.
+  // این لایه فقط برای XAUUSD (M15) و *مکملِ* منطقِ ML است: وقتی مدلِ اصلی
+  // هنوز ENTRY نداده اما بازار پس از یک دورهٔ فشردگیِ نوسان (پهنای باندِ بولینگر
+  // در کفِ محلی) سقفِ اخیر را رو به بالا می‌شکند و روند صعودی است، یک سیگنالِ
+  // LONG می‌دهد و اجازه می‌دهد بردها بدوند (TP دورِ ۳۰۰pip).
+  // اعتبار: سودِ مستقل +$20,435، هر دو نیمهٔ داده مثبت، WF هر ۴ پنجره مثبت،
+  //   همبستگیِ روزانه با پرتفویِ پایه +0.28 (ناهمبسته). افزایشی: +101,259$ → +121,694$.
+  // جزئیات: results/SqueezeBreakout_NetProfit_121694.md
+  // ========================================================================
+  if (spec.id === 'XAUUSD' && high && high.length === close.length) {
+    const sq = computeSqueeze(close, high, DEFAULT_SQUEEZE)
+    const pip = 0.1                              // طلا: ۱ pip = ۰.۱ واحدِ قیمت
+    const slDist = DEFAULT_SQUEEZE.slPip * pip   // ۹۰pip = ۹.۰$
+    const tpDist = DEFAULT_SQUEEZE.tpPip * pip   // ۳۰۰pip = ۳۰.۰$
+
+    const sqInd: RouterDecision['indicators'] = [
+      { name: 'فشردگیِ بولینگر (صدکِ پهنای باند)', value: isFinite(sq.bwPct) ? (sq.bwPct * 100).toFixed(0) + '%' : '—',
+        status: sq.squeezed ? 'ok' : 'neutral' },
+      { name: 'سقفِ شکستِ اخیر', value: isFinite(sq.priorHigh) ? sq.priorHigh.toFixed(2) + '$' : '—',
+        status: sq.active ? 'ok' : 'neutral' },
+      { name: 'گیتِ روندِ صعودی (EMA50>EMA200)', value: sq.trendUp ? 'بله ✓' : 'خیر',
+        status: sq.trendUp ? 'ok' : 'neutral' },
+      ...indicators,
+    ]
+
+    if (sq.active) {
+      // ---- ورودِ LONG (ماشهٔ Squeeze→Breakout شلیک کرد) ----
+      const entry = a.price
+      const sl = entry - slDist
+      const tp = entry + tpDist
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'ورود خرید (LONG) — انفجارِ صعودی پس از فشردگیِ نوسان',
+        reason: `${sq.reason} این «فنرِ فشرده» است: بازار مدتی کم‌نوسان و متراکم بود و حالا با ` +
+          `شکستِ صعودی، انفجارِ نوسان آغاز شده. طبقِ قانونِ شمارهٔ ۱ هدف سودِ خالصِ بیشتر است، نه ` +
+          `وین‌ریت: TP دور (۳۰۰pip) نگه داشته می‌شود تا بردها بدوند (WR ~۴۰٪ اما سودِ خالصِ بالا؛ ` +
+          `سهمِ مستقل +۲۰٬۴۳۵$، افزایشی به رکورد +۱۲۱٬۶۹۴$).`,
+        direction: 'LONG', entry, tp, sl,
+        rr: `SL ثابت ۹۰pip (${slDist.toFixed(2)}$) / TP ۳۰۰pip (${tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:۳.۳ (بگذار بردها بدوند)`,
+        probability: 58,
+        sizing: {
+          lotMultiplier: 1.0,
+          label: 'Squeeze→Breakout (فشردگی ⇒ انفجارِ صعودی)',
+          note: `استراتژیِ S132 (کشفِ نو). ورودِ open کندلِ بعد، اسپرد ۴pip لحاظ شده. ` +
+            `همبستگیِ روزانه با پرتفویِ پایه = +0.28 ⇒ جریانِ ناهمبسته که سودِ خالصِ کل را بالا می‌برد.`,
+          lots: lots ?? undefined,
+          riskDollars: rd,
+          capital, riskPct,
+          capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+            `(ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. ` +
+            `اگر SL (فاصلهٔ ${slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        tpPlan: {
+          multiplier: DEFAULT_SQUEEZE.tpPip,
+          note: `TP دورِ ۳۰۰pip. انفجارهای پس از فشردگی معمولاً بزرگ‌اند؛ TP دور اجازه می‌دهد ` +
+            `حرکتِ صعودی کامل استخراج شود. تا ۹۶ کندل (۲۴ ساعت) نگه دارید یا تا برخورد به TP/SL.`,
+        },
+        slPlan: {
+          multiplier: DEFAULT_SQUEEZE.slPip,
+          note: `SL ثابت ۹۰pip (${slDist.toFixed(2)}$) زیرِ نقطهٔ شکست. اگر انفجار کاذب بود (شکستِ ناموفق)، ` +
+            `این SL ضررِ کوچک را محدود می‌کند؛ اما بردهای واقعی به‌مراتب بزرگ‌ترند (R:R ۱:۳.۳).`,
+        },
+        indicators: sqInd,
+      }
+    }
+
+    if (sq.approaching && reg.activeStream !== 'bull') {
+      // ---- نزدیک‌شدن به سیگنالِ LONGِ Squeeze ----
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — فنرِ فشرده، منتظرِ شکست',
+        reason: sq.reason,
+        confirmations: [
+          { label: `قیمت سقفِ ${DEFAULT_SQUEEZE.breakoutLookback} کندلِ اخیر (${isFinite(sq.priorHigh) ? sq.priorHigh.toFixed(2) + '$' : '—'}) را رو به بالا بشکند`,
+            met: false, detail: 'شکستِ صعودی هنوز تأیید نشده — منتظرِ بسته‌شدنِ قیمت بالای سقف بمانید.' },
+          { label: 'گیتِ روندِ صعودی (EMA50>EMA200)', met: sq.trendUp,
+            detail: sq.trendUp ? 'برقرار است ✓' : 'هنوز برقرار نیست.' },
+        ],
+        indicators: sqInd,
       }
     }
   }

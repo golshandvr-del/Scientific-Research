@@ -428,7 +428,7 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
       ? decideGoldM5(result, useCandles.map(k => k.close), capital, riskPct)
       : isM30
       ? decideGoldM30(result, useCandles.map(k => k.close), capital, riskPct)
-      : decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec('XAUUSD'))
+      : decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high))
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
