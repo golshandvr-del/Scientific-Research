@@ -470,12 +470,28 @@ function startClock() {
 // ---------------------------------------------------------------------------
 // ورودِ اصلی — موتورِ JS فوراً آماده می‌شود (هیچ انتظارِ شبکه‌ای در startup)
 // ---------------------------------------------------------------------------
+// نمایشِ لیستِ استراتژی‌های فعالِ ثبت‌شده در رجیستری (تبِ موتور)
+function renderStrategyList() {
+  const ul = $('strategy-list');
+  if (!ul || !window.GoldEngine || typeof window.GoldEngine.listStrategies !== 'function') return;
+  const list = window.GoldEngine.listStrategies();
+  if (!list.length) {
+    ul.innerHTML = '<li class="text-slate-500">هیچ استراتژی‌ای ثبت نشده است.</li>';
+    return;
+  }
+  ul.innerHTML = list.map(s =>
+    `<li><i class="fas fa-circle text-[6px] text-violet-400"></i> <b class="text-slate-100">${s.name}</b>
+     <span class="text-slate-500">(${s.asset} · <code class="bg-slate-800 px-1 rounded">${s.id}</code>)</span></li>`
+  ).join('');
+}
+
 async function main() {
   setupTabs();
   setupEvents();
   startClock();
   const ok = initEngine();           // ← فوری، بدونِ Pyodide، بدونِ گیر کردن
   if (!ok) return;
+  renderStrategyList();              // نمایشِ استراتژی‌های افزونه‌ایِ فعال
   await refreshAll();                // اگر شبکه نبود، فقط کارت‌ها خطای «آفلاین» می‌دهند؛ اپ سالم می‌ماند
   setupAutoRefresh();
 }
