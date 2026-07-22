@@ -90,49 +90,47 @@ def detect_spike_channel_events(df, ema_fast, ema_slow, spike_len,
     long_evt = np.zeros(n, dtype=bool)
     short_evt = np.zeros(n, dtype=bool)
 
+    # ---- vectorized spike detection (سریع، سببی) ----
+    bull_body = c > o
+    bear_body = c < o
+    hh = np.zeros(n, dtype=bool); hh[1:] = h[1:] > h[:-1]   # higher-high
+    hl = np.zeros(n, dtype=bool); hl[1:] = l[1:] > l[:-1]   # higher-low
+    lh = np.zeros(n, dtype=bool); lh[1:] = h[1:] < h[:-1]   # lower-high
+    ll = np.zeros(n, dtype=bool); ll[1:] = l[1:] < l[:-1]   # lower-low
+
+    def rolling_all(arr):
+        """True در i اگر arr[i-spike_len+1 .. i] همه True باشند."""
+        out = np.ones(n, dtype=bool)
+        for k in range(spike_len):
+            out[k:] &= arr[:n - k] if k == 0 else np.concatenate([np.zeros(k, dtype=bool), arr[:n - k]])
+        return out
+
+    bull_spike_mask = rolling_all(bull_body) & rolling_all(hh) & rolling_all(hl)
+    bear_spike_mask = rolling_all(bear_body) & rolling_all(lh) & rolling_all(ll)
+    # حرکتِ کافی: close[i] - close[i-spike_len]  vs  spike_atr_mult*ATR[i]
+    move_up = np.full(n, -np.inf); move_up[spike_len:] = c[spike_len:] - c[:n - spike_len]
+    move_dn = np.full(n, -np.inf); move_dn[spike_len:] = c[:n - spike_len] - c[spike_len:]
+    atr_ok = ~np.isnan(atr)
+    bull_spike = bull_spike_mask & atr_ok & (move_up >= spike_atr_mult * np.nan_to_num(atr))
+    bear_spike = bear_spike_mask & atr_ok & (move_dn >= spike_atr_mult * np.nan_to_num(atr))
+
     # وضعیتِ فازِ کانال پس از آخرین spike
     bull_channel_left = 0   # چند کندل دیگر مجازیم در فازِ کانالِ صعودی ورود کنیم
     bear_channel_left = 0
     spike_top = np.nan      # سقفِ spikeِ صعودیِ اخیر (برای measured-move/محدودهٔ اعتبار)
     spike_bot = np.nan
 
-    def is_bull_spike(i):
-        """آیا پنجرهٔ [i-spike_len+1 .. i] یک bull spike کامل است؟ (سببی)"""
-        s = i - spike_len + 1
-        if s < 1 or np.isnan(atr[i]):
-            return False
-        # همه کندل‌ها bull-body، higher-high و higher-low
-        for k in range(s, i + 1):
-            if c[k] <= o[k]:
-                return False
-            if h[k] <= h[k - 1] or l[k] <= l[k - 1]:
-                return False
-        move = c[i] - c[s - 1]
-        return move >= spike_atr_mult * atr[i]
-
-    def is_bear_spike(i):
-        s = i - spike_len + 1
-        if s < 1 or np.isnan(atr[i]):
-            return False
-        for k in range(s, i + 1):
-            if c[k] >= o[k]:
-                return False
-            if h[k] >= h[k - 1] or l[k] >= l[k - 1]:
-                return False
-        move = c[s - 1] - c[i]
-        return move >= spike_atr_mult * atr[i]
-
     for i in range(spike_len + 1, n):
         bull = ef[i] > es[i]
         bear = ef[i] < es[i]
 
         # --- تشخیصِ spike جدید ⇒ باز کردنِ پنجرهٔ کانال ---
-        if bull and is_bull_spike(i):
+        if bull and bull_spike[i]:
             bull_channel_left = channel_window
             spike_top = h[i]
             spike_bot = l[i - spike_len + 1]
             bear_channel_left = 0
-        elif bear and is_bear_spike(i):
+        elif bear and bear_spike[i]:
             bear_channel_left = channel_window
             spike_bot = l[i]
             spike_top = h[i - spike_len + 1]
