@@ -388,5 +388,44 @@ walk-forward را رد کرد (مثلِ S168/S169).
 - مستندِ کامل: [`results/S174_BrooksSellClimaxReversal_NetProfit_237181_REJECTED.md`](../../../results/S174_BrooksSellClimaxReversal_NetProfit_237181_REJECTED.md)
 - کد: `strategies/s174_brooks_sell_climax_reversal.py` · `s174_finalize.py` · `s174_climax_filter.py`
 
-_وضعیت: ✅ مرحلهٔ ۷ (فصل ۲) بررسی و بک‌تست شد (رد). رکورد بدون تغییر (+$237,181).
-▶ نشستِ بعد: **CHAPTER 3** (Breakouts, Trading Ranges, Tests, and Reversals)._
+---
+
+## مرحلهٔ ۸ (فصلِ ۳) — Breakouts, Trading Ranges, Tests, and Reversals
+
+**مفهوم:** مهم‌ترین مهارتِ معامله‌گر طبق Brooks تمایزِ شکستِ موفق از **شکستِ ناموفق
+(failed breakout)** است. هر swing یک «تست» از یک سطحِ ساختاری است؛ وقتی قیمت یک سطحِ
+مهم را می‌شکند اما **در همان ناحیه reversal bar می‌سازد و برمی‌گردد**، آن شکست ناموفق
+است و تلهٔ خلافِ جهت می‌سازد ⇒ سیگنالِ برگشت.
+
+**ترجمه به قانونِ بک‌تست‌پذیر (همه causal، shift-safe):**
+- **سطحِ ساختاری:** نزدیک‌ترین swing-low/high تأییدشده (`swing_pivots(k)`) یا high/low دیروز.
+- **Failed-Breakout LONG:** `low < level` (شکستِ رو‌به‌پایین) ولی **در همان کندل**
+  `close > level` و `close > open` (bull reversal bar روی سطح). قرینه برای SHORT.
+- SL/TP نسبتِ R چندگانه؛ گیتِ سختِ ۴-گانهٔ پروژه + n≥۳۰.
+
+### نتیجهٔ بک‌تست — ⛔ رد شد (Δ سودِ خالص = ۰، رکورد = +$237,181)
+
+**بهترین کاندیدِ خام (XAUUSD LONG, swing k3, SL200/TP300, mh96):** net=+$8,590،
+WR ۴۷.۶٪، n۱۱۱۶، PF ۱.۱۰، گیتِ خام پاس (WF ۴/۴ + هر دو نیمه). SHORT و EURUSD رد شدند.
+
+**آزمونِ ۱ — baseline long-bias (✅ لبه واقعی است):** خریدِ *بدونِ شرطِ failed-breakout*
+در همان رژیم +$6,868 داد ⇒ **Δ = +$1,721** ⇒ شرطِ failed-breakout واقعاً لبهٔ
+price-action می‌افزاید، نه صرفاً bias صعودیِ طلا.
+
+**آزمونِ ۲ — سهمِ مستقل (⛔ ناپایدار):** همپوشانیِ بار-به-بار با اجتماعِ LONGِ طلا
+**۵۹.۸٪** (High-2 ۵۵.۳٪ + SoS ۱۰.۹٪ + time-drift ۶.۳٪). سهمِ مستقل: net=−$1,313،
+**h2=−$1,185**، walk-forward `+760/−104/+229/−2027` (دو پنجرهٔ منفی) ⇒ گیت رد.
+
+**آزمونِ ۳ — فیلترِ تأیید روی لایه‌های زمان‌محور (قانونِ همپوشانی، پیش از فصلِ بعد):**
+روی S140/S142/S143/S144 با پنجره‌های recent w8..w96 آزموده شد. هیچ موردی هم‌زمان
+`WR↑` و `net↑` نداد؛ **اثرِ خالصِ کل = $0** ⇒ رد.
+
+**درس:** failed-breakout reversal یک لبهٔ price-actionِ *واقعی* روی طلاست اما **از قبل
+توسطِ High-2 (S168) گرفته شده** (۵۵٪ همپوشانی)؛ سهمِ مستقل ناپایدار و به‌عنوان فیلتر
+بی‌اثر. الگوی تکراری S169/S174/S175: مفاهیمِ برگشتیِ Brooks روی طلا واقعی اما هم‌پوشانِ سنگین.
+
+- مستندِ کامل: [`results/S175_BrooksFailedBreakout_NetProfit_237181_REJECTED.md`](../../../results/S175_BrooksFailedBreakout_NetProfit_237181_REJECTED.md)
+- کد: `strategies/s175_brooks_failed_breakout.py` · `s175_finalize.py` · `s175_fbo_filter.py`
+
+_وضعیت: ✅ مرحلهٔ ۸ (فصل ۳) بررسی و بک‌تست شد (رد). رکورد بدون تغییر (+$237,181).
+▶ نشستِ بعد: **CHAPTER 4** (Bar Basics: Signal Bars, Entry Bars, Setups)._
