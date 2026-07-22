@@ -30,8 +30,11 @@ import numpy as np
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
 import s172_brooks_two_legs as S
-import scalp_engine as se
+from engine import scalp_engine as se
+from engine import indicators as ind
 
 TICK = {'XAUUSD': 0.01, 'EURUSD': 0.00001}   # یک «تیک» (حداقل حرکتِ قیمت)
 
@@ -48,9 +51,6 @@ def setup_signal(df, side, ema_fast, ema_slow, body_frac):
     h = df['high'].to_numpy(); l = df['low'].to_numpy()
     rng = np.maximum(h - l, 1e-9)
     body = np.abs(c - o)
-    ef = S.se.ema(df['close'], ema_fast).to_numpy() if hasattr(S, 'se') else None
-    # از indicators استفاده کن
-    import indicators as ind
     ef = ind.ema(df['close'], ema_fast).to_numpy()
     es = ind.ema(df['close'], ema_slow).to_numpy()
     strong = body >= body_frac * rng
