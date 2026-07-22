@@ -13,3 +13,8 @@ web_tool/.dev.vars
 web_tool/tools/full_ref_2000.json
 web_tool/tools/full_feats_2000.json
 .tmp_logs/
+
+# Telegram-Resource: ویدیوهای آموزشیِ حجیم (غیرقابلِ تحلیلِ متنی) از git حذف می‌شوند
+# تا repo سبک بماند؛ محتوایِ متنی/سورس/PDF نگه داشته می‌شود.
+Telegram-Resource/**/*.mp4
+Telegram-Resource/**/*.ppsx
