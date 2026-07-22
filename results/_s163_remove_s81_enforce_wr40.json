@@ -1,0 +1,69 @@
+{
+  "layers": [
+    {
+      "layer": "S140 Monday",
+      "action": "KEEP",
+      "config": "فیلترِ امتیازی score≥3/6",
+      "asset": "XAUUSD",
+      "base_wr": 39.67213114754099,
+      "new_wr": 42.084942084942085,
+      "base_net": 7655.100000000035,
+      "new_net": 9919.940000000053,
+      "delta": 2264.8400000000183,
+      "base_n": 305,
+      "new_n": 259,
+      "base_pf": 1.2686708914071358,
+      "new_pf": 1.3943803638737446
+    },
+    {
+      "layer": "S142 Mid-Month",
+      "action": "KEEP",
+      "config": "TPِ تطبیقی (score≥3⇒TP500 وگرنه TP150)",
+      "asset": "XAUUSD",
+      "base_wr": 35.54502369668246,
+      "new_wr": 41.796875,
+      "base_net": 21012.37000000003,
+      "new_net": 20817.070000000014,
+      "delta": -195.30000000001746,
+      "base_n": 211,
+      "new_n": 256,
+      "base_pf": 1.7066318715225182,
+      "new_pf": 1.6231420598671769
+    },
+    {
+      "layer": "S143 EURUSD Mid-Month",
+      "action": "KEEP",
+      "config": "فیلترِ امتیازی score≥2 + TP40",
+      "asset": "EURUSD",
+      "base_wr": 34.01015228426396,
+      "new_wr": 43.58974358974359,
+      "base_net": 3933.990000000402,
+      "new_net": 4604.680000000491,
+      "delta": 670.6900000000896,
+      "base_n": 197,
+      "new_n": 234,
+      "base_pf": 1.2490716769835049,
+      "new_pf": 1.268798053545055
+    },
+    {
+      "layer": "S81 Swing-Pullback",
+      "action": "REMOVE",
+      "config": "حذفِ کامل (WR≥40 آن را ضررده می‌کرد)",
+      "asset": "XAUUSD_M30",
+      "base_wr": 28.185328185328185,
+      "new_wr": 0.0,
+      "base_net": 25488.32000000008,
+      "new_net": 0.0,
+      "delta": -25488.32000000008,
+      "base_n": 259,
+      "new_n": 0,
+      "base_pf": 1.605610859040425,
+      "new_pf": 0.0
+    }
+  ],
+  "total_delta": -22748.08999999999,
+  "note": "تصمیمِ کاربر: WR≥40 اجباری؛ S81 کاملاً حذف شد.",
+  "record_before": 241487,
+  "record_after": 218738.91,
+  "s81_removed_net": 25488.32000000008
+}
