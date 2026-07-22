@@ -1,0 +1,8 @@
+{
+  "layer": "S168 High-2 long ema20/50 SL300/TP450 mh32 (XAUUSD)",
+  "ALL": {"net": 4137, "wr": 48.8, "n": 2595, "pf": 1.10},
+  "IN_time_windows": {"net": 3404, "wr": 50.1, "n": 1621, "pf": 1.13},
+  "OUT_independent": {"net": 1351, "wr": 47.3, "n": 1253, "pf": 1.07},
+  "verdict": "independent structural edge confirmed (OUT net>0 & WR>=40)",
+  "walkforward": {"W1": 411, "W2": 104, "W3": 825, "W4": 2641, "all_positive": true}
+}
