@@ -354,8 +354,8 @@ def run_s67_layer(start, end):
         return dict(net=0.0, n=0, wins=0, losses=0, wr=0.0, gp=0.0, gl=0.0, pf=0.0)
     # فیلترِ پنجرهٔ ۴ ساله بر مبنای زمانِ خروج
     tms = pd.to_datetime(dfg['time'].values[np.clip(all_tr['exit_bar'].values.astype(int), 0, ng - 1)], unit='s')
-    mask = (tms >= start) & (tms <= end)
-    all_tr = all_tr[mask.values].reset_index(drop=True)
+    mask = np.asarray((tms >= start) & (tms <= end))
+    all_tr = all_tr[mask].reset_index(drop=True)
     if len(all_tr) == 0:
         return dict(net=0.0, n=0, wins=0, losses=0, wr=0.0, gp=0.0, gl=0.0, pf=0.0)
     # S67 با موتورِ قدیمِ backtest سود را بر حسبِ pnl(قیمت) می‌دهد؛ برای هم‌ترازی با
