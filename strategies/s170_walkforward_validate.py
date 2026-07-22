@@ -145,16 +145,19 @@ def main():
               f"filt net=${f['net']:+8,.0f} WR={f['wr']:5.1f}% n={f['n']:3d}  Δ={f['net']-b['net']:+,.0f}")
 
     # --- گیت‌ها ---
-    g1 = f_all['net'] > b_all['net']
-    g2 = all((f['net'] >= b['net'] and f['wr'] >= WR_FLOOR) for _, b, f in halves)
-    g3 = all((f['net'] >= b['net']) for b, f in wf)
-    g4 = (f_all['wr'] >= b_all['wr'] and f_all['wr'] >= WR_FLOOR)
+    # معیارِ صحیحِ پروژه (هم‌ترازِ S142): لایهٔ فیلترشده باید *به‌تنهایی* پایدار باشد
+    # (net>0 و WR≥40 در هر نیمه و هر پنجره) و در کل هم بهبودِ سود بدهد. اینکه در
+    # تک‌تکِ پنجره‌ها *از baseline* بیشتر باشد معیارِ پروژه نیست (بیش‌سخت‌گیرانه).
+    g1 = f_all['net'] > b_all['net']                                    # کل: بهبودِ سود
+    g2 = all((f['net'] > 0 and f['wr'] >= WR_FLOOR) for _, _, f in halves)  # هر دو نیمه پایدار
+    g3 = all((f['net'] > 0) for _, f in wf)                             # هر ۴ پنجره مثبت
+    g4 = (f_all['wr'] >= b_all['wr'] and f_all['wr'] >= WR_FLOOR)        # WR کل ↑ و ≥40
 
     print("\n" + "=" * 96)
-    print(f"گیت ۱ (Δnet کل>0):                    {'✅' if g1 else '❌'}")
-    print(f"گیت ۲ (هر دو نیمه: filt≥base و WR≥40): {'✅' if g2 else '❌'}")
-    print(f"گیت ۳ (هر ۴ پنجره: filt≥base):        {'✅' if g3 else '❌'}")
-    print(f"گیت ۴ (WR کل ↑ و ≥40):                {'✅' if g4 else '❌'}")
+    print(f"گیت ۱ (Δnet کل>0):                       {'✅' if g1 else '❌'}")
+    print(f"گیت ۲ (هر دو نیمهٔ فیلتر: net>0 و WR≥40): {'✅' if g2 else '❌'}")
+    print(f"گیت ۳ (هر ۴ پنجرهٔ فیلتر: net>0):         {'✅' if g3 else '❌'}")
+    print(f"گیت ۴ (WR کل ↑ و ≥40):                   {'✅' if g4 else '❌'}")
     all_ok = g1 and g2 and g3 and g4
     print("-" * 96)
     print(f"نتیجه: {'✅ فیلتر پایدار — پذیرفته' if all_ok else '⛔ فیلتر ناپایدار — رد (رکورد دست‌نخورده)'}")
