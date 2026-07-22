@@ -23,6 +23,12 @@ import {
 import {
   computeTurnOfMonth, TOM_MAX_HOLD, TOM_SL_PIP, TOM_TP_PIP,
 } from './turn_of_month_drift'
+import { confirmScore } from './confirmation_filter'
+
+// آستانهٔ امتیازِ تأیید (از ۵) برای گِیت‌کردنِ ورودِ لایه‌های زمان-محورِ Monday/Turn-of-Month.
+// نشستِ S163: فیلترِ تأییدِ متعامد WR این لایه‌ها را از زیرِ ۴۰٪ به بالای ۴۰٪ رساند
+// (رجوع: results/EnforceWR40_RemoveS81_NetProfit_218739.md). پاسخِ صریحِ User Note.
+const CONFIRM_MIN_SCORE = 2
 
 export type RouterState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 export type Regime = 'trend_up' | 'trend_down' | 'range'
@@ -375,6 +381,28 @@ export function decide(a: AnalysisResult, close: number[],
         status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
     ]
+    // ★ فیلترِ تأییدِ امتیازی (S163): ورودِ Monday فقط وقتی امتیازِ تأیید کافی باشد.
+    const moConfirm = (Array.isArray(high) && Array.isArray(low))
+      ? confirmScore(close, high, low) : null
+    const moConfirmed = !moConfirm || moConfirm.score >= CONFIRM_MIN_SCORE
+    if (moConfirm) {
+      moInd.push({ name: `تأییدِ امتیازیِ Monday (S163)`,
+        value: `${moConfirm.score}/${moConfirm.maxScore} ${moConfirmed ? '✓ (کافی)' : '✗ (ناکافی)'}`,
+        status: moConfirmed ? 'ok' : 'warn' })
+    }
+    if (mo.state === 'ENTRY' && !moConfirmed) {
+      // پنجرهٔ زمانی باز است اما تأییدها کافی نیست ⇒ به‌جای ورود، «نزدیک‌شدن/منتظرِ تأیید».
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ Monday باز است اما تأییدها کامل نیست',
+        reason: `${mo.reason}\n\n⚠️ فیلترِ تأییدِ متعامد (S163): امتیازِ تأیید ${moConfirm!.score} از ${moConfirm!.maxScore} ` +
+          `است و از آستانهٔ ${CONFIRM_MIN_SCORE} کمتر است. طبقِ نشستِ S163 (پاسخِ User Note)، ورود تنها ` +
+          `وقتی رخ می‌دهد که شاخص‌های تأییدِ روند/مومنتوم/نوسان هم‌سو شوند — این فیلتر WR این لایه را ` +
+          `از زیرِ ۴۰٪ به بالای ۴۰٪ رساند بدونِ آسیب به سودِ خالص.`,
+        confirmations: moConfirm!.breakdown.map(b => ({ label: b.label, met: b.met, detail: `مقدار: ${b.value}` })),
+        indicators: moInd,
+      }
+    }
     if (mo.state === 'ENTRY') {
       const entry = a.price
       const sl = entry - mo.slDist
@@ -447,6 +475,26 @@ export function decide(a: AnalysisResult, close: number[],
         status: tom.state === 'ENTRY' ? 'ok' : tom.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
     ]
+    // ★ فیلترِ تأییدِ امتیازی (S163): ورودِ Turn-of-Month فقط وقتی امتیازِ تأیید کافی باشد.
+    const tomConfirm = (Array.isArray(high) && Array.isArray(low))
+      ? confirmScore(close, high, low) : null
+    const tomConfirmed = !tomConfirm || tomConfirm.score >= CONFIRM_MIN_SCORE
+    if (tomConfirm) {
+      tomInd.push({ name: `تأییدِ امتیازیِ Turn-of-Month (S163)`,
+        value: `${tomConfirm.score}/${tomConfirm.maxScore} ${tomConfirmed ? '✓ (کافی)' : '✗ (ناکافی)'}`,
+        status: tomConfirmed ? 'ok' : 'warn' })
+    }
+    if (tom.state === 'ENTRY' && !tomConfirmed) {
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ چرخشِ ماه باز است اما تأییدها کامل نیست',
+        reason: `${tom.reason}\n\n⚠️ فیلترِ تأییدِ متعامد (S163): امتیازِ تأیید ${tomConfirm!.score} از ${tomConfirm!.maxScore} ` +
+          `است و از آستانهٔ ${CONFIRM_MIN_SCORE} کمتر است. طبقِ نشستِ S163 (پاسخِ User Note)، ورود تنها وقتی ` +
+          `رخ می‌دهد که شاخص‌های تأییدِ روند/مومنتوم/نوسان هم‌سو شوند — این فیلتر WR این لایه را بالای ۴۰٪ برد.`,
+        confirmations: tomConfirm!.breakdown.map(b => ({ label: b.label, met: b.met, detail: `مقدار: ${b.value}` })),
+        indicators: tomInd,
+      }
+    }
     if (tom.state === 'ENTRY') {
       const entry = a.price
       const sl = entry - tom.slDist
