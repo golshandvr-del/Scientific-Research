@@ -82,17 +82,18 @@ def evaluate(df, asset, side, lo, hi, sl_pip, tp_pip, max_hold):
     if trades is None or len(trades) < 30:
         return None
     stats, _, per_trade = se.run_capital_pertrade(
-        trades, asset, initial_capital=CAPITAL, risk_pct=RISK_PCT, compounding=False,
+        trades, asset, df=df, initial_capital=CAPITAL, risk_pct=RISK_PCT, compounding=False,
     )
     n = len(per_trade)
+    if n < 30:
+        return None
     half = n // 2
-    net_h1 = per_trade["pnl_dollar"].iloc[:half].sum()
-    net_h2 = per_trade["pnl_dollar"].iloc[half:].sum()
-    wr = (per_trade["pnl_dollar"] > 0).mean() * 100.0
-    gross_win = per_trade.loc[per_trade["pnl_dollar"] > 0, "pnl_dollar"].sum()
-    gross_loss = -per_trade.loc[per_trade["pnl_dollar"] < 0, "pnl_dollar"].sum()
-    pf = gross_win / gross_loss if gross_loss > 0 else float("inf")
-    net = per_trade["pnl_dollar"].sum()
+    pnl = per_trade["net_usd"]
+    net_h1 = pnl.iloc[:half].sum()
+    net_h2 = pnl.iloc[half:].sum()
+    wr = float(stats["win_rate"])
+    pf = float(stats["profit_factor"])
+    net = float(stats["net_profit"])
     accepted = bool(net > 0 and net_h1 > 0 and net_h2 > 0 and wr >= WR_FLOOR and n >= 30)
     return {
         "asset": asset, "side": side, "lo": lo, "hi": hi,
