@@ -32,6 +32,14 @@ import type { AnalysisResult } from './signal'
 import type { RouterDecision, RegimeInfo } from './router'
 import { computeLots, assetSpec, DEFAULT_CAPITAL, DEFAULT_RISK_PCT } from './router'
 
+// --- پارامترهای S164: برگشتِ پیش از London Fix در سومین روزِ کاری مانده به پایان ماه ---
+// بک‌تست ۲۰۱۸–۲۰۲۶: net=+$3,473، WR=60.7٪، PF=1.71؛ هر ۴ WF مثبت و WR≥40.
+const S164_ENTRY_HOUR_UTC = 13
+const S164_APPROACH_HOUR_UTC = 12
+const S164_SL_PIP = 15.0
+const S164_TP_PIP = 20.0
+const S164_MAX_HOLD_BARS = 12
+
 // --- پارامترهای ثابتِ استراتژی S73 (هم‌راستا با strategies/s73_eurusd_session_drift.py) ---
 const ENTRY_HOUR_UTC = 0        // ساعتِ باز شدنِ نقدینگیِ اروپا (در فیدِ این پروژه)
 const PULLBACK_LOOKBACK = 4     // چند کندلِ قبل باید نزولی باشد
@@ -40,6 +48,19 @@ const TP_PIP = 12.0
 const PIP = 0.0001
 // «نزدیک‌شدن»: اگر در همان ساعتِ ماقبلِ سشن باشیم و pullback در حالِ شکل‌گیری.
 const APPROACH_HOUR_UTC = 23
+
+/** تعداد روزهای کاری از تاریخ جاری تا پایان ماه، با احتساب خود روز. تعطیلات آخرهفته حذف می‌شوند. */
+function businessDaysThroughMonthEnd(timestampSec: number): number {
+  const now = new Date(timestampSec * 1000)
+  const y = now.getUTCFullYear(), m = now.getUTCMonth(), d = now.getUTCDate()
+  const last = new Date(Date.UTC(y, m + 1, 0)).getUTCDate()
+  let count = 0
+  for (let day = d; day <= last; day++) {
+    const dow = new Date(Date.UTC(y, m, day)).getUTCDay()
+    if (dow !== 0 && dow !== 6) count++
+  }
+  return count
+}
 
 /** آیا مجموعِ حرکتِ N کندلِ اخیر نزولی است؟ (pullback = buy-the-dip) */
 function isPullback(close: number[], lookback = PULLBACK_LOOKBACK): { met: boolean; delta: number } {
@@ -61,6 +82,7 @@ export function decideEurusd(
   nowUtcHour: number,
   capital: number = DEFAULT_CAPITAL,
   riskPct: number = DEFAULT_RISK_PCT,
+  nowUtcTimestamp?: number,
 ): RouterDecision {
   const spec = assetSpec('EURUSD')
   const price = a.price
@@ -86,6 +108,63 @@ export function decideEurusd(
 
   const slDist = SL_PIP * PIP
   const tpDist = TP_PIP * PIP
+
+  // ========================================================================
+  // S164 — حالت‌های ورود/نزدیک‌شدن: سومین روزِ کاری مانده به پایان ماه، ۱۳ UTC.
+  // این لایه Short مستقل است و بر S73 اولویت دارد؛ چون پنجره‌اش بسیار انتخابی است.
+  // ========================================================================
+  const ts = nowUtcTimestamp ?? Math.floor(Date.now() / 1000)
+  const businessDaysLeft = businessDaysThroughMonthEnd(ts)
+  const s164Day = businessDaysLeft === 3
+  const s164Approaching = s164Day && nowUtcHour === S164_APPROACH_HOUR_UTC
+  const s164Indicators: RouterDecision['indicators'] = [
+    { name: 'روز کاری تا پایان ماه', value: `${businessDaysLeft} روز (با احتساب امروز)`, status: s164Day ? 'ok' : 'neutral' },
+    { name: 'پنجرهٔ S164', value: `${S164_ENTRY_HOUR_UTC}:00 UTC`, status: nowUtcHour === S164_ENTRY_HOUR_UTC ? 'ok' : (s164Approaching ? 'warn' : 'neutral') },
+    { name: 'اثر پیش از London Fix', value: s164Day ? 'روز هدف تأیید شد' : 'خارج از روز هدف', status: s164Day ? 'ok' : 'neutral' },
+    { name: 'ATR', value: (a.atr / PIP).toFixed(1) + ' pip', status: 'neutral' },
+    { name: 'RSI(14)', value: a.rsi14.toFixed(1), status: 'neutral' },
+  ]
+
+  if (s164Day && nowUtcHour === S164_ENTRY_HOUR_UTC) {
+    const entry = price
+    const sl164 = entry + S164_SL_PIP * PIP
+    const tp164 = entry - S164_TP_PIP * PIP
+    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, S164_SL_PIP * PIP, 1.0, spec)
+    const rd = Math.round(riskDollars * 100) / 100
+    return {
+      state: 'ENTRY', regime: { ...reg, bucket: 'pre-month-end-fix' },
+      headline: 'ورود فروش (SHORT) — برگشتِ پیش از London Fix تأیید شد',
+      reason:
+        `امروز سومین روزِ کاری مانده به پایان ماه است و پنجرهٔ ${S164_ENTRY_HOUR_UTC}:00 UTC فعال شد. ` +
+        `S164 روی ۲۰۰٬۰۰۰ کندل EURUSD این drift نزولی کوتاه را با سود خالص +$3,473، WR=60.7٪، ` +
+        `PF=1.71 و چهار پنجرهٔ walk-forward مثبت تأیید کرد. این لایه با S73/S143 تقریباً همبستگی صفر دارد.`,
+      direction: 'SHORT', entry, tp: tp164, sl: sl164,
+      rr: `TP ${S164_TP_PIP} pip / SL ${S164_SL_PIP} pip (≈ 1:${(S164_TP_PIP / S164_SL_PIP).toFixed(2)})`,
+      probability: 60.7,
+      sizing: {
+        lotMultiplier: 1.0, label: 'حجم پایهٔ S164 (۱×)',
+        note: `ریسک ثابت ۱٪؛ خروج حداکثر پس از ${S164_MAX_HOLD_BARS} کندل M15 (۳ ساعت).`,
+        lots: lots ?? undefined, riskDollars: rd, capital, riskPct,
+        capitalNote: `سرمایه ${capital.toLocaleString('en-US')}$، ریسک مؤثر ${effRiskPct.toFixed(2)}٪، حجم پیشنهادی ${lots != null ? lots.toFixed(2) : '—'} lot؛ زیان هدف در SL حدود ${rd.toLocaleString('en-US')}$.`,
+      },
+      tpPlan: { multiplier: S164_TP_PIP, note: `TP ثابت ${S164_TP_PIP} pip؛ نقطهٔ میانی ناحیهٔ پایدار ۱۸/۱۸ ترکیب.` },
+      slPlan: { multiplier: S164_SL_PIP, note: `SL ثابت ${S164_SL_PIP} pip؛ بدون جابه‌جایی قبل از تأیید مدیریت معامله.` },
+      indicators: s164Indicators,
+    }
+  }
+
+  if (s164Approaching) {
+    return {
+      state: 'APPROACHING', regime: { ...reg, bucket: 'pre-month-end-fix' },
+      headline: 'نزدیک‌شدن به سیگنال فروشِ ماه‌پایان EURUSD',
+      reason: `روز هدف S164 تأیید شده و یک ساعت تا پنجرهٔ ${S164_ENTRY_HOUR_UTC}:00 UTC مانده است. هنوز وارد نمی‌شوم تا زمان دقیق رویداد برسد.`,
+      confirmations: [
+        { label: `امروز دقیقاً سومین روزِ کاری مانده به پایان ماه باشد`, met: s164Day, detail: `${businessDaysLeft} روز کاری با احتساب امروز باقی مانده است.` },
+        { label: `کندلِ ${S164_ENTRY_HOUR_UTC}:00 UTC آغاز شود`, met: false, detail: `اکنون ${nowUtcHour}:00 UTC است؛ ورود زودهنگام مجاز نیست.` },
+      ],
+      indicators: s164Indicators,
+    }
+  }
 
   // --------- حالتِ ۳: ورود — کندلِ ساعتِ ۰ UTC + pullback تأییدشده ---------
   if (nowUtcHour === ENTRY_HOUR_UTC && pb.met) {
@@ -146,9 +225,9 @@ export function decideEurusd(
     state: 'NEUTRAL', regime: reg,
     headline: 'خنثی — خارج از پنجرهٔ سشن',
     reason:
-      `ساعتِ جاری ${nowUtcHour}:00 UTC است و در پنجرهٔ سیگنالِ EURUSD (کندلِ ${ENTRY_HOUR_UTC}:00 UTC، ` +
-      `باز شدنِ نقدینگیِ اروپا) نیستیم. طبقِ کشفِ S73، EURUSD در M15 بیرون از این پنجره عملاً ` +
-      `random-walk است (لبهٔ آماری ندارد) — پس وارد نمی‌شوم. صبر می‌کنم تا پنجرهٔ سشن. ` +
+      `ساعتِ جاری ${nowUtcHour}:00 UTC است و نه پنجرهٔ S73 (کندلِ ${ENTRY_HOUR_UTC}:00 UTC) و نه ` +
+      `پنجرهٔ S164 (سومین روزِ کاری مانده به پایان ماه، ${S164_ENTRY_HOUR_UTC}:00 UTC) فعال نیست. ` +
+      `خارج از این محل‌های آزموده‌شده EURUSD عمدتاً random-walk است؛ پس وارد نمی‌شوم. ` +
       `(این دقیقاً منطقِ «سود ۰ بهتر از منفی» طبقِ قانونِ #۱ است — همان درسی که S71/S72 داد.)`,
     indicators,
   }
