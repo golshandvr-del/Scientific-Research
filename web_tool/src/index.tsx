@@ -400,7 +400,10 @@ app.get('/api/context', async (c) => {
 const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' }[] = [
   { id: 'XAUUSD',     name: 'طلا / دلار — نوسانی (M15)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing' },
   { id: 'XAUUSD-M5',  name: 'طلا / دلار — اسکالپ (M5)',    symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
-  { id: 'XAUUSD-M30', name: 'طلا / دلار — نوسانی (M30)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing-m30' },
+  // ⛔ S81 (XAUUSD-M30 / Swing Trend-Pullback) در نشستِ S163 طبقِ تصمیمِ صریحِ کاربر
+  //    کاملاً حذف شد: WR=۲۸٪ داشت و رساندنِ آن به WR≥۴۰٪ سود را −۹٬۵۳۱$ نابود می‌کرد.
+  //    کاربر خواست هر لایه‌ای که برای WR≥۴۰ ضررده می‌شود حذف شود. (روتر decideGoldM30 باقی
+  //    مانده اما دیگر فراخوانی نمی‌شود.) رجوع: results/EnforceWR40_RemoveS81_NetProfit_218739.md
   { id: 'EURUSD',     name: 'یورو / دلار (EURUSD)',        symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'swing' },
 ]
 
