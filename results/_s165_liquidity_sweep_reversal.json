@@ -1,0 +1,928 @@
+{
+  "XAUUSD": {
+    "rows": 150000,
+    "start": "2020-02-20 19:15:00+00:00",
+    "end": "2026-07-07 16:30:00+00:00",
+    "variants": [
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 30,
+        "net": -6472.519999999984,
+        "wr": 39.39393939393939,
+        "n": 528,
+        "pf": 0.712825618582134,
+        "max_dd_pct": -66.1009586924264,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 40,
+        "net": -6293.670000000038,
+        "wr": 34.85714285714286,
+        "n": 525,
+        "pf": 0.724026478009097,
+        "max_dd_pct": -64.26845057848948,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 30,
+        "tp": 45,
+        "net": -6033.339999999929,
+        "wr": 38.767395626242546,
+        "n": 503,
+        "pf": 0.6680757842663647,
+        "max_dd_pct": -61.411523446429506,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 30,
+        "net": -9558.840000000057,
+        "wr": 38.10909090909091,
+        "n": 1375,
+        "pf": 0.6800982578968594,
+        "max_dd_pct": -95.76699238120187,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 40,
+        "net": -9392.530000000035,
+        "wr": 33.74816983894583,
+        "n": 1366,
+        "pf": 0.7097754007126009,
+        "max_dd_pct": -94.18233036496765,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 30,
+        "tp": 45,
+        "net": -8827.829999999956,
+        "wr": 39.49771689497717,
+        "n": 1314,
+        "pf": 0.7304602019633274,
+        "max_dd_pct": -88.62957821427105,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 30,
+        "net": -8463.670000000053,
+        "wr": 39.578947368421055,
+        "n": 950,
+        "pf": 0.7241255786042985,
+        "max_dd_pct": -85.26202593928075,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 40,
+        "net": -8220.609999999997,
+        "wr": 35.14376996805112,
+        "n": 939,
+        "pf": 0.717933339074897,
+        "max_dd_pct": -82.96173324039712,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 30,
+        "tp": 45,
+        "net": -7179.929999999986,
+        "wr": 40.503432494279174,
+        "n": 874,
+        "pf": 0.7365400175030083,
+        "max_dd_pct": -72.6069348473011,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 30,
+        "net": -10000.870000000059,
+        "wr": 38.507209499575914,
+        "n": 2358,
+        "pf": 0.6893033015176155,
+        "max_dd_pct": -100.00836068976709,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 40,
+        "net": -9976.110000000064,
+        "wr": 33.724221593206636,
+        "n": 2473,
+        "pf": 0.6988891377325291,
+        "max_dd_pct": -99.83090243533333,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 30,
+        "tp": 45,
+        "net": -9734.320000000023,
+        "wr": 39.436008676789584,
+        "n": 2305,
+        "pf": 0.7447788085804182,
+        "max_dd_pct": -97.545282356249,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 30,
+        "net": -6642.110000000033,
+        "wr": 38.899082568807344,
+        "n": 545,
+        "pf": 0.7439191442522516,
+        "max_dd_pct": -68.82670722498362,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 40,
+        "net": -6989.430000000035,
+        "wr": 33.33333333333333,
+        "n": 540,
+        "pf": 0.7207477379321451,
+        "max_dd_pct": -72.22301741404313,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 30,
+        "tp": 45,
+        "net": -5834.639999999942,
+        "wr": 39.163498098859314,
+        "n": 526,
+        "pf": 0.7231517758050531,
+        "max_dd_pct": -60.69431074124994,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 30,
+        "net": -9568.450000000068,
+        "wr": 38.4928716904277,
+        "n": 1473,
+        "pf": 0.7628486466551531,
+        "max_dd_pct": -95.99506973702144,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 40,
+        "net": -9486.82000000009,
+        "wr": 33.85665529010239,
+        "n": 1465,
+        "pf": 0.7785609714651721,
+        "max_dd_pct": -95.21051417760596,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 30,
+        "tp": 45,
+        "net": -8545.729999999945,
+        "wr": 40.55555555555556,
+        "n": 1440,
+        "pf": 0.8012794233061028,
+        "max_dd_pct": -85.53748020971679,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 30,
+        "net": -9060.450000000073,
+        "wr": 37.42454728370221,
+        "n": 994,
+        "pf": 0.7216432799238554,
+        "max_dd_pct": -90.8795634662863,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 40,
+        "net": -8960.570000000058,
+        "wr": 33.09426229508197,
+        "n": 976,
+        "pf": 0.7273896911180932,
+        "max_dd_pct": -90.62202236996869,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 30,
+        "tp": 45,
+        "net": -8080.2199999999575,
+        "wr": 38.791208791208796,
+        "n": 910,
+        "pf": 0.737364248966709,
+        "max_dd_pct": -82.43981107717953,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 30,
+        "net": -10000.740000000123,
+        "wr": 38.58234295415959,
+        "n": 2356,
+        "pf": 0.7644005403309023,
+        "max_dd_pct": -100.00703436095324,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 40,
+        "net": -10001.10000000011,
+        "wr": 33.51648351648351,
+        "n": 2366,
+        "pf": 0.7822579802381432,
+        "max_dd_pct": -100.01088564628687,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 30,
+        "tp": 45,
+        "net": -9761.209999999915,
+        "wr": 39.781328847771235,
+        "n": 2378,
+        "pf": 0.804494271751313,
+        "max_dd_pct": -97.80834918094098,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": false,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      }
+    ]
+  },
+  "EURUSD": {
+    "rows": 200000,
+    "start": "2018-06-14 05:30:00+00:00",
+    "end": "2026-07-16 16:00:00+00:00",
+    "variants": [
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 30,
+        "net": -1777.4099999987138,
+        "wr": 48.261474269819196,
+        "n": 719,
+        "pf": 0.908131557103003,
+        "max_dd_pct": -22.275754806153643,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 40,
+        "net": -1958.90999999848,
+        "wr": 48.12239221140473,
+        "n": 719,
+        "pf": 0.8986222550676436,
+        "max_dd_pct": -24.38420086478833,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 30,
+        "tp": 45,
+        "net": -1048.3199999987228,
+        "wr": 49.43820224719101,
+        "n": 712,
+        "pf": 0.9220384587068444,
+        "max_dd_pct": -16.287399591628855,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 30,
+        "net": -6535.769999998067,
+        "wr": 45.01969611705121,
+        "n": 1777,
+        "pf": 0.8411178829623258,
+        "max_dd_pct": -65.47921798656834,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 40,
+        "net": -6356.9199999972425,
+        "wr": 44.563380281690144,
+        "n": 1775,
+        "pf": 0.8544059530094874,
+        "max_dd_pct": -65.28375969067578,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 30,
+        "tp": 45,
+        "net": -4997.309999997497,
+        "wr": 46.07390300230947,
+        "n": 1732,
+        "pf": 0.8474860099908433,
+        "max_dd_pct": -51.150866835167776,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 30,
+        "net": -3806.3699999980718,
+        "wr": 46.62045060658579,
+        "n": 1154,
+        "pf": 0.8555734648299708,
+        "max_dd_pct": -42.224841956050035,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 40,
+        "net": -3912.709999997757,
+        "wr": 46.53379549393414,
+        "n": 1154,
+        "pf": 0.8512272475457939,
+        "max_dd_pct": -43.353519462148974,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 30,
+        "tp": 45,
+        "net": -2910.4299999980667,
+        "wr": 47.6274165202109,
+        "n": 1138,
+        "pf": 0.8507446536275636,
+        "max_dd_pct": -33.94894710360891,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 30,
+        "net": -8353.279999997916,
+        "wr": 44.38622754491018,
+        "n": 2672,
+        "pf": 0.797501593291271,
+        "max_dd_pct": -83.83913024677912,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 40,
+        "net": -8201.32999999717,
+        "wr": 43.993993993993996,
+        "n": 2664,
+        "pf": 0.8106180332593702,
+        "max_dd_pct": -82.52032757658289,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "long",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 30,
+        "tp": 45,
+        "net": -6994.439999997045,
+        "wr": 45.54608830364059,
+        "n": 2582,
+        "pf": 0.8112768607986623,
+        "max_dd_pct": -70.63097874189533,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 30,
+        "net": -3905.619999998996,
+        "wr": 45.729303547963205,
+        "n": 761,
+        "pf": 0.7925630935644669,
+        "max_dd_pct": -45.94680220277611,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 40,
+        "net": -3671.3999999986845,
+        "wr": 45.6578947368421,
+        "n": 760,
+        "pf": 0.8113001958235193,
+        "max_dd_pct": -41.655527222198714,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": true,
+        "sl": 30,
+        "tp": 45,
+        "net": -3025.6499999988337,
+        "wr": 46.56084656084656,
+        "n": 756,
+        "pf": 0.7891835736473389,
+        "max_dd_pct": -32.841027647355894,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 30,
+        "net": -6191.39999999847,
+        "wr": 44.431621465666474,
+        "n": 1733,
+        "pf": 0.833705642818751,
+        "max_dd_pct": -67.25419828401094,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 40,
+        "net": -5680.859999997663,
+        "wr": 44.104046242774565,
+        "n": 1730,
+        "pf": 0.8553895757268997,
+        "max_dd_pct": -62.341980985651126,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": true,
+        "use_kill": false,
+        "sl": 30,
+        "tp": 45,
+        "net": -3459.279999997626,
+        "wr": 46.19917501473188,
+        "n": 1697,
+        "pf": 0.8911622671025543,
+        "max_dd_pct": -40.53611865385205,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 30,
+        "net": -3334.459999998402,
+        "wr": 46.573080099091655,
+        "n": 1211,
+        "pf": 0.8835529539211104,
+        "max_dd_pct": -40.827967760706386,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 20,
+        "tp": 40,
+        "net": -3177.1399999978994,
+        "wr": 46.44628099173554,
+        "n": 1210,
+        "pf": 0.8904785329114223,
+        "max_dd_pct": -37.44941252942324,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": true,
+        "sl": 30,
+        "tp": 45,
+        "net": -2620.3099999982387,
+        "wr": 47.21991701244813,
+        "n": 1205,
+        "pf": 0.8760235716601467,
+        "max_dd_pct": -29.93241364706472,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 30,
+        "net": -6994.3699999978735,
+        "wr": 45.426829268292686,
+        "n": 2624,
+        "pf": 0.8572056205827345,
+        "max_dd_pct": -73.79908283173755,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 20,
+        "tp": 40,
+        "net": -6718.47999999694,
+        "wr": 45.0,
+        "n": 2620,
+        "pf": 0.8649449958540147,
+        "max_dd_pct": -71.09939565133341,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      },
+      {
+        "side": "short",
+        "use_htf": false,
+        "use_kill": false,
+        "sl": 30,
+        "tp": 45,
+        "net": -4313.059999996779,
+        "wr": 46.94596711041504,
+        "n": 2554,
+        "pf": 0.897221296175676,
+        "max_dd_pct": -47.83376856012785,
+        "accepted": false,
+        "gates": {
+          "full_net_positive": false,
+          "full_wr_at_least_40": true,
+          "both_halves_ok": false,
+          "all_walk_forward_ok": false
+        }
+      }
+    ]
+  }
+}
