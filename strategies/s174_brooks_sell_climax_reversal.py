@@ -120,10 +120,18 @@ def evaluate(df, asset, sig, sl, tp, mh, params):
     r = S.stats(tr, asset)
     if not r or r['n'] < 30:
         return None
-    hv = S.halves(df, sig, z, sl, tp, mh, asset)
-    wf = walk_forward(df, sig, sl, tp, mh, asset)
-    wf_ok = all(x[0] > 0 and x[1] >= WR_FLOOR for x in wf)
-    both_ok = bool(hv and hv['h1'] > 0 and hv['h2'] > 0)
+    # lazy: walk-forward (گران) فقط وقتی net/WR پایه امیدوارکننده باشد محاسبه می‌شود
+    prelim_ok = (r['net'] > 0 and r['wr'] >= WR_FLOOR)
+    if prelim_ok:
+        hv = S.halves(df, sig, z, sl, tp, mh, asset)
+        both_ok = bool(hv and hv['h1'] > 0 and hv['h2'] > 0)
+        if both_ok:
+            wf = walk_forward(df, sig, sl, tp, mh, asset)
+            wf_ok = all(x[0] > 0 and x[1] >= WR_FLOOR for x in wf)
+        else:
+            wf, wf_ok = [], False
+    else:
+        hv, both_ok, wf, wf_ok = None, False, [], False
     accept = bool(r['net'] > 0 and r['wr'] >= WR_FLOOR and both_ok and wf_ok)
     d = dict(asset=asset, side='long', sl=sl, tp=tp, mh=mh,
              net=round(r['net'], 1), wr=round(r['wr'], 2), n=r['n'],
