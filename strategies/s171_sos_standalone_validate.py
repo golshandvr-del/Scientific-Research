@@ -34,8 +34,10 @@ CAP, RISK, YEARS = 10000.0, 1.0, 4
 WR_FLOOR = 40.0
 se.ASSETS['XAUUSD'].update(spread_pip=3.3, comm=0.0, slip_pip=0.0)
 
-# بهترین واریانتِ مستقلِ S171-B
-WIN, THR, SL, TP, MH = 12, 2, 150, 300, 96
+# بهترین واریانتِ پایدارِ S171 (پس از اصلاحِ SL/TP برای نوسانِ بالای بازار):
+#   جستجوی all-window نشان داد w32/thr2/SL300/TP450/mh96 پایدارترین است
+#   (هر ۴ پنجرهٔ walk-forward WR≥۵۲٪، net>0). TP کوچکِ قبلی (۳۰۰) علتِ افتِ W4 بود.
+WIN, THR, SL, TP, MH = 32, 2, 300, 450, 96
 
 
 def sos_rising_edge(df, thr, ema_period, win):
