@@ -1,0 +1,254 @@
+{
+  "strategy": "S175 Failed-Breakout as confirmation filter on time-drift layers",
+  "layers": [
+    {
+      "name": "S140 Monday+",
+      "asset": "XAUUSD",
+      "base_wr": 42.084942084942085,
+      "base_net": 9919.940000000053,
+      "base_n": 259,
+      "base_pf": 1.3943803638737446,
+      "best_filter": null,
+      "variants": [
+        {
+          "mode": "fbo_recent_w8",
+          "net": 2615.020000000044,
+          "n": 95,
+          "wins": 40,
+          "losses": 55,
+          "wr": 42.10526315789473,
+          "pf": 1.4268960405899105,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w16",
+          "net": 3254.709999999988,
+          "n": 140,
+          "wins": 59,
+          "losses": 81,
+          "wr": 42.142857142857146,
+          "pf": 1.3369223156648147,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w32",
+          "net": 6453.659999999971,
+          "n": 176,
+          "wins": 76,
+          "losses": 100,
+          "wr": 43.18181818181818,
+          "pf": 1.4567375163748384,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w64",
+          "net": 8041.680000000022,
+          "n": 218,
+          "wins": 95,
+          "losses": 123,
+          "wr": 43.57798165137615,
+          "pf": 1.4296310859702395,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w96",
+          "net": 9636.880000000074,
+          "n": 243,
+          "wins": 104,
+          "losses": 139,
+          "wr": 42.79835390946502,
+          "pf": 1.4260571428571422,
+          "both_ok": true
+        }
+      ],
+      "delta_net": 0.0
+    },
+    {
+      "name": "S142 Mid-Month",
+      "asset": "XAUUSD",
+      "base_wr": 35.54502369668246,
+      "base_net": 21012.37000000003,
+      "base_n": 211,
+      "base_pf": 1.7066318715225182,
+      "best_filter": null,
+      "variants": [
+        {
+          "mode": "fbo_recent_w8",
+          "net": 7498.250000000004,
+          "n": 114,
+          "wins": 41,
+          "losses": 73,
+          "wr": 35.96491228070175,
+          "pf": 1.7919638104250974,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w16",
+          "net": 9422.120000000035,
+          "n": 132,
+          "wins": 47,
+          "losses": 85,
+          "wr": 35.60606060606061,
+          "pf": 1.8017576836969216,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w32",
+          "net": 12183.480000000054,
+          "n": 155,
+          "wins": 56,
+          "losses": 99,
+          "wr": 36.12903225806451,
+          "pf": 1.7829416316007298,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w64",
+          "net": 19681.920000000056,
+          "n": 185,
+          "wins": 68,
+          "losses": 117,
+          "wr": 36.75675675675676,
+          "pf": 1.8558134195672573,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w96",
+          "net": 19200.230000000032,
+          "n": 209,
+          "wins": 73,
+          "losses": 136,
+          "wr": 34.92822966507177,
+          "pf": 1.6801349484927937,
+          "both_ok": true
+        }
+      ],
+      "delta_net": 0.0
+    },
+    {
+      "name": "S144 EndOfMonth",
+      "asset": "XAUUSD",
+      "base_wr": 29.739776951672862,
+      "base_net": 157.25000000017099,
+      "base_n": 269,
+      "base_pf": 1.0081080523659018,
+      "best_filter": null,
+      "variants": [
+        {
+          "mode": "fbo_recent_w8",
+          "net": -147.7199999999284,
+          "n": 117,
+          "wins": 39,
+          "losses": 78,
+          "wr": 33.33333333333333,
+          "pf": 0.9806091092030607,
+          "both_ok": false
+        },
+        {
+          "mode": "fbo_recent_w16",
+          "net": 1361.6100000000988,
+          "n": 148,
+          "wins": 51,
+          "losses": 97,
+          "wr": 34.45945945945946,
+          "pf": 1.136464360272888,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w32",
+          "net": 1344.150000000127,
+          "n": 188,
+          "wins": 61,
+          "losses": 127,
+          "wr": 32.4468085106383,
+          "pf": 1.0954220285282878,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w64",
+          "net": 1805.3700000001409,
+          "n": 242,
+          "wins": 76,
+          "losses": 166,
+          "wr": 31.40495867768595,
+          "pf": 1.0970056386068878,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w96",
+          "net": 385.25000000016735,
+          "n": 259,
+          "wins": 78,
+          "losses": 181,
+          "wr": 30.115830115830118,
+          "pf": 1.0204747919569814,
+          "both_ok": false
+        }
+      ],
+      "delta_net": 0.0
+    },
+    {
+      "name": "S143 EURUSD Mid-Month+",
+      "asset": "EURUSD",
+      "base_wr": 43.58974358974359,
+      "base_net": 4604.680000000491,
+      "base_n": 234,
+      "base_pf": 1.268798053545055,
+      "best_filter": null,
+      "variants": [
+        {
+          "mode": "fbo_recent_w8",
+          "net": 954.220000000194,
+          "n": 114,
+          "wins": 47,
+          "losses": 67,
+          "wr": 41.228070175438596,
+          "pf": 1.1322324815035265,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w16",
+          "net": 1135.2500000002292,
+          "n": 144,
+          "wins": 59,
+          "losses": 85,
+          "wr": 40.97222222222222,
+          "pf": 1.1248898516063495,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w32",
+          "net": 3020.1800000003495,
+          "n": 185,
+          "wins": 80,
+          "losses": 105,
+          "wr": 43.24324324324324,
+          "pf": 1.2549781086480016,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w64",
+          "net": 3241.8400000004203,
+          "n": 215,
+          "wins": 92,
+          "losses": 123,
+          "wr": 42.7906976744186,
+          "pf": 1.2178263592310283,
+          "both_ok": true
+        },
+        {
+          "mode": "fbo_recent_w96",
+          "net": 4122.170000000466,
+          "n": 226,
+          "wins": 98,
+          "losses": 128,
+          "wr": 43.36283185840708,
+          "pf": 1.249759157761088,
+          "both_ok": true
+        }
+      ],
+      "delta_net": 0.0
+    }
+  ],
+  "total_delta": 0.0
+}
