@@ -34,8 +34,11 @@ RESULTS = os.path.join(ROOT, 'results')
 CAP, RISK = 10000.0, 1.0
 WR_FLOOR = 40.0
 
-# کاندیدِ برنده
+# کاندیدِ خامِ برنده (بیشترین net کل — عمدتاً long-bias)
 CFG = dict(k=5, tol=0.0015, lb=30, sl=150, tp=225, mh=48)
+# کاندیدِ نهاییِ قابلِ‌ثبت = double-bottomِ *تنگ* (ساختاری)، سهمِ مستقلِ کلِ پرتفوی.
+# tol سخت‌گیرانه‌تر (۰.۱٪) ⇒ الگوی دو-پایهٔ واقعی؛ سهمِ مستقل هر دو نیمه مثبت + WF.
+CFG_FINAL = dict(k=5, tol=0.001, lb=30, sl=250, tp=375, mh=48)
 
 
 def net_wr_pf(df, sig, asset, sl, tp, mh, mask=None):
