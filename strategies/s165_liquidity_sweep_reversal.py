@@ -60,28 +60,42 @@ def atr(df, n=14):
 
 
 def confirmed_pivots(df, swing_len):
-    """آخرین pivotHigh/pivotLow تأییدشده تا کندلِ t (بدونِ look-ahead).
-    یک pivot در اندیس k وقتی تأیید می‌شود که swing_len کندلِ بعدی هم دیده شده باشند،
-    یعنی زودترین کندلی که می‌تواند از آن استفاده کند t = k + swing_len است.
+    """آخرین pivotHigh/pivotLow تأییدشده تا کندلِ t (بدونِ look-ahead) — نسخهٔ برداری.
+    یک pivot در اندیسِ k وقتی «سقف/کفِ محلی» است که در پنجرهٔ [k-swing, k+swing]
+    اکسترممِ یکتا باشد؛ این pivot زودترین در t = k + swing_len قابلِ استفاده است
+    (چون تا آن کندل هر دو طرفِ پنجره دیده شده). با forward-fill به هر t نسبت داده می‌شود.
     """
     h = df["high"].values.astype(float)
     l = df["low"].values.astype(float)
     n = len(df)
+    w = swing_len
+    # اکسترممِ پنجرهٔ متقارن حولِ هر k (برداری با rolling)
+    sH = pd.Series(h)
+    sL = pd.Series(l)
+    win = 2 * w + 1
+    max_win = sH.rolling(win, center=True).max().to_numpy()
+    min_win = sL.rolling(win, center=True).min().to_numpy()
+    is_ph = np.zeros(n, dtype=bool)
+    is_pl = np.zeros(n, dtype=bool)
+    valid = np.arange(n)
+    mask = (valid >= w) & (valid < n - w)
+    is_ph[mask] = h[mask] >= max_win[mask]
+    is_pl[mask] = l[mask] <= min_win[mask]
+
     last_ph = np.full(n, np.nan)
     last_pl = np.full(n, np.nan)
-    cur_ph = np.nan
-    cur_pl = np.nan
-    for t in range(n):
-        k = t - swing_len  # کاندیدِ pivot که حالا تأیید می‌شود
-        if k - swing_len >= 0:
-            win_h = h[k - swing_len:k + swing_len + 1]
-            if h[k] == win_h.max() and np.argmax(win_h) == swing_len:
-                cur_ph = h[k]
-            win_l = l[k - swing_len:k + swing_len + 1]
-            if l[k] == win_l.min() and np.argmin(win_l) == swing_len:
-                cur_pl = l[k]
-        last_ph[t] = cur_ph
-        last_pl[t] = cur_pl
+    # مقدارِ pivot در k از t=k+w به بعد در دسترس است
+    for k in np.where(is_ph)[0]:
+        t0 = k + w
+        if t0 < n:
+            last_ph[t0] = h[k]
+    for k in np.where(is_pl)[0]:
+        t0 = k + w
+        if t0 < n:
+            last_pl[t0] = l[k]
+    # forward-fill آخرین مقدارِ در دسترس
+    last_ph = pd.Series(last_ph).ffill().to_numpy()
+    last_pl = pd.Series(last_pl).ffill().to_numpy()
     return last_ph, last_pl
 
 
