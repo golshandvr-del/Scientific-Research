@@ -519,3 +519,45 @@ time-drift 40%) است ⇒ سهمِ مستقل n=۲۸<۳۰ (رد). آزمونِ 
 باید به **SHORT** یا **رژیم‌شناسیِ غیرِ price-action** رفت. کد:
 `strategies/s177_brooks_reversal_bar.py` · `s177_finalize.py` · `s177_filter.py`.
 ▶ نشستِ بعد: **CHAPTER 6** (ادامهٔ ترتیبیِ کتاب)._
+
+---
+
+## مرحلهٔ ۱۱ (فصلِ ۶) — Signal Bars: Other Types — ⏳ در حالِ آزمون
+
+**نوع:** فصلِ ساختاری/شکلی (ص. ۱۰۱–… چاپی؛ pdf idx ۱۳۲+). Brooks انواعِ *دیگرِ* signal bar
+را فراتر از reversal barِ کلاسیک (فصل ۵) معرفی می‌کند. سه بخش:
+
+1. **STRONG TREND BAR:** یک کندلِ trend-barِ قوی (به‌ویژه در فازِ spike) خودش یک signal bar
+   است؛ ورود market-on-close یا stop یک تیک بالای high.
+2. **★ REVERSAL PATTERNS — Two-Bar Reversal (مفهومِ محوریِ نو):** «یکی از رایج‌ترین
+   ستاپ‌های برگشتی». تعریفِ صریحِ Brooks:
+   - **long setup:** یک **bear trend bar** بلافاصله به‌دنبالِ یک **bull trend bar**
+     (کندلِ نزولی که sell-climax است، سپس کندلِ صعودی که breakoutِ صعودی است).
+   - **★ short setup (جهتِ موردِنیازِ پرتفوی):** یک **bull trend bar** بلافاصله به‌دنبالِ
+     یک **bear trend bar** (کندلِ صعودی = buy-climax، سپس کندلِ نزولی = breakoutِ نزولی).
+   - دو کندل «تقریباً هم‌اندازه و در جهتِ مخالف».
+   - **قاعدهٔ overlap:** اگر reversal bar بیش از ~۷۵٪ کندلِ قبلی را overlap کند، بهتر است
+     به‌جای reversal bar، آن را **two-bar reversal** در نظر گرفت (نرخِ موفقیتِ بالاتر).
+   - **bear/bull trap:** اگر entry-bar فقط زیرِ low کندلِ reversal بیفتد (نه زیرِ low هر
+     دو کندل)، اغلب تله است ⇒ فیلترِ «شکستِ low/high هر دو کندل».
+3. **ALL BARS IN A CHANNEL:** در یک channel، هر کندل می‌تواند signal bar باشد (زمینه‌محور).
+
+**چرا این یک لبهٔ *نو* است + منطقِ انتخابِ جهت:** درسِ کلیدیِ S177 (فصل ۵) این بود که
+مفاهیمِ برگشتیِ LONG با اجتماعِ LONGِ طلا ۶۶٪ هم‌پوشان‌اند و باید به **SHORT** رفت.
+فصل ۶ صریحاً الگوی قرینهٔ SHORT را می‌دهد (bull-bar سپس bear-bar). پرتفوی به‌شدت به لبهٔ
+SHORT نیاز دارد (تنها SHORTهای فعلی: SHORT-MA-Confluence و S173). پس این نشست **two-bar
+bear-reversal (SHORT)** را می‌آزماید — هم بُعدِ تازه (الگوی دو-کندلی به‌جای تک-کندلی) و
+هم جهتِ کم‌پوششِ SHORT.
+
+**ترجمه به قانونِ بک‌تست‌پذیر (causal, shift-safe):**
+- **bear two-bar reversal (SHORT):** کندلِ `i-1` یک bull trend-bar قوی
+  (`close>open`, `body≥bf×range`) و کندلِ `i` یک bear trend-bar قوی
+  (`close<open`, `body≥bf×range`)، دو بدنه تقریباً هم‌اندازه
+  (`|body_i − body_{i-1}| ≤ sz×max(body)`)، در context = تستِ سقفِ اخیر (رژیمِ صعودی/خنثی).
+- **فیلترِ trap:** entry تنها وقتی فعال شود که low کندلِ `i` **زیرِ low هر دو کندل** برود
+  (نه فقط زیرِ کندلِ دوم).
+- ورود stop یک تیک زیرِ low الگو؛ SL بالای high الگو؛ TP نسبتِ R؛ گیتِ سختِ ۴-گانه + n≥۳۰.
+- **فرضیهٔ همپوشانی:** اگر لبهٔ مستقل ضعیف/هم‌پوشان بود، two-bar-reversal به‌عنوان فیلترِ
+  تأیید روی SHORTهای موجود بررسی می‌شود (قانونِ همپوشانی — پیش از فصلِ بعد).
+
+_وضعیت: ⏳ در حالِ آزمون. کد: `strategies/s178_brooks_two_bar_reversal.py`._
