@@ -200,9 +200,64 @@ S168) فقط سهمِ مستقل ثبت شد: net=**+$8,130**، WR ۵۵.۹٪، P
 
 ---
 
-_وضعیت: ✅ مرحلهٔ ۱ (Bar-Counting) پذیرفته + ✅ مرحلهٔ ۲ (Spike-and-Channel، فصل ۲۱)
-رد + ✅ مرحلهٔ ۳ (High-2 به‌عنوان فیلترِ تأیید روی S143) پذیرفته + ✅ مرحلهٔ ۴
-(Signs of Strength، فصل ۱۹ — لایهٔ مستقلِ طلا) پذیرفته. فصل‌های باقی‌ماندهٔ کتاب برای
-نشست‌های آینده: **Two Legs (ف۲۰)، Trend from the Open (ف۲۳)،
-Reversal/Trend-Resumption Day (ف۲۴/۲۵)، Stairs/Broad Channel (ف۲۶)،
-Trend Lines/Channels (ف۱۳–۱۷)**._
+## ۹. مرحلهٔ ۵ کتاب — **CHAPTER 20: Two Legs** — ✅ پذیرفته (سهمِ مستقلِ کوچک)
+
+**منطقِ استخراج‌شده (فصلِ ۲۰):** «بازار مرتب می‌کوشد کاری را دو بار انجام دهد» ⇒ هر
+حرکت به دو legِ کوچک‌تر می‌شکند؛ تستِ دو-پایهٔ یک extreme (double-top/bottomِ ساختاری)
+یک الگوی برگشتی است، و شکستِ خطِ روند شروعِ legِ تازه در جهتِ مخالف. کاربردِ نوِ کدشده:
+**double-bottom → Long** (نه bar-counting که S168 پوشش داد).
+
+**نتیجهٔ بک‌تست (XAUUSD long، double-bottomِ *تنگِ* ساختاری k5 tol0.001 lb30
+SL250/TP375):** سهمِ مستقلِ کلِ پرتفوی net=**+$2,140**، WR ۵۲.۵٪، n۳۹۴، PF ۱.۲۳،
+هر دو نیمه مثبت، walk-forward هر ۴ پنجره مثبت. همپوشانیِ خام با اجتماعِ پرتفوی ۹۷٪ ⇒
+طبق تصمیمِ محافظه‌کارانهٔ ضدِ دوباره‌شماری فقط سهمِ مستقل ثبت شد. کاندیدِ خامِ پُرسود
+(+$20,435) عمدتاً long-biasِ طلا بود (baseline p95=+$14,095) و ثبت نشد. هیچ SHORT
+(double-top) پذیرفته نشد ⇒ تأییدِ مجددِ درسِ «bias صعودیِ طلا».
+
+**حکم: ✅ پذیرفته. Δ سودِ خالص = +$2,140 ⇒ رکورد: +$233,260 → +$235,400.**
+
+- مستندِ کامل: [`results/S172_BrooksTwoLegs_NetProfit_235400_ACCEPTED.md`](../../../results/S172_BrooksTwoLegs_NetProfit_235400_ACCEPTED.md)
+- کد: `strategies/s172_brooks_two_legs.py` · `s172_validate.py` · `s172c_two_leg_filter.py` · `s172_finalize.py`
+
+---
+
+## 🗺️ نقشهٔ راهِ ترتیبیِ کتاب (تثبیت‌شده — از این پس بدونِ پرش)
+
+> **درسِ فرآیندی (User Note ۲):** چهار نشستِ نخست فصل‌ها را جسته‌گریخته انتخاب کردند
+> (ترتیبِ واقعی: ۱۲ → ۲۱ → ۱۹ → ۲۰). این **اشتباهِ روش‌شناختی** بود. از این پس کتاب
+> **دقیقاً به ترتیبِ فصل** پیش می‌رود و هر نشست از **نخستین فصلِ استخراج‌نشده** آغاز می‌شود.
+
+| فصل | عنوان | Part | وضعیت |
+|---|---|---|---|
+| 1 | Spectrum of Price Action | I | ⬜ **← نخستین فصلِ باقی‌مانده** |
+| 2 | Trend Bars, Doji Bars, Climaxes | I | ⬜ |
+| 3 | Breakouts, Trading Ranges, Tests, Reversals | I | ⬜ |
+| 4 | Bar Basics (Signal/Entry Bars, Setups) | I | ⬜ |
+| 5 | Signal Bars: Reversal Bars | I | ⬜ |
+| 6 | Signal Bars: Other Types | I | ⬜ |
+| 7 | Outside Bars | I | ⬜ |
+| 8 | Importance of the Close of the Bar | I | ⬜ |
+| 9 | ETFs and Inverse Charts | I | ⬜ (نامرتبط با XAU/EUR — احتمالاً رد) |
+| 10 | Second Entries | I | ⬜ |
+| 11 | Late and Missed Entries | I | ⬜ |
+| **12** | **Pattern Evolution** | I | ✅ **S168** (نشست ۱) |
+| 13 | Trend Lines | II | ⬜ |
+| 14 | Trend Channel Lines | II | ⬜ |
+| 15 | Channels | II | ⬜ |
+| 16 | Micro Channels | II | ⬜ |
+| 17 | Horizontal Lines: Swing Points | II | ⬜ |
+| 18 | Example of How to Trade a Trend | III | ⬜ |
+| **19** | **Signs of Strength** | III | ✅ **S171** (نشست ۴) |
+| **20** | **Two Legs** | III | ✅ **S172** (نشست ۵/قبلی) |
+| **21** | **Spike and Channel Trend** | IV | ⛔ **S169** رد (نشست ۲) |
+| 22 | Trending Trading Range Days | IV | ⬜ |
+| 23 | Trend from the Open & Small Pullback Trends | IV | ⬜ |
+| 24 | Reversal Day | IV | ⬜ |
+| 25 | Trend Resumption Day | IV | ⬜ |
+| 26 | Stairs: Broad Channel Trend | IV | ⬜ |
+
+**⇒ نشستِ جاری از CHAPTER 1 آغاز می‌شود** و تا پایانِ کتاب فصل‌به‌فصل جلو می‌رود.
+فصل‌های پیش‌ترخوانده (۱۲/۱۹/۲۰/۲۱) در جای خود skip می‌شوند.
+
+_وضعیت: ✅ ۵ نشستِ کتاب انجام شد (رکورد +$235,400). نقشهٔ ترتیبی تثبیت شد؛
+نخستین فصلِ استخراج‌نشده = **CHAPTER 1: The Spectrum of Price Action**._
