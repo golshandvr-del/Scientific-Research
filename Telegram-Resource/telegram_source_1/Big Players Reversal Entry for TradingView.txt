@@ -1,0 +1,43 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+
+//@version=6
+indicator(title = 'Big Players Entry', shorttitle = 'Big Players Entry', overlay=true)
+periodL = input.int(33, minval=1, title='Period Emtrys', group='Settings Big Players Entry')
+adxlen = input.int(14, minval=1, title='Period ADX', group='Settings Big Players Entry')
+adxF = input(true, 'Trend filter ADX', group = 'Settings Big Players Entry')
+
+varl0 = ta.ema(close, 5)
+varl1 = ta.lowest(low, periodL)
+varl2 = ta.ema(low <= varl1 ? varl0 : 0, 3) * 40
+varl3 = varl2 > 100 ? varl2 * 0.312 : varl2
+varh0 = ta.ema(close, 5)
+varh1 = ta.highest(high, periodL)
+varh2 = ta.ema(high >= varh1 ? varh0 : 0, 3) * 40
+varh3 = varh2 > 100 ? varh2 * 0.312 : varh2
+
+// Trend Filter ADX
+TrueRange = math.max(math.max(high - low, math.abs(high - nz(close[1]))), math.abs(low - nz(close[1])))
+DirectionalMovementPlus = high - nz(high[1]) > nz(low[1]) - low ? math.max(high - nz(high[1]), 0) : 0
+DirectionalMovementMinus = nz(low[1]) - low > high - nz(high[1]) ? math.max(nz(low[1]) - low, 0) : 0
+SmoothedTrueRange = 0.0
+SmoothedTrueRange := nz(SmoothedTrueRange[1]) - nz(SmoothedTrueRange[1]) / adxlen + TrueRange
+SmoothedDirectionalMovementPlus = 0.0
+SmoothedDirectionalMovementPlus := nz(SmoothedDirectionalMovementPlus[1]) - nz(SmoothedDirectionalMovementPlus[1]) / adxlen + DirectionalMovementPlus
+SmoothedDirectionalMovementMinus = 0.0
+SmoothedDirectionalMovementMinus := nz(SmoothedDirectionalMovementMinus[1]) - nz(SmoothedDirectionalMovementMinus[1]) / adxlen + DirectionalMovementMinus
+DIPlus = SmoothedDirectionalMovementPlus / SmoothedTrueRange * 100
+DIMinus = SmoothedDirectionalMovementMinus / SmoothedTrueRange * 100
+DX = math.abs(DIPlus - DIMinus) / (DIPlus + DIMinus) * 100
+ADX = ta.sma(DX, adxlen)
+
+plotshape(adxF ? varl3 > varl3[1] and close > close[1] and ADX > 40 and DIMinus > DIPlus : varl3 > varl3[1] and close > close[1], title = 'More BUYs', location = location.belowbar, color = color.rgb(140, 251, 197), textcolor = color.rgb(140, 251, 197), style = shape.triangleup, size = size.tiny, text = 'Big Player')
+plotshape(adxF ? varh3 > varh3[1] and close < close[1] and ADX > 40 and DIMinus < DIPlus : varh3 > varh3[1] and close < close[1], title = 'More Sells', location=location.abovebar, color = color.rgb(255, 122, 122), textcolor = color.rgb(255, 122, 122), style = shape.triangledown, size = size.tiny, text = 'Big Player')
+alertcondition((adxF ? varl3 > varl3[1] and close > close[1] and ADX > 40 and DIMinus > DIPlus : varl3 > varl3[1] and close > close[1]) or (adxF ? varh3 > varh3[1] and close < close[1] and ADX > 40 and DIMinus < DIPlus : varh3 > varh3[1] and close < close[1]), title = 'Big Players Entry', message = 'Big Players Entry at {{exchange}} | {{ticker}}')
+
+// ==========================================================================================
+
+// === Dashboard with Telegram Link ===
+var table myTable = table.new(position.top_center, 1, 1, border_width=1, frame_color=color.black, bgcolor=color.white)
+
+// Add Telegram Message to Dashboard
+table.cell(myTable, 0, 0, "Join Telegram For Premium Indicators @T.me/Robexminer ", bgcolor=color.blue, text_color=color.white, text_size=size.large)

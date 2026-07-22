@@ -1,0 +1,55 @@
+Instructions:
+
+(I would recommend playing around with the settings using a Demo account first, and then move to Live account with your favourite settings)
+
+*EA works on both Standard and ECN account types.
+
+1. Open the MT4
+
+2. Copy TSR_EA.ex4, paste at File-> Open Date Folder -> MLQ4 -> Experts -> TSR_EA.ex4
+
+3. Close the MT4
+
+4. Open MT4 again
+
+5. Remember to turn on THE "AUTOTRADING" into green button
+
+6. Select H4 chart (Recommended) for the currency pair you wish to use the EA (Recommended is USDCHF, EURUSD, GBPUSD, USDJPY)
+* (You can try our EA on other charts result may vary)
+
+7. You can start by selecting only 1-2 currency pair first (USDCHF/EURUSD) if your balance is low and slowly move to more currency pair as your balance increases.
+$100-$400 only use 1 pair
+$500-$900 use 2 pairs
+$1000-$1900 use 3 pairs
+$2000 or more use 4 pairs
+
+
+8. Press Ctrl + N to open Navigator -> Find "Expert Advisor" section -> Right click on Legacy EA -> Select "Attach to a chart",
+          Select "Inputs", look for the "DiMarti" in the Variable section at the second row from the end
+
+9. Adjust DiMarti from 1.7 to 0.0 (if you use 0.01 lot size) -> Press "OK" <-- THE MOST IMPORTANT STEP TO USE FIXED LOT SIZE 
+
+10. Adjust DiMarti from 1.7 to 1.0 (if you use other than 0.01 lot size)-> Press "OK" <-- THE MOST IMPORTANT STEP TO USE FIXED LOT SIZE
+
+11. (Higher Risk Option) Leave DiMarti at 1.7 if you want the EA to use Martingale System and different lot sizes (Higher Risk Option)
+
+++++PAIRS TO USE: $2000 use EURGBP EURUSD GBPJPY EURJPY 0.01 lot size -> follow these instruction and increase lot size base on your balance 
+(For example: use 0.1 lot size for each pairs if you have $20000 cent/USD account)
+*Average Drawdown is 10%-20% and Profit is 100% a month
+*Amount below $2000 use 0.01 lot size
+
+12. Adjust Lot Size by editing the Fix_Lot in the Variable section which is 4 rows above DiMarti
+(Lot Size is at your own risk, we suggest 0.01 lot size for $2000 for low risk, anything more is already higher risk, adjust according to your risk)
+(Recommended leverage is 1:200 or more)
+
+13. Make sure there is a SMILEY FACE on the right corner, not a sad face. If there is a sad face, turn on your AutoTrading and set up the Expert Advisor again.
+
+14. Do not turn off the Metatrader 4 on your PC or the EA will stop working. Only turn off on Sat and Sun. We recommend to Use VPS to prevent the Metatrader 4 from closing.
+
+15. We recommend to withdraw profits every month for good monthly passive income. We will NOT BE RESPONSIBLE for any losses that may happen.
+
+16. A great way to profit from our EA is to stop the EA by closing MT4 (Close MT4 on Computer or VPS) and then close all trades manually 
+about every 1-3 days using the MT4 on your phone once your account is in positive balance and has profited 
+from running the EA and then open back your MT4 and let the EA place new trades again.
+
+PLEASE CONTACT OUR SUPPORT TEAM IF YOU HAVE ANY PROBLEM IN SET UP AND WE WILL HELP YOU OUT :)

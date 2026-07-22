@@ -1,0 +1,155 @@
+//@version=6
+indicator('Trinity Volume Profile / Fixed Range {LonesomeTheBlue}', overlay=true, max_boxes_count=200, max_bars_back=501)
+
+bbars   = input.int(title='Number of Bars', defval=150, minval=1, maxval=500)
+offset  = input.int(title='Offset Bars (from current bar)', defval=80, minval=5, maxval=200)
+cnum    = input.int(title='Row Size', defval=24, minval=5, maxval=100)
+percent = input.float(70., title='Value Area Volume %', minval=0, maxval=100)
+
+poc_color    = input.color(defval=#ff0000, title='POC Color', inline='poc')
+vah_color    = input.color(defval=#00ff00, title='VAH (POC+) Color')
+val_color    = input.color(defval=#ff00ff, title='VAL (POC-) Color')
+poc_width    = input.int(defval=2, title='Width', minval=1, maxval=5, inline='poc')
+var table wm = table.new(position.bottom_right, 1, 1)
+if barstate.isfirst
+    table.cell(wm, 0, 0, "Telegram @free_fx_pro", text_color = color.new(color.gray, 70), text_size = size.large)
+vup_color    = input.color(defval=color.new(color.green, 30), title='Value Area Up')
+vdown_color  = input.color(defval=color.new(color.red, 30), title='Value Area Down')
+up_color     = input.color(defval=color.new(color.green, 75), title='UP Volume')
+down_color   = input.color(defval=color.new(color.red, 75), title='Down Volume')
+
+show_poc     = input.bool(defval=true, title="Show POC Label")
+show_va      = input.bool(defval=true, title="Show VAH / VAL Labels")
+show_volumes = input.bool(defval=true, title="Show Volume Values")
+
+// Persistent objects
+var array<label> vol_labels = array.new<label>()
+var line poc_line = na
+var line vah_line = na
+var line val_line = na
+var label poc_label = na
+var label vah_label = na
+var label val_label = na
+
+top = ta.highest(bbars)
+bot = ta.lowest(bbars)
+dist = (top - bot) / 500
+step = (top - bot) / cnum
+
+levels = array.new<float>(cnum + 1)
+for x = 0 to cnum
+    array.set(levels, x, bot + step * x)
+
+get_vol(y11, y12, y21, y22, height, vol) =>
+    nz(math.max(math.min(math.max(y11, y12), math.max(y21, y22)) - math.max(math.min(y11, y12), math.min(y21, y22)), 0) * vol / height)
+
+if barstate.islast
+    volumes = array.new<float>(cnum * 2, 0.)
+    for bars = 0 to bbars - 1
+        body_top = math.max(close[bars], open[bars])
+        body_bot = math.min(close[bars], open[bars])
+        itsgreen = close[bars] >= open[bars]
+        topwick = high[bars] - body_top
+        bottomwick = body_bot - low[bars]
+        body = body_top - body_bot
+        bodyvol = body * volume[bars] / (2 * topwick + 2 * bottomwick + body)
+        topwickvol = 2 * topwick * volume[bars] / (2 * topwick + 2 * bottomwick + body)
+        bottomwickvol = 2 * bottomwick * volume[bars] / (2 * topwick + 2 * bottomwick + body)
+        
+        for x = 0 to cnum - 1
+            float up_contrib = itsgreen ? get_vol(array.get(levels, x), array.get(levels, x + 1), body_bot, body_top, body, bodyvol) : 0.
+            float wick_contrib = get_vol(array.get(levels, x), array.get(levels, x + 1), body_top, high[bars], topwick, topwickvol) / 2 + 
+                                 get_vol(array.get(levels, x), array.get(levels, x + 1), body_bot, low[bars], bottomwick, bottomwickvol) / 2
+            
+            array.set(volumes, x, array.get(volumes, x) + up_contrib + wick_contrib)
+            
+            float down_contrib = itsgreen ? 0. : get_vol(array.get(levels, x), array.get(levels, x + 1), body_bot, body_top, body, bodyvol)
+            array.set(volumes, x + cnum, array.get(volumes, x + cnum) + down_contrib + wick_contrib)
+
+    totalvols = array.new<float>(cnum, 0.)
+    for x = 0 to cnum - 1
+        array.set(totalvols, x, array.get(volumes, x) + array.get(volumes, x + cnum))
+
+    int poc = array.indexof(totalvols, array.max(totalvols))
+    // Value Area calculation
+    totalmax = array.sum(totalvols) * percent / 100.
+    va_total = array.get(totalvols, poc)
+    int va_up = poc
+    int va_down = poc
+    for x = 0 to cnum - 1
+        if va_total >= totalmax
+            break
+        uppervol = va_up < cnum - 1 ? array.get(totalvols, va_up + 1) : 0.
+        lowervol = va_down > 0 ? array.get(totalvols, va_down - 1) : 0.
+        if uppervol == 0 and lowervol == 0
+            break
+        if uppervol >= lowervol
+            va_total += uppervol
+            va_up += 1
+        else
+            va_total += lowervol
+            va_down -= 1
+
+    maxvol = array.max(totalvols)
+    for x = 0 to cnum * 2 - 1
+        array.set(volumes, x, array.get(volumes, x) * bbars / (3 * maxvol))
+
+    // Draw Volume Profile
+    var vol_bars = array.new<box>(cnum * 2, na)
+    right_start = bar_index + offset
+    int profile_left = right_start
+    
+    for x = 0 to cnum - 1
+        box.delete(array.get(vol_bars, x))
+        box.delete(array.get(vol_bars, x + cnum))
+        
+        up_vol   = math.round(array.get(volumes, x))
+        down_vol = math.round(array.get(volumes, x + cnum))
+        total_width = up_vol + down_vol
+        profile_left := math.min(profile_left, right_start - total_width)
+        
+        array.set(vol_bars, x, box.new(right_start - up_vol, array.get(levels, x + 1) - dist, right_start, array.get(levels, x) + dist, border_width=0, bgcolor = x >= va_down and x <= va_up ? vup_color : up_color))
+        array.set(vol_bars, x + cnum, box.new(right_start - total_width, array.get(levels, x + 1) - dist, right_start - up_vol, array.get(levels, x) + dist, border_width=0, bgcolor = x >= va_down and x <= va_up ? vdown_color : down_color))
+
+    // POC, VAH (POC+), VAL (POC-) Lines
+    poc_level = (array.get(levels, poc) + array.get(levels, poc + 1)) / 2
+    vah_level = (array.get(levels, va_up) + array.get(levels, va_up + 1)) / 2
+    val_level = (array.get(levels, va_down) + array.get(levels, va_down + 1)) / 2
+
+    line.delete(poc_line)
+    line.delete(vah_line)
+    line.delete(val_line)
+    
+    poc_line := line.new(bar_index - bbars + 1, poc_level, right_start + 30, poc_level, extend=extend.right, color=poc_color, width=poc_width)
+    vah_line := line.new(bar_index - bbars + 1, vah_level, right_start + 30, vah_level, extend=extend.right, color=vah_color, width=1)
+    val_line := line.new(bar_index - bbars + 1, val_level, right_start + 30, val_level, extend=extend.right, color=val_color, width=1)
+
+    // Labels on the left
+    if show_poc
+        label.delete(poc_label)
+        poc_label := label.new(profile_left - 15, poc_level, "POC", style=label.style_label_right, size=size.small, textcolor=poc_color)
+
+    if show_va
+        label.delete(vah_label)
+        label.delete(val_label)
+        vah_label := label.new(profile_left - 15, vah_level, "POC+", style=label.style_label_right, size=size.small, textcolor=vah_color)
+        val_label := label.new(profile_left - 15, val_level, "POC-", style=label.style_label_right, size=size.small, textcolor=val_color)
+
+    // Volume value labels
+    if show_volumes
+        if array.size(vol_labels) > 0
+            for i = 0 to array.size(vol_labels) - 1
+                label.delete(array.get(vol_labels, i))
+        array.clear(vol_labels)
+        
+        for x = 0 to cnum - 1
+            up_vol   = math.round(array.get(volumes, x))
+            down_vol = math.round(array.get(volumes, x + cnum))
+            y_pos    = (array.get(levels, x) + array.get(levels, x + 1)) / 2
+            lbl = label.new(right_start - (up_vol + down_vol) - 5, y_pos, "▲" + str.tostring(up_vol) + "\n▼" + str.tostring(down_vol), style=label.style_label_right, size=size.tiny, color=color.new(color.white,100), textcolor=color.gray)
+            array.push(vol_labels, lbl)
+// === Dashboard with Telegram Link ===
+var table myTable = table.new(position.top_center, 1, 1, border_width=1, frame_color=color.black, bgcolor=color.white)
+
+// Add Telegram Message to Dashboard
+table.cell(myTable, 0, 0, "Join Telegram @free_fx_pro", bgcolor=color.blue, text_color=color.white, text_size=size.normal)

@@ -1,0 +1,581 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © officialjackofalltrades
+//@version=6
+
+indicator("TJR Smart Money Model [JOAT]", "TJR SMC [JOAT]", overlay = true, max_lines_count = 500, max_labels_count = 500, max_boxes_count = 500)
+
+// ─────────────────────────────────────────────────────────────────────────
+//  PALETTE  (monochrome base + reserved accents for key events)
+// ─────────────────────────────────────────────────────────────────────────
+WHITE   = #F5F7FA
+LGREY   = #C7CDD6
+MGREY   = #8A93A3
+DGREY   = #4A5160
+INK     = #14181F
+MUTE    = #8A93A3
+ACC_UP  = #1E9E7A          // reserved bullish accent (sweep low / bullish MSS)
+ACC_UPH = #56D6AE
+ACC_DN  = #C0392B          // reserved bearish accent (sweep high / bearish MSS)
+ACC_DNH = #E8837A
+GOLD    = #C9A24B          // equilibrium / entry zone
+
+// ─────────────────────────────────────────────────────────────────────────
+//  INPUTS
+// ─────────────────────────────────────────────────────────────────────────
+gS      = "Structure"
+pivLen  = input.int(8, "Swing pivot strength", minval = 2, group = gS, tooltip = "Bars either side used to confirm a swing high/low. Higher = only major structure is tracked.")
+showBos = input.bool(true, "Show BOS / CHoCH", group = gS)
+showSwn = input.bool(false, "Mark raw swing points", group = gS)
+
+gL      = "Liquidity & Sweeps"
+showLiq = input.bool(true, "Show liquidity levels (BSL/SSL)", group = gL, tooltip = "Draws the most recent buy-side (above) and sell-side (below) liquidity that price is likely to seek.")
+showSwp = input.bool(true, "Mark liquidity sweeps", group = gL)
+
+gM      = "Market Structure Shift"
+dispAtr = input.float(0.6, "Displacement body (ATR x)", minval = 0.1, step = 0.1, group = gM, tooltip = "The MSS candle's body must exceed this multiple of ATR to count as displacement.")
+mssWin  = input.int(12, "Sweep-to-MSS window (bars)", minval = 1, group = gM, tooltip = "How long after a sweep an MSS is still accepted as its confirmation.")
+entryWin= input.int(20, "MSS-to-entry window (bars)", minval = 1, group = gM, tooltip = "How long the entry zone stays valid after an MSS before the setup is abandoned.")
+
+gZ      = "Entry Zones"
+showFVG = input.bool(true, "Show fair value gaps", group = gZ)
+fvgMinAtr = input.float(0.20, "Min FVG size (ATR x)", minval = 0.0, step = 0.05, group = gZ)
+fvgMax  = input.int(6, "Max live FVGs", minval = 1, maxval = 30, group = gZ)
+showOB  = input.bool(true, "Show order blocks", group = gZ)
+obMax   = input.int(6, "Max live order blocks", minval = 1, maxval = 20, group = gZ)
+zonePad = input.float(0.10, "Equilibrium zone pad (ATR x)", minval = 0.0, step = 0.05, group = gZ, tooltip = "Thickness of the 50% equilibrium entry band when no fair-value gap is present.")
+
+gSMT    = "SMT Divergence"
+useSMT  = input.bool(false, "Require SMT divergence", group = gSMT, tooltip = "Only allow entries confirmed by a divergence against a correlated instrument.")
+smtInput= input.symbol("", "Correlated symbol", group = gSMT, tooltip = "e.g. when trading one index, set its correlated index here. Leave blank to disable the check.")
+showSMT = input.bool(true, "Label SMT divergences", group = gSMT)
+
+gK      = "Killzones"
+useKZ   = input.bool(false, "Only signal inside killzones", group = gK, tooltip = "Restrict entries to the session windows where this model is designed to be used.")
+kzTz    = input.string("America/New_York", "Killzone timezone", group = gK)
+kzLdnOn = input.bool(true, "London killzone", group = gK)
+kzLdn   = input.session("0200-0500", "London window", group = gK)
+kzNyOn  = input.bool(true, "New York AM killzone", group = gK)
+kzNy    = input.session("0930-1100", "New York AM window", group = gK)
+showKZ  = input.bool(true, "Shade killzones", group = gK)
+
+gC      = "Candle Paint"
+paintC  = input.bool(true, "Paint candles monochrome", group = gC, tooltip = "Bullish candles light, bearish candles grey — the signature clean tape.")
+
+gTr     = "Signals & Trade"
+showBox = input.bool(true, "TP/SL boxes", group = gTr)
+atrLenT = input.int(14, "ATR length", minval = 1, group = gTr)
+slPad   = input.float(0.5, "SL padding beyond sweep (ATR x)", minval = 0.0, step = 0.1, group = gTr)
+tp1R    = input.float(1.0, "TP1 (R)", minval = 0.5, step = 0.5, group = gTr)
+tp2R    = input.float(2.0, "TP2 (R)", minval = 0.5, step = 0.5, group = gTr)
+tp3R    = input.float(3.0, "TP3 (R)", minval = 0.5, step = 0.5, group = gTr)
+boxW    = input.int(28, "TP/SL box width (bars)", minval = 5, group = gTr)
+minGap  = input.int(10, "Min bars between signals", minval = 0, group = gTr, tooltip = "Spacing so Buy/Sell never overlap on lower timeframes. 0 = off.")
+
+gP      = "Dashboard"
+showHUD = input.bool(true, "Show dashboard", group = gP)
+hudPos  = input.string("Top Right", "Position", options = ["Top Right", "Top Left", "Bottom Right", "Bottom Left", "Middle Right"], group = gP)
+hudSize = input.string("Normal", "Text size", options = ["Tiny", "Small", "Normal", "Large"], group = gP)
+
+// ─────────────────────────────────────────────────────────────────────────
+//  HELPERS
+// ─────────────────────────────────────────────────────────────────────────
+f_pos(string s) =>
+    switch s
+        "Top Right"    => position.top_right
+        "Top Left"     => position.top_left
+        "Bottom Right" => position.bottom_right
+        "Bottom Left"  => position.bottom_left
+        => position.middle_right
+
+hudTS = hudSize == "Tiny" ? size.tiny : hudSize == "Small" ? size.small : hudSize == "Large" ? size.large : size.normal
+
+atr = ta.atr(atrLenT)
+atrSafe = na(atr) or atr <= 0 ? syminfo.mintick : atr
+var table wm = table.new(position.bottom_right, 1, 1)
+if barstate.isfirst
+    table.cell(wm, 0, 0, "Telegram @free_fx_pro", text_color = color.new(color.gray, 70), text_size = size.large)
+// ─────────────────────────────────────────────────────────────────────────
+//  KILLZONES  (session windows in a chosen timezone)
+// ─────────────────────────────────────────────────────────────────────────
+inLdn = kzLdnOn and not na(time(timeframe.period, kzLdn, kzTz))
+inNy  = kzNyOn  and not na(time(timeframe.period, kzNy,  kzTz))
+inKZ  = inLdn or inNy
+killOK = not useKZ or inKZ
+
+// ─────────────────────────────────────────────────────────────────────────
+//  SWING PIVOTS  (confirmed pivLen bars back — non-repainting)
+// ─────────────────────────────────────────────────────────────────────────
+ph = ta.pivothigh(high, pivLen, pivLen)
+pl = ta.pivotlow(low,  pivLen, pivLen)
+
+// active (most recent) swing levels + a "broken" flag so each fires ONCE
+var float shPrice = na
+var int   shBar   = na
+var bool  shBroken= false
+var float slPrice = na
+var int   slBar   = na
+var bool  slBroken= false
+
+// two most recent swing extremes (for SMT) + correlated readings
+var float lastSHp = na
+var float prevSHp = na
+var float lastSLp = na
+var float prevSLp = na
+
+// ─────────────────────────────────────────────────────────────────────────
+//  SMT — correlated instrument (lookahead OFF, blank = self = disabled)
+// ─────────────────────────────────────────────────────────────────────────
+smtSym = smtInput == "" ? syminfo.tickerid : smtInput
+[cHigh, cLow] = request.security(smtSym, timeframe.period, [high, low], lookahead = barmerge.lookahead_off)
+var float lastSHc = na
+var float prevSHc = na
+var float lastSLc = na
+var float prevSLc = na
+
+if not na(ph)
+    shPrice := ph
+    shBar   := bar_index - pivLen
+    shBroken:= false
+    prevSHp := lastSHp
+    lastSHp := ph
+    prevSHc := lastSHc
+    lastSHc := cHigh[pivLen]
+if not na(pl)
+    slPrice := pl
+    slBar   := bar_index - pivLen
+    slBroken:= false
+    prevSLp := lastSLp
+    lastSLp := pl
+    prevSLc := lastSLc
+    lastSLc := cLow[pivLen]
+
+// SMT: our new extreme is unconfirmed by the correlated symbol
+smtHasSym = smtInput != ""
+bearSMT = smtHasSym and not na(prevSHp) and lastSHp > prevSHp and lastSHc <= prevSHc  // we higher high, corr didn't
+bullSMT = smtHasSym and not na(prevSLp) and lastSLp < prevSLp and lastSLc >= prevSLc  // we lower low, corr didn't
+
+if showSwn and not na(ph)
+    label.new(bar_index - pivLen, ph, "·", style = label.style_none, textcolor = color.new(MGREY, 30), size = size.tiny)
+if showSwn and not na(pl)
+    label.new(bar_index - pivLen, pl, "·", style = label.style_none, textcolor = color.new(MGREY, 30), size = size.tiny)
+
+if showSMT and bearSMT
+    label.new(bar_index - pivLen, ph, "SMT", style = label.style_label_down, color = color.new(ACC_DN, 20), textcolor = WHITE, size = size.tiny, yloc = yloc.abovebar)
+if showSMT and bullSMT
+    label.new(bar_index - pivLen, pl, "SMT", style = label.style_label_up, color = color.new(ACC_UP, 20), textcolor = WHITE, size = size.tiny, yloc = yloc.belowbar)
+
+// ─────────────────────────────────────────────────────────────────────────
+//  MARKET STRUCTURE  (BOS / CHoCH — fires ONCE per level, then that level is
+//  consumed until a fresh swing forms; this is the fix for sprayed labels)
+// ─────────────────────────────────────────────────────────────────────────
+var int bias = 0
+
+bullBreak = not na(shPrice) and not shBroken and close > shPrice
+bearBreak = not na(slPrice) and not slBroken and close < slPrice
+
+bool choChUp = false
+bool choChDn = false
+
+if bullBreak
+    choChUp := bias < 0          // break against a bearish bias = change of character
+    shBroken := true
+    bias := 1
+if bearBreak
+    choChDn := bias > 0
+    slBroken := true
+    bias := -1
+
+// draw the broken level cleanly: a line from the swing to the break + a label
+if showBos and (bullBreak or bearBreak)
+    lvl = bullBreak ? shPrice : slPrice
+    x1  = bullBreak ? shBar : slBar
+    line.new(x1, lvl, bar_index, lvl, color = bullBreak ? color.new(ACC_UP, 30) : color.new(ACC_DN, 30), style = line.style_dashed, width = 1)
+    txt = (bullBreak ? (choChUp ? "CHoCH" : "BOS") : (choChDn ? "CHoCH" : "BOS"))
+    label.new(bar_index, lvl, txt, style = bullBreak ? label.style_label_up : label.style_label_down, color = bullBreak ? color.new(ACC_UP, 15) : color.new(ACC_DN, 15), textcolor = WHITE, size = size.tiny, yloc = bullBreak ? yloc.belowbar : yloc.abovebar)
+
+// displacement (used to qualify an MSS)
+dispUp = (close - open) > dispAtr * atrSafe
+dispDn = (open - close) > dispAtr * atrSafe
+
+// ─────────────────────────────────────────────────────────────────────────
+//  LIQUIDITY LEVELS + SWEEPS
+// ─────────────────────────────────────────────────────────────────────────
+var line bslLine = na
+var line sslLine = na
+var label bslLbl = na
+var label sslLbl = na
+if showLiq and barstate.islast
+    if na(bslLine)
+        bslLine := line.new(bar_index, na, bar_index, na, color = color.new(MGREY, 40), style = line.style_dotted)
+        sslLine := line.new(bar_index, na, bar_index, na, color = color.new(MGREY, 40), style = line.style_dotted)
+        bslLbl  := label.new(bar_index, na, "", style = label.style_label_left, color = color.new(INK, 100), textcolor = MUTE, size = size.tiny)
+        sslLbl  := label.new(bar_index, na, "", style = label.style_label_left, color = color.new(INK, 100), textcolor = MUTE, size = size.tiny)
+    if not na(shPrice)
+        line.set_xy1(bslLine, bar_index - 40, shPrice)
+        line.set_xy2(bslLine, bar_index + 8, shPrice)
+        label.set_xy(bslLbl, bar_index + 8, shPrice)
+        label.set_text(bslLbl, " BSL " + str.tostring(shPrice, format.mintick))
+    if not na(slPrice)
+        line.set_xy1(sslLine, bar_index - 40, slPrice)
+        line.set_xy2(sslLine, bar_index + 8, slPrice)
+        label.set_xy(sslLbl, bar_index + 8, slPrice)
+        label.set_text(sslLbl, " SSL " + str.tostring(slPrice, format.mintick))
+
+// sweep = raid a swing then close back inside (failed break)
+sweepUp = not na(shPrice) and high > shPrice and close < shPrice   // raid buy-side -> bearish intent
+sweepDn = not na(slPrice) and low  < slPrice and close > slPrice   // raid sell-side -> bullish intent
+
+if showSwp and sweepUp
+    label.new(bar_index, high, "sweep", style = label.style_label_down, color = color.new(ACC_DN, 35), textcolor = WHITE, size = size.tiny, yloc = yloc.abovebar)
+if showSwp and sweepDn
+    label.new(bar_index, low, "sweep", style = label.style_label_up, color = color.new(ACC_UP, 35), textcolor = WHITE, size = size.tiny, yloc = yloc.belowbar)
+
+// ─────────────────────────────────────────────────────────────────────────
+//  ORDER BLOCKS  (last opposing candle before a displacement leg)
+// ─────────────────────────────────────────────────────────────────────────
+var array<box> obBox = array.new<box>()
+var array<int> obDir = array.new<int>()
+
+bullOB = dispUp and close[1] < open[1]
+bearOB = dispDn and close[1] > open[1]
+
+if showOB and bullOB
+    b = box.new(bar_index - 1, math.max(open[1], close[1]), bar_index + 6, low[1], border_color = color.new(ACC_UP, 45), bgcolor = color.new(ACC_UP, 88), border_width = 1, text = "Demand", text_color = color.new(ACC_UP, 20), text_size = size.tiny, text_halign = text.align_left, text_valign = text.align_bottom)
+    array.push(obBox, b)
+    array.push(obDir, 1)
+if showOB and bearOB
+    b = box.new(bar_index - 1, high[1], bar_index + 6, math.min(open[1], close[1]), border_color = color.new(ACC_DN, 45), bgcolor = color.new(ACC_DN, 88), border_width = 1, text = "Supply", text_color = color.new(ACC_DN, 20), text_size = size.tiny, text_halign = text.align_left, text_valign = text.align_top)
+    array.push(obBox, b)
+    array.push(obDir, -1)
+
+if array.size(obBox) > 0
+    for i = array.size(obBox) - 1 to 0
+        b   = array.get(obBox, i)
+        d   = array.get(obDir, i)
+        top = box.get_top(b)
+        bot = box.get_bottom(b)
+        mitig = d == 1 ? close < bot : close > top
+        if mitig
+            box.delete(b)
+            array.remove(obBox, i)
+            array.remove(obDir, i)
+        else
+            box.set_right(b, bar_index + 6)
+while array.size(obBox) > obMax
+    box.delete(array.shift(obBox))
+    array.shift(obDir)
+
+// ─────────────────────────────────────────────────────────────────────────
+//  FAIR VALUE GAPS  (3-bar imbalance) — tracked so the MSS can adopt one
+// ─────────────────────────────────────────────────────────────────────────
+var array<box>   fvgBox = array.new<box>()
+var array<int>   fvgDir = array.new<int>()
+
+bullFVG = low > high[2] and (low - high[2]) > fvgMinAtr * atrSafe
+bearFVG = high < low[2] and (low[2] - high) > fvgMinAtr * atrSafe
+
+if showFVG and bullFVG
+    b = box.new(bar_index - 2, low, bar_index + 3, high[2], border_color = color.new(GOLD, 60), bgcolor = color.new(GOLD, 90))
+    array.push(fvgBox, b)
+    array.push(fvgDir, 1)
+if showFVG and bearFVG
+    b = box.new(bar_index - 2, low[2], bar_index + 3, high, border_color = color.new(GOLD, 60), bgcolor = color.new(GOLD, 90))
+    array.push(fvgBox, b)
+    array.push(fvgDir, -1)
+
+if array.size(fvgBox) > 0
+    for i = array.size(fvgBox) - 1 to 0
+        b   = array.get(fvgBox, i)
+        d   = array.get(fvgDir, i)
+        top = box.get_top(b)
+        bot = box.get_bottom(b)
+        filled = d == 1 ? close < bot : close > top
+        if filled
+            box.delete(b)
+            array.remove(fvgBox, i)
+            array.remove(fvgDir, i)
+        else
+            box.set_right(b, bar_index + 3)
+while array.size(fvgBox) > fvgMax
+    box.delete(array.shift(fvgBox))
+    array.shift(fvgDir)
+
+// ─────────────────────────────────────────────────────────────────────────
+//  THE MODEL STATE MACHINE  (sweep -> MSS -> entry-zone tap)
+//  stage 0 = idle, 1 = swept/armed, 2 = MSS confirmed & waiting for the retrace
+// ─────────────────────────────────────────────────────────────────────────
+var int   bStage = 0            // bullish path
+var float bSweepLo= na          // swept extreme (SL basis)
+var int   bStageBar= na
+var float bZoneTop = na
+var float bZoneBot = na
+
+var int   sStage = 0            // bearish path
+var float sSweepHi= na
+var int   sStageBar= na
+var float sZoneTop = na
+var float sZoneBot = na
+
+// 1) sweep arms the path
+if sweepDn
+    bStage    := 1
+    bSweepLo  := low
+    bStageBar := bar_index
+if sweepUp
+    sStage    := 1
+    sSweepHi  := high
+    sStageBar := bar_index
+
+// 2) MSS (displacement structure break in the reversal direction) confirms
+mssUp = bullBreak and dispUp
+mssDn = bearBreak and dispDn
+
+if bStage == 1 and mssUp and (bar_index - bStageBar) <= mssWin
+    bStage    := 2
+    bStageBar := bar_index
+    eq = (high + bSweepLo) / 2.0                    // 50% equilibrium of the reversal leg
+    // adopt a fresh bullish FVG if one just formed, else an equilibrium band
+    if bullFVG
+        bZoneTop := low
+        bZoneBot := high[2]
+    else
+        bZoneTop := eq + zonePad * atrSafe
+        bZoneBot := eq - zonePad * atrSafe
+if sStage == 1 and mssDn and (bar_index - sStageBar) <= mssWin
+    sStage    := 2
+    sStageBar := bar_index
+    eq = (low + sSweepHi) / 2.0
+    if bearFVG
+        sZoneTop := low[2]
+        sZoneBot := high
+    else
+        sZoneTop := eq + zonePad * atrSafe
+        sZoneBot := eq - zonePad * atrSafe
+
+// expire stale setups
+if bStage == 1 and (bar_index - bStageBar) > mssWin
+    bStage := 0
+if sStage == 1 and (bar_index - sStageBar) > mssWin
+    sStage := 0
+if bStage == 2 and (bar_index - bStageBar) > entryWin
+    bStage := 0
+if sStage == 2 and (bar_index - sStageBar) > entryWin
+    sStage := 0
+
+// 3) entry = price retraces into the zone with a reaction, in a killzone,
+//    optionally confirmed by SMT
+bullTap = bStage == 2 and low <= bZoneTop and close >= bZoneBot and close >= open
+bearTap = sStage == 2 and high >= sZoneBot and close <= sZoneTop and close <= open
+
+buy  = bullTap and killOK and (not useSMT or bullSMT)
+sell = bearTap and killOK and (not useSMT or bearSMT)
+
+// consume the setup on entry
+if buy
+    bStage := 0
+if sell
+    sStage := 0
+
+// mutual exclusivity + debounce (never overlap on any timeframe)
+sell := sell and not buy
+var int lastSigBar = na
+okGap = na(lastSigBar) or (bar_index - lastSigBar) >= minGap
+buy  := buy  and okGap
+sell := sell and okGap
+sig  = buy or sell
+if sig
+    lastSigBar := bar_index
+
+// ─────────────────────────────────────────────────────────────────────────
+//  TP/SL BOXES  (red RISK entry->SL, green REWARD entry->TP3, labelled edges)
+//  SL rests BEYOND the swept liquidity — the TJR invalidation.
+// ─────────────────────────────────────────────────────────────────────────
+var float sEntry = na
+var float sSL    = na
+var float sT1    = na
+var float sT2    = na
+var float sT3    = na
+var int   sDir   = 0
+var bool  sOpen  = false
+var int   wins   = 0
+var int   losses = 0
+
+if sOpen
+    if sDir == 1
+        if high >= sT1
+            wins   += 1
+            sOpen  := false
+        else if low <= sSL
+            losses += 1
+            sOpen  := false
+    else
+        if low <= sT1
+            wins   += 1
+            sOpen  := false
+        else if high >= sSL
+            losses += 1
+            sOpen  := false
+
+var box   riskBox = na
+var box   rewBox  = na
+var line  eLine   = na
+var line  slLine  = na
+var line  t1Line  = na
+var line  t2Line  = na
+var label lbE = na
+var label lbS = na
+var label lb1 = na
+var label lb2 = na
+var label lb3 = na
+
+f_setLbl(label lb, float p, string txt, color c) =>
+    label.set_xy(lb, bar_index + boxW, p)
+    label.set_text(lb, txt)
+    label.set_textcolor(lb, c)
+
+if sig
+    if sOpen
+        losses += 1
+        sOpen  := false
+    sDir   := buy ? 1 : -1
+    slBase  = buy ? (na(bSweepLo) ? low : bSweepLo) - slPad * atrSafe : (na(sSweepHi) ? high : sSweepHi) + slPad * atrSafe
+    sEntry := close
+    risk    = math.abs(sEntry - slBase)
+    risk    := risk > 0 ? risk : atrSafe
+    sSL    := buy ? sEntry - risk : sEntry + risk
+    sT1    := buy ? sEntry + risk * tp1R : sEntry - risk * tp1R
+    sT2    := buy ? sEntry + risk * tp2R : sEntry - risk * tp2R
+    sT3    := buy ? sEntry + risk * tp3R : sEntry - risk * tp3R
+    sOpen  := true
+
+    if showBox
+        box.delete(riskBox)
+        box.delete(rewBox)
+        riskBox := box.new(bar_index, sEntry, bar_index + boxW, sSL, bgcolor = color.new(ACC_DN, 86), border_color = color.new(ACC_DN, 40), border_width = 1)
+        rewBox  := box.new(bar_index, sEntry, bar_index + boxW, sT3, bgcolor = color.new(ACC_UP, 88), border_color = color.new(ACC_UP, 40), border_width = 1)
+        if na(eLine)
+            eLine  := line.new(bar_index, sEntry, bar_index + boxW, sEntry, color = color.new(GOLD, 10),   width = 1)
+            slLine := line.new(bar_index, sSL,    bar_index + boxW, sSL,    color = color.new(ACC_DN, 20),  width = 1, style = line.style_dashed)
+            t1Line := line.new(bar_index, sT1,    bar_index + boxW, sT1,    color = color.new(ACC_UP, 30),  width = 1, style = line.style_dotted)
+            t2Line := line.new(bar_index, sT2,    bar_index + boxW, sT2,    color = color.new(ACC_UP, 30),  width = 1, style = line.style_dotted)
+            lbE := label.new(bar_index + boxW, sEntry, "", style = label.style_label_left, color = color.new(WHITE, 0), textcolor = INK, size = size.small)
+            lbS := label.new(bar_index + boxW, sSL,    "", style = label.style_label_left, color = color.new(WHITE, 0), textcolor = INK, size = size.small)
+            lb1 := label.new(bar_index + boxW, sT1,    "", style = label.style_label_left, color = color.new(WHITE, 0), textcolor = INK, size = size.small)
+            lb2 := label.new(bar_index + boxW, sT2,    "", style = label.style_label_left, color = color.new(WHITE, 0), textcolor = INK, size = size.small)
+            lb3 := label.new(bar_index + boxW, sT3,    "", style = label.style_label_left, color = color.new(WHITE, 0), textcolor = INK, size = size.small)
+        line.set_xy1(eLine,  bar_index, sEntry)
+        line.set_xy2(eLine,  bar_index + boxW, sEntry)
+        line.set_xy1(slLine, bar_index, sSL)
+        line.set_xy2(slLine, bar_index + boxW, sSL)
+        line.set_xy1(t1Line, bar_index, sT1)
+        line.set_xy2(t1Line, bar_index + boxW, sT1)
+        line.set_xy1(t2Line, bar_index, sT2)
+        line.set_xy2(t2Line, bar_index + boxW, sT2)
+        f_setLbl(lbE, sEntry, " ENTRY " + str.tostring(sEntry, format.mintick), INK)
+        f_setLbl(lbS, sSL,    " SL " + str.tostring(sSL, format.mintick), ACC_DN)
+        f_setLbl(lb1, sT1,    " TP1 · " + str.tostring(tp1R, "#.#") + "R " + str.tostring(sT1, format.mintick), ACC_UP)
+        f_setLbl(lb2, sT2,    " TP2 · " + str.tostring(tp2R, "#.#") + "R " + str.tostring(sT2, format.mintick), ACC_UP)
+        f_setLbl(lb3, sT3,    " TP3 · " + str.tostring(tp3R, "#.#") + "R " + str.tostring(sT3, format.mintick), ACC_UPH)
+
+if showBox and sOpen and not na(riskBox) and barstate.islast
+    box.set_right(riskBox, bar_index + boxW)
+    box.set_right(rewBox,  bar_index + boxW)
+    line.set_x2(eLine,  bar_index + boxW)
+    line.set_x2(slLine, bar_index + boxW)
+    line.set_x2(t1Line, bar_index + boxW)
+    line.set_x2(t2Line, bar_index + boxW)
+    label.set_x(lbE, bar_index + boxW)
+    label.set_x(lbS, bar_index + boxW)
+    label.set_x(lb1, bar_index + boxW)
+    label.set_x(lb2, bar_index + boxW)
+    label.set_x(lb3, bar_index + boxW)
+
+resolved = wins + losses
+winRate  = resolved > 0 ? wins / resolved * 100.0 : na
+
+// ─────────────────────────────────────────────────────────────────────────
+//  CONVICTION 0..100  (how much of the model is aligned right now)
+// ─────────────────────────────────────────────────────────────────────────
+cStage  = math.max(bStage, sStage) / 2.0
+cSmt    = (bullSMT or bearSMT) ? 1.0 : 0.0
+cKz     = inKZ ? 1.0 : 0.0
+cSig    = sig ? 1.0 : 0.0
+conv    = math.round(100 * math.min(1.0, 0.40 * cStage + 0.25 * cSmt + 0.15 * cKz + 0.20 * cSig))
+
+// ─────────────────────────────────────────────────────────────────────────
+//  KILLZONE SHADING + CANDLE PAINT + SIGNAL PLOTS  (global scope, const args)
+// ─────────────────────────────────────────────────────────────────────────
+bgcolor(showKZ and inLdn ? color.new(MGREY, 92) : na, title = "London KZ")
+bgcolor(showKZ and inNy  ? color.new(GOLD, 92)  : na, title = "New York KZ")
+
+bullBar   = close >= open
+bodyCol   = bullBar ? WHITE : MGREY
+borderCol = bullBar ? LGREY : DGREY
+wickCol   = bullBar ? LGREY : DGREY
+plotcandle(paintC ? open : na, paintC ? high : na, paintC ? low : na, paintC ? close : na, title = "Clean candles", color = bodyCol, wickcolor = wickCol, bordercolor = borderCol)
+barcolor(paintC ? na : bullBar ? WHITE : MGREY, title = "Bar tint")
+
+plotshape(buy,  "BUY",  style = shape.labelup,   location = location.belowbar, color = ACC_UP, textcolor = WHITE, text = "BUY",  size = size.small)
+plotshape(sell, "SELL", style = shape.labeldown, location = location.abovebar, color = ACC_DN, textcolor = WHITE, text = "SELL", size = size.small)
+
+// ─────────────────────────────────────────────────────────────────────────
+//  DASHBOARD  —  "smart-money process card": shows exactly which stage of the
+//  sweep -> shift -> SMT -> entry sequence the market is in right now.
+// ─────────────────────────────────────────────────────────────────────────
+var table hud = na
+if showHUD and barstate.islast
+    if not na(hud)
+        table.delete(hud)
+    hud := table.new(f_pos(hudPos), 2, 8, bgcolor = color.new(WHITE, 0), frame_color = color.new(INK, 20), frame_width = 1, border_color = color.new(LGREY, 55), border_width = 1)
+    SURF = color.new(WHITE, 0)
+    RULE = color.new(INK, 0)
+
+    biasT   = bias == 1 ? "Bullish" : bias == -1 ? "Bearish" : "Neutral"
+    biasC   = bias == 1 ? ACC_UP : bias == -1 ? ACC_DN : MUTE
+    stageN  = math.max(bStage, sStage)
+    stageDir= bStage >= sStage ? "long" : "short"
+    stageT  = stageN == 2 ? "MSS — await entry (" + stageDir + ")" : stageN == 1 ? "Swept — await MSS (" + stageDir + ")" : "Idle — hunting sweep"
+    stageC  = stageN == 2 ? INK : stageN == 1 ? DGREY : MUTE
+    smtT    = not smtHasSym ? "off" : bullSMT ? "bullish" : bearSMT ? "bearish" : "none"
+    smtC    = bullSMT ? ACC_UP : bearSMT ? ACC_DN : MUTE
+    kzT     = inLdn ? "London" : inNy ? "New York" : "outside"
+    kzC     = inKZ ? INK : MUTE
+    sigT    = buy ? "BUY ▲" : sell ? "SELL ▼" : "Waiting"
+    sigC    = buy ? ACC_UP : sell ? ACC_DN : MUTE
+    statTxt = na(winRate) ? "—" : str.tostring(math.round(winRate)) + "% (" + str.tostring(resolved) + ")"
+
+    cF = math.round(conv / 100.0 * 8)
+    meter = ""
+    for i = 1 to 8
+        meter := meter + (i <= cF ? "◼" : "◻")
+
+    table.cell(hud, 0, 0, "  TJR Smart Money", text_color = INK, text_halign = text.align_left, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 1, 0, str.tostring(conv) + "  ", text_color = INK, text_halign = text.align_right, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 0, 1, "", bgcolor = RULE, text_size = size.tiny)
+    table.cell(hud, 1, 1, "", bgcolor = RULE, text_size = size.tiny)
+    table.cell(hud, 0, 2, "  Bias", text_color = MUTE, text_halign = text.align_left, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 1, 2, biasT + "  ", text_color = biasC, text_halign = text.align_right, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 0, 3, "  Stage", text_color = MUTE, text_halign = text.align_left, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 1, 3, stageT + "  ", text_color = stageC, text_halign = text.align_right, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 0, 4, "  SMT", text_color = MUTE, text_halign = text.align_left, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 1, 4, smtT + "  ", text_color = smtC, text_halign = text.align_right, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 0, 5, "  Killzone", text_color = MUTE, text_halign = text.align_left, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 1, 5, kzT + "  ", text_color = kzC, text_halign = text.align_right, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 0, 6, "  Signal", text_color = MUTE, text_halign = text.align_left, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 1, 6, sigT + " " + meter + "  ", text_color = sigC, text_halign = text.align_right, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 0, 7, "  Win (TP1)", text_color = MUTE, text_halign = text.align_left, bgcolor = SURF, text_size = hudTS)
+    table.cell(hud, 1, 7, statTxt + "  ", text_color = INK, text_halign = text.align_right, bgcolor = SURF, text_size = hudTS)
+
+// ─────────────────────────────────────────────────────────────────────────
+//  ALERTS
+// ─────────────────────────────────────────────────────────────────────────
+alertcondition(buy,  "Buy",  "TJR Smart Money: bullish sweep + MSS + retrace entry")
+alertcondition(sell, "Sell", "TJR Smart Money: bearish sweep + MSS + retrace entry")
+alertcondition(sweepUp or sweepDn, "Liquidity sweep", "TJR Smart Money: liquidity swept")
+alertcondition(choChUp or choChDn, "CHoCH", "TJR Smart Money: change of character")
+alertcondition(bullSMT or bearSMT, "SMT divergence", "TJR Smart Money: SMT divergence detected")
+// === Dashboard with Telegram Link ===
+var table myTable = table.new(position.top_center, 1, 1, border_width=1, frame_color=color.black, bgcolor=color.white)
+
+// Add Telegram Message to Dashboard
+table.cell(myTable, 0, 0, "Join Telegram @free_fx_pro", bgcolor=color.blue, text_color=color.white, text_size=size.normal)

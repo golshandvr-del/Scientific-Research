@@ -1,0 +1,908 @@
+//@version=6
+indicator("Strong Gradient Channel", overlay = true,
+     max_polylines_count = 100, max_lines_count = 500, max_labels_count = 500,
+     max_boxes_count = 500, max_bars_back = 5000, calc_bars_count = 5000)
+if chart.is_heikinashi or chart.is_renko
+    runtime.error("This script requires standard candlestick charts. Non-standard charts (Heikin Ashi / Renko) distort volume and price action.")
+gC              = "◆ 1 · LinReg Channel"
+lengthInput     = input.int(480, "Channel Length", minval = 20, maxval = 5000, group = gC, tooltip = "Number of bars in the linear-regression window. The channel and the entire volume profile are computed over exactly this many bars.")
+sourceStr       = input.string("hlc3", "Source", options = ["close", "high", "low", "hl2", "hlc3", "ohlc4"], group = gC)
+devMode         = input.string("Std Dev", "Band Basis", options = ["Std Dev", "Max Deviation", "ATR"], group = gC, tooltip = "How the upper/lower channel walls are sized. Std Dev: statistical dispersion. Max Deviation: touches the most extreme wick. ATR: volatility multiple of the mean line.")
+upperMultInput  = input.float(2.0, "Upper Band Mult", minval = 0.1, maxval = 8.0, step = 0.1, group = gC)
+lowerMultInput  = input.float(2.0, "Lower Band Mult", minval = 0.1, maxval = 8.0, step = 0.1, group = gC)
+showChanFill    = input.bool(true, "Fill Channel Body", group = gC)
+showMid         = input.bool(true, "Show Midline", group = gC)
+var table wm = table.new(position.bottom_left, 1, 1)
+if barstate.isfirst
+    table.cell(wm, 0, 0, "Telegram @free_fx_pro", text_color = color.new(color.gray, 70), text_size = size.large)
+gP              = "◆ 2 · Sloped Volume Profile"
+i_rowSize       = input.int(60, "Profile Rows", minval = 10, maxval = 140, group = gP, tooltip = "Number of horizontal price buckets the profile is split into. More rows = finer resolution.")
+i_widthPct      = input.int(34, "Profile Width %", minval = 5, maxval = 90, group = gP, tooltip = "Length of the longest profile bar as a percentage of the channel length.")
+profSideStr     = input.string("Left", "Profile Anchor", options = ["Left", "Right"], group = gP, tooltip = "Which end of the channel the profile bars grow from.")
+i_splitBuySell  = input.bool(true, "Split Buy / Sell", group = gP, tooltip = "Draw each row as a stacked buy (bull) + sell (bear) parallelogram rather than one solid bar.")
+i_rampColor     = input.bool(true, "Spectral Ramp (volume-weighted)", group = gP, tooltip = "Colour each row along an inner→outer spectral ramp by its volume rank, in addition to buy/sell tint.")
+i_showPOC       = input.bool(true, "POC Line", group = gP)
+i_showVA        = input.bool(true, "Value Area Lines", group = gP)
+i_fillVA        = input.bool(true, "Fill Value Area", group = gP)
+i_vaPct         = input.float(70.0, "Value Area %", minval = 40.0, maxval = 95.0, step = 1.0, group = gP)
+i_showExt       = input.bool(false, "Profile Extremes (Max/Min)", group = gP)
+i_showDeltaPoc  = input.bool(true, "Delta POC Line", group = gP, tooltip = "Marks the row holding the largest one-sided (buy-minus-sell) volume.")
+i_showInsta     = input.bool(true, "Highlight Institutional Rows", group = gP, tooltip = "Rows whose volume exceeds mean + 2σ are painted in the footprint colour — unusually heavy single-level activity.")
+gO              = "◆ 3 · Intrabar Order Flow"
+useLTF          = input.bool(true, "Use Intrabar Volume", group = gO, tooltip = "Reconstruct each candle's internal buy/sell split from a lower timeframe. When off, volume is classified per whole candle by body direction.")
+granInput       = input.string("Auto", "Intrabar Granularity", options = ["Auto", "1 Minute", "5 Minute", "15 Minute", "1 Hour"], group = gO, tooltip = "Lower timeframe used to reconstruct order flow. Auto scales to the chart timeframe.")
+clsMode         = input.string("Blend", "Volume Classification", options = ["Body Direction", "Close Location", "Blend"], group = gO, tooltip = "How each intrabar's volume is split into buy vs sell. Close Location: where it closed inside its range. Body Direction: binary up/down. Blend: weighted mix.")
+locBlend        = input.int(65, "Blend — Close Location %", minval = 0, maxval = 100, group = gO)
+divLen          = input.int(14, "CVD Divergence Lookback", minval = 3, maxval = 100, group = gO)
+gF              = "◆ 4 · Contrarian Fade Engine"
+showSig         = input.bool(true, "Fade Signals At Channel Walls", group = gF, tooltip = "Fire FADE ▲ / FADE ▼ when price pierces a channel wall and the auction shows exhaustion against the move.")
+minScore        = input.float(6.0, "Min Conviction Score", minval = 0, maxval = 10, step = 0.5, group = gF)
+extLen          = input.int(10, "Local Extreme Lookback", minval = 2, maxval = 100, group = gF)
+coolBars        = input.int(5, "Signal Cooldown (bars)", minval = 0, maxval = 50, group = gF)
+showTgt         = input.bool(true, "Fade Target / Invalidation", group = gF)
+tgtBars         = input.int(14, "Target Line Length", minval = 2, maxval = 80, group = gF)
+gN              = "◆ 5 · Naked POC Magnets"
+showNaked       = input.bool(true, "Track Untested POCs", group = gN, tooltip = "Extend a strong candle's POC to the right until price trades back through it, then remove it.")
+nakedMin        = input.float(6.0, "Naked POC Min Score", minval = 0, maxval = 10, step = 0.5, group = gN)
+nakedMax        = input.int(8, "Max Active Naked POCs", minval = 1, maxval = 30, group = gN)
+gS              = "◆ 6 · Scenario Projection"
+scenOn          = input.bool(true, "Build Forward Scenario", group = gS, tooltip = "Projects a path from the last bar that walks the profile's key levels (POC / VA / ΔPOC / walls) in sequence. Every waypoint is hard-clamped to the sloped channel walls, so the path stays inside the channel at all times. This is a geometric outlook built from current structure — not a forecast.")
+scenShape       = input.string("Standard", "Path Detail", options = ["Simple", "Standard", "Extended"], group = gS, tooltip = "Simple: trigger → target.  Standard: adds a reverse and a retest leg.  Extended: adds a continuation leg toward the far wall.")
+scenAnchor      = input.string("Channel Extremes", "Trigger / Target Anchor", options = ["Channel Extremes", "Key Levels"], group = gS, tooltip = "Channel Extremes: the outlook spans the full channel — trigger rides one wall (red/green), target the opposite wall.  Key Levels: trigger/target snap to the nearest POC / VA / ΔPOC levels instead (a tighter path).")
+scenDir         = input.string("Auto (net flow)", "Trigger Direction", options = ["Auto (net flow)", "Up First", "Down First"], group = gS)
+projBars        = input.int(70, "Projection Length (bars)", minval = 12, maxval = 400, group = gS)
+revPct          = input.float(55.0, "Reverse Retrace (% of trigger leg)", minval = 10.0, maxval = 95.0, step = 5.0, group = gS)
+retestPct       = input.float(55.0, "Retest Recovery (% of reverse leg)", minval = 10.0, maxval = 95.0, step = 5.0, group = gS)
+wallPad         = input.float(2.0, "Wall Padding (% of channel width)", minval = 0.0, maxval = 25.0, step = 0.5, group = gS, tooltip = "Keeps waypoints this far inside the walls so the clamped path never rides exactly on a wall.")
+scenCol         = input.color(#FFB020, "Path Color", group = gS)
+scenGlow        = input.bool(true, "Glow", group = gS)
+scenLabs        = input.bool(true, "Waypoint Labels", group = gS)
+scenRails       = input.bool(true, "Trigger / Target Rails", group = gS)
+chanExtend      = input.int(100, "Extend Channel Right (bars)", minval = 0, maxval = 500, group = gS, tooltip = "Projects the channel walls, midline and key levels this many bars to the right of the last bar, so the channel covers the full forward scenario outlook.")
+gD              = "◆ 7 · Dashboard & Theme"
+showDash        = input.bool(true, "Show Command Dashboard", group = gD)
+dashPos         = input.string("Top Right", "Position", options = ["Top Right", "Middle Right", "Bottom Right", "Bottom Left", "Top Left"], group = gD)
+dashSize        = input.string("Small", "Text Size", options = ["Tiny", "Small", "Normal", "Large"], group = gD)
+themeInput      = input.string("Obsidian Aurora", "Color Theme", options = ["Obsidian Aurora", "Magma", "Plasma", "Deep Ocean", "Graphite Mono"], group = gD, tooltip = "Every palette is engineered for a pure-black chart background.")
+useCustom       = input.bool(false, "Use Custom Colors", group = gD)
+cuBuy           = input.color(#00E5C0, "Bullish Volume", group = gD, inline = "cc1")
+cuSell          = input.color(#FF2D78, "Bearish Volume", group = gD, inline = "cc1")
+cuPoc           = input.color(#FFD166, "POC", group = gD, inline = "cc2")
+cuAcc           = input.color(#B388FF, "Accent", group = gD, inline = "cc2")
+showLegend      = input.bool(true, "Show Legend Key", group = gD)
+legendPos       = input.string("Bottom Right", "Legend Position", options = ["Bottom Right", "Bottom Left", "Middle Left"], group = gD)
+int taLen = math.max(20, lengthInput)
+color thBuy = switch themeInput
+    "Obsidian Aurora" => #00E5C0
+    "Magma"           => #F1605D
+    "Plasma"          => #00E5FF
+    "Deep Ocean"      => #3FC1C9
+    => #D0D6DE
+color thSell = switch themeInput
+    "Obsidian Aurora" => #FF2D78
+    "Magma"           => #B63679
+    "Plasma"          => #FF3D71
+    "Deep Ocean"      => #F45B69
+    => #7A8391
+color thPoc = switch themeInput
+    "Obsidian Aurora" => #FFD166
+    "Magma"           => #FCFDBF
+    "Plasma"          => #FFC400
+    "Deep Ocean"      => #FFD97D
+    => #FFFFFF
+color thAcc = switch themeInput
+    "Obsidian Aurora" => #B388FF
+    "Magma"           => #FEAF77
+    "Plasma"          => #D500F9
+    "Deep Ocean"      => #6C8AE4
+    => #A8B2C1
+color thPanel = switch themeInput
+    "Obsidian Aurora" => #0D1117
+    "Magma"           => #120409
+    "Plasma"          => #0A0416
+    "Deep Ocean"      => #0A0F14
+    => #0E0E10
+color r0 = switch themeInput
+    "Obsidian Aurora" => #1B4E88
+    "Magma"           => #6A176E
+    "Plasma"          => #6A00A8
+    "Deep Ocean"      => #12303A
+    => #303036
+color r1 = switch themeInput
+    "Obsidian Aurora" => #2A7DB8
+    "Magma"           => #B63679
+    "Plasma"          => #B12A90
+    "Deep Ocean"      => #1E6E7A
+    => #55555C
+color r2 = switch themeInput
+    "Obsidian Aurora" => #21B5A8
+    "Magma"           => #F1605D
+    "Plasma"          => #E16462
+    "Deep Ocean"      => #2FA8B0
+    => #7A7A82
+color r3 = switch themeInput
+    "Obsidian Aurora" => #5EE0C0
+    "Magma"           => #FEAF77
+    "Plasma"          => #FCA636
+    "Deep Ocean"      => #6FD9C0
+    => #A2A2AA
+color r4 = switch themeInput
+    "Obsidian Aurora" => #C9FDF0
+    "Magma"           => #FCFDBF
+    "Plasma"          => #F0F921
+    "Deep Ocean"      => #CFF5E8
+    => #E4E4EC
+color BUY   = useCustom ? cuBuy  : thBuy
+color SELL  = useCustom ? cuSell : thSell
+color POCC  = useCustom ? cuPoc  : thPoc
+color ACC   = useCustom ? cuAcc  : thAcc
+color PANEL = thPanel
+color TXT   = #E6EDF3
+color MUT   = #8B949E
+color NEUT  = #58606C
+color c_instaCol = #FFEB3B
+ramp5(float t) =>
+    float u = math.max(0.0, math.min(1.0, t)) * 4.0
+    int i = math.min(3, int(u))
+    color a = i == 0 ? r0 : i == 1 ? r1 : i == 2 ? r2 : r3
+    color b = i == 0 ? r1 : i == 1 ? r2 : i == 2 ? r3 : r4
+    color.from_gradient(u - i, 0.0, 1.0, a, b)
+clamp(float v, float lo, float hi) => math.max(lo, math.min(hi, v))
+safeDiv(float a, float b) => b == 0.0 ? 0.0 : a / b
+fmtP(float v) => str.tostring(v, format.mintick)
+fmtV(float v) => str.tostring(v, format.volume)
+szOf(string s) =>
+    switch s
+        "Tiny"   => size.tiny
+        "Small"  => size.small
+        "Normal" => size.normal
+        "Large"  => size.large
+        => size.small
+tierShort(float sc) => sc >= 8.5 ? "EXT" : sc >= 7 ? "V.STR" : sc >= 5.5 ? "STR" : sc >= 4 ? "MOD" : "WK"
+tierName(float sc)  => sc >= 8.5 ? "EXTREME" : sc >= 7 ? "VERY STRONG" : sc >= 5.5 ? "STRONG" : sc >= 4 ? "MODERATE" : "WEAK"
+biasName(float buyPct) => buyPct >= 60 ? "DEMAND" : buyPct <= 40 ? "SUPPLY" : "BATTLE"
+f_blockBar(float score) =>
+    int n = math.min(math.max(math.round(score), 0), 10)
+    str.repeat('█', n) + str.repeat('░', 10 - n)
+meter(float pct, int cells) =>
+    int f = int(math.round(clamp(pct, 0, 100) / 100.0 * cells))
+    string s = ""
+    for i = 0 to cells - 1
+        s := s + (i < f ? "▰" : "▱")
+    s
+splitMeter(float buyPct, int cells) =>
+    int f = int(math.round(clamp(buyPct, 0, 100) / 100.0 * cells))
+    string s = ""
+    for i = 0 to cells - 1
+        s := s + (i < f ? "█" : "▒")
+    s
+stars(float sc) =>
+    int f = int(math.round(clamp(sc, 0, 10) / 2.0))
+    string s = ""
+    for i = 0 to 4
+        s := s + (i < f ? "★" : "☆")
+    s
+sessionName() =>
+    int h = hour(time, "GMT")
+    h < 7 ? "ASIA" : h < 12 ? "LONDON" : h < 16 ? "LDN×NY" : h < 21 ? "NEW YORK" : "ASIA"
+float srcVal = switch sourceStr
+    "high"  => high
+    "low"   => low
+    "hl2"   => hl2
+    "hlc3"  => hlc3
+    "ohlc4" => ohlc4
+    =>          close
+var string tfAuto = "5"
+if barstate.isfirst
+    int cs = timeframe.in_seconds()
+    tfAuto := cs >= 14400 ? "60" : cs >= 3600 ? "15" : cs >= 900 ? "5" : cs >= 60 ? "1" : "1"
+string tfPri = switch granInput
+    "Auto"     => tfAuto
+    "1 Minute" => "1"
+    "5 Minute" => "5"
+    "15 Minute"=> "15"
+    "1 Hour"   => "60"
+    => tfAuto
+buyShare() =>
+    float r   = math.max(high - low, syminfo.mintick)
+    float loc = (close - low) / r
+    float bs  = close > open ? 1.0 : close < open ? 0.0 : 0.5
+    float k   = locBlend / 100.0
+    float w = switch clsMode
+        "Close Location" => loc
+        "Body Direction" => bs
+        => k * loc + (1.0 - k) * bs
+    clamp(w, 0.0, 1.0)
+[ltfH, ltfL, ltfV, ltfB] = request.security_lower_tf(syminfo.tickerid, tfPri, [high, low, volume, buyShare()], ignore_invalid_timeframe = true)
+int nSub = na(ltfV) ? 0 : ltfV.size()
+float barBuyFrac = buyShare()
+float wholeBuy   = volume * barBuyFrac
+float wholeSell  = volume * (1.0 - barBuyFrac)
+float ibBuy  = 0.0
+float ibSell = 0.0
+if useLTF and nSub > 0
+    for i = 0 to nSub - 1
+        float v  = ltfV.get(i)
+        float bf = ltfB.get(i)
+        ibBuy  += v * bf
+        ibSell += v * (1.0 - bf)
+else
+    ibBuy  := wholeBuy
+    ibSell := wholeSell
+float barVol   = ibBuy + ibSell
+float barDelta = ibBuy - ibSell
+var float cvd = 0.0
+cvd := (barstate.isfirst ? 0.0 : nz(cvd[1])) + barDelta
+bool newDay = timeframe.change("D")
+var float sessDelta = 0.0
+sessDelta := (newDay ? 0.0 : nz(sessDelta[1])) + barDelta
+float avgVol = ta.sma(volume, 20)
+float atr14  = ta.atr(14)
+float atr100 = ta.atr(100)
+float cvdHiP = ta.highest(cvd, divLen)[1]
+float cvdLoP = ta.lowest(cvd, divLen)[1]
+var array<polyline> polyArr       = array.new<polyline>()
+var array<line>     profileLines  = array.new<line>()
+var array<label>    profileLabels = array.new<label>()
+var array<linefill> profileFills  = array.new<linefill>()
+int   lenM1  = lengthInput - 1
+float fLen   = float(lengthInput)
+array<float> hArr = array.new<float>(lengthInput)
+array<float> lArr = array.new<float>(lengthInput)
+array<float> oArr = array.new<float>(lengthInput)
+array<float> cArr = array.new<float>(lengthInput)
+array<float> vArr = array.new<float>(lengthInput)
+array<float> bfArr = array.new<float>(lengthInput)
+float sumX  = 0.0
+float sumY  = 0.0
+float sumXY = 0.0
+float sumXX = 0.0
+if barstate.islast and bar_index >= lengthInput
+    for i = 0 to lenM1
+        int   bi = lenM1 - i
+        float sv = srcVal[bi]
+        hArr.set(i, high[bi])
+        lArr.set(i, low[bi])
+        oArr.set(i, open[bi])
+        cArr.set(i, close[bi])
+        vArr.set(i, volume[bi])
+        bfArr.set(i, nz(barBuyFrac[bi], 0.5))
+        float fx = float(i)
+        sumX  += fx
+        sumY  += sv
+        sumXY += sv * fx
+        sumXX += fx * fx
+float denom     = fLen * sumXX - sumX * sumX
+float s         = denom != 0.0 ? (fLen * sumXY - sumX * sumY) / denom : 0.0
+float intercept = (sumY - s * sumX) / fLen
+float startPrice = intercept
+float endPrice   = intercept + s * lenM1
+float stdDevAcc = 0.0
+float maxDev    = -1e10
+float minDev    =  1e10
+if barstate.islast and bar_index >= lengthInput
+    for k = 0 to lenM1
+        float fk = float(k)
+        float bY = intercept + s * fk
+        float sv_k = switch sourceStr
+            "high"  => hArr.get(k)
+            "low"   => lArr.get(k)
+            "hl2"   => (hArr.get(k) + lArr.get(k)) * 0.5
+            "hlc3"  => (hArr.get(k) + lArr.get(k) + cArr.get(k)) / 3.0
+            "ohlc4" => (oArr.get(k) + hArr.get(k) + lArr.get(k) + cArr.get(k)) * 0.25
+            =>          cArr.get(k)
+        float sdiff = sv_k - bY
+        stdDevAcc += sdiff * sdiff
+        float dH = hArr.get(k) - bY
+        float dL = lArr.get(k) - bY
+        maxDev := math.max(maxDev, dH)
+        minDev := math.min(minDev, dL)
+float stdDev = math.sqrt(stdDevAcc / fLen)
+float atrBand = nz(atr14, syminfo.mintick * 10) * 3.0
+float upBand = switch devMode
+    "Std Dev"        => upperMultInput * stdDev
+    "Max Deviation"  => maxDev
+    => upperMultInput * atrBand
+float dnBand = switch devMode
+    "Std Dev"        => lowerMultInput * stdDev
+    "Max Deviation"  => -minDev
+    => lowerMultInput * atrBand
+float upperStartPrice = startPrice + upBand
+float upperEndPrice   = endPrice   + upBand
+float lowerStartPrice = startPrice - dnBand
+float lowerEndPrice   = endPrice   - dnBand
+int   startIdx        = bar_index - lengthInput + 1
+float rng    = maxDev - minDev
+float slotSz = rng > 0.0 ? rng / i_rowSize : 0.0
+float invSz  = rng > 0.0 ? i_rowSize / rng : 0.0
+int   maxSlotIdx = i_rowSize - 1
+var array<float> slotVol  = array.new<float>()
+var array<float> slotBuy  = array.new<float>()
+var array<float> slotSell = array.new<float>()
+float totalBuyVol  = 0.0
+float totalSellVol = 0.0
+float totalVol     = 0.0
+float pocDev       = 0.0
+float deltaPocDev  = 0.0
+float vahDev       = 0.0
+float valDev       = 0.0
+float maxV         = 0.0
+float instThreshold = 0.0
+int   pIdx         = 0
+if barstate.islast and bar_index >= lengthInput and rng > 0.0
+    slotVol.clear()
+    slotBuy.clear()
+    slotSell.clear()
+    for j = 0 to maxSlotIdx
+        slotVol.push(0.0)
+        slotBuy.push(0.0)
+        slotSell.push(0.0)
+    for k = 0 to lenM1
+        float bY   = intercept + s * float(k)
+        float dVol = vArr.get(k)
+        float dH   = hArr.get(k) - bY
+        float dL   = lArr.get(k) - bY
+        float bSz  = dH - dL
+        float bf   = bfArr.get(k)
+        int sIdx = int(math.max(0.0, math.floor((dL - minDev) * invSz)))
+        int eIdx = int(math.min(float(maxSlotIdx), math.floor((dH - minDev) * invSz)))
+        if sIdx <= eIdx and bSz > 0.0
+            float volPerP = dVol / bSz
+            for j = sIdx to eIdx
+                float slotLo = minDev + slotSz * j
+                float slotHi = slotLo + slotSz
+                float ov = math.min(dH, slotHi) - math.max(dL, slotLo)
+                if ov > 0.0
+                    float sv = volPerP * ov
+                    slotVol.set(j, slotVol.get(j) + sv)
+                    slotBuy.set(j, slotBuy.get(j) + sv * bf)
+                    slotSell.set(j, slotSell.get(j) + sv * (1.0 - bf))
+                    totalVol += sv
+                    totalBuyVol += sv * bf
+                    totalSellVol += sv * (1.0 - bf)
+    float meanVol = totalVol / i_rowSize
+    float varSum  = 0.0
+    for j = 0 to maxSlotIdx
+        float d = slotVol.get(j) - meanVol
+        varSum += d * d
+    float stDevVol = math.sqrt(varSum / i_rowSize)
+    instThreshold := meanVol + 2.0 * stDevVol
+    float maxDelta = -1e10
+    int   dpIdx    = 0
+    for j = 0 to maxSlotIdx
+        float v = slotVol.get(j)
+        if v > maxV
+            maxV := v
+            pIdx := j
+        float absDelta = math.abs(slotBuy.get(j) - slotSell.get(j))
+        if absDelta > maxDelta
+            maxDelta := absDelta
+            dpIdx := j
+    pocDev      := minDev + (pIdx  + 0.5) * slotSz
+    deltaPocDev := minDev + (dpIdx + 0.5) * slotSz
+    float vaTarget = totalVol * (i_vaPct * 0.01)
+    float vaVol = maxV
+    int   vaHi  = pIdx
+    int   vaLo  = pIdx
+    while vaVol < vaTarget and (vaHi < maxSlotIdx or vaLo > 0)
+        float uV = vaHi < maxSlotIdx ? slotVol.get(vaHi + 1) : -1.0
+        float lV = vaLo > 0          ? slotVol.get(vaLo - 1) : -1.0
+        if uV >= lV and vaHi < maxSlotIdx
+            vaHi += 1
+            vaVol += uV
+        else if vaLo > 0
+            vaLo -= 1
+            vaVol += lV
+        else
+            break
+    vahDev := minDev + (vaHi + 1) * slotSz
+    valDev := minDev +  vaLo      * slotSz
+if barstate.islast
+    while polyArr.size() > 0
+        polyline.delete(polyArr.pop())
+    while profileLines.size() > 0
+        line.delete(profileLines.pop())
+    while profileLabels.size() > 0
+        label.delete(profileLabels.pop())
+    while profileFills.size() > 0
+        linefill.delete(profileFills.pop())
+int   endChannelIdx = bar_index
+float endBase       = startPrice + s * float(lenM1)
+int   endExtIdx     = bar_index + chanExtend
+float endExtBase    = startPrice + s * float(endExtIdx - startIdx)
+float upperExtPrice = endExtBase + upBand
+float lowerExtPrice = endExtBase - dnBand
+float profW         = math.max(lengthInput * (i_widthPct * 0.01), 5.0)
+float invMaxV       = maxV > 0.0 ? 1.0 / maxV : 0.0
+bool  anchorLeft    = profSideStr == "Left"
+if barstate.islast and bar_index >= lengthInput and rng > 0.0
+    color colLine = color.new(TXT, 55)
+    profileLines.push(line.new(startIdx, startPrice,      endExtIdx, endExtBase,       width = 1, color = showMid ? colLine : color.new(colLine, 100)))
+    line lUp = line.new(startIdx, upperStartPrice, endExtIdx, upperExtPrice, width = 2, color = color.new(SELL, 20))
+    line lDn = line.new(startIdx, lowerStartPrice, endExtIdx, lowerExtPrice, width = 2, color = color.new(BUY, 20))
+    profileLines.push(lUp)
+    profileLines.push(lDn)
+    if showChanFill
+        profileFills.push(linefill.new(lUp, lDn, color.new(ACC, 94)))
+    for j = 0 to maxSlotIdx
+        float sv = slotVol.get(j)
+        if sv > 0.0
+            float d_bot = minDev + slotSz * j
+            float d_top = d_bot + slotSz
+            float volFrac = sv * invMaxV
+            bool  isInsta = i_showInsta and sv > instThreshold
+            color rampC = ramp5(volFrac)
+            color buyC  = isInsta ? c_instaCol : (i_rampColor ? rampC : BUY)
+            color sellC = isInsta ? c_instaCol : (i_rampColor ? color.new(rampC, 25) : SELL)
+            if i_splitBuySell
+                int iBuy  = int(math.round(slotBuy.get(j)  * invMaxV * profW))
+                int iSell = int(math.round(slotSell.get(j) * invMaxV * profW))
+                int buy0  = anchorLeft ? startIdx : endChannelIdx - iBuy
+                int buy1  = anchorLeft ? startIdx + iBuy : endChannelIdx
+                int sell0 = anchorLeft ? buy1 : buy0 - iSell
+                int sell1 = anchorLeft ? buy1 + iSell : buy0
+                if iBuy > 0
+                    float yb0 = startPrice + s * float(buy0 - startIdx)
+                    float yb1 = startPrice + s * float(buy1 - startIdx)
+                    polyArr.push(polyline.new(array.from(chart.point.from_index(buy0, yb0 + d_bot), chart.point.from_index(buy0, yb0 + d_top), chart.point.from_index(buy1, yb1 + d_top), chart.point.from_index(buy1, yb1 + d_bot)), closed = true, line_color = color.new(buyC, 15), fill_color = color.new(buyC, 22)))
+                if iSell > 0
+                    float ys0 = startPrice + s * float(sell0 - startIdx)
+                    float ys1 = startPrice + s * float(sell1 - startIdx)
+                    polyArr.push(polyline.new(array.from(chart.point.from_index(sell0, ys0 + d_bot), chart.point.from_index(sell0, ys0 + d_top), chart.point.from_index(sell1, ys1 + d_top), chart.point.from_index(sell1, ys1 + d_bot)), closed = true, line_color = color.new(sellC, 15), fill_color = color.new(sellC, 45)))
+            else
+                int iTot = int(math.round(volFrac * profW))
+                if iTot > 0
+                    int x0 = anchorLeft ? startIdx : endChannelIdx - iTot
+                    int x1 = anchorLeft ? startIdx + iTot : endChannelIdx
+                    bool netBuy = slotBuy.get(j) >= slotSell.get(j)
+                    color solid = isInsta ? c_instaCol : (i_rampColor ? rampC : (netBuy ? BUY : SELL))
+                    float y0 = startPrice + s * float(x0 - startIdx)
+                    float y1 = startPrice + s * float(x1 - startIdx)
+                    polyArr.push(polyline.new(array.from(chart.point.from_index(x0, y0 + d_bot), chart.point.from_index(x0, y0 + d_top), chart.point.from_index(x1, y1 + d_top), chart.point.from_index(x1, y1 + d_bot)), closed = true, line_color = color.new(solid, 15), fill_color = color.new(solid, 30)))
+    if i_showPOC
+        line lp = line.new(startIdx, startPrice + pocDev, endExtIdx, endExtBase + pocDev, color = POCC, width = 3)
+        profileLines.push(lp)
+        profileLabels.push(label.new(endExtIdx, endExtBase + pocDev, "POC " + fmtP(endExtBase + pocDev), color = color.new(color.black, 100), textcolor = POCC, style = label.style_label_left, size = size.small))
+    if i_showDeltaPoc
+        line ld = line.new(startIdx, startPrice + deltaPocDev, endExtIdx, endExtBase + deltaPocDev, color = ACC, width = 2, style = line.style_dashed)
+        profileLines.push(ld)
+        profileLabels.push(label.new(endExtIdx, endExtBase + deltaPocDev, "ΔPOC", color = color.new(color.black, 100), textcolor = ACC, style = label.style_label_left, size = size.small))
+    if i_showVA
+        line lvah = line.new(startIdx, startPrice + vahDev, endExtIdx, endExtBase + vahDev, color = color.new(ACC, 30), style = line.style_dashed, width = 1)
+        line lval = line.new(startIdx, startPrice + valDev, endExtIdx, endExtBase + valDev, color = color.new(ACC, 30), style = line.style_dashed, width = 1)
+        profileLines.push(lvah)
+        profileLines.push(lval)
+        profileLabels.push(label.new(endExtIdx, endExtBase + vahDev, "VAH", color = color.new(color.black, 100), textcolor = color.new(ACC, 20), style = label.style_label_left, size = size.tiny))
+        profileLabels.push(label.new(endExtIdx, endExtBase + valDev, "VAL", color = color.new(color.black, 100), textcolor = color.new(ACC, 20), style = label.style_label_left, size = size.tiny))
+        if i_fillVA
+            profileFills.push(linefill.new(lvah, lval, color.new(ACC, 90)))
+    if i_showExt
+        profileLines.push(line.new(startIdx, startPrice + maxDev, endExtIdx, endExtBase + maxDev, color = color.new(MUT, 40), style = line.style_dotted, width = 1))
+        profileLines.push(line.new(startIdx, startPrice + minDev, endExtIdx, endExtBase + minDev, color = color.new(MUT, 40), style = line.style_dotted, width = 1))
+    profileLabels.push(label.new(endExtIdx, upperExtPrice, "UPPER", color = color.new(color.black, 100), textcolor = color.new(SELL, 20), style = label.style_label_left, size = size.tiny))
+    profileLabels.push(label.new(endExtIdx, lowerExtPrice, "LOWER", color = color.new(color.black, 100), textcolor = color.new(BUY, 20), style = label.style_label_left, size = size.tiny))
+type NakedPOC
+    line ln
+    float price
+    int born
+var array<NakedPOC> npocs = array.new<NakedPOC>()
+var int lastSig = -9999
+float candScore = 0.0
+int   fadeDir   = 0
+bool  fireLong  = false
+bool  fireShort = false
+float candPocPrice = na
+float rMid   = ta.linreg(srcVal, taLen, 0)
+float rStd   = ta.stdev(srcVal, taLen)
+float wallUp = rMid + upperMultInput * rStd
+float wallDn = rMid - lowerMultInput * rStd
+float hiPrev = ta.highest(high, extLen)[1]
+float loPrev = ta.lowest(low, extLen)[1]
+if nSub > 0 and high > low and barVol > 0
+    int   rows = 14
+    float rowRng = high - low
+    float step = rowRng / rows
+    array<float> lvVol  = array.new_float(rows, 0.0)
+    array<float> lvBuy  = array.new_float(rows, 0.0)
+    array<float> lvSell = array.new_float(rows, 0.0)
+    for i = 0 to nSub - 1
+        float sh = ltfH.get(i)
+        float sl = ltfL.get(i)
+        float svv = ltfV.get(i)
+        float bf = ltfB.get(i)
+        int bot = int(clamp(math.floor((sl - low) / step), 0, rows - 1))
+        int top = int(clamp(math.floor((sh - low) / step), 0, rows - 1))
+        float sh2 = svv / (top - bot + 1)
+        for x = bot to top
+            lvVol.set(x,  lvVol.get(x)  + sh2)
+            lvBuy.set(x,  lvBuy.get(x)  + sh2 * bf)
+            lvSell.set(x, lvSell.get(x) + sh2 * (1.0 - bf))
+    float lmax = lvVol.max()
+    int   lpoc = lvVol.indexof(lmax)
+    candPocPrice := low + step * (lpoc + 0.5)
+    float pocLoc = (lpoc + 0.5) / rows
+    int hvnFirst = -1
+    int hvnLast  = -1
+    for i = 0 to rows - 1
+        if lvVol.get(i) >= 0.70 * lmax
+            hvnFirst := hvnFirst < 0 ? i : hvnFirst
+            hvnLast := i
+    bool bimodal = false
+    if hvnLast - hvnFirst >= 3
+        int thin = 0
+        for i = hvnFirst + 1 to hvnLast - 1
+            if lvVol.get(i) < 0.35 * lmax
+                thin += 1
+        bimodal := thin >= 2
+    string shape = bimodal ? "B" : pocLoc >= 0.62 ? "P" : pocLoc <= 0.38 ? "b" : "D"
+    float body   = math.abs(close - open)
+    float upWick = high - math.max(open, close)
+    float dnWick = math.min(open, close) - low
+    float relVol = safeDiv(barVol, nz(avgVol, barVol))
+    float dDom   = safeDiv(math.abs(barDelta), barVol)
+    float mid    = (high + low) / 2
+    bool newHi = not na(hiPrev) and high > hiPrev
+    bool newLo = not na(loPrev) and low  < loPrev
+    bool pierceUp = not na(wallUp) and high >= wallUp
+    bool pierceDn = not na(wallDn) and low  <= wallDn
+    bool candShort = newHi and pierceUp and upWick >= dnWick
+    bool candLong  = newLo and pierceDn and dnWick >= upWick
+    float cEffort = clamp((relVol - 1.0) / 1.5, 0, 1) * clamp(1.0 - safeDiv(body, rowRng), 0, 1)
+    if candShort or candLong
+        float cWick = 0.0
+        float cTrap = 0.0
+        float cShape = 0.0
+        float cDiv = 0.0
+        if candShort
+            fadeDir := -1
+            cWick   := clamp(safeDiv(upWick, rowRng) / 0.50, 0, 1)
+            cTrap   := barDelta > 0 and close < mid ? clamp(dDom / 0.50, 0, 1) : 0.0
+            cShape  := shape == "P" ? clamp((pocLoc - 0.50) / 0.35, 0, 1) : 0.0
+            cDiv    := not na(cvdHiP) and cvd < cvdHiP ? 1.0 : 0.0
+        else
+            fadeDir := 1
+            cWick   := clamp(safeDiv(dnWick, rowRng) / 0.50, 0, 1)
+            cTrap   := barDelta < 0 and close > mid ? clamp(dDom / 0.50, 0, 1) : 0.0
+            cShape  := shape == "b" ? clamp((0.50 - pocLoc) / 0.35, 0, 1) : 0.0
+            cDiv    := not na(cvdLoP) and cvd > cvdLoP ? 1.0 : 0.0
+        float raw = 1.8 * cWick + 2.0 * cEffort + 2.0 * cTrap + 1.6 * cShape + 1.6 * cDiv
+        candScore := clamp(raw * (shape == "B" ? 0.55 : 1.0), 0, 10)
+    bool cool = bar_index - lastSig >= coolBars
+    if showSig and barstate.isconfirmed and fadeDir != 0 and candScore >= minScore and shape != "B" and cool
+        lastSig := bar_index
+        color scol = fadeDir == 1 ? BUY : SELL
+        string txt = (fadeDir == 1 ? "FADE ▲ " : "FADE ▼ ") + str.tostring(candScore, "#.0")
+        string tip = "Contrarian conviction " + str.tostring(candScore, "#.0") + "/10 · " + tierShort(candScore) + "\nAuction shape: " + shape + "\nDelta: " + str.tostring(barDelta, format.volume) + " · Rel vol: " + str.tostring(relVol, "#.00") + "x\nPOC: " + fmtP(candPocPrice)
+        label.new(bar_index, fadeDir == 1 ? low : high, txt, yloc = yloc.price, style = fadeDir == 1 ? label.style_label_up : label.style_label_down, color = color.new(scol, 12), textcolor = #FFFFFF, size = size.small, tooltip = tip)
+        if fadeDir == 1
+            fireLong := true
+        else
+            fireShort := true
+        if showTgt
+            float tgt = candPocPrice
+            float bestD = 1e12
+            if npocs.size() > 0
+                for kk = 0 to npocs.size() - 1
+                    NakedPOC nn = npocs.get(kk)
+                    bool okDir = fadeDir == 1 ? nn.price > close : nn.price < close
+                    float dd = math.abs(nn.price - close)
+                    if okDir and dd < bestD
+                        bestD := dd
+                        tgt := nn.price
+            line.new(bar_index, tgt, bar_index + tgtBars, tgt, color = color.new(scol, 25), style = line.style_dotted, width = 1)
+    if showNaked and barstate.isconfirmed and candScore >= nakedMin and fadeDir != 0
+        line nl = line.new(bar_index, candPocPrice, bar_index + 1, candPocPrice, color = color.new(POCC, 30), width = 2)
+        npocs.push(NakedPOC.new(nl, candPocPrice, bar_index))
+        while npocs.size() > nakedMax
+            NakedPOC old = npocs.shift()
+            line.delete(old.ln)
+if showNaked and npocs.size() > 0
+    for i = npocs.size() - 1 to 0
+        if i < npocs.size()
+            NakedPOC n = npocs.get(i)
+            bool tested = bar_index > n.born and high >= n.price and low <= n.price
+            if tested
+                line.delete(n.ln)
+                npocs.remove(i)
+            else
+                n.ln.set_x2(bar_index + 1)
+var array<polyline> scPolys = array.new<polyline>()
+var array<label>    scLabs  = array.new<label>()
+var array<line>     scRails = array.new<line>()
+var int   dScDir    = 0
+var float dScTrig   = na
+var float dScTgt    = na
+var float dScRev    = na
+var float dScRet    = na
+var float dScExt    = na
+var int   dScLegs   = 0
+var bool  dScClamped = false
+if barstate.islast
+    for p in scPolys
+        polyline.delete(p)
+    scPolys.clear()
+    for l in scLabs
+        label.delete(l)
+    scLabs.clear()
+    for r in scRails
+        line.delete(r)
+    scRails.clear()
+wallAt(int xi, bool upper) =>
+    float baseY = startPrice + s * float(xi - startIdx)
+    baseY + (upper ? upBand : -dnBand)
+toFrac(float price, float wLo, float wHi) =>
+    float w = wHi - wLo
+    w != 0.0 ? (price - wLo) / w : 0.5
+f_nearestInDir(float src, int d, float c0, float c1, float c2, float c3) =>
+    float best = na
+    array<float> cs = array.from(c0, c1, c2, c3)
+    for i = 0 to cs.size() - 1
+        float v = cs.get(i)
+        bool ok = d > 0 ? v > src : v < src
+        if ok and (na(best) or (d > 0 ? v < best : v > best))
+            best := v
+    best
+if scenOn and barstate.islast and bar_index >= lengthInput and rng > 0.0
+    dScClamped := false
+    float px = close
+    float buyRatio = safeDiv(totalBuyVol, totalVol)
+    float flowScore = (buyRatio - 0.5) + (s > 0 ? 0.15 : -0.15) + (cvd >= 0 ? 0.05 : -0.05)
+    int dir = scenDir == "Up First" ? 1 : scenDir == "Down First" ? -1 : (flowScore >= 0 ? 1 : -1)
+    dScDir := dir
+    float lvlPOC = endBase + pocDev
+    float lvlDPO = endBase + deltaPocDev
+    float lvlVAH = endBase + vahDev
+    float lvlVAL = endBase + valDev
+    float wallU  = upperEndPrice
+    float wallL  = lowerEndPrice
+    float pad     = (wallU - wallL) * (wallPad / 100.0)
+    float capHi   = wallU - pad
+    float capLo   = wallL + pad
+    float chW = wallU - wallL
+    float padFrac = chW != 0.0 ? pad / chW : 0.0
+    bool useWalls = scenAnchor == "Channel Extremes"
+    float trigLvl = f_nearestInDir(px, dir, lvlPOC, lvlDPO, lvlVAH, lvlVAL)
+    float trigFrac = useWalls or na(trigLvl) ? (dir > 0 ? 1.0 : 0.0) : clamp(toFrac(trigLvl, wallL, wallU), padFrac, 1.0 - padFrac)
+    float trig = wallL + trigFrac * chW
+    float tgtLvl = f_nearestInDir(px, -dir, lvlPOC, lvlDPO, lvlVAH, lvlVAL)
+    float tgtFrac = useWalls or na(tgtLvl) ? (dir > 0 ? 0.0 : 1.0) : clamp(toFrac(tgtLvl, wallL, wallU), padFrac, 1.0 - padFrac)
+    float tgt = wallL + tgtFrac * chW
+    float pxFrac = clamp(toFrac(px, wallL, wallU), padFrac, 1.0 - padFrac)
+    float legTrigF = trigFrac - pxFrac
+    float revFrac  = clamp(trigFrac - legTrigF * (revPct / 100.0), padFrac, 1.0 - padFrac)
+    float legRevF  = revFrac - trigFrac
+    float retFrac  = clamp(trigFrac > revFrac ? revFrac + math.abs(legRevF) * (retestPct/100.0) : revFrac - math.abs(legRevF) * (retestPct/100.0), padFrac, 1.0 - padFrac)
+    float extFrac = na
+    if scenShape == "Extended"
+        float farFrac = dir > 0 ? 0.0 : 1.0
+        extFrac := clamp(tgtFrac + (farFrac - tgtFrac) * 0.5, padFrac, 1.0 - padFrac)
+    dScTrig := trig
+    dScTgt  := tgt
+    dScRev  := wallL + revFrac * chW
+    dScRet  := wallL + retFrac * chW
+    dScExt  := na(extFrac) ? na : wallL + extFrac * chW
+    array<float>  ys = array.from(pxFrac, trigFrac)
+    array<string> nm = array.from("", "TRIGGER")
+    if scenShape != "Simple"
+        ys.push(revFrac)
+        nm.push("REVERSE")
+        ys.push(retFrac)
+        nm.push("RETEST")
+    ys.push(tgtFrac)
+    nm.push("TARGET")
+    if scenShape == "Extended" and not na(extFrac)
+        ys.push(extFrac)
+        nm.push("EXTENSION")
+    int legs = ys.size() - 1
+    dScLegs := legs
+    float sumD = 0.0
+    for k = 1 to legs
+        sumD += math.abs(ys.get(k) - ys.get(k - 1))
+    int   x0   = bar_index
+    array<int>   nodeX = array.new<int>()
+    array<float> nodeY = array.new<float>()
+    float lw0 = wallAt(x0, false)
+    float uw0 = wallAt(x0, true)
+    nodeX.push(x0)
+    nodeY.push(lw0 + ys.get(0) * (uw0 - lw0))
+    int xcur = x0
+    for k = 1 to legs
+        float fK = ys.get(k)
+        float d  = math.abs(fK - ys.get(k - 1))
+        int span = math.max(4, sumD > 0 ? int(math.round(projBars * d / sumD)) : 6)
+        int xK   = math.min(xcur + span, x0 + chanExtend + projBars)
+        float lw = wallAt(xK, false)
+        float uw = wallAt(xK, true)
+        float yc = lw + fK * (uw - lw)
+        if fK >= 1.0 - padFrac or fK <= padFrac
+            dScClamped := true
+        nodeX.push(xK)
+        nodeY.push(yc)
+        xcur := xK
+    for k = 1 to legs
+        int   xa = nodeX.get(k - 1)
+        int   xb = nodeX.get(k)
+        float ya = nodeY.get(k - 1)
+        float yb = nodeY.get(k)
+        if scenGlow
+            scRails.push(line.new(xa, ya, xb, yb, color = color.new(scenCol, 82), width = 5, xloc = xloc.bar_index))
+        scRails.push(line.new(xa, ya, xb, yb, color = scenCol, width = 2, xloc = xloc.bar_index))
+    for k = 1 to legs
+        int   xw = nodeX.get(k)
+        float yc = nodeY.get(k)
+        bool  last = k == legs
+        color wc = scenCol
+        scLabs.push(label.new(xw, yc, "", style = label.style_diamond, color = wc, size = size.tiny, xloc = xloc.bar_index))
+        if last
+            bool dnLeg = nodeY.get(k) < nodeY.get(k - 1)
+            scLabs.push(label.new(xw, yc, "", style = dnLeg ? label.style_arrowdown : label.style_arrowup, color = wc, size = size.small, xloc = xloc.bar_index))
+        if scenLabs
+            float dPct = px > 0 ? (yc - px) / px * 100.0 : 0.0
+            string txt = nm.get(k) + "  " + fmtP(yc) + "   (" + (dPct >= 0 ? "+" : "") + str.tostring(dPct, "#.00") + "%)"
+            scLabs.push(label.new(xw, yc, txt, style = label.style_label_left, color = #00000000, textcolor = wc, size = size.small, xloc = xloc.bar_index))
+    if scenRails
+        int xr = nodeX.get(nodeX.size() - 1)
+        scRails.push(line.new(x0, trig, xr, trig, color = color.new(scenCol, 60), style = line.style_dotted, width = 1, xloc = xloc.bar_index))
+        scRails.push(line.new(x0, tgt,  xr, tgt,  color = color.new(scenCol, 60), style = line.style_dotted, width = 1, xloc = xloc.bar_index))
+bool scHit = scenOn and not na(dScTrig) and barstate.isconfirmed and (dScDir > 0 ? high >= dScTrig : low <= dScTrig)
+var float dPocPrice   = na
+var float dDeltaPocPr = na
+var float dVahPrice   = na
+var float dValPrice   = na
+var float dBuyRatio   = na
+var float dInstaCount = 0
+var float dCompScore  = na
+var string dTrend     = "—"
+var string dRegime    = "—"
+var float dPosScore   = na
+var float dVwap       = na
+if barstate.islast and bar_index >= lengthInput and rng > 0.0
+    dPocPrice   := endBase + pocDev
+    dDeltaPocPr := endBase + deltaPocDev
+    dVahPrice   := endBase + vahDev
+    dValPrice   := endBase + valDev
+    dBuyRatio   := safeDiv(totalBuyVol, totalVol)
+    float ic = 0.0
+    for j = 0 to maxSlotIdx
+        if slotVol.get(j) > instThreshold
+            ic += 1
+    dInstaCount := ic
+    float vaBins = math.max(1.0, (vahDev - valDev) / math.max(slotSz, 1e-9))
+    dCompScore  := clamp(10.0 - (vaBins / i_rowSize * 10.0), 0, 10)
+    dTrend      := s > 0.0 ? "▲ Bullish" : "▼ Bearish"
+    dRegime     := close > upperEndPrice ? "OVERBOUGHT" : close < lowerEndPrice ? "OVERSOLD" : "INSIDE"
+    float chW   = upperEndPrice - lowerEndPrice
+    dPosScore   := chW > 0.0 ? clamp((close - lowerEndPrice) / chW * 10.0, 0, 10) : 5.0
+    dVwap       := math.sum(hlc3 * volume, taLen) / math.sum(volume, taLen)
+string dpos = switch dashPos
+    "Top Right"    => position.top_right
+    "Middle Right" => position.middle_right
+    "Bottom Right" => position.bottom_right
+    "Bottom Left"  => position.bottom_left
+    "Top Left"     => position.top_left
+    => position.top_right
+string dsz = szOf(dashSize)
+var table dash = table.new(dpos, 3, 36, bgcolor = color.new(PANEL, 6), frame_color = color.new(ACC, 45), frame_width = 1, border_color = color.new(PANEL, 40), border_width = 1)
+var bool dashBuilt = false
+setC(int c, int r, string t, color fg, color bg, string al) =>
+    table.cell(dash, c, r, t, text_color = fg, bgcolor = bg, text_size = dsz, text_halign = al)
+row3(int r, string lbl, string mid, string val, color lblC, color midC, color valC) =>
+    setC(0, r, lbl, lblC, na, text.align_left)
+    setC(1, r, mid, midC, na, text.align_center)
+    setC(2, r, val, valC, na, text.align_right)
+secHdr(int r, string t) =>
+    table.cell(dash, 0, r, t, text_color = ACC, bgcolor = color.new(ACC, 88), text_size = dsz, text_halign = text.align_center)
+if barstate.islast and showDash
+    if not dashBuilt
+        for r = 0 to 35
+            for c = 0 to 2
+                table.cell(dash, c, r, "", text_size = dsz)
+        table.merge_cells(dash, 0, 0, 2, 0)
+        table.merge_cells(dash, 0, 1, 2, 1)
+        table.merge_cells(dash, 0, 2, 2, 2)
+        table.merge_cells(dash, 0, 8, 2, 8)
+        table.merge_cells(dash, 0, 14, 2, 14)
+        table.merge_cells(dash, 0, 20, 2, 20)
+        table.merge_cells(dash, 0, 25, 2, 25)
+        table.merge_cells(dash, 0, 30, 2, 30)
+        table.merge_cells(dash, 1, 24, 2, 24)
+        table.cell(dash, 0, 0, "⚡  S T R O N G   G R A D I E N T   C H A N N E L", text_color = TXT, bgcolor = color.new(ACC, 72), text_size = dsz, text_halign = text.align_center)
+        secHdr(2,  "◤ CHANNEL & TREND ◢")
+        secHdr(8,  "◤ LIVE ORDER FLOW ◢")
+        secHdr(14, "◤ VOLUME PROFILE ◢")
+        secHdr(20, "◤ AUCTION & FADE ◢")
+        secHdr(25, "◤ REGIME ◢")
+        secHdr(30, "◤ SCENARIO PATH ◢")
+        dashBuilt := true
+    table.cell(dash, 0, 1, syminfo.ticker + "  •  " + timeframe.period + "  •  LTF " + tfPri + "  •  " + sessionName(), text_color = MUT, text_size = size.tiny, text_halign = text.align_center)
+    bool ready = not na(dPocPrice)
+    color trendCol = str.startswith(dTrend, "▲") ? BUY : SELL
+    float slopePct = safeDiv(s * lenM1, close) * 100.0
+    color posCol   = nz(dPosScore) >= 7 ? SELL : nz(dPosScore) <= 3 ? BUY : POCC
+    color regCol   = dRegime == "OVERBOUGHT" ? SELL : dRegime == "OVERSOLD" ? BUY : MUT
+    float bandW    = safeDiv(upperEndPrice - lowerEndPrice, close) * 100.0
+    row3(3, "LinReg Slope",  ready ? dTrend : "—",                         ready ? str.tostring(slopePct, "#.00") + "%" : "—", MUT, trendCol, trendCol)
+    row3(4, "Channel Pos",   meter(nz(dPosScore) * 10.0, 8),               str.tostring(nz(dPosScore), "#.0") + "/10", MUT, posCol, posCol)
+    row3(5, "Price Regime",  ready ? dRegime : "—",                        ready ? fmtP(close) : "—", MUT, regCol, TXT)
+    row3(6, "Upper Wall",    ready ? "▲ resistance" : "—",                 ready ? fmtP(upperEndPrice) : "—", MUT, color.new(SELL, 15), color.new(SELL, 20))
+    row3(7, "Lower Wall",    ready ? "▼ support" : "—",                    ready ? fmtP(lowerEndPrice) : "—", MUT, color.new(BUY, 15), color.new(BUY, 20))
+    float buyPct  = safeDiv(ibBuy, barVol) * 100.0
+    float sellPct = 100.0 - buyPct
+    color dCol    = barDelta >= 0 ? BUY : SELL
+    color cvdCol  = cvd >= 0 ? BUY : SELL
+    string cvdArr = cvd >= nz(cvd[5], cvd) ? "▲ ▲ ▲" : "▼ ▼ ▼"
+    color sdCol   = sessDelta >= 0 ? BUY : SELL
+    float relV    = safeDiv(barVol, nz(avgVol, barVol))
+    row3(9,  "Delta",       meter(math.abs(safeDiv(barDelta, barVol)) * 100.0, 8), (barDelta > 0 ? "+" : "") + fmtV(barDelta), MUT, dCol, dCol)
+    row3(10, "Buy / Sell",  splitMeter(buyPct, 8),                                 str.tostring(buyPct, "#") + " / " + str.tostring(sellPct, "#") + "%", MUT, buyPct >= 50 ? BUY : SELL, TXT)
+    row3(11, "CVD",         cvdArr,                                                fmtV(cvd), MUT, cvdCol, cvdCol)
+    row3(12, "Session Δ",   meter(clamp(math.abs(safeDiv(sessDelta, math.max(barVol * 10.0, 1.0))) * 100.0, 0, 100), 8), (sessDelta > 0 ? "+" : "") + fmtV(sessDelta), MUT, sdCol, sdCol)
+    row3(13, "Rel Volume",  meter(clamp(relV * 40.0, 0, 100), 8),                  str.tostring(relV, "#.00") + "x", MUT, relV > 1.5 ? POCC : ACC, TXT)
+    string buyBias = na(dBuyRatio) ? "—" : biasName(nz(dBuyRatio) * 100.0)
+    color biasCol  = nz(dBuyRatio) >= 0.55 ? BUY : nz(dBuyRatio) <= 0.45 ? SELL : POCC
+    row3(15, "Volume POC",   ready ? (close >= dPocPrice ? "ABOVE" : "BELOW") : "—", ready ? fmtP(dPocPrice) : "—", MUT, ready ? (close >= dPocPrice ? BUY : SELL) : MUT, POCC)
+    row3(16, "Delta POC",    ready ? "Δ max" : "—",                                 ready ? fmtP(dDeltaPocPr) : "—", MUT, ACC, ACC)
+    row3(17, "Value Area",   ready ? (close <= dVahPrice and close >= dValPrice ? "INSIDE" : "OUTSIDE") : "—", ready ? fmtP(dValPrice) + "‥" + fmtP(dVahPrice) : "—", MUT, ready ? ACC : MUT, TXT)
+    row3(18, "Buy Bias",     na(dBuyRatio) ? "—" : splitMeter(nz(dBuyRatio) * 100.0, 8), na(dBuyRatio) ? "—" : str.tostring(nz(dBuyRatio) * 100.0, "#") + "% " + buyBias, MUT, biasCol, biasCol)
+    row3(19, "Compression",  meter(nz(dCompScore) * 10.0, 8),                       str.tostring(nz(dCompScore), "#.0") + "/10", MUT, nz(dCompScore) >= 7 ? POCC : ACC, TXT)
+    color scoreCol = candScore >= 7 ? (fadeDir == 1 ? BUY : SELL) : candScore >= 5.5 ? POCC : MUT
+    string fadeTxt = fadeDir == 0 ? "NONE" : fadeDir == 1 ? "FADE ▲ LONG" : "FADE ▼ SHORT"
+    color fadeCol  = fadeDir == 1 ? BUY : fadeDir == -1 ? SELL : MUT
+    row3(21, "Conviction",   meter(candScore * 10.0, 8),          str.tostring(candScore, "#.0") + "/10 " + tierShort(candScore), MUT, scoreCol, scoreCol)
+    row3(22, "Fade Signal",  stars(candScore),                    fadeTxt, MUT, fadeCol, fadeCol)
+    row3(23, "VWAP (anch)",  na(dVwap) ? "—" : (close >= dVwap ? "ABOVE" : "BELOW"), na(dVwap) ? "—" : fmtP(dVwap), MUT, na(dVwap) ? MUT : close >= dVwap ? BUY : SELL, TXT)
+    setC(0, 24, "Naked POCs", MUT, na, text.align_left)
+    table.cell(dash, 1, 24, str.tostring(npocs.size()) + " active  ·  " + str.tostring(int(dInstaCount)) + " insta rows", text_color = ACC, bgcolor = color.new(ACC, 90), text_size = dsz, text_halign = text.align_center)
+    float volPct = clamp(safeDiv(atr14, nz(atr100, atr14)) * 50.0, 0, 100)
+    string volSt = volPct < 40 ? "COMPRESSED" : volPct > 65 ? "EXPANSION" : "NORMAL"
+    string overall = not ready ? "—" : dRegime == "OVERSOLD" and nz(dBuyRatio) >= 0.5 ? "BULLISH REVERSAL WATCH" : dRegime == "OVERBOUGHT" and nz(dBuyRatio) <= 0.5 ? "BEARISH REVERSAL WATCH" : s > 0 ? "BULL TREND" : "BEAR TREND"
+    color ovCol = str.contains(overall, "BULL") ? BUY : str.contains(overall, "BEAR") ? SELL : POCC
+    row3(26, "Volatility",  meter(volPct, 8),  volSt, MUT, volPct > 65 ? POCC : ACC, volPct > 65 ? POCC : ACC)
+    row3(27, "Trend Bias",  ready ? dTrend : "—", ready ? tierName(math.abs(slopePct) * 4.0) : "—", MUT, trendCol, trendCol)
+    row3(28, "CVD State",   cvd >= 0 ? "ACCUMULATION" : "DISTRIBUTION", cvdArr, MUT, cvdCol, cvdCol)
+    setC(0, 29, "SIGNAL", TXT, color.new(ovCol, 80), text.align_left)
+    table.cell(dash, 1, 29, overall, text_color = ovCol, bgcolor = color.new(ovCol, 84), text_size = dsz, text_halign = text.align_right)
+    table.merge_cells(dash, 1, 29, 2, 29)
+    bool scReady = scenOn and not na(dScTrig)
+    color sdirCol = dScDir > 0 ? BUY : SELL
+    float mvPct = scReady and close > 0 ? (dScTgt - close) / close * 100.0 : na
+    float mvAtr = scReady and atr14 > 0 ? math.abs(dScTgt - dScTrig) / atr14 : na
+    row3(31, "Direction",   scReady ? (dScDir > 0 ? "▲ UP FIRST" : "▼ DOWN FIRST") : "—", scReady ? "path" : "off", MUT, sdirCol, MUT)
+    row3(32, "Trigger",     scReady ? "→" : "—",  scReady ? fmtP(dScTrig) : "—", MUT, scenCol, scenCol)
+    row3(33, "Target",      scReady ? (na(mvPct) ? "" : (mvPct >= 0 ? "+" : "") + str.tostring(mvPct, "#.00") + "%") : "—", scReady ? fmtP(dScTgt) : "—", MUT, sdirCol, TXT)
+    row3(34, "Move Size",   scReady and not na(mvAtr) ? meter(clamp(mvAtr * 20.0, 0, 100), 8) : "—", scReady and not na(mvAtr) ? str.tostring(mvAtr, "#.0") + "×ATR" : "—", MUT, POCC, TXT)
+    row3(35, "Containment", scReady ? (dScClamped ? "CLAMPED TO WALLS" : "INSIDE WALLS") : "—", scReady ? str.tostring(dScLegs) + " legs" : "—", MUT, dScClamped ? POCC : BUY, MUT)
+string lpos = switch legendPos
+    "Bottom Right" => position.bottom_right
+    "Bottom Left"  => position.bottom_left
+    "Middle Left"  => position.middle_left
+    => position.bottom_right
+var table leg = table.new(lpos, 2, 10, bgcolor = color.new(PANEL, 8), frame_color = color.new(ACC, 45), frame_width = 1, border_color = color.new(PANEL, 45), border_width = 1)
+legRow(int r, string glyph, color gcol, string meaning) =>
+    table.cell(leg, 0, r, glyph, text_color = gcol, text_size = size.small, text_halign = text.align_center)
+    table.cell(leg, 1, r, meaning, text_color = #C7D0DC, text_size = size.small, text_halign = text.align_left)
+if barstate.islast and showLegend
+    table.merge_cells(leg, 0, 0, 1, 0)
+    table.cell(leg, 0, 0, "STRONG GRADIENT CHANNEL — KEY", text_color = TXT, bgcolor = color.new(ACC, 74), text_size = size.small, text_halign = text.align_center)
+    legRow(1, "█", BUY,  "Bullish (buy) profile volume")
+    legRow(2, "█", SELL, "Bearish (sell) profile volume")
+    legRow(3, "▬", POCC, "POC — highest-volume row of the profile")
+    legRow(4, "▬", ACC,  "ΔPOC / value-area & VWAP levels")
+    legRow(5, "█", c_instaCol, "Institutional row (vol > mean + 2σ)")
+    legRow(6, "▲▼", TXT, "Contrarian fade — exhaustion at a channel wall")
+    legRow(7, "┈", POCC, "Naked POC magnet — untested, extends right")
+    legRow(8, "╱", scenCol, "Scenario path — clamped inside the channel")
+    legRow(9, "◤◢", ACC, "Dashboard sections — meters, stars, tiers")
+alertcondition(fireLong,  "SGC — Fade Long",  "Strong Gradient Channel: exhaustion at lower wall, contrarian long fade.")
+alertcondition(fireShort, "SGC — Fade Short", "Strong Gradient Channel: exhaustion at upper wall, contrarian short fade.")
+alertcondition(fireLong or fireShort, "SGC — Any Fade", "Strong Gradient Channel: contrarian fade signal fired.")
+alertcondition(scHit, "SGC — Scenario Trigger", "Strong Gradient Channel: price reached the scenario trigger level.")
+plot(barDelta,  "Bar Delta",     color = barDelta >= 0 ? BUY : SELL, display = display.data_window)
+plot(cvd,       "CVD",           color = cvd >= 0 ? BUY : SELL,      display = display.data_window)
+plot(sessDelta, "Session Delta", color = sessDelta >= 0 ? BUY : SELL, display = display.data_window)
+plot(candScore, "Fade Score",    color = ACC,                        display = display.data_window)
+// === Dashboard with Telegram Link ===
+var table myTable = table.new(position.top_center, 1, 1, border_width=1, frame_color=color.black, bgcolor=color.white)
+
+// Add Telegram Message to Dashboard
+table.cell(myTable, 0, 0, "Join Telegram @free_fx_pro", bgcolor=color.blue, text_color=color.white, text_size=size.normal)

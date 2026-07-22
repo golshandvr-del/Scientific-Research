@@ -1,0 +1,428 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Brothers_FX_Trading
+
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Brothers_FX_Trading
+
+//@version=5
+indicator("Entry Signal-(Brother's Academy)", overlay=true, max_labels_count=500, max_lines_count=500)
+
+//====================================================
+// EMA TREND
+//====================================================
+
+ema20 = ta.ema(close, 20)
+ema50 = ta.ema(close, 50)
+ema200 = ta.ema(close, 200)
+
+plot(ema20, color=color.lime, linewidth=2)
+plot(ema50, color=color.orange, linewidth=2)
+plot(ema200, color=color.red, linewidth=3)
+
+bullTrend = ema20 > ema50 and ema50 > ema200
+bearTrend = ema20 < ema50 and ema50 < ema200
+
+//====================================================
+// HTF TREND
+//====================================================
+
+htfClose = request.security(syminfo.tickerid, "240", close)
+htfEMA = request.security(syminfo.tickerid, "240", ta.ema(close, 200))
+
+htfBull = htfClose > htfEMA
+htfBear = htfClose < htfEMA
+
+//====================================================
+// BACKGROUND
+//====================================================
+
+bgcolor(
+     bullTrend ?
+     color.new(color.green, 96) :
+     bearTrend ?
+     color.new(color.red, 96) :
+     na)
+
+//====================================================
+// ATR + RSI
+//====================================================
+
+atr = ta.atr(14)
+rsi = ta.rsi(close, 14)
+
+//====================================================
+// BOS
+//====================================================
+
+bosBull = close > ta.highest(high, 10)[1]
+bosBear = close < ta.lowest(low, 10)[1]
+
+//====================================================
+// ORDER BLOCK
+//====================================================
+
+bullOB =
+     close[1] < open[1] and
+     close > high[1]
+
+bearOB =
+     close[1] > open[1] and
+     close < low[1]
+
+//====================================================
+// BREAKER BLOCK
+//====================================================
+
+bullBreaker =
+     low < low[1] and
+     close > high[1]
+
+bearBreaker =
+     high > high[1] and
+     close < low[1]
+
+//====================================================
+// RETEST
+//====================================================
+
+bullRetest =
+     low <= low[1] and
+     close > high[1]
+
+bearRetest =
+     high >= high[1] and
+     close < low[1]
+
+//====================================================
+// CONFIDENCE
+//====================================================
+
+score = 0.0
+
+if bullTrend
+    score += 25
+
+if bearTrend
+    score += 25
+
+if htfBull
+    score += 20
+
+if htfBear
+    score += 20
+
+if bosBull
+    score += 15
+
+if bosBear
+    score += 15
+
+if bullOB
+    score += 15
+
+if bearOB
+    score += 15
+
+if bullBreaker
+    score += 15
+
+if bearBreaker
+    score += 15
+
+if bullRetest
+    score += 10
+
+if bearRetest
+    score += 10
+
+if rsi > 55
+    score += 10
+
+if rsi < 45
+    score += 10
+
+confidence = math.min(score, 100)
+
+//====================================================
+// SIGNALS
+//====================================================
+
+buySignal =
+     bullTrend and
+     (bullOB or bullBreaker) and
+     bullRetest and
+     confidence >= 70
+
+sellSignal =
+     bearTrend and
+     (bearOB or bearBreaker) and
+     bearRetest and
+     confidence >= 70
+
+//====================================================
+// ENTRY / TP / SL
+//====================================================
+
+buyEntry = close
+buySL = low - atr
+
+buyTP1 = close + atr * 1
+buyTP2 = close + atr * 2
+buyTP3 = close + atr * 3
+buyTP4 = close + atr * 4
+
+sellEntry = close
+sellSL = high + atr
+
+sellTP1 = close - atr * 1
+sellTP2 = close - atr * 2
+sellTP3 = close - atr * 3
+sellTP4 = close - atr * 4
+
+//====================================================
+// ANTI SPAM
+//====================================================
+
+var int lastSignal = na
+
+canSignal =
+     na(lastSignal) or
+     bar_index - lastSignal > 10
+
+//====================================================
+// PREMIUM TITLES
+//====================================================
+
+premiumTitleBuy =
+     "👑 BROTHER'S ACADEMY 👑" +
+     "\n━━━━━━━━━━━━" +
+     "\n🚀 BUY SIGNAL 🚀\n"
+
+premiumTitleSell =
+     "👑 BROTHER'S ACADEMY 👑" +
+     "\n━━━━━━━━━━━━" +
+     "\n🔻 SELL SIGNAL 🔻\n"
+
+//====================================================
+// BUY SIGNAL
+//====================================================
+
+if buySignal and canSignal
+
+    lastSignal := bar_index
+
+    label.new(
+         bar_index,
+         low - atr * 2,
+         text=
+             premiumTitleBuy +
+
+             "\n🎯 Entry: " + str.tostring(buyEntry, format.mintick) +
+             "\n🛑 SL: " + str.tostring(buySL, format.mintick) +
+
+             "\n\n🎯 TP1: " + str.tostring(buyTP1, format.mintick) +
+             "\n💰 TP2: " + str.tostring(buyTP2, format.mintick) +
+             "\n🚀 TP3: " + str.tostring(buyTP3, format.mintick) +
+             "\n👑 TP4: " + str.tostring(buyTP4, format.mintick) +
+
+             "\n\n⚡ Potencial: " + str.tostring(confidence) + "%",
+
+         style=label.style_label_up,
+         color=color.rgb(10,10,10),
+         textcolor=color.lime,
+         size=size.normal)
+
+    // ENTRY
+    line.new(bar_index, buyEntry, bar_index + 15, buyEntry, color=color.white, width=2)
+
+    label.new(
+         bar_index + 15,
+         buyEntry,
+         "ENTRY",
+         style=label.style_label_left,
+         color=color.white,
+         textcolor=color.black)
+
+    // STOP LOSS
+    line.new(bar_index, buySL, bar_index + 15, buySL, color=color.red, width=2)
+
+    label.new(
+         bar_index + 15,
+         buySL,
+         "STOP LOSS",
+         style=label.style_label_left,
+         color=color.red,
+         textcolor=color.white)
+
+    // TP1
+    line.new(bar_index, buyTP1, bar_index + 15, buyTP1, color=color.lime, width=2)
+
+    label.new(
+         bar_index + 15,
+         buyTP1,
+         "🎯 TP1",
+         style=label.style_label_left,
+         color=color.lime,
+         textcolor=color.black)
+
+    // TP2
+    line.new(bar_index, buyTP2, bar_index + 15, buyTP2, color=color.green, width=2)
+
+    label.new(
+         bar_index + 15,
+         buyTP2,
+         "💰 TP2",
+         style=label.style_label_left,
+         color=color.green,
+         textcolor=color.black)
+
+    // TP3
+    line.new(bar_index, buyTP3, bar_index + 15, buyTP3, color=color.blue, width=2)
+
+    label.new(
+         bar_index + 15,
+         buyTP3,
+         "🚀 TP3",
+         style=label.style_label_left,
+         color=color.blue,
+         textcolor=color.white)
+
+    // TP4
+    line.new(bar_index, buyTP4, bar_index + 15, buyTP4, color=color.purple, width=2)
+
+    label.new(
+         bar_index + 15,
+         buyTP4,
+         "👑 TP4",
+         style=label.style_label_left,
+         color=color.purple,
+         textcolor=color.white)
+
+//====================================================
+// SELL SIGNAL
+//====================================================
+
+if sellSignal and canSignal
+
+    lastSignal := bar_index
+
+    label.new(
+         bar_index,
+         high + atr * 2,
+         text=
+             premiumTitleSell +
+
+             "\n🎯 Entry: " + str.tostring(sellEntry, format.mintick) +
+             "\n🛑 SL: " + str.tostring(sellSL, format.mintick) +
+
+             "\n\n🎯 TP1: " + str.tostring(sellTP1, format.mintick) +
+             "\n💰 TP2: " + str.tostring(sellTP2, format.mintick) +
+             "\n🚀 TP3: " + str.tostring(sellTP3, format.mintick) +
+             "\n👑 TP4: " + str.tostring(sellTP4, format.mintick) +
+
+             "\n\n⚡ Potencial: " + str.tostring(confidence) + "%",
+
+         style=label.style_label_down,
+         color=color.rgb(10,10,10),
+         textcolor=color.red,
+         size=size.normal)
+
+    // ENTRY
+    line.new(bar_index, sellEntry, bar_index + 15, sellEntry, color=color.white, width=2)
+
+    label.new(
+         bar_index + 15,
+         sellEntry,
+         "ENTRY",
+         style=label.style_label_left,
+         color=color.white,
+         textcolor=color.black)
+
+    // STOP LOSS
+    line.new(bar_index, sellSL, bar_index + 15, sellSL, color=color.red, width=2)
+
+    label.new(
+         bar_index + 15,
+         sellSL,
+         "STOP LOSS",
+         style=label.style_label_left,
+         color=color.red,
+         textcolor=color.white)
+
+    // TP1
+    line.new(bar_index, sellTP1, bar_index + 15, sellTP1, color=color.lime, width=2)
+
+    label.new(
+         bar_index + 15,
+         sellTP1,
+         "🎯 TP1",
+         style=label.style_label_left,
+         color=color.lime,
+         textcolor=color.black)
+
+    // TP2
+    line.new(bar_index, sellTP2, bar_index + 15, sellTP2, color=color.green, width=2)
+
+    label.new(
+         bar_index + 15,
+         sellTP2,
+         "💰 TP2",
+         style=label.style_label_left,
+         color=color.green,
+         textcolor=color.black)
+
+    // TP3
+    line.new(bar_index, sellTP3, bar_index + 15, sellTP3, color=color.blue, width=2)
+
+    label.new(
+         bar_index + 15,
+         sellTP3,
+         "🚀 TP3",
+         style=label.style_label_left,
+         color=color.blue,
+         textcolor=color.white)
+
+    // TP4
+    line.new(bar_index, sellTP4, bar_index + 15, sellTP4, color=color.purple, width=2)
+
+    label.new(
+         bar_index + 15,
+         sellTP4,
+         "👑 TP4",
+         style=label.style_label_left,
+         color=color.purple,
+         textcolor=color.white)
+
+//====================================================
+// SIGNAL ARROWS
+//====================================================
+
+plotshape(
+     buySignal and canSignal,
+     title="BUY",
+     style=shape.triangleup,
+     location=location.belowbar,
+     color=color.lime,
+     size=size.small)
+
+plotshape(
+     sellSignal and canSignal,
+     title="SELL",
+     style=shape.triangledown,
+     location=location.abovebar,
+     color=color.red,
+     size=size.small)
+
+//====================================================
+// ALERTS
+//====================================================
+
+alertcondition(
+     buySignal and canSignal,
+     title="BUY SIGNAL",
+     message="BUY SIGNAL")
+
+alertcondition(
+     sellSignal and canSignal,
+     title="SELL SIGNAL",
+     message="SELL SIGNAL")

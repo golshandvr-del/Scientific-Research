@@ -1,0 +1,325 @@
+// This Pine Script™ code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © nnamdert
+// 08-17-2024 UPDATE
+//@version=5
+indicator("Sign of Strength - Sign of Weakness Indicator", shorttitle = "SOS SOW", overlay = true)
+//RSI
+len = input(6, "RSI Length") 
+src = input(close, "RSI Source")
+
+rsiValue = ta.rsi(src, len)
+plot_rsi = input.bool(defval = false, title = "Plot overbought and oversold RSI?")
+plot_rsi_div_confirmed = input.bool(defval = true, title = "Show Confirmed RSI Divergence Plots?")
+plot_rsi_div_potential = input.bool(defval = true, title = "Show Potential RSI Divergence Plots?")
+oversoldLevel = input.int(35, "RSI Oversold Level") 
+overboughtLevel = input.int(65, "RSI Overbought Level")
+//Divergence Detection:
+
+//Bullish Divergence:
+
+//Check if:
+//Current RSI is below the oversold level (typically 30).
+OSRSI = rsiValue <= oversoldLevel
+plotshape(not plot_rsi ? na : OSRSI, title = "rsi", style =shape.cross, location = location.belowbar, color = color.rgb(248, 2, 174))
+//Current price low is lower than the previous price low.
+Lower_Low = low <= low[1]
+//Current RSI is higher than the previous RSI.
+Stronger_RSI = rsiValue >= rsiValue[1]
+bullish_rsi_divergence = OSRSI and Lower_Low and Stronger_RSI
+
+//Bearish Divergence:
+
+//Check if:
+//Current RSI is above the overbought level (typically 70).
+OBRSI = rsiValue >= overboughtLevel
+plotshape(not plot_rsi ? na : OBRSI, title = "rsi", style =shape.cross, location = location.abovebar, color = color.lime)
+//Current price high is higher than the previous price high.
+Higher_High = high >= high[1]
+//Current RSI is lower than the previous RSI.
+Weaker_RSI = rsiValue <= rsiValue[1]
+bearish_rsi_divergence = OBRSI and Higher_High and Weaker_RSI
+//
+//
+
+//
+//
+
+ONOFF = 'Sharkfin On Off'
+angle_multiplier = input.int(defval = 3, step = 1, title = 'Angle Multiplier', tooltip = " Used when the Linear Regresion is being used to adjust the angle")
+BGC = 'Background Settings'
+show_tdi_sharkfins = input.bool(defval = false, title = 'Show TDI Shark Fins?', group = ONOFF)
+color_code_bars = input.bool(defval = false, title = 'Color Code Bars?', group = ONOFF)
+bull_bear_symbols = input.bool(defval = true, title = 'Show Bullish and Bearish plots (symbols)?', group = ONOFF)
+color_background = input.bool(defval = false, title = 'Color Background?', group = BGC)
+//PlotICHICLOUD = input.bool(defval = true, title = 'Show Ichimoku Cloud Status?', group = BGC)
+show_potential_reversals = input.bool(defval = false, title = 'Show Potential Scalping Entries (Quick Scalps)?', group = BGC)
+show_bull_bear_ema = input.bool(defval = false, title = 'Show Bullish / Bearish EMA Trend?', group = BGC)
+show_strong_bear_sentiment = input.bool(defval = true, title = 'Show Oversold Background?', group = BGC)
+show_strong_bull_sentiment = input.bool(defval = true, title = 'Show Overbought Background?', group = BGC)
+show_bull_bear_sentiment = input.bool(defval = false, title = 'Show Bullish Bearish Sentiment?', group = BGC)
+TDI_GRP_01 = 'Traders Dynamic Index Settings' 
+UBAND = 'Upper band'
+LBAND = 'Lower Band'
+Show_Upper_Band = input.bool(defval = true, title = 'Show Upper Blue Band', group = TDI_GRP_01, inline = UBAND)
+Color_Code_Upper_Band = input.bool(defval = false, title = 'Color Code Band', group = TDI_GRP_01, inline = UBAND)
+Show_Lower_Band = input.bool(defval = true, title = 'Show Lower Blue Band', group = TDI_GRP_01, inline = LBAND)
+Color_Code_Lower_Band = input.bool(defval = false, title = 'Color Code Band', group = TDI_GRP_01, inline = LBAND)
+Show_Green_Line = input.bool(defval = true, title = 'Show Green Line (Price Line)', group = TDI_GRP_01,
+ tooltip = 'Called the price line it is similar to the RSI indicator and represents market sentiment. It shows you how the market is moving.')
+Show_Red_Line = input.bool(defval = true, title = 'Show Red Line (Signal Line)', group = TDI_GRP_01,
+ tooltip = 'Called the signal line it is simply a crossover signal line for use with the green line. Used for entry and exit.')
+Show_Yellow_Band = input.bool(defval = true, title = 'Show Yellow Line (Base Line)', group = TDI_GRP_01,
+ tooltip = 'Called the base line it is what indicates overall market sentiment. It shows the overall direction of the market.')
+rsiPeriod = input.int(21, minval = 1, title = "RSI Period", group = TDI_GRP_01)
+bandLength = input.int(34, minval = 1, title = "Band Length", group = TDI_GRP_01)
+Fast_RSI_Len = input.int(2, minval = 1, title = "Fast MA on RSI", group = TDI_GRP_01)
+Slow_RSI_Len = input.int(7, minval = 0, title = "Slow MA on RSI", group = TDI_GRP_01)                                                    
+// TDI Calculations
+// Price line is 2, signal line is 7 and base line is 34
+RSI_for_TDI = ta.rsi(src, rsiPeriod)                                            
+TDI_Moving_Average = ta.sma(RSI_for_TDI, bandLength)                                            
+TDI_Band_Offset = (1.6185 * ta.stdev(RSI_for_TDI, bandLength))                              
+Upper_Band = TDI_Moving_Average + TDI_Band_Offset                                                      
+Lower_Band = TDI_Moving_Average - TDI_Band_Offset                                                      
+Mid_Point = (Upper_Band + Lower_Band) / 2                                                 
+Slow_MA_twobarsback = ta.sma(RSI_for_TDI, Slow_RSI_Len)                                        
+Fast_MA_sevenbarsback = ta.sma(RSI_for_TDI, Fast_RSI_Len)  
+Bear_Bands = Upper_Band < Upper_Band[10] and Lower_Band < Lower_Band[10]
+Bull_Bands = Upper_Band > Upper_Band[10] and Lower_Band > Lower_Band[10]  
+Neutral_Bands = not Bear_Bands and not Bull_Bands      
+Bullish_TDI_Move = ta.crossover(Fast_MA_sevenbarsback, Slow_MA_twobarsback) and Neutral_Bands  
+Bearish_TDI_Move = ta.crossunder(Fast_MA_sevenbarsback, Slow_MA_twobarsback) and Neutral_Bands  
+// SHARKFINS BEGIN
+// Bullish 
+very_bullish = Fast_MA_sevenbarsback > Upper_Band and Fast_MA_sevenbarsback > 68
+bullish_sharkfin_start = ta.crossover(Fast_MA_sevenbarsback, Upper_Band)
+bullish_strength_weakening = ta.crossunder(Fast_MA_sevenbarsback, Upper_Band) and Fast_MA_sevenbarsback > 68
+bullish_sharkfin_end = ta.crossunder(Fast_MA_sevenbarsback, Slow_MA_twobarsback)
+bullish_shark_fin_condition = Fast_MA_sevenbarsback > Upper_Band
+bullish_sharkfin_conditon_end = bullish_shark_fin_condition[1] and not bullish_shark_fin_condition and bullish_sharkfin_end and Fast_MA_sevenbarsback > 60
+plotchar(bullish_strength_weakening and show_tdi_sharkfins and barstate.isconfirmed ? high : na, char = '𓂁', location = location.top, color = color.new(color.red, 0),size = size.normal)
+// Bearish
+very_bearish = Fast_MA_sevenbarsback < Lower_Band and Fast_MA_sevenbarsback < 32
+bearish_sharkfin_start = ta.crossunder(Fast_MA_sevenbarsback, Lower_Band)
+bearish_strength_weakening = ta.crossover(Fast_MA_sevenbarsback, Lower_Band) and Fast_MA_sevenbarsback < 32
+bearish_sharkfin_end = ta.crossover(Fast_MA_sevenbarsback, Slow_MA_twobarsback)
+bearish_shark_fin_condition = Fast_MA_sevenbarsback < Lower_Band
+bearish_sharkfin_conditon_end = bearish_shark_fin_condition[1] and not bearish_shark_fin_condition and bearish_sharkfin_end and Fast_MA_sevenbarsback < 40
+plotchar(bearish_strength_weakening and show_tdi_sharkfins and barstate.isconfirmed ? high : na, char = '𓂁', location = location.bottom, color = color.new(color.green, 0),size = size.normal)
+// SHARKFINS END
+Overbought_TDI = bullish_shark_fin_condition and Fast_MA_sevenbarsback > 68 and Bull_Bands and Upper_Band > 68   
+Oversold_TDI = bearish_shark_fin_condition and Fast_MA_sevenbarsback < 32 and Bear_Bands and Lower_Band < 32      
+Bullish_Sentiment = Upper_Band > 62 and Lower_Band < 50 and Fast_MA_sevenbarsback > 60 and Slow_MA_twobarsback > 50 and Mid_Point > 40
+Bearish_Sentiment = Lower_Band < 37 and Upper_Band > 40 and Fast_MA_sevenbarsback < 40 and Slow_MA_twobarsback < 50 and Mid_Point < 60           
+Early_Reversal_Bearish = bullish_shark_fin_condition and Fast_MA_sevenbarsback > 68 and Bull_Bands
+Early_Reversal_Bullish = bearish_shark_fin_condition and Fast_MA_sevenbarsback < 32 and Bear_Bands
+// Plots
+//UB_Plot = plot(Upper_Band, title = "Upper Band", color = Show_Upper_Band and Color_Code_Upper_Band and Bull_Bands ? color.new(color.lime, 50) : Show_Upper_Band and Color_Code_Upper_Band and Bear_Bands ? color.new(#FF0000, 50) : Show_Upper_Band ? #1976d2 : na, linewidth = 2)    
+//LB_Plot = plot(Lower_Band, title = "Lower Band", color = Show_Lower_Band and Color_Code_Lower_Band and Bull_Bands ? color.new(color.lime, 50) : Show_Lower_Band and Color_Code_Lower_Band and Bear_Bands ? color.new(#FF0000, 50) : Show_Lower_Band ?#1976d2 :na, linewidth = 2)     
+//plot(Mid_Point, title = "Middle Band", color = Show_Yellow_Band ? #fbc02d : na, linewidth = 2)    
+//FASTMA_Plot = plot(Fast_MA_sevenbarsback, title = "Fast MA", color = Show_Green_Line ? #388e3c : na, linewidth = 2)    
+//SLOWMA_Plot = plot(Slow_MA_twobarsback, title = "Slow MA", color = Show_Red_Line ? #b71c1c : na, linewidth = 2)   
+//fill(UB_Plot, LB_Plot, color = Bull_Bands ? color.new(color.green, 70) : Bear_Bands ? color.new(color.red, 70) : na)
+//fill(UB_Plot, LB_Plot, color = Neutral_Bands ? color.yellow : na)
+//fill(FASTMA_Plot, UB_Plot, color = Overbought_TDI ? color.new(color.lime, 0) : na)
+//fill(FASTMA_Plot, LB_Plot, color = Oversold_TDI ? color.new(#FF0000, 0) : na)
+// Horizontal Lines  
+//HONEHUNDRED = hline(75, color = color.new(#787b86, 100) )
+//HOS = hline(32, title = "TDI Band Oversold", color = #787b86, linewidth = 1 )                        
+//ML = hline(50, title = "TDI Band Midline", color = #d1d4dc, linewidth = 1 )                                       
+//HOB = hline(68, title = "TDI Band Overbought", color = #787b86, linewidth = 1 ) 
+//HZERO = hline(25, color = color.new(#787b86, 100) ) 
+// Fills               
+//fill(HOS, HOB, color = color_background and show_bull_bear_ema and Fast_MA_sevenbarsback > Mid_Point and Slow_MA_twobarsback > Mid_Point and Fast_MA_sevenbarsback > Slow_MA_twobarsback ? color.new(color.green, 80) : na)
+//fill(HOS, HOB, color = color_background and show_bull_bear_ema and Fast_MA_sevenbarsback < Mid_Point and Slow_MA_twobarsback < Mid_Point and Fast_MA_sevenbarsback < Slow_MA_twobarsback ? color.new(color.maroon, 80) : na)
+//fill(HONEHUNDRED, HZERO, color = color_background and Bearish_Sentiment and show_bull_bear_sentiment? color.new(color.maroon, 80) : na)
+//fill(HONEHUNDRED, HZERO, color = color_background and Bullish_Sentiment and show_bull_bear_sentiment? color.new(color.green, 80): na)
+// Background Colors
+//fill(HOB, HONEHUNDRED, color = bullish_shark_fin_condition and color_background and show_strong_bull_sentiment ? color.new(color.lime, 70) : na)
+//fill(HOS, HZERO, color = bearish_shark_fin_condition and color_background and show_strong_bear_sentiment? color.new(#f79be3, 70) : na)
+//bgcolor(barstate.isconfirmed and Early_Reversal_Bullish and not Early_Reversal_Bullish[1] and color_background and show_potential_reversals ? color.new(color.green, 50) : na)
+//bgcolor(barstate.isconfirmed and Early_Reversal_Bearish and not Early_Reversal_Bearish[1] and color_background and show_potential_reversals ? color.new(#f851d4, 50) : na)
+// Bar Color
+barcolor(bullish_strength_weakening and color_code_bars ? color.new(#f851d4, 0) : na)
+barcolor(bearish_strength_weakening and color_code_bars ? color.new(color.blue, 0) : na)
+barcolor(Bullish_Sentiment and color_code_bars ? color.new(color.lime, 0) : na)
+barcolor(Bearish_Sentiment and color_code_bars ? color.new(#FF0000, 0) : na)
+
+weakening_bull_sentiment = very_bullish[1] and bearish_rsi_divergence
+weakening_bear_sentiment = very_bearish[1] and bullish_rsi_divergence
+MAX_LINES_COUNT = 50
+//HANDLES MAX_LINES_COUNTS ISSUE================================================================================================//
+lineLimitInput = input.int(                                                                                                     //
+ defval = 60,                                                                                                                   //
+ title = 'Max Lines to Show',                                                                                                   // 
+ tooltip = 'Adjust this number to increase or decrease the total number of lines seen on the chart. (ONLY this indicator)',     //
+ group = 'Line Settings'                                                                                                        //
+ )                                                                                                                              //
+if array.size(line.all) > lineLimitInput                                                                                        //
+    for i = 0 to array.size(line.all) - lineLimitInput - 1                                                                      //
+        line.delete(array.get(line.all, i))                                                                                     //
+//END MAX_LINES_COUNTS FIX======================================================================================================//
+//BEGIN Get User Inputs=========================================================================================================//
+hi_piv_color  = input.color(color.new(#e61b00, 0), "High Pivot Color")                                                        //
+lo_piv_color  = input.color(color.new(#40fb6f, 0), "Low Pivot Color")                                                         //
+piv_legs     = input.int(5, "Pivot legs")                                                                                       //
+maxLineLengthInput = input.int(600, "Maximum line length in bars", minval = 2)                                                  //
+show_extra = input.bool(defval = false, title = 'Show additional Pivot Lines at Close Price?')                                  //
+use_hi_lo = input.bool(defval = true, title = 'Show High /Low Pivot Lines?')                                                    //                          
+//END Get User Inputs===========================================================================================================//
+//Defined without User Input ' can chang to an input if desired                                                                 //
+int pivots_to_check = (MAX_LINES_COUNT)                                                                                         //
+//BEGIN SCRIPT==================================================================================================================//
+//==============================================================================================================================//
+//                                                     PIVOT BREACH CODE                                                        //
+//==============================================================================================================================//
+qDq(array, qtyOfElements, arrayElement) =>                                                                                      // 
+    array.push(array, arrayElement)                                                                                             //
+    if array.size(array) > qtyOfElements                                                                                        //
+        // Only deqeue if array has reached capacity.                                                                           //
+        array.shift(array)                                                                                                      //
+//EXTEND UNBREACHED LINES=======================================================================================================//
+checkLinesForBreaches(arrayOfLines) =>                                                                                          //
+    int qtyOfLines = array.size(arrayOfLines)                                                                                   //
+    // Don't loop in case there are no lines to check because "to" value will be `na` then`.                                    //
+    for lineNo = 0 to (qtyOfLines > 0 ? qtyOfLines - 1 : na)                                                                    //
+        // Need to check that array size still warrants a loop because we may have deleted array elements in the loop.          //
+        if lineNo < array.size(arrayOfLines)                                                                                    //
+            line  currentLine    = array.get(arrayOfLines, lineNo)                                                              //
+            float lineLevel      = line.get_price(currentLine, bar_index)                                                       //
+            bool  lineWasCrossed = math.sign(close[1] - lineLevel) != math.sign(close - lineLevel)// uses close                 //
+            bool  highlineWasCrossed = math.sign(high[1] - lineLevel) != math.sign(high - lineLevel)// uses high                //
+            bool  lowlineWasCrossed = math.sign(low[1] - lineLevel) != math.sign(low - lineLevel)// uses low                    //
+            bool  lineIsTooLong  = bar_index - line.get_x1(currentLine) > maxLineLengthInput                                    //
+            if lineWasCrossed or lineIsTooLong //or highlineWasCrossed or lowlineWasCrossed                                     //
+                // Line stays on the chart but will no longer be extend on further bars.                                        //
+                array.remove(arrayOfLines, lineNo)                                                                              //
+                // Force type of both local blocks to same type.                                                                // 
+                int(na)                                                                                                         //
+            else                                                                                                                //
+                line.set_x2(currentLine, bar_index)                                                                             //
+                int(na)                                                                                                         //
+// Arrays of lines containing non-crossed pivot lines.                                                                          //
+var line[] hiPivotLines = array.new_line(pivots_to_check)                                                                       //
+var line[] loPivotLines = array.new_line(pivots_to_check)                                                                       //
+// Detect new pivots.                                                                                                           //
+float hiPivot = ta.pivothigh(close, piv_legs, piv_legs)                                                                         //
+float loPivot = ta.pivotlow(close, piv_legs, piv_legs)                                                                          //   
+//float hiPivot_02 = ta.pivothigh(high, piv_legs, piv_legs)                                                                       //
+//float loPivot_02 = ta.pivotlow(low, piv_legs, piv_legs)                                                                         //
+// Create new lines on new pivots.                                                                                              //
+//                                           OPTIONAL CLOSE LEVEL PIVOT LINES                                                   //
+if not na(hiPivot) and show_extra                                                                                             //
+    line newLine = line.new(bar_index[piv_legs], hiPivot, bar_index, hiPivot, color = hi_piv_color)                             //
+    line.delete(qDq(hiPivotLines, pivots_to_check, newLine))                                                                    //
+else if not na(loPivot) and show_extra                                                                                        //
+    line lo_line_01 = line.new(bar_index[piv_legs], loPivot, bar_index, loPivot, color = lo_piv_color)                          //
+    line.delete(qDq(loPivotLines, pivots_to_check, lo_line_01))                                                                 //
+//                                             PRIMARY HIGH LOW PIVOT LINES                                                     //
+//if not na(hiPivot_02) and use_hi_lo                                                                                             // 
+//    line newLine = line.new(bar_index[piv_legs], hiPivot_02, bar_index, hiPivot_02, color = hi_piv_color)                       //
+//    line.delete(qDq(hiPivotLines, pivots_to_check, newLine))                                                                    //
+//else if not na(loPivot_02) and use_hi_lo                                                                                        //
+//    line lo_line_02 = line.new(bar_index[piv_legs], loPivot_02, bar_index, loPivot_02, color = lo_piv_color)                    //
+//    line.delete(qDq(loPivotLines, pivots_to_check, lo_line_02))                                                                 //
+// Extend lines if they haven't been crossed by price.                                                                          //
+checkLinesForBreaches(hiPivotLines)                                                                                             //
+checkLinesForBreaches(loPivotLines)                                                                                             //
+
+var line bull_signal_line = na
+var line bear_signal_line = na 
+
+//if weakening_bull_sentiment
+//    bull_signal_line := line.new(bar_index, high, bar_index+50, high, color = color.new(color.red, 0))
+//if weakening_bear_sentiment
+//    bear_signal_line := line.new(bar_index, low, bar_index+50, low, color = color.new(color.green, 0))
+//
+//
+hide_engulfing_pattern_areas = input.bool(defval = false, title = "hide boxes?")
+bullish_engulfing_box_border_width =(1)
+bullish_engulfing_box_border_color =(color.new(color.green,0))
+bullish_engulfing_box_transp = (85)     
+bullish_engulfing_box_color = bullish_engulfing_box_border_color
+
+
+bearish_engulfing_box_border_width =(1)
+bearish_engulfing_box_border_color =(color.new(color.red,0))
+bearish_engulfing_box_transp = (85)
+bearish_engulfing_box_color = bearish_engulfing_box_border_color
+//BEGIN ENGULFING BOXES CODE==================================================================================================================//
+var box[] Open_Bullish_Engulfing_Box = array.new_box()                                                                                        //
+var box[] Closed_Open_Bullish_Engulfing_Box = array.new_box()                                                                                 //                                                                                                                                            
+var box[] Open_Bearish_Engulfing_Box = array.new_box()                                                                                        //                                   
+var box[] Closed_Open_Bearish_Engulfing_Box = array.new_box()                                                                                 //                                                                                                                                            
+//                                                                                                                                            //
+Bullish_Engulfing_Is_True = weakening_bear_sentiment                                                                                                                   //
+ //close >= open[1]                                                                                                                             //
+ //and open <= close[1]                                                                                                                         //
+ //and (close[1] < open[1])                                                                                                                     //
+ //and (close - open) > ((open[1] - close[1]) * bullish_engulfing_size)                                                                         //
+ //and (close - open) > atr                                                                                                                     //
+//                                                                                                                                            //
+Bearish_Engulfing_Is_True = weakening_bull_sentiment                                                                                                                   //
+ //close <= open[1]                                                                                                                             //
+ //and open >= close[1]                                                                                                                         //
+ //and (close[1] > open[1])                                                                                                                     //
+ //and (open - close) > ((close[1] - open[1]) * bearish_engulfing_size)                                                                         //
+ //and (open - close) > atr                                                                                                                     //
+//                                                                                                                                            //
+Still_Bull = ta.barssince(Bullish_Engulfing_Is_True) >= 1                                                                                     //   
+Still_Bear = ta.barssince(Bearish_Engulfing_Is_True) >= 1                                                                                     //
+//                                                                                                                                            //
+if Bullish_Engulfing_Is_True and not hide_engulfing_pattern_areas                                                                             //
+    array.push(                                                                                                                               //
+     Open_Bullish_Engulfing_Box,                                                                                                              // 
+     box.new(bar_index - 1, open, bar_index, low,                                                                                       //
+     border_color = color.new(bullish_engulfing_box_border_color, 0),                                                                         //
+     border_width = bullish_engulfing_box_border_width,                                                                                       //
+     border_style = line.style_dotted,                                                                                                        //
+     extend=extend.right,                                                                                                                     //
+     bgcolor=color.new(bullish_engulfing_box_color, bullish_engulfing_box_transp)                                                             //
+     ))                                                                                                                                       //
+//                                                                                                                                            //
+if Bearish_Engulfing_Is_True and not hide_engulfing_pattern_areas                                                                             //
+    array.push(                                                                                                                               //
+     Open_Bearish_Engulfing_Box,                                                                                                              //
+     box.new(bar_index - 1, open, bar_index, high,                                                                                       //
+     border_color = color.new(bearish_engulfing_box_border_color, 0),                                                                         //
+     border_width=bearish_engulfing_box_border_width,                                                                                         //
+     border_style = line.style_dotted,                                                                                                        //
+     extend=extend.right,                                                                                                                     //
+     bgcolor=color.new(bearish_engulfing_box_color, bearish_engulfing_box_transp)                                                             //   
+     ))                                                                                                                                       //
+//                                                                                                                                            //
+for Area_Box in Open_Bullish_Engulfing_Box                                                                                                    //
+    Breached_Level_Occurred = box.get_bottom(Area_Box) > low                                                                                  //                              
+    if  Breached_Level_Occurred and Still_Bull                                                                                                //
+        box.set_extend(Area_Box, extend.none)                                                                                                 //
+        box.set_right(Area_Box, bar_index)                                                                                                    //
+        Closed_Area_Box = box.copy(Area_Box)                                                                                                  //
+        array.push(Closed_Open_Bullish_Engulfing_Box, Closed_Area_Box)                                                                        //
+        box.delete(Area_Box)                                                                                                                  //
+//                                                                                                                                            //    
+for Area_Box in Open_Bearish_Engulfing_Box                                                                                                    //
+    Breached_Level_Occurred = box.get_top(Area_Box) < low  // was high                                                                                   //
+    if Breached_Level_Occurred and Still_Bear                                                                                                 //
+        box.set_extend(Area_Box, extend.none)                                                                                                 //
+        box.set_right(Area_Box, bar_index)                                                                                                    //
+        Closed_Area_Box = box.copy(Area_Box)                                                                                                  //
+        array.push(Closed_Open_Bullish_Engulfing_Box, Closed_Area_Box)                                                                        //
+        box.delete(Area_Box)                                                                                                                  //
+//END ENGULFING BOXES CODE====================================================================================================================//
+//
+//
+//
+//plot(very_bearish and bull_bear_symbols? 32.00 : na, title = 'Bearish', style = plot.style_cross, color = color.new(#FF0000, 0), linewidth = 3 )
+//plot(very_bullish and bull_bear_symbols? 68.00 : na, title = 'Bullish', style = plot.style_cross, color = color.new(color.lime, 0), linewidth = 3 )
+plotshape(not plot_rsi_div_confirmed ? na : weakening_bear_sentiment ? bullish_rsi_divergence : na, title = "rsi", style =shape.circle, 
+ size = size.tiny, location = location.belowbar, color = color.lime, text = "LONG")
+plotshape(not plot_rsi_div_confirmed ? na : weakening_bull_sentiment ? bearish_rsi_divergence : na, title = "rsi", style =shape.circle, 
+ size = size.tiny, location = location.abovebar, color = color.new(#FF0000, 0), text = "SHORT")
+ //
+plotshape(not plot_rsi_div_potential or weakening_bear_sentiment ? na : bullish_rsi_divergence, title = "rsi", style =shape.circle, 
+ size = size.tiny, location = location.belowbar, color = color.blue)
+plotshape(not plot_rsi_div_potential or weakening_bull_sentiment ? na : bearish_rsi_divergence, title = "rsi", style =shape.circle, 
+ size = size.tiny, location = location.abovebar, color = color.fuchsia)

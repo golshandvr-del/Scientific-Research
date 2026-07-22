@@ -1,0 +1,431 @@
+// This Pine Script® code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © drsamgeorge
+
+//@version=6
+// This indicator is educational and should be used with risk management, market context, and your own plan.
+indicator("Volume V6", shorttitle="Volume V6", overlay=false, format=format.volume, max_labels_count=500)
+// Created by the author with AI assistance.
+// Beginner guide:
+// - BUY means volume, price action, and the score are confirming demand/accumulation.
+// - ADD means volume has dried up on a constructive pullback while the score remains supportive.
+// - TRIM means early supply pressure is appearing; consider reducing risk.
+// - SELL means distribution pressure is strong enough to defend capital.
+// - PPV means pocket-pivot style demand.
+// - BS means Bull Snort: unusually strong bullish volume closing near the highs.
+
+//------------------------------------------------------------------------------
+// Inputs
+//------------------------------------------------------------------------------
+groupGuide = "Symbol Guide"
+guideExtreme = input.string("HVQ+/HVY+/HVE+ = bullish high-volume extreme, shown as blue labels in the lower pane and tiny blue arrows on the main chart. HVQ-/HVY-/HVE- = bearish high-volume extreme, shown as red labels in the lower pane and tiny red arrows on the main chart. LVQ/LVY = orange low-volume extreme labels.", "Extreme marker meaning", group=groupGuide)
+guideBuySell = input.string("BUY = accumulation/demand confirmation. ADD = constructive dry pullback. TRIM = early supply warning. SELL = defend capital/distribution.", "Trade marker meaning", group=groupGuide)
+
+groupCore = "Core Volume"
+avgLen = input.int(50, "Average volume length", minval=1, group=groupCore, tooltip="Baseline used for relative volume, strong volume bars, and dry-up detection.")
+dryFraction = input.float(0.35, "Dry-up fraction of avg volume", minval=0.01, maxval=1.0, step=0.01, group=groupCore, tooltip="A bar below this fraction of average volume is marked as dry volume. Example: 0.35 means volume is below 35% of average.")
+showAvgLine = input.bool(true, "Show average volume line", group=groupCore, tooltip="Plots the moving average of volume in the volume pane.")
+
+groupSignals = "Buy / Sell Engine"
+signalMode = input.string("Balanced", "Signal strictness", options=["Aggressive", "Balanced", "Conservative"], group=groupSignals, tooltip="Aggressive gives earlier signals. Conservative waits for stronger confirmation.")
+pressureLen = input.int(21, "Volume pressure length", minval=2, group=groupSignals, tooltip="Lookback used to decide whether volume pressure is demand-led or supply-led.")
+scoreSmoothLen = input.int(5, "Score smoothing", minval=1, group=groupSignals, tooltip="Smooths the -100 to +100 accumulation score. Higher values reduce noise.")
+showScore = input.bool(true, "Show accumulation score", group=groupSignals, tooltip="Plots the score line in the volume pane. Green/blue means accumulation; red means distribution.")
+showVerdictHma = input.bool(true, "Show verdict Hull MA on main chart", group=groupSignals, tooltip="Plots a Hull moving average on the main price chart, colored by the volume verdict instead of using background shading.")
+verdictHmaLen = input.int(21, "Verdict Hull MA length", minval=2, group=groupSignals, tooltip="Length of the main-chart Hull moving average that carries the accumulation/distribution color.")
+showMainSignals = input.bool(true, "Show chart markers: BUY, ADD, BS, TRIM, SELL", group=groupSignals, tooltip="Displays the most important volume signals on the main price chart.")
+showPullbackAdds = input.bool(true, "Show ADD markers for dry pullbacks", group=groupSignals, tooltip="ADD appears when volume dries up constructively while the score stays supportive.")
+showDistribution = input.bool(true, "Show TRIM/SELL distribution warnings", group=groupSignals, tooltip="TRIM and SELL appear when high-volume supply pressure is detected.")
+
+groupPPV = "Pocket Pivot"
+ppvDownDays = input.int(10, "Pocket pivot down-days", options=[5, 10, 20], group=groupPPV)
+ppvRequireCloseNearHigh = input.bool(true, "Require close in upper range", group=groupPPV)
+ppvUpperRangePct = input.float(55.0, "Upper range threshold %", minval=1.0, maxval=100.0, step=1.0, group=groupPPV)
+ppvRequireAboveShortMa = input.bool(true, "Require close above short MA", group=groupPPV)
+ppvShortMaLen = input.int(10, "Short MA length", minval=1, group=groupPPV)
+ppvRequireAboveLongMa = input.bool(false, "Require price above long MA", group=groupPPV)
+ppvLongMaLen = input.int(50, "Long MA length", minval=1, group=groupPPV)
+
+groupBullSnort = "Bull Snort / High Demand"
+showBullSnort = input.bool(true, "Mark BS: Bull Snort demand bars", group=groupBullSnort, tooltip="BS marks very large bullish volume that closes near the top of the bar.")
+bullSnortVolMult = input.float(2.5, "BS volume multiple of average", minval=1.0, step=0.1, group=groupBullSnort, tooltip="BS requires volume to be this many times the average volume.")
+bullSnortVolLen = input.int(50, "BS average volume length", minval=1, group=groupBullSnort, tooltip="Average volume length used for Bull Snort detection.")
+bullSnortTopZonePct = input.float(35.0, "BS close in top % of range", minval=1.0, maxval=100.0, step=1.0, group=groupBullSnort, tooltip="BS requires the close to finish near the high. Lower values are stricter.")
+
+groupExtremes = "Extreme Volume Markers"
+showQuarterHigh = input.bool(true, "Show HVQ+/HVQ- labels on both panes", group=groupExtremes, tooltip="HVQ+ is bullish highest-volume-in-quarter. HVQ- is bearish. Labels appear in the lower pane and as tiny arrows on the main chart.")
+showYearHigh = input.bool(true, "Show HVY+/HVY- labels on both panes", group=groupExtremes, tooltip="HVY+ is bullish highest-volume-in-year. HVY- is bearish. Labels appear in the lower pane and as tiny arrows on the main chart.")
+showEverHigh = input.bool(false, "Show HVE+/HVE- labels on both panes", group=groupExtremes, tooltip="HVE+ is bullish highest-volume-in-loaded-lookback. HVE- is bearish. Labels appear in the lower pane and as tiny arrows on the main chart.")
+showQuarterLow = input.bool(false, "Show LVQ orange quarter low-volume labels", group=groupExtremes, tooltip="LVQ marks the lowest volume in the quarter window and is orange.")
+showYearLow = input.bool(false, "Show LVY orange year low-volume labels", group=groupExtremes, tooltip="LVY marks the lowest volume in the year window and is orange.")
+extremeLookback = input.int(2500, "Loaded lookback for 'ever' high", minval=100, maxval=20000, group=groupExtremes)
+quarterLen = input.int(63, "Quarter length (bars)", minval=5, group=groupExtremes)
+yearLen = input.int(252, "Year length (bars)", minval=20, group=groupExtremes)
+var table wm = table.new(position.bottom_right, 1, 1)
+if barstate.isfirst
+    table.cell(wm, 0, 0, "Telegram @free_fx_pro", text_color = color.new(color.gray, 70), text_size = size.large)
+groupStats = "Dashboard"
+statsLookback = input.int(50, "Stats lookback", minval=1, group=groupStats)
+showTable = input.bool(true, "Show decision dashboard", group=groupStats)
+showLegendTable = input.bool(false, "Show legend table", group=groupStats)
+valueUnit = input.string("Millions", "Average dollar volume unit", options=["Raw", "Millions", "Crores"], group=groupStats)
+
+groupTable = "Table Layout"
+tableSizeInput = input.string("Small", "Text size", options=["Tiny", "Small", "Normal", "Large"], group=groupTable)
+tablePosInput = input.string("Top Right", "Dashboard position", options=["Top Left", "Top Right", "Bottom Left", "Bottom Right"], group=groupTable)
+legendPosInput = input.string("Top Left", "Legend position", options=["Top Left", "Top Right", "Bottom Left", "Bottom Right"], group=groupTable)
+tableBg = input.color(color.new(color.rgb(18, 24, 38), 8), "Table background", group=groupTable)
+tableFrame = input.color(color.new(color.rgb(148, 163, 184), 55), "Table frame", group=groupTable)
+tableText = input.color(color.rgb(241, 245, 249), "Table text", group=groupTable)
+
+groupPower = "Power Volume"
+showPowerHighlight = input.bool(true, "Highlight power-volume bars", group=groupPower)
+powerMinTurnover = input.float(500000.0, "Minimum turnover", minval=0, step=1000, group=groupPower)
+powerMinMovePct = input.float(5.0, "Minimum price move %", minval=0.1, step=0.1, group=groupPower)
+
+groupColors = "Colors"
+colorBuy = input.color(color.rgb(20, 184, 166), "Buy / accumulation color", group=groupColors)
+colorAdd = input.color(color.rgb(132, 204, 22), "Add / dry pullback color", group=groupColors)
+colorPPV = input.color(color.rgb(59, 130, 246), "Pocket pivot color", group=groupColors)
+colorDemand = input.color(color.rgb(20, 184, 166), "Bull Snort / high-demand color", group=groupColors)
+colorSell = input.color(color.rgb(239, 68, 68), "Sell / distribution color", group=groupColors)
+colorDry = input.color(color.rgb(245, 158, 11), "Dry volume color", group=groupColors)
+colorNeutral = input.color(color.rgb(100, 116, 139), "Neutral color", group=groupColors)
+colorAvg = input.color(color.rgb(203, 213, 225), "Average line color", group=groupColors)
+
+//------------------------------------------------------------------------------
+// Helpers
+//------------------------------------------------------------------------------
+f_table_pos(pos) =>
+    switch pos
+        "Top Left" => position.top_left
+        "Top Right" => position.top_right
+        "Bottom Left" => position.bottom_left
+        => position.bottom_right
+
+f_table_size(sizeText) =>
+    switch sizeText
+        "Tiny" => size.tiny
+        "Small" => size.small
+        "Normal" => size.normal
+        => size.large
+
+f_clamp(v, lo, hi) =>
+    math.max(lo, math.min(hi, v))
+
+f_format_compact(v) =>
+    absV = math.abs(v)
+    result = ""
+    if absV >= 1e12
+        result := str.tostring(v / 1e12, "#.##") + "T"
+    else if absV >= 1e9
+        result := str.tostring(v / 1e9, "#.##") + "B"
+    else if absV >= 1e6
+        result := str.tostring(v / 1e6, "#.##") + "M"
+    else if absV >= 1e3
+        result := str.tostring(v / 1e3, "#.##") + "K"
+    else
+        result := str.tostring(v, "#.##")
+    result
+
+f_format_money(v, unitMode) =>
+    divisor = unitMode == "Millions" ? 1000000.0 : unitMode == "Crores" ? 10000000.0 : 1.0
+    suffix = unitMode == "Millions" ? "M" : unitMode == "Crores" ? "Cr" : ""
+    unitMode == "Raw" ? f_format_compact(v) : str.tostring(v / divisor, "#.##") + suffix
+
+f_highest_down_volume(requiredDownDays, maxScan) =>
+    float highest = na
+    int found = 0
+    for i = 1 to maxScan
+        if i < bar_index
+            isDownBar = close[i] < close[i + 1]
+            if isDownBar
+                highest := na(highest) ? volume[i] : math.max(highest, volume[i])
+                found += 1
+                if found >= requiredDownDays
+                    break
+    highest
+
+f_sum_up_down_volume(length) =>
+    float upSum = 0.0
+    float downSum = 0.0
+    for i = 1 to length
+        if i < bar_index
+            if close[i - 1] > close[i]
+                upSum += volume[i - 1]
+            else if close[i - 1] < close[i]
+                downSum += volume[i - 1]
+    [upSum, downSum]
+
+f_close_position() =>
+    rng = high - low
+    rng > 0 ? ((close - low) / rng) * 100.0 : 50.0
+
+f_close_in_upper_zone(thresholdPct) =>
+    f_close_position() >= thresholdPct
+
+f_close_in_top_zone(topPct) =>
+    100.0 - f_close_position() <= topPct
+
+//------------------------------------------------------------------------------
+// Core calculations
+//------------------------------------------------------------------------------
+isUpDay = close > close[1]
+isDownDay = close < close[1]
+volAvg = ta.sma(volume, avgLen)
+relativeVol = volAvg > 0 ? volume / volAvg : na
+relativeVolPct = relativeVol * 100.0
+avgDollarVol = ta.sma(volume * close, statsLookback)
+
+[upVolSum, downVolSum] = f_sum_up_down_volume(statsLookback)
+upDownRatio = downVolSum > 0 ? upVolSum / downVolSum : na
+
+shortMa = ta.sma(close, ppvShortMaLen)
+longMa = ta.sma(close, ppvLongMaLen)
+trendOk = close > shortMa and close > longMa
+
+maxScanBars = math.max(ppvDownDays * 20, 100)
+highestRecentDownVol = f_highest_down_volume(ppvDownDays, maxScanBars)
+
+ppvBase = isUpDay and not na(highestRecentDownVol) and volume > highestRecentDownVol
+ppvUpperZoneOk = not ppvRequireCloseNearHigh or f_close_in_upper_zone(ppvUpperRangePct)
+ppvShortMaOk = not ppvRequireAboveShortMa or close > shortMa
+ppvLongMaOk = not ppvRequireAboveLongMa or close > longMa
+isPPV = ppvBase and ppvUpperZoneOk and ppvShortMaOk and ppvLongMaOk
+
+isStrongUp = isUpDay and volume > volAvg and f_close_position() >= 50
+isStrongDown = isDownDay and volume > volAvg and f_close_position() <= 50
+isDryVolume = volume < volAvg * dryFraction
+
+bullSnortVolAvg = ta.sma(volume, bullSnortVolLen)
+bullSnortVolumeOk = bullSnortVolAvg > 0 and volume >= bullSnortVolAvg * bullSnortVolMult
+bullSnortCloseZoneOk = f_close_in_top_zone(bullSnortTopZonePct)
+bullSnortCloseOk = close > close[1]
+isBullSnort = showBullSnort and bullSnortVolumeOk and bullSnortCloseZoneOk and bullSnortCloseOk
+
+//------------------------------------------------------------------------------
+// Accumulation / distribution pressure
+//------------------------------------------------------------------------------
+closeLocationValue = high != low ? ((close - low) - (high - close)) / (high - low) : 0.0
+effort = f_clamp(nz(relativeVol, 1.0), 0.0, 4.0)
+volumePressure = closeLocationValue * effort
+pressureFast = ta.ema(volumePressure, math.max(2, math.round(pressureLen / 3)))
+pressureSlow = ta.ema(volumePressure, pressureLen)
+moneyFlowVolume = closeLocationValue * volume
+volumeSum = math.sum(volume, pressureLen)
+moneyFlowSum = math.sum(moneyFlowVolume, pressureLen)
+cmf = volumeSum > 0 ? moneyFlowSum / volumeSum : 0.0
+obv = ta.cum(math.sign(ta.change(close)) * volume)
+obvRising = ta.ema(obv, 5) > ta.ema(obv, 13)
+obvFalling = ta.ema(obv, 5) < ta.ema(obv, 13)
+
+distributionDay = showDistribution and isDownDay and relativeVol >= 1.2 and f_close_position() <= 45
+upthrustSell = showDistribution and high > high[1] and close < open and f_close_position() <= 45 and relativeVol >= 1.5
+heavyChurn = showDistribution and relativeVol >= 2.0 and math.abs(close - open) <= (high - low) * 0.25 and f_close_position() < 55
+sellPressure = distributionDay or upthrustSell or heavyChurn
+
+constructiveDryPullback = showPullbackAdds and isDryVolume and close >= longMa and close <= shortMa * 1.03 and close >= longMa * 0.97
+demandBar = isStrongUp and f_close_position() >= 65 and relativeVol >= 1.25
+
+rawScore = 0.0
+rawScore += isPPV ? 28 : 0
+rawScore += isBullSnort ? 22 : 0
+rawScore += demandBar ? 16 : 0
+rawScore += constructiveDryPullback ? 12 : 0
+rawScore += pressureFast > pressureSlow ? 10 : -10
+rawScore += cmf > 0.05 ? 12 : cmf < -0.05 ? -12 : 0
+rawScore += obvRising ? 8 : obvFalling ? -8 : 0
+rawScore += trendOk ? 10 : close < longMa ? -10 : 0
+rawScore -= distributionDay ? 24 : 0
+rawScore -= upthrustSell ? 22 : 0
+rawScore -= heavyChurn ? 16 : 0
+rawScore := f_clamp(rawScore, -100, 100)
+accumScore = ta.ema(rawScore, scoreSmoothLen)
+
+buyThreshold = signalMode == "Aggressive" ? 42 : signalMode == "Balanced" ? 52 : 62
+sellThreshold = signalMode == "Aggressive" ? -38 : signalMode == "Balanced" ? -48 : -58
+addThreshold = signalMode == "Aggressive" ? 22 : signalMode == "Balanced" ? 30 : 38
+
+buySignal = accumScore >= buyThreshold and (isPPV or isBullSnort or demandBar) and close > shortMa
+addSignal = showPullbackAdds and accumScore >= addThreshold and constructiveDryPullback
+sellSignal = showDistribution and accumScore <= sellThreshold and sellPressure
+trimSignal = showDistribution and sellPressure and accumScore < 10 and not sellSignal
+
+verdict = accumScore >= buyThreshold ? "BUY / ACCUMULATE" : accumScore >= addThreshold ? "ADD ON DRY-UP" : accumScore <= sellThreshold ? "SELL / DEFEND" : accumScore < -15 ? "DISTRIBUTION" : "NEUTRAL"
+verdictColor = accumScore >= buyThreshold ? colorBuy : accumScore >= addThreshold ? colorAdd : accumScore <= sellThreshold ? colorSell : accumScore < -15 ? color.new(colorSell, 15) : colorNeutral
+verdictHma = ta.hma(close, verdictHmaLen)
+
+//------------------------------------------------------------------------------
+// Extreme markers
+//------------------------------------------------------------------------------
+isDailyPlus = timeframe.isdaily or timeframe.isweekly or timeframe.ismonthly
+
+highestQuarter = ta.highest(volume, quarterLen)
+highestYear = ta.highest(volume, yearLen)
+highestEverLoaded = ta.highest(volume, extremeLookback)
+lowestQuarter = ta.lowest(volume, quarterLen)
+lowestYear = ta.lowest(volume, yearLen)
+
+markHVQ = isDailyPlus and showQuarterHigh and volume == highestQuarter
+markHVY = isDailyPlus and showYearHigh and volume == highestYear
+markHVE = isDailyPlus and showEverHigh and volume == highestEverLoaded
+markLVQ = isDailyPlus and showQuarterLow and volume == lowestQuarter
+markLVY = isDailyPlus and showYearLow and volume == lowestYear
+
+isBullCandle = close >= open
+markHVQBull = markHVQ and isBullCandle
+markHVQBear = markHVQ and not isBullCandle
+markHVYBull = markHVY and isBullCandle
+markHVYBear = markHVY and not isBullCandle
+markHVEBull = markHVE and isBullCandle
+markHVEBear = markHVE and not isBullCandle
+
+//------------------------------------------------------------------------------
+// Power volume
+//------------------------------------------------------------------------------
+turnover = volume * close
+priceMovePct = close[1] != 0 ? math.abs((close - close[1]) / close[1]) * 100.0 : 0.0
+isPowerVolume = turnover >= powerMinTurnover and priceMovePct >= powerMinMovePct
+
+//------------------------------------------------------------------------------
+// Plots: volume pane
+//------------------------------------------------------------------------------
+barColor = colorNeutral
+if sellSignal or trimSignal
+    barColor := colorSell
+else if buySignal
+    barColor := colorBuy
+else if addSignal
+    barColor := colorAdd
+else if isPPV
+    barColor := colorPPV
+else if isBullSnort
+    barColor := colorDemand
+else if isDryVolume
+    barColor := colorDry
+else if isStrongUp
+    barColor := color.new(colorBuy, 25)
+else if isStrongDown
+    barColor := color.new(colorSell, 20)
+
+bgcolor(showPowerHighlight and isPowerVolume ? color.new(color.yellow, 86) : na)
+
+plot(volume, "Volume", style=plot.style_columns, color=barColor)
+plot(showAvgLine ? volAvg : na, "Average Volume", color=colorAvg, linewidth=2)
+plot(showVerdictHma ? verdictHma : na, "Verdict Hull MA", color=verdictColor, linewidth=3, force_overlay=true)
+
+scorePlot = showScore ? (accumScore + 100.0) / 200.0 * nz(ta.highest(volume, 100), volume) : na
+plot(scorePlot, "Accumulation Score", color=verdictColor, linewidth=2)
+
+plotshape(markLVQ ? volume : na, title="Lowest Volume Quarter", style=shape.labeldown, location=location.absolute, text="LVQ", size=size.tiny, color=color.new(colorDry, 0), textcolor=color.white)
+plotshape(markLVY ? volume : na, title="Lowest Volume Year", style=shape.labeldown, location=location.absolute, text="LVY", size=size.tiny, color=color.new(colorDry, 15), textcolor=color.white)
+plotshape(markHVQBull ? volume : na, title="Bullish Highest Volume Quarter", style=shape.labelup, location=location.absolute, text="HVQ+", size=size.tiny, color=color.new(colorPPV, 0), textcolor=color.white)
+plotshape(markHVQBear ? volume : na, title="Bearish Highest Volume Quarter", style=shape.labeldown, location=location.absolute, text="HVQ-", size=size.tiny, color=color.new(colorSell, 0), textcolor=color.white)
+plotshape(markHVYBull ? volume : na, title="Bullish Highest Volume Year", style=shape.labelup, location=location.absolute, text="HVY+", size=size.tiny, color=color.new(colorPPV, 10), textcolor=color.white)
+plotshape(markHVYBear ? volume : na, title="Bearish Highest Volume Year", style=shape.labeldown, location=location.absolute, text="HVY-", size=size.tiny, color=color.new(colorSell, 10), textcolor=color.white)
+plotshape(markHVEBull ? volume : na, title="Bullish Highest Volume Loaded", style=shape.labelup, location=location.absolute, text="HVE+", size=size.tiny, color=color.new(colorPPV, 20), textcolor=color.white)
+plotshape(markHVEBear ? volume : na, title="Bearish Highest Volume Loaded", style=shape.labeldown, location=location.absolute, text="HVE-", size=size.tiny, color=color.new(colorSell, 20), textcolor=color.white)
+plotshape(isBullSnort ? volume : na, title="Bull Snort Volume Label", style=shape.labelup, location=location.absolute, text="BS", size=size.tiny, color=colorDemand, textcolor=color.white)
+
+//------------------------------------------------------------------------------
+// Plots: main chart
+//------------------------------------------------------------------------------
+plotshape(markHVQBull, title="Bullish Highest Volume Quarter Main Chart", style=shape.arrowup, location=location.belowbar, text="HVQ+", size=size.tiny, color=color.new(colorPPV, 0), textcolor=colorPPV, force_overlay=true)
+plotshape(markHVQBear, title="Bearish Highest Volume Quarter Main Chart", style=shape.arrowdown, location=location.abovebar, text="HVQ-", size=size.tiny, color=color.new(colorSell, 0), textcolor=colorSell, force_overlay=true)
+plotshape(markHVYBull, title="Bullish Highest Volume Year Main Chart", style=shape.arrowup, location=location.belowbar, text="HVY+", size=size.tiny, color=color.new(colorPPV, 5), textcolor=colorPPV, force_overlay=true)
+plotshape(markHVYBear, title="Bearish Highest Volume Year Main Chart", style=shape.arrowdown, location=location.abovebar, text="HVY-", size=size.tiny, color=color.new(colorSell, 5), textcolor=colorSell, force_overlay=true)
+plotshape(markHVEBull, title="Bullish Highest Volume Loaded Main Chart", style=shape.arrowup, location=location.belowbar, text="HVE+", size=size.tiny, color=color.new(colorPPV, 10), textcolor=colorPPV, force_overlay=true)
+plotshape(markHVEBear, title="Bearish Highest Volume Loaded Main Chart", style=shape.arrowdown, location=location.abovebar, text="HVE-", size=size.tiny, color=color.new(colorSell, 10), textcolor=colorSell, force_overlay=true)
+plotshape(showMainSignals and buySignal, title="Buy / Accumulate", style=shape.triangleup, location=location.belowbar, color=colorBuy, size=size.small, text="BUY", textcolor=color.white, force_overlay=true)
+plotshape(showMainSignals and isBullSnort, title="Bull Snort Main Chart Marker", style=shape.labelup, location=location.belowbar, color=colorDemand, size=size.tiny, text="BS", textcolor=color.white, force_overlay=true)
+plotshape(showMainSignals and addSignal, title="Add on Dry Pullback", style=shape.circle, location=location.belowbar, color=colorAdd, size=size.tiny, text="ADD", textcolor=color.white, force_overlay=true)
+plotshape(showMainSignals and trimSignal, title="Trim / Warning", style=shape.triangledown, location=location.abovebar, color=color.new(colorSell, 10), size=size.tiny, text="TRIM", textcolor=color.white, force_overlay=true)
+plotshape(showMainSignals and sellSignal, title="Sell / Defend", style=shape.triangledown, location=location.abovebar, color=colorSell, size=size.small, text="SELL", textcolor=color.white, force_overlay=true)
+
+//------------------------------------------------------------------------------
+// Decision dashboard
+//------------------------------------------------------------------------------
+var table statsTable = na
+tablePosition = f_table_pos(tablePosInput)
+tableTextSize = f_table_size(tableSizeInput)
+dashRows = 8
+dashCols = 2
+
+if barstate.isfirst
+    statsTable := table.new(tablePosition, dashCols, dashRows, bgcolor=tableBg, frame_color=tableFrame, border_width=1)
+
+if barstate.islast and showTable
+    table.clear(statsTable, 0, 0, dashCols - 1, dashRows - 1)
+    table.cell(statsTable, 0, 0, "Volume Verdict", text_color=tableText, text_size=tableTextSize, bgcolor=color.new(verdictColor, 65))
+    table.cell(statsTable, 1, 0, verdict, text_color=color.white, text_size=tableTextSize, bgcolor=color.new(verdictColor, 35))
+    table.cell(statsTable, 0, 1, "Score", text_color=tableText, text_size=tableTextSize)
+    table.cell(statsTable, 1, 1, str.tostring(accumScore, "#"), text_color=verdictColor, text_size=tableTextSize)
+    table.cell(statsTable, 0, 2, "Rel Vol", text_color=tableText, text_size=tableTextSize)
+    table.cell(statsTable, 1, 2, str.tostring(relativeVolPct, "#") + "%", text_color=relativeVol >= 1.5 ? colorDemand : tableText, text_size=tableTextSize)
+    table.cell(statsTable, 0, 3, "U/D Ratio", text_color=tableText, text_size=tableTextSize)
+    table.cell(statsTable, 1, 3, na(upDownRatio) ? "n/a" : str.tostring(upDownRatio, "#.##"), text_color=upDownRatio >= 1.2 ? colorBuy : upDownRatio <= 0.8 ? colorSell : tableText, text_size=tableTextSize)
+    table.cell(statsTable, 0, 4, "CMF", text_color=tableText, text_size=tableTextSize)
+    table.cell(statsTable, 1, 4, str.tostring(cmf, "#.##"), text_color=cmf > 0.05 ? colorBuy : cmf < -0.05 ? colorSell : tableText, text_size=tableTextSize)
+    table.cell(statsTable, 0, 5, "Avg $ Vol", text_color=tableText, text_size=tableTextSize)
+    table.cell(statsTable, 1, 5, f_format_money(avgDollarVol, valueUnit), text_color=tableText, text_size=tableTextSize)
+    table.cell(statsTable, 0, 6, "Pressure", text_color=tableText, text_size=tableTextSize)
+    table.cell(statsTable, 1, 6, pressureFast > pressureSlow ? "Demand" : "Supply", text_color=pressureFast > pressureSlow ? colorBuy : colorSell, text_size=tableTextSize)
+    table.cell(statsTable, 0, 7, "Last Event", text_color=tableText, text_size=tableTextSize)
+    table.cell(statsTable, 1, 7, buySignal ? "Buy" : addSignal ? "Dry Add" : sellSignal ? "Sell" : trimSignal ? "Trim" : isBullSnort ? "Bull Snort" : isPPV ? "PPV" : isDryVolume ? "Dry" : "None", text_color=barColor, text_size=tableTextSize)
+
+if barstate.islast and not showTable and not na(statsTable)
+    table.clear(statsTable, 0, 0, dashCols - 1, dashRows - 1)
+
+//------------------------------------------------------------------------------
+// Legend table
+//------------------------------------------------------------------------------
+var table legendTable = na
+legendPosition = f_table_pos(legendPosInput)
+legendRows = 11
+legendCols = 2
+
+if barstate.isfirst
+    legendTable := table.new(legendPosition, legendCols, legendRows, bgcolor=tableBg, frame_color=tableFrame, border_width=1)
+
+if barstate.islast and showLegendTable
+    table.clear(legendTable, 0, 0, legendCols - 1, legendRows - 1)
+    table.cell(legendTable, 0, 0, "Signal", text_color=tableText, text_size=tableTextSize, bgcolor=color.new(color.gray, 70))
+    table.cell(legendTable, 1, 0, "Meaning", text_color=tableText, text_size=tableTextSize, bgcolor=color.new(color.gray, 70))
+    table.cell(legendTable, 0, 1, "BUY", text_color=colorBuy, text_size=tableTextSize)
+    table.cell(legendTable, 1, 1, "Demand + score confirmation", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 2, "ADD", text_color=colorAdd, text_size=tableTextSize)
+    table.cell(legendTable, 1, 2, "Dry pullback while score stays constructive", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 3, "SELL", text_color=colorSell, text_size=tableTextSize)
+    table.cell(legendTable, 1, 3, "Distribution + weak score", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 4, "TRIM", text_color=colorSell, text_size=tableTextSize)
+    table.cell(legendTable, 1, 4, "Early supply warning", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 5, "PPV", text_color=colorPPV, text_size=tableTextSize)
+    table.cell(legendTable, 1, 5, "Pocket-pivot style demand", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 6, "BS", text_color=colorDemand, text_size=tableTextSize)
+    table.cell(legendTable, 1, 6, "Bull Snort: huge demand volume closing near highs", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 7, "Dry", text_color=colorDry, text_size=tableTextSize)
+    table.cell(legendTable, 1, 7, "Very low volume", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 8, "HVQ+/-", text_color=colorPPV, text_size=tableTextSize)
+    table.cell(legendTable, 1, 8, "Blue up arrow = bullish high volume, red down arrow = bearish high volume", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 9, "HMA", text_color=verdictColor, text_size=tableTextSize)
+    table.cell(legendTable, 1, 9, "Main-chart Hull line colored by volume verdict", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 0, 10, "Score", text_color=tableText, text_size=tableTextSize)
+    table.cell(legendTable, 1, 10, "-100 distribution to +100 accumulation", text_color=tableText, text_size=tableTextSize)
+
+if barstate.islast and not showLegendTable and not na(legendTable)
+    table.clear(legendTable, 0, 0, legendCols - 1, legendRows - 1)
+
+//------------------------------------------------------------------------------
+// Alerts
+//------------------------------------------------------------------------------
+alertcondition(buySignal, "Buy / Accumulate", "Volume Accum+: Buy / accumulation signal")
+alertcondition(addSignal, "Add on Dry Pullback", "Volume Accum+: Dry pullback add zone")
+alertcondition(trimSignal, "Trim / Warning", "Volume Accum+: Trim warning from supply pressure")
+alertcondition(sellSignal, "Sell / Defend", "Volume Accum+: Sell / defend signal")
+alertcondition(isPPV, "Pocket Pivot", "Volume Accum+: Pocket-pivot style demand")
+alertcondition(isBullSnort, "High Demand", "Volume Accum+: High-demand volume bar")
+
+// === Dashboard with Telegram Link ===
+var table myTable = table.new(position.top_center, 1, 1, border_width=1, frame_color=color.black, bgcolor=color.white)
+
+// Add Telegram Message to Dashboard
+table.cell(myTable, 0, 0, "Join Telegram @free_fx_pro", bgcolor=color.blue, text_color=color.white, text_size=size.normal)
