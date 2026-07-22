@@ -23,7 +23,6 @@
 // ============================================================================
 
 import * as ind from './indicators'
-import type { Candle } from './signal'
 
 export interface ConfirmBreakdown {
   label: string
@@ -37,19 +36,42 @@ export interface ConfirmResult {
   breakdown: ConfirmBreakdown[]
 }
 
+// ATR بر پایهٔ سری‌های خامِ close/high/low (بدونِ نیاز به شیءِ Candle).
+function atrRaw(close: number[], high: number[], low: number[], period: number): number[] {
+  const n = close.length
+  const tr = new Array(n).fill(NaN)
+  for (let i = 0; i < n; i++) {
+    if (i === 0) { tr[i] = high[i] - low[i]; continue }
+    const a = high[i] - low[i]
+    const b = Math.abs(high[i] - close[i - 1])
+    const c = Math.abs(low[i] - close[i - 1])
+    tr[i] = Math.max(a, b, c)
+  }
+  // میانگینِ متحرکِ ساده روی TR (سازگار با ind.atr پروژه که SMA(TR) است).
+  const out = new Array(n).fill(NaN)
+  let sum = 0
+  for (let i = 0; i < n; i++) {
+    sum += tr[i]
+    if (i >= period) sum -= tr[i - period]
+    if (i >= period - 1) out[i] = sum / period
+  }
+  return out
+}
+
 /**
- * امتیازِ تأیید را برای آخرین کندلِ سریِ داده‌شده محاسبه می‌کند.
- * @param candles کندل‌های همان دارایی (حداقل ~۲۰۰ کندل برای EMA200/ATR100).
+ * امتیازِ تأیید را برای آخرین کندلِ سری‌های داده‌شده محاسبه می‌کند.
+ * @param close سریِ close همان دارایی (حداقل ~۲۰۰ نقطه برای EMA200/ATR100).
+ * @param high  سریِ high متناظر.
+ * @param low   سریِ low متناظر.
  */
-export function confirmScore(candles: Candle[]): ConfirmResult {
-  const n = candles.length
-  const close = candles.map(c => c.close)
+export function confirmScore(close: number[], high: number[], low: number[]): ConfirmResult {
+  const n = close.length
   const i = n - 1
 
   const ema50 = ind.ema(close, 50)[i]
   const ema200 = ind.ema(close, 200)[i]
-  const atr14 = ind.atr(candles, 14)[i]
-  const atr100 = ind.atr(candles, 100)[i]
+  const atr14 = atrRaw(close, high, low, 14)[i]
+  const atr100 = atrRaw(close, high, low, 100)[i]
   const rsi14 = ind.rsi(close, 14)[i]
   const { hist } = ind.macd(close)
   const macdHist = hist[i]
