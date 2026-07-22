@@ -1,0 +1,65 @@
+{
+ "strategy": "S180_revive_s169_standalone",
+ "cfg": {
+  "asset": "XAUUSD",
+  "side": "long",
+  "ema_fast": 10,
+  "ema_slow": 30,
+  "spike_len": 3,
+  "spike_atr_mult": 1.5,
+  "channel_window": 20,
+  "sl": 200,
+  "tp": 300,
+  "mh": 32
+ },
+ "raw": {
+  "label": "S169 raw",
+  "net": 4528.4,
+  "wr": 48.54,
+  "n": 1059,
+  "pf": 1.105,
+  "h1": 1878.9,
+  "h2": 2366.5,
+  "wf": [
+   [
+    76.0,
+    48.7,
+    226
+   ],
+   [
+    1149.2,
+    47.2,
+    218
+   ],
+   [
+    1415.7,
+    54.6,
+    251
+   ],
+   [
+    1594.6,
+    45.1,
+    364
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "ok": true
+ },
+ "overlaps": {
+  "High2_S168": 91.0,
+  "SignsOfStrength_S171": 99.6,
+  "TwoLegs_S172": 11.9,
+  "SellClimax_S174": 2.4,
+  "TimeDrifts": 34.7,
+  "UNION_ALL": 100.0
+ },
+ "independent": {
+  "label": "S169 fully-independent",
+  "n": 1,
+  "ok": false,
+  "reason": "n<30"
+ },
+ "decision": "REJECT",
+ "accepted_net": 0.0
+}
