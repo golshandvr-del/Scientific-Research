@@ -556,9 +556,9 @@ export function decide(a: AnalysisResult, close: number[],
         sizing: {
           lotMultiplier: 1.0,
           label: sm.dnStack ? 'کیفیتِ بالا (چیدمانِ نزولیِ کامل)' : 'کیفیتِ متوسط',
-          note: `استراتژیِ SHORT-MA-Confluence (خروجِ بازطراحی‌شدهٔ s118). ورودِ open کندلِ بعد، اسپرد ۴pip لحاظ شده. ` +
+          note: `استراتژیِ SHORT-MA-Confluence (خروجِ بازطراحی‌شدهٔ s118). ورودِ open کندلِ بعد، اسپردِ واقعیِ ۳.۳pip لحاظ شده. ` +
             `همبستگیِ روزانه با جریانِ long = +0.16 ⇒ این معامله مکملِ سبدِ long است و سودِ خالصِ ` +
-            `کل را افزایش می‌دهد (رکورد: +۸۸٬۹۵۵$ → +۹۵٬۶۴۵$).`,
+            `کل را افزایش می‌دهد (تنها لبهٔ SHORTِ اثبات‌شدهٔ پروژه، سهمِ +۳۴٬۵۴۲$).`,
           lots: lots ?? undefined,
           riskDollars: rd,
           capital, riskPct,
@@ -576,7 +576,7 @@ export function decide(a: AnalysisResult, close: number[],
           multiplier: DEFAULT_SHORT_MA.slPip,
           note: `SL ثابت ۷۰pip (${slDist.toFixed(2)}$). پس از رسیدن به ۶pip سود، به سربه‌سر منتقل کنید؛ ` +
             `سپس با trailing ۶pip (${trailDist.toFixed(2)}$) سود را دنبال کنید و بگذارید حرکتِ نزولیِ بزرگ ` +
-            `ادامه یابد (تا ۴۸ کندل). این «اجازه‌دادن به بردها» کلیدِ رکوردِ +۹۵٬۶۴۵$ است (s118).`,
+            `ادامه یابد (تا ۴۸ کندل). این «اجازه‌دادن به بردها» کلیدِ سودِ خالصِ لایهٔ SHORT است (s118).`,
         },
         indicators: shortInd,
       }
@@ -646,7 +646,7 @@ export function decide(a: AnalysisResult, close: number[],
         reason: `${sq.reason} این «فنرِ فشرده» است: بازار مدتی کم‌نوسان و متراکم بود و حالا با ` +
           `شکستِ صعودی، انفجارِ نوسان آغاز شده. طبقِ قانونِ شمارهٔ ۱ هدف سودِ خالصِ بیشتر است، نه ` +
           `وین‌ریت: TP دور (۳۰۰pip) نگه داشته می‌شود تا بردها بدوند (WR ~۴۰٪ اما سودِ خالصِ بالا؛ ` +
-          `سهمِ مستقل +۲۰٬۴۳۵$، افزایشی به رکورد +۱۲۱٬۶۹۴$).`,
+          `سهمِ مستقل +۲۰٬۴۳۵$، جریانی افزایشی و ناهمبسته).`,
         direction: 'LONG', entry, tp, sl,
         rr: `SL ثابت ۹۰pip (${slDist.toFixed(2)}$) / TP ۳۰۰pip (${tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:۳.۳ (بگذار بردها بدوند)`,
         probability: 58,
