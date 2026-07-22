@@ -72,21 +72,21 @@ WR_FLOOR = 40.0
 def recent_swing_level(high, low, k, kind):
     """آرایه‌ای هم‌طولِ داده: در هر اندیس، مقدارِ نزدیک‌ترین swing-low (kind='low')
     یا swing-high (kind='high') که تا آن لحظه تأیید شده باشد (با تأخیرِ k کندل).
-    NaN تا زمانی که هیچ pivot دیده نشده."""
+    NaN تا زمانی که هیچ pivot دیده نشده. (vectorized با forward-fill)"""
     n = len(high)
     sh, sl_ = S.swing_pivots(high, low, k)
-    level = np.full(n, np.nan)
-    last = np.nan
-    for i in range(n):
-        # pivotِ اندیسِ i-k تا اینجا تأیید شده (نیاز به k کندلِ راست)
-        j = i - k
-        if j >= 0:
-            if kind == 'low' and sl_[j]:
-                last = low[j]
-            elif kind == 'high' and sh[j]:
-                last = high[j]
-        level[i] = last
-    return level
+    # مقدارِ pivot در اندیسِ اصلی، اما «قابل‌مشاهده» فقط از i+k به بعد ⇒ shift(k)
+    val = np.full(n, np.nan)
+    if kind == 'low':
+        idx = np.where(sl_)[0]
+        val[idx] = low[idx]
+    else:
+        idx = np.where(sh)[0]
+        val[idx] = high[idx]
+    # تأخیرِ تأییدِ k کندل: pivotِ اندیسِ j فقط در j+k دیده می‌شود
+    seen = pd.Series(val).shift(k)
+    # نزدیک‌ترین pivotِ تأییدشده تا کنون = forward-fill
+    return seen.ffill().to_numpy()
 
 
 # ============================================================================
