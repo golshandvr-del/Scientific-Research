@@ -91,7 +91,6 @@ def reversal_bar_signals(df, side, tail_frac, up_frac, cc, hh, lb, ema_fast, ema
         overlap_ok = mid > np.roll(l, 1)                        # midpoint بالای low کندلِ قبلی
         overlap_ok[0] = False
         # context: کندل نزدیکِ کفِ lb اخیر (تستِ extreme) + رژیمِ غیرصعودی
-        near_low = l <= (np.nan_to_num(ctx_low, nan=1e18) * 1.0 + 1e-9) | (l <= np.nan_to_num(ctx_low, nan=1e18))
         near_low = l <= np.nan_to_num(ctx_low, nan=-1e18) + (np.nan_to_num(ctx_high, nan=0) - np.nan_to_num(ctx_low, nan=0)) * 0.15
         regime = ef <= es                                       # نزولی/خنثی (کف)
         sig = bull_body & long_lower & small_upper & crev & hrev & overlap_ok & near_low & regime
