@@ -108,7 +108,10 @@ def evaluate(df, asset, side, ema_fast, ema_slow, body_frac, confirm,
     if tr is None or len(tr) < 30:
         return None
     st = S.stats(tr, asset)
-    h1, h2 = S.halves(df, ls, shs, sl, tp, mh, asset)
+    hv = S.halves(df, ls, shs, sl, tp, mh, asset)
+    if hv is None:
+        return None
+    h1, h2 = hv['h1'], hv['h2']
     # walk-forward ۴ پنجره
     wf = []
     n = len(df)
