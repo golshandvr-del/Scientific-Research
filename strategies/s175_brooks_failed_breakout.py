@@ -126,19 +126,25 @@ def failed_breakout_signals(df, level_mode, k, win, side):
         level = (recent_swing_level(high, low, k, 'high') if level_mode == 'swing'
                  else yesterday_level(df, 'high'))
 
-    lvl = pd.Series(level)
+    # نکتهٔ کلیدیِ روش‌شناختی (اصلاحِ ضدِ نویز):
+    #   «failed breakout» = کندلی که *خودش* سطح را می‌شکند (low زیرِ سطح برای long)
+    #   اما *در همان کندل* رد می‌شود (close دوباره بالای سطح) — یعنی یک **reversal bar
+    #   روی سطح**. پنجرهٔ `win` فقط تضمین می‌کند سطح «تازه/معنادار» است (شکست باید در
+    #   `win` کندلِ اخیر رخ داده باشد)، ولی خودِ سیگنال لحظهٔ rejection است، نه هر کندلِ
+    #   bull بالای سطح. این دقیقاً «test → failed breakout → reversal» فصل ۳ است.
     if side == 'long':
-        broke = (pd.Series(low) < lvl)                        # breakout رو-به-پایین
-        broke_recent = broke.rolling(win, min_periods=1).max().astype(bool).to_numpy()
-        # rejection: close دوباره بالای سطح + bull bar
-        reject = (close > level) & (close > openp)
-        # خودِ این کندل نباید یک شکستِ تازهٔ پایین‌رونده باشد (close باید بالای سطح بسته باشد)
-        raw = broke_recent & reject & ~np.isnan(level)
+        pierce = (low < level)                    # این کندل سطح را از پایین شکست
+        # شکست باید تازه باشد: در `win` کندلِ اخیر (شاملِ همین کندل) piercing رخ داده
+        pierce_recent = pd.Series(pierce).rolling(win, min_periods=1).max().astype(bool).to_numpy()
+        reject = (close > level) & (close > openp)  # close برگشت بالای سطح + bull bar
+        # این کندل باید بالای سطح بسته باشد (نه یک شکستِ ادامه‌دار)
+        raw = pierce_recent & pierce & reject & ~np.isnan(level)
+        # حالتِ سخت‌گیرانه‌تر: هم piercing و هم rejection در همین کندل (reversal bar واقعی)
     else:
-        broke = (pd.Series(high) > lvl)
-        broke_recent = broke.rolling(win, min_periods=1).max().astype(bool).to_numpy()
+        pierce = (high > level)
+        pierce_recent = pd.Series(pierce).rolling(win, min_periods=1).max().astype(bool).to_numpy()
         reject = (close < level) & (close < openp)
-        raw = broke_recent & reject & ~np.isnan(level)
+        raw = pierce_recent & pierce & reject & ~np.isnan(level)
 
     return pd.Series(raw).shift(1).fillna(False).to_numpy()
 
