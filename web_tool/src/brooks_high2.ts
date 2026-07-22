@@ -119,3 +119,70 @@ export function computeBrooksHigh2(
       : `روند صعودی نیست (EMA۲۰≤EMA۵۰)؛ لایهٔ High-2 فقط در روندِ صعودی ورودِ Long می‌دهد.`,
   }
 }
+
+// ============================================================================
+// فیلترِ تأییدِ ساختاریِ «recent High-2» (S170) — برای بالا بردنِ WR لایه‌های مرزی.
+// ----------------------------------------------------------------------------
+// کشفِ بک‌تست (strategies/s170_brooks_high2_filter_on_timedrift.py +
+//   s170_walkforward_validate.py): افزودنِ شرطِ «در ۹۶ کندلِ اخیر یک High-2 (bull)
+//   رخ داده باشد» به لایهٔ مرزیِ EURUSD Mid-Month⁺ (S143)، WR را از ۴۳.۶٪ به ۴۵.۵٪
+//   و سودِ خالص را از +$4,605 به +$6,489 رساند (Δ +$1,884؛ هر ۴ گیتِ ضدِ overfit سبز).
+//   ⇒ رکوردِ رسمی: +$223,246 → +$225,130.
+// این فیلتر روی هر دارایی قابل‌اعمال است (پارامترِ EMA مشترک ۲۰/۵۰).
+// خروجی: آیا آخرین کندلِ بسته، شرطِ «High-2 اخیر» را پاس می‌کند؟
+// ============================================================================
+export const BROOKS_RECENT_WINDOW = 96
+
+export interface BrooksRecentFilter {
+  pass: boolean          // آیا در پنجرهٔ اخیر High-2 دیده شده؟
+  barsSinceHigh2: number // چند کندل از آخرین High-2 گذشته (Infinity اگر هیچ)
+  reason: string
+}
+
+export function recentBrooksHigh2(
+  high: number[], low: number[], close: number[],
+  window: number = BROOKS_RECENT_WINDOW,
+): BrooksRecentFilter {
+  const n = close.length
+  if (n < BROOKS_EMA_SLOW + 5) {
+    return { pass: false, barsSinceHigh2: Infinity,
+      reason: 'دادهٔ کافی برای فیلترِ ساختاریِ Brooks موجود نیست.' }
+  }
+  const ef = ema(close, BROOKS_EMA_FAST)
+  const es = ema(close, BROOKS_EMA_SLOW)
+
+  let upCount = 0
+  let sawPullback = false
+  let lastHigh2Idx = -1
+  for (let i = 1; i < n; i++) {
+    const bull = ef[i] > es[i]
+    if (bull) {
+      if (high[i] < high[i - 1]) {
+        sawPullback = true
+      } else if (high[i] > high[i - 1] && sawPullback) {
+        upCount += 1
+        sawPullback = false
+        if (upCount === 2) { lastHigh2Idx = i; upCount = 0 }
+        else if (upCount >= 4) { upCount = 0 }
+      }
+    } else {
+      upCount = 0
+      sawPullback = false
+    }
+  }
+  // آخرین کندلِ بسته = n-1 (فیلترِ shift-safe: فقط تاریخچه لحاظ می‌شود).
+  const barsSince = lastHigh2Idx >= 0 ? (n - 1 - lastHigh2Idx) : Infinity
+  const pass = lastHigh2Idx >= 0 && barsSince < window
+  return {
+    pass,
+    barsSinceHigh2: barsSince,
+    reason: pass
+      ? `فیلترِ ساختاریِ Brooks تأیید شد: آخرین الگوی «High-2» ${barsSince} کندل پیش ` +
+        `(در پنجرهٔ ${window} کندلیِ اخیر) رخ داده ⇒ ساختارِ روندِ صعودی هنوز فعال است. ` +
+        `طبقِ بک‌تستِ S170 این فیلتر WR لایهٔ زمان-محور را از ۴۳.۶٪ به ۴۵.۵٪ می‌رساند.`
+      : (barsSince === Infinity
+          ? `فیلترِ Brooks: در کلِ تاریخچه هیچ الگوی High-2 صعودی یافت نشد ⇒ تأییدِ ساختاری نداریم.`
+          : `فیلترِ Brooks رد شد: آخرین High-2 صعودی ${barsSince} کندل پیش بوده ` +
+            `(بیش از پنجرهٔ ${window} کندلی) ⇒ ساختارِ روندِ صعودی کهنه شده؛ کیفیتِ ورود پایین است.`),
+  }
+}
