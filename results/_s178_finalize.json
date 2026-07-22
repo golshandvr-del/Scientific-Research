@@ -1,0 +1,122 @@
+{
+ "strategy": "S178_finalize",
+ "cfg": {
+  "asset": "XAUUSD",
+  "side": "long",
+  "ema_fast": 10,
+  "ema_slow": 30,
+  "body_frac": 0.6,
+  "size_tol": 1.0,
+  "lb": 20,
+  "sl": 250,
+  "tp": 375,
+  "mh": 96
+ },
+ "raw": {
+  "label": "S178 two-bar raw",
+  "net": 4052.0,
+  "wr": 52.58,
+  "n": 291,
+  "pf": 1.37,
+  "h1": 1420.7,
+  "h2": 2078.6,
+  "wf": [
+   [
+    741.5,
+    51.1,
+    92
+   ],
+   [
+    770.4,
+    52.4,
+    63
+   ],
+   [
+    1037.9,
+    58.5,
+    65
+   ],
+   [
+    917.9,
+    49.3,
+    71
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "ok": true
+ },
+ "baseline": {
+  "label": "baseline context-long",
+  "net": 1214.0,
+  "wr": 49.6,
+  "n": 379,
+  "pf": 1.089,
+  "h1": -300.1,
+  "h2": 1601.6,
+  "wf": [
+   [
+    0.9,
+    49.5,
+    109
+   ],
+   [
+    -461.5,
+    45.8,
+    96
+   ],
+   [
+    553.7,
+    54.1,
+    85
+   ],
+   [
+    1112.0,
+    48.3,
+    89
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "ok": false
+ },
+ "edge_vs_baseline": 2838.0,
+ "overlap_high2_pct": 36.8,
+ "overlap_timedrift_pct": 35.3,
+ "overlap_all_pct": 60.8,
+ "independent": {
+  "label": "indep-of-gold-LONG",
+  "net": 975.9,
+  "wr": 48.78,
+  "n": 123,
+  "pf": 1.249,
+  "h1": 404.1,
+  "h2": 635.9,
+  "wf": [
+   [
+    388.9,
+    50.0,
+    44
+   ],
+   [
+    86.4,
+    44.4,
+    27
+   ],
+   [
+    -52.4,
+    46.4,
+    28
+   ],
+   [
+    617.1,
+    54.2,
+    24
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "ok": false
+ },
+ "accepted": false
+}
