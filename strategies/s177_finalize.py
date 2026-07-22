@@ -33,10 +33,10 @@ from engine import indicators as ind
 OVERLAP_BARS = 12
 WR_FLOOR = 40.0
 
-# کاندیدِ برندهٔ S177 (تثبیت‌شده در گرید)
-CFG = dict(asset='XAUUSD', side='long', ema_fast=20, ema_slow=50,
-           tail_frac=0.33, up_frac=0.25, cc=4, hh=3, lb=40,
-           sl=200, tp=300, mh=48)
+# کاندیدِ برندهٔ S177 (تثبیت‌شده در گرید — پایدارترین با walk-forward 4/4)
+CFG = dict(asset='XAUUSD', side='long', ema_fast=10, ema_slow=30,
+           tail_frac=0.5, up_frac=0.35, cc=4, hh=3, lb=20,
+           sl=150, tp=225, mh=96)
 
 
 def baseline_regime_long(df, ema_fast, ema_slow, lb, sample_every):
