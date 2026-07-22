@@ -1,0 +1,96 @@
+{
+ "strategy": "S177_finalize",
+ "cfg": {
+  "asset": "XAUUSD",
+  "side": "long",
+  "ema_fast": 10,
+  "ema_slow": 30,
+  "tail_frac": 0.5,
+  "up_frac": 0.35,
+  "cc": 4,
+  "hh": 3,
+  "lb": 20,
+  "sl": 150,
+  "tp": 225,
+  "mh": 96
+ },
+ "raw": {
+  "label": "S177 reversal raw",
+  "net": 1679.0,
+  "wr": 53.16,
+  "n": 79,
+  "pf": 1.502,
+  "h1": 459.5,
+  "h2": 1209.2,
+  "wf": [
+   [
+    533.4,
+    59.1,
+    22
+   ],
+   [
+    49.1,
+    50.0,
+    22
+   ],
+   [
+    384.7,
+    47.4,
+    19
+   ],
+   [
+    645.5,
+    56.2,
+    16
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "ok": true
+ },
+ "baseline": {
+  "label": "baseline context-long",
+  "net": -160.5,
+  "wr": 47.25,
+  "n": 91,
+  "pf": 0.964,
+  "h1": 388.9,
+  "h2": -482.9,
+  "wf": [
+   [
+    282.5,
+    51.9,
+    27
+   ],
+   [
+    -56.7,
+    60.9,
+    23
+   ],
+   [
+    -230.5,
+    35.0,
+    20
+   ],
+   [
+    -233.7,
+    38.1,
+    21
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "ok": false
+ },
+ "edge_vs_baseline": 1839.5,
+ "overlap_high2_pct": 42.2,
+ "overlap_timedrift_pct": 40.0,
+ "overlap_all_pct": 65.6,
+ "independent": {
+  "label": "indep-of-gold-LONG",
+  "n": 28,
+  "ok": false,
+  "reason": "n<30"
+ },
+ "accepted": false
+}
