@@ -99,10 +99,13 @@ def detect_spike_channel_events(df, ema_fast, ema_slow, spike_len,
     ll = np.zeros(n, dtype=bool); ll[1:] = l[1:] < l[:-1]   # lower-low
 
     def rolling_all(arr):
-        """True در i اگر arr[i-spike_len+1 .. i] همه True باشند."""
-        out = np.ones(n, dtype=bool)
-        for k in range(spike_len):
-            out[k:] &= arr[:n - k] if k == 0 else np.concatenate([np.zeros(k, dtype=bool), arr[:n - k]])
+        """True در i اگر arr[i-spike_len+1 .. i] همه True باشند (سببی، بدونِ آینده)."""
+        out = arr.copy()
+        for k in range(1, spike_len):
+            shifted = np.zeros(n, dtype=bool)
+            shifted[k:] = arr[:n - k]   # arr شیفت‌داده‌شده به جلو (گذشته)
+            out &= shifted
+        out[:spike_len - 1] = False     # ابتدای سری پنجرهٔ کامل ندارد
         return out
 
     bull_spike_mask = rolling_all(bull_body) & rolling_all(hh) & rolling_all(hl)
