@@ -97,20 +97,27 @@ def halves(df, ls, shs, sl, tp, mh, asset):
 #  swing-pivot ساختاری (causal، با تأخیرِ تأییدِ k کندل)
 # ============================================================================
 def swing_pivots(high, low, k):
-    """آرایه‌های بولی swing_high / swing_low.
+    """آرایه‌های بولی swing_high / swing_low — نسخهٔ vectorized.
     pivot در i وقتی high[i] اکیداً بزرگ‌تر از k همسایهٔ چپ و راست باشد.
     مقدار در اندیسِ i علامت‌گذاری می‌شود ولی تنها i+k «قابلِ مشاهده» است
     (چون به k کندلِ راست نیاز دارد). این تأخیر در توابعِ پایین لحاظ می‌شود.
     """
     n = len(high)
-    sh = np.zeros(n, bool); sl_ = np.zeros(n, bool)
-    for i in range(k, n - k):
-        wh = high[i - k:i + k + 1]; wl = low[i - k:i + k + 1]
-        if high[i] == wh.max() and (wh == high[i]).sum() == 1:
-            sh[i] = True
-        if low[i] == wl.min() and (wl == low[i]).sum() == 1:
-            sl_[i] = True
-    return sh, sl_
+    hs = pd.Series(high); ls = pd.Series(low)
+    win = 2 * k + 1
+    # بیشینه/کمینهٔ متحرکِ متمرکز؛ pivot = اکیداً بزرگ‌ترِ منحصربه‌فردِ پنجره.
+    # شرطِ «منحصربه‌فرد» را با «pivot اکیداً بزرگ‌تر از max همهٔ همسایه‌ها» می‌سازیم:
+    # با گرفتنِ max/min روی پنجرهٔ همسایه‌ها (بدونِ خودِ i) و مقایسهٔ اکید.
+    left_hmax = hs.shift(1).rolling(k).max().to_numpy()
+    right_hmax = hs.shift(-k).rolling(k).max().to_numpy()
+    left_lmin = ls.shift(1).rolling(k).min().to_numpy()
+    right_lmin = ls.shift(-k).rolling(k).min().to_numpy()
+    sh = (high > np.nan_to_num(left_hmax, nan=-1e18)) & (high > np.nan_to_num(right_hmax, nan=-1e18))
+    sl_ = (low < np.nan_to_num(left_lmin, nan=1e18)) & (low < np.nan_to_num(right_lmin, nan=1e18))
+    # لبه‌ها (که همسایهٔ کامل ندارند) را pivot نمی‌گیریم
+    sh[:k] = False; sh[n - k:] = False
+    sl_[:k] = False; sl_[n - k:] = False
+    return sh.astype(bool), sl_.astype(bool)
 
 
 # ============================================================================
@@ -224,7 +231,7 @@ def main():
         for side in ('long', 'short'):
             for (ef, es) in [(20, 50), (10, 30)]:
                 for k in (3, 5):
-                    sig = two_leg_pullback_signals(df, ef, es, k, side)
+                    sig = two_leg_pullback_signals(df, ef, es, k, side)  # یک‌بار محاسبه
                     for (sl, tp) in grids[asset]:
                         for mh in mhs:
                             r = evaluate(df, asset, sig, side, sl, tp, mh)
