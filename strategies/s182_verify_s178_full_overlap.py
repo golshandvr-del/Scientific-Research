@@ -25,7 +25,8 @@ import s172_brooks_two_legs as S
 import s174_brooks_sell_climax_reversal as SC
 import s174_finalize as F
 import s178_brooks_two_bar_reversal as T
-import s180_revive_s169_standalone as R180   # signs_of_strength_long, two_legs_long, sell_climax_long
+import s171_brooks_signs_of_strength_filter as SOS   # sos_filter (نسخهٔ واقعیِ S171)
+import s180_revive_s169_standalone as R180   # two_legs_long (بازسازی؛ S172 تابعِ سیگنالِ مستقیم دارد)
 
 WR_FLOOR = 40.0
 
@@ -72,9 +73,9 @@ def main():
     print("-" * 100)
     print("همپوشانیِ بار-به-بار (recent-12) با کلِ پرتفویِ LONGِ طلا:")
     h2 = F.brooks_high2_long(df)
-    sos = R180.signs_of_strength_long(df)
-    tl = R180.two_legs_long(df)
-    scx = R180.sell_climax_long(df)
+    sos = SOS.sos_filter(df, 2, ema_period=20, win=32)                 # S171 کاندیدِ واقعیِ برنده (w32,thr2)
+    tl = R180.two_legs_long(df)                                        # S172
+    scx = np.asarray(SC.sell_climax_signals(df, 10, 30, 20, 2.0, False, 5), bool)  # S174 CFG واقعی
     td = F.time_drift_long(df)
     layers = dict(High2_S168=h2, SignsOfStrength_S171=sos, TwoLegs_S172=tl,
                   SellClimax_S174=scx, TimeDrifts=td)
