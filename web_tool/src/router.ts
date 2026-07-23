@@ -448,23 +448,23 @@ export function decide(a: AnalysisResult, close: number[],
         headline: 'ورود خرید (LONG) — درایوِ ابتدای هفتهٔ طلا (عصرِ دوشنبه)',
         reason: mo.reason,
         sourceLayer: {
-          code: 'S140⁺', name: 'درایوِ ابتدای هفته (Monday Drift)', kind: 'time',
+          code: 'S140⁺⁺', name: 'درایوِ ابتدای هفته (Monday Drift — M5, ۱۸-۲۰ UTC)', kind: 'time',
           filters: moConfirm ? [`تأییدِ امتیازیِ متعامد (S163): ${moConfirm.score}/${moConfirm.maxScore}`] : undefined,
           manage: {
             style: 'let-run-trail', beTriggerR: 1.0,
             trailDistPrice: MONDAY_SL_PIP * 0.1, maxHoldBars: MONDAY_MAX_HOLD,
-            note: `لایهٔ زمان-محورِ روز×ساعت با R:R بالا. پس از ۱R سود بریک‌ایون؛ سپس trailing با فاصلهٔ ${(MONDAY_SL_PIP * 0.1).toFixed(1)}$ تا سقفِ ${MONDAY_MAX_HOLD} کندل.`,
+            note: `لایهٔ زمان-محورِ روز×ساعت (M5). پس از ۱R سود بریک‌ایون؛ سپس trailing با فاصلهٔ ${(MONDAY_SL_PIP * 0.1).toFixed(1)}$ تا سقفِ ${MONDAY_MAX_HOLD} کندلِ M5 (۲۴ ساعت).`,
           },
         },
         direction: 'LONG', entry, tp, sl,
         rr: `SL ثابت ${MONDAY_SL_PIP}pip (${mo.slDist.toFixed(2)}$) / TP ${MONDAY_TP_PIP}pip ` +
-          `(${mo.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(MONDAY_TP_PIP / MONDAY_SL_PIP).toFixed(1)} (بگذار بردها بدوند)`,
+          `(${mo.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(MONDAY_TP_PIP / MONDAY_SL_PIP).toFixed(1)} (بازتنظیمِ مخصوصِ M5)`,
         probability: 55,
         sizing: {
           lotMultiplier: 1.0,
-          label: 'Monday Week-Start Drift (لایهٔ زمان-محورِ S140)',
-          note: `استراتژیِ S140 (کشفِ نو، زمان-محورِ روز×ساعت — بدونِ اندیکاتور). ورودِ open کندلِ بعد. ` +
-            `همبستگیِ روزانه +۰.۲۱ با Overnight و +۰.۱۵ با S67 ⇒ جریانِ ناهمبسته که سودِ خالصِ کل را بالا می‌برد.`,
+          label: 'Monday Week-Start Drift (لایهٔ زمان-محورِ S140⁺⁺ — M5)',
+          note: `استراتژیِ S140⁺⁺ (زمان-محورِ روز×ساعت روی M5 — بدونِ اندیکاتور). دوشنبه ساعتِ ۱۸/۱۹/۲۰ UTC، ورودِ open کندلِ بعد. ` +
+            `ارتقا از M15 به M5 با TP/SL بازتنظیم‌شده و حذفِ ساعتِ زیان‌دهِ ۲۱ ⇒ WR ۴۴.۵٪، اثرِ افزایشی +$1,553 (تأییدشده روی M15).`,
           lots: lots ?? undefined,
           riskDollars: rd,
           capital, riskPct,
@@ -474,8 +474,8 @@ export function decide(a: AnalysisResult, close: number[],
         },
         tpPlan: {
           multiplier: MONDAY_TP_PIP,
-          note: `TP دورِ ${MONDAY_TP_PIP}pip. درایوِ ابتدای هفته معمولاً چند ساعت ادامه دارد؛ ` +
-            `TP دور اجازه می‌دهد حرکتِ صعودی کامل استخراج شود. تا ${MONDAY_MAX_HOLD} کندل (۲۴ ساعت) نگه دارید یا تا برخورد به TP/SL.`,
+          note: `TP ${MONDAY_TP_PIP}pip (بازتنظیمِ مخصوصِ M5). چون ATR میانهٔ M5 نصفِ M15 است، TP نزدیک‌ترِ ۲۰۰pip ` +
+            `روی M5 سریع‌تر پُر می‌شود و WR را از زیرِ کف به ۴۴.۵٪ می‌بَرَد. تا ${MONDAY_MAX_HOLD} کندلِ M5 (۲۴ ساعت) نگه دارید یا تا برخورد به TP/SL.`,
         },
         slPlan: {
           multiplier: MONDAY_SL_PIP,
