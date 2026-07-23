@@ -252,6 +252,7 @@ function renderCard(a) {
   const sm = STATE_META[state] || STATE_META.NEUTRAL
 
   const isScalp = a.layer === 'scalp'
+  if (d) d._assetId = a.id   // برای idِ یکتای badgeِ شمارشِ معکوس
   let body = ''
   if (s.error) {
     body = `<div class="text-rose-400 text-sm p-3"><i class="fas fa-triangle-exclamation ml-1"></i>خطا در دریافت داده: ${s.error}</div>`
