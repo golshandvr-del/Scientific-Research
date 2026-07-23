@@ -1,0 +1,127 @@
+{
+ "strategy": "S182_verify_s178",
+ "cfg": {
+  "asset": "XAUUSD",
+  "side": "long",
+  "ema_fast": 10,
+  "ema_slow": 30,
+  "body_frac": 0.6,
+  "size_tol": 1.0,
+  "lb": 40,
+  "sl": 300,
+  "tp": 450,
+  "mh": 96
+ },
+ "raw": {
+  "label": "S178 raw",
+  "net": 3485.3,
+  "wr": 53.38,
+  "n": 281,
+  "pf": 1.363,
+  "h1": 1158.2,
+  "h2": 1636.2,
+  "wf": [
+   [
+    962.4,
+    52.2,
+    92
+   ],
+   [
+    372.2,
+    50.8,
+    61
+   ],
+   [
+    1079.6,
+    66.1,
+    56
+   ],
+   [
+    549.8,
+    47.2,
+    72
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "ok": true
+ },
+ "overlaps": {
+  "High2_S168": 27.8,
+  "SignsOfStrength_S171": 4.5,
+  "TwoLegs_S172": 4.5,
+  "SellClimax_S174": 49.1,
+  "TimeDrifts": 36.2,
+  "UNION_OLD_h2_td": 56.4,
+  "UNION_FULL": 84.8
+ },
+ "indep_old": {
+  "label": "indep vs OLD union",
+  "net": 1533.3,
+  "wr": 52.9,
+  "n": 138,
+  "pf": 1.427,
+  "h1": 230.5,
+  "h2": 1061.1,
+  "wf": [
+   [
+    240.4,
+    49.0,
+    49
+   ],
+   [
+    99.2,
+    50.0,
+    32
+   ],
+   [
+    259.5,
+    58.6,
+    29
+   ],
+   [
+    751.1,
+    57.1,
+    28
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "ok": true
+ },
+ "indep_full": {
+  "label": "indep vs FULL union",
+  "net": 348.3,
+  "wr": 52.83,
+  "n": 53,
+  "pf": 1.249,
+  "h1": -59.0,
+  "h2": 453.6,
+  "wf": [
+   [
+    12.6,
+    47.4,
+    19
+   ],
+   [
+    -78.3,
+    45.5,
+    11
+   ],
+   [
+    216.4,
+    63.6,
+    11
+   ],
+   [
+    213.6,
+    58.3,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "ok": false
+ },
+ "verdict": "INVALIDATED"
+}
