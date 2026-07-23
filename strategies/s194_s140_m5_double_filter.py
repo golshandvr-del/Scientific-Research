@@ -129,8 +129,10 @@ def main():
     df = load('XAUUSD_M5')
     SL, TP, MH = 100.0, 200.0, 288
 
-    # سیگنالِ پایهٔ S140: دوشنبه (dow==0)، Long
-    base_mask = (df['dow'].values == 0)
+    # ⚠️ اصلاحِ حیاتی: سیگنالِ پایهٔ S140 در S193 = دوشنبه (dow==0) **و ساعتِ ۱۸-۲۱ UTC**.
+    # فیلترِ ساعت [18,19,20,21] بخشِ ذاتیِ لایه است، نه فیلترِ مضاعف. بدونِ آن لایه سودده نیست.
+    ENTRY_HOURS = [18, 19, 20, 21]
+    base_mask = (df['dow'].values == 0) & np.isin(df['hour'].values, ENTRY_HOURS)
 
     # نسخهٔ مبنا (بدون فیلترِ مضاعف)
     base_tr = build_trades(df, base_mask, SL, TP, MH, asset)
@@ -183,9 +185,9 @@ def main():
         if improved and (best is None or st['net'] > best[1]['net']):
             best = (name, st, d_net)
 
-    # F3: ساعتِ ورود روی مبنا (trade-level)
-    print(f"\n[F3 — ساعتِ ورود (turn-of-hour)] روی مبنای خام:")
-    for hset, label in [((0, 1, 2), 'h0-2'), ((1,), 'h1'), ((0, 1), 'h0-1')]:
+    # F3: کدام زیرمجموعهٔ ساعاتِ [18-21] بهتر است؟ (trade-level)
+    print(f"\n[F3 — زیرمجموعهٔ ساعاتِ ورود درونِ 18-21 UTC] روی مبنا:")
+    for hset, label in [((18, 19), 'h18-19'), ((20, 21), 'h20-21'), ((19, 20), 'h19-20'), ((18, 19, 20), 'h18-20')]:
         sub = base_tr[base_tr['entry_hour'].isin(hset)]
         if len(sub) < 20:
             print(f"   {label:6s}: n<20 رد"); continue
