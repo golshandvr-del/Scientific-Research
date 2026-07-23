@@ -442,6 +442,15 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'ENTRY', regime: reg,
         headline: 'ورود خرید (LONG) — درایوِ ابتدای هفتهٔ طلا (عصرِ دوشنبه)',
         reason: mo.reason,
+        sourceLayer: {
+          code: 'S140⁺', name: 'درایوِ ابتدای هفته (Monday Drift)', kind: 'time',
+          filters: moConfirm ? [`تأییدِ امتیازیِ متعامد (S163): ${moConfirm.score}/${moConfirm.maxScore}`] : undefined,
+          manage: {
+            style: 'let-run-trail', beTriggerR: 1.0,
+            trailDistPrice: MONDAY_SL_PIP * 0.1, maxHoldBars: MONDAY_MAX_HOLD,
+            note: `لایهٔ زمان-محورِ روز×ساعت با R:R بالا. پس از ۱R سود بریک‌ایون؛ سپس trailing با فاصلهٔ ${(MONDAY_SL_PIP * 0.1).toFixed(1)}$ تا سقفِ ${MONDAY_MAX_HOLD} کندل.`,
+          },
+        },
         direction: 'LONG', entry, tp, sl,
         rr: `SL ثابت ${MONDAY_SL_PIP}pip (${mo.slDist.toFixed(2)}$) / TP ${MONDAY_TP_PIP}pip ` +
           `(${mo.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(MONDAY_TP_PIP / MONDAY_SL_PIP).toFixed(1)} (بگذار بردها بدوند)`,
