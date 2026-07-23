@@ -268,9 +268,17 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
     })
   }
 
+  // ---------- ★ مدیریتِ لایه-محور (User Note #3) — اولویت با پلنِ خودِ لایه ----------
+  // اگر معامله از یک سیگنالِ سایت باز شده و managePlan دارد، دقیقاً همان سبکِ مدیریتِ
+  // آن لایه اجرا می‌شود (TP/SL متحرکِ هم‌خوان با واقعیتِ لایه). در این حالت بلوک‌های
+  // «عامِ» بریک‌ایون/تریلِ ATR/SHORT-MAِ heuristic خاموش می‌شوند تا توصیه‌ها یکدست بمانند.
+  const layerMgmt = layerAwareAdvices(t, price, atr, isLong, pnlR, rawMove, riskDist, reachedTp, reachedSl)
+  const planHandled = layerMgmt.handled
+  for (const adv of layerMgmt.advices) advices.push(adv)
+
   // ---------- ۲) بریک‌ایون: وقتی به ~۱R سود رسیدیم، SL را به ورود ببر ----------
   const slAtEntry = Math.abs(t.sl - t.entry) < 0.05
-  if (!reachedTp && !reachedSl && pnlR >= 1.0 && !slAtEntry && !isSlBeyondEntry(t)) {
+  if (!planHandled && !reachedTp && !reachedSl && pnlR >= 1.0 && !slAtEntry && !isSlBeyondEntry(t)) {
     advices.push({
       type: 'sl', severity: 'good',
       title: 'حالا معامله را بی‌ریسک کن (بریک‌ایون)',
