@@ -1,0 +1,129 @@
+// =============================================================================
+//  server.mjs — سرورِ لوکالِ سایتِ کامل روی Node/Termux (بدونِ هیچ npm install)
+// =============================================================================
+//  این فایل باندلِ آماده (app.bundle.mjs) را که «کلِ منطقِ سایت» را دارد بارگذاری
+//  و روی شبکهٔ محلی (LAN) سرو می‌کند. هیچ وابستگیِ خارجی لازم نیست: فقط ماژول‌های
+//  داخلیِ Node (node:http, node:fs) استفاده می‌شوند تا روی گوشی/ترموکس بدونِ
+//  `npm install` هم اجرا شود.
+//
+//  اجرا:
+//      node server.mjs
+//  یا با پورت/هاست دلخواه:
+//      PORT=8080 HOST=0.0.0.0 node server.mjs
+//
+//  چرا node:http خام؟ چون @hono/node-server یک وابستگیِ اضافه است؛ با تبدیلِ
+//  دستیِ IncomingMessage → Web Request و Web Response → ServerResponse، اپِ Hono
+//  (که app.fetch(request) دارد) بدونِ هیچ پکیجِ اضافه اجرا می‌شود.
+// =============================================================================
+
+import { createServer } from 'node:http'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+import { networkInterfaces } from 'node:os'
+import { existsSync } from 'node:fs'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const PORT = parseInt(process.env.PORT || '8080', 10)
+const HOST = process.env.HOST || '0.0.0.0' // 0.0.0.0 = قابل‌دسترس در کلِ شبکهٔ محلی
+
+// مسیرِ پوشهٔ public سایت را به shim می‌دهیم تا /static/* درست سرو شود.
+const PUBLIC = join(__dirname, '..', 'web_tool', 'public')
+process.env.WEBTOOL_PUBLIC = PUBLIC
+
+// باندلِ آماده (کلِ منطقِ سایت). اگر نبود، راهنماییِ ساخت می‌دهیم.
+const BUNDLE = join(__dirname, 'app.bundle.mjs')
+if (!existsSync(BUNDLE)) {
+  console.error('❌ فایلِ app.bundle.mjs یافت نشد.')
+  console.error('   اگر روی کامپیوتر/سندباکس هستید، یک‌بار بسازید:')
+  console.error('     cd local-mobile && node build.mjs')
+  console.error('   (روی گوشی نیازی به ساخت نیست؛ فقط git pull بزنید تا باندلِ آماده بیاید.)')
+  process.exit(1)
+}
+
+const mod = await import('./app.bundle.mjs')
+const app = mod.default
+if (!app || typeof app.fetch !== 'function') {
+  console.error('❌ باندل، اپِ Hono معتبری export نکرد (app.fetch یافت نشد).')
+  process.exit(1)
+}
+
+// --- تبدیلِ درخواستِ Node به Web Request -----------------------------------
+function toWebRequest(req) {
+  const proto = 'http'
+  const host = req.headers.host || `${HOST}:${PORT}`
+  const url = `${proto}://${host}${req.url}`
+  const headers = new Headers()
+  for (const [k, v] of Object.entries(req.headers)) {
+    if (Array.isArray(v)) v.forEach((x) => headers.append(k, x))
+    else if (v != null) headers.set(k, v)
+  }
+  const method = req.method || 'GET'
+  const hasBody = method !== 'GET' && method !== 'HEAD'
+  return new Promise((resolve) => {
+    if (!hasBody) {
+      resolve(new Request(url, { method, headers }))
+      return
+    }
+    const chunks = []
+    req.on('data', (c) => chunks.push(c))
+    req.on('end', () => {
+      const body = Buffer.concat(chunks)
+      resolve(new Request(url, { method, headers, body }))
+    })
+  })
+}
+
+// --- نوشتنِ Web Response در پاسخِ Node --------------------------------------
+async function sendWebResponse(res, webRes) {
+  res.statusCode = webRes.status
+  webRes.headers.forEach((value, key) => res.setHeader(key, value))
+  if (webRes.body) {
+    const buf = Buffer.from(await webRes.arrayBuffer())
+    res.end(buf)
+  } else {
+    res.end()
+  }
+}
+
+const server = createServer(async (req, res) => {
+  try {
+    const webReq = await toWebRequest(req)
+    const webRes = await app.fetch(webReq, {}, {})
+    await sendWebResponse(res, webRes)
+  } catch (err) {
+    console.error('[خطای سرور]', err)
+    res.statusCode = 500
+    res.setHeader('content-type', 'text/plain; charset=utf-8')
+    res.end('Internal Server Error: ' + (err?.message || err))
+  }
+})
+
+// --- یافتنِ IP محلی برای نمایش به کاربر (تا دوستش هم وصل شود) ---------------
+function localIPs() {
+  const nets = networkInterfaces()
+  const ips = []
+  for (const name of Object.keys(nets)) {
+    for (const net of nets[name] || []) {
+      if (net.family === 'IPv4' && !net.internal) ips.push(net.address)
+    }
+  }
+  return ips
+}
+
+server.listen(PORT, HOST, () => {
+  const line = '='.repeat(58)
+  console.log(line)
+  console.log('  🧭 دستیارِ تصمیمِ معاملاتی — موتورِ کاملِ سایت (لوکال)')
+  console.log(line)
+  console.log(`  روی همین گوشی      : http://localhost:${PORT}`)
+  const ips = localIPs()
+  if (ips.length) {
+    console.log('  در شبکهٔ محلی (LAN) — این آدرس را به دوستتان بدهید:')
+    for (const ip of ips) console.log(`      http://${ip}:${PORT}`)
+  } else {
+    console.log('  (فعلاً به شبکهٔ محلی وصل نیستید؛ فقط localhost در دسترس است.)')
+  }
+  console.log(line)
+  console.log('  توقف: کلیدهای Ctrl+C')
+  console.log(line)
+})
