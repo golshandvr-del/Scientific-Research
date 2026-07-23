@@ -480,7 +480,7 @@ export function decide(a: AnalysisResult, close: number[],
         headline: 'ورود خرید (LONG) — درایوِ ابتدای هفتهٔ طلا (عصرِ دوشنبه)',
         reason: mo.reason,
         sourceLayer: {
-          code: 'S140⁺⁺', name: 'درایوِ ابتدای هفته (Monday Drift — M5, ۱۸-۲۰ UTC)', kind: 'time',
+          code: 'S140⁺⁺', name: 'درایوِ ابتدای هفته (Monday Drift — M5, دوشنبه ۲۱:۳۰–۲۳:۳۰ به وقتِ ایران)', kind: 'time',
           filters: moConfirm ? [`تأییدِ امتیازیِ متعامد (S163): ${moConfirm.score}/${moConfirm.maxScore}`] : undefined,
           manage: {
             style: 'let-run-trail', beTriggerR: 1.0,
@@ -522,7 +522,7 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'APPROACHING', regime: reg,
         headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ ابتدای هفته در حالِ باز شدن',
         reason: mo.reason,
-        sourceLayer: { code: 'S140⁺⁺', name: 'درایوِ ابتدای هفته (Monday Drift — M5, ۱۸-۲۰ UTC)', kind: 'time' },
+        sourceLayer: { code: 'S140⁺⁺', name: 'درایوِ ابتدای هفته (Monday Drift — M5, دوشنبه ۲۱:۳۰–۲۳:۳۰ به وقتِ ایران)', kind: 'time' },
         confirmations: [
           { label: 'رسیدنِ ساعتِ UTC به ۱۸:۰۰ در روزِ دوشنبه (ورودِ پنجرهٔ درایوِ ابتدای هفته)', met: false,
             detail: 'با بسته‌شدنِ کندلِ دوشنبه ساعتِ ۱۸ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
