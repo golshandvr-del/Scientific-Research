@@ -157,7 +157,8 @@ bash stop.sh
 |---|---|
 | `node: command not found` | `pkg install -y nodejs` |
 | `git: command not found` | `pkg install -y git` |
-| پورت اشغال است | `bash stop.sh` سپس دوباره `bash start.sh` |
+| `EADDRINUSE ... 0.0.0.0:8080` (پورت اشغال است) | یک سرورِ قبلی هنوز روشن است. بزنید `pkill -f "node .*server.mjs"` و چند ثانیه بعد `bash start.sh`. یا از پورتِ دیگر استفاده کنید: `PORT=8090 bash start.sh` |
+| `fuser: Bad system call` | بی‌خطر است و دیگر رخ نمی‌دهد؛ اسکریپت‌ها به‌جای `fuser` از `pkill` استفاده می‌کنند. اگر هنوز دیدید، یک‌بار `bash update.sh` بزنید تا اسکریپت‌ها به‌روز شوند |
 | دوستم وصل نمی‌شود | مطمئن شوید هر دو روی یک وای‌فای هستید + Client Isolation مودم خاموش باشد |
 | قیمت‌ها نمی‌آید | اینترنتِ گوشی روشن باشد (قیمتِ زنده از Yahoo گرفته می‌شود) |
 | با خاموشیِ صفحه قطع می‌شود | `pkg install termux-api` و اجرای `termux-wake-lock`؛ و خاموش‌کردنِ بهینه‌سازیِ باتری برای Termux |
