@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <title>leaktest-start</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script type="module" src="/static/signal_latch.js"></script>
+</head>
+<body class="bg-slate-950">
+  <div id="app"></div>
+  <script src="/static/app.js"></script>
+  <script>
+    // پس از بارگذاریِ app.js و اولین رفرش، استرس‌تست می‌کنیم:
+    // 800 بار renderCardsOnly + بازشماریِ گره‌های DOM. اگر نشتی حل شده باشد،
+    // تعداد گره‌ها باید تقریباً ثابت بماند (نه اینکه خطی رشد کند).
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        try {
+          // مطمئن شویم یک رندرِ کامل انجام شده تا #asset-grid وجود داشته باشد.
+          if (typeof render === 'function') render();
+          const before = document.getElementsByTagName('*').length;
+          const t0 = performance.now();
+          for (let i = 0; i < 800; i++) {
+            if (typeof renderCardsOnly === 'function') renderCardsOnly();
+          }
+          const after = document.getElementsByTagName('*').length;
+          const ms = Math.round(performance.now() - t0);
+          document.title = `leaktest-done before=${before} after=${after} loops=800 ms=${ms}`;
+        } catch (e) {
+          document.title = 'leaktest-error ' + e.message;
+        }
+      }, 4000);
+    });
+  </script>
+</body>
+</html>
