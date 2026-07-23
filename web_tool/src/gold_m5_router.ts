@@ -133,6 +133,7 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
     return {
       state: 'APPROACHING', regime: reg,
       headline: 'نزدیکِ سیگنالِ خرید — منتظرِ پولبکِ عمیق‌تر',
+      sourceLayer: { code: 'M5-Scalp', name: 'اسکالپِ پولبکِ روندِ M5 (EMA20/100 + RSI)', kind: 'ma-confluence' },
       reason: `روندِ کوتاه‌مدت صعودی است، اما قیمت هنوز به‌اندازهٔ کافی پولبک نزده ` +
         `(RSI(21)=${rsi.toFixed(1)}). اگر RSI به زیرِ ${RSI_ENTRY} برسد، BUY صادر می‌شود. ` +
         `فعلاً منتظر بمان و معامله باز نکن.`,
