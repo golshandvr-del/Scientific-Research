@@ -1,0 +1,182 @@
+{
+ "note": "S194 double-filter test on S140-M5 (attempt to build S140++)",
+ "base_s140_m5": {
+  "net": 8085.459999999966,
+  "n": 313,
+  "wr": 42.49201277955272,
+  "pf": 1.2831525252546472
+ },
+ "filters": {
+  "F1_score>=2": {
+   "action": "reject",
+   "net": 6081.1,
+   "delta_vs_base": -2004.4,
+   "wr": 41.67,
+   "n": 300,
+   "pf": 1.227,
+   "wf": [
+    2791.0,
+    2682.0,
+    501.0,
+    -616.0
+   ],
+   "wf_ok": false,
+   "halves_ok": false
+  },
+  "F1_score>=3": {
+   "action": "reject",
+   "net": 5134.2,
+   "delta_vs_base": -2951.3,
+   "wr": 42.0,
+   "n": 250,
+   "pf": 1.239,
+   "wf": [
+    2667.0,
+    2731.0,
+    98.0,
+    -733.0
+   ],
+   "wf_ok": false,
+   "halves_ok": false
+  },
+  "F1_score>=4": {
+   "action": "reject",
+   "net": 3927.1,
+   "delta_vs_base": -4158.3,
+   "wr": 42.54,
+   "n": 181,
+   "pf": 1.268,
+   "wf": [
+    1803.0,
+    2313.0,
+    733.0,
+    -997.0
+   ],
+   "wf_ok": false,
+   "halves_ok": false
+  },
+  "F2_trend_up": {
+   "action": "reject",
+   "net": 3782.3,
+   "delta_vs_base": -4303.1,
+   "wr": 42.5,
+   "n": 160,
+   "pf": 1.297,
+   "wf": [
+    1565.0,
+    2239.0,
+    631.0,
+    -811.0
+   ],
+   "wf_ok": false,
+   "halves_ok": false
+  },
+  "F4_calm_vol": {
+   "action": "reject",
+   "net": 8085.5,
+   "delta_vs_base": 0.0,
+   "wr": 42.49,
+   "n": 313,
+   "pf": 1.283,
+   "wf": [
+    3104.0,
+    2659.0,
+    773.0,
+    -8.0
+   ],
+   "wf_ok": false,
+   "halves_ok": true
+  },
+  "F1F2_sc>=3_trend": {
+   "action": "reject",
+   "net": 3782.3,
+   "delta_vs_base": -4303.1,
+   "wr": 42.5,
+   "n": 160,
+   "pf": 1.297,
+   "wf": [
+    1565.0,
+    2239.0,
+    631.0,
+    -811.0
+   ],
+   "wf_ok": false,
+   "halves_ok": false
+  },
+  "F3_h18-19": {
+   "action": "candidate",
+   "net": 8228.2,
+   "delta_vs_base": 142.8,
+   "wr": 45.41,
+   "n": 229,
+   "wf": [
+    1874.0,
+    871.0,
+    3167.0,
+    699.0
+   ],
+   "wf_ok": true,
+   "halves_ok": true
+  },
+  "F3_h20-21": {
+   "action": "reject",
+   "net": -154.7,
+   "delta_vs_base": -8240.1,
+   "wr": 34.18,
+   "n": 79,
+   "wf": [
+    281.0,
+    -602.0,
+    630.0,
+    -463.0
+   ],
+   "wf_ok": false,
+   "halves_ok": false
+  },
+  "F3_h19-20": {
+   "action": "reject",
+   "net": 1585.1,
+   "delta_vs_base": -6500.4,
+   "wr": 40.74,
+   "n": 81,
+   "wf": [
+    1516.0,
+    -602.0,
+    1280.0,
+    -566.0
+   ],
+   "wf_ok": false,
+   "halves_ok": true
+  },
+  "F3_h18-20": {
+   "action": "candidate",
+   "net": 9380.0,
+   "delta_vs_base": 1294.6,
+   "wr": 44.49,
+   "n": 272,
+   "wf": [
+    2248.0,
+    3279.0,
+    1057.0,
+    749.0
+   ],
+   "wf_ok": true,
+   "halves_ok": true
+  }
+ },
+ "verdict": {
+  "s140pp": "accept",
+  "best": {
+   "filter": "F3_h18-20",
+   "net": 9380.0,
+   "wr": 44.49,
+   "delta": 1294.6
+  },
+  "base": {
+   "net": 8085.459999999966,
+   "n": 313,
+   "wr": 42.49201277955272,
+   "pf": 1.2831525252546472
+  }
+ }
+}
