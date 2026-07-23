@@ -346,9 +346,12 @@ Scientific-Research/
 
 - **`mt5_robot/`** — ربات MetaTrader 5 از عصرِ WR (S14، ۵۷ feature، مدلِ ONNX). به‌عنوانِ
   تاریخچه نگه داشته می‌شود؛ تمرکزِ فعلیِ پروژه روی سایت است نه ربات.
-- **`apk/`** — پروژهٔ Capacitor برای تولیدِ APK اندروید (موتورِ تصمیم روی دستگاه با
-  Pyodide). راهنمای ساخت: [`docs/APK_Android_Build_Guide.md`](./docs/APK_Android_Build_Guide.md).
-  ساختِ نهاییِ فایلِ APK به Android SDK/JDK روی سیستمِ کاربر نیاز دارد.
+- **`local-mobile/`** — اجرای **موتورِ کاملِ سایت** روی گوشی با **Termux + Node سبک**
+  (بدونِ Vite/Wrangler/Workerd و بدونِ نیاز به `npm install` روی گوشی). باندلِ آمادهٔ
+  `app.bundle.mjs` کلِ منطقِ سایت (همهٔ ۹ کارت و لایه‌های رکورد) را در خود دارد؛ سرور روی
+  `0.0.0.0` اجرا می‌شود تا در **شبکهٔ محلی (LAN)** با دوستان هم به اشتراک گذاشته شود،
+  با **wake-lock** در پس‌زمینه پایدار می‌ماند و **دستی** (git pull) به‌روز می‌شود.
+  راهنمای کاملِ فارسی: [`local-mobile/README.md`](./local-mobile/README.md).
 
 ---
 
