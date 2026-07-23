@@ -1,0 +1,4197 @@
+[
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": 395.4,
+  "wr": 53.12,
+  "n": 64,
+  "pf": 1.164,
+  "wf": [
+   [
+    -425.0,
+    45.5,
+    22
+   ],
+   [
+    8.1,
+    50.0,
+    8
+   ],
+   [
+    300.9,
+    57.9,
+    19
+   ],
+   [
+    612.2,
+    60.0,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": 674.4,
+  "wr": 56.25,
+  "n": 64,
+  "pf": 1.403,
+  "wf": [
+   [
+    -366.3,
+    45.5,
+    22
+   ],
+   [
+    72.9,
+    50.0,
+    8
+   ],
+   [
+    353.8,
+    68.4,
+    19
+   ],
+   [
+    614.0,
+    60.0,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": 622.8,
+  "wr": 56.25,
+  "n": 64,
+  "pf": 1.422,
+  "wf": [
+   [
+    -289.4,
+    45.5,
+    22
+   ],
+   [
+    88.3,
+    50.0,
+    8
+   ],
+   [
+    283.0,
+    68.4,
+    19
+   ],
+   [
+    540.9,
+    60.0,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": 464.5,
+  "wr": 56.25,
+  "n": 64,
+  "pf": 1.393,
+  "wf": [
+   [
+    -188.4,
+    45.5,
+    22
+   ],
+   [
+    88.7,
+    50.0,
+    8
+   ],
+   [
+    150.7,
+    68.4,
+    19
+   ],
+   [
+    413.4,
+    60.0,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 472.2,
+  "wr": 50.0,
+  "n": 94,
+  "pf": 1.144,
+  "wf": [
+   [
+    -387.8,
+    43.8,
+    32
+   ],
+   [
+    84.6,
+    52.9,
+    17
+   ],
+   [
+    -192.3,
+    48.1,
+    27
+   ],
+   [
+    1059.3,
+    61.1,
+    18
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 812.0,
+  "wr": 52.69,
+  "n": 93,
+  "pf": 1.341,
+  "wf": [
+   [
+    -339.7,
+    43.8,
+    32
+   ],
+   [
+    17.7,
+    52.9,
+    17
+   ],
+   [
+    88.2,
+    57.7,
+    26
+   ],
+   [
+    1045.8,
+    61.1,
+    18
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 896.2,
+  "wr": 53.76,
+  "n": 93,
+  "pf": 1.443,
+  "wf": [
+   [
+    -268.2,
+    43.8,
+    32
+   ],
+   [
+    157.4,
+    58.8,
+    17
+   ],
+   [
+    30.5,
+    57.7,
+    26
+   ],
+   [
+    976.4,
+    61.1,
+    18
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 793.1,
+  "wr": 53.76,
+  "n": 93,
+  "pf": 1.496,
+  "wf": [
+   [
+    -172.4,
+    43.8,
+    32
+   ],
+   [
+    140.0,
+    58.8,
+    17
+   ],
+   [
+    -43.1,
+    57.7,
+    26
+   ],
+   [
+    868.7,
+    61.1,
+    18
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -214.2,
+  "wr": 50.0,
+  "n": 60,
+  "pf": 0.909,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": 292.0,
+  "wr": 53.33,
+  "n": 60,
+  "pf": 1.174,
+  "wf": [
+   [
+    -425.2,
+    45.0,
+    20
+   ],
+   [
+    65.9,
+    45.5,
+    11
+   ],
+   [
+    334.6,
+    70.6,
+    17
+   ],
+   [
+    316.7,
+    50.0,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": 337.2,
+  "wr": 53.33,
+  "n": 60,
+  "pf": 1.228,
+  "wf": [
+   [
+    -336.6,
+    45.0,
+    20
+   ],
+   [
+    82.7,
+    45.5,
+    11
+   ],
+   [
+    267.7,
+    70.6,
+    17
+   ],
+   [
+    323.4,
+    50.0,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": 227.8,
+  "wr": 53.33,
+  "n": 60,
+  "pf": 1.192,
+  "wf": [
+   [
+    -223.7,
+    45.0,
+    20
+   ],
+   [
+    84.5,
+    45.5,
+    11
+   ],
+   [
+    139.2,
+    70.6,
+    17
+   ],
+   [
+    227.7,
+    50.0,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -441.4,
+  "wr": 47.19,
+  "n": 89,
+  "pf": 0.871,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 314.6,
+  "wr": 51.14,
+  "n": 88,
+  "pf": 1.129,
+  "wf": [
+   [
+    -376.8,
+    44.8,
+    29
+   ],
+   [
+    10.7,
+    50.0,
+    20
+   ],
+   [
+    96.3,
+    58.3,
+    24
+   ],
+   [
+    584.4,
+    53.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 488.5,
+  "wr": 52.27,
+  "n": 88,
+  "pf": 1.236,
+  "wf": [
+   [
+    -297.8,
+    44.8,
+    29
+   ],
+   [
+    151.8,
+    55.0,
+    20
+   ],
+   [
+    57.0,
+    58.3,
+    24
+   ],
+   [
+    577.5,
+    53.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 355.6,
+  "wr": 52.27,
+  "n": 88,
+  "pf": 1.215,
+  "wf": [
+   [
+    -194.7,
+    44.8,
+    29
+   ],
+   [
+    135.8,
+    55.0,
+    20
+   ],
+   [
+    -33.8,
+    58.3,
+    24
+   ],
+   [
+    448.3,
+    53.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -274.3,
+  "wr": 47.06,
+  "n": 51,
+  "pf": 0.875,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -200.4,
+  "wr": 49.02,
+  "n": 51,
+  "pf": 0.892,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -227.4,
+  "wr": 49.02,
+  "n": 51,
+  "pf": 0.86,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -201.9,
+  "wr": 49.02,
+  "n": 51,
+  "pf": 0.834,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -447.9,
+  "wr": 48.75,
+  "n": 80,
+  "pf": 0.867,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -662.0,
+  "wr": 50.63,
+  "n": 79,
+  "pf": 0.769,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -411.7,
+  "wr": 53.16,
+  "n": 79,
+  "pf": 0.829,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -428.2,
+  "wr": 53.16,
+  "n": 79,
+  "pf": 0.773,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -471.6,
+  "wr": 42.5,
+  "n": 40,
+  "pf": 0.729,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -460.5,
+  "wr": 45.0,
+  "n": 40,
+  "pf": 0.7,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -307.0,
+  "wr": 47.5,
+  "n": 40,
+  "pf": 0.769,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -254.1,
+  "wr": 47.5,
+  "n": 40,
+  "pf": 0.735,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -432.0,
+  "wr": 48.44,
+  "n": 64,
+  "pf": 0.835,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -673.1,
+  "wr": 50.0,
+  "n": 64,
+  "pf": 0.71,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -252.2,
+  "wr": 54.69,
+  "n": 64,
+  "pf": 0.867,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -271.1,
+  "wr": 54.69,
+  "n": 64,
+  "pf": 0.812,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -1001.8,
+  "wr": 28.95,
+  "n": 38,
+  "pf": 0.43,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -515.9,
+  "wr": 34.21,
+  "n": 38,
+  "pf": 0.642,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -742.7,
+  "wr": 31.58,
+  "n": 38,
+  "pf": 0.489,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -620.5,
+  "wr": 31.58,
+  "n": 38,
+  "pf": 0.492,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -445.3,
+  "wr": 37.5,
+  "n": 48,
+  "pf": 0.781,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 95.5,
+  "wr": 41.67,
+  "n": 48,
+  "pf": 1.059,
+  "wf": [
+   [
+    430.6,
+    61.5,
+    13
+   ],
+   [
+    -107.6,
+    33.3,
+    12
+   ],
+   [
+    -611.9,
+    0.0,
+    7
+   ],
+   [
+    384.4,
+    50.0,
+    16
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -441.4,
+  "wr": 37.5,
+  "n": 48,
+  "pf": 0.736,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -379.5,
+  "wr": 37.5,
+  "n": 48,
+  "pf": 0.732,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -1107.6,
+  "wr": 22.58,
+  "n": 31,
+  "pf": 0.321,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -625.6,
+  "wr": 29.03,
+  "n": 31,
+  "pf": 0.531,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -590.5,
+  "wr": 29.03,
+  "n": 31,
+  "pf": 0.526,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -476.3,
+  "wr": 29.03,
+  "n": 31,
+  "pf": 0.54,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -591.5,
+  "wr": 31.71,
+  "n": 41,
+  "pf": 0.683,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -65.3,
+  "wr": 36.59,
+  "n": 41,
+  "pf": 0.957,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -247.7,
+  "wr": 34.15,
+  "n": 41,
+  "pf": 0.832,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -206.8,
+  "wr": 34.15,
+  "n": 41,
+  "pf": 0.833,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 576.5,
+  "wr": 51.61,
+  "n": 31,
+  "pf": 1.481,
+  "wf": [
+   [
+    88.5,
+    57.1,
+    7
+   ],
+   [
+    265.0,
+    50.0,
+    8
+   ],
+   [
+    -114.5,
+    40.0,
+    10
+   ],
+   [
+    337.6,
+    66.7,
+    6
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 452.6,
+  "wr": 54.84,
+  "n": 31,
+  "pf": 1.507,
+  "wf": [
+   [
+    63.2,
+    57.1,
+    7
+   ],
+   [
+    207.8,
+    50.0,
+    8
+   ],
+   [
+    175.0,
+    60.0,
+    10
+   ],
+   [
+    6.6,
+    50.0,
+    6
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 350.0,
+  "wr": 54.84,
+  "n": 31,
+  "pf": 1.43,
+  "wf": [
+   [
+    50.6,
+    57.1,
+    7
+   ],
+   [
+    196.2,
+    50.0,
+    8
+   ],
+   [
+    127.9,
+    60.0,
+    10
+   ],
+   [
+    -24.7,
+    50.0,
+    6
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 226.1,
+  "wr": 54.84,
+  "n": 31,
+  "pf": 1.317,
+  "wf": [
+   [
+    37.9,
+    57.1,
+    7
+   ],
+   [
+    169.7,
+    50.0,
+    8
+   ],
+   [
+    89.9,
+    60.0,
+    10
+   ],
+   [
+    -41.0,
+    50.0,
+    6
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -1.3,
+  "wr": 48.72,
+  "n": 78,
+  "pf": 0.994,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -0.9,
+  "wr": 48.72,
+  "n": 78,
+  "pf": 0.994,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -0.8,
+  "wr": 48.72,
+  "n": 78,
+  "pf": 0.994,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -0.6,
+  "wr": 48.72,
+  "n": 78,
+  "pf": 0.994,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -30.2,
+  "wr": 51.69,
+  "n": 118,
+  "pf": 0.911,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -21.6,
+  "wr": 51.69,
+  "n": 118,
+  "pf": 0.911,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -17.3,
+  "wr": 51.69,
+  "n": 118,
+  "pf": 0.911,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -13.0,
+  "wr": 51.69,
+  "n": 118,
+  "pf": 0.911,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 1.4,
+  "wr": 51.35,
+  "n": 37,
+  "pf": 1.016,
+  "wf": [
+   [
+    -1.0,
+    57.1,
+    7
+   ],
+   [
+    2.4,
+    50.0,
+    10
+   ],
+   [
+    -14.8,
+    58.3,
+    12
+   ],
+   [
+    14.8,
+    37.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 1.0,
+  "wr": 51.35,
+  "n": 37,
+  "pf": 1.016,
+  "wf": [
+   [
+    -0.7,
+    57.1,
+    7
+   ],
+   [
+    1.7,
+    50.0,
+    10
+   ],
+   [
+    -10.5,
+    58.3,
+    12
+   ],
+   [
+    10.6,
+    37.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 0.8,
+  "wr": 51.35,
+  "n": 37,
+  "pf": 1.016,
+  "wf": [
+   [
+    -0.6,
+    57.1,
+    7
+   ],
+   [
+    1.4,
+    50.0,
+    10
+   ],
+   [
+    -8.4,
+    58.3,
+    12
+   ],
+   [
+    8.4,
+    37.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 0.6,
+  "wr": 51.35,
+  "n": 37,
+  "pf": 1.016,
+  "wf": [
+   [
+    -0.4,
+    57.1,
+    7
+   ],
+   [
+    1.0,
+    50.0,
+    10
+   ],
+   [
+    -6.3,
+    58.3,
+    12
+   ],
+   [
+    6.3,
+    37.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -40.0,
+  "wr": 49.25,
+  "n": 67,
+  "pf": 0.796,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -28.5,
+  "wr": 49.25,
+  "n": 67,
+  "pf": 0.796,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -22.8,
+  "wr": 49.25,
+  "n": 67,
+  "pf": 0.796,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -17.1,
+  "wr": 49.25,
+  "n": 67,
+  "pf": 0.796,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -59.1,
+  "wr": 53.54,
+  "n": 99,
+  "pf": 0.794,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -42.2,
+  "wr": 53.54,
+  "n": 99,
+  "pf": 0.794,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -33.8,
+  "wr": 53.54,
+  "n": 99,
+  "pf": 0.794,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -25.3,
+  "wr": 53.54,
+  "n": 99,
+  "pf": 0.794,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -43.5,
+  "wr": 34.15,
+  "n": 82,
+  "pf": 0.85,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -31.0,
+  "wr": 34.15,
+  "n": 82,
+  "pf": 0.85,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -24.8,
+  "wr": 34.15,
+  "n": 82,
+  "pf": 0.85,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -18.6,
+  "wr": 34.15,
+  "n": 82,
+  "pf": 0.85,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -104.9,
+  "wr": 32.48,
+  "n": 117,
+  "pf": 0.73,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -74.9,
+  "wr": 32.48,
+  "n": 117,
+  "pf": 0.73,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -59.9,
+  "wr": 32.48,
+  "n": 117,
+  "pf": 0.73,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -44.9,
+  "wr": 32.48,
+  "n": 117,
+  "pf": 0.73,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -29.3,
+  "wr": 38.71,
+  "n": 31,
+  "pf": 0.712,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -20.9,
+  "wr": 38.71,
+  "n": 31,
+  "pf": 0.712,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -16.7,
+  "wr": 38.71,
+  "n": 31,
+  "pf": 0.712,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -12.5,
+  "wr": 38.71,
+  "n": 31,
+  "pf": 0.712,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -59.3,
+  "wr": 33.33,
+  "n": 39,
+  "pf": 0.574,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -42.3,
+  "wr": 33.33,
+  "n": 39,
+  "pf": 0.574,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -33.9,
+  "wr": 33.33,
+  "n": 39,
+  "pf": 0.574,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -25.4,
+  "wr": 33.33,
+  "n": 39,
+  "pf": 0.574,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -2.9,
+  "wr": 37.33,
+  "n": 75,
+  "pf": 0.988,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -2.1,
+  "wr": 37.33,
+  "n": 75,
+  "pf": 0.988,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -1.7,
+  "wr": 37.33,
+  "n": 75,
+  "pf": 0.988,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -1.3,
+  "wr": 37.33,
+  "n": 75,
+  "pf": 0.988,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -69.5,
+  "wr": 34.26,
+  "n": 108,
+  "pf": 0.798,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -49.6,
+  "wr": 34.26,
+  "n": 108,
+  "pf": 0.798,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -39.7,
+  "wr": 34.26,
+  "n": 108,
+  "pf": 0.798,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -29.8,
+  "wr": 34.26,
+  "n": 108,
+  "pf": 0.798,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 4,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -36.8,
+  "wr": 34.38,
+  "n": 32,
+  "pf": 0.653,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 4,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -26.3,
+  "wr": 34.38,
+  "n": 32,
+  "pf": 0.653,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 4,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -21.0,
+  "wr": 34.38,
+  "n": 32,
+  "pf": 0.653,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M1",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 4,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -15.8,
+  "wr": 34.38,
+  "n": 32,
+  "pf": 0.653,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -280.8,
+  "wr": 36.49,
+  "n": 74,
+  "pf": 0.567,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -202.8,
+  "wr": 36.49,
+  "n": 74,
+  "pf": 0.587,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -162.3,
+  "wr": 36.49,
+  "n": 74,
+  "pf": 0.587,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -121.7,
+  "wr": 36.49,
+  "n": 74,
+  "pf": 0.587,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -375.4,
+  "wr": 38.71,
+  "n": 93,
+  "pf": 0.581,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -257.6,
+  "wr": 38.71,
+  "n": 93,
+  "pf": 0.61,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -206.1,
+  "wr": 38.71,
+  "n": 93,
+  "pf": 0.61,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -154.6,
+  "wr": 38.71,
+  "n": 93,
+  "pf": 0.61,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -104.0,
+  "wr": 31.25,
+  "n": 32,
+  "pf": 0.652,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -74.3,
+  "wr": 31.25,
+  "n": 32,
+  "pf": 0.652,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -59.4,
+  "wr": 31.25,
+  "n": 32,
+  "pf": 0.652,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 4,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -44.6,
+  "wr": 31.25,
+  "n": 32,
+  "pf": 0.652,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": -268.5,
+  "wr": 35.62,
+  "n": 73,
+  "pf": 0.565,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": -191.7,
+  "wr": 35.62,
+  "n": 73,
+  "pf": 0.585,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": -153.4,
+  "wr": 35.62,
+  "n": 73,
+  "pf": 0.585,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": -115.0,
+  "wr": 35.62,
+  "n": 73,
+  "pf": 0.585,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": -434.4,
+  "wr": 37.5,
+  "n": 88,
+  "pf": 0.484,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": -302.2,
+  "wr": 37.5,
+  "n": 88,
+  "pf": 0.513,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": -241.8,
+  "wr": 37.5,
+  "n": 88,
+  "pf": 0.513,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": -181.3,
+  "wr": 37.5,
+  "n": 88,
+  "pf": 0.513,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": 330.4,
+  "wr": 57.14,
+  "n": 63,
+  "pf": 2.383,
+  "wf": [
+   [
+    -19.4,
+    42.9,
+    14
+   ],
+   [
+    84.6,
+    63.2,
+    19
+   ],
+   [
+    159.8,
+    62.5,
+    16
+   ],
+   [
+    105.4,
+    57.1,
+    14
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": 236.0,
+  "wr": 57.14,
+  "n": 63,
+  "pf": 2.383,
+  "wf": [
+   [
+    -13.8,
+    42.9,
+    14
+   ],
+   [
+    60.4,
+    63.2,
+    19
+   ],
+   [
+    114.2,
+    62.5,
+    16
+   ],
+   [
+    75.3,
+    57.1,
+    14
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": 188.8,
+  "wr": 57.14,
+  "n": 63,
+  "pf": 2.383,
+  "wf": [
+   [
+    -11.1,
+    42.9,
+    14
+   ],
+   [
+    48.3,
+    63.2,
+    19
+   ],
+   [
+    91.3,
+    62.5,
+    16
+   ],
+   [
+    60.2,
+    57.1,
+    14
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": 141.6,
+  "wr": 57.14,
+  "n": 63,
+  "pf": 2.383,
+  "wf": [
+   [
+    -8.3,
+    42.9,
+    14
+   ],
+   [
+    36.2,
+    63.2,
+    19
+   ],
+   [
+    68.5,
+    62.5,
+    16
+   ],
+   [
+    45.2,
+    57.1,
+    14
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 165.4,
+  "wr": 52.94,
+  "n": 102,
+  "pf": 1.286,
+  "wf": [
+   [
+    3.2,
+    48.0,
+    25
+   ],
+   [
+    51.2,
+    60.0,
+    30
+   ],
+   [
+    146.2,
+    58.3,
+    24
+   ],
+   [
+    -35.3,
+    43.5,
+    23
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 118.2,
+  "wr": 52.94,
+  "n": 102,
+  "pf": 1.286,
+  "wf": [
+   [
+    2.3,
+    48.0,
+    25
+   ],
+   [
+    36.6,
+    60.0,
+    30
+   ],
+   [
+    104.5,
+    58.3,
+    24
+   ],
+   [
+    -25.2,
+    43.5,
+    23
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 94.5,
+  "wr": 52.94,
+  "n": 102,
+  "pf": 1.286,
+  "wf": [
+   [
+    1.8,
+    48.0,
+    25
+   ],
+   [
+    29.3,
+    60.0,
+    30
+   ],
+   [
+    83.6,
+    58.3,
+    24
+   ],
+   [
+    -20.2,
+    43.5,
+    23
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 70.9,
+  "wr": 52.94,
+  "n": 102,
+  "pf": 1.286,
+  "wf": [
+   [
+    1.4,
+    48.0,
+    25
+   ],
+   [
+    22.0,
+    60.0,
+    30
+   ],
+   [
+    62.7,
+    58.3,
+    24
+   ],
+   [
+    -15.1,
+    43.5,
+    23
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": 225.5,
+  "wr": 55.17,
+  "n": 58,
+  "pf": 1.71,
+  "wf": [
+   [
+    -21.3,
+    33.3,
+    12
+   ],
+   [
+    -63.2,
+    52.9,
+    17
+   ],
+   [
+    170.8,
+    66.7,
+    15
+   ],
+   [
+    139.2,
+    64.3,
+    14
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": 161.1,
+  "wr": 55.17,
+  "n": 58,
+  "pf": 1.71,
+  "wf": [
+   [
+    -15.2,
+    33.3,
+    12
+   ],
+   [
+    -45.1,
+    52.9,
+    17
+   ],
+   [
+    122.0,
+    66.7,
+    15
+   ],
+   [
+    99.5,
+    64.3,
+    14
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": 128.9,
+  "wr": 55.17,
+  "n": 58,
+  "pf": 1.71,
+  "wf": [
+   [
+    -12.2,
+    33.3,
+    12
+   ],
+   [
+    -36.1,
+    52.9,
+    17
+   ],
+   [
+    97.6,
+    66.7,
+    15
+   ],
+   [
+    79.6,
+    64.3,
+    14
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": 96.7,
+  "wr": 55.17,
+  "n": 58,
+  "pf": 1.71,
+  "wf": [
+   [
+    -9.1,
+    33.3,
+    12
+   ],
+   [
+    -27.1,
+    52.9,
+    17
+   ],
+   [
+    73.2,
+    66.7,
+    15
+   ],
+   [
+    59.7,
+    64.3,
+    14
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 3.8,
+  "wr": 51.69,
+  "n": 89,
+  "pf": 1.006,
+  "wf": [
+   [
+    -61.7,
+    40.9,
+    22
+   ],
+   [
+    -102.2,
+    51.9,
+    27
+   ],
+   [
+    89.8,
+    60.0,
+    20
+   ],
+   [
+    77.8,
+    55.0,
+    20
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 2.7,
+  "wr": 51.69,
+  "n": 89,
+  "pf": 1.006,
+  "wf": [
+   [
+    -44.0,
+    40.9,
+    22
+   ],
+   [
+    -73.0,
+    51.9,
+    27
+   ],
+   [
+    64.2,
+    60.0,
+    20
+   ],
+   [
+    55.6,
+    55.0,
+    20
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 2.2,
+  "wr": 51.69,
+  "n": 89,
+  "pf": 1.006,
+  "wf": [
+   [
+    -35.2,
+    40.9,
+    22
+   ],
+   [
+    -58.4,
+    51.9,
+    27
+   ],
+   [
+    51.3,
+    60.0,
+    20
+   ],
+   [
+    44.5,
+    55.0,
+    20
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M5",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 1.6,
+  "wr": 51.69,
+  "n": 89,
+  "pf": 1.006,
+  "wf": [
+   [
+    -26.4,
+    40.9,
+    22
+   ],
+   [
+    -43.8,
+    51.9,
+    27
+   ],
+   [
+    38.5,
+    60.0,
+    20
+   ],
+   [
+    33.4,
+    55.0,
+    20
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": 49.1,
+  "wr": 53.12,
+  "n": 32,
+  "pf": 1.206,
+  "wf": [
+   [
+    -81.4,
+    41.7,
+    12
+   ],
+   [
+    72.9,
+    80.0,
+    5
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    14.3,
+    50.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": 35.1,
+  "wr": 53.12,
+  "n": 32,
+  "pf": 1.206,
+  "wf": [
+   [
+    -58.1,
+    41.7,
+    12
+   ],
+   [
+    52.1,
+    80.0,
+    5
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    10.2,
+    50.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": 28.1,
+  "wr": 53.12,
+  "n": 32,
+  "pf": 1.206,
+  "wf": [
+   [
+    -46.5,
+    41.7,
+    12
+   ],
+   [
+    41.6,
+    80.0,
+    5
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    8.2,
+    50.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": 21.1,
+  "wr": 53.12,
+  "n": 32,
+  "pf": 1.206,
+  "wf": [
+   [
+    -34.9,
+    41.7,
+    12
+   ],
+   [
+    31.2,
+    80.0,
+    5
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    6.1,
+    50.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 308.2,
+  "wr": 48.94,
+  "n": 47,
+  "pf": 1.902,
+  "wf": [
+   [
+    27.7,
+    40.0,
+    15
+   ],
+   [
+    101.4,
+    62.5,
+    8
+   ],
+   [
+    176.0,
+    58.3,
+    12
+   ],
+   [
+    3.2,
+    41.7,
+    12
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 220.2,
+  "wr": 48.94,
+  "n": 47,
+  "pf": 1.902,
+  "wf": [
+   [
+    19.8,
+    40.0,
+    15
+   ],
+   [
+    72.4,
+    62.5,
+    8
+   ],
+   [
+    125.7,
+    58.3,
+    12
+   ],
+   [
+    2.3,
+    41.7,
+    12
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 176.1,
+  "wr": 48.94,
+  "n": 47,
+  "pf": 1.902,
+  "wf": [
+   [
+    15.8,
+    40.0,
+    15
+   ],
+   [
+    57.9,
+    62.5,
+    8
+   ],
+   [
+    100.6,
+    58.3,
+    12
+   ],
+   [
+    1.8,
+    41.7,
+    12
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 132.1,
+  "wr": 48.94,
+  "n": 47,
+  "pf": 1.902,
+  "wf": [
+   [
+    11.9,
+    40.0,
+    15
+   ],
+   [
+    43.4,
+    62.5,
+    8
+   ],
+   [
+    75.4,
+    58.3,
+    12
+   ],
+   [
+    1.4,
+    41.7,
+    12
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 271.2,
+  "wr": 47.5,
+  "n": 40,
+  "pf": 1.963,
+  "wf": [
+   [
+    54.8,
+    41.7,
+    12
+   ],
+   [
+    68.7,
+    57.1,
+    7
+   ],
+   [
+    144.6,
+    55.6,
+    9
+   ],
+   [
+    3.2,
+    41.7,
+    12
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 193.7,
+  "wr": 47.5,
+  "n": 40,
+  "pf": 1.963,
+  "wf": [
+   [
+    39.2,
+    41.7,
+    12
+   ],
+   [
+    49.1,
+    57.1,
+    7
+   ],
+   [
+    103.2,
+    55.6,
+    9
+   ],
+   [
+    2.3,
+    41.7,
+    12
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 155.0,
+  "wr": 47.5,
+  "n": 40,
+  "pf": 1.963,
+  "wf": [
+   [
+    31.3,
+    41.7,
+    12
+   ],
+   [
+    39.2,
+    57.1,
+    7
+   ],
+   [
+    82.6,
+    55.6,
+    9
+   ],
+   [
+    1.8,
+    41.7,
+    12
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "short",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 116.2,
+  "wr": 47.5,
+  "n": 40,
+  "pf": 1.963,
+  "wf": [
+   [
+    23.5,
+    41.7,
+    12
+   ],
+   [
+    29.4,
+    57.1,
+    7
+   ],
+   [
+    62.0,
+    55.6,
+    9
+   ],
+   [
+    1.4,
+    41.7,
+    12
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": 224.2,
+  "wr": 51.11,
+  "n": 45,
+  "pf": 1.849,
+  "wf": [
+   [
+    156.9,
+    70.0,
+    10
+   ],
+   [
+    -38.6,
+    22.2,
+    9
+   ],
+   [
+    36.2,
+    54.5,
+    11
+   ],
+   [
+    69.7,
+    53.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": 160.2,
+  "wr": 51.11,
+  "n": 45,
+  "pf": 1.849,
+  "wf": [
+   [
+    112.1,
+    70.0,
+    10
+   ],
+   [
+    -27.6,
+    22.2,
+    9
+   ],
+   [
+    25.9,
+    54.5,
+    11
+   ],
+   [
+    49.8,
+    53.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": 128.1,
+  "wr": 51.11,
+  "n": 45,
+  "pf": 1.849,
+  "wf": [
+   [
+    89.7,
+    70.0,
+    10
+   ],
+   [
+    -22.1,
+    22.2,
+    9
+   ],
+   [
+    20.7,
+    54.5,
+    11
+   ],
+   [
+    39.8,
+    53.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": 96.1,
+  "wr": 51.11,
+  "n": 45,
+  "pf": 1.849,
+  "wf": [
+   [
+    67.3,
+    70.0,
+    10
+   ],
+   [
+    -16.6,
+    22.2,
+    9
+   ],
+   [
+    15.5,
+    54.5,
+    11
+   ],
+   [
+    29.9,
+    53.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 285.9,
+  "wr": 51.79,
+  "n": 56,
+  "pf": 1.895,
+  "wf": [
+   [
+    187.0,
+    61.5,
+    13
+   ],
+   [
+    -12.9,
+    38.5,
+    13
+   ],
+   [
+    36.5,
+    53.8,
+    13
+   ],
+   [
+    75.3,
+    52.9,
+    17
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 204.2,
+  "wr": 51.79,
+  "n": 56,
+  "pf": 1.895,
+  "wf": [
+   [
+    133.6,
+    61.5,
+    13
+   ],
+   [
+    -9.2,
+    38.5,
+    13
+   ],
+   [
+    26.1,
+    53.8,
+    13
+   ],
+   [
+    53.8,
+    52.9,
+    17
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 163.4,
+  "wr": 51.79,
+  "n": 56,
+  "pf": 1.895,
+  "wf": [
+   [
+    106.8,
+    61.5,
+    13
+   ],
+   [
+    -7.4,
+    38.5,
+    13
+   ],
+   [
+    20.8,
+    53.8,
+    13
+   ],
+   [
+    43.0,
+    52.9,
+    17
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "10/30",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 122.5,
+  "wr": 51.79,
+  "n": 56,
+  "pf": 1.895,
+  "wf": [
+   [
+    80.1,
+    61.5,
+    13
+   ],
+   [
+    -5.5,
+    38.5,
+    13
+   ],
+   [
+    15.6,
+    53.8,
+    13
+   ],
+   [
+    32.3,
+    52.9,
+    17
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 150,
+  "tp": 225,
+  "net": 268.7,
+  "wr": 56.41,
+  "n": 39,
+  "pf": 2.421,
+  "wf": [
+   [
+    181.7,
+    75.0,
+    12
+   ],
+   [
+    -56.3,
+    14.3,
+    7
+   ],
+   [
+    23.9,
+    50.0,
+    8
+   ],
+   [
+    119.3,
+    66.7,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 200,
+  "tp": 300,
+  "net": 191.9,
+  "wr": 56.41,
+  "n": 39,
+  "pf": 2.421,
+  "wf": [
+   [
+    129.8,
+    75.0,
+    12
+   ],
+   [
+    -40.2,
+    14.3,
+    7
+   ],
+   [
+    17.1,
+    50.0,
+    8
+   ],
+   [
+    85.2,
+    66.7,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 250,
+  "tp": 375,
+  "net": 153.5,
+  "wr": 56.41,
+  "n": 39,
+  "pf": 2.421,
+  "wf": [
+   [
+    103.8,
+    75.0,
+    12
+   ],
+   [
+    -32.2,
+    14.3,
+    7
+   ],
+   [
+    13.7,
+    50.0,
+    8
+   ],
+   [
+    68.2,
+    66.7,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 4,
+  "sl": 300,
+  "tp": 450,
+  "net": 115.1,
+  "wr": 56.41,
+  "n": 39,
+  "pf": 2.421,
+  "wf": [
+   [
+    77.9,
+    75.0,
+    12
+   ],
+   [
+    -24.1,
+    14.3,
+    7
+   ],
+   [
+    10.3,
+    50.0,
+    8
+   ],
+   [
+    51.1,
+    66.7,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 150,
+  "tp": 225,
+  "net": 376.4,
+  "wr": 56.86,
+  "n": 51,
+  "pf": 2.495,
+  "wf": [
+   [
+    203.6,
+    62.5,
+    16
+   ],
+   [
+    -48.9,
+    30.0,
+    10
+   ],
+   [
+    24.2,
+    50.0,
+    10
+   ],
+   [
+    197.5,
+    73.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 200,
+  "tp": 300,
+  "net": 268.9,
+  "wr": 56.86,
+  "n": 51,
+  "pf": 2.495,
+  "wf": [
+   [
+    145.4,
+    62.5,
+    16
+   ],
+   [
+    -34.9,
+    30.0,
+    10
+   ],
+   [
+    17.3,
+    50.0,
+    10
+   ],
+   [
+    141.1,
+    73.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 250,
+  "tp": 375,
+  "net": 215.1,
+  "wr": 56.86,
+  "n": 51,
+  "pf": 2.495,
+  "wf": [
+   [
+    116.3,
+    62.5,
+    16
+   ],
+   [
+    -27.9,
+    30.0,
+    10
+   ],
+   [
+    13.8,
+    50.0,
+    10
+   ],
+   [
+    112.8,
+    73.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "EURUSD_M15",
+  "side": "long",
+  "ema": "20/50",
+  "spk": 3,
+  "gap": 6,
+  "sl": 300,
+  "tp": 450,
+  "net": 161.3,
+  "wr": 56.86,
+  "n": 51,
+  "pf": 2.495,
+  "wf": [
+   [
+    87.2,
+    62.5,
+    16
+   ],
+   [
+    -20.9,
+    30.0,
+    10
+   ],
+   [
+    10.4,
+    50.0,
+    10
+   ],
+   [
+    84.6,
+    73.3,
+    15
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ }
+]
