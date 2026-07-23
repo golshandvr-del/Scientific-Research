@@ -952,6 +952,7 @@ export function decide(a: AnalysisResult, close: number[],
       headline: `نزدیک‌شدن به سیگنالِ ${isBull ? 'خرید' : 'فروش'} — منتظرِ تأیید`,
       reason: `رژیمِ روندیِ ${isBull ? 'صعودی' : 'نزولی'} کارا شکل گرفته و احتمالِ مدل (${p.toFixed(1)}%) ` +
         `به آستانهٔ ورود نزدیک است ولی هنوز به ${P_MIN}% نرسیده. تا تأییدهایِ زیر وارد نمی‌شوم.`,
+      sourceLayer: { code: 'S67', name: `VWAP-Regime Selective ML (سطلِ «${reg.bucket}»)`, kind: 'regime-ml' },
       confirmations,
       indicators,
     }
