@@ -65,6 +65,35 @@ async function fetchGold(interval: string, range: string): Promise<{ candles: Ca
 }
 
 // ---------------------------------------------------------------------------
+// تجمیعِ کندل‌ها به تایم‌فریمِ بزرگ‌تر (مثلِ H1×4 ⇒ H4). Yahoo تایم‌فریمِ ۴ساعته را
+// مستقیم نمی‌دهد؛ پس از کندل‌های H1 آن را می‌سازیم. گروه‌بندی بر اساسِ مرزِ ساعتیِ
+// UTC (۰/۴/۸/۱۲/۱۶/۲۰) انجام می‌شود تا کندل‌ها با استانداردِ متعارفِ H4 هم‌تراز باشند.
+// O=اولین open ، H=بیشینهٔ high ، L=کمینهٔ low ، C=آخرین close ، V=جمعِ volume.
+// ---------------------------------------------------------------------------
+function aggregateCandles(candles: Candle[], factorHours: number): Candle[] {
+  if (!candles.length) return []
+  const bucketSec = factorHours * 3600
+  const out: Candle[] = []
+  let cur: Candle | null = null
+  let curBucket = -1
+  for (const k of candles) {
+    const b = Math.floor(k.time / bucketSec)
+    if (b !== curBucket) {
+      if (cur) out.push(cur)
+      cur = { time: b * bucketSec, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume || 0 }
+      curBucket = b
+    } else if (cur) {
+      cur.high = Math.max(cur.high, k.high)
+      cur.low = Math.min(cur.low, k.low)
+      cur.close = k.close
+      cur.volume = (cur.volume || 0) + (k.volume || 0)
+    }
+  }
+  if (cur) out.push(cur)
+  return out
+}
+
+// ---------------------------------------------------------------------------
 // رفعِ باگِ اصلی «اختلاف ~۲۰ دلاری قیمت»:
 //   داده کندل از Yahoo GC=F (طلای آتی COMEX) می‌آید که به‌طور ساختاری چند تا چند‌ده
 //   دلار بالاتر از XAU/USD spot (مرجع TradingView/OANDA) است. قبلاً فقط «آخرین کندل»
@@ -409,9 +438,16 @@ app.get('/api/context', async (c) => {
 //    صریحاً می‌گوید «در دستِ تحقیق»؛ آماده برای گسترشِ آینده بدونِ تغییرِ معماری).
 // فیلدِ `tf`: تایم‌فریمِ Yahoo برای دریافتِ کندل (5m/15m/30m/1m). فقط برای کارت‌های
 //   غیرطلا کاربرد دارد (طلا تایم‌فریمش را از id می‌گیرد).
-const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' | 'placeholder'; tf?: string }[] = [
+const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' | 'placeholder' | 'htf'; tf?: string }[] = [
   { id: 'XAUUSD',     name: 'طلا / دلار — نوسانی (M15)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing' },
   { id: 'XAUUSD-M5',  name: 'طلا / دلار — اسکالپ (M5)',    symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
+  // --- تایم‌فریم‌های بالای طلا (درخواستِ User Note) — هر کارت منطقِ مستقلِ خودش را دارد ---
+  //   H1/H4/D1 فعلاً در «حالتِ تحقیقِ فعال» هستند (بدونِ سیگنالِ ورودِ خام تا کشفِ لایهٔ
+  //   اثبات‌شده) اما تحلیلِ روند/رژیمِ مخصوصِ همان تایم‌فریم را نمایش می‌دهند. منطق در
+  //   gold_htf_router.ts (decideGoldH1/H4/D1) — کاملاً مستقل و ماژولار.
+  { id: 'XAUUSD-H1',  name: 'طلا / دلار — یک‌ساعته (H1)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
+  { id: 'XAUUSD-H4',  name: 'طلا / دلار — چهارساعته (H4)', symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
+  { id: 'XAUUSD-D1',  name: 'طلا / دلار — روزانه (D1)',    symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
   // ⛔ S81 (XAUUSD-M30 / Swing Trend-Pullback) در نشستِ S163 طبقِ تصمیمِ صریحِ کاربر
   //    کاملاً حذف شد: WR=۲۸٪ داشت و رساندنِ آن به WR≥۴۰٪ سود را −۹٬۵۳۱$ نابود می‌کرد.
   //    کاربر خواست هر لایه‌ای که برای WR≥۴۰ ضررده می‌شود حذف شود. (روتر decideGoldM30 باقی
@@ -431,33 +467,44 @@ const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decim
 // تصمیمِ یک دارایی: کندلِ زنده → analyze → decide (۴-حالته).
 async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 1.0) {
   if (a.isGold) {
-    const isM5 = a.id === 'XAUUSD-M5'
-    const isM30 = a.id === 'XAUUSD-M30'
-    // طلا: کندلِ GC=F + rebase به spot. هر لایه تایم‌فریمِ مستقلِ خودش را می‌گیرد:
-    //   M5 → ۵دقیقه‌ای، M30 → ۳۰دقیقه‌ای، M15 → ۱۵دقیقه‌ای. (منطقِ M15/S67 دست‌نخورده.)
-    // نکته: Yahoo برای interval=30m فقط range تا ~۶۰ روز می‌دهد؛ 1mo امن است (~۴۸۰ کندل).
-    const gapSec = isM5 ? 300 : (isM30 ? 1800 : 900)
-    const interval = isM5 ? '5m' : (isM30 ? '30m' : '15m')
-    const range = isM5 ? '5d' : '1mo'
-    const { candles } = await fetchGold(interval, range)
-    if (candles.length < 220) throw new Error('داده کافی برای تحلیل نیست')
+    // --- نگاشتِ ماژولارِ تایم‌فریمِ طلا → (interval, range, gapSec) ---
+    // هر کارتِ طلا تایم‌فریمِ مستقلِ خودش را از این جدول می‌گیرد. افزودنِ تایم‌فریمِ
+    // تازه فقط یک ردیف است و بقیهٔ کارت‌ها را دست نمی‌زند (ماژولار).
+    // نکته: Yahoo برای interval=30m/1h فقط range محدود می‌دهد؛ مقادیرِ امن انتخاب شده.
+    const GOLD_TF: Record<string, { interval: string; range: string; gap: number }> = {
+      'XAUUSD':    { interval: '15m', range: '1mo', gap: 900 },
+      'XAUUSD-M5': { interval: '5m',  range: '5d',  gap: 300 },
+      'XAUUSD-M30':{ interval: '30m', range: '1mo', gap: 1800 },
+      'XAUUSD-H1': { interval: '1h',  range: '3mo', gap: 3600 },
+      'XAUUSD-H4': { interval: '1h',  range: '1y',  gap: 3600 },  // H4 از تجمیعِ H1 ساخته می‌شود
+      'XAUUSD-D1': { interval: '1d',  range: '2y',  gap: 86400 },
+    }
+    const tfc = GOLD_TF[a.id] || GOLD_TF['XAUUSD']
+    const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range)
+    // H4: Yahoo تایم‌فریمِ ۴ساعته را مستقیم نمی‌دهد ⇒ از تجمیعِ کندل‌های H1 می‌سازیم.
+    const candles = a.id === 'XAUUSD-H4' ? aggregateCandles(rawCandles, 4) : rawCandles
+    // آستانهٔ حداقلِ کندل بسته به تایم‌فریم (D1/H4 داده کمتری دارند، اما برای EMA200 کافی است).
+    const minBars = a.id === 'XAUUSD-D1' ? 60 : (a.id === 'XAUUSD-H4' ? 60 : 220)
+    if (candles.length < minBars) throw new Error('داده کافی برای تحلیل نیست')
     let spot: SpotPrice | null = null
     try { spot = await getSpotGold() } catch {}
-    const merged = rebaseFuturesToSpot(candles, spot, gapSec)
+    const merged = rebaseFuturesToSpot(candles, spot, tfc.gap)
     const useCandles = merged.candles
     const result = analyze(useCandles)
-    // هر لایه منطقِ استراتژیِ مخصوصِ خودش را دارد (کاملاً مستقل):
-    //   M5 → S79 (decideGoldM5) ، M30 → S81 (decideGoldM30) ، M15 → S67 (decide عمومی).
-    // ساعت و روزِ UTCِ کندلِ جاری — برای لایه‌های زمان-محورِ Overnight (S139)، Monday (S140) و Turn-of-Month (S141) روی طلا M15.
+    // هر تایم‌فریم منطقِ decide مخصوصِ خودش را دارد (کاملاً مستقل — ماژولار):
+    //   M5→S79 ، M30→S81 ، M15→S67 (زمان-محورها) ، H1/H4/D1→gold_htf_router (حالتِ تحقیقِ فعال).
+    // ساعت/روز/زمانِ کندلِ جاری — برای لایه‌های زمان-محورِ روی طلا M15 (S139/S140/S141).
     const goldUtcHour = new Date(useCandles[useCandles.length - 1].time * 1000).getUTCHours()
     const goldUtcDay = new Date(useCandles[useCandles.length - 1].time * 1000).getUTCDay()
-    // آرایهٔ زمانِ کندل‌ها — برای تشخیصِ «اولین روزِ معاملاتیِ ماه» در لایهٔ Turn-of-Month (S141).
     const goldTimes = useCandles.map(k => k.time)
-    const dec = isM5
-      ? decideGoldM5(result, useCandles.map(k => k.close), capital, riskPct)
-      : isM30
-      ? decideGoldM30(result, useCandles.map(k => k.close), capital, riskPct)
-      : decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high), useCandles.map(k => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles.map(k => k.open))
+    const closes = useCandles.map(k => k.close)
+    let dec
+    if (a.id === 'XAUUSD-M5')      dec = decideGoldM5(result, closes, capital, riskPct)
+    else if (a.id === 'XAUUSD-M30') dec = decideGoldM30(result, closes, capital, riskPct)
+    else if (a.id === 'XAUUSD-H1')  dec = decideGoldH1(result, closes, capital, riskPct)
+    else if (a.id === 'XAUUSD-H4')  dec = decideGoldH4(result, closes, capital, riskPct)
+    else if (a.id === 'XAUUSD-D1')  dec = decideGoldD1(result, closes, capital, riskPct)
+    else dec = decide(result, closes, capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high), useCandles.map(k => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles.map(k => k.open))
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
