@@ -838,3 +838,53 @@ momentum-guard). این با S172 (double-bottom ساختاری)، S174 (sell-cl
 
 _وضعیت: ✅ **مرحلهٔ ۱۵ (فصلِ ۱۰ Second Entries) بررسی و بک‌تست شد — پذیرفته (ACCEPTED)**.
 ▶ نشستِ بعد: **CHAPTER 11** (Late and Missed Entries) — ادامهٔ ترتیبیِ کتاب._
+
+---
+
+## مرحلهٔ ۱۶ (فصلِ ۱۱) — Late and Missed Entries — ⏳ در حالِ آزمون
+
+**نوع:** فصلِ **مکانیزمِ ورود** (کوتاه، ۴ صفحه؛ ص. ۱۸۱–۱۸۳ کتاب؛ pdf idx ۲۱۲–۲۱۴). این فصل
+یک هندسهٔ کندلِ جدید نمی‌دهد؛ یک **قاعدهٔ زمان‌بندیِ ورودِ *دیرهنگام*** می‌دهد — دقیقاً
+**قرینهٔ فصلِ ۱۰ (Second Entries / fade)**: آنجا پس از اسپایک، برگشت را می‌گرفتیم؛ اینجا پس
+از اسپایک، **با روند** و بدونِ انتظار برای pullback وارد می‌شویم (continuation).
+
+**مفاهیمِ کلیدیِ استخراج‌شده (نقلِ مکانیکیِ Brooks):**
+1. **★ تزِ مرکزی «always-in / participate»:** «If you look at any chart and think that if you
+   had taken the original entry you would still be holding the swing portion of your trade,
+   then you need to **enter at the market**. The market has a clear always-in position, and
+   you need to participate in the trend, because the **probability of making a profit is
+   high**.» ⇒ اگر روندِ واضحی برقرار است و ورودِ اولیه را از دست داده‌ای، **دیر هم که شده at
+   market وارد شو** — چون احتمالِ سود بالاست.
+2. **★ قاعدهٔ کاملاً کدنویسی‌پذیر (Figure 11.1, «Consecutive Trend Bars in a Trend»):**
+   «Once the market starts forming **four or more consecutive bull trend bars that are not
+   too large and therefore possibly climactic**, traders should **buy at least a small
+   position at the market instead of waiting for a pullback**.» ⇒ به‌محضِ تشکیلِ **≥۴ کندلِ
+   trend-bar متوالیِ هم‌جهت** که **بیش‌ازحد بزرگ/اقلیمی (climactic) نیستند** ⇒ **ورودِ at-market
+   در جهتِ روند، بدونِ انتظار برای اصلاح**. قرینه برای SHORT در روندِ نزولی.
+3. **★ مدیریتِ ریسکِ ورودِ دیرهنگام:** «enter only with the number of shares you would still
+   be holding … use the **same trailing stop** … Your stop will usually be **larger** than
+   for a scalp, and you therefore need to **trade a smaller position**.» ⇒ ورودِ دیرهنگام
+   استاپِ بزرگ‌تر (swing-size) می‌خواهد ⇒ در قابِ ما = SL دورتر + TP روندی (بگذار برد بدود).
+4. **قیدِ ضدِ climax:** کندل‌ها نباید «too large / climactic» باشند؛ اگر اسپایک اقلیمی شد،
+   احتمالِ برگشت بالا می‌رود (این دقیقاً مرزِ تفکیک از فصلِ ۱۰ است).
+
+**چرا این می‌تواند لبهٔ *نو* یا فیلتر بدهد:** پرتفویِ فعلی هیچ لایهٔ **momentum-continuation
+مبتنی بر شمارشِ کندل‌های trend متوالی** ندارد. لایه‌های موجود یا زمان-محورند، یا برگشتی
+(S168 High-2 pullback، S172 double-bottom، S173/S213 fade)، یا Squeeze→Breakout (که بر پایهٔ
+فشردگیِ نوسان است نه شمارشِ trend-bar). این صراحتاً **«روند در حالِ دویدن ⇒ سوارشو»** است، نه
+«اصلاح ⇒ بخر». طلا با long-biasِ ساختاری بهترین کاندید برای لبهٔ LONGِ continuation است.
+
+**ترجمه به قانونِ بک‌تست‌پذیر (همه causal، shift(1) ⇒ ورودِ next-open):**
+- **رویدادِ روندِ متوالی:** دنبالهٔ ≥`n_run`(=۴) کندلِ **trend-bar هم‌جهت** پیاپی. تعریفِ
+  trend-bar صعودی = `close>open` و `body=|close−open| ≥ br_min×range`. جهتِ روند با
+  `ema10>ema30` (LONG) تأیید می‌شود.
+- **قیدِ ضدِ climax:** میانگینِ range کندل‌های run نباید از `clx×ATR` بزرگ‌تر باشد (رد کندل‌های
+  اقلیمی) — پیاده‌سازیِ صریحِ «not too large / possibly climactic».
+- **ماشه:** روی کندلِ بلافاصله پس از تکمیلِ run (بدونِ انتظار برای pullback) ⇒ **at-market
+  LONG** (next-open). قرینه برای SHORT در روندِ نزولی.
+- **مدیریت:** SL دورتر (swing-size، چند برابرِ scalp) + TP روندی؛ گیتِ سختِ ۴-گانه + n≥۳۰.
+- **فرضیهٔ همپوشانی (پیش از فصلِ بعد):** اگر لبهٔ مستقل ضعیف/هم‌پوشان بود، «فیلترِ ادامهٔ روندِ
+  ≥۴ trend-bar» به‌عنوان تأیید روی لایه‌های موجود (به‌ویژه Squeeze→Breakout و زمان-محورهای
+  مرزی) بررسی می‌شود.
+
+_وضعیت: ⏳ در حالِ آزمون. کد: `strategies/s214_brooks_late_entry.py`._
