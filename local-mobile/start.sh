@@ -44,9 +44,12 @@ if [ ! -f "$DIR/app.bundle.mjs" ]; then
   exit 1
 fi
 
-# آزادسازیِ پورت اگر از قبل اشغال بود
-if command -v fuser >/dev/null 2>&1; then
-  fuser -k "${PORT}/tcp" >/dev/null 2>&1 || true
+# آزادسازیِ سرورِ قبلی اگر در حال اجرا مانده بود.
+# نکته: در اندروید/Termux دستورِ `fuser` مجاز نیست («Bad system call»)، پس به‌جای آن
+# فرآیندِ node که همین server.mjs را اجرا می‌کند مستقیماً kill می‌کنیم.
+if command -v pkill >/dev/null 2>&1; then
+  pkill -f "node .*server\.mjs" >/dev/null 2>&1 || true
+  sleep 1
 fi
 
 echo "  ▶ اجرای سرور روی http://${HOST}:${PORT} ..."
