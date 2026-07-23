@@ -63,6 +63,41 @@ function setLatch(asset, latch) {
 const store = {}   // { XAUUSD: { decision, adviceStatus, error } , ... }
 let assetsMeta = []
 
+// ============================================================================
+// 🎛️ ترجیحاتِ نمایشِ کارت‌ها (User Note) — انتخابِ کارت‌های نمایشی + ترتیبِ آن‌ها
+// ----------------------------------------------------------------------------
+// کاربر می‌تواند از بالای سایت تعیین کند کدام کارت‌ها نمایش داده شوند و با یک شماره،
+// ترتیبشان را مشخص کند. ترجیحات در localStorage پایدار می‌ماند (با رفرش نمی‌پرد).
+// ساختار: { hidden: { [assetId]: true }, order: { [assetId]: number } }
+//   - hidden: کارت‌هایی که کاربر مخفی کرده.
+//   - order: شمارهٔ ترتیبِ هر کارت (کوچک‌تر = بالاتر). کارت‌های بدونِ شماره ته می‌روند.
+// این ماژول کاملاً مستقل از منطقِ تصمیمِ کارت‌هاست ⇒ فقط لایهٔ نمایش را کنترل می‌کند.
+// ============================================================================
+const PREFS_KEY = 'card_prefs_v1'
+function getPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem(PREFS_KEY) || 'null')
+    if (p && typeof p === 'object') return { hidden: p.hidden || {}, order: p.order || {} }
+  } catch {}
+  return { hidden: {}, order: {} }
+}
+function setPrefs(p) { localStorage.setItem(PREFS_KEY, JSON.stringify(p)) }
+function isHidden(id) { return !!getPrefs().hidden[id] }
+function setHidden(id, v) { const p = getPrefs(); if (v) p.hidden[id] = true; else delete p.hidden[id]; setPrefs(p) }
+function getOrder(id, fallback) { const v = getPrefs().order[id]; return (typeof v === 'number' && isFinite(v)) ? v : fallback }
+function setOrder(id, v) { const p = getPrefs(); if (typeof v === 'number' && isFinite(v)) p.order[id] = v; else delete p.order[id]; setPrefs(p) }
+
+// فهرستِ کارت‌ها به ترتیبِ انتخابِ کاربر (فقط کارت‌های نمایان). کارت‌های بدونِ شمارهٔ
+// صریح، به ترتیبِ طبیعیِ assetsMeta و پس از کارت‌های شماره‌دار می‌آیند (پایدار).
+function orderedVisibleAssets() {
+  const p = getPrefs()
+  return assetsMeta
+    .map((a, i) => ({ a, i, ord: (typeof p.order[a.id] === 'number' && isFinite(p.order[a.id])) ? p.order[a.id] : (1000 + i) }))
+    .filter(x => !p.hidden[x.a.id])
+    .sort((x, y) => x.ord - y.ord || x.i - y.i)
+    .map(x => x.a)
+}
+
 const fmt = (x, d = 2) => (x == null || !isFinite(x)) ? '—' : Number(x).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d })
 // زمانِ دریافتِ آخرین پاسخِ موفق از سرور — بر پایهٔ ساعتِ خودِ مرورگر ثبت می‌شود.
 // (رفع باگِ «-۳۶۲۱ ثانیه پیش»: قبلاً lastUpdateِ سرور با Date.now()ِ مرورگر مقایسه
