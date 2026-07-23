@@ -10,11 +10,10 @@ PORT="${PORT:-8080}"
 
 echo "▶ در حالِ بستنِ سرور روی پورتِ ${PORT} ..."
 
-# بستنِ پروسهٔ سرور
-if command -v fuser >/dev/null 2>&1; then
-  fuser -k "${PORT}/tcp" >/dev/null 2>&1 || true
-fi
-pkill -f "node .*server.mjs" >/dev/null 2>&1 || true
+# بستنِ پروسهٔ سرور.
+# نکته: در اندروید/Termux دستورِ `fuser` مجاز نیست («Bad system call»)، پس مستقیماً
+# فرآیندِ node که server.mjs را اجرا می‌کند kill می‌کنیم.
+pkill -f "node .*server\.mjs" >/dev/null 2>&1 || true
 
 # آزادسازیِ wake-lock تا باتری بیهوده مصرف نشود
 if command -v termux-wake-unlock >/dev/null 2>&1; then
