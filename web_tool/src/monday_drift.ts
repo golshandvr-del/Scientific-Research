@@ -40,6 +40,65 @@ function toIran(utcHour: number): string {
 }
 const MONDAY_IRAN_RANGE = `${toIran(18)}–${toIran(20)}`  // ۲۱:۳۰–۲۳:۳۰
 
+// ============================================================================
+// فیلترِ «عدم‌تقارنِ دیدِ معکوس» — S212 (Al Brooks فصلِ ۹: ETFs and Inverse Charts)
+// ----------------------------------------------------------------------------
+// تزِ فصل: اگر یک ستاپ روی نمودارِ **معکوس** یک "rounding bottom" (اصلاحِ محدب/کم‌شتاب)
+//   دیده شود، تله است ⇒ ورود نکن. معیارِ عملیاتی (معادلِ دقیقِ پایتون
+//   strategies/s212_brooks_inverse_view.py::inverse_view_asym):
+//   در پنجرهٔ lb کندلِ **بسته‌شده**: سقفِ محلی=argmax(high)، کفِ پس از آن=argmin(low)،
+//   legِ اصلاحی به دو نیمه؛ شیبِ close هر نیمه (s1,s2)؛ asym=(s1−s2)/(range/بارها).
+//   asym بزرگ ⇒ نیمهٔ دومِ اصلاح کم‌شتاب‌تر ⇒ محدب/rounding ⇒ ستاپِ مشکوک ⇒ رد.
+// بک‌تست (S212d) روی S140⁺⁺ فعالِ رکورد (XAUUSD M5): lb=12, thr=0.5 ⇒
+//   net $+8,625→$+11,191 (Δ+$2,566)، WR ۴۴٪→۴۶.۲٪، WF ۴/۴ مثبت. رکورد → +$261,375.
+export const MONDAY_INVVIEW_LB = 12       // پنجرهٔ نگاه (کندلِ بسته‌شده)
+export const MONDAY_INVVIEW_THR = 0.5     // آستانهٔ عدم‌تقارن؛ asym>thr ⇒ رد (تله)
+
+function slope(y: number[]): number {
+  // شیبِ خطِ کمترین‌مربعات (معادلِ np.polyfit(x, y, 1)[0] با x=0..n-1).
+  const n = y.length
+  if (n < 2) return 0
+  let sx = 0, sy = 0, sxx = 0, sxy = 0
+  for (let i = 0; i < n; i++) { sx += i; sy += y[i]; sxx += i * i; sxy += i * y[i] }
+  const denom = n * sxx - sx * sx
+  if (denom === 0) return 0
+  return (n * sxy - sx * sy) / denom
+}
+
+// asymِ اصلاحِ «اخیرِ بسته‌شده» را برمی‌گرداند (NaN اگر اصلاحی نبود ⇒ خنثی/مجاز).
+// ورودی: آرایه‌های close/high/low تا کندلِ جاری. lb = طولِ پنجره.
+// نکتهٔ causal: مثلِ shift(1) پایتون، فقط تا کندلِ ماقبلِ آخر نگاه می‌کنیم (idx تا len-1).
+export function inverseViewAsymRecent(
+  close: number[], high: number[], low: number[], lb: number = MONDAY_INVVIEW_LB,
+): number {
+  const n = close.length
+  if (n < lb + 2) return NaN
+  // پنجرهٔ بسته‌شده = [n-1-lb, n-1) ⇒ معادلِ asym[i] با i=n-1 و shift(1) (تا کندلِ i-1).
+  const hi = high.slice(n - 1 - lb, n - 1)
+  const lo = low.slice(n - 1 - lb, n - 1)
+  const cl = close.slice(n - 1 - lb, n - 1)
+  const m = cl.length
+  if (m < lb) return NaN
+  // سقفِ محلی
+  let pk = 0
+  for (let i = 1; i < m; i++) if (hi[i] > hi[pk]) pk = i
+  if (pk >= lb - 3) return NaN          // سقف باید فضای اصلاح داشته باشد
+  // کفِ پس از سقف
+  let tr = pk
+  for (let i = pk; i < m; i++) if (lo[i] < lo[tr]) tr = i
+  if (tr - pk < 4) return NaN            // legِ اصلاحی باید ≥۴ کندل باشد
+  const leg = cl.slice(pk, tr + 1)
+  const mm = leg.length
+  const half = Math.floor(mm / 2)
+  const first = leg.slice(0, half)
+  const second = leg.slice(half)
+  if (first.length < 2 || second.length < 2) return NaN
+  const s1 = slope(first)
+  const s2 = slope(second)
+  const rng = Math.max(hi[pk] - lo[tr], 1e-9)
+  return (s1 - s2) / (rng / mm)
+}
+
 export type MondayState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 
 export interface MondaySignal {
