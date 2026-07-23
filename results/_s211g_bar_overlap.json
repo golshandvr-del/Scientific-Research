@@ -1,0 +1,33 @@
+{
+  "cand_signals": 3254,
+  "indep_signals": 902,
+  "overlap_signals": 2352,
+  "indep_gate": {
+    "n": 497,
+    "net": 6338,
+    "wr": 51.7,
+    "h1": 1127,
+    "h2": 4738,
+    "wf": [
+      924,
+      268,
+      1403,
+      2636
+    ],
+    "pass_gate": true
+  },
+  "overlap_gate": {
+    "n": 1006,
+    "net": 8252,
+    "wr": 48.8,
+    "h1": -277,
+    "h2": 8707,
+    "wf": [
+      -213,
+      -86,
+      1586,
+      6254
+    ],
+    "pass_gate": false
+  }
+}
