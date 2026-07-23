@@ -34,6 +34,20 @@ import { computeTripleSMA, DEFAULT_TRIPLE_SMA } from './triple_sma_pullback'
 // (رجوع: results/EnforceWR40_RemoveS81_NetProfit_218739.md). پاسخِ صریحِ User Note.
 const CONFIRM_MIN_SCORE = 2
 
+// ساعتِ UTC → «HH:MM به وقتِ ایران» (ایران آفستِ ثابتِ UTC+3:30، بدونِ DST از ۱۴۰۱).
+// همهٔ توصیه‌های زمان-محورِ نمایشی به وقتِ ایران بیان می‌شوند (پاسخِ صریحِ User Note).
+export function toIranHM(utcHour: number): string {
+  const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440
+  const hh = Math.floor(total / 60), mm = total % 60
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+}
+// بازهٔ چند ساعتِ متوالیِ UTC → «HH:MM–HH:MM به وقتِ ایران».
+export function toIranRange(hoursUtc: number[]): string {
+  if (!hoursUtc.length) return ''
+  const lo = Math.min(...hoursUtc), hi = Math.max(...hoursUtc)
+  return `${toIranHM(lo)}–${toIranHM(hi)}`
+}
+
 export type RouterState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 export type Regime = 'trend_up' | 'trend_down' | 'range'
 
@@ -352,7 +366,7 @@ export function decide(a: AnalysisResult, close: number[],
     ]
     const ovGate: RouterDecision['timeGate'] = {
       layerCode: 'S139', label: 'درایوِ شبانهٔ طلا (Overnight)',
-      entryHoursUtc: [22, 23], windowOpen: ov.state === 'ENTRY',
+      entryHoursUtc: [22, 23], endHourUtc: 24, windowOpen: ov.state === 'ENTRY',
     }
     if (ov.state === 'ENTRY') {
       const entry = a.price
