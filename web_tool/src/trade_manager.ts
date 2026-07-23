@@ -68,6 +68,101 @@ export interface TradeStatus {
 
 const round2 = (x: number) => Math.round(x * 100) / 100
 
+// ============================================================================
+// مدیریتِ TP/SL متحرکِ لایه-محور (User Note #3) — قلبِ بازطراحیِ مدیریتِ معامله
+// ----------------------------------------------------------------------------
+// وقتی معامله از یک سیگنالِ سایت باز شده، managePlan همراهش می‌آید و اینجا دقیقاً
+// همان سبکِ مدیریتِ همان لایه اجرا می‌شود:
+//   • بریک‌ایون در beTriggerR (اگر لایه آن را داشته باشد)،
+//   • trailing با فاصلهٔ ثابتِ قیمت یا ضریبِ ATR (هرکدام که لایه تعریف کرده)،
+//   • سقفِ نگه‌داری maxHoldBars،
+//   • و صریحاً می‌گوید «TP/SL را کجا ببر» با مقدارِ قابلِ‌اعمال (suggest).
+// نکته: بعضی لایه‌ها trailing دارند (let-run/structural/regime-atr) و بعضی
+// «fixed-tp-sl» هستند (هیچ جابه‌جاییِ SL توصیه نمی‌شود) — دقیقاً هم‌خوان با واقعیتِ لایه.
+// خروجی: آرایهٔ advice + پرچمِ اینکه آیا این پلن «trailing فعال» دارد یا نه.
+// ============================================================================
+function layerAwareAdvices(
+  t: OpenTrade, price: number, atr: number, isLong: boolean,
+  pnlR: number, rawMove: number, riskDist: number,
+  reachedTp: boolean, reachedSl: boolean,
+): { advices: Advice[]; handled: boolean; closeForMaxHold: boolean } {
+  const out: Advice[] = []
+  const mp = t.managePlan
+  if (!mp || reachedTp || reachedSl) return { advices: out, handled: false, closeForMaxHold: false }
+
+  const tag = mp.layerCode ? `[${mp.layerName || mp.layerCode}] ` : ''
+  const beTrig = mp.beTriggerR ?? 1.0
+  const slAtOrBeyondEntry = isLong ? t.sl >= t.entry - 0.02 : t.sl <= t.entry + 0.02
+
+  // ---- سبکِ ثابت: هیچ trailing؛ فقط یادآوریِ پایبندی به پلنِ لایه ----
+  if (mp.style === 'fixed-tp-sl') {
+    out.push({
+      type: 'info', severity: 'info',
+      title: `${tag}پلنِ این لایه: TP/SL ثابت است`,
+      detail: `${mp.note} این لایه TP/SL متحرک ندارد؛ بهترین کار پایبندی به همان TP/SL اولیه است ` +
+        `(جابه‌جاییِ دستی معمولاً اکسپکتنسیِ این لایه را خراب می‌کند).`,
+    })
+    return { advices: out, handled: true, closeForMaxHold: false }
+  }
+
+  // ---- سبک‌های trailing‌دار (let-run / structural / regime-atr) ----
+  // ۱) بریک‌ایون در آستانهٔ beTriggerR
+  if (pnlR >= beTrig && !slAtOrBeyondEntry) {
+    out.push({
+      type: 'sl', severity: 'good',
+      title: `${tag}بی‌ریسک کن (بریک‌ایون) — به ${round2(pnlR)}R سود رسیدی`,
+      detail: `طبقِ پلنِ همین لایه، در ${beTrig}R سود، SL را به قیمتِ ورود (${round2(t.entry)}) ببر تا معامله بدون‌ریسک شود. ` +
+        `${mp.style === 'structural-trail' ? 'سپس در گام بعد SL را زیرِ کفِ آخرین پولبک (higher-low) بالا می‌آوریم.' : 'معامله را نبند؛ بگذار سود ادامه یابد.'}`,
+      suggest: { field: 'sl', value: round2(t.entry) },
+    })
+  }
+
+  // ۲) trailing (پس از عبور از آستانهٔ بریک‌ایون)
+  if (pnlR >= beTrig) {
+    const trailDist = (typeof mp.trailAtrMult === 'number')
+      ? mp.trailAtrMult * atr
+      : (typeof mp.trailDistPrice === 'number' ? mp.trailDistPrice : 1.0 * atr)
+    const trail = isLong ? round2(price - trailDist) : round2(price + trailDist)
+    const better = isLong ? trail > t.sl : trail < t.sl
+    if (better && trailDist > 0) {
+      const distTxt = (typeof mp.trailAtrMult === 'number')
+        ? `${mp.trailAtrMult}×ATR (${round2(trailDist)} واحدِ قیمت)`
+        : `${round2(trailDist)} واحدِ قیمت (~${Math.round(trailDist * 10)}pip)`
+      out.push({
+        type: 'sl', severity: 'good',
+        title: `${tag}TP/SL متحرک: حد ضرر را جلو بکش (Trailing)`,
+        detail: `سود ${round2(pnlR)}R شده. طبقِ سبکِ «${styleFa(mp.style)}» این لایه، SL را به ${trail} ` +
+          `(${distTxt} پشتِ قیمت) بکش تا سودِ بیشتری قفل شود — و همین کار را با هر حرکتِ مساعد تکرار کن. ` +
+          `این «TP/SL متحرکِ هم‌خوان با لایه» است: بگذار برد بدود، ولی سودِ کسب‌شده را از دست نده.`,
+        suggest: { field: 'sl', value: trail },
+      })
+    }
+  }
+
+  // ۳) سقفِ نگه‌داری
+  let closeForMaxHold = false
+  if (typeof mp.maxHoldBars === 'number' && typeof t.barsHeld === 'number' && t.barsHeld >= mp.maxHoldBars) {
+    closeForMaxHold = true
+    out.push({
+      type: 'close', severity: 'warning',
+      title: `${tag}به سقفِ نگه‌داری (${mp.maxHoldBars} کندل) رسید — ببند`,
+      detail: `این معامله ${t.barsHeld} کندل باز بوده و به سقفِ نگه‌داریِ همین لایه (${mp.maxHoldBars} کندل) رسیده است. ` +
+        `طبقِ پلنِ لایه اینجا معامله بسته می‌شود تا سرمایه آزاد شود.`,
+    })
+  }
+
+  return { advices: out, handled: true, closeForMaxHold }
+}
+
+function styleFa(s: ManagePlan['style']): string {
+  switch (s) {
+    case 'let-run-trail': return 'بگذار بردها بدوند'
+    case 'structural-trail': return 'تریلِ ساختاری (پرایس-اکشن)'
+    case 'regime-atr-trail': return 'تریلِ رژیم-آگاه (ATR)'
+    case 'fixed-tp-sl': return 'TP/SL ثابت'
+  }
+}
+
 /**
  * تولید وضعیت + توصیه‌های مدیریت معامله بر اساس تحلیل زنده.
  * @param t     معاملهٔ باز کاربر
