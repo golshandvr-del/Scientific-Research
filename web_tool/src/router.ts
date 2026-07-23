@@ -423,8 +423,8 @@ export function decide(a: AnalysisResult, close: number[],
         reason: ov.reason,
         sourceLayer: { code: 'S139', name: 'درایوِ شبانه (Overnight Drift)', kind: 'time' },
         confirmations: [
-          { label: 'رسیدنِ ساعتِ UTC به ۲۲:۰۰ (ورودِ پنجرهٔ درایوِ شبانه)', met: false,
-            detail: 'با بسته‌شدنِ کندلِ ساعتِ ۲۲ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
+          { label: `رسیدنِ ساعت به ${toIranHM(22)} به وقتِ ایران (ورودِ پنجرهٔ درایوِ شبانه)`, met: false,
+            detail: `با بسته‌شدنِ کندلِ ساعتِ ${toIranHM(22)} به وقتِ ایران، سیگنالِ ورودِ خرید صادر می‌شود.` },
         ],
         indicators: ovInd, timeGate: ovGate,
       }
