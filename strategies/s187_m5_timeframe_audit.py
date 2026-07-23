@@ -42,7 +42,11 @@ CAP, RISK = 10000.0, 1.0
 # ---- مشخصاتِ واقعیِ حساب (single source of truth) ----
 se.ASSETS['XAUUSD'].update(spread_pip=3.3, comm=0.0, slip_pip=0.0)
 se.ASSETS['EURUSD'].update(spread_pip=1.0, comm=0.0, slip_pip=0.3)
-# نسخهٔ M5 (همان pip/contract/هزینه؛ فقط فایلِ داده فرق دارد)
+# نسخه‌های M15/M5 (همان pip/contract/هزینه؛ فقط فایلِ داده فرق دارد)
+se.ASSETS['XAUUSD_M15'] = dict(file='data/XAUUSD_M15.csv', pip=0.10, contract=100.0,
+                               pip_value=10.0, spread_pip=3.3, comm=0.0, slip_pip=0.0)
+se.ASSETS['EURUSD_M15'] = dict(file='data/EURUSD_M15.csv', pip=0.0001, contract=100_000.0,
+                               pip_value=10.0, spread_pip=1.0, comm=0.0, slip_pip=0.3)
 se.ASSETS['XAUUSD_M5'] = dict(file='data/XAUUSD_M5.csv', pip=0.10, contract=100.0,
                               pip_value=10.0, spread_pip=3.3, comm=0.0, slip_pip=0.0)
 se.ASSETS['EURUSD_M5'] = dict(file='data/EURUSD_M5.csv', pip=0.0001, contract=100_000.0,
