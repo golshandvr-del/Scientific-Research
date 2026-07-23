@@ -3366,12 +3366,12 @@ function classifyTrend(timeframe, candles) {
   const close = candles.map((c) => c.close);
   const e50 = ema(close, 50);
   const e200 = ema(close, 200);
-  const slope = rollingSlope(e50, 10);
+  const slope2 = rollingSlope(e50, 10);
   const i = close.length - 1;
   const price = close[i];
   const ema50 = e50[i];
   const ema200 = e200[i];
-  const slope50 = ema50 ? slope[i] / ema50 * 100 : 0;
+  const slope50 = ema50 ? slope2[i] / ema50 * 100 : 0;
   let trend = "range";
   let score = 0;
   const aboveBoth = price > ema50 && ema50 > ema200;
@@ -3769,6 +3769,47 @@ function toIran2(utcHour) {
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 var MONDAY_IRAN_RANGE = `${toIran2(18)}\u2013${toIran2(20)}`;
+var MONDAY_INVVIEW_LB = 12;
+var MONDAY_INVVIEW_THR = 0.5;
+function slope(y) {
+  const n = y.length;
+  if (n < 2) return 0;
+  let sx = 0, sy = 0, sxx = 0, sxy = 0;
+  for (let i = 0; i < n; i++) {
+    sx += i;
+    sy += y[i];
+    sxx += i * i;
+    sxy += i * y[i];
+  }
+  const denom = n * sxx - sx * sx;
+  if (denom === 0) return 0;
+  return (n * sxy - sx * sy) / denom;
+}
+function inverseViewAsymRecent(close, high, low, lb = MONDAY_INVVIEW_LB) {
+  const n = close.length;
+  if (n < lb + 2) return NaN;
+  const hi = high.slice(n - 1 - lb, n - 1);
+  const lo = low.slice(n - 1 - lb, n - 1);
+  const cl = close.slice(n - 1 - lb, n - 1);
+  const m = cl.length;
+  if (m < lb) return NaN;
+  let pk = 0;
+  for (let i = 1; i < m; i++) if (hi[i] > hi[pk]) pk = i;
+  if (pk >= lb - 3) return NaN;
+  let tr = pk;
+  for (let i = pk; i < m; i++) if (lo[i] < lo[tr]) tr = i;
+  if (tr - pk < 4) return NaN;
+  const leg = cl.slice(pk, tr + 1);
+  const mm = leg.length;
+  const half = Math.floor(mm / 2);
+  const first = leg.slice(0, half);
+  const second = leg.slice(half);
+  if (first.length < 2 || second.length < 2) return NaN;
+  const s1 = slope(first);
+  const s2 = slope(second);
+  const rng = Math.max(hi[pk] - lo[tr], 1e-9);
+  return (s1 - s2) / (rng / mm);
+}
 function computeMonday(utcDay, utcHour) {
   const slDist = MONDAY_SL_PIP * PIP2;
   const tpDist = MONDAY_TP_PIP * PIP2;
@@ -4476,6 +4517,29 @@ function decide(a, close, capital = DEFAULT_CAPITAL, riskPct = DEFAULT_RISK_PCT,
         value: `${moConfirm.score}/${moConfirm.maxScore} ${moConfirm.score >= CONFIRM_MIN_SCORE ? "(\u0647\u0645\u200C\u0633\u0648)" : "(\u062E\u0646\u062B\u06CC)"}`,
         status: "neutral"
       });
+    }
+    let moAsym = NaN;
+    if (mo.state === "ENTRY" && Array.isArray(high) && Array.isArray(low) && Array.isArray(close)) {
+      moAsym = inverseViewAsymRecent(close, high, low, MONDAY_INVVIEW_LB);
+    }
+    const moAsymTrap = mo.state === "ENTRY" && Number.isFinite(moAsym) && moAsym > MONDAY_INVVIEW_THR;
+    if (Number.isFinite(moAsym)) {
+      moInd.push({
+        name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u062F\u06CC\u062F\u0650 \u0645\u0639\u06A9\u0648\u0633 (S212 \u2014 \u0639\u062F\u0645\u200C\u062A\u0642\u0627\u0631\u0646\u0650 \u0627\u0635\u0644\u0627\u062D\u060C \u0641\u0635\u0644\u0650 \u06F9 Brooks)`,
+        value: `asym=${moAsym.toFixed(2)} (\u0622\u0633\u062A\u0627\u0646\u0647 ${MONDAY_INVVIEW_THR}) ${moAsymTrap ? "\u21D2 \u062A\u0644\u0647/\u0631\u062F" : "\u21D2 \u0633\u0627\u0644\u0645"}`,
+        status: moAsymTrap ? "bad" : "ok"
+      });
+    }
+    if (moAsymTrap) {
+      return {
+        state: "NEUTRAL",
+        regime: reg,
+        headline: "\u062E\u0646\u062B\u06CC \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0648\u0634\u0646\u0628\u0647 \u0628\u0627\u0632 \u0627\u0633\u062A \u0627\u0645\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \xAB\u062F\u06CC\u062F\u0650 \u0645\u0639\u06A9\u0648\u0633\xBB \u0648\u0631\u0648\u062F \u0631\u0627 \u0631\u062F \u06A9\u0631\u062F",
+        reason: `\u067E\u0646\u062C\u0631\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 (S140\u207A\u207A) \u0628\u0627\u0632 \u0627\u0633\u062A\u060C \u0627\u0645\u0627 \u0637\u0628\u0642\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \xAB\u062F\u06CC\u062F\u0650 \u0645\u0639\u06A9\u0648\u0633\xBB (Al Brooks \u0641\u0635\u0644\u0650 \u06F9): \u0627\u0635\u0644\u0627\u062D\u0650 \u0627\u062E\u06CC\u0631\u0650 \u0642\u06CC\u0645\u062A \u062F\u0631 \u0645\u0646\u0638\u0631\u0650 \u0645\u0639\u06A9\u0648\u0633 \u0634\u0628\u06CC\u0647\u0650 \xABrounding bottom\xBB (\u0645\u062D\u062F\u0628/\u06A9\u0645\u200C\u0634\u062A\u0627\u0628) \u062F\u06CC\u062F\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F (\u0634\u0627\u062E\u0635\u0650 \u0639\u062F\u0645\u200C\u062A\u0642\u0627\u0631\u0646 asym=${moAsym.toFixed(2)} > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${MONDAY_INVVIEW_THR}). \u0627\u06CC\u0646 \u0646\u0634\u0627\u0646\u0647\u0654 \u06CC\u06A9 \u0633\u062A\u0627\u067E\u0650 \u062A\u0644\u0647 \u0627\u0633\u062A\u061B \u0628\u06A9\u200C\u062A\u0633\u062A (S212d \u0631\u0648\u06CC M5) \u0646\u0634\u0627\u0646 \u062F\u0627\u062F \u0631\u062F \u06A9\u0631\u062F\u0646\u0650 \u0686\u0646\u06CC\u0646 \u0645\u0648\u0642\u0639\u06CC\u062A\u200C\u0647\u0627\u06CC\u06CC WR \u0631\u0627 \u0627\u0632 \u06F4\u06F4\u066A \u0628\u0647 \u06F4\u06F6.\u06F2\u066A \u0648 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0631\u0627 +$2,566 \u0627\u0641\u0632\u0627\u06CC\u0634 \u0645\u06CC\u200C\u062F\u0647\u062F. \u067E\u0633 \u0627\u06CC\u0646 \u0646\u0648\u0628\u062A \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`,
+        sourceLayer: { code: "S212", name: "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0639\u062F\u0645\u200C\u062A\u0642\u0627\u0631\u0646\u0650 \u062F\u06CC\u062F\u0650 \u0645\u0639\u06A9\u0648\u0633 (Brooks \u0641\u0635\u0644\u0650 \u06F9) \u0631\u0648\u06CC S140\u207A\u207A", kind: "time" },
+        indicators: moInd,
+        timeGate: moGate
+      };
     }
     if (mo.state === "ENTRY") {
       const entry = a.price;
