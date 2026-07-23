@@ -703,6 +703,7 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'APPROACHING', regime: reg,
         headline: 'نزدیک‌شدن به سیگنالِ فروش (SHORT) — منتظرِ عبور از میانه',
         reason: sm.reason,
+        sourceLayer: { code: 'SHORT-MA', name: 'هم‌گراییِ میانگین‌ها (SHORT-MA-Confluence)', kind: 'ma-confluence' },
         confirmations: [
           { label: 'قیمت از خطِ میانهٔ MA رو به پایین عبور کند', met: false,
             detail: `اکنون ${sm.distPct.toFixed(2)}% بالای میانه است و رو به کاهش.` },
