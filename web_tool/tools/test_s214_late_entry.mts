@@ -7,15 +7,17 @@ import { evalGoldM5LateEntry } from '../src/gold_m5_late_entry.ts'
 function buildSeries(lastTs: number, n = 400, withMomentum = true) {
   const o: number[] = [], h: number[] = [], l: number[] = [], c: number[] = [], t: number[] = []
   let px = 4000
+  // ATRِ زمینه را با نوسانِ range ثابتِ ~۱.۶ نگه می‌داریم تا رشتهٔ صعودی غیر-climactic بماند.
   for (let i = 0; i < n; i++) {
     t.push(lastTs - (n - 1 - i) * 300) // هر کندل ۵ دقیقه
     const open = px
-    // روندِ صعودیِ ملایمِ زمینه (تا EMA20>EMA50 شود و regimeUp=true) + نوسانِ کوچک
-    let close = px + 0.15 + (Math.sin(i / 7) * 0.6)
-    // ۶ کندلِ آخر: رشتهٔ صعودیِ قویِ غیر-climactic (برای فعال‌کردنِ مومنتوم)
-    if (withMomentum && i >= n - 6) close = open + 1.2 // بدنهٔ صعودیِ متوسط
-    const hi = Math.max(open, close) + 0.3
-    const lo = Math.min(open, close) - 0.3
+    // روندِ صعودیِ ملایمِ زمینه (تا EMA20>EMA50 شود و regimeUp=true)
+    let close = px + 0.5 + (Math.sin(i / 7) * 0.9)
+    if (withMomentum && i >= n - 5) close = open + 1.1 // ۵ کندلِ صعودیِ متوسط (غیر-climactic)
+    // range را در همهٔ کندل‌ها ~۱.۶ ثابت می‌کنیم تا بدنهٔ رشته نسبت به ATR اقلیمی نشود
+    const mid = (open + close) / 2
+    const hi = Math.max(open, close) + 0.5
+    const lo = Math.min(open, close) - 0.5
     o.push(open); c.push(close); h.push(hi); l.push(lo)
     px = close
   }
