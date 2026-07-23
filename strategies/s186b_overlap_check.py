@@ -105,10 +105,8 @@ def main():
 
     # halves + walk-forward روی سهمِ مستقل (به‌ترتیبِ entry_bar)
     tr_ind = tr_ind.sort_values('entry_bar').reset_index(drop=True)
-    if len(tr_ind) >= 8:
-        st, _, pt = __import__('engine.sim_engine', fromlist=['x']) if False else (None, None, None)
     # استفاده از capital-per-trade برای pnl هر معامله (مطابق stats)
-    import engine.sim_engine as se
+    from engine import scalp_engine as se
     if len(tr_ind) >= 8:
         _, _, ptbl = se.run_capital_pertrade(tr_ind, 'XAUUSD', initial_capital=S.CAP,
                                              risk_pct=S.RISK, compounding=False)
