@@ -159,6 +159,12 @@ export function decideEurusd(
       tpPlan: { multiplier: S164_TP_PIP, note: `TP ثابت ${S164_TP_PIP} pip؛ نقطهٔ میانی ناحیهٔ پایدار ۱۸/۱۸ ترکیب.` },
       slPlan: { multiplier: S164_SL_PIP, note: `SL ثابت ${S164_SL_PIP} pip؛ بدون جابه‌جایی قبل از تأیید مدیریت معامله.` },
       indicators: s164Indicators,
+      timeGate: {
+        layerCode: 'S164', label: 'برگشتِ پیش از London Fix (EURUSD ماه‌پایان)',
+        entryHoursUtc: [S164_ENTRY_HOUR_UTC],
+        dayOfMonthNote: 'فقط در سومین روزِ کاریِ ماندهٔ هر ماه فعال است',
+        windowOpen: true,
+      },
     }
   }
 
@@ -173,6 +179,12 @@ export function decideEurusd(
         { label: `کندلِ ${S164_ENTRY_HOUR_UTC}:00 UTC آغاز شود`, met: false, detail: `اکنون ${nowUtcHour}:00 UTC است؛ ورود زودهنگام مجاز نیست.` },
       ],
       indicators: s164Indicators,
+      timeGate: {
+        layerCode: 'S164', label: 'برگشتِ پیش از London Fix (EURUSD ماه‌پایان)',
+        entryHoursUtc: [S164_ENTRY_HOUR_UTC],
+        dayOfMonthNote: 'فقط در سومین روزِ کاریِ ماندهٔ هر ماه فعال است',
+        windowOpen: false,
+      },
     }
   }
 
@@ -216,6 +228,10 @@ export function decideEurusd(
       tpPlan: { multiplier: TP_PIP, note: `TP ثابتِ ${TP_PIP} pip — چون drift کوچک است، TPِ بزرگِ ATR-محور نامناسب بود (بک‌تست تأیید کرد).` },
       slPlan: { multiplier: SL_PIP, note: `SL ثابتِ ${SL_PIP} pip — مرکزِ ناحیهٔ پایدار؛ کلِ همسایگیِ ۱۰..۱۴ pip سودده و هر دو نیمه مثبت بود.` },
       indicators,
+      timeGate: {
+        layerCode: 'S73', label: 'درایوِ باز شدنِ سشنِ اروپا (EURUSD Session-Open)',
+        entryHoursUtc: [ENTRY_HOUR_UTC], windowOpen: true,
+      },
     }
   }
 
@@ -237,6 +253,10 @@ export function decideEurusd(
         `تا تأییدِ هر دو شرطِ زیر وارد نمی‌شوم.`,
       confirmations,
       indicators,
+      timeGate: {
+        layerCode: 'S73', label: 'درایوِ باز شدنِ سشنِ اروپا (EURUSD Session-Open)',
+        entryHoursUtc: [ENTRY_HOUR_UTC], windowOpen: nowUtcHour === ENTRY_HOUR_UTC,
+      },
     }
   }
 
@@ -250,5 +270,9 @@ export function decideEurusd(
       `خارج از این محل‌های آزموده‌شده EURUSD عمدتاً random-walk است؛ پس وارد نمی‌شوم. ` +
       `(این دقیقاً منطقِ «سود ۰ بهتر از منفی» طبقِ قانونِ #۱ است — همان درسی که S71/S72 داد.)`,
     indicators,
+    timeGate: {
+      layerCode: 'S73', label: 'درایوِ باز شدنِ سشنِ اروپا (EURUSD Session-Open)',
+      entryHoursUtc: [ENTRY_HOUR_UTC], windowOpen: false,
+    },
   }
 }
