@@ -547,14 +547,14 @@ export function decide(a: AnalysisResult, close: number[],
     const tomInd: RouterDecision['indicators'] = [
       { name: 'روزِ ماه (لایهٔ چرخشِ ماه)', value: tom.isFirstTradingDay ? 'اولین روزِ معاملاتیِ ماه ✓' : 'میانهٔ ماه',
         status: tom.state === 'ENTRY' ? 'ok' : tom.state === 'APPROACHING' ? 'warn' : 'neutral' },
-      { name: 'پنجرهٔ درایوِ اولِ ماه (اولین روزِ ماه، ۷–۱۲ UTC)',
+      { name: `پنجرهٔ درایوِ اولِ ماه (اولین روزِ ماه، ${toIranRange([7, 12])} به وقتِ ایران)`,
         value: tom.state === 'ENTRY' ? 'باز ✓' : tom.state === 'APPROACHING' ? 'در حالِ باز شدن' : 'بسته',
         status: tom.state === 'ENTRY' ? 'ok' : tom.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
     ]
     const tomGate: RouterDecision['timeGate'] = {
       layerCode: 'S141', label: 'درایوِ اولِ ماهِ طلا (Turn-of-Month)',
-      entryHoursUtc: [7, 8, 9, 10, 11, 12],
+      entryHoursUtc: [7, 8, 9, 10, 11, 12], endHourUtc: 13,
       dayOfMonthNote: 'فقط در اولین روزِ معاملاتیِ هر ماه فعال است',
       windowOpen: tom.state === 'ENTRY',
     }
