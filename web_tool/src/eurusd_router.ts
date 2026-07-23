@@ -134,6 +134,15 @@ export function decideEurusd(
     return {
       state: 'ENTRY', regime: { ...reg, bucket: 'pre-month-end-fix' },
       headline: 'ورود فروش (SHORT) — برگشتِ پیش از London Fix تأیید شد',
+      sourceLayer: {
+        code: 'S164', name: 'برگشتِ پیش از London Fix (ماه‌پایان)', kind: 'time',
+        filters: ['سومین روزِ کاریِ ماندهٔ ماه', `کندلِ ${S164_ENTRY_HOUR_UTC}:00 UTC`],
+        manage: {
+          style: 'fixed-tp-sl', maxHoldBars: S164_MAX_HOLD_BARS,
+          note: `این لایهٔ رویداد-محور TP/SL ثابت دارد (TP ${S164_TP_PIP}pip / SL ${S164_SL_PIP}pip، ناحیهٔ پایدار ۱۸/۱۸). ` +
+            `جابه‌جاییِ TP/SL توصیه نمی‌شود؛ فقط اگر تا ${S164_MAX_HOLD_BARS} کندل (۳ ساعت) به هدف نرسید، طبقِ پلن ببند.`,
+        },
+      },
       reason:
         `امروز سومین روزِ کاری مانده به پایان ماه است و پنجرهٔ ${S164_ENTRY_HOUR_UTC}:00 UTC فعال شد. ` +
         `S164 روی ۲۰۰٬۰۰۰ کندل EURUSD این drift نزولی کوتاه را با سود خالص +$3,473، WR=60.7٪، ` +
