@@ -10,6 +10,7 @@ import type { RouterDecision } from './router'
 import { decideEurusd } from './eurusd_router'
 import { decideGoldM5, manageGoldM5Scalp } from './gold_m5_router'
 import { decideGoldM30 } from './gold_m30_router'
+import { decideGoldH1, decideGoldH4, decideGoldD1 } from './gold_htf_router'
 
 const app = new Hono()
 
