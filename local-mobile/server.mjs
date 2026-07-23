@@ -110,20 +110,51 @@ function localIPs() {
   return ips
 }
 
-server.listen(PORT, HOST, () => {
+function printBanner(actualPort) {
   const line = '='.repeat(58)
   console.log(line)
   console.log('  🧭 دستیارِ تصمیمِ معاملاتی — موتورِ کاملِ سایت (لوکال)')
   console.log(line)
-  console.log(`  روی همین گوشی      : http://localhost:${PORT}`)
+  console.log(`  روی همین گوشی      : http://localhost:${actualPort}`)
   const ips = localIPs()
   if (ips.length) {
     console.log('  در شبکهٔ محلی (LAN) — این آدرس را به دوستتان بدهید:')
-    for (const ip of ips) console.log(`      http://${ip}:${PORT}`)
+    for (const ip of ips) console.log(`      http://${ip}:${actualPort}`)
   } else {
     console.log('  (فعلاً به شبکهٔ محلی وصل نیستید؛ فقط localhost در دسترس است.)')
   }
   console.log(line)
   console.log('  توقف: کلیدهای Ctrl+C')
   console.log(line)
+}
+
+// --- شروعِ گوش‌دادن با «تلاشِ خودکارِ پورتِ بعدی» -----------------------------
+// نکته مهمِ Termux/اندروید: اگر یک سرورِ قبلی هنوز روی این پورت زنده مانده باشد
+// (و kill نشده باشد)، به‌جای کرش‌کردن با EADDRINUSE، به‌طور خودکار پورتِ بعدی را
+// امتحان می‌کنیم تا سرور همیشه بالا بیاید. برای همین دیگر لازم نیست حتماً سرورِ
+// قدیمی را دستی بکشید.
+const MAX_PORT_TRIES = 20
+
+function startListening(port, triesLeft) {
+  server.listen(port, HOST, () => printBanner(port))
+}
+
+server.on('error', (err) => {
+  if (err && err.code === 'EADDRINUSE') {
+    const busy = err.port || PORT
+    const next = busy + 1
+    if (next - PORT < MAX_PORT_TRIES) {
+      console.log(`  ⚠️  پورتِ ${busy} اشغال است (احتمالاً سرورِ قبلی هنوز روشن است) → امتحانِ پورتِ ${next} ...`)
+      // اجازه می‌دهیم رویدادِ error تمام شود، بعد دوباره listen می‌کنیم.
+      setTimeout(() => server.listen(next, HOST, () => printBanner(next)), 300)
+      return
+    }
+    console.error(`❌ هیچ پورتِ آزادی بینِ ${PORT} تا ${PORT + MAX_PORT_TRIES} پیدا نشد.`)
+    console.error('   لطفاً همهٔ سرورهای قبلی را ببندید: bash stop.sh')
+    process.exit(1)
+  }
+  console.error('❌ خطای سرور:', err)
+  process.exit(1)
 })
+
+startListening(PORT, MAX_PORT_TRIES)
