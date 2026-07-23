@@ -64,11 +64,9 @@ def trade_bar_mask(df, sig, side, sl, tp, mh, asset):
     if tr is None or len(tr) == 0:
         return mask, tr
     for _, row in tr.iterrows():
-        a = int(row['entry_idx']) if 'entry_idx' in row else None
-        b = int(row['exit_idx']) if 'exit_idx' in row else None
-        if a is None or b is None:
-            continue
-        mask[a:b + 1] = True
+        a = int(row['entry_bar'])
+        b = int(row['exit_bar'])
+        mask[a:min(b + 1, len(df))] = True
     return mask, tr
 
 
