@@ -881,4 +881,6 @@ setInterval(() => {
 setInterval(() => {
   const lu = document.getElementById('last-update')
   if (lu && lastFetchAt) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
+  // شمارشِ معکوسِ زندهٔ لایه‌های زمان-محور (وقتِ ایران) — فقط متنِ badge، بدونِ رندرِ کامل.
+  tickCountdowns()
 }, 1000)
