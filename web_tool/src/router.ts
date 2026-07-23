@@ -534,6 +534,10 @@ export function decide(a: AnalysisResult, close: number[],
         reason: `${tom.reason}\n\n⚠️ فیلترِ تأییدِ متعامد (S163): امتیازِ تأیید ${tomConfirm!.score} از ${tomConfirm!.maxScore} ` +
           `است و از آستانهٔ ${CONFIRM_MIN_SCORE} کمتر است. طبقِ نشستِ S163 (پاسخِ User Note)، ورود تنها وقتی ` +
           `رخ می‌دهد که شاخص‌های تأییدِ روند/مومنتوم/نوسان هم‌سو شوند — این فیلتر WR این لایه را بالای ۴۰٪ برد.`,
+        sourceLayer: {
+          code: 'S141', name: 'درایوِ چرخشِ ماه (Turn-of-Month)', kind: 'time',
+          filters: [`تأییدِ امتیازیِ متعامد (S163): ${tomConfirm!.score}/${tomConfirm!.maxScore} — هنوز ناکافی`],
+        },
         confirmations: tomConfirm!.breakdown.map(b => ({ label: b.label, met: b.met, detail: `مقدار: ${b.value}` })),
         indicators: tomInd,
       }
@@ -591,6 +595,7 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'APPROACHING', regime: reg,
         headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ چرخشِ ماه در حالِ باز شدن',
         reason: tom.reason,
+        sourceLayer: { code: 'S141', name: 'درایوِ چرخشِ ماه (Turn-of-Month)', kind: 'time' },
         confirmations: [
           { label: 'رسیدنِ ساعتِ UTC به ۷:۰۰ در اولین روزِ معاملاتیِ ماه (ورودِ پنجرهٔ درایوِ اولِ ماه)', met: false,
             detail: 'با بسته‌شدنِ کندلِ ساعتِ ۷ UTC در اولین روزِ ماه، سیگنالِ ورودِ خرید صادر می‌شود.' },
