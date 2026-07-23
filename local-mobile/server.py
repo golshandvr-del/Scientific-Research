@@ -163,6 +163,19 @@ class Handler(BaseHTTPRequestHandler):
                 self._send(502, json.dumps({"ok": False, "error": str(e)}).encode("utf-8"), MIME[".json"])
             return
 
+        # ---- favicon داخلی (تا 404 در لاگ نیفتد؛ یک سکهٔ کهربایی سادهٔ SVG) ----
+        if path == "/favicon.ico" or path == "/favicon.svg":
+            svg = (
+                '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+                '<circle cx="32" cy="32" r="28" fill="#f59e0b"/>'
+                '<circle cx="32" cy="32" r="20" fill="#fbbf24"/>'
+                '<text x="32" y="42" font-size="28" text-anchor="middle" '
+                'fill="#78350f" font-family="serif" font-weight="bold">$</text>'
+                '</svg>'
+            ).encode("utf-8")
+            self._send(200, svg, "image/svg+xml")
+            return
+
         # ---- API: سلامت ----
         if path == "/api/health":
             self._send(200, json.dumps({"ok": True, "webroot": WEBROOT}).encode("utf-8"), MIME[".json"])
