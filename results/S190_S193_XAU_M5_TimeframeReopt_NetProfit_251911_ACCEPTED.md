@@ -18,8 +18,10 @@ User Note** پرداخت: «هر تایم‌فریم ممکن است TP/SL یا 
 · `strategies/s191_xau_m5_tpsl_reopt.py` (بازتنظیمِ TP/SL هر لایه روی M5 + گیتِ سخت)
 · `strategies/s192_xau_m5_overlap_decision.py` (قانونِ همپوشانی + اثرِ hybrid)
 · `strategies/s193_xau_m5_final_validation.py` (تأییدِ نهاییِ محافظه‌کارانه)
-**داده:** `_s190_m5_explore.json` · `_s191_xau_m5_reopt.json` · `_s192_xau_m5_overlap.json` · `_s193_xau_m5_final.json`
-**وضعیت:** ✅ **موفق — ارتقای S140 Monday به M5 (اثرِ افزایشیِ محافظه‌کارانه +$993).**
+· `strategies/s194_s140_m5_double_filter.py` (امتحانِ فیلترِ مضاعف روی S140-M5 → کشفِ S140⁺⁺)
+· `strategies/s195_s140pp_robustness.py` (آزمونِ استحکامِ مستقلِ S140⁺⁺ روی M15)
+**داده:** `_s190_m5_explore.json` · `_s191_xau_m5_reopt.json` · `_s192_xau_m5_overlap.json` · `_s193_xau_m5_final.json` · `_s194_s140_m5_double_filter.json` · `_s195_s140pp_robustness.json`
+**وضعیت:** ✅ **موفق — ارتقای S140 Monday به M5 + کشفِ S140⁺⁺ (حذفِ ساعتِ ۲۱). اثرِ افزایشیِ محافظه‌کارانه +$1,553.**
 
 ---
 
