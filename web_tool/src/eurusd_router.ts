@@ -166,6 +166,7 @@ export function decideEurusd(
     return {
       state: 'APPROACHING', regime: { ...reg, bucket: 'pre-month-end-fix' },
       headline: 'نزدیک‌شدن به سیگنال فروشِ ماه‌پایان EURUSD',
+      sourceLayer: { code: 'S164', name: 'برگشتِ پیش از London Fix (ماه‌پایان)', kind: 'time' },
       reason: `روز هدف S164 تأیید شده و یک ساعت تا پنجرهٔ ${S164_ENTRY_HOUR_UTC}:00 UTC مانده است. هنوز وارد نمی‌شوم تا زمان دقیق رویداد برسد.`,
       confirmations: [
         { label: `امروز دقیقاً سومین روزِ کاری مانده به پایان ماه باشد`, met: s164Day, detail: `${businessDaysLeft} روز کاری با احتساب امروز باقی مانده است.` },
