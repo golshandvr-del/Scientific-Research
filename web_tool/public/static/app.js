@@ -172,6 +172,28 @@ function msUntilGate(gate) {
   return null
 }
 
+// میلی‌ثانیهٔ باقی‌مانده تا «پایانِ فرصتِ ورود» وقتی پنجره هم‌اکنون باز است.
+// پایانِ پنجره = endHourUtc (اگر داده شده) یا max(entryHoursUtc)+1 (پایانِ آخرین
+// کندلِ ساعتیِ ورود). خروجی: { ms, endLabelIran } یا null.
+// این پاسخِ صریح به User Note است: لایه‌هایی مثلِ درایوِ شبانهٔ طلا که «آخرِ شب buy
+// با TP بالا» می‌گویند، حالا یک شمارشِ معکوسِ دقیق «تا پایانِ فرصتِ ورود» دارند.
+function msUntilWindowEnd(gate) {
+  if (!gate || !Array.isArray(gate.entryHoursUtc) || !gate.entryHoursUtc.length) return null
+  const endHour = (typeof gate.endHourUtc === 'number')
+    ? gate.endHourUtc
+    : Math.max(...gate.entryHoursUtc) + 1
+  const nowUtc = new Date()
+  // نزدیک‌ترین لحظهٔ endHour:00 UTC که هنوز نگذشته (امروز یا فردا).
+  for (let addDay = 0; addDay <= 1; addDay++) {
+    const cand = new Date(Date.UTC(
+      nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate() + addDay,
+      endHour % 24, 0, 0, 0))
+    if (cand.getTime() <= nowUtc.getTime()) continue
+    return { ms: cand.getTime() - nowUtc.getTime(), endLabelIran: utcHourToIran(endHour % 24) }
+  }
+  return null
+}
+
 // ms → «Dروز HH:MM:SS»
 function fmtCountdown(ms) {
   if (ms == null || ms < 0) ms = 0
@@ -183,20 +205,48 @@ function fmtCountdown(ms) {
   return d > 0 ? `${d} روز و ${hhmmss}` : hhmmss
 }
 
-// رندرِ بلوکِ دروازهٔ زمانی (وقتِ ایران + شمارشِ معکوس). در حالتِ APPROACHING/NEUTRAL
-// برای لایه‌های زمان-محور نمایش داده می‌شود تا کاربر دقیقاً بداند «چقدر تا سیگنال مانده».
+// رندرِ بلوکِ دروازهٔ زمانی (وقتِ ایران + شمارشِ معکوس). برای *همهٔ* لایه‌های زمان-محور
+// در هر حالتی نمایش داده می‌شود:
+//   • پنجره بسته  ⇒ شمارشِ معکوس «تا فعال‌شدنِ سیگنال» (وقتِ ایران).
+//   • پنجره باز   ⇒ شمارشِ معکوس «تا پایانِ فرصتِ ورود» (وقتِ ایران) — پاسخِ صریح به
+//     User Note: لایه‌های آخرِ‌شب مثلِ درایوِ شبانهٔ طلا حالا حتماً تایمرِ معکوس دارند.
 function renderTimeGate(d) {
   const g = d && d.timeGate
   if (!g) return ''
   const hoursIran = (g.entryHoursUtc || []).map(utcHourToIran).join('، ')
   const daysFa = (Array.isArray(g.activeDaysUtc) && g.activeDaysUtc.length)
     ? g.activeDaysUtc.map(x => DOW_FA[x]).join('، ') : null
-  // اگر پنجره باز است، countdown لازم نیست (خودِ سیگنال فعال است).
-  const openBadge = g.windowOpen
-    ? `<span class="rounded bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 text-[10px] font-bold">پنجره باز است ✓</span>`
-    : `<span id="cd-${d._assetId || ''}" class="rounded bg-sky-500/20 text-sky-200 px-2 py-0.5 text-[11px] font-extrabold tabular-nums" dir="ltr" data-gate='${encodeURIComponent(JSON.stringify(g))}'>—</span>`
+  const gateAttr = encodeURIComponent(JSON.stringify(g))
+  const aid = d._assetId || ''
+
+  // بخشِ شمارشِ معکوس — همیشه یک badgeِ زنده دارد (چه پنجره باز، چه بسته).
+  let countdownRow = ''
+  if (g.windowOpen) {
+    // پنجره باز است ⇒ تایمرِ «تا پایانِ فرصتِ ورود» به وقتِ ایران.
+    countdownRow = `
+      <div class="flex items-center flex-wrap gap-2 text-[11px] mt-1.5">
+        <span class="rounded bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 text-[10px] font-bold">پنجره باز است ✓</span>
+        <span class="text-slate-400"><i class="fas fa-hourglass-end ml-1 text-emerald-300"></i>تا پایانِ فرصتِ ورود:</span>
+        <span id="cdEnd-${aid}" class="rounded bg-emerald-500/20 text-emerald-200 px-2 py-0.5 text-[11px] font-extrabold tabular-nums" dir="ltr" data-gate='${gateAttr}'>—</span>
+      </div>`
+  } else if (g.dayOfMonthNote) {
+    // قیدِ روزِ ماه ⇒ شمارشِ معکوسِ ساده تا ساعتِ ورود در روزِ رسیدن ممکن نیست، اما
+    // اگر ساعت هم داده شده، حداقل تا نزدیک‌ترین ساعتِ ورودِ روزِ جاری تایمر بده.
+    countdownRow = `
+      <div class="flex items-center gap-2 text-[11px] mt-1.5">
+        <span class="text-slate-400"><i class="fas fa-hourglass-half ml-1 text-sky-300"></i>تا فعال‌شدنِ سیگنال:</span>
+        <span id="cd-${aid}" class="rounded bg-sky-500/20 text-sky-200 px-2 py-0.5 text-[11px] font-extrabold tabular-nums" dir="ltr" data-gate='${gateAttr}'>—</span>
+      </div>`
+  } else {
+    // پنجره بسته ⇒ تایمرِ «تا فعال‌شدنِ سیگنال» به وقتِ ایران.
+    countdownRow = `
+      <div class="flex items-center gap-2 text-[11px] mt-1.5">
+        <span class="text-slate-400"><i class="fas fa-hourglass-half ml-1 text-sky-300"></i>تا فعال‌شدنِ سیگنال:</span>
+        <span id="cd-${aid}" class="rounded bg-sky-500/20 text-sky-200 px-2 py-0.5 text-[11px] font-extrabold tabular-nums" dir="ltr" data-gate='${gateAttr}'>—</span>
+      </div>`
+  }
   const dayNote = g.dayOfMonthNote
-    ? `<div class="text-[10px] text-amber-200/80 mt-1"><i class="fas fa-calendar-day ml-1"></i>${g.dayOfMonthNote} (شمارشِ معکوسِ دقیق برای این لایه در دسترس نیست)</div>`
+    ? `<div class="text-[10px] text-amber-200/80 mt-1"><i class="fas fa-calendar-day ml-1"></i>${g.dayOfMonthNote}</div>`
     : ''
   return `
     <div class="mb-2 rounded-md bg-indigo-500/10 border border-indigo-500/25 px-2.5 py-2">
@@ -206,23 +256,29 @@ function renderTimeGate(d) {
         <span class="font-bold text-indigo-200 tabular-nums" dir="ltr">${hoursIran}</span>
         ${daysFa ? `<span class="text-slate-500">·</span><span class="text-slate-300">${daysFa}</span>` : ''}
       </div>
-      ${!g.windowOpen && !g.dayOfMonthNote ? `
-      <div class="flex items-center gap-2 text-[11px] mt-1.5">
-        <span class="text-slate-400"><i class="fas fa-hourglass-half ml-1 text-sky-300"></i>تا فعال‌شدنِ سیگنال:</span>
-        ${openBadge}
-      </div>` : (g.windowOpen ? `<div class="mt-1.5">${openBadge}</div>` : '')}
+      ${countdownRow}
       ${dayNote}
     </div>`
 }
 
 // تیکِ زندهٔ شمارشِ معکوس (هر ثانیه) — فقط متنِ badgeها را عوض می‌کند (بدونِ رندرِ کامل).
 function tickCountdowns() {
+  // تایمرِ «تا فعال‌شدنِ سیگنال» (پنجره بسته).
   document.querySelectorAll('[id^="cd-"]').forEach(el => {
     const raw = el.getAttribute('data-gate')
     if (!raw) return
     let gate
     try { gate = JSON.parse(decodeURIComponent(raw)) } catch { return }
     const r = msUntilGate(gate)
+    el.textContent = r ? fmtCountdown(r.ms) : '—'
+  })
+  // تایمرِ «تا پایانِ فرصتِ ورود» (پنجره باز) — پاسخِ User Note.
+  document.querySelectorAll('[id^="cdEnd-"]').forEach(el => {
+    const raw = el.getAttribute('data-gate')
+    if (!raw) return
+    let gate
+    try { gate = JSON.parse(decodeURIComponent(raw)) } catch { return }
+    const r = msUntilWindowEnd(gate)
     el.textContent = r ? fmtCountdown(r.ms) : '—'
   })
 }
