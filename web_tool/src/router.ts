@@ -948,6 +948,71 @@ export function decide(a: AnalysisResult, close: number[],
         indicators: sosInd,
       }
     }
+
+    // ---- لایهٔ ۳: Triple-SMA(13/100/200) + Vortex + Kaufman-ER (S211) ----
+    // لایهٔ price-actionِ مستقلِ سوم. سهمِ مستقلِ ناهمپوشان در بک‌تست +$6,338
+    // (WR ۵۱.۷٪، همهٔ ۴ پنجرهٔ walk-forward مثبت). فقط XAUUSD M15 LONG.
+    // منطق: چیدمانِ صعودیِ سه SMA + pullback به SMA13 + تأییدِ Vortex(VI+>VI-) و ER>0.20.
+    // آرایهٔ Candle را از داده‌های موجودِ scope می‌سازیم (volume برای این لایه لازم نیست).
+    const hi = (Array.isArray(high) && high.length === close.length) ? high : close
+    const lo = (Array.isArray(low) && low.length === close.length) ? low : close
+    const candles = close.map((cl, i) => ({
+      time: (Array.isArray(times) && times[i] != null) ? times[i] : i,
+      open: openArr[i], high: hi[i], low: lo[i], close: cl, volume: 0,
+    }))
+    const tsma = computeTripleSMA(candles)
+    const tsmaInd: RouterDecision['indicators'] = [
+      { name: 'چیدمانِ سه SMA (۱۳/۱۰۰/۲۰۰)', value: tsma.upStack ? 'صعودی ✓' : 'نامنظم',
+        status: tsma.upStack ? 'ok' : 'neutral' },
+      { name: 'Vortex VI+ / VI−', value: `${tsma.viPlus.toFixed(2)} / ${tsma.viMinus.toFixed(2)}`,
+        status: tsma.viPlus > tsma.viMinus ? 'ok' : 'warn' },
+      { name: 'کاراییِ روند Kaufman-ER', value: `${tsma.er.toFixed(2)}`,
+        status: tsma.er > 0.20 ? 'ok' : 'warn' },
+      ...indicators,
+    ]
+    if (tsma.active && tsma.entry != null && tsma.sl != null && tsma.tp != null) {
+      const slDist = tsma.entry - tsma.sl
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'ورود خرید (LONG) — Triple-SMA(۱۳/۱۰۰/۲۰۰) + Vortex + Kaufman-ER تأیید شد',
+        sourceLayer: {
+          code: 'S211', name: 'Triple-SMA Stack-Pullback (روند-محور)', kind: 'price-action',
+          filters: ['چیدمانِ صعودیِ SMA13>SMA100>SMA200', 'pullback به SMA13', 'Vortex VI+>VI−', 'Kaufman-ER>0.20',
+            'سهمِ مستقلِ ناهمبسته +$6,338 (WR ۵۱.۷٪)'],
+          manage: {
+            style: 'let-run-trail', beTriggerR: 1.0,
+            trailDistPrice: DEFAULT_TRIPLE_SMA.slPip * pip, maxHoldBars: DEFAULT_TRIPLE_SMA.maxHold,
+            note: `مدیریتِ روند-دنبال‌کن: SL اولیه ${DEFAULT_TRIPLE_SMA.slPip}pip (۱.۵$). پس از ۱R بریک‌ایون؛ سپس ` +
+              `trailing با فاصلهٔ ${(DEFAULT_TRIPLE_SMA.slPip * pip).toFixed(1)}$ تا سقفِ ${DEFAULT_TRIPLE_SMA.maxHold} کندل.`,
+          },
+        },
+        reason: tsma.reason,
+        direction: 'LONG', entry: tsma.entry, tp: tsma.tp, sl: tsma.sl,
+        rr: `SL ثابت ${DEFAULT_TRIPLE_SMA.slPip}pip (${slDist.toFixed(2)}$) / TP ${DEFAULT_TRIPLE_SMA.tpPip}pip (${(tsma.tp - tsma.entry).toFixed(2)}$) — R:R ≈ ۱:۲`,
+        probability: 52,
+        sizing: {
+          lotMultiplier: 1.0, label: 'Triple-SMA Stack-Pullback (روند-محور)',
+          note: `لایهٔ مستقلِ price-action (S211). سهمِ مستقلِ ناهمبسته در بک‌تست +$۶٬۳۳۸.`,
+          lots: lots ?? undefined, riskDollars: rd, capital, riskPct,
+          capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% (ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، ` +
+            `حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. اگر SL بخورد ~${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        indicators: tsmaInd,
+      }
+    }
+    if (tsma.approaching) {
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'احتمالِ نزدیک‌شدن به سیگنالِ خرید — Triple-SMA(۱۳/۱۰۰/۲۰۰)',
+        sourceLayer: { code: 'S211', name: 'Triple-SMA Stack-Pullback (روند-محور)', kind: 'price-action' },
+        reason: tsma.reason,
+        direction: 'LONG',
+        probability: 40,
+        indicators: tsmaInd,
+      }
+    }
   }
 
   // --------- حالتِ ۱: رنج / بی‌روند → خنثی (کلیدِ سودِ خالص طبقِ L36) ---------
