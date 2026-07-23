@@ -78,6 +78,118 @@ const timeAgoSince = (baseMs) => {
   return Math.round(s / 60) + ' دقیقه پیش'
 }
 
+// ============================================================================
+// 🕒 وقتِ ایران + شمارشِ معکوسِ زنده (پاسخ به User Note)
+// ----------------------------------------------------------------------------
+// ایران از ۱۴۰۱ ساعتِ تابستانی ندارد ⇒ آفستِ ثابتِ UTC+3:30.
+// ساعتِ لایه‌های زمان-محور در بک‌اند UTC است؛ اینجا به وقتِ ایران ترجمه و یک
+// شمارشِ معکوسِ دقیق (روز/ساعت/دقیقه/ثانیه) تا «لحظهٔ فعال‌شدنِ سیگنال» ساخته می‌شود.
+// ============================================================================
+const IRAN_OFFSET_MIN = 3 * 60 + 30   // +3:30
+
+// ساعتِ UTC (۰..۲۳) → رشتهٔ «HH:MM به وقتِ ایران»
+function utcHourToIran(utcHour) {
+  const totalMin = ((utcHour * 60 + IRAN_OFFSET_MIN) % 1440 + 1440) % 1440
+  const hh = Math.floor(totalMin / 60), mm = totalMin % 60
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+}
+
+// اکنون به وقتِ ایران (شیٔ Date با اجزای UTC که آفستِ ایران رویش سوار شده)
+function nowInIranParts() {
+  const now = new Date()
+  const iranMs = now.getTime() + IRAN_OFFSET_MIN * 60 * 1000
+  const d = new Date(iranMs)
+  return {
+    dow: d.getUTCDay(),           // 0=یکشنبه..1=دوشنبه (هم‌راستا با getUTCDay بک‌اند)
+    hour: d.getUTCHours(),
+    min: d.getUTCMinutes(),
+    sec: d.getUTCSeconds(),
+    date: d,                      // برای محاسبهٔ اختلافِ روز
+  }
+}
+
+// نامِ روزِ هفته به فارسی از getUTCDay (0=یکشنبه)
+const DOW_FA = ['یک‌شنبه', 'دوشنبه', 'سه‌شنبه', 'چهارشنبه', 'پنج‌شنبه', 'جمعه', 'شنبه']
+
+// میلی‌ثانیهٔ باقی‌مانده تا بعدیِ «رسیدن به ساعتِ UTC مشخص در روزِ مجاز».
+// gate: { entryHoursUtc:[..], activeDaysUtc?:[..], windowOpen, dayOfMonthNote? }
+// خروجی: { ms, targetLabelIran } یا null اگر قابلِ محاسبه نباشد (مثلِ قیدِ روزِ ماه).
+function msUntilGate(gate) {
+  if (!gate || !Array.isArray(gate.entryHoursUtc) || !gate.entryHoursUtc.length) return null
+  const firstHour = Math.min(...gate.entryHoursUtc)   // ابتدای پنجرهٔ ورود
+  const nowUtc = new Date()
+  // کاندیدا: امروز و تا ۷ روزِ آینده، اولین لحظه‌ای که (روز مجاز است) و ساعت=firstHour:00 UTC.
+  for (let addDay = 0; addDay <= 8; addDay++) {
+    const cand = new Date(Date.UTC(
+      nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate() + addDay,
+      firstHour, 0, 0, 0))
+    if (cand.getTime() <= nowUtc.getTime()) continue
+    // فیلترِ روزِ هفته (اگر لایه روز-محور باشد)
+    if (Array.isArray(gate.activeDaysUtc) && gate.activeDaysUtc.length) {
+      if (!gate.activeDaysUtc.includes(cand.getUTCDay())) continue
+    }
+    // قیدِ روزِ ماه (Turn-of-Month / S164) قابلِ پیش‌بینیِ ساده نیست ⇒ countdown نمی‌دهیم.
+    const ms = cand.getTime() - nowUtc.getTime()
+    return { ms, targetLabelIran: utcHourToIran(firstHour) }
+  }
+  return null
+}
+
+// ms → «Dروز HH:MM:SS»
+function fmtCountdown(ms) {
+  if (ms == null || ms < 0) ms = 0
+  let s = Math.floor(ms / 1000)
+  const d = Math.floor(s / 86400); s -= d * 86400
+  const h = Math.floor(s / 3600); s -= h * 3600
+  const m = Math.floor(s / 60); s -= m * 60
+  const hhmmss = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
+  return d > 0 ? `${d} روز و ${hhmmss}` : hhmmss
+}
+
+// رندرِ بلوکِ دروازهٔ زمانی (وقتِ ایران + شمارشِ معکوس). در حالتِ APPROACHING/NEUTRAL
+// برای لایه‌های زمان-محور نمایش داده می‌شود تا کاربر دقیقاً بداند «چقدر تا سیگنال مانده».
+function renderTimeGate(d) {
+  const g = d && d.timeGate
+  if (!g) return ''
+  const hoursIran = (g.entryHoursUtc || []).map(utcHourToIran).join('، ')
+  const daysFa = (Array.isArray(g.activeDaysUtc) && g.activeDaysUtc.length)
+    ? g.activeDaysUtc.map(x => DOW_FA[x]).join('، ') : null
+  // اگر پنجره باز است، countdown لازم نیست (خودِ سیگنال فعال است).
+  const openBadge = g.windowOpen
+    ? `<span class="rounded bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 text-[10px] font-bold">پنجره باز است ✓</span>`
+    : `<span id="cd-${d._assetId || ''}" class="rounded bg-sky-500/20 text-sky-200 px-2 py-0.5 text-[11px] font-extrabold tabular-nums" dir="ltr" data-gate='${encodeURIComponent(JSON.stringify(g))}'>—</span>`
+  const dayNote = g.dayOfMonthNote
+    ? `<div class="text-[10px] text-amber-200/80 mt-1"><i class="fas fa-calendar-day ml-1"></i>${g.dayOfMonthNote} (شمارشِ معکوسِ دقیق برای این لایه در دسترس نیست)</div>`
+    : ''
+  return `
+    <div class="mb-2 rounded-md bg-indigo-500/10 border border-indigo-500/25 px-2.5 py-2">
+      <div class="flex items-center flex-wrap gap-x-2 gap-y-1 text-[11px]">
+        <i class="fas fa-clock text-indigo-300"></i>
+        <span class="text-slate-400">ساعتِ فعال‌سازی (به وقتِ ایران):</span>
+        <span class="font-bold text-indigo-200 tabular-nums" dir="ltr">${hoursIran}</span>
+        ${daysFa ? `<span class="text-slate-500">·</span><span class="text-slate-300">${daysFa}</span>` : ''}
+      </div>
+      ${!g.windowOpen && !g.dayOfMonthNote ? `
+      <div class="flex items-center gap-2 text-[11px] mt-1.5">
+        <span class="text-slate-400"><i class="fas fa-hourglass-half ml-1 text-sky-300"></i>تا فعال‌شدنِ سیگنال:</span>
+        ${openBadge}
+      </div>` : (g.windowOpen ? `<div class="mt-1.5">${openBadge}</div>` : '')}
+      ${dayNote}
+    </div>`
+}
+
+// تیکِ زندهٔ شمارشِ معکوس (هر ثانیه) — فقط متنِ badgeها را عوض می‌کند (بدونِ رندرِ کامل).
+function tickCountdowns() {
+  document.querySelectorAll('[id^="cd-"]').forEach(el => {
+    const raw = el.getAttribute('data-gate')
+    if (!raw) return
+    let gate
+    try { gate = JSON.parse(decodeURIComponent(raw)) } catch { return }
+    const r = msUntilGate(gate)
+    el.textContent = r ? fmtCountdown(r.ms) : '—'
+  })
+}
+
 // -------------------------- رنگ/برچسبِ حالت --------------------------
 const STATE_META = {
   NEUTRAL:     { fa: 'خنثی', icon: 'fa-circle-pause', ring: 'border-slate-600', chip: 'bg-slate-700 text-slate-200', dot: 'bg-slate-400' },
