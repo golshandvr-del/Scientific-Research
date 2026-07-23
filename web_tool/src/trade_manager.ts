@@ -427,6 +427,8 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   else if (layerMgmt.closeForMaxHold) { overallAction = 'close'; overallNote = 'به سقفِ نگه‌داریِ این لایه رسیدی — طبقِ پلنِ لایه ببند.' }
   // «بستن» فقط وقتی روند معکوس شده و در ضررِ واقعی (خارج از ناحیهٔ اسپرد) هستیم.
   else if (trendAgainst && inRealLoss) { overallAction = 'close'; overallNote = 'روند برخلاف تو شده و در ضررِ واقعی هستی — بستن را جدی بگیر.' }
+  // لایهٔ «TP/SL ثابت» نباید پیشنهادِ ترِیل/جابه‌جاییِ SL بگیرد؛ فقط پایبندی به پلن.
+  else if (t.managePlan?.style === 'fixed-tp-sl') { overallAction = 'hold'; overallNote = 'در سودی؛ این لایه TP/SL ثابت دارد — به همان پلنِ اولیه پایبند بمان و جابه‌جا نکن.' }
   else if (pnlR >= 1.5) { overallAction = 'let-run'; overallNote = 'در سود خوبی هستی — SL را ترِیل کن و بگذار سود رشد کند.' }
   else if (pnlR >= 1.0) { overallAction = 'move-sl'; overallNote = 'SL را به بریک‌ایون ببر تا معامله بی‌ریسک شود.' }
   else if (trendAgainst && inProfit) { overallAction = 'tighten'; overallNote = 'روند ضعیف شده ولی در سودی — SL را جلو بکش تا سود حفظ شود.' }
