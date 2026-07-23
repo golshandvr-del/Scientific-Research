@@ -423,6 +423,8 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   let overallNote = 'شرایط پایدار است؛ طبق برنامه با TP/SL فعلی نگه‌دار.'
   if (reachedTp) { overallAction = 'close'; overallNote = 'به هدف رسیدی — سود را ثبت کن.' }
   else if (reachedSl) { overallAction = 'close'; overallNote = 'به حد ضرر رسیدی — طبق پلن خارج شو.' }
+  // ★ سقفِ نگه‌داریِ لایه (maxHoldBars) — طبقِ پلنِ همان لایه معامله بسته می‌شود.
+  else if (layerMgmt.closeForMaxHold) { overallAction = 'close'; overallNote = 'به سقفِ نگه‌داریِ این لایه رسیدی — طبقِ پلنِ لایه ببند.' }
   // «بستن» فقط وقتی روند معکوس شده و در ضررِ واقعی (خارج از ناحیهٔ اسپرد) هستیم.
   else if (trendAgainst && inRealLoss) { overallAction = 'close'; overallNote = 'روند برخلاف تو شده و در ضررِ واقعی هستی — بستن را جدی بگیر.' }
   else if (pnlR >= 1.5) { overallAction = 'let-run'; overallNote = 'در سود خوبی هستی — SL را ترِیل کن و بگذار سود رشد کند.' }
