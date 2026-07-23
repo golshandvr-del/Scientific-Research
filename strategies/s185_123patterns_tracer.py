@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-s178_123patterns_tracer.py — اعتبارسنجیِ گیتِ سختِ لبهٔ «123PatternsV6»
+s185_123patterns_tracer.py — اعتبارسنجیِ گیتِ سختِ لبهٔ «123PatternsV6»
 ========================================================================
 منبع: فایلِ باینریِ 123PatternsV6.ex4 (Telegram-Resource) — منطق از سورسِ همراهش
 (123PatternsV6.mq4، نویسنده Robert Dee 2010) استخراج و در tools/ea_tracer.py
@@ -64,7 +64,7 @@ def run(symbol, tf, point, target=1, risk=1.0, direction=None,
 
 def main():
     print("=" * 80)
-    print("S178 — گیتِ سختِ لبهٔ «123PatternsV6» (منبعِ ex4/تلگرام)")
+    print("S185 — گیتِ سختِ لبهٔ «123PatternsV6» (منبعِ ex4/تلگرام)")
     print("=" * 80)
 
     configs = [
