@@ -276,7 +276,12 @@ app.post('/api/trade/advice', async (c) => {
       a = analyze(candles)
     }
 
-    const trade: OpenTrade = { side, entry, tp, sl, openedAt: tr.openedAt }
+    // managePlan: پلنِ مدیریتِ لایه‌ای که سیگنال را داده بود (از sourceLayer.manage).
+    // فرانت‌اند هنگام ثبتِ معامله آن را ذخیره و اینجا برمی‌گرداند تا trade_manager دقیقاً
+    // همان سبکِ مدیریتِ همان لایه را اجرا کند (TP/SL متحرکِ هم‌خوان با لایه — User Note #3).
+    const managePlan = (tr.managePlan && typeof tr.managePlan === 'object') ? tr.managePlan : undefined
+    const barsHeld = (typeof tr.barsHeld === 'number' && tr.barsHeld >= 0) ? tr.barsHeld : undefined
+    const trade: OpenTrade = { side, entry, tp, sl, openedAt: tr.openedAt, barsHeld, managePlan }
     const modelProbPct = typeof body.modelProbPct === 'number' ? body.modelProbPct : undefined
     const status = evaluateTrade(trade, a, modelProbPct)
 
