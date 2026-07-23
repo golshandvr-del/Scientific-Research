@@ -430,6 +430,11 @@ export function decide(a: AnalysisResult, close: number[],
         status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
     ]
+    const moGate: RouterDecision['timeGate'] = {
+      layerCode: 'S140⁺⁺', label: 'درایوِ ابتدای هفتهٔ طلا (Monday — M5)',
+      entryHoursUtc: [...MONDAY_ENTRY_HOURS], activeDaysUtc: [MONDAY_UTC_DAY],
+      windowOpen: mo.state === 'ENTRY',
+    }
     // ★ فیلترِ تأییدِ امتیازی (S163): در نسخهٔ M15 برای رساندنِ WR از زیرِ ۴۰٪ به بالای ۴۰٪ لازم بود.
     // اما S194 اثبات کرد این فیلتر روی نسخهٔ M5 (S140⁺⁺) net را کاهش می‌دهد و چون S140⁺⁺ خودش
     // WR ۴۴.۵٪ دارد (بالای کف بدونِ فیلتر)، دیگر لازم نیست ⇒ فقط اطلاعاتی نمایش داده می‌شود،
@@ -489,7 +494,7 @@ export function decide(a: AnalysisResult, close: number[],
           note: `SL ثابت ${MONDAY_SL_PIP}pip (${mo.slDist.toFixed(2)}$). اگر درایوِ ابتدای هفته شکل نگرفت، ` +
             `این SL ضرر را محدود می‌کند؛ اما بردهای واقعی به‌مراتب بزرگ‌ترند.`,
         },
-        indicators: moInd,
+        indicators: moInd, timeGate: moGate,
       }
     }
     if (mo.state === 'APPROACHING') {
@@ -502,7 +507,7 @@ export function decide(a: AnalysisResult, close: number[],
           { label: 'رسیدنِ ساعتِ UTC به ۱۸:۰۰ در روزِ دوشنبه (ورودِ پنجرهٔ درایوِ ابتدای هفته)', met: false,
             detail: 'با بسته‌شدنِ کندلِ دوشنبه ساعتِ ۱۸ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
         ],
-        indicators: moInd,
+        indicators: moInd, timeGate: moGate,
       }
     }
     // mo.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
