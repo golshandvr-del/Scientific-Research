@@ -759,6 +759,16 @@ export function decide(a: AnalysisResult, close: number[],
       return {
         state: 'ENTRY', regime: reg,
         headline: 'ورود خرید (LONG) — انفجارِ صعودی پس از فشردگیِ نوسان',
+        sourceLayer: {
+          code: 'S132', name: 'انفجارِ پس از فشردگی (Squeeze→Breakout)', kind: 'squeeze',
+          filters: ['قدرتِ شکست (S136) ≥ ۰.۳۰', 'RSI۱۴ (S138) ≤ ۷۵ (نه اشباعِ خرید)'],
+          manage: {
+            style: 'let-run-trail', beTriggerR: 1.0,
+            trailDistPrice: DEFAULT_SQUEEZE.slPip * 0.1, maxHoldBars: 96,
+            note: `انفجارهای پس از فشردگی معمولاً بزرگ‌اند (R:R ۱:۳.۳). پس از ۱R سود، SL را به بریک‌ایون ببر؛ ` +
+              `سپس با فاصلهٔ ${(DEFAULT_SQUEEZE.slPip * 0.1).toFixed(1)}$ trail کن و تا سقفِ ۹۶ کندل (۲۴ ساعت) بگذار حرکتِ صعودی کامل استخراج شود — خروج فقط با TP دور یا trailing.`,
+          },
+        },
         reason: `${sq.reason} این «فنرِ فشرده» است: بازار مدتی کم‌نوسان و متراکم بود و حالا با ` +
           `شکستِ صعودی، انفجارِ نوسان آغاز شده. طبقِ قانونِ شمارهٔ ۱ هدف سودِ خالصِ بیشتر است، نه ` +
           `وین‌ریت: TP دور (۳۰۰pip) نگه داشته می‌شود تا بردها بدوند (WR ~۴۰٪ اما سودِ خالصِ بالا؛ ` +
