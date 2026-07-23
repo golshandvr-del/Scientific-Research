@@ -345,6 +345,8 @@ app.post('/api/scalp/manage', async (c) => {
     if (!isFinite(refPrice) || refPrice <= 0) {
       return c.json({ ok: false, error: 'قیمتِ ورود (refPrice) نامعتبر است' }, 400)
     }
+    // آستانه‌های پنهانِ مخصوصِ لایه (اگر فرانت‌اند فرستاد) — تا هر لایه TP/SL خودش را داشته باشد.
+    const tpPip = Number(body.tpPip); const slPip = Number(body.slPip)
 
     // دادهٔ زندهٔ M5 طلا (هم‌راستا با decideGoldM5)
     const { candles } = await fetchGold('5m', '5d')
@@ -355,7 +357,9 @@ app.post('/api/scalp/manage', async (c) => {
     const close = merged.candles.map(k => k.close)
     const livePrice = spot?.price ?? close[close.length - 1]
 
-    const res = manageGoldM5Scalp({ action, refPrice, livePrice, close })
+    const res = manageGoldM5Scalp({ action, refPrice, livePrice, close,
+      tpPip: isFinite(tpPip) && tpPip > 0 ? tpPip : undefined,
+      slPip: isFinite(slPip) && slPip > 0 ? slPip : undefined })
 
     return c.json({
       ok: true,
