@@ -297,7 +297,8 @@ export function decide(a: AnalysisResult, close: number[],
                        low?: number[],
                        utcHour?: number,
                        utcDay?: number,
-                       times?: number[]): RouterDecision {
+                       times?: number[],
+                       open?: number[]): RouterDecision {
   const reg = computeRegime(a, close)
   const p = a.probability
   const atr = a.atr || 1
@@ -873,7 +874,12 @@ export function decide(a: AnalysisResult, close: number[],
     }
 
     // ---- لایهٔ ۲: Signs of Strength (S171) — سنجهٔ عددیِ قدرتِ روند ----
-    const sos = computeSignsOfStrength(high, low, close)
+    // computeSignsOfStrength امضای (open, high, low, close) دارد. اگر open در دسترس
+    // نباشد از تقریبِ open[i]≈close[i-1] استفاده می‌کنیم (رفعِ باگِ undefined.length).
+    const openArr = (Array.isArray(open) && open.length === close.length)
+      ? open
+      : close.map((_, i) => (i > 0 ? close[i - 1] : close[0]))
+    const sos = computeSignsOfStrength(openArr, high, low, close)
     const sosInd: RouterDecision['indicators'] = [
       { name: 'نمرهٔ قدرتِ روندِ Brooks (Signs of Strength)', value: `${sos.score}/۴`,
         status: sos.state === 'ENTRY' ? 'ok' : (sos.score >= 1 ? 'neutral' : 'warn') },
