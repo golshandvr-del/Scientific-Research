@@ -167,6 +167,7 @@ export function decideGoldM30(a: AnalysisResult, close: number[],
     return {
       state: 'APPROACHING', regime: reg,
       headline: 'نزدیکِ سیگنالِ خرید — منتظرِ پولبکِ عمیق‌تر (M30)',
+      sourceLayer: { code: 'M30-Swing', name: 'نوسان‌گیریِ پولبکِ روندِ M30 (EMA20/100 + RSI)', kind: 'ma-confluence' },
       reason: `روندِ میان‌مدت صعودی است، اما قیمت هنوز به‌اندازهٔ کافی پولبک نزده ` +
         `(RSI(14)=${rsi.toFixed(1)}). اگر RSI به زیرِ ${RSI_ENTRY} برسد، سیگنالِ خرید صادر می‌شود. ` +
         `فعلاً منتظر بمانید و معامله باز نکنید.` + (capWarn ? `\n${capWarn}` : ''),
