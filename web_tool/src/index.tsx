@@ -533,7 +533,8 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   } else if (a.id === 'EURUSD') {
     const lastT = useCandles[useCandles.length - 1].time
     const nowUtcHour = new Date(lastT * 1000).getUTCHours()
-    dec = decideEurusd(result, useCandles.map(k => k.close), nowUtcHour, capital, riskPct, lastT)
+    dec = decideEurusd(result, useCandles.map(k => k.close), nowUtcHour, capital, riskPct, lastT,
+      useCandles.map(k => k.high), useCandles.map(k => k.low), useCandles.map(k => k.open))
   } else {
     dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
   }

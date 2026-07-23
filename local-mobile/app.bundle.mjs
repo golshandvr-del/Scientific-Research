@@ -5267,6 +5267,14 @@ var PULLBACK_LOOKBACK = 4;
 var SL_PIP = 12;
 var TP_PIP = 12;
 var PIP4 = 1e-4;
+var S213_EMA_FAST = 10;
+var S213_EMA_SLOW = 30;
+var S213_SPK = 3;
+var S213_GAP = 10;
+var S213_SL_PIP = 150;
+var S213_TP_PIP = 225;
+var S213_TREND_BODY_FRAC = 0.5;
+var S213_MAX_HOLD_BARS = 48;
 var APPROACH_HOUR_UTC = 23;
 function toIranHM2(utcHour) {
   const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
@@ -5290,7 +5298,83 @@ function isPullback(close, lookback = PULLBACK_LOOKBACK) {
   const delta = close[n - 1] - close[n - 1 - lookback];
   return { met: delta < 0, delta };
 }
-function decideEurusd(a, close, nowUtcHour, capital = DEFAULT_CAPITAL, riskPct = DEFAULT_RISK_PCT, nowUtcTimestamp) {
+function detectS213Short(open, high, low, close) {
+  const n = close.length;
+  const none = {
+    phase: "none",
+    spikeBars: 0,
+    firstIdx: -1,
+    secondLow: NaN,
+    firstLow: NaN,
+    goodFillOk: false,
+    emaFast: NaN,
+    emaSlow: NaN
+  };
+  const need = S213_EMA_SLOW + S213_SPK + 2 * S213_GAP + 4;
+  if (n < need) return none;
+  const ef = ema(close, S213_EMA_FAST);
+  const es = ema(close, S213_EMA_SLOW);
+  const isBull = (i) => {
+    const rng = Math.max(high[i] - low[i], 1e-9);
+    const body = close[i] - open[i];
+    return body > 0 && Math.abs(body) >= S213_TREND_BODY_FRAC * rng;
+  };
+  const last = n - 1;
+  const isBearAttempt = (i) => i >= 1 && close[i] < open[i] && low[i] < low[i - 1];
+  if (isBearAttempt(last)) {
+    for (let first = last - 1; first >= last - S213_GAP && first >= 1; first--) {
+      if (!isBearAttempt(first)) continue;
+      let rallied = false;
+      for (let k = first + 1; k <= last; k++) {
+        if (high[k] > high[first]) {
+          rallied = true;
+          break;
+        }
+      }
+      if (!rallied) continue;
+      const spikeEnd = first - 1;
+      let spikeBars = 0;
+      for (let k = spikeEnd; k > spikeEnd - S213_SPK && k >= 0; k--) {
+        if (isBull(k)) spikeBars++;
+      }
+      if (spikeBars < S213_SPK) continue;
+      if (!(ef[spikeEnd] > es[spikeEnd])) continue;
+      const goodFillOk = low[last] <= low[first];
+      if (!goodFillOk) continue;
+      return {
+        phase: "entry",
+        spikeBars,
+        firstIdx: first - last,
+        secondLow: low[last],
+        firstLow: low[first],
+        goodFillOk: true,
+        emaFast: ef[last],
+        emaSlow: es[last]
+      };
+    }
+  }
+  if (isBearAttempt(last)) {
+    const spikeEnd = last - 1;
+    let spikeBars = 0;
+    for (let k = spikeEnd; k > spikeEnd - S213_SPK && k >= 0; k--) {
+      if (isBull(k)) spikeBars++;
+    }
+    if (spikeBars >= S213_SPK && ef[spikeEnd] > es[spikeEnd]) {
+      return {
+        phase: "approaching",
+        spikeBars,
+        firstIdx: 0,
+        secondLow: NaN,
+        firstLow: low[last],
+        goodFillOk: false,
+        emaFast: ef[last],
+        emaSlow: es[last]
+      };
+    }
+  }
+  return none;
+}
+function decideEurusd(a, close, nowUtcHour, capital = DEFAULT_CAPITAL, riskPct = DEFAULT_RISK_PCT, nowUtcTimestamp, high, low, open) {
   const spec = assetSpec("EURUSD");
   const price = a.price;
   const pb = isPullback(close);
@@ -5486,11 +5570,107 @@ function decideEurusd(a, close, nowUtcHour, capital = DEFAULT_CAPITAL, riskPct =
       }
     };
   }
+  if (high && low && open && high.length === close.length && low.length === close.length) {
+    const s213 = detectS213Short(open, high, low, close);
+    if (s213.phase !== "none") {
+      const emaGapPip = (s213.emaFast - s213.emaSlow) / PIP4;
+      const s213Indicators = [
+        {
+          name: "\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0627\u062E\u06CC\u0631",
+          value: `${s213.spikeBars}/${S213_SPK} \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0646\u062F`,
+          status: s213.spikeBars >= S213_SPK ? "ok" : "warn"
+        },
+        {
+          name: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA10>EMA30)",
+          value: `${emaGapPip >= 0 ? "+" : ""}${emaGapPip.toFixed(1)} pip`,
+          status: emaGapPip > 0 ? "ok" : "warn"
+        },
+        {
+          name: "\u062A\u0644\u0627\u0634\u0650 \u0628\u0631\u06AF\u0634\u062A",
+          value: s213.phase === "entry" ? "\u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645 \u2713" : "\u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644 (\u0631\u062F \u0645\u06CC\u200C\u0634\u0648\u062F)",
+          status: s213.phase === "entry" ? "ok" : "warn"
+        },
+        {
+          name: "\u0641\u06CC\u0644\u062A\u0631\u0650 good-fill",
+          value: s213.phase === "entry" ? s213.goodFillOk ? "\u0642\u06CC\u0645\u062A \u0645\u0633\u0627\u0648\u06CC/\u0628\u062F\u062A\u0631 \u2713" : "\u0642\u06CC\u0645\u062A\u0650 \u0628\u0647\u062A\u0631 \u2192 \u062A\u0644\u0647" : "\u2014",
+          status: s213.phase === "entry" ? s213.goodFillOk ? "ok" : "bad" : "neutral"
+        },
+        { name: "RSI(14)", value: a.rsi14.toFixed(1), status: "neutral" }
+      ];
+      if (s213.phase === "entry") {
+        const entry = price;
+        const sl213 = entry + S213_SL_PIP * PIP4;
+        const tp213 = entry - S213_TP_PIP * PIP4;
+        const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, S213_SL_PIP * PIP4, 1, spec);
+        const rd = Math.round(riskDollars * 100) / 100;
+        return {
+          state: "ENTRY",
+          regime: { ...reg, bucket: "brooks-second-entry" },
+          headline: "\u0648\u0631\u0648\u062F \u0641\u0631\u0648\u0634 (SHORT) \u2014 \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A \u067E\u0633 \u0627\u0632 \u0627\u0633\u067E\u0627\u06CC\u06A9 \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F",
+          sourceLayer: {
+            code: "S213",
+            name: "\u0648\u0631\u0648\u062F\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A (Al Brooks \u0641\u0635\u0644\u0650 \u06F1\u06F0)",
+            kind: "price-action",
+            filters: [
+              `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 ${S213_SPK}+ \u06A9\u0646\u062F\u0644\u06CC (momentum-guard)`,
+              "\u0631\u062F\u0650 \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644\u0650 \u0628\u0631\u06AF\u0634\u062A\u060C \u0648\u0631\u0648\u062F \u0631\u0648\u06CC \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645",
+              "\u0641\u06CC\u0644\u062A\u0631\u0650 good-fill (\u0642\u06CC\u0645\u062A\u0650 \u0645\u0633\u0627\u0648\u06CC/\u0628\u062F\u062A\u0631)"
+            ],
+            manage: {
+              style: "fixed-tp-sl",
+              maxHoldBars: S213_MAX_HOLD_BARS,
+              note: `\u0644\u0628\u0647\u0654 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u0628\u0631\u06AF\u0634\u062A: TP ${S213_TP_PIP}pip / SL ${S213_SL_PIP}pip \u062B\u0627\u0628\u062A (\u0646\u0633\u0628\u062A \u2248 1:1.5). \u0628\u06A9\u200C\u062A\u0633\u062A \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F \u0641\u06CC\u0644\u062A\u0631\u0650 good-fill \u062D\u06CC\u0627\u062A\u06CC \u0627\u0633\u062A\u061B \u0627\u06AF\u0631 \u062A\u0627 ${S213_MAX_HOLD_BARS} \u06A9\u0646\u062F\u0644 \u0628\u0647 \u0647\u062F\u0641 \u0646\u0631\u0633\u06CC\u062F \u0637\u0628\u0642 \u067E\u0644\u0646 \u0628\u0628\u0646\u062F.`
+            }
+          },
+          reason: `\u06CC\u06A9 \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC (${s213.spikeBars} \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0646\u062F \u067E\u06CC\u0627\u067E\u06CC) \u0631\u062E \u062F\u0627\u062F\u061B \u062A\u0644\u0627\u0634\u0650 *\u0627\u0648\u0644\u0650* \u0628\u0631\u06AF\u0634\u062A \u0631\u0627 \u0637\u0628\u0642\u0650 \u0642\u0627\u0639\u062F\u0647\u0654 momentum-guard\u0650 \u0628\u0631\u0648\u06A9\u0633 \u0631\u062F \u06A9\u0631\u062F\u06CC\u0645 \u0648 \u0627\u06A9\u0646\u0648\u0646 *\u062F\u0648\u0645\u06CC\u0646* \u062A\u0644\u0627\u0634\u0650 \u0628\u0631\u06AF\u0634\u062A \u0634\u06A9\u0644 \u06AF\u0631\u0641\u062A. \u0641\u06CC\u0644\u062A\u0631\u0650 \xABgood fill = bad trade\xBB \u0647\u0645 \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A (\u062A\u0631\u06CC\u06AF\u0631 \u0645\u0633\u0627\u0648\u06CC/\u0628\u062F\u062A\u0631 \u0627\u0632 \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644). S213 \u0631\u0648\u06CC EURUSD M15 \u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 +$418 \u0628\u0627 WR=59.6\u066A\u060C PF=2.13 \u0648 \u0647\u0631 \u06F4 walk-forward \u0645\u062B\u0628\u062A \u062F\u0627\u062F (\u0647\u0645\u067E\u0648\u0634\u0627\u0646\u06CC\u0650 \u062A\u0646\u0647\u0627 \u06F6.\u06F3\u066A \u0628\u0627 \u067E\u0631\u062A\u0641\u0648\u06CC \u21D2 \u0644\u0628\u0647\u0654 \u0646\u0648).`,
+          direction: "SHORT",
+          entry,
+          tp: tp213,
+          sl: sl213,
+          rr: `TP ${S213_TP_PIP} pip / SL ${S213_SL_PIP} pip (\u2248 1:${(S213_TP_PIP / S213_SL_PIP).toFixed(2)})`,
+          probability: 59.6,
+          sizing: {
+            lotMultiplier: 1,
+            label: "\u062D\u062C\u0645 \u067E\u0627\u06CC\u0647\u0654 S213 (\u06F1\xD7)",
+            note: `\u0631\u06CC\u0633\u06A9 \u062B\u0627\u0628\u062A\u061B \u062E\u0631\u0648\u062C \u062D\u062F\u0627\u06A9\u062B\u0631 \u067E\u0633 \u0627\u0632 ${S213_MAX_HOLD_BARS} \u06A9\u0646\u062F\u0644 M15.`,
+            lots: lots ?? void 0,
+            riskDollars: rd,
+            capital,
+            riskPct,
+            capitalNote: `\u0633\u0631\u0645\u0627\u06CC\u0647 ${capital.toLocaleString("en-US")}$\u060C \u0631\u06CC\u0633\u06A9 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}\u066A\u060C \u062D\u062C\u0645 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots != null ? lots.toFixed(2) : "\u2014"} lot\u061B \u0632\u06CC\u0627\u0646 \u0647\u062F\u0641 \u062F\u0631 SL \u062D\u062F\u0648\u062F ${rd.toLocaleString("en-US")}$.`
+          },
+          tpPlan: { multiplier: S213_TP_PIP, note: `TP \u062B\u0627\u0628\u062A ${S213_TP_PIP} pip\u061B \u0646\u0633\u0628\u062A\u0650 \u067E\u0627\u06CC\u062F\u0627\u0631\u0650 \u06F1:\u06F1.\u06F5 (grid \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F).` },
+          slPlan: { multiplier: S213_SL_PIP, note: `SL \u062B\u0627\u0628\u062A ${S213_SL_PIP} pip \u0622\u0646\u200C\u0633\u0648\u06CC \u0627\u06A9\u0633\u062A\u0631\u0645\u0650 \u0627\u0644\u06AF\u0648\u061B \u0628\u062F\u0648\u0646 \u062C\u0627\u0628\u0647\u200C\u062C\u0627\u06CC\u06CC \u0642\u0628\u0644 \u0627\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0645\u062F\u06CC\u0631\u06CC\u062A.` },
+          indicators: s213Indicators
+        };
+      }
+      return {
+        state: "APPROACHING",
+        regime: { ...reg, bucket: "brooks-second-entry" },
+        headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0641\u0631\u0648\u0634 \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A",
+        sourceLayer: { code: "S213", name: "\u0648\u0631\u0648\u062F\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A (Al Brooks \u0641\u0635\u0644\u0650 \u06F1\u06F0)", kind: "price-action" },
+        reason: `\u06CC\u06A9 \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC (${s213.spikeBars} \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0646\u062F) \u062F\u06CC\u062F\u0647 \u0634\u062F \u0648 \u0627\u06A9\u0646\u0648\u0646 *\u0627\u0648\u0644\u06CC\u0646* \u062A\u0644\u0627\u0634\u0650 \u0628\u0631\u06AF\u0634\u062A \u062F\u0631 \u062D\u0627\u0644\u0650 \u0634\u06A9\u0644\u200C\u06AF\u06CC\u0631\u06CC \u0627\u0633\u062A. \u0637\u0628\u0642\u0650 \u0642\u0627\u0639\u062F\u0647\u0654 momentum-guard\u0650 \u0628\u0631\u0648\u06A9\u0633\u060C \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644 \u0631\u0627 \u0646\u0645\u06CC\u200C\u06AF\u06CC\u0631\u06CC\u0645\u061B \u0645\u0646\u062A\u0638\u0631 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645 \u062A\u0627 \u0631\u0648\u0646\u062F \u06CC\u06A9\u06CC-\u062F\u0648 \u06A9\u0646\u062F\u0644 \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F \u0648 *\u062F\u0648\u0645\u06CC\u0646* \u062A\u0644\u0627\u0634\u0650 \u0628\u0631\u06AF\u0634\u062A (\u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 good-fill) \u062A\u0623\u06CC\u06CC\u062F \u0634\u0648\u062F.`,
+        confirmations: [
+          {
+            label: "\u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A \u0634\u06A9\u0644 \u0628\u06AF\u06CC\u0631\u062F (bear-close \u06A9\u0647 low \u0642\u0628\u0644 \u0631\u0627 \u0628\u0634\u06A9\u0646\u062F)",
+            met: false,
+            detail: "\u0627\u06A9\u0646\u0648\u0646 \u0641\u0642\u0637 \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644 \u062F\u06CC\u062F\u0647 \u0634\u062F\u0647\u061B \u0648\u0631\u0648\u062F \u062A\u0646\u0647\u0627 \u0631\u0648\u06CC \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645 \u0645\u062C\u0627\u0632 \u0627\u0633\u062A."
+          },
+          {
+            label: "\u0641\u06CC\u0644\u062A\u0631\u0650 good-fill: \u062A\u0631\u06CC\u06AF\u0631\u0650 \u062F\u0648\u0645 \u0645\u0633\u0627\u0648\u06CC/\u0628\u062F\u062A\u0631 \u0627\u0632 \u0627\u0648\u0644",
+            met: false,
+            detail: "\u0627\u06AF\u0631 \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645 \u0642\u06CC\u0645\u062A\u0650 \u0628\u0647\u062A\u0631\u06CC \u0628\u062F\u0647\u062F\u060C \u062A\u0644\u0647 \u0627\u0633\u062A \u0648 \u0631\u062F \u0645\u06CC\u200C\u0634\u0648\u062F."
+          }
+        ],
+        indicators: s213Indicators
+      };
+    }
+  }
   return {
     state: "NEUTRAL",
     regime: reg,
     headline: "\u062E\u0646\u062B\u06CC \u2014 \u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0633\u0634\u0646",
-    reason: `\u0633\u0627\u0639\u062A\u0650 \u062C\u0627\u0631\u06CC ${nowUtcHour}:00 UTC \u0627\u0633\u062A \u0648 \u0646\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 S73 (\u06A9\u0646\u062F\u0644\u0650 ${ENTRY_HOUR_UTC}:00 UTC) \u0648 \u0646\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 S164 (\u0633\u0648\u0645\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u0645\u0627\u0646\u062F\u0647 \u0628\u0647 \u067E\u0627\u06CC\u0627\u0646 \u0645\u0627\u0647\u060C ${S164_ENTRY_HOUR_UTC}:00 UTC) \u0641\u0639\u0627\u0644 \u0646\u06CC\u0633\u062A. \u062E\u0627\u0631\u062C \u0627\u0632 \u0627\u06CC\u0646 \u0645\u062D\u0644\u200C\u0647\u0627\u06CC \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647 EURUSD \u0639\u0645\u062F\u062A\u0627\u064B random-walk \u0627\u0633\u062A\u061B \u067E\u0633 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645. (\u0627\u06CC\u0646 \u062F\u0642\u06CC\u0642\u0627\u064B \u0645\u0646\u0637\u0642\u0650 \xAB\u0633\u0648\u062F \u06F0 \u0628\u0647\u062A\u0631 \u0627\u0632 \u0645\u0646\u0641\u06CC\xBB \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 #\u06F1 \u0627\u0633\u062A \u2014 \u0647\u0645\u0627\u0646 \u062F\u0631\u0633\u06CC \u06A9\u0647 S71/S72 \u062F\u0627\u062F.)`,
+    reason: `\u0633\u0627\u0639\u062A\u0650 \u062C\u0627\u0631\u06CC ${nowUtcHour}:00 UTC \u0627\u0633\u062A \u0648 \u0647\u06CC\u0686\u200C\u06CC\u06A9 \u0627\u0632 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627\u06CC \u0641\u0639\u0627\u0644 \u0634\u0631\u0637\u0650 \u0648\u0631\u0648\u062F \u0646\u062F\u0627\u0631\u0646\u062F: \u0646\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 S73 (\u06A9\u0646\u062F\u0644\u0650 ${ENTRY_HOUR_UTC}:00 UTC)\u060C \u0646\u0647 S164 (\u0633\u0648\u0645\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC\u0650 \u0645\u0627\u0646\u062F\u0647\u0654 \u0645\u0627\u0647\u060C ${S164_ENTRY_HOUR_UTC}:00 UTC)\u060C \u0648 \u0646\u0647 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 S213 (\u0648\u0631\u0648\u062F\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A \u067E\u0633 \u0627\u0632 \u0627\u0633\u067E\u0627\u06CC\u06A9). \u062E\u0627\u0631\u062C \u0627\u0632 \u0627\u06CC\u0646 \u0645\u062D\u0644\u200C\u0647\u0627\u06CC \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647 EURUSD \u0639\u0645\u062F\u062A\u0627\u064B random-walk \u0627\u0633\u062A\u061B \u067E\u0633 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645. (\u0627\u06CC\u0646 \u062F\u0642\u06CC\u0642\u0627\u064B \u0645\u0646\u0637\u0642\u0650 \xAB\u0633\u0648\u062F \u06F0 \u0628\u0647\u062A\u0631 \u0627\u0632 \u0645\u0646\u0641\u06CC\xBB \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 #\u06F1 \u0627\u0633\u062A \u2014 \u0647\u0645\u0627\u0646 \u062F\u0631\u0633\u06CC \u06A9\u0647 S71/S72 \u062F\u0627\u062F.)`,
     indicators,
     timeGate: {
       layerCode: "S73",
@@ -6257,7 +6437,17 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
   } else if (a.id === "EURUSD") {
     const lastT = useCandles[useCandles.length - 1].time;
     const nowUtcHour = new Date(lastT * 1e3).getUTCHours();
-    dec = decideEurusd(result, useCandles.map((k) => k.close), nowUtcHour, capital, riskPct, lastT);
+    dec = decideEurusd(
+      result,
+      useCandles.map((k) => k.close),
+      nowUtcHour,
+      capital,
+      riskPct,
+      lastT,
+      useCandles.map((k) => k.high),
+      useCandles.map((k) => k.low),
+      useCandles.map((k) => k.open)
+    );
   } else {
     dec = decide(result, useCandles.map((k) => k.close), capital, riskPct, assetSpec(a.id));
   }
