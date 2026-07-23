@@ -76,71 +76,73 @@ def second_entry_signals(df, side, ema_fast, ema_slow, spk, gap, good_fill=True)
 
     if side == 'short':
         bull_bar = (body > 0) & big
-        # اسپایکِ صعودی: ≥spk از spk+1 کندلِ اخیر bull-trend-bar
-        for i in range(spk + 4, n):
-            # زمینه: روندِ صعودی (ema_fast>ema_slow) + اسپایکِ اخیر
-            if not (ef[i - 1] > es[i - 1]):
+        # اسکنِ رو به جلو: در هر کندلِ i که «اسپایکِ صعودی» تازه تمام شده،
+        # به‌دنبالِ تلاشِ برگشتِ اول سپس دوم در پنجرهٔ gap کندلِ بعدی می‌گردیم.
+        i = spk + 1
+        while i < n - gap - 2:
+            # اسپایک = spk کندلِ اخیرِ bull-trend-bar پیاپی (تا i، بسته‌شده) + روندِ صعودی
+            win = bull_bar[i - spk + 1:i + 1]
+            if win.sum() < spk or not (ef[i] > es[i]):
+                i += 1
                 continue
-            win = bull_bar[i - spk - 1:i - 1]      # کندل‌های بسته‌شده تا i-1
-            if win.sum() < spk:
-                continue
-            # جستجوی «تلاشِ برگشتِ اول» سپس «تلاشِ دوم» در gap کندلِ بعد از اسپایک
-            # تلاشِ برگشت = bear-close که low کندلِ قبل را می‌شکند
+            # از کندلِ i+1 به بعد، دنبالِ تلاشِ برگشتِ اول (bear-close که low قبل را شکسته)
             first = -1
-            for j in range(i - gap - 1, i):
-                if j < 1:
-                    continue
+            for j in range(i + 1, min(i + 1 + gap, n)):
                 if c[j] < o[j] and l[j] < l[j - 1]:
                     first = j
                     break
             if first < 0:
+                i += 1
                 continue
-            # دومین تلاشِ برگشت پس از first (و پس از ≥۱ کندلِ ادامهٔ روند)
+            # پس از first باید یک رالی (higher-high نسبت به first) و سپس تلاشِ دوم بیاید
             second = -1
-            for j in range(first + 1, i):
-                # باید بینِ اول و دوم دستِ‌کم یک رالی/بالاتررفتن رخ داده باشد
+            for j in range(first + 1, min(first + 1 + gap, n)):
                 if h[j] > h[first] and c[j] < o[j] and l[j] < l[j - 1]:
                     second = j
                     break
-            if second < 0 or (i - 1) != second:
-                # سیگنال فقط در کندلِ تشکیلِ تلاشِ دوم صادر می‌شود (i-1)
+            if second < 0:
+                i = first + 1
                 continue
-            # فیلترِ good-fill: ورودِ دوم باید same-or-worse (قیمتِ SHORT ≤ قیمتِ اول)
+            # فیلترِ good-fill: تریگرِ SHORT (شکستِ low[second]) نباید بهتر (بالاتر) از اول باشد
             if good_fill and (l[second] > l[first]):
-                # ورودِ دوم قیمتِ بهترِ (بالاتر) داده ⇒ تله ⇒ رد
+                i = second + 1
                 continue
-            sig[i] = True
-            trig_price[i] = l[second]
-    else:  # long
+            # سیگنال روی کندلِ second صادر (ورود در open کندلِ بعد پس از shift)
+            sig[second] = True
+            trig_price[second] = l[second]
+            i = second + 1
+    else:  # long — روندِ نزولیِ قوی، LONG روی تلاشِ دومِ برگشتِ صعودی
         bear_bar = (body < 0) & big
-        for i in range(spk + 4, n):
-            if not (ef[i - 1] < es[i - 1]):
-                continue
-            win = bear_bar[i - spk - 1:i - 1]
-            if win.sum() < spk:
+        i = spk + 1
+        while i < n - gap - 2:
+            win = bear_bar[i - spk + 1:i + 1]
+            if win.sum() < spk or not (ef[i] < es[i]):
+                i += 1
                 continue
             first = -1
-            for j in range(i - gap - 1, i):
-                if j < 1:
-                    continue
+            for j in range(i + 1, min(i + 1 + gap, n)):
                 if c[j] > o[j] and h[j] > h[j - 1]:
                     first = j
                     break
             if first < 0:
+                i += 1
                 continue
             second = -1
-            for j in range(first + 1, i):
+            for j in range(first + 1, min(first + 1 + gap, n)):
                 if l[j] < l[first] and c[j] > o[j] and h[j] > h[j - 1]:
                     second = j
                     break
-            if second < 0 or (i - 1) != second:
+            if second < 0:
+                i = first + 1
                 continue
             if good_fill and (h[second] < h[first]):
+                i = second + 1
                 continue
-            sig[i] = True
-            trig_price[i] = h[second]
+            sig[second] = True
+            trig_price[second] = h[second]
+            i = second + 1
 
-    # shift(1) ⇒ همه‌چیز تا i-1 بسته‌شده؛ ورود در open کندلِ بعد
+    # shift(1) ⇒ همه‌چیز تا کندلِ سیگنال بسته‌شده؛ ورود در open کندلِ بعد
     return pd.Series(sig).shift(1).fillna(False).to_numpy()
 
 
