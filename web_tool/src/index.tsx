@@ -501,7 +501,7 @@ app.get('/api/decision/:asset', async (c) => {
     const out = await decideAsset(a, capital, riskPct)
     return c.json({ ok: true, lastUpdate: new Date().toISOString(), ...out })
   } catch (e: any) {
-    return c.json({ ok: false, asset: a.id, name: a.name, error: e.message }, 502)
+    return c.json({ ok: false, asset: a.id, name: a.name, error: e.message, _stack: (e.stack || '').split('\n').slice(0, 6) }, 502)
   }
 })
 
