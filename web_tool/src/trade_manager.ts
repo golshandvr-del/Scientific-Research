@@ -315,7 +315,10 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   // ==========================================================================
   const isGoldPrice = price >= 100
   // SLِ رکوردِ s118 = ۷۰pip = ۷$؛ بازهٔ تشخیص را حولِ آن می‌گیریم (۵$..۹$).
-  const isMaShort = !isLong && isGoldPrice && riskDist >= 5.0 && riskDist <= 9.0
+  // نکته: این تشخیصِ heuristic فقط برای معاملاتِ SHORT-MAیی است که *بدونِ* managePlan
+  // ثبت شده‌اند (سازگاریِ عقب‌رو). اگر معامله managePlan داشت، بلوکِ لایه-محورِ بالا آن را
+  // اداره کرده و اینجا خاموش می‌ماند تا توصیه‌ها دوبار صادر نشوند.
+  const isMaShort = !planHandled && !isLong && isGoldPrice && riskDist >= 5.0 && riskDist <= 9.0
   if (isMaShort && !reachedTp && !reachedSl) {
     const profitDollars = rawMove            // برای short: entry - price
     const BE_TRIG = 0.6                       // ۶pip سود → بریک‌ایون
