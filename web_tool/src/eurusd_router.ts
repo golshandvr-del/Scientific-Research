@@ -209,9 +209,6 @@ export function decideEurusd(
   capital: number = DEFAULT_CAPITAL,
   riskPct: number = DEFAULT_RISK_PCT,
   nowUtcTimestamp?: number,
-  high?: number[],
-  low?: number[],
-  open?: number[],
 ): RouterDecision {
   const spec = assetSpec('EURUSD')
   const price = a.price
@@ -389,98 +386,13 @@ export function decideEurusd(
     }
   }
 
-  // ========================================================================
-  // S213 — لایهٔ ساختاریِ Second-Entry SHORT (Al Brooks فصلِ ۱۰).
-  // مستقل از زمان است؛ فقط وقتی بررسی می‌شود که پنجره‌های زمان-محورِ S73/S164
-  // فعال نباشند (در این نقطهٔ کد تضمین شده). با پرتفوی همپوشانیِ ۶.۳٪ دارد ⇒ لبهٔ نو.
-  // ========================================================================
-  if (high && low && open && high.length === close.length && low.length === close.length) {
-    const s213 = detectS213Short(open, high, low, close)
-    if (s213.phase !== 'none') {
-      const emaGapPip = (s213.emaFast - s213.emaSlow) / PIP
-      const s213Indicators: RouterDecision['indicators'] = [
-        { name: 'اسپایکِ صعودیِ اخیر', value: `${s213.spikeBars}/${S213_SPK} کندلِ روند`,
-          status: s213.spikeBars >= S213_SPK ? 'ok' : 'warn' },
-        { name: 'روندِ صعودی (EMA10>EMA30)', value: `${emaGapPip >= 0 ? '+' : ''}${emaGapPip.toFixed(1)} pip`,
-          status: emaGapPip > 0 ? 'ok' : 'warn' },
-        { name: 'تلاشِ برگشت', value: s213.phase === 'entry' ? 'تلاشِ دوم ✓' : 'تلاشِ اول (رد می‌شود)',
-          status: s213.phase === 'entry' ? 'ok' : 'warn' },
-        { name: 'فیلترِ good-fill', value: s213.phase === 'entry' ? (s213.goodFillOk ? 'قیمت مساوی/بدتر ✓' : 'قیمتِ بهتر → تله') : '—',
-          status: s213.phase === 'entry' ? (s213.goodFillOk ? 'ok' : 'bad') : 'neutral' },
-        { name: 'RSI(14)', value: a.rsi14.toFixed(1), status: 'neutral' },
-      ]
-
-      if (s213.phase === 'entry') {
-        const entry = price
-        const sl213 = entry + S213_SL_PIP * PIP
-        const tp213 = entry - S213_TP_PIP * PIP
-        const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, S213_SL_PIP * PIP, 1.0, spec)
-        const rd = Math.round(riskDollars * 100) / 100
-        return {
-          state: 'ENTRY', regime: { ...reg, bucket: 'brooks-second-entry' },
-          headline: 'ورود فروش (SHORT) — تلاشِ دومِ برگشت پس از اسپایک تأیید شد',
-          sourceLayer: {
-            code: 'S213', name: 'ورودِ دومِ برگشت (Al Brooks فصلِ ۱۰)', kind: 'price-action',
-            filters: [
-              `اسپایکِ صعودیِ ${S213_SPK}+ کندلی (momentum-guard)`,
-              'ردِ تلاشِ اولِ برگشت، ورود روی تلاشِ دوم',
-              'فیلترِ good-fill (قیمتِ مساوی/بدتر)',
-            ],
-            manage: {
-              style: 'fixed-tp-sl', maxHoldBars: S213_MAX_HOLD_BARS,
-              note: `لبهٔ ساختاریِ برگشت: TP ${S213_TP_PIP}pip / SL ${S213_SL_PIP}pip ثابت (نسبت ≈ 1:1.5). ` +
-                `بک‌تست تأیید کرد فیلترِ good-fill حیاتی است؛ اگر تا ${S213_MAX_HOLD_BARS} کندل به هدف نرسید طبق پلن ببند.`,
-            },
-          },
-          reason:
-            `یک اسپایکِ صعودیِ قوی (${s213.spikeBars} کندلِ روند پیاپی) رخ داد؛ تلاشِ *اولِ* برگشت را ` +
-            `طبقِ قاعدهٔ momentum-guardِ بروکس رد کردیم و اکنون *دومین* تلاشِ برگشت شکل گرفت. ` +
-            `فیلترِ «good fill = bad trade» هم برقرار است (تریگر مساوی/بدتر از تلاشِ اول). ` +
-            `S213 روی EURUSD M15 سهمِ مستقلِ +$418 با WR=59.6٪، PF=2.13 و هر ۴ walk-forward مثبت داد ` +
-            `(همپوشانیِ تنها ۶.۳٪ با پرتفوی ⇒ لبهٔ نو).`,
-          direction: 'SHORT', entry, tp: tp213, sl: sl213,
-          rr: `TP ${S213_TP_PIP} pip / SL ${S213_SL_PIP} pip (≈ 1:${(S213_TP_PIP / S213_SL_PIP).toFixed(2)})`,
-          probability: 59.6,
-          sizing: {
-            lotMultiplier: 1.0, label: 'حجم پایهٔ S213 (۱×)',
-            note: `ریسک ثابت؛ خروج حداکثر پس از ${S213_MAX_HOLD_BARS} کندل M15.`,
-            lots: lots ?? undefined, riskDollars: rd, capital, riskPct,
-            capitalNote: `سرمایه ${capital.toLocaleString('en-US')}$، ریسک مؤثر ${effRiskPct.toFixed(2)}٪، حجم پیشنهادی ${lots != null ? lots.toFixed(2) : '—'} lot؛ زیان هدف در SL حدود ${rd.toLocaleString('en-US')}$.`,
-          },
-          tpPlan: { multiplier: S213_TP_PIP, note: `TP ثابت ${S213_TP_PIP} pip؛ نسبتِ پایدارِ ۱:۱.۵ (grid تأیید کرد).` },
-          slPlan: { multiplier: S213_SL_PIP, note: `SL ثابت ${S213_SL_PIP} pip آن‌سوی اکسترمِ الگو؛ بدون جابه‌جایی قبل از تأیید مدیریت.` },
-          indicators: s213Indicators,
-        }
-      }
-
-      // phase === 'approaching'
-      return {
-        state: 'APPROACHING', regime: { ...reg, bucket: 'brooks-second-entry' },
-        headline: 'نزدیک‌شدن به سیگنالِ فروش — منتظرِ تلاشِ دومِ برگشت',
-        sourceLayer: { code: 'S213', name: 'ورودِ دومِ برگشت (Al Brooks فصلِ ۱۰)', kind: 'price-action' },
-        reason:
-          `یک اسپایکِ صعودیِ قوی (${s213.spikeBars} کندلِ روند) دیده شد و اکنون *اولین* تلاشِ برگشت در حالِ ` +
-          `شکل‌گیری است. طبقِ قاعدهٔ momentum-guardِ بروکس، تلاشِ اول را نمی‌گیریم؛ منتظر می‌مانیم تا روند ` +
-          `یکی-دو کندل ادامه یابد و *دومین* تلاشِ برگشت (با فیلترِ good-fill) تأیید شود.`,
-        confirmations: [
-          { label: 'تلاشِ دومِ برگشت شکل بگیرد (bear-close که low قبل را بشکند)', met: false,
-            detail: 'اکنون فقط تلاشِ اول دیده شده؛ ورود تنها روی تلاشِ دوم مجاز است.' },
-          { label: 'فیلترِ good-fill: تریگرِ دوم مساوی/بدتر از اول', met: false,
-            detail: 'اگر تلاشِ دوم قیمتِ بهتری بدهد، تله است و رد می‌شود.' },
-        ],
-        indicators: s213Indicators,
-      }
-    }
-  }
-
   // --------- حالتِ ۱: خنثی — خارج از پنجرهٔ سشن ---------
   return {
     state: 'NEUTRAL', regime: reg,
     headline: 'خنثی — خارج از پنجرهٔ سشن',
     reason:
-      `ساعتِ جاری ${nowUtcHour}:00 UTC است و هیچ‌یک از لایه‌های فعال شرطِ ورود ندارند: ` +
-      `نه پنجرهٔ S73 (کندلِ ${ENTRY_HOUR_UTC}:00 UTC)، نه S164 (سومین روزِ کاریِ ماندهٔ ماه، ${S164_ENTRY_HOUR_UTC}:00 UTC)، ` +
-      `و نه ساختارِ S213 (ورودِ دومِ برگشت پس از اسپایک). ` +
+      `ساعتِ جاری ${nowUtcHour}:00 UTC است و نه پنجرهٔ S73 (کندلِ ${ENTRY_HOUR_UTC}:00 UTC) و نه ` +
+      `پنجرهٔ S164 (سومین روزِ کاری مانده به پایان ماه، ${S164_ENTRY_HOUR_UTC}:00 UTC) فعال نیست. ` +
       `خارج از این محل‌های آزموده‌شده EURUSD عمدتاً random-walk است؛ پس وارد نمی‌شوم. ` +
       `(این دقیقاً منطقِ «سود ۰ بهتر از منفی» طبقِ قانونِ #۱ است — همان درسی که S71/S72 داد.)`,
     indicators,
@@ -488,5 +400,125 @@ export function decideEurusd(
       layerCode: 'S73', label: 'درایوِ باز شدنِ سشنِ اروپا (EURUSD Session-Open)',
       entryHoursUtc: [ENTRY_HOUR_UTC], windowOpen: false,
     },
+  }
+}
+
+// ============================================================================
+// decideEurusdM15 — کارتِ اختصاصیِ EURUSD روی تایم‌فریمِ M15.
+// ----------------------------------------------------------------------------
+// این کارت مخصوصِ لایهٔ S213 (Second-Entry SHORT، Al Brooks فصلِ ۱۰) است که
+// دقیقاً روی EURUSD **M15** بک‌تست و پذیرفته شد (سهمِ مستقلِ +$418، WR=59.6٪،
+// PF=2.13، هر ۴ walk-forward مثبت، همپوشانیِ Union-All تنها ۶.۳٪).
+// سند: results/S213_BrooksSecondEntry_Eurusd_M15_261793_60.md.
+//
+// چرا کارتِ جدا؟ کارتِ اصلیِ EURUSD روی M5 است (S73/S164)؛ اما S213 یک لبهٔ
+// ساختاریِ price-action روی M15 است. اجرای منطقِ M15 روی دادهٔ M5 نادرست بود،
+// پس این تابع فقط با کندل‌های M15 فراخوانی می‌شود.
+// ماشینِ حالتِ ۴-وضعیتی: NEUTRAL / APPROACHING / ENTRY (+ MANAGE در trade_manager).
+// ============================================================================
+export function decideEurusdM15(
+  a: AnalysisResult,
+  open: number[],
+  high: number[],
+  low: number[],
+  close: number[],
+  capital: number = DEFAULT_CAPITAL,
+  riskPct: number = DEFAULT_RISK_PCT,
+): RouterDecision {
+  const spec = assetSpec('EURUSD')
+  const price = a.price
+  const reg: RegimeInfo = {
+    regime: 'range', efficiencyRatio: 0, trendy: false, adx: a.adx,
+    activeStream: 'none', bucket: 'brooks-second-entry',
+  }
+
+  const s213 = detectS213Short(open, high, low, close)
+  const emaGapPip = (s213.emaFast - s213.emaSlow) / PIP
+  const s213Indicators: RouterDecision['indicators'] = [
+    { name: 'اسپایکِ صعودیِ اخیر', value: `${s213.spikeBars}/${S213_SPK} کندلِ روند`,
+      status: s213.spikeBars >= S213_SPK ? 'ok' : 'warn' },
+    { name: 'روندِ صعودی (EMA10>EMA30)', value: Number.isFinite(emaGapPip) ? `${emaGapPip >= 0 ? '+' : ''}${emaGapPip.toFixed(1)} pip` : '—',
+      status: emaGapPip > 0 ? 'ok' : 'warn' },
+    { name: 'تلاشِ برگشت', value: s213.phase === 'entry' ? 'تلاشِ دوم ✓' : (s213.phase === 'approaching' ? 'تلاشِ اول (رد می‌شود)' : 'بدون ساختار'),
+      status: s213.phase === 'entry' ? 'ok' : (s213.phase === 'approaching' ? 'warn' : 'neutral') },
+    { name: 'فیلترِ good-fill', value: s213.phase === 'entry' ? (s213.goodFillOk ? 'قیمت مساوی/بدتر ✓' : 'قیمتِ بهتر → تله') : '—',
+      status: s213.phase === 'entry' ? (s213.goodFillOk ? 'ok' : 'bad') : 'neutral' },
+    { name: 'RSI(14)', value: a.rsi14.toFixed(1), status: 'neutral' },
+    { name: 'ATR', value: (a.atr / PIP).toFixed(1) + ' pip', status: 'neutral' },
+  ]
+
+  // --------- حالتِ ۳: ورود — تلاشِ دومِ برگشت پس از اسپایک تأیید شد ---------
+  if (s213.phase === 'entry') {
+    const entry = price
+    const sl213 = entry + S213_SL_PIP * PIP
+    const tp213 = entry - S213_TP_PIP * PIP
+    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, S213_SL_PIP * PIP, 1.0, spec)
+    const rd = Math.round(riskDollars * 100) / 100
+    return {
+      state: 'ENTRY', regime: reg,
+      headline: 'ورود فروش (SHORT) — تلاشِ دومِ برگشت پس از اسپایک تأیید شد',
+      sourceLayer: {
+        code: 'S213', name: 'ورودِ دومِ برگشت (Al Brooks فصلِ ۱۰)', kind: 'price-action',
+        filters: [
+          `اسپایکِ صعودیِ ${S213_SPK}+ کندلی (momentum-guard)`,
+          'ردِ تلاشِ اولِ برگشت، ورود روی تلاشِ دوم',
+          'فیلترِ good-fill (قیمتِ مساوی/بدتر)',
+        ],
+        manage: {
+          style: 'fixed-tp-sl', maxHoldBars: S213_MAX_HOLD_BARS,
+          note: `لبهٔ ساختاریِ برگشت: TP ${S213_TP_PIP}pip / SL ${S213_SL_PIP}pip ثابت (نسبت ≈ 1:1.5). ` +
+            `بک‌تست تأیید کرد فیلترِ good-fill حیاتی است؛ اگر تا ${S213_MAX_HOLD_BARS} کندل (M15) به هدف نرسید طبقِ پلن ببند.`,
+        },
+      },
+      reason:
+        `یک اسپایکِ صعودیِ قوی (${s213.spikeBars} کندلِ روندِ پیاپی) رخ داد؛ تلاشِ *اولِ* برگشت را ` +
+        `طبقِ قاعدهٔ momentum-guardِ بروکس رد کردیم و اکنون *دومین* تلاشِ برگشت شکل گرفت. ` +
+        `فیلترِ «good fill = bad trade» هم برقرار است (تریگر مساوی/بدتر از تلاشِ اول). ` +
+        `S213 روی EURUSD M15 سهمِ مستقلِ +$418 با WR=59.6٪، PF=2.13 و هر ۴ walk-forward مثبت داد ` +
+        `(همپوشانیِ تنها ۶.۳٪ با پرتفوی ⇒ لبهٔ نو، نه صرفاً فیلتر).`,
+      direction: 'SHORT', entry, tp: tp213, sl: sl213,
+      rr: `TP ${S213_TP_PIP} pip / SL ${S213_SL_PIP} pip (≈ 1:${(S213_TP_PIP / S213_SL_PIP).toFixed(2)})`,
+      probability: 59.6,
+      sizing: {
+        lotMultiplier: 1.0, label: 'حجم پایهٔ S213 (۱×)',
+        note: `ریسک ثابت؛ خروج حداکثر پس از ${S213_MAX_HOLD_BARS} کندل M15.`,
+        lots: lots ?? undefined, riskDollars: rd, capital, riskPct,
+        capitalNote: `سرمایه ${capital.toLocaleString('en-US')}$، ریسک مؤثر ${effRiskPct.toFixed(2)}٪، حجم پیشنهادی ${lots != null ? lots.toFixed(2) : '—'} lot؛ زیان هدف در SL حدود ${rd.toLocaleString('en-US')}$.`,
+      },
+      tpPlan: { multiplier: S213_TP_PIP, note: `TP ثابت ${S213_TP_PIP} pip؛ نسبتِ پایدارِ ۱:۱.۵ (grid تأیید کرد).` },
+      slPlan: { multiplier: S213_SL_PIP, note: `SL ثابت ${S213_SL_PIP} pip آن‌سوی اکسترمِ الگو؛ بدون جابه‌جایی قبل از تأیید مدیریت.` },
+      indicators: s213Indicators,
+    }
+  }
+
+  // --------- حالتِ ۲: نزدیک‌شدن — اسپایک + تلاشِ اول دیده شد، منتظرِ تلاشِ دوم ---------
+  if (s213.phase === 'approaching') {
+    return {
+      state: 'APPROACHING', regime: reg,
+      headline: 'نزدیک‌شدن به سیگنالِ فروش — منتظرِ تلاشِ دومِ برگشت',
+      sourceLayer: { code: 'S213', name: 'ورودِ دومِ برگشت (Al Brooks فصلِ ۱۰)', kind: 'price-action' },
+      reason:
+        `یک اسپایکِ صعودیِ قوی (${s213.spikeBars} کندلِ روند) دیده شد و اکنون *اولین* تلاشِ برگشت در حالِ ` +
+        `شکل‌گیری است. طبقِ قاعدهٔ momentum-guardِ بروکس، تلاشِ اول را نمی‌گیریم؛ منتظر می‌مانیم تا روند ` +
+        `یکی-دو کندل ادامه یابد و *دومین* تلاشِ برگشت (با فیلترِ good-fill) تأیید شود.`,
+      confirmations: [
+        { label: 'تلاشِ دومِ برگشت شکل بگیرد (bear-close که low کندلِ قبل را بشکند)', met: false,
+          detail: 'اکنون فقط تلاشِ اول دیده شده؛ ورود تنها روی تلاشِ دوم مجاز است.' },
+        { label: 'فیلترِ good-fill: تریگرِ دوم مساوی/بدتر از اول باشد', met: false,
+          detail: 'اگر تلاشِ دوم قیمتِ بهتری بدهد، تله است و رد می‌شود.' },
+      ],
+      indicators: s213Indicators,
+    }
+  }
+
+  // --------- حالتِ ۱: خنثی — هیچ ساختارِ second-entry فعالی نیست ---------
+  return {
+    state: 'NEUTRAL', regime: reg,
+    headline: 'خنثی — بدونِ ساختارِ ورودِ دومِ برگشت',
+    reason:
+      `هیچ ساختارِ S213 (اسپایکِ صعودیِ قوی → ردِ تلاشِ اول → تلاشِ دومِ برگشت) روی EURUSD M15 فعال نیست. ` +
+      `این لایه ساختاری و انتخابی است (به‌طورِ متوسط ~۱۵ سیگنال در سال)؛ خارج از آن وارد نمی‌شوم تا سیگنالِ ` +
+      `ضعیف تولید نشود (منطقِ «سود ۰ بهتر از منفی» طبقِ قانونِ #۱).`,
+    indicators: s213Indicators,
   }
 }

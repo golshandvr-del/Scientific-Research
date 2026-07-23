@@ -7,7 +7,7 @@ import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
 import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuote, type SpotPrice } from './external'
 import { decide, assetSpec } from './router'
 import type { RouterDecision } from './router'
-import { decideEurusd } from './eurusd_router'
+import { decideEurusd, decideEurusdM15 } from './eurusd_router'
 import { decideGoldM5, manageGoldM5Scalp } from './gold_m5_router'
 import { decideGoldM30 } from './gold_m30_router'
 import { decideGoldH1, decideGoldH4, decideGoldD1 } from './gold_htf_router'
@@ -459,7 +459,7 @@ const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decim
   // --- تفکیکِ تایم‌فریمِ EURUSD (درخواستِ کاربر) — هم‌ساختار با طلا ---
   //   این کارت‌ها فعلاً استراتژیِ اثبات‌شدهٔ اختصاصیِ خود را ندارند ⇒ قالبِ خام (placeholder).
   //   داده/قیمتِ زنده را نشان می‌دهند و آماده‌ی افزودنِ منطق در تحقیقِ آینده‌اند (هر کارت مستقل).
-  { id: 'EURUSD-M15', name: 'یورو / دلار — نوسانی (M15)',  symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '15m' },
+  { id: 'EURUSD-M15', name: 'یورو / دلار — نوسانی (M15)',  symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '15m' },
   { id: 'EURUSD-M30', name: 'یورو / دلار — میان‌مدت (M30)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '30m' },
   { id: 'EURUSD-M1',  name: 'یورو / دلار — ریز-اسکالپ (M1)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '1m' },
 ]
@@ -533,8 +533,11 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   } else if (a.id === 'EURUSD') {
     const lastT = useCandles[useCandles.length - 1].time
     const nowUtcHour = new Date(lastT * 1000).getUTCHours()
-    dec = decideEurusd(result, useCandles.map(k => k.close), nowUtcHour, capital, riskPct, lastT,
-      useCandles.map(k => k.high), useCandles.map(k => k.low), useCandles.map(k => k.open))
+    dec = decideEurusd(result, useCandles.map(k => k.close), nowUtcHour, capital, riskPct, lastT)
+  } else if (a.id === 'EURUSD-M15') {
+    // کارتِ M15 مخصوصِ لایهٔ S213 (Second-Entry SHORT، Brooks فصلِ ۱۰) — دادهٔ M15.
+    dec = decideEurusdM15(result, useCandles.map(k => k.open), useCandles.map(k => k.high),
+      useCandles.map(k => k.low), useCandles.map(k => k.close), capital, riskPct)
   } else {
     dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
   }
