@@ -33,6 +33,13 @@ export const MONDAY_TP_PIP = 200
 export const MONDAY_MAX_HOLD = 288   // ۲۴ ساعت روی M5 (۲۸۸×۵ دقیقه)
 const PIP = 0.10                    // اندازهٔ pip طلا بر حسبِ قیمت
 
+// ساعتِ UTC → «HH:MM به وقتِ ایران» (UTC+3:30 ثابت). همهٔ توصیه‌های زمان-محور به وقتِ ایران (User Note).
+function toIran(utcHour: number): string {
+  const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440
+  return `${String(Math.floor(total / 60)).padStart(2, '0')}:${String(total % 60).padStart(2, '0')}`
+}
+const MONDAY_IRAN_RANGE = `${toIran(18)}–${toIran(20)}`  // ۲۱:۳۰–۲۳:۳۰
+
 export type MondayState = 'NEUTRAL' | 'APPROACHING' | 'ENTRY'
 
 export interface MondaySignal {
