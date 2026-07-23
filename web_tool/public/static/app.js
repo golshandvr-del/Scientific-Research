@@ -182,6 +182,35 @@ function renderCard(a) {
     </section>`
 }
 
+// --- برچسبِ منبعِ سیگنال (پاسخ به User Note #4: «بگو سیگنال طبقِ کدام لایه/فیلتر است») ---
+// در حالت‌های APPROACHING و ENTRY نمایش داده می‌شود تا کاربر بداند این تصمیم از
+// کدام لایه/استراتژیِ داخلی و با چه فیلترهایی آمده است.
+const LAYER_KIND_FA = {
+  'time': 'زمان-محور', 'price-action': 'پرایس-اکشن', 'regime-ml': 'رژیم/یادگیریِ ماشین',
+  'ma-confluence': 'هم‌گراییِ میانگین‌ها', 'squeeze': 'فشردگی/شکست', 'session': 'سشن-محور',
+}
+function renderSourceLayer(d) {
+  const s = d.sourceLayer
+  if (!s) return ''
+  const kindFa = LAYER_KIND_FA[s.kind] || s.kind || ''
+  const filters = (s.filters && s.filters.length)
+    ? `<div class="mt-1.5 flex flex-wrap gap-1">${s.filters.map(f =>
+        `<span class="inline-flex items-center gap-1 rounded bg-slate-700/60 px-1.5 py-0.5 text-[10px] text-slate-300">
+          <i class="fas fa-filter text-[9px] text-sky-300"></i>${f}</span>`).join('')}</div>`
+    : ''
+  return `
+    <div class="mb-2 rounded-md bg-sky-500/10 border border-sky-500/25 px-2.5 py-1.5">
+      <div class="flex items-center gap-2 text-[11px]">
+        <i class="fas fa-diagram-project text-sky-300"></i>
+        <span class="text-slate-400">منبعِ سیگنال:</span>
+        <span class="font-bold text-sky-200">${s.name}</span>
+        <span class="rounded bg-sky-500/20 px-1.5 py-0.5 text-[10px] text-sky-100 tabular-nums" dir="ltr">${s.code}</span>
+        <span class="text-[10px] text-slate-400">(${kindFa})</span>
+      </div>
+      ${filters}
+    </div>`
+}
+
 // -------------------------- حالت ۱: خنثی --------------------------
 function renderNeutral(a, d) {
   return `
