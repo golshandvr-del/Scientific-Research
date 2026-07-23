@@ -274,9 +274,9 @@ Scientific-Research/
 ├── strategies/               # کدِ پایتونِ هر استراتژی (s1..s156)
 ├── results/                  # فایل‌های MD نتایج + دادهٔ JSON (_*.json)
 ├── web_tool/                 # 🌐 سایتِ دستیارِ تصمیمِ ۴-حالته (Hono + Cloudflare)
+├── local-mobile/             # 📱 اجرای «موتورِ کاملِ سایت» روی گوشی/Termux (Node سبک، LAN، آپدیتِ دستی)
 ├── mt5_robot/                # 🤖 ربات MetaTrader 5 (تاریخیِ عصرِ WR)
-├── apk/                      # 📱 پروژهٔ Capacitor برای APK اندروید
-├── docs/                     # راهنماها (مثلِ APK_Android_Build_Guide.md)
+├── docs/                     # راهنماها
 ├── research/                 # ثبت‌های زندهٔ تحلیل
 └── tools/                    # ابزارهای کمکی
 ```
