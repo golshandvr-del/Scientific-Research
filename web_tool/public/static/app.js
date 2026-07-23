@@ -346,6 +346,7 @@ function renderApproaching(a, d) {
     <div class="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 mb-3">
       <p class="font-bold text-amber-300 mb-1"><i class="fas fa-hourglass-half ml-1"></i>${d.headline}</p>
       ${renderSourceLayer(d)}
+      ${renderTimeGate(d)}
       <p class="text-sm text-slate-300 leading-relaxed mb-2">${d.reason}</p>
       <p class="text-xs text-amber-200/80 font-bold mb-1">تأییدهایِ موردِ انتظار:</p>
       <ul class="space-y-1.5">${confs}</ul>
