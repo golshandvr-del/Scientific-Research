@@ -548,6 +548,15 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'ENTRY', regime: reg,
         headline: 'ورود خرید (LONG) — درایوِ چرخشِ ماهِ طلا (اولین روزِ معاملاتیِ ماه)',
         reason: tom.reason,
+        sourceLayer: {
+          code: 'S141', name: 'درایوِ چرخشِ ماه (Turn-of-Month)', kind: 'time',
+          filters: tomConfirm ? [`تأییدِ امتیازیِ متعامد (S163): ${tomConfirm.score}/${tomConfirm.maxScore}`] : undefined,
+          manage: {
+            style: 'let-run-trail', beTriggerR: 1.0,
+            trailDistPrice: TOM_SL_PIP * 0.1, maxHoldBars: TOM_MAX_HOLD,
+            note: `لایهٔ زمان-محورِ تقویمی با R:R بسیار بالا (۱:۷). پس از ۱R سود بریک‌ایون؛ سپس trailing با فاصلهٔ ${(TOM_SL_PIP * 0.1).toFixed(1)}$ تا سقفِ ${TOM_MAX_HOLD} کندل — بگذار درایوِ سشنِ لندن کامل استخراج شود.`,
+          },
+        },
         direction: 'LONG', entry, tp, sl,
         rr: `SL ثابت ${TOM_SL_PIP}pip (${tom.slDist.toFixed(2)}$) / TP ${TOM_TP_PIP}pip ` +
           `(${tom.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(TOM_TP_PIP / TOM_SL_PIP).toFixed(1)} (بگذار بردها بدوند)`,
