@@ -46,45 +46,48 @@ export const S214_HIDDEN_TP_PIP = 300
 export const S214_HIDDEN_SL_PIP = 150
 
 /**
- * from_end برای هر کندل: تعدادِ روزهای کاریِ *موجود در داده* مانده تا انتهای ماهِ آن کندل.
- * دقیقاً معادلِ محاسبهٔ پایتون: rank(بر اساسِ روزِ منحصربه‌فرد در ماه) − count − 1.
- * (آخرین روزِ ماه ⇒ from_end = −1؛ ۶ روزِ کاری مانده ⇒ from_end = −6.)
+ * from_end برای هر کندل: رتبهٔ روزِ کاری از انتهای ماهِ تقویمی.
+ *
+ * ⚠️ مهم (تفاوت با بک‌تستِ پایتون): در بک‌تست، from_end از «روزهای موجود در داده»
+ * ساخته می‌شد چون کلِ ۴ سال داده در دست بود. اما در محیطِ *زنده* سرور فقط چند روزِ
+ * آخر کندلِ M5 را می‌گیرد (مثلاً ۵ روز)، پس شمارشِ روزهای موجود کاملاً غلط می‌شود.
+ * راهِ درست و مستقل از طولِ داده: from_end را از **تقویمِ واقعی** بازسازی می‌کنیم —
+ * تعدادِ روزهای کاری (دوشنبه…جمعه، تقریبِ استانداردِ روزهای معاملاتیِ فارکس/طلا)
+ * بین روزِ کندل و آخرین روزِ کاریِ ماهِ تقویمی.
+ *   آخرین روزِ کاریِ ماه ⇒ from_end = −1 ؛ ۶ روزِ کاری مانده ⇒ from_end = −6.
+ * این معادلِ معناییِ تعریفِ پایتون است (رتبه از انتهای ماه) اما در زمانِ زنده درست کار می‌کند.
  */
+function isWeekday(y: number, m0: number, d: number): boolean {
+  const wd = new Date(Date.UTC(y, m0, d)).getUTCDay() // 0=یکشنبه … 6=شنبه
+  return wd >= 1 && wd <= 5
+}
+
+function fromEndForDate(y: number, m0: number, d: number): number {
+  // تعدادِ روزهای کاریِ *بعد از* روزِ جاری تا پایانِ ماه (شاملِ نشدنِ خودِ روز).
+  const lastDay = new Date(Date.UTC(y, m0 + 1, 0)).getUTCDate() // آخرین روزِ ماه
+  let workdaysAfter = 0
+  for (let dd = d + 1; dd <= lastDay; dd++) {
+    if (isWeekday(y, m0, dd)) workdaysAfter++
+  }
+  // اگر خودِ روزِ جاری تعطیلِ آخرِهفته باشد، آن را به نزدیک‌ترین روزِ کاریِ بعدی نسبت می‌دهیم
+  // (رفتارِ محافظه‌کارانه: from_end بر مبنای روزهای کاری است).
+  return -(1 + workdaysAfter)
+}
+
 function computeFromEnd(times: number[]): number[] {
   const n = times.length
-  // کلیدِ روز (UTC) و کلیدِ ماه
-  const dayKey: number[] = new Array(n)
-  const ymKey: number[] = new Array(n)
-  for (let i = 0; i < n; i++) {
-    const d = new Date(times[i] * 1000)
-    dayKey[i] = Math.floor(times[i] / 86400)   // شمارهٔ روزِ UTC (یکتا)
-    ymKey[i] = d.getUTCFullYear() * 100 + d.getUTCMonth()
-  }
-  // روزهای منحصربه‌فرد به‌ترتیب + گروه‌بندی بر اساسِ ماه
-  const seenDay = new Set<number>()
-  const uniqDays: number[] = []
-  const uniqYm: number[] = []
-  for (let i = 0; i < n; i++) {
-    if (!seenDay.has(dayKey[i])) {
-      seenDay.add(dayKey[i])
-      uniqDays.push(dayKey[i])
-      uniqYm.push(ymKey[i])
-    }
-  }
-  // شمارشِ روزها در هر ماه + رتبهٔ هر روز در ماهِ خودش
-  const monthCount = new Map<number, number>()
-  for (const ym of uniqYm) monthCount.set(ym, (monthCount.get(ym) || 0) + 1)
-  const rankSoFar = new Map<number, number>()
-  const fromEndByDay = new Map<number, number>()
-  for (let k = 0; k < uniqDays.length; k++) {
-    const ym = uniqYm[k]
-    const r = (rankSoFar.get(ym) || 0) + 1
-    rankSoFar.set(ym, r)
-    const cnt = monthCount.get(ym)!
-    fromEndByDay.set(uniqDays[k], r - cnt - 1)
-  }
   const out: number[] = new Array(n)
-  for (let i = 0; i < n; i++) out[i] = fromEndByDay.get(dayKey[i])!
+  const cache = new Map<number, number>()
+  for (let i = 0; i < n; i++) {
+    const dayKey = Math.floor(times[i] / 86400)
+    let fe = cache.get(dayKey)
+    if (fe === undefined) {
+      const dt = new Date(times[i] * 1000)
+      fe = fromEndForDate(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate())
+      cache.set(dayKey, fe)
+    }
+    out[i] = fe
+  }
   return out
 }
 
