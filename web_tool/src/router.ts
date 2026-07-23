@@ -525,8 +525,8 @@ export function decide(a: AnalysisResult, close: number[],
         reason: mo.reason,
         sourceLayer: { code: 'S140⁺⁺', name: 'درایوِ ابتدای هفته (Monday Drift — M5, دوشنبه ۲۱:۳۰–۲۳:۳۰ به وقتِ ایران)', kind: 'time' },
         confirmations: [
-          { label: 'رسیدنِ ساعتِ UTC به ۱۸:۰۰ در روزِ دوشنبه (ورودِ پنجرهٔ درایوِ ابتدای هفته)', met: false,
-            detail: 'با بسته‌شدنِ کندلِ دوشنبه ساعتِ ۱۸ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
+          { label: `رسیدنِ ساعت به ${toIranHM(18)} به وقتِ ایران در روزِ دوشنبه (ورودِ پنجرهٔ درایوِ ابتدای هفته)`, met: false,
+            detail: `با بسته‌شدنِ کندلِ دوشنبه ساعتِ ${toIranHM(18)} به وقتِ ایران، سیگنالِ ورودِ خرید صادر می‌شود.` },
         ],
         indicators: moInd, timeGate: moGate,
       }
