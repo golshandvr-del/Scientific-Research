@@ -5712,38 +5712,32 @@ var PRE_EOM_MIN = -8;
 var PRE_EOM_MAX = -6;
 var S214_HIDDEN_TP_PIP = 300;
 var S214_HIDDEN_SL_PIP = 150;
+function isWeekday(y, m0, d) {
+  const wd = new Date(Date.UTC(y, m0, d)).getUTCDay();
+  return wd >= 1 && wd <= 5;
+}
+function fromEndForDate(y, m0, d) {
+  const lastDay = new Date(Date.UTC(y, m0 + 1, 0)).getUTCDate();
+  let workdaysAfter = 0;
+  for (let dd = d + 1; dd <= lastDay; dd++) {
+    if (isWeekday(y, m0, dd)) workdaysAfter++;
+  }
+  return -(1 + workdaysAfter);
+}
 function computeFromEnd(times) {
   const n = times.length;
-  const dayKey = new Array(n);
-  const ymKey = new Array(n);
-  for (let i = 0; i < n; i++) {
-    const d = new Date(times[i] * 1e3);
-    dayKey[i] = Math.floor(times[i] / 86400);
-    ymKey[i] = d.getUTCFullYear() * 100 + d.getUTCMonth();
-  }
-  const seenDay = /* @__PURE__ */ new Set();
-  const uniqDays = [];
-  const uniqYm = [];
-  for (let i = 0; i < n; i++) {
-    if (!seenDay.has(dayKey[i])) {
-      seenDay.add(dayKey[i]);
-      uniqDays.push(dayKey[i]);
-      uniqYm.push(ymKey[i]);
-    }
-  }
-  const monthCount = /* @__PURE__ */ new Map();
-  for (const ym of uniqYm) monthCount.set(ym, (monthCount.get(ym) || 0) + 1);
-  const rankSoFar = /* @__PURE__ */ new Map();
-  const fromEndByDay = /* @__PURE__ */ new Map();
-  for (let k = 0; k < uniqDays.length; k++) {
-    const ym = uniqYm[k];
-    const r = (rankSoFar.get(ym) || 0) + 1;
-    rankSoFar.set(ym, r);
-    const cnt = monthCount.get(ym);
-    fromEndByDay.set(uniqDays[k], r - cnt - 1);
-  }
   const out = new Array(n);
-  for (let i = 0; i < n; i++) out[i] = fromEndByDay.get(dayKey[i]);
+  const cache = /* @__PURE__ */ new Map();
+  for (let i = 0; i < n; i++) {
+    const dayKey = Math.floor(times[i] / 86400);
+    let fe = cache.get(dayKey);
+    if (fe === void 0) {
+      const dt = new Date(times[i] * 1e3);
+      fe = fromEndForDate(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate());
+      cache.set(dayKey, fe);
+    }
+    out[i] = fe;
+  }
   return out;
 }
 function lateEntryMomentum(open, high, low, close) {
