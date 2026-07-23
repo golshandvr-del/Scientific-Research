@@ -12,6 +12,20 @@ import type { AnalysisResult } from './signal'
 
 export type Side = 'long' | 'short'
 
+// پلنِ مدیریتِ معاملهٔ مخصوصِ لایه‌ای که سیگنال داده (از router.sourceLayer.manage می‌آید).
+// این همان «TP/SL متحرکِ هم‌خوان با واقعیتِ لایه» است که User Note #3 می‌خواست:
+// هر لایه سبکِ مدیریتِ خودش را دارد و کاربر دقیقاً همان را می‌بیند، نه یک منطقِ عام.
+export interface ManagePlan {
+  style: 'let-run-trail' | 'structural-trail' | 'fixed-tp-sl' | 'regime-atr-trail'
+  beTriggerR?: number       // آستانهٔ سود (بر حسبِ R) برای انتقالِ SL به بریک‌ایون
+  trailDistPrice?: number   // فاصلهٔ trailing بر حسبِ واحدِ قیمت (اگر ثابت باشد)
+  trailAtrMult?: number     // یا فاصلهٔ trailing بر حسبِ ضریبِ ATR
+  maxHoldBars?: number      // سقفِ نگه‌داری (کندل)
+  note: string              // توضیحِ فارسیِ سبکِ مدیریتِ همین لایه
+  layerCode?: string        // کدِ لایه (S139/S168/...) برای نمایش
+  layerName?: string        // نامِ فارسیِ لایه
+}
+
 export interface OpenTrade {
   side: Side
   entry: number          // قیمت ورود کاربر
@@ -19,6 +33,7 @@ export interface OpenTrade {
   sl: number             // حد ضرر اولیه
   openedAt?: number      // زمان باز کردن (ثانیه) — اختیاری
   barsHeld?: number      // تعداد کندلِ M15 که معامله باز بوده (برای سقفِ نگه‌داریِ SHORT s118)
+  managePlan?: ManagePlan // پلنِ مدیریتِ لایه‌محور (اگر معامله از یک سیگنالِ سایت باز شده باشد)
 }
 
 export interface Advice {
