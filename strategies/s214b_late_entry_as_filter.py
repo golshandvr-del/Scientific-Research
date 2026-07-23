@@ -127,9 +127,19 @@ def eval_layer(df, asset, long_sig):
 
 
 def wf_halves(df, asset, long_sig):
+    """h1/h2 + چهارک‌های walk-forward از per-trade net (هم‌ترازِ finalize)."""
+    from engine import scalp_engine as se
     z = np.zeros(len(df), bool)
-    hv = S.halves(df, long_sig, z, SL, TP, MH, asset)
-    return hv
+    tr = S.sim(df, long_sig, z, SL, TP, MH, asset)
+    if tr is None or len(tr) < 8:
+        return None
+    tr = tr.sort_values('entry_bar').reset_index(drop=True)
+    _, _, pt = se.run_capital_pertrade(tr, asset, initial_capital=S.CAP,
+                                       risk_pct=S.RISK, compounding=False)
+    nu = pt['net_usd'].to_numpy()
+    h = len(nu) // 2; q = len(nu) // 4
+    return dict(h1=float(nu[:h].sum()), h2=float(nu[h:].sum()),
+                wf=[round(float(nu[i * q:(i + 1) * q].sum())) for i in range(4)])
 
 
 # پارامترهای پیش‌فرضِ خروج (کالیبرهٔ طلا؛ مطابقِ نشست‌های calendar)
