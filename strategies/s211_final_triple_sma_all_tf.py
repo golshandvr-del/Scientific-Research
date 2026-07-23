@@ -81,25 +81,33 @@ TF_CFG = {
 
 
 def build_signals(df, direction):
-    """تولیدِ آرایهٔ بولینِ سیگنال برای LONG یا SHORT."""
+    """تولیدِ آرایهٔ بولینِ سیگنال برای LONG یا SHORT.
+
+    ⚠️ تعریفِ pullback دقیقاً همان تعریفِ *بازتولیدپذیرِ* S211e است:
+       LONG: low کندلِ قبلی به/زیرِ SMA_fast رسیده (لمسِ سایه) و close فعلی بالای SMA_fast.
+       (تعریفِ سخت‌گیرانهٔ close<=fast اشتباهاً سیگنال‌ها را ~۳ برابر کم می‌کرد.)
+    """
     c = df['close']
+    l = df['low']
+    h = df['high']
     f = sma(c, FAST)
     m = sma(c, MID)
     s = sma(c, SLOW)
     vip, vim = vortex(df, VORTEX_P)
     er = kaufman_er(c, ER_P)
 
-    prev_c = c.shift(1)
     prev_f = f.shift(1)
+    prev_l = l.shift(1)
+    prev_h = h.shift(1)
 
     if direction == 'long':
-        stack = (f > m) & (m > s)                 # چیدمانِ صعودی
-        pullback = (prev_c <= prev_f) & (c > f)   # بازگشت از زیرِ SMA_fast به بالای آن
-        trend_ok = (vip > vim) & (er > ER_MIN)    # فیلترِ کمیاب: Vortex + ER
+        stack = (f > m) & (m > s)                     # چیدمانِ صعودی
+        pullback = (prev_l <= prev_f) & (c > f)       # لمسِ سایه از پایین + بستنِ بالای fast
+        trend_ok = (vip > vim) & (er > ER_MIN)        # فیلترِ کمیاب: Vortex + ER
         sig = stack & pullback & trend_ok
     else:
         stack = (f < m) & (m < s)
-        pullback = (prev_c >= prev_f) & (c < f)
+        pullback = (prev_h >= prev_f) & (c < f)       # قرینهٔ SHORT
         trend_ok = (vim > vip) & (er > ER_MIN)
         sig = stack & pullback & trend_ok
 
