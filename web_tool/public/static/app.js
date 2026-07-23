@@ -513,11 +513,15 @@ function bindEvents() {
   document.querySelectorAll('.btn-register').forEach(btn => {
     btn.onclick = () => {
       const d = btn.dataset
+      // managePlan: پلنِ مدیریتِ لایه‌ای که سیگنال داد (برای TP/SL متحرکِ لایه-محور — User Note #3)
+      let managePlan
+      try { managePlan = d.plan ? JSON.parse(decodeURIComponent(d.plan)) : undefined } catch { managePlan = undefined }
       const trade = {
         side: d.dir === 'LONG' ? 'long' : 'short',
         entry: Number(d.entry), tp: Number(d.tp), sl: Number(d.sl),
         modelProbPct: d.prob ? Number(d.prob) : undefined,
         openedAt: Math.floor(Date.now() / 1000),
+        managePlan,   // ذخیره می‌شود تا در مرحلهٔ مدیریت به سرور فرستاده شود
       }
       setTrade(d.asset, trade)
       setLatch(d.asset, null)   // 🔒 معامله ثبت شد → قفلِ سیگنال دیگر لازم نیست (MANAGE فرمان است)
