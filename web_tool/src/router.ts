@@ -471,6 +471,35 @@ export function decide(a: AnalysisResult, close: number[],
         value: `${moConfirm.score}/${moConfirm.maxScore} ${moConfirm.score >= CONFIRM_MIN_SCORE ? '(هم‌سو)' : '(خنثی)'}`,
         status: 'neutral' })
     }
+    // ★ فیلترِ «عدم‌تقارنِ دیدِ معکوس» (S212 — Al Brooks فصلِ ۹): پیش از هر ورودِ Monday،
+    // اگر اصلاحِ اخیر در منظرِ معکوس یک "rounding bottom" (محدب/کم‌شتاب، asym>thr) باشد،
+    // ستاپ تله است ⇒ سیگنالِ ورود رد و به NEUTRAL تبدیل می‌شود (بک‌تستِ S212d: Δ+$2,566).
+    let moAsym = NaN
+    if (mo.state === 'ENTRY' && Array.isArray(high) && Array.isArray(low) && Array.isArray(close)) {
+      moAsym = inverseViewAsymRecent(close, high, low, MONDAY_INVVIEW_LB)
+    }
+    const moAsymTrap = mo.state === 'ENTRY' && Number.isFinite(moAsym) && moAsym > MONDAY_INVVIEW_THR
+    if (Number.isFinite(moAsym)) {
+      moInd.push({
+        name: `فیلترِ دیدِ معکوس (S212 — عدم‌تقارنِ اصلاح، فصلِ ۹ Brooks)`,
+        value: `asym=${moAsym.toFixed(2)} (آستانه ${MONDAY_INVVIEW_THR}) ${moAsymTrap ? '⇒ تله/رد' : '⇒ سالم'}`,
+        status: moAsymTrap ? 'bad' : 'ok',
+      })
+    }
+    if (moAsymTrap) {
+      // ستاپ در منظرِ معکوس rounding-bottom است ⇒ ورود نکن؛ لایه به NEUTRAL می‌رود.
+      return {
+        state: 'NEUTRAL', regime: reg,
+        headline: 'خنثی — پنجرهٔ دوشنبه باز است اما فیلترِ «دیدِ معکوس» ورود را رد کرد',
+        reason: `پنجرهٔ زمانیِ درایوِ ابتدای هفته (S140⁺⁺) باز است، اما طبقِ فیلترِ «دیدِ معکوس» ` +
+          `(Al Brooks فصلِ ۹): اصلاحِ اخیرِ قیمت در منظرِ معکوس شبیهِ «rounding bottom» (محدب/کم‌شتاب) ` +
+          `دیده می‌شود (شاخصِ عدم‌تقارن asym=${moAsym.toFixed(2)} > آستانهٔ ${MONDAY_INVVIEW_THR}). ` +
+          `این نشانهٔ یک ستاپِ تله است؛ بک‌تست (S212d روی M5) نشان داد رد کردنِ چنین موقعیت‌هایی ` +
+          `WR را از ۴۴٪ به ۴۶.۲٪ و سودِ خالص را +$2,566 افزایش می‌دهد. پس این نوبت ورود نمی‌کنیم.`,
+        sourceLayer: { code: 'S212', name: 'فیلترِ عدم‌تقارنِ دیدِ معکوس (Brooks فصلِ ۹) روی S140⁺⁺', kind: 'time' },
+        indicators: moInd, timeGate: moGate,
+      }
+    }
     if (mo.state === 'ENTRY') {
       const entry = a.price
       const sl = entry - mo.slDist
