@@ -105,6 +105,10 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
     return {
       state: 'ENTRY', regime: reg,
       headline: 'BUY — همین حالا خرید کن',
+      sourceLayer: {
+        code: 'M5-Scalp', name: 'اسکالپِ پولبکِ روندِ M5 (EMA20/100 + RSI)', kind: 'ma-confluence',
+        filters: [`روندِ صعودی EMA20>EMA100`, `پولبک: RSI(21) < ${RSI_ENTRY}`],
+      },
       reason: `روندِ کوتاه‌مدتِ طلا صعودی است و قیمت یک پولبک زده. تشخیصِ من: خرید (BUY). ` +
         `معاملهٔ خرید را در حسابِ دمو باز کن و بعد دکمهٔ تأیید را بزن تا مدیریتِ لحظه‌ای شروع شود. ` +
         `نیازی به تعیینِ حد سود/ضرر یا حجم نیست — من لحظه‌به‌لحظه بهت می‌گویم کِی ببندی.`,
