@@ -950,11 +950,11 @@ async function refreshScalpManage(asset) {
     } else {
       store[asset].scalpError = data.error
     }
-    render()
+    renderCardsOnly()   // هر ۵ ثانیه؛ فقط کارت‌ها (نه کلِ صفحه) — ضدِ نشتی
   } catch (e) {
     store[asset] = store[asset] || {}
     store[asset].scalpError = e.message
-    render()
+    renderCardsOnly()
   }
 }
 
@@ -980,11 +980,11 @@ async function refreshAdvice(asset) {
     } else {
       store[asset].adviceError = data.error
     }
-    render()
+    renderCardsOnly()   // بعد از هر رفرشِ advice؛ فقط کارت‌ها — ضدِ نشتی
   } catch (e) {
     store[asset] = store[asset] || {}
     store[asset].adviceError = e.message
-    render()
+    renderCardsOnly()
   }
 }
 
