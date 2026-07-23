@@ -238,6 +238,10 @@ export interface ScalpManageInput {
   refPrice: number         // قیمتِ ورودِ کاربر (یا قیمتِ مرجعِ سیگنال)
   livePrice: number        // قیمتِ زندهٔ فعلی
   close: number[]          // سریِ close کندلِ M5 (برای شکستِ روند)
+  // آستانه‌های پنهانِ مخصوصِ لایه‌ای که سیگنال داد (اختیاری — پیش‌فرض = M5-Scalp).
+  // این تضمین می‌کند هر لایه TP/SL مخصوصِ خودش را دارد (نه یکسان برای همه — User Note).
+  tpPip?: number
+  slPip?: number
 }
 
 export interface ScalpManageResult {
@@ -251,6 +255,11 @@ export function manageGoldM5Scalp(inp: ScalpManageInput): ScalpManageResult {
   // حرکتِ «مطلوب» به pip: برای BUY وقتی قیمت بالا رفت مثبت است، برای SELL برعکس.
   const favorPip = (dir * (inp.livePrice - inp.refPrice)) / PIP
 
+  // آستانه‌های خروج: مخصوصِ لایه‌ای که سیگنال داد (اگر داده شد)، وگرنه پیش‌فرضِ M5-Scalp.
+  // این تضمین می‌کند هر لایه TP/SL مخصوصِ خود را دارد (نه یکسان برای همه — اشتباهِ رایج).
+  const tp = (inp.tpPip != null && inp.tpPip > 0) ? inp.tpPip : HIDDEN_TP_PIP
+  const sl = (inp.slPip != null && inp.slPip > 0) ? inp.slPip : HIDDEN_SL_PIP
+
   // شکستِ روندِ M5 (EMA20 زیرِ EMA100) در حالِ ضرر → خروجِ «اشتباه بود».
   const emaF = ind.ema(inp.close, EMA_FAST)
   const emaS = ind.ema(inp.close, EMA_SLOW)
@@ -258,10 +267,10 @@ export function manageGoldM5Scalp(inp: ScalpManageInput): ScalpManageResult {
   const es = emaS[emaS.length - 1]
   const trendBroke = inp.action === 'BUY' ? ef < es : ef > es
 
-  if (favorPip >= HIDDEN_TP_PIP) {
+  if (favorPip >= tp) {
     return { state: 'take_profit', message: 'ما سودمونو گرفتیم، سریع معامله رو ببند', favorPip }
   }
-  if (favorPip <= -HIDDEN_SL_PIP) {
+  if (favorPip <= -sl) {
     return { state: 'wrong', message: 'متاسفم تشخیصم اشتباه بود، سریع معامله رو ببند', favorPip }
   }
   if (trendBroke && favorPip <= 0) {
