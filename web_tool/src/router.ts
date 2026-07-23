@@ -890,6 +890,16 @@ export function decide(a: AnalysisResult, close: number[],
     return {
       state: 'ENTRY', regime: reg,
       headline: `ورود ${isBull ? 'خرید (LONG)' : 'فروش (SHORT)'} — رژیمِ روندیِ ${isBull ? 'صعودی' : 'نزولی'} تأیید شد`,
+      sourceLayer: {
+        code: 'S67', name: `VWAP-Regime Selective ML (سطلِ «${reg.bucket}»)`, kind: 'regime-ml',
+        filters: [`آستانهٔ احتمالِ مدل ≥ ${P_MIN}%`, `گیتِ رژیمِ روندیِ کارا (ER ≥ ${ER_TREND_THR})`],
+        manage: {
+          style: 'regime-atr-trail', beTriggerR: 1.0, trailAtrMult: slM, maxHoldBars: 64,
+          note: `مدیریتِ رژیم-آگاه: فاصلهٔ trailing = ${slM}×ATR (همان ضریبِ SLِ سطلِ «${reg.bucket}»). ` +
+            `پس از ۱R سود، SL را به بریک‌ایون ببر؛ سپس با ${slM}×ATR دنبال کن. TP هدف ${tpM}×ATR است ولی ` +
+            `اگر رژیم قوی ماند (trend_hi) بگذار بدود. اگر ER زیرِ آستانه افتاد یا سطل تغییرِ کیفی داد ⇒ خروجِ زودهنگام.`,
+        },
+      },
       reason: `رژیمِ روندیِ ${isBull ? 'صعودی' : 'نزولی'} کارا (ER=${reg.efficiencyRatio.toFixed(3)}) + ` +
         `احتمالِ مدل ${p.toFixed(1)}% (بالای آستانهٔ ${P_MIN}%). ` +
         `${!isBull ? 'این «محلِ درستِ استفادهٔ» جریانِ Bear است که در بک‌تست بالاترین اکسپکتنسی را داشت (L34).' : 'جریانِ Bull در رژیمِ صعودیِ کارا فعال شد.'}`,
