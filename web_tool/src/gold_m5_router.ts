@@ -64,9 +64,76 @@ function m5Regime(emaFast: number, emaSlow: number): RegimeInfo {
  * خروجی در ENTRY فقط جهت (BUY) + آستانه‌های پنهان (برای موتورِ مدیریت) دارد.
  */
 export function decideGoldM5(a: AnalysisResult, close: number[],
-                             _capital = 10000, _riskPct = 1.0): RouterDecision {
+                             _capital = 10000, _riskPct = 1.0,
+                             open?: number[], high?: number[], low?: number[],
+                             times?: number[]): RouterDecision {
   const price = a.price
 
+  // ======================================================================
+  // لایهٔ اولویت‌دار: S214 — Al Brooks «Late and Missed Entries» (فصلِ ۱۱)
+  // لبهٔ مستقلِ pre-EOM (روزهای ۶–۸ مانده به پایانِ ماه) در ساعاتِ روز +
+  // فیلترِ مومنتوم (≥۴ trend-barِ صعودیِ غیر-climactic اخیر). این setup خاص و
+  // کم‌تکرار اما باکیفیت است؛ اگر برقرار باشد بر اسکالپِ پولبک اولویت دارد.
+  // (فقط وقتی داده کاملِ OHLC+زمان در دسترس است.)
+  // ======================================================================
+  if (open && high && low && times && times.length === close.length) {
+    const le = evalGoldM5LateEntry(open, high, low, close, times, price)
+    if (le.inWindow) {
+      const leReg = m5Regime(le.regimeUp ? 1 : 0, 0)
+      const leIndicators: RouterDecision['indicators'] = [
+        { name: 'پنجرهٔ پایانِ ماه', value: `${-le.fromEnd} روزِ کاری مانده ✔`, status: 'ok' },
+        { name: 'روندِ M5 (EMA20/50)', value: le.regimeUp ? 'صعودی ✔' : 'صعودی نیست ✘',
+          status: le.regimeUp ? 'ok' : 'bad' },
+        { name: 'مومنتومِ ادامهٔ روند (۴ کندلِ پیاپی)', value: le.hadRecentRun ? 'تأیید شد ✔' : `ناقص (${le.curRun}/4)`,
+          status: le.hadRecentRun ? 'ok' : 'warn' },
+        { name: 'قیمتِ زنده', value: price.toFixed(2) + '$', status: 'neutral' },
+      ]
+      if (le.entry) {
+        // --------- ENTRY (S214) ---------
+        return {
+          state: 'ENTRY', regime: leReg,
+          headline: 'BUY — همین حالا خرید کن',
+          sourceLayer: {
+            code: 'M5-LateEntry', name: 'ادامهٔ روندِ پایانِ ماه (مومنتومِ Late-Entry)', kind: 'price-action',
+            filters: ['پنجرهٔ ۶–۸ روزِ مانده به پایانِ ماه', 'روندِ صعودی EMA20>EMA50', 'مومنتوم: ۴+ کندلِ صعودیِ پیاپیِ اخیر'],
+          },
+          reason: `به پایانِ ماه نزدیک شده‌ایم و طلا یک روندِ صعودیِ واقعی (مومنتومِ رو به بالا) ساخته. ` +
+            `طبقِ این الگو، وقتی روند این‌قدر قوی است نباید منتظرِ پولبک ماند — همین حالا خرید (BUY). ` +
+            `معاملهٔ خرید را در حسابِ دمو باز کن و دکمهٔ تأیید را بزن تا مدیریتِ لحظه‌ای شروع شود. ` +
+            `نیازی به تعیینِ حد سود/ضرر یا حجم نیست — من لحظه‌به‌لحظه بهت می‌گویم کِی ببندی.`,
+          scalp: {
+            isScalp: true,
+            action: 'BUY',
+            hiddenTpPip: S214_HIDDEN_TP_PIP,
+            hiddenSlPip: S214_HIDDEN_SL_PIP,
+            refPrice: price,
+          },
+          indicators: leIndicators,
+        }
+      }
+      // --------- APPROACHING (S214) — در پنجره هستیم ولی مومنتوم/روند کامل نیست ---------
+      const conf: Confirmation[] = [
+        { label: 'پنجرهٔ پایانِ ماه', met: true, detail: `${-le.fromEnd} روزِ کاری تا پایانِ ماه مانده (پنجرهٔ ۶–۸).` },
+        { label: 'روندِ صعودیِ M5', met: le.regimeUp, detail: le.regimeUp ? 'EMA20 بالای EMA50 است.' : 'هنوز EMA20 بالای EMA50 نیست.' },
+        { label: 'مومنتومِ ۴+ کندلِ پیاپی', met: le.hadRecentRun, detail: le.hadRecentRun ? 'رشتهٔ کندل‌های صعودی تأیید شد.' : `فعلاً ${le.curRun} کندلِ پیاپی؛ منتظرِ رسیدن به ۴ می‌مانیم.` },
+      ]
+      return {
+        state: 'APPROACHING', regime: leReg,
+        headline: 'نزدیکِ سیگنالِ خرید — پنجرهٔ پایانِ ماه فعال است',
+        sourceLayer: { code: 'M5-LateEntry', name: 'ادامهٔ روندِ پایانِ ماه (مومنتومِ Late-Entry)', kind: 'price-action' },
+        reason: `به پایانِ ماه نزدیک شده‌ایم (پنجرهٔ مساعدِ خرید). اما برای ورود باید مطمئن شوم روند ` +
+          `واقعاً قوی است: EMA20 بالای EMA50 و یک رشتهٔ حداقل ۴ کندلِ صعودیِ پیاپیِ اخیر. ` +
+          `تا این تأییدها کامل نشود معامله باز نمی‌کنم — منتظر بمان.`,
+        confirmations: conf,
+        indicators: leIndicators,
+      }
+    }
+    // اگر در پنجرهٔ S214 نیستیم → می‌افتد روی منطقِ اسکالپِ پولبکِ M5 (پیش‌فرض).
+  }
+
+  // ======================================================================
+  // لایهٔ پیش‌فرض: اسکالپِ پولبکِ روندِ M5 (EMA20/100 + RSI) — S79
+  // ======================================================================
   // شاخص‌های زنده (بدونِ آینده — تا آخرین کندلِ بسته)
   const emaF = ind.ema(close, EMA_FAST)
   const emaS = ind.ema(close, EMA_SLOW)
