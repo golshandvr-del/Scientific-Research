@@ -649,6 +649,16 @@ export function decide(a: AnalysisResult, close: number[],
       return {
         state: 'ENTRY', regime: reg,
         headline: 'ورود فروش (SHORT) — قیمت خطِ میانهٔ میانگین‌ها را از بالا شکست',
+        sourceLayer: {
+          code: 'SHORT-MA', name: 'هم‌گراییِ میانگین‌ها (SHORT-MA-Confluence)', kind: 'ma-confluence',
+          manage: {
+            style: 'let-run-trail', beTriggerR: 0.086,   // ~۶pip روی SL۷۰pip
+            trailDistPrice: DEFAULT_SHORT_MA.trailPip * 0.1, maxHoldBars: 48,
+            note: `تنها لبهٔ SHORTِ اثبات‌شدهٔ پروژه (خروجِ بازطراحیِ s118 «بگذار بردها بدوند»): ` +
+              `پس از ۶pip (۰.۶$) سود، SL را به بریک‌ایون ببر؛ سپس با فاصلهٔ ۶pip trail کن و تا ۴۸ کندل بگذار معامله بدود — ` +
+              `فقط با برخوردِ trailing یا سقفِ ۴۸ کندل خارج شو. این کلیدِ رکوردِ SHORT (+$۳۴٬۵۴۲) است.`,
+          },
+        },
         reason: `${sm.reason} این همان الگویی است که «خطِ چارت، خطوطِ MA را از بالا قطع می‌کند» — ` +
           `شتابِ نزولیِ کوتاه‌مدت. ${qualNote} طبقِ کشفِ MFE (s117)، بردهای بزرگِ نزولی را ` +
           `زودهنگام قطع نمی‌کنیم: پس از ۶ پیپ سود، حد ضرر به سربه‌سر می‌آید و با فاصلهٔ ۶ پیپ ` +
