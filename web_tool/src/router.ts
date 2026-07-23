@@ -27,6 +27,7 @@ import {
 import { confirmScore } from './confirmation_filter'
 import { computeBrooksHigh2, BROOKS_SL_POINT, BROOKS_TP_POINT, BROOKS_MAX_HOLD } from './brooks_high2'
 import { computeSignsOfStrength, SOS_SL_POINT, SOS_TP_POINT, SOS_MAX_HOLD } from './signs_of_strength'
+import { computeTripleSMA, DEFAULT_TRIPLE_SMA } from './triple_sma_pullback'
 
 // آستانهٔ امتیازِ تأیید (از ۵) برای گِیت‌کردنِ ورودِ لایه‌های زمان-محورِ Monday/Turn-of-Month.
 // نشستِ S163: فیلترِ تأییدِ متعامد WR این لایه‌ها را از زیرِ ۴۰٪ به بالای ۴۰٪ رساند
