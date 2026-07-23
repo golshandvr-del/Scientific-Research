@@ -279,6 +279,8 @@ function renderCard(a) {
             ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-fuchsia-500/20 text-fuchsia-300 font-bold" title="سبک: اسکالپِ کوتاه‌مدت روی M5"><i class="fas fa-bolt"></i> اسکالپ</span>'
             : a.layer === 'swing-m30'
             ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold" title="سبک: نوسان‌گیریِ میان‌مدت روی M30 (نگهداریِ تا ۳ روز، R:R بالا)"><i class="fas fa-mountain"></i> نوسانی M30</span>'
+            : a.layer === 'placeholder'
+            ? '<span class="text-[10px] px-1.5 py-0.5 rounded bg-slate-500/20 text-slate-300 font-bold" title="این تایم‌فریم هنوز استراتژیِ اثبات‌شده ندارد — قالبِ خامِ آمادهٔ گسترش"><i class="fas fa-flask"></i> در دستِ تحقیق</span>'
             : '<span class="text-[10px] px-1.5 py-0.5 rounded bg-sky-500/20 text-sky-300 font-bold" title="سبک: معاملهٔ نوسانی روی M15"><i class="fas fa-wave-square"></i> نوسانی</span>'}
         </div>
         <span class="text-xs px-2.5 py-1 rounded-full font-bold ${sm.chip}">
