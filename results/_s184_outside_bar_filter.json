@@ -1,0 +1,189 @@
+{
+ "strategy": "S184_outside_bar_as_filter",
+ "total_delta": 0.0,
+ "layers": [
+  {
+   "name": "S140 Monday+",
+   "asset": "XAUUSD",
+   "base": {
+    "net": 9919.940000000053,
+    "n": 259,
+    "wins": 109,
+    "losses": 150,
+    "wr": 42.084942084942085,
+    "pf": 1.3943803638737446
+   },
+   "best_filter": null,
+   "delta_net": 0.0,
+   "variants": [
+    {
+     "mode": "recentBullOutside_w8",
+     "net": 2251.1100000000006,
+     "n": 99,
+     "wins": 40,
+     "losses": 59,
+     "wr": 40.4040404040404,
+     "pf": 1.3354598451386765
+    },
+    {
+     "mode": "recentBullOutside_w16",
+     "net": 3092.0399999999754,
+     "n": 135,
+     "wins": 56,
+     "losses": 79,
+     "wr": 41.48148148148148,
+     "pf": 1.3234385296917317
+    },
+    {
+     "mode": "recentBullOutside_w32",
+     "net": 2950.9099999999544,
+     "n": 169,
+     "wins": 68,
+     "losses": 101,
+     "wr": 40.23668639053255,
+     "pf": 1.2237639904152366
+    },
+    {
+     "mode": "recentBullOutside_w64",
+     "net": 6689.090000000029,
+     "n": 220,
+     "wins": 93,
+     "losses": 127,
+     "wr": 42.27272727272727,
+     "pf": 1.3578664831972462
+    },
+    {
+     "mode": "recentBullOutside_w96",
+     "net": 9042.800000000068,
+     "n": 249,
+     "wins": 105,
+     "losses": 144,
+     "wr": 42.168674698795186,
+     "pf": 1.3830024959456233
+    }
+   ]
+  },
+  {
+   "name": "S142 Mid-Month",
+   "asset": "XAUUSD",
+   "base": {
+    "net": 21012.37000000003,
+    "n": 211,
+    "wins": 75,
+    "losses": 136,
+    "wr": 35.54502369668246,
+    "pf": 1.7066318715225182
+   },
+   "best_filter": null,
+   "delta_net": 0.0,
+   "variants": [
+    {
+     "mode": "recentBullOutside_w8",
+     "net": 7746.880000000016,
+     "n": 116,
+     "wins": 43,
+     "losses": 73,
+     "wr": 37.06896551724138,
+     "pf": 1.7458188441794988
+    },
+    {
+     "mode": "recentBullOutside_w16",
+     "net": 5927.820000000012,
+     "n": 147,
+     "wins": 47,
+     "losses": 100,
+     "wr": 31.97278911564626,
+     "pf": 1.4397880821823283
+    },
+    {
+     "mode": "recentBullOutside_w32",
+     "net": 10077.30000000005,
+     "n": 166,
+     "wins": 58,
+     "losses": 108,
+     "wr": 34.93975903614458,
+     "pf": 1.60073932194842
+    },
+    {
+     "mode": "recentBullOutside_w64",
+     "net": 19422.220000000038,
+     "n": 179,
+     "wins": 68,
+     "losses": 111,
+     "wr": 37.988826815642454,
+     "pf": 1.8940287363782082
+    },
+    {
+     "mode": "recentBullOutside_w96",
+     "net": 21738.99000000004,
+     "n": 196,
+     "wins": 73,
+     "losses": 123,
+     "wr": 37.244897959183675,
+     "pf": 1.8332479859682804
+    }
+   ]
+  },
+  {
+   "name": "S143 EURUSD Mid-Month+",
+   "asset": "EURUSD",
+   "base": {
+    "net": 4604.680000000491,
+    "n": 234,
+    "wins": 102,
+    "losses": 132,
+    "wr": 43.58974358974359,
+    "pf": 1.268798053545055
+   },
+   "best_filter": null,
+   "delta_net": 0.0,
+   "variants": [
+    {
+     "mode": "recentBullOutside_w8",
+     "net": 1004.8100000001432,
+     "n": 109,
+     "wins": 44,
+     "losses": 65,
+     "wr": 40.36697247706422,
+     "pf": 1.1449377587375993
+    },
+    {
+     "mode": "recentBullOutside_w16",
+     "net": 1311.480000000205,
+     "n": 132,
+     "wins": 54,
+     "losses": 78,
+     "wr": 40.909090909090914,
+     "pf": 1.1570772055521286
+    },
+    {
+     "mode": "recentBullOutside_w32",
+     "net": 4150.640000000307,
+     "n": 170,
+     "wins": 75,
+     "losses": 95,
+     "wr": 44.11764705882353,
+     "pf": 1.3581500218740155
+    },
+    {
+     "mode": "recentBullOutside_w64",
+     "net": 3325.8100000004106,
+     "n": 216,
+     "wins": 91,
+     "losses": 125,
+     "wr": 42.129629629629626,
+     "pf": 1.2180338594591487
+    },
+    {
+     "mode": "recentBullOutside_w96",
+     "net": 3729.480000000445,
+     "n": 228,
+     "wins": 98,
+     "losses": 130,
+     "wr": 42.98245614035088,
+     "pf": 1.230108283202251
+    }
+   ]
+  }
+ ]
+}
