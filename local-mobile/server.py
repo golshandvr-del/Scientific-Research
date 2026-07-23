@@ -100,12 +100,38 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
 
-        # ---- API: پروکسیِ کندلِ زنده  /api/candles?asset=XAUUSD&interval=15m&range=60d ----
+        # ---- API: پروکسیِ خامِ Yahoo  /api/proxy?url=<yahoo-url> ----
+        # اپ (apk/www/app.js تابعِ fetchYahoo) این را در اولویت می‌گذارد و فرمتِ
+        # خامِ Yahoo (chart.result[0]) را انتظار دارد. این مسیر مشکلِ CORS را روی
+        # موبایل کاملاً حل می‌کند (سرورِ لوکال CORS ندارد) — برای هر دو ارز.
+        if path == "/api/proxy":
+            qs = parse_qs(parsed.query)
+            target = qs.get("url", [""])[0]
+            if not target.startswith("https://query1.finance.yahoo.com") and \
+               not target.startswith("https://query2.finance.yahoo.com"):
+                self._send(403, json.dumps({"error": "only yahoo urls allowed"}).encode("utf-8"), MIME[".json"])
+                return
+            try:
+                req = urllib.request.Request(target, headers={
+                    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                  "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36",
+                    "Accept": "application/json",
+                })
+                with urllib.request.urlopen(req, timeout=15) as resp:
+                    raw = resp.read()
+                self._send(200, raw, MIME[".json"])
+            except Exception as e:
+                self._send(502, json.dumps({"error": str(e)}).encode("utf-8"), MIME[".json"])
+            return
+
+        # ---- API: کندلِ آمادهٔ XAUUSD  /api/candles?interval=15m&range=2mo ----
+        # اپ این را فقط برای XAUUSD و در مسیرِ اول صدا می‌زند و فرمتِ
+        # {ok:true, candles:[...]} را انتظار دارد (app.js خط ۲۱۳).
         if path == "/api/candles":
             qs = parse_qs(parsed.query)
             asset = (qs.get("asset", ["XAUUSD"])[0]).upper()
             interval = qs.get("interval", ["15m"])[0]
-            rng = qs.get("range", ["60d"])[0]
+            rng = qs.get("range", ["2mo"])[0]
             symbol = YAHOO_SYMBOL.get(asset, asset)
             try:
                 data = yahoo_fetch(symbol, interval, rng)
@@ -114,22 +140,23 @@ class Handler(BaseHTTPRequestHandler):
                     raise ValueError("no result")
                 ts = r.get("timestamp") or []
                 q = (r.get("indicators", {}).get("quote") or [{}])[0]
+                o, h, l, c = q.get("open"), q.get("high"), q.get("low"), q.get("close")
+                vol = q.get("volume") or []
                 candles = []
                 for i in range(len(ts)):
-                    o, h, l, c = q.get("open"), q.get("high"), q.get("low"), q.get("close")
                     if not (o and h and l and c):
-                        continue
+                        break
                     if o[i] is None or h[i] is None or l[i] is None or c[i] is None:
                         continue
                     candles.append({
                         "time": ts[i],
                         "open": o[i], "high": h[i], "low": l[i], "close": c[i],
-                        "volume": (q.get("volume") or [0])[i] or 0,
+                        "volume": (vol[i] if i < len(vol) and vol[i] else 0),
                     })
-                out = {"candles": candles, "source": "yahoo", "symbol": symbol}
+                out = {"ok": True, "candles": candles, "source": "yahoo", "symbol": symbol}
                 self._send(200, json.dumps(out).encode("utf-8"), MIME[".json"])
             except Exception as e:
-                self._send(502, json.dumps({"error": str(e)}).encode("utf-8"), MIME[".json"])
+                self._send(502, json.dumps({"ok": False, "error": str(e)}).encode("utf-8"), MIME[".json"])
             return
 
         # ---- API: سلامت ----
