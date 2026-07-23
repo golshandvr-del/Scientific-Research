@@ -637,8 +637,8 @@ export function decide(a: AnalysisResult, close: number[],
         reason: tom.reason,
         sourceLayer: { code: 'S141', name: 'درایوِ چرخشِ ماه (Turn-of-Month)', kind: 'time' },
         confirmations: [
-          { label: 'رسیدنِ ساعتِ UTC به ۷:۰۰ در اولین روزِ معاملاتیِ ماه (ورودِ پنجرهٔ درایوِ اولِ ماه)', met: false,
-            detail: 'با بسته‌شدنِ کندلِ ساعتِ ۷ UTC در اولین روزِ ماه، سیگنالِ ورودِ خرید صادر می‌شود.' },
+          { label: `رسیدنِ ساعت به ${toIranHM(7)} به وقتِ ایران در اولین روزِ معاملاتیِ ماه (ورودِ پنجرهٔ درایوِ اولِ ماه)`, met: false,
+            detail: `با بسته‌شدنِ کندلِ ساعتِ ${toIranHM(7)} به وقتِ ایران در اولین روزِ ماه، سیگنالِ ورودِ خرید صادر می‌شود.` },
         ],
         indicators: tomInd, timeGate: tomGate,
       }
