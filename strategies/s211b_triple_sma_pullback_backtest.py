@@ -69,24 +69,29 @@ def hard_gate(trades, df, asset):
     """گیتِ سختِ ضدِ overfit: net، دو نیمه، ۴ پنجرهٔ walk-forward."""
     if trades is None or len(trades) == 0:
         return dict(n=0, net=0, wr=0, pass_gate=False, reason='no-trades')
-    cap = run_capital(trades, asset)
-    net = cap['net_profit']
+
+    def _net(t):
+        if t is None or len(t) == 0:
+            return 0.0
+        stats, _ = run_capital(t, asset)
+        return stats['net_profit']
+
+    net = _net(trades)
     wr = 100.0 * (trades['outcome'] == 'win').mean()
     n = len(trades)
 
     # دو نیمه بر اساسِ signal_bar
-    mid = df.index[len(df) // 2]
     t1 = trades[trades['signal_bar'] < len(df) // 2]
     t2 = trades[trades['signal_bar'] >= len(df) // 2]
-    net_h1 = run_capital(t1, asset)['net_profit'] if len(t1) else 0
-    net_h2 = run_capital(t2, asset)['net_profit'] if len(t2) else 0
+    net_h1 = _net(t1)
+    net_h2 = _net(t2)
 
     # ۴ پنجرهٔ walk-forward
     wf = []
     bounds = np.linspace(0, len(df), 5).astype(int)
     for k in range(4):
         tw = trades[(trades['signal_bar'] >= bounds[k]) & (trades['signal_bar'] < bounds[k + 1])]
-        wf.append(run_capital(tw, asset)['net_profit'] if len(tw) else 0)
+        wf.append(_net(tw))
 
     pass_gate = (net > 0 and net_h1 > 0 and net_h2 > 0 and all(w > 0 for w in wf) and wr >= 40.0)
     return dict(n=n, net=round(net), wr=round(wr, 1),
