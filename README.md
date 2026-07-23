@@ -166,7 +166,7 @@
 | **SHORT-MA-Confluence** | M15 | **Short** | تنها لبهٔ SHORTِ اثبات‌شدهٔ پروژه (عبور از میانهٔ سه MA) | — |
 | **S132/S136/S138** | Squeeze→Breakout M15 | Long | فشردگیِ نوسان + دو فیلترِ کاهشِ ضرر (brk≥۰.۳۰، RSI≤۷۵) | — |
 | **S139** | زمان-محور | Long | Overnight Drift (۲۲–۲۳ UTC) | — |
-| **S140⁺** | زمان-محور | Long | Monday Drift **+ فیلترِ تأییدِ امتیازی (S163)** | **۴۲.۱٪** |
+| **S140⁺** | زمان-محور **(M5 upgrade)** | Long | Monday Drift **+ ارتقا به M5 (S193؛ SL100/TP200، WR ۳۹.۰٪→۴۲.۹٪)** | **۴۲.۹٪** |
 | **S141** | زمان-محور | Long | Turn-of-Month Drift (ابتدای ماه) | — |
 | **S142⁺** | زمان-محور | Long | Mid-Month Drift **+ TPِ تطبیقیِ رژیم-آگاه (S163)** | **۴۱.۸٪** |
 | **S144** | زمان-محور | Long | End-of-Month Pre-End Drift (۶–۸ روز پیش از پایان) | — |
