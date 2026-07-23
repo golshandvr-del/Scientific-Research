@@ -725,7 +725,11 @@ function bindEvents() {
   const controls = document.getElementById('card-controls')
   if (controls) {
     controls.open = panelOpen
-    controls.addEventListener('toggle', () => { panelOpen = controls.open })
+    // نکته نشتی: از .ontoggle (به‌جای addEventListener) استفاده می‌کنیم. چون این
+    // عنصر با هر render دوباره ساخته و bindEvents دوباره صدا می‌شود، addEventListener
+    // در هر چرخه یک listenerِ تازه روی هم می‌انباشت و روی موبایل به‌مرور حافظه را پر
+    // می‌کرد؛ .ontoggle همیشه جایگزین می‌شود و نشت نمی‌کند.
+    controls.ontoggle = () => { panelOpen = controls.open }
   }
   // چک‌باکسِ نمایش/مخفیِ هر کارت
   document.querySelectorAll('.cardvis-toggle').forEach(cb => {
