@@ -49,6 +49,14 @@ const PIP = 0.0001
 // «نزدیک‌شدن»: اگر در همان ساعتِ ماقبلِ سشن باشیم و pullback در حالِ شکل‌گیری.
 const APPROACH_HOUR_UTC = 23
 
+// ساعتِ UTC → «HH:MM به وقتِ ایران» (ایران آفستِ ثابتِ UTC+3:30، بدونِ DST از ۱۴۰۱).
+// همهٔ توصیه‌های زمان-محورِ نمایشیِ EURUSD به وقتِ ایران بیان می‌شوند (پاسخِ User Note).
+function toIranHM(utcHour: number): string {
+  const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440
+  const hh = Math.floor(total / 60), mm = total % 60
+  return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`
+}
+
 /** تعداد روزهای کاری از تاریخ جاری تا پایان ماه، با احتساب خود روز. تعطیلات آخرهفته حذف می‌شوند. */
 function businessDaysThroughMonthEnd(timestampSec: number): number {
   const now = new Date(timestampSec * 1000)
