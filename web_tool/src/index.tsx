@@ -463,16 +463,26 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   }
   // سایر دارایی‌ها: کندلِ Yahoo + به‌روزرسانیِ کندلِ جاری با قیمتِ زنده
   // (رفعِ اختلافِ قیمتِ لحظه‌ای — User Note نکتهٔ اول)
-  const { candles } = await yahooCandles(a.symbol, '15m', '1mo')
-  if (candles.length < 220) throw new Error('داده کافی برای تحلیل نیست')
+  // تایم‌فریم از فیلدِ `tf` می‌آید (پیش‌فرض 15m). range و gap متناسب با تایم‌فریم
+  // انتخاب می‌شود تا هم داده کافی باشد و هم Yahoo پاسخ دهد (M1 فقط ~۷ روز می‌دهد).
+  const tf = a.tf || '15m'
+  const rangeFor = (t: string) => (t === '1m' || t === '5m') ? '5d' : '1mo'
+  const gapForTf = (t: string) => t === '1m' ? 60 : t === '5m' ? 300 : t === '30m' ? 1800 : 900
+  const { candles } = await yahooCandles(a.symbol, tf, rangeFor(tf))
+  // آستانهٔ داده برای placeholder سبک‌تر است (فقط نمایشِ قیمت/داده، نه تحلیلِ سنگین).
+  const minBars = a.layer === 'placeholder' ? 30 : 220
+  if (candles.length < minBars) throw new Error('داده کافی برای تحلیل نیست')
   let live: number | null = null, liveAge = 0, liveSrc = ''
   try { const q = await getLiveQuote(a.symbol); live = q.price; liveAge = q.ageSec; liveSrc = q.source } catch {}
-  const merged = mergeLiveQuote(candles, live, 900)
+  const merged = mergeLiveQuote(candles, live, gapForTf(tf))
   const useCandles = merged.candles
   const result = analyze(useCandles)
-  // EURUSD: منطقِ مخصوصِ S73 (Session-Open Drift) — نه decide()ِ عمومیِ طلا.
+  // EURUSD (M5): منطقِ مخصوصِ S73 (Session-Open Drift) — نه decide()ِ عمومیِ طلا.
+  // کارت‌های placeholder (EURUSD-M15/M30/M1): قالبِ خام — «در دستِ تحقیق».
   let dec
-  if (a.id === 'EURUSD') {
+  if (a.layer === 'placeholder') {
+    dec = placeholderDecision(a, result, tf)
+  } else if (a.id === 'EURUSD') {
     const lastT = useCandles[useCandles.length - 1].time
     const nowUtcHour = new Date(lastT * 1000).getUTCHours()
     dec = decideEurusd(result, useCandles.map(k => k.close), nowUtcHour, capital, riskPct, lastT)
@@ -482,6 +492,35 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
     price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
+}
+
+// ---------------------------------------------------------------------------
+// قالبِ خامِ کارت‌های بدونِ استراتژیِ اثبات‌شده (placeholder) — درخواستِ کاربر.
+// همیشه NEUTRAL برمی‌گرداند و صریحاً می‌گوید «این تایم‌فریم هنوز در دستِ تحقیق است».
+// چند شاخصِ پایه (RSI/ATR/ADX) را برای شفافیت نشان می‌دهد. آماده برای گسترش:
+// در تحقیقِ آینده کافی است این تابع با منطقِ واقعیِ همان تایم‌فریم جایگزین شود
+// (هر کارت مستقل است ⇒ افزودنِ منطق به یک تایم‌فریم بقیه را تغییر نمی‌دهد).
+// ---------------------------------------------------------------------------
+const TF_FA: Record<string, string> = { '1m': 'M1 (یک‌دقیقه‌ای)', '5m': 'M5 (پنج‌دقیقه‌ای)', '15m': 'M15 (پانزده‌دقیقه‌ای)', '30m': 'M30 (سی‌دقیقه‌ای)' }
+function placeholderDecision(a: typeof ASSETS[number], result: any, tf: string): RouterDecision {
+  const tfFa = TF_FA[tf] || tf
+  return {
+    state: 'NEUTRAL',
+    regime: { regime: 'range', efficiencyRatio: 0, trendy: false, adx: result.adx ?? 0, activeStream: 'none', bucket: 'research' },
+    headline: `${a.name} — قالبِ خام (در دستِ تحقیق)`,
+    reason:
+      `این کارت برای تایم‌فریمِ ${tfFa} ساخته شده اما هنوز استراتژیِ اثبات‌شده و بک‌تست‌شده‌ای ` +
+      `روی این تایم‌فریم برایش تعریف نشده است. طبقِ قانونِ اصلیِ پروژه (فقط سودِ خالصِ اثبات‌شده)، ` +
+      `تا وقتی لبه‌ای با WR≥۴۰٪ و سودِ خالصِ مثبت روی این تایم‌فریم کشف نشود، این کارت سیگنالِ ورود ` +
+      `نمی‌دهد و صرفاً «قالبِ خامِ آمادهٔ گسترش» است. داده و قیمتِ زنده در حالِ پایش است.`,
+    sourceLayer: { code: '—', name: `EURUSD ${tfFa} — بدونِ لایهٔ فعال`, kind: 'time' },
+    indicators: [
+      { name: 'وضعیتِ تحقیق', value: 'قالبِ خام (placeholder)', status: 'neutral' },
+      { name: 'تایم‌فریم', value: tfFa, status: 'neutral' },
+      { name: 'RSI(14)', value: (result.rsi14 ?? 0).toFixed(1), status: 'neutral' },
+      { name: 'ATR', value: (result.atr ?? 0).toFixed(5), status: 'neutral' },
+    ],
+  }
 }
 
 // خواندنِ سرمایه/ریسکِ کاربر از query (پیش‌فرض ۱۰k$ ، ۱٪) — کشفِ L41 (S67)
