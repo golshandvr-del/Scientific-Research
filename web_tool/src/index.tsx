@@ -402,7 +402,12 @@ app.get('/api/context', async (c) => {
 //   'swing-m30' = نوسان‌گیریِ M30 (S81 — نگهداریِ تا ۳ روز، R:R بالا).
 // این برچسب در UI به کاربر نشان داده می‌شود تا بداند پیشنهاد از کدام سبک آمده است.
 // هر کارت داده/منطق/localStorageِ مستقل دارد ⇒ کارت‌ها هیچ تداخلی با هم ندارند.
-const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' }[] = [
+// فیلدِ `layer`: 'swing'=M15 ، 'scalp'=M5 ، 'swing-m30'=M30 ، 'placeholder'=قالبِ خام
+//   (تایم‌فریمی که هنوز استراتژیِ اثبات‌شده‌ای ندارد — فقط داده/قیمت را نشان می‌دهد و
+//    صریحاً می‌گوید «در دستِ تحقیق»؛ آماده برای گسترشِ آینده بدونِ تغییرِ معماری).
+// فیلدِ `tf`: تایم‌فریمِ Yahoo برای دریافتِ کندل (5m/15m/30m/1m). فقط برای کارت‌های
+//   غیرطلا کاربرد دارد (طلا تایم‌فریمش را از id می‌گیرد).
+const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' | 'placeholder'; tf?: string }[] = [
   { id: 'XAUUSD',     name: 'طلا / دلار — نوسانی (M15)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing' },
   { id: 'XAUUSD-M5',  name: 'طلا / دلار — اسکالپ (M5)',    symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
   // ⛔ S81 (XAUUSD-M30 / Swing Trend-Pullback) در نشستِ S163 طبقِ تصمیمِ صریحِ کاربر
@@ -412,7 +417,13 @@ const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decim
   // EURUSD: در S187–S189 لایهٔ S73 به تایم‌فریمِ M5 ارتقا یافت (net +$8,911/WR ۵۹.۶٪ روی M5
   //   در برابرِ +$4,224/۵۵.۳٪ روی M15؛ گیتِ سختِ کامل + قانونِ همپوشانی ⇒ ارتقا نه افزودن).
   //   منبعِ کندل حالا 5m است؛ منطقِ decideEurusd (ساعتِ ۰ UTC + pullback ۴-کندلی) دست‌نخورده.
-  { id: 'EURUSD',     name: 'یورو / دلار (EURUSD — M5)',   symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp' },
+  { id: 'EURUSD',     name: 'یورو / دلار — اسکالپ (M5)',   symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp',  tf: '5m'  },
+  // --- تفکیکِ تایم‌فریمِ EURUSD (درخواستِ کاربر) — هم‌ساختار با طلا ---
+  //   این کارت‌ها فعلاً استراتژیِ اثبات‌شدهٔ اختصاصیِ خود را ندارند ⇒ قالبِ خام (placeholder).
+  //   داده/قیمتِ زنده را نشان می‌دهند و آماده‌ی افزودنِ منطق در تحقیقِ آینده‌اند (هر کارت مستقل).
+  { id: 'EURUSD-M15', name: 'یورو / دلار — نوسانی (M15)',  symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '15m' },
+  { id: 'EURUSD-M30', name: 'یورو / دلار — میان‌مدت (M30)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '30m' },
+  { id: 'EURUSD-M1',  name: 'یورو / دلار — ریز-اسکالپ (M1)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '1m' },
 ]
 
 // تصمیمِ یک دارایی: کندلِ زنده → analyze → decide (۴-حالته).
