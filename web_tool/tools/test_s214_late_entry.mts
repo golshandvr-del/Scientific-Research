@@ -9,9 +9,9 @@ function buildSeries(lastTs: number, n = 400, withMomentum = true) {
   let px = 4000
   for (let i = 0; i < n; i++) {
     t.push(lastTs - (n - 1 - i) * 300) // هر کندل ۵ دقیقه
-    // بدنهٔ رنج/خنثی تا نزدیکِ انتها
     const open = px
-    let close = px + (Math.sin(i / 7) * 1.5) // نوسانِ کوچک
+    // روندِ صعودیِ ملایمِ زمینه (تا EMA20>EMA50 شود و regimeUp=true) + نوسانِ کوچک
+    let close = px + 0.15 + (Math.sin(i / 7) * 0.6)
     // ۶ کندلِ آخر: رشتهٔ صعودیِ قویِ غیر-climactic (برای فعال‌کردنِ مومنتوم)
     if (withMomentum && i >= n - 6) close = open + 1.2 // بدنهٔ صعودیِ متوسط
     const hi = Math.max(open, close) + 0.3
