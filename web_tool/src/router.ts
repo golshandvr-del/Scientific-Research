@@ -357,9 +357,9 @@ export function decide(a: AnalysisResult, close: number[],
   if (spec.id === 'XAUUSD' && typeof utcHour === 'number') {
     const ov = computeOvernight(utcHour)
     const ovInd: RouterDecision['indicators'] = [
-      { name: 'ساعتِ UTC (لایهٔ شبانه)', value: `${utcHour}:00`,
+      { name: 'ساعتِ فعلی (به وقتِ ایران)', value: `${toIranHM(utcHour)}`,
         status: ov.state === 'ENTRY' ? 'ok' : ov.state === 'APPROACHING' ? 'warn' : 'neutral' },
-      { name: 'پنجرهٔ درایوِ شبانه (۲۲–۲۳ UTC)',
+      { name: `پنجرهٔ درایوِ شبانه (${toIranRange([22, 23])} به وقتِ ایران)`,
         value: ov.state === 'ENTRY' ? 'باز ✓' : ov.state === 'APPROACHING' ? 'در حالِ باز شدن' : 'بسته',
         status: ov.state === 'ENTRY' ? 'ok' : ov.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
