@@ -104,9 +104,9 @@ export function decideEurusd(
   }
 
   const indicators: RouterDecision['indicators'] = [
-    { name: 'ساعتِ جاری (UTC)', value: `${nowUtcHour}:00`,
+    { name: 'ساعتِ جاری (به وقتِ ایران)', value: `${toIranHM(nowUtcHour)}`,
       status: nowUtcHour === ENTRY_HOUR_UTC ? 'ok' : (nowUtcHour === APPROACH_HOUR_UTC ? 'warn' : 'neutral') },
-    { name: 'پنجرهٔ سشن (۰ UTC)', value: nowUtcHour === ENTRY_HOUR_UTC ? 'باز (باز شدنِ اروپا)' : 'بسته',
+    { name: `پنجرهٔ سشن (${toIranHM(ENTRY_HOUR_UTC)} به وقتِ ایران)`, value: nowUtcHour === ENTRY_HOUR_UTC ? 'باز (باز شدنِ اروپا)' : 'بسته',
       status: nowUtcHour === ENTRY_HOUR_UTC ? 'ok' : 'neutral' },
     { name: `pullback (${PULLBACK_LOOKBACK} کندل)`, value: `${deltaPip >= 0 ? '+' : ''}${deltaPip.toFixed(1)} pip ${pb.met ? '(نزولی ✓)' : '(صعودی)'}`,
       status: pb.met ? 'ok' : 'warn' },
