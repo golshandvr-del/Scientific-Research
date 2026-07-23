@@ -646,7 +646,7 @@ function renderScalpEntry(a, d) {
     </div>
     ${renderIndicators(d)}
     <button class="btn-scalp-register mt-3 w-full py-3 rounded-lg bg-${color}-600 hover:bg-${color}-500 font-bold text-white transition"
-      data-asset="${a.id}" data-action="${action}" data-ref="${refPrice}">
+      data-asset="${a.id}" data-action="${action}" data-ref="${refPrice}" data-tp="${sc.hiddenTpPip || ''}" data-sl="${sc.hiddenSlPip || ''}">
       <i class="fas fa-check ml-2"></i>معاملهٔ ${action} را در دمو باز کردم
     </button>
     <p class="text-[11px] text-slate-500 mt-1.5 text-center">پس از تأیید، فقط لحظه‌ای بهت می‌گویم کِی ببندی — نه حد سود، نه حد ضرر، نه حجم.</p>`
