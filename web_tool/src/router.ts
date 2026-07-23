@@ -407,7 +407,7 @@ export function decide(a: AnalysisResult, close: number[],
     const moInd: RouterDecision['indicators'] = [
       { name: 'روزِ هفته (لایهٔ ابتدای هفته)', value: utcDay === 1 ? 'دوشنبه ✓' : 'غیرِ دوشنبه',
         status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
-      { name: 'پنجرهٔ درایوِ ابتدای هفته (دوشنبه ۱۸–۲۱ UTC)',
+      { name: 'پنجرهٔ درایوِ ابتدای هفته (دوشنبه ۱۸–۲۰ UTC — S140⁺⁺/M5)',
         value: mo.state === 'ENTRY' ? 'باز ✓' : mo.state === 'APPROACHING' ? 'در حالِ باز شدن' : 'بسته',
         status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
