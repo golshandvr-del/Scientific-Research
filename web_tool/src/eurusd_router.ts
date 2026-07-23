@@ -230,6 +230,7 @@ export function decideEurusd(
     return {
       state: 'APPROACHING', regime: reg,
       headline: 'نزدیک‌شدن به سیگنالِ خرید — منتظرِ باز شدنِ سشنِ اروپا',
+      sourceLayer: { code: 'S73', name: 'درایوِ باز شدنِ سشنِ اروپا (Session-Open Drift)', kind: 'session' },
       reason:
         `به پنجرهٔ سیگنالِ ساعتِ ${ENTRY_HOUR_UTC}:00 UTC نزدیک شده‌ایم. ` +
         `${nowUtcHour === ENTRY_HOUR_UTC ? 'کندلِ سشن باز است اما هنوز pullback (نزولی‌بودنِ ۴ کندلِ اخیر) تأیید نشده.' : 'کندلِ سشن هنوز آغاز نشده.'} ` +
