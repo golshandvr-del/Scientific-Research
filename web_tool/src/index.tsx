@@ -409,7 +409,10 @@ const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decim
   //    کاملاً حذف شد: WR=۲۸٪ داشت و رساندنِ آن به WR≥۴۰٪ سود را −۹٬۵۳۱$ نابود می‌کرد.
   //    کاربر خواست هر لایه‌ای که برای WR≥۴۰ ضررده می‌شود حذف شود. (روتر decideGoldM30 باقی
   //    مانده اما دیگر فراخوانی نمی‌شود.) رجوع: results/EnforceWR40_RemoveS81_NetProfit_218739.md
-  { id: 'EURUSD',     name: 'یورو / دلار (EURUSD)',        symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'swing' },
+  // EURUSD: در S187–S189 لایهٔ S73 به تایم‌فریمِ M5 ارتقا یافت (net +$8,911/WR ۵۹.۶٪ روی M5
+  //   در برابرِ +$4,224/۵۵.۳٪ روی M15؛ گیتِ سختِ کامل + قانونِ همپوشانی ⇒ ارتقا نه افزودن).
+  //   منبعِ کندل حالا 5m است؛ منطقِ decideEurusd (ساعتِ ۰ UTC + pullback ۴-کندلی) دست‌نخورده.
+  { id: 'EURUSD',     name: 'یورو / دلار (EURUSD — M5)',   symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp' },
 ]
 
 // تصمیمِ یک دارایی: کندلِ زنده → analyze → decide (۴-حالته).
