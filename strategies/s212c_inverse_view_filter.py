@@ -27,10 +27,22 @@ WR_FLOOR = 40.0
 CAP, RISK = 10000.0, 1.0
 
 
+_ASYM_CACHE = {}
+
+
+def _asym_shifted(df, lb):
+    """asymِ shift(1)-شده را برای هر (id(df), lb) یک‌بار محاسبه و کش می‌کند
+    (asym فقط به lb وابسته است نه thr ⇒ حذفِ محاسبهٔ تکراریِ سنگین)."""
+    key = (id(df), lb)
+    if key not in _ASYM_CACHE:
+        asym = M.inverse_view_asym(df, lb)
+        _ASYM_CACHE[key] = pd.Series(asym).shift(1).to_numpy()
+    return _ASYM_CACHE[key]
+
+
 def recent_asym_ok(df, lb, thr):
     """فیلترِ bool: آیا asymِ اصلاحِ اخیر ≤ thr است (یا اصلاحی نبوده)؟ causal (shift(1))."""
-    asym = M.inverse_view_asym(df, lb)
-    asym_s = pd.Series(asym).shift(1).to_numpy()
+    asym_s = _asym_shifted(df, lb)
     keep = (asym_s <= thr) | np.isnan(asym_s)
     return keep
 
