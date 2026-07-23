@@ -89,6 +89,13 @@ def evaluate(df, asset, sig, side, sl, tp, mh):
     r = S.stats(tr, asset)
     if r is None or r['n'] < 30:
         return None
+    # ── early-exit (بهینه‌سازی): اگر net≤0 یا WR<کف، simهای گران (halves+WF) را اجرا نکن.
+    #    فقط سطرِ خلاصه ثبت می‌شود؛ این کاندید هرگز accept نمی‌شود.
+    if r['net'] <= 0 or r['wr'] < WR_FLOOR:
+        return dict(asset=asset, side=side, sl=sl, tp=tp, mh=mh,
+                    net=round(r['net'], 1), wr=round(r['wr'], 2), n=r['n'],
+                    pf=(round(r['pf'], 3) if r['pf'] != float('inf') else 999.0),
+                    h1=None, h2=None, wf=[], wf_ok=False, both_ok=False, accepted=False)
     hv = S.halves(df, sig if side == 'long' else z, z if side == 'long' else sig, sl, tp, mh, asset)
     wf = []
     n = len(df)
