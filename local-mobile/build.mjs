@@ -15,12 +15,16 @@
 //      cd local-mobile && node build.mjs
 // =============================================================================
 
-import { build } from 'esbuild'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')                 // ریشهٔ ریپو
+
+// esbuild داخلِ web_tool/node_modules نصب است (نه در local-mobile). آن را با
+// مسیرِ مطلق import می‌کنیم تا این اسکریپت از هر cwd اجرا شود.
+const esbuildPath = join(ROOT, 'web_tool', 'node_modules', 'esbuild', 'lib', 'main.js')
+const { build } = await import(pathToFileURL(esbuildPath).href)
 const ENTRY = join(ROOT, 'web_tool', 'src', 'index.tsx')
 const SHIM = join(__dirname, 'cf-shim.mjs')
 const OUT = join(__dirname, 'app.bundle.mjs')
