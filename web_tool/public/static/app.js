@@ -997,7 +997,7 @@ async function refreshScalpManage(asset) {
   try {
     const res = await fetch('/api/scalp/manage', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: trade.action, refPrice: trade.entry }),
+      body: JSON.stringify({ action: trade.action, refPrice: trade.entry, tpPip: trade.tpPip, slPip: trade.slPip }),
     })
     const data = await res.json()
     store[asset] = store[asset] || {}
