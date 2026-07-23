@@ -808,6 +808,7 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'APPROACHING', regime: reg,
         headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — فنرِ فشرده، منتظرِ شکست',
         reason: sq.reason,
+        sourceLayer: { code: 'S132', name: 'انفجارِ پس از فشردگی (Squeeze→Breakout)', kind: 'squeeze' },
         confirmations: [
           { label: `قیمت سقفِ ${DEFAULT_SQUEEZE.breakoutLookback} کندلِ اخیر (${isFinite(sq.priorHigh) ? sq.priorHigh.toFixed(2) + '$' : '—'}) را رو به بالا بشکند`,
             met: false, detail: 'شکستِ صعودی هنوز تأیید نشده — منتظرِ بسته‌شدنِ قیمت بالای سقف بمانید.' },
