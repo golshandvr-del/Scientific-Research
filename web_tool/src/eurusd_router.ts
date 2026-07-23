@@ -246,8 +246,8 @@ export function decideEurusd(
   // --------- حالتِ ۲: نزدیک‌شدن — ساعتِ ماقبلِ سشن یا سشن بدونِ pullback ---------
   if (nowUtcHour === APPROACH_HOUR_UTC || (nowUtcHour === ENTRY_HOUR_UTC && !pb.met)) {
     const confirmations = [
-      { label: `کندلِ ساعتِ ${ENTRY_HOUR_UTC}:00 UTC آغاز شود`, met: nowUtcHour === ENTRY_HOUR_UTC,
-        detail: `اکنون ساعتِ ${nowUtcHour}:00 است؛ سیگنال دقیقاً در کندلِ ${ENTRY_HOUR_UTC}:00 UTC فعال می‌شود.` },
+      { label: `کندلِ ساعتِ ${toIranHM(ENTRY_HOUR_UTC)} به وقتِ ایران آغاز شود`, met: nowUtcHour === ENTRY_HOUR_UTC,
+        detail: `اکنون ساعتِ ${toIranHM(nowUtcHour)} به وقتِ ایران است؛ سیگنال دقیقاً در کندلِ ${toIranHM(ENTRY_HOUR_UTC)} به وقتِ ایران فعال می‌شود.` },
       { label: `pullback: ۴ کندلِ اخیر نزولی باشد`, met: pb.met,
         detail: `اکنون ${deltaPip.toFixed(1)} pip است؛ برای ورود باید نزولی (< ۰) باشد (buy-the-dip).` },
     ]
