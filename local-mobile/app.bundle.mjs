@@ -5699,9 +5699,121 @@ function decideEurusdM15(a, open, high, low, close, capital = DEFAULT_CAPITAL, r
   };
 }
 
-// ../web_tool/src/gold_m5_router.ts
+// ../web_tool/src/gold_m5_late_entry.ts
 var EMA_FAST = 20;
-var EMA_SLOW = 100;
+var EMA_SLOW = 50;
+var N_RUN = 4;
+var BR = 0.5;
+var CLX = 1.5;
+var LOOK = 12;
+var ATR_LEN = 14;
+var NIGHT = /* @__PURE__ */ new Set([19, 20, 21, 22, 23]);
+var PRE_EOM_MIN = -8;
+var PRE_EOM_MAX = -6;
+var S214_HIDDEN_TP_PIP = 300;
+var S214_HIDDEN_SL_PIP = 150;
+function computeFromEnd(times) {
+  const n = times.length;
+  const dayKey = new Array(n);
+  const ymKey = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const d = new Date(times[i] * 1e3);
+    dayKey[i] = Math.floor(times[i] / 86400);
+    ymKey[i] = d.getUTCFullYear() * 100 + d.getUTCMonth();
+  }
+  const seenDay = /* @__PURE__ */ new Set();
+  const uniqDays = [];
+  const uniqYm = [];
+  for (let i = 0; i < n; i++) {
+    if (!seenDay.has(dayKey[i])) {
+      seenDay.add(dayKey[i]);
+      uniqDays.push(dayKey[i]);
+      uniqYm.push(ymKey[i]);
+    }
+  }
+  const monthCount = /* @__PURE__ */ new Map();
+  for (const ym of uniqYm) monthCount.set(ym, (monthCount.get(ym) || 0) + 1);
+  const rankSoFar = /* @__PURE__ */ new Map();
+  const fromEndByDay = /* @__PURE__ */ new Map();
+  for (let k = 0; k < uniqDays.length; k++) {
+    const ym = uniqYm[k];
+    const r = (rankSoFar.get(ym) || 0) + 1;
+    rankSoFar.set(ym, r);
+    const cnt = monthCount.get(ym);
+    fromEndByDay.set(uniqDays[k], r - cnt - 1);
+  }
+  const out = new Array(n);
+  for (let i = 0; i < n; i++) out[i] = fromEndByDay.get(dayKey[i]);
+  return out;
+}
+function lateEntryMomentum(open, high, low, close) {
+  const n = close.length;
+  const emaF = ema(close, EMA_FAST);
+  const emaS = ema(close, EMA_SLOW);
+  const atr2 = atr(
+    close.map((c, i2) => ({ time: 0, open: open[i2], high: high[i2], low: low[i2], close: c, volume: 0 })),
+    ATR_LEN
+  );
+  const regimeUp = emaF[n - 1] > emaS[n - 1];
+  const trendBar = new Array(n);
+  const rng = new Array(n);
+  for (let i2 = 0; i2 < n; i2++) {
+    rng[i2] = Math.max(high[i2] - low[i2], 1e-9);
+    const body = close[i2] - open[i2];
+    trendBar[i2] = body > 0 && Math.abs(body) >= BR * rng[i2];
+  }
+  const runEvt = new Array(n).fill(false);
+  let run = 0;
+  for (let i2 = 0; i2 < n; i2++) {
+    run = trendBar[i2] ? run + 1 : 0;
+    if (run === N_RUN && !isNaN(atr2[i2]) && atr2[i2] > 0) {
+      let sum = 0;
+      for (let j = i2 - N_RUN + 1; j <= i2; j++) sum += rng[j];
+      const avgRunRng = sum / N_RUN;
+      if (avgRunRng <= CLX * atr2[i2]) runEvt[i2] = true;
+    }
+  }
+  const i = n - 1;
+  const lo = Math.max(0, i - LOOK);
+  let hadRecentRun = false;
+  for (let k = lo; k <= i - 1; k++) {
+    if (runEvt[k]) {
+      hadRecentRun = true;
+      break;
+    }
+  }
+  let curRun = 0;
+  for (let k = i; k >= 0; k--) {
+    if (trendBar[k]) curRun++;
+    else break;
+  }
+  return { active: hadRecentRun && regimeUp, regimeUp, hadRecentRun, curRun };
+}
+function evalGoldM5LateEntry(open, high, low, close, times, price) {
+  const n = close.length;
+  const fromEndArr = computeFromEnd(times);
+  const fromEnd = fromEndArr[n - 1];
+  const utcHour = new Date(times[n - 1] * 1e3).getUTCHours();
+  const inPreEom = fromEnd >= PRE_EOM_MIN && fromEnd <= PRE_EOM_MAX;
+  const isDay = !NIGHT.has(utcHour);
+  const inWindow = inPreEom && isDay;
+  const mom = lateEntryMomentum(open, high, low, close);
+  const entry = inWindow && mom.active;
+  return {
+    entry,
+    inWindow,
+    regimeUp: mom.regimeUp,
+    hadRecentRun: mom.hadRecentRun,
+    curRun: mom.curRun,
+    fromEnd,
+    utcHour,
+    price
+  };
+}
+
+// ../web_tool/src/gold_m5_router.ts
+var EMA_FAST2 = 20;
+var EMA_SLOW2 = 100;
 var RSI_PERIOD = 21;
 var RSI_ENTRY = 35;
 var RSI_APPROACH = 42;
@@ -5719,10 +5831,66 @@ function m5Regime(emaFast, emaSlow) {
     bucket: up ? "m5_trend" : "none"
   };
 }
-function decideGoldM5(a, close, _capital = 1e4, _riskPct = 1) {
+function decideGoldM5(a, close, _capital = 1e4, _riskPct = 1, open, high, low, times) {
   const price = a.price;
-  const emaF = ema(close, EMA_FAST);
-  const emaS = ema(close, EMA_SLOW);
+  if (open && high && low && times && times.length === close.length) {
+    const le = evalGoldM5LateEntry(open, high, low, close, times, price);
+    if (le.inWindow) {
+      const leReg = m5Regime(le.regimeUp ? 1 : 0, 0);
+      const leIndicators = [
+        { name: "\u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647", value: `${-le.fromEnd} \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u0645\u0627\u0646\u062F\u0647 \u2714`, status: "ok" },
+        {
+          name: "\u0631\u0648\u0646\u062F\u0650 M5 (EMA20/50)",
+          value: le.regimeUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A \u2718",
+          status: le.regimeUp ? "ok" : "bad"
+        },
+        {
+          name: "\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F (\u06F4 \u06A9\u0646\u062F\u0644\u0650 \u067E\u06CC\u0627\u067E\u06CC)",
+          value: le.hadRecentRun ? "\u062A\u0623\u06CC\u06CC\u062F \u0634\u062F \u2714" : `\u0646\u0627\u0642\u0635 (${le.curRun}/4)`,
+          status: le.hadRecentRun ? "ok" : "warn"
+        },
+        { name: "\u0642\u06CC\u0645\u062A\u0650 \u0632\u0646\u062F\u0647", value: price.toFixed(2) + "$", status: "neutral" }
+      ];
+      if (le.entry) {
+        return {
+          state: "ENTRY",
+          regime: leReg,
+          headline: "BUY \u2014 \u0647\u0645\u06CC\u0646 \u062D\u0627\u0644\u0627 \u062E\u0631\u06CC\u062F \u06A9\u0646",
+          sourceLayer: {
+            code: "M5-LateEntry",
+            name: "\u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 Late-Entry)",
+            kind: "price-action",
+            filters: ["\u067E\u0646\u062C\u0631\u0647\u0654 \u06F6\u2013\u06F8 \u0631\u0648\u0632\u0650 \u0645\u0627\u0646\u062F\u0647 \u0628\u0647 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647", "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA20>EMA50", "\u0645\u0648\u0645\u0646\u062A\u0648\u0645: \u06F4+ \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u067E\u06CC\u0627\u067E\u06CC\u0650 \u0627\u062E\u06CC\u0631"]
+          },
+          reason: `\u0628\u0647 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F\u0647\u200C\u0627\u06CC\u0645 \u0648 \u0637\u0644\u0627 \u06CC\u06A9 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0648\u0627\u0642\u0639\u06CC (\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627) \u0633\u0627\u062E\u062A\u0647. \u0637\u0628\u0642\u0650 \u0627\u06CC\u0646 \u0627\u0644\u06AF\u0648\u060C \u0648\u0642\u062A\u06CC \u0631\u0648\u0646\u062F \u0627\u06CC\u0646\u200C\u0642\u062F\u0631 \u0642\u0648\u06CC \u0627\u0633\u062A \u0646\u0628\u0627\u06CC\u062F \u0645\u0646\u062A\u0638\u0631\u0650 \u067E\u0648\u0644\u0628\u06A9 \u0645\u0627\u0646\u062F \u2014 \u0647\u0645\u06CC\u0646 \u062D\u0627\u0644\u0627 \u062E\u0631\u06CC\u062F (BUY). \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062E\u0631\u06CC\u062F \u0631\u0627 \u062F\u0631 \u062D\u0633\u0627\u0628\u0650 \u062F\u0645\u0648 \u0628\u0627\u0632 \u06A9\u0646 \u0648 \u062F\u06A9\u0645\u0647\u0654 \u062A\u0623\u06CC\u06CC\u062F \u0631\u0627 \u0628\u0632\u0646 \u062A\u0627 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0644\u062D\u0638\u0647\u200C\u0627\u06CC \u0634\u0631\u0648\u0639 \u0634\u0648\u062F. \u0646\u06CC\u0627\u0632\u06CC \u0628\u0647 \u062A\u0639\u06CC\u06CC\u0646\u0650 \u062D\u062F \u0633\u0648\u062F/\u0636\u0631\u0631 \u06CC\u0627 \u062D\u062C\u0645 \u0646\u06CC\u0633\u062A \u2014 \u0645\u0646 \u0644\u062D\u0638\u0647\u200C\u0628\u0647\u200C\u0644\u062D\u0638\u0647 \u0628\u0647\u062A \u0645\u06CC\u200C\u06AF\u0648\u06CC\u0645 \u06A9\u0650\u06CC \u0628\u0628\u0646\u062F\u06CC.`,
+          scalp: {
+            isScalp: true,
+            action: "BUY",
+            hiddenTpPip: S214_HIDDEN_TP_PIP,
+            hiddenSlPip: S214_HIDDEN_SL_PIP,
+            refPrice: price
+          },
+          indicators: leIndicators
+        };
+      }
+      const conf = [
+        { label: "\u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647", met: true, detail: `${-le.fromEnd} \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u062A\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0645\u0627\u0646\u062F\u0647 (\u067E\u0646\u062C\u0631\u0647\u0654 \u06F6\u2013\u06F8).` },
+        { label: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 M5", met: le.regimeUp, detail: le.regimeUp ? "EMA20 \u0628\u0627\u0644\u0627\u06CC EMA50 \u0627\u0633\u062A." : "\u0647\u0646\u0648\u0632 EMA20 \u0628\u0627\u0644\u0627\u06CC EMA50 \u0646\u06CC\u0633\u062A." },
+        { label: "\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u06F4+ \u06A9\u0646\u062F\u0644\u0650 \u067E\u06CC\u0627\u067E\u06CC", met: le.hadRecentRun, detail: le.hadRecentRun ? "\u0631\u0634\u062A\u0647\u0654 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u0635\u0639\u0648\u062F\u06CC \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F." : `\u0641\u0639\u0644\u0627\u064B ${le.curRun} \u06A9\u0646\u062F\u0644\u0650 \u067E\u06CC\u0627\u067E\u06CC\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0631\u0633\u06CC\u062F\u0646 \u0628\u0647 \u06F4 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.` }
+      ];
+      return {
+        state: "APPROACHING",
+        regime: leReg,
+        headline: "\u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A",
+        sourceLayer: { code: "M5-LateEntry", name: "\u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 Late-Entry)", kind: "price-action" },
+        reason: `\u0628\u0647 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F\u0647\u200C\u0627\u06CC\u0645 (\u067E\u0646\u062C\u0631\u0647\u0654 \u0645\u0633\u0627\u0639\u062F\u0650 \u062E\u0631\u06CC\u062F). \u0627\u0645\u0627 \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F \u0628\u0627\u06CC\u062F \u0645\u0637\u0645\u0626\u0646 \u0634\u0648\u0645 \u0631\u0648\u0646\u062F \u0648\u0627\u0642\u0639\u0627\u064B \u0642\u0648\u06CC \u0627\u0633\u062A: EMA20 \u0628\u0627\u0644\u0627\u06CC EMA50 \u0648 \u06CC\u06A9 \u0631\u0634\u062A\u0647\u0654 \u062D\u062F\u0627\u0642\u0644 \u06F4 \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u067E\u06CC\u0627\u067E\u06CC\u0650 \u0627\u062E\u06CC\u0631. \u062A\u0627 \u0627\u06CC\u0646 \u062A\u0623\u06CC\u06CC\u062F\u0647\u0627 \u06A9\u0627\u0645\u0644 \u0646\u0634\u0648\u062F \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0627\u0632 \u0646\u0645\u06CC\u200C\u06A9\u0646\u0645 \u2014 \u0645\u0646\u062A\u0638\u0631 \u0628\u0645\u0627\u0646.`,
+        confirmations: conf,
+        indicators: leIndicators
+      };
+    }
+  }
+  const emaF = ema(close, EMA_FAST2);
+  const emaS = ema(close, EMA_SLOW2);
   const rsiArr = rsi(close, RSI_PERIOD);
   const ef = emaF[emaF.length - 1];
   const es = emaS[emaS.length - 1];
@@ -5804,15 +5972,17 @@ function decideGoldM5(a, close, _capital = 1e4, _riskPct = 1) {
 function manageGoldM5Scalp(inp) {
   const dir = inp.action === "BUY" ? 1 : -1;
   const favorPip = dir * (inp.livePrice - inp.refPrice) / PIP5;
-  const emaF = ema(inp.close, EMA_FAST);
-  const emaS = ema(inp.close, EMA_SLOW);
+  const tp = inp.tpPip != null && inp.tpPip > 0 ? inp.tpPip : HIDDEN_TP_PIP;
+  const sl = inp.slPip != null && inp.slPip > 0 ? inp.slPip : HIDDEN_SL_PIP;
+  const emaF = ema(inp.close, EMA_FAST2);
+  const emaS = ema(inp.close, EMA_SLOW2);
   const ef = emaF[emaF.length - 1];
   const es = emaS[emaS.length - 1];
   const trendBroke = inp.action === "BUY" ? ef < es : ef > es;
-  if (favorPip >= HIDDEN_TP_PIP) {
+  if (favorPip >= tp) {
     return { state: "take_profit", message: "\u0645\u0627 \u0633\u0648\u062F\u0645\u0648\u0646\u0648 \u06AF\u0631\u0641\u062A\u06CC\u0645\u060C \u0633\u0631\u06CC\u0639 \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0648 \u0628\u0628\u0646\u062F", favorPip };
   }
-  if (favorPip <= -HIDDEN_SL_PIP) {
+  if (favorPip <= -sl) {
     return { state: "wrong", message: "\u0645\u062A\u0627\u0633\u0641\u0645 \u062A\u0634\u062E\u06CC\u0635\u0645 \u0627\u0634\u062A\u0628\u0627\u0647 \u0628\u0648\u062F\u060C \u0633\u0631\u06CC\u0639 \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0648 \u0628\u0628\u0646\u062F", favorPip };
   }
   if (trendBroke && favorPip <= 0) {
@@ -5822,8 +5992,8 @@ function manageGoldM5Scalp(inp) {
 }
 
 // ../web_tool/src/gold_m30_router.ts
-var EMA_FAST2 = 20;
-var EMA_SLOW2 = 100;
+var EMA_FAST3 = 20;
+var EMA_SLOW3 = 100;
 var RSI_PERIOD2 = 14;
 var RSI_ENTRY2 = 35;
 var RSI_APPROACH2 = 45;
@@ -5851,8 +6021,8 @@ function capitalWarning(capital) {
 function decideGoldM30(a, close, capital = 1e4, riskPct = 1) {
   const spec = assetSpec("XAUUSD");
   const price = a.price;
-  const emaF = ema(close, EMA_FAST2);
-  const emaS = ema(close, EMA_SLOW2);
+  const emaF = ema(close, EMA_FAST3);
+  const emaS = ema(close, EMA_SLOW3);
   const rsiArr = rsi(close, RSI_PERIOD2);
   const ef = emaF[emaF.length - 1];
   const es = emaS[emaS.length - 1];
@@ -6302,6 +6472,8 @@ app.post("/api/scalp/manage", async (c) => {
     if (!isFinite(refPrice) || refPrice <= 0) {
       return c.json({ ok: false, error: "\u0642\u06CC\u0645\u062A\u0650 \u0648\u0631\u0648\u062F (refPrice) \u0646\u0627\u0645\u0639\u062A\u0628\u0631 \u0627\u0633\u062A" }, 400);
     }
+    const tpPip = Number(body.tpPip);
+    const slPip = Number(body.slPip);
     const { candles } = await fetchGold("5m", "5d");
     if (candles.length < 120) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0645\u062F\u06CC\u0631\u06CC\u062A \u0646\u06CC\u0633\u062A" }, 400);
     let spot = null;
@@ -6312,7 +6484,14 @@ app.post("/api/scalp/manage", async (c) => {
     const merged = rebaseFuturesToSpot(candles, spot, 300);
     const close = merged.candles.map((k) => k.close);
     const livePrice = spot?.price ?? close[close.length - 1];
-    const res = manageGoldM5Scalp({ action, refPrice, livePrice, close });
+    const res = manageGoldM5Scalp({
+      action,
+      refPrice,
+      livePrice,
+      close,
+      tpPip: isFinite(tpPip) && tpPip > 0 ? tpPip : void 0,
+      slPip: isFinite(slPip) && slPip > 0 ? slPip : void 0
+    });
     return c.json({
       ok: true,
       lastUpdate: (/* @__PURE__ */ new Date()).toISOString(),
@@ -6414,7 +6593,16 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     const goldTimes = useCandles2.map((k) => k.time);
     const closes = useCandles2.map((k) => k.close);
     let dec2;
-    if (a.id === "XAUUSD-M5") dec2 = decideGoldM5(result2, closes, capital, riskPct);
+    if (a.id === "XAUUSD-M5") dec2 = decideGoldM5(
+      result2,
+      closes,
+      capital,
+      riskPct,
+      useCandles2.map((k) => k.open),
+      useCandles2.map((k) => k.high),
+      useCandles2.map((k) => k.low),
+      goldTimes
+    );
     else if (a.id === "XAUUSD-M30") dec2 = decideGoldM30(result2, closes, capital, riskPct);
     else if (a.id === "XAUUSD-H1") dec2 = decideGoldH1(result2, closes, capital, riskPct);
     else if (a.id === "XAUUSD-H4") dec2 = decideGoldH4(result2, closes, capital, riskPct);
