@@ -271,6 +271,18 @@ function render() {
       <p class="text-[11px] text-slate-500 mt-1.5 max-w-xl mx-auto">حجمِ لاتِ پیشنهادی طوری محاسبه می‌شود که اگر SL بخورد، دقیقاً همین درصدِ ریسک از سرمایه‌تان کم شود. (بک‌تستِ برنده S67: با ۱۰٬۰۰۰$ و ریسکِ ۱٪ ⇒ سودِ خالص +۳۷٬۱۵۶$)</p>
     </header>`
 
+  app.innerHTML = header +
+    renderCardControls() +
+    `<main id="asset-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4">${buildCardsHTML()}</main>` +
+    `<footer class="mt-6 text-center text-xs text-slate-600">
+       این ابزار برای تحقیقِ علمی است و توصیهٔ مالی نیست. بازار ریسک دارد.
+     </footer>`
+  bindGlobalEvents()
+  bindCardEvents()
+}
+
+// محتوای داخلِ گریدِ کارت‌ها را می‌سازد (بدونِ header/پنلِ کنترل).
+function buildCardsHTML() {
   const visible = orderedVisibleAssets()
   const cards = visible.map(a => renderCard(a)).join('')
   const emptyNote = visible.length === 0
@@ -279,13 +291,18 @@ function render() {
          <p>همهٔ کارت‌ها مخفی‌اند. از «تنظیمِ کارت‌ها» در بالا، کارت‌های موردِنظر را نمایان کنید.</p>
        </div>`
     : ''
-  app.innerHTML = header +
-    renderCardControls() +
-    `<main id="asset-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4">${cards}${emptyNote}</main>` +
-    `<footer class="mt-6 text-center text-xs text-slate-600">
-       این ابزار برای تحقیقِ علمی است و توصیهٔ مالی نیست. بازار ریسک دارد.
-     </footer>`
-  bindEvents()
+  return cards + emptyNote
+}
+
+// 🩹 رفعِ نشتی/هنگ: رفرشِ دوره‌ایِ ۳۰-ثانیه‌ای دیگر کلِ صفحه را بازنمی‌سازد.
+// فقط محتوای گریدِ کارت‌ها را جایگزین می‌کند و listenerهای همان کارت‌ها را می‌بندد.
+// header و پنلِ تنظیمِ کارت‌ها دست‌نخورده می‌مانند (هیچ listenerِ سراسری‌ای دوباره
+// ساخته نمی‌شود) — این همان چیزی است که روی موبایل باعثِ انباشتِ حافظه و مرگِ صفحه می‌شد.
+function renderCardsOnly() {
+  const grid = document.getElementById('asset-grid')
+  if (!grid) { render(); return }   // اگر هنوز رندرِ کامل نشده، یک‌بار کامل بساز
+  grid.innerHTML = buildCardsHTML()
+  bindCardEvents()
 }
 
 // ============================================================================
@@ -692,7 +709,8 @@ function renderIndicators(d) {
 // ============================================================================
 // رویدادها
 // ============================================================================
-function bindEvents() {
+// listenerهای «سراسری» (header + پنلِ کنترل + سرمایه/ریسک) — فقط هنگامِ رندرِ کامل.
+function bindGlobalEvents() {
   // --- باگ #۲: دکمهٔ بروزرسانیِ دستیِ داده‌ها (User Note) ---
   // هم تصمیم/سیگنال (/api/decision) و هم قیمتِ زندهٔ کارت‌ها (/api/spots) را فوراً
   // به‌روز می‌کند و بازخوردِ بصری می‌دهد؛ مستقل از تایمرِ خودکارِ ۳۰ ثانیه.
@@ -775,6 +793,12 @@ function bindEvents() {
       refreshAll().then(() => { const b = document.getElementById('cap-apply'); if (b) b.textContent = 'اعمال' })
     }
   }
+}
+
+// listenerهای «کارت‌محور» (دکمه‌های داخلِ هر کارت) — هم در رندرِ کامل و هم در
+// renderCardsOnly صدا زده می‌شوند. چون همه با .onclick بسته می‌شوند (نه addEventListener)
+// و عناصر با هر رندر تازه‌اند، نشتی‌ای ایجاد نمی‌شود.
+function bindCardEvents() {
   document.querySelectorAll('.btn-register').forEach(btn => {
     btn.onclick = () => {
       const d = btn.dataset
@@ -893,7 +917,8 @@ async function refreshAll() {
         store[a.asset].error = a.error
       }
     })
-    render()
+    // رفرشِ دوره‌ای فقط کارت‌ها را به‌روز می‌کند (نه کلِ صفحه) تا نشتی/هنگ نداشته باشیم.
+    renderCardsOnly()
     lastFetchAt = Date.now()   // لحظهٔ دریافتِ این پاسخ (ساعتِ خودِ مرورگر)
     const lu = document.getElementById('last-update')
     if (lu) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
