@@ -73,6 +73,8 @@ let assetsMeta = []
 //   - order: شمارهٔ ترتیبِ هر کارت (کوچک‌تر = بالاتر). کارت‌های بدونِ شماره ته می‌روند.
 // این ماژول کاملاً مستقل از منطقِ تصمیمِ کارت‌هاست ⇒ فقط لایهٔ نمایش را کنترل می‌کند.
 // ============================================================================
+// وضعیتِ باز/بستهٔ پنلِ تنظیمِ کارت‌ها (بین رندرها حفظ می‌شود)
+let panelOpen = false
 const PREFS_KEY = 'card_prefs_v1'
 function getPrefs() {
   try {
@@ -715,6 +717,46 @@ function bindEvents() {
         }
       }
     }
+  }
+
+  // --- 🎛️ پنلِ تنظیمِ کارت‌ها (User Note): نمایش/مخفی + ترتیب ---
+  // نکته: برای اینکه با هر رندر پنل بسته نشود، وضعیتِ بازبودنِ <details> را در یک
+  // متغیرِ ماژول (panelOpen) نگه می‌داریم و پس از هر render دوباره اعمال می‌کنیم.
+  const controls = document.getElementById('card-controls')
+  if (controls) {
+    controls.open = panelOpen
+    controls.addEventListener('toggle', () => { panelOpen = controls.open })
+  }
+  // چک‌باکسِ نمایش/مخفیِ هر کارت
+  document.querySelectorAll('.cardvis-toggle').forEach(cb => {
+    cb.onchange = () => {
+      panelOpen = true
+      setHidden(cb.dataset.asset, !cb.checked)   // checked=نمایان ⇒ hidden=false
+      render()
+    }
+  })
+  // شمارهٔ ترتیبِ هر کارت — با change (نه هر کیبورد) تا تایپ روان بماند
+  document.querySelectorAll('.cardord-input').forEach(inp => {
+    inp.onchange = () => {
+      panelOpen = true
+      const v = parseInt(inp.value, 10)
+      setOrder(inp.dataset.asset, isFinite(v) ? v : undefined)
+      render()
+    }
+  })
+  // نمایشِ همه
+  const showAllBtn = document.getElementById('cards-show-all')
+  if (showAllBtn) showAllBtn.onclick = () => {
+    panelOpen = true
+    const p = getPrefs(); p.hidden = {}; setPrefs(p)
+    render()
+  }
+  // بازنشانیِ ترتیب به پیش‌فرض
+  const resetOrderBtn = document.getElementById('cards-reset-order')
+  if (resetOrderBtn) resetOrderBtn.onclick = () => {
+    panelOpen = true
+    const p = getPrefs(); p.order = {}; setPrefs(p)
+    render()
   }
 
   // --- L41: اعمالِ سرمایه/ریسک ---
