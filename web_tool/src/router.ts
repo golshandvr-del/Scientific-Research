@@ -54,6 +54,24 @@ export interface RouterDecision {
   regime: RegimeInfo
   headline: string              // خطِ اصلیِ تصمیم (فارسی)
   reason: string                // دلیلِ دقیق (چرا این حالت)
+  // --- منبعِ سیگنال (پاسخ به User Note #4: «بگو سیگنال طبقِ کدام لایه/فیلتر است») ---
+  // هر تصمیمِ ENTRY/APPROACHING باید صریحاً بگوید از کدام لایه/استراتژی آمده و چه
+  // فیلترهایی روی آن اعمال شده‌اند. این فیلد در فرانت‌اند به کاربر نمایش داده می‌شود.
+  sourceLayer?: {
+    code: string                // کدِ لایه (مثلِ S139، S168، S171، S67)
+    name: string                // نامِ فارسیِ لایه
+    kind: 'time' | 'price-action' | 'regime-ml' | 'ma-confluence' | 'squeeze' | 'session'
+    filters?: string[]          // فیلترهای اعمال‌شده (مثلِ «تأییدِ امتیازیِ S163»)
+    // پلنِ مدیریتِ معامله‌ی مخصوصِ همین لایه (برای trade_manager — User Note #3):
+    manage?: {
+      style: 'let-run-trail' | 'structural-trail' | 'fixed-tp-sl' | 'regime-atr-trail'
+      beTriggerR?: number       // آستانهٔ سود (بر حسبِ R) برای انتقالِ SL به بریک‌ایون
+      trailDistPrice?: number   // فاصلهٔ trailing بر حسبِ واحدِ قیمت (اگر ثابت باشد)
+      trailAtrMult?: number     // یا فاصلهٔ trailing بر حسبِ ضریبِ ATR
+      maxHoldBars?: number      // سقفِ نگه‌داری (کندل)
+      note: string              // توضیحِ فارسیِ سبکِ مدیریتِ همین لایه
+    }
+  }
   // فقط در ENTRY پر می‌شوند:
   direction?: 'LONG' | 'SHORT'
   entry?: number
