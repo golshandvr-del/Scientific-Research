@@ -339,6 +339,15 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'ENTRY', regime: reg,
         headline: 'ورود خرید (LONG) — درایوِ شبانهٔ طلا (ابتدای سشنِ آسیا)',
         reason: ov.reason,
+        sourceLayer: {
+          code: 'S139', name: 'درایوِ شبانه (Overnight Drift)', kind: 'time',
+          manage: {
+            style: 'let-run-trail', beTriggerR: 1.0,
+            trailDistPrice: OVERNIGHT_SL_PIP * 0.1, maxHoldBars: OVERNIGHT_MAX_HOLD,
+            note: `این لایهٔ زمان-محور با R:R بالا (۱:${(OVERNIGHT_TP_PIP / OVERNIGHT_SL_PIP).toFixed(1)}) طراحیِ «بگذار بردها بدوند» دارد. ` +
+              `پس از ۱R سود، SL را به بریک‌ایون ببر؛ سپس با فاصلهٔ ${(OVERNIGHT_SL_PIP * 0.1).toFixed(1)}$ trail کن و تا سقفِ ${OVERNIGHT_MAX_HOLD} کندل (۲۴ ساعت) نگه دار.`,
+          },
+        },
         direction: 'LONG', entry, tp, sl,
         rr: `SL ثابت ${OVERNIGHT_SL_PIP}pip (${ov.slDist.toFixed(2)}$) / TP ${OVERNIGHT_TP_PIP}pip ` +
           `(${ov.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(OVERNIGHT_TP_PIP / OVERNIGHT_SL_PIP).toFixed(1)} (بگذار بردها بدوند)`,
