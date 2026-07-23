@@ -269,13 +269,80 @@ function render() {
       <p class="text-[11px] text-slate-500 mt-1.5 max-w-xl mx-auto">حجمِ لاتِ پیشنهادی طوری محاسبه می‌شود که اگر SL بخورد، دقیقاً همین درصدِ ریسک از سرمایه‌تان کم شود. (بک‌تستِ برنده S67: با ۱۰٬۰۰۰$ و ریسکِ ۱٪ ⇒ سودِ خالص +۳۷٬۱۵۶$)</p>
     </header>`
 
-  const cards = assetsMeta.map(a => renderCard(a)).join('')
+  const visible = orderedVisibleAssets()
+  const cards = visible.map(a => renderCard(a)).join('')
+  const emptyNote = visible.length === 0
+    ? `<div class="col-span-full text-center text-slate-500 p-8 rounded-2xl border border-slate-700 bg-slate-900/50">
+         <i class="fas fa-eye-slash text-2xl mb-2"></i>
+         <p>همهٔ کارت‌ها مخفی‌اند. از «تنظیمِ کارت‌ها» در بالا، کارت‌های موردِنظر را نمایان کنید.</p>
+       </div>`
+    : ''
   app.innerHTML = header +
-    `<main id="asset-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4">${cards}</main>` +
+    renderCardControls() +
+    `<main id="asset-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-4">${cards}${emptyNote}</main>` +
     `<footer class="mt-6 text-center text-xs text-slate-600">
        این ابزار برای تحقیقِ علمی است و توصیهٔ مالی نیست. بازار ریسک دارد.
      </footer>`
   bindEvents()
+}
+
+// ============================================================================
+// 🎛️ پنلِ تنظیمِ کارت‌ها (User Note) — انتخابِ نمایش + ترتیب با شماره
+// ----------------------------------------------------------------------------
+// یک بخشِ جمع‌شونده (details) در بالای سایت. برای هر کارت:
+//   • چک‌باکسِ نمایش/مخفی.
+//   • یک ورودیِ عددیِ «شمارهٔ ترتیب» (کوچک‌تر بالاتر).
+// تغییرات بلافاصله در localStorage ذخیره و صفحه دوباره رندر می‌شود.
+// برچسبِ سبکِ هر کارت (اسکالپ/نوسانی/تایم‌فریمِ بالا/در دستِ تحقیق) هم نشان داده
+// می‌شود تا کاربر ماهیتِ هر کارت را بشناسد.
+// ============================================================================
+const LAYER_BADGE = {
+  scalp:       { fa: 'اسکالپ',        cls: 'bg-fuchsia-500/20 text-fuchsia-300' },
+  swing:       { fa: 'نوسانی',        cls: 'bg-sky-500/20 text-sky-300' },
+  'swing-m30': { fa: 'نوسانی M30',    cls: 'bg-amber-500/20 text-amber-300' },
+  htf:         { fa: 'تایم‌فریمِ بالا', cls: 'bg-indigo-500/20 text-indigo-300' },
+  placeholder: { fa: 'در دستِ تحقیق', cls: 'bg-slate-500/20 text-slate-300' },
+}
+function renderCardControls() {
+  if (!assetsMeta.length) return ''
+  const p = getPrefs()
+  const rows = assetsMeta.map((a, i) => {
+    const hidden = !!p.hidden[a.id]
+    const ord = (typeof p.order[a.id] === 'number' && isFinite(p.order[a.id])) ? p.order[a.id] : (i + 1)
+    const badge = LAYER_BADGE[a.layer] || LAYER_BADGE.swing
+    return `
+      <div class="flex items-center gap-2 rounded-lg bg-slate-800/50 border border-slate-700/60 px-2.5 py-2">
+        <label class="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+          <input type="checkbox" class="cardvis-toggle accent-emerald-500 w-4 h-4" data-asset="${a.id}" ${hidden ? '' : 'checked'}>
+          <span class="text-sm text-slate-200 truncate">${a.name}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded font-bold shrink-0 ${badge.cls}">${badge.fa}</span>
+        </label>
+        <label class="flex items-center gap-1 text-[11px] text-slate-400 shrink-0">
+          ترتیب
+          <input type="number" min="1" step="1" value="${ord}"
+            class="cardord-input w-14 rounded bg-slate-900 border border-slate-600 px-1.5 py-1 text-indigo-200 font-bold text-center tabular-nums focus:outline-none focus:border-indigo-500"
+            dir="ltr" data-asset="${a.id}">
+        </label>
+      </div>`
+  }).join('')
+  const shownCount = assetsMeta.filter(a => !p.hidden[a.id]).length
+  return `
+    <details id="card-controls" class="mb-5 rounded-2xl border border-slate-700 bg-slate-900/60 overflow-hidden">
+      <summary class="cursor-pointer select-none px-4 py-3 bg-slate-800/60 flex items-center justify-between">
+        <span class="font-bold text-slate-100"><i class="fas fa-sliders ml-2 text-indigo-300"></i>تنظیمِ کارت‌ها (نمایش و ترتیب)</span>
+        <span class="text-xs text-slate-400">${shownCount} از ${assetsMeta.length} کارت نمایان</span>
+      </summary>
+      <div class="p-3">
+        <p class="text-[11px] text-slate-500 mb-2.5 leading-relaxed">
+          تیکِ هر کارت را برای نمایش/مخفی‌کردن بزنید و با «شماره‌ی ترتیب» جای آن را تعیین کنید (عددِ کوچک‌تر، بالاتر). تنظیماتِ شما ذخیره می‌شود.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">${rows}</div>
+        <div class="flex flex-wrap items-center gap-2 mt-3">
+          <button id="cards-show-all" class="rounded bg-emerald-600/90 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-1.5 transition"><i class="fas fa-eye ml-1"></i>نمایشِ همه</button>
+          <button id="cards-reset-order" class="rounded bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs px-3 py-1.5 transition"><i class="fas fa-rotate ml-1"></i>ترتیبِ پیش‌فرض</button>
+        </div>
+      </div>
+    </details>`
 }
 
 function renderCard(a) {
