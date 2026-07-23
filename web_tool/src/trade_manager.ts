@@ -287,8 +287,8 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
     })
   }
 
-  // ---------- ۳) تریلینگ استاپ با ATR (وقتی سود >1.5R شد) ----------
-  if (!reachedTp && !reachedSl && pnlR >= 1.5) {
+  // ---------- ۳) تریلینگ استاپ با ATR (وقتی سود >1.5R شد) — فقط اگر پلنِ لایه نداریم ----------
+  if (!planHandled && !reachedTp && !reachedSl && pnlR >= 1.5) {
     const trail = isLong ? round2(price - 1.5 * atr) : round2(price + 1.5 * atr)
     const better = isLong ? trail > t.sl : trail < t.sl
     if (better) {
