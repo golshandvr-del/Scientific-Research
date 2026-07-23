@@ -418,28 +418,13 @@ export function decide(a: AnalysisResult, close: number[],
     // گیتِ ورود نیست (moConfirmed همیشه true تا با استراتژیِ رکورد هم‌راستا بماند).
     const moConfirm = (Array.isArray(high) && Array.isArray(low))
       ? confirmScore(close, high, low) : null
-    const moConfirmed = true
     if (moConfirm) {
-      moInd.push({ name: `تأییدِ امتیازیِ Monday (S163)`,
-        value: `${moConfirm.score}/${moConfirm.maxScore} ${moConfirmed ? '✓ (کافی)' : '✗ (ناکافی)'}`,
-        status: moConfirmed ? 'ok' : 'warn' })
-    }
-    if (mo.state === 'ENTRY' && !moConfirmed) {
-      // پنجرهٔ زمانی باز است اما تأییدها کافی نیست ⇒ به‌جای ورود، «نزدیک‌شدن/منتظرِ تأیید».
-      return {
-        state: 'APPROACHING', regime: reg,
-        headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ Monday باز است اما تأییدها کامل نیست',
-        reason: `${mo.reason}\n\n⚠️ فیلترِ تأییدِ متعامد (S163): امتیازِ تأیید ${moConfirm!.score} از ${moConfirm!.maxScore} ` +
-          `است و از آستانهٔ ${CONFIRM_MIN_SCORE} کمتر است. طبقِ نشستِ S163 (پاسخِ User Note)، ورود تنها ` +
-          `وقتی رخ می‌دهد که شاخص‌های تأییدِ روند/مومنتوم/نوسان هم‌سو شوند — این فیلتر WR این لایه را ` +
-          `از زیرِ ۴۰٪ به بالای ۴۰٪ رساند بدونِ آسیب به سودِ خالص.`,
-        sourceLayer: {
-          code: 'S140⁺', name: 'درایوِ ابتدای هفته (Monday Drift)', kind: 'time',
-          filters: [`تأییدِ امتیازیِ متعامد (S163): ${moConfirm!.score}/${moConfirm!.maxScore} — هنوز ناکافی`],
-        },
-        confirmations: moConfirm!.breakdown.map(b => ({ label: b.label, met: b.met, detail: `مقدار: ${b.value}` })),
-        indicators: moInd,
-      }
+      // فقط اطلاعاتی (نه گیتِ ورود): نشان می‌دهد شاخص‌های تأیید هم‌سو هستند یا نه.
+      // در نسخهٔ S140⁺⁺ روی M5، فیلترِ S163 گیتِ ورود نیست (S194 اثبات کرد net را کاهش می‌دهد)؛
+      // پس در پنجرهٔ باز همیشه مستقیم به ENTRY می‌رویم و این صرفاً یک شاخصِ نمایشی است.
+      moInd.push({ name: `تأییدِ امتیازیِ Monday (S163 — اطلاعاتی)`,
+        value: `${moConfirm.score}/${moConfirm.maxScore} ${moConfirm.score >= CONFIRM_MIN_SCORE ? '(هم‌سو)' : '(خنثی)'}`,
+        status: 'neutral' })
     }
     if (mo.state === 'ENTRY') {
       const entry = a.price
