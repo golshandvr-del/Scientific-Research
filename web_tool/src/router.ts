@@ -531,6 +531,12 @@ export function decide(a: AnalysisResult, close: number[],
         status: tom.state === 'ENTRY' ? 'ok' : tom.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
     ]
+    const tomGate: RouterDecision['timeGate'] = {
+      layerCode: 'S141', label: 'درایوِ اولِ ماهِ طلا (Turn-of-Month)',
+      entryHoursUtc: [7, 8, 9, 10, 11, 12],
+      dayOfMonthNote: 'فقط در اولین روزِ معاملاتیِ هر ماه فعال است',
+      windowOpen: tom.state === 'ENTRY',
+    }
     // ★ فیلترِ تأییدِ امتیازی (S163): ورودِ Turn-of-Month فقط وقتی امتیازِ تأیید کافی باشد.
     const tomConfirm = (Array.isArray(high) && Array.isArray(low))
       ? confirmScore(close, high, low) : null
@@ -552,7 +558,7 @@ export function decide(a: AnalysisResult, close: number[],
           filters: [`تأییدِ امتیازیِ متعامد (S163): ${tomConfirm!.score}/${tomConfirm!.maxScore} — هنوز ناکافی`],
         },
         confirmations: tomConfirm!.breakdown.map(b => ({ label: b.label, met: b.met, detail: `مقدار: ${b.value}` })),
-        indicators: tomInd,
+        indicators: tomInd, timeGate: tomGate,
       }
     }
     if (tom.state === 'ENTRY') {
@@ -600,7 +606,7 @@ export function decide(a: AnalysisResult, close: number[],
           note: `SL ثابت ${TOM_SL_PIP}pip (${tom.slDist.toFixed(2)}$). اگر درایوِ اولِ ماه شکل نگرفت، ` +
             `این SL ضرر را محدود می‌کند؛ اما بردهای واقعی به‌مراتب بزرگ‌ترند (R:R ۱:۷).`,
         },
-        indicators: tomInd,
+        indicators: tomInd, timeGate: tomGate,
       }
     }
     if (tom.state === 'APPROACHING') {
@@ -613,7 +619,7 @@ export function decide(a: AnalysisResult, close: number[],
           { label: 'رسیدنِ ساعتِ UTC به ۷:۰۰ در اولین روزِ معاملاتیِ ماه (ورودِ پنجرهٔ درایوِ اولِ ماه)', met: false,
             detail: 'با بسته‌شدنِ کندلِ ساعتِ ۷ UTC در اولین روزِ ماه، سیگنالِ ورودِ خرید صادر می‌شود.' },
         ],
-        indicators: tomInd,
+        indicators: tomInd, timeGate: tomGate,
       }
     }
     // tom.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
