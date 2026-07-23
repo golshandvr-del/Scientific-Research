@@ -40,6 +40,13 @@ fi
 PY=python3
 command -v python3 >/dev/null 2>&1 || PY=python
 
+# --- ۱.۵) جلوگیری از قطعِ سرور هنگامِ قفلِ صفحه (Termux) ---
+# بدونِ wake-lock، اندروید پس از قفلِ صفحه فرآیندِ Termux را می‌خوابانَد و سرور قطع می‌شود.
+if command -v termux-wake-lock >/dev/null 2>&1; then
+  echo "[*] فعال‌سازیِ wake-lock تا سرور هنگامِ قفلِ صفحه قطع نشود ..."
+  termux-wake-lock || true
+fi
+
 # --- ۲) اجرای سرور در پس‌زمینه ---
 echo "[*] در حالِ راه‌اندازیِ سرور روی پورتِ $PORT ..."
 "$PY" server.py &
@@ -65,6 +72,14 @@ fi
 echo ""
 echo "  برای توقف: Ctrl+C را بزنید (یا این ترمینال را ببندید)."
 echo "==============================================================="
+
+# آزادسازیِ wake-lock هنگامِ خروج (Ctrl+C)
+cleanup() {
+  if command -v termux-wake-unlock >/dev/null 2>&1; then
+    termux-wake-unlock || true
+  fi
+}
+trap cleanup EXIT INT TERM
 
 # منتظرِ سرور می‌مانیم تا اسکریپت با آن زنده بماند
 wait $SRV_PID
