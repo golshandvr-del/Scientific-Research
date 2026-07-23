@@ -131,7 +131,11 @@ class Handler(BaseHTTPRequestHandler):
             qs = parse_qs(parsed.query)
             asset = (qs.get("asset", ["XAUUSD"])[0]).upper()
             interval = qs.get("interval", ["15m"])[0]
-            rng = qs.get("range", ["2mo"])[0]
+            rng = qs.get("range", ["60d"])[0]
+            # Yahoo برای interval=15m مقدارِ «2mo» را نمی‌پذیرد (خطای 422)؛ به
+            # «60d» که معتبر است نگاشت می‌شود تا مسیرِ اول هم پایدار بماند.
+            RANGE_FIX = {"2mo": "60d", "1mo": "30d", "3mo": "90d"}
+            rng = RANGE_FIX.get(rng, rng)
             symbol = YAHOO_SYMBOL.get(asset, asset)
             try:
                 data = yahoo_fetch(symbol, interval, rng)
