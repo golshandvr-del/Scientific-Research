@@ -479,7 +479,7 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'APPROACHING', regime: reg,
         headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ ابتدای هفته در حالِ باز شدن',
         reason: mo.reason,
-        sourceLayer: { code: 'S140⁺', name: 'درایوِ ابتدای هفته (Monday Drift)', kind: 'time' },
+        sourceLayer: { code: 'S140⁺⁺', name: 'درایوِ ابتدای هفته (Monday Drift — M5, ۱۸-۲۰ UTC)', kind: 'time' },
         confirmations: [
           { label: 'رسیدنِ ساعتِ UTC به ۱۸:۰۰ در روزِ دوشنبه (ورودِ پنجرهٔ درایوِ ابتدای هفته)', met: false,
             detail: 'با بسته‌شدنِ کندلِ دوشنبه ساعتِ ۱۸ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
@@ -497,7 +497,7 @@ export function decide(a: AnalysisResult, close: number[],
   // ماه» (ساعاتِ ۷–۱۲ UTC، سشنِ لندن) درایوِ صعودیِ ساختاری دارد (اثرِ چرخشِ ماه؛
   // tom_rel=1 با t=+9.66 = قوی‌ترین t-stat کلِ پروژه). سهمِ محافظه‌کارانهٔ +$4,162،
   // افزایشی به رکورد (corr +0.09 با Overnight، +0.06 با Monday، +0.13 با S67 — پایین‌ترین
-  // در پروژه). این پنجره (۷–۱۲) با Overnight (۲۲–۲۳) و Monday (۱۸–۲۱) هم‌پوشانی ندارد.
+  // در پروژه). این پنجره (۷–۱۲) با Overnight (۲۲–۲۳) و Monday (۱۸–۲۰) هم‌پوشانی ندارد.
   if (spec.id === 'XAUUSD' && typeof utcHour === 'number' && Array.isArray(times) && times.length > 1) {
     const tom = computeTurnOfMonth(times, utcHour)
     const tomInd: RouterDecision['indicators'] = [
