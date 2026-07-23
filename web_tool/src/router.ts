@@ -821,6 +821,110 @@ export function decide(a: AnalysisResult, close: number[],
     }
   }
 
+  // ========================================================================
+  // لایه‌های price-actionِ Al Brooks (کشفِ رکورد) — اتصالِ لبه‌های غایب به سایت
+  // ------------------------------------------------------------------------
+  // پاسخِ صریح به نگرانیِ User Note («بخشِ سیگنالِ ورود مثلِ بخشِ تصمیم از همهٔ
+  // لایه‌ها ورودی بگیرد»): تا پیش از این، ماژول‌های brooks_high2.ts (S168) و
+  // signs_of_strength.ts (S171) در پروژه ساخته و پذیرفته شده بودند اما به موتورِ
+  // زندهٔ router وصل نبودند (dead-code). اکنون در زنجیرهٔ اولویت وصل می‌شوند.
+  //
+  // چرا این جایگاه (بعد از زمان-محورها/Squeeze، قبل از VWAP/ML)؟
+  //   • S168 در رکورد فقط سهمِ **مستقلِ OUT** را دارد (خارج از پنجره‌های زمان-محور،
+  //     +$1,351). چون همهٔ لایه‌های زمان-محور بالاتر با `return` خارج شده‌اند، هر
+  //     سیگنالی که به اینجا برسد قطعاً «OUT» است ⇒ هیچ همپوشانی/شمارشِ دوباره‌ای رخ
+  //     نمی‌دهد و «تداخلِ سیگنالِ ورود» که کاربر نگرانش بود، ساختاراً حذف است.
+  //   • S171 (Signs of Strength) لایهٔ مستقلِ ناهمبستهٔ روند-دنبال‌کن است (Δ +$8,130).
+  // ترتیب: اول High-2 (ساختاری، دقیق‌تر)، سپس SoS (روند-محور). فقط XAUUSD long.
+  // اعتبار: results/S168_...ACCEPTED.md و results/S171_...ACCEPTED.md
+  // ========================================================================
+  if (spec.id === 'XAUUSD' && high && low && high.length === close.length && low.length === close.length) {
+    const pip = 0.1
+
+    // ---- لایهٔ ۱: Brooks High-2 (S168) — ساختاریِ bar-counting ----
+    const bh = computeBrooksHigh2(high, low, close)
+    const bhInd: RouterDecision['indicators'] = [
+      { name: 'ساختارِ Brooks High-2 (شمارندهٔ اصلاح)', value: `${bh.upCount}/۲`,
+        status: bh.state === 'ENTRY' ? 'ok' : (bh.upCount >= 1 ? 'neutral' : 'warn') },
+      ...indicators,
+    ]
+    if (bh.state === 'ENTRY') {
+      const entry = a.price
+      const sl = entry - bh.slDist
+      const tp = entry + bh.tpDist
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, bh.slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'ورود خرید (LONG) — الگوی ساختاریِ Al Brooks «High-2» کامل شد',
+        sourceLayer: {
+          code: 'S168', name: 'Al Brooks High-2 (ساختاری/price-action)', kind: 'price-action',
+          filters: ['گیتِ روندِ صعودی EMA۲۰>EMA۵۰', 'سیگنالِ مستقل: خارج از همهٔ پنجره‌های زمان-محور (بخشِ OUT)'],
+          manage: {
+            style: 'structural-trail', beTriggerR: 1.0,
+            trailDistPrice: BROOKS_SL_POINT * pip, maxHoldBars: BROOKS_MAX_HOLD,
+            note: `مدیریتِ ساختاری (price-action): SL اولیه ${BROOKS_SL_POINT}pt زیرِ پایهٔ اصلاح. پس از ۱R سود، ` +
+              `SL را به بریک‌ایون ببر؛ سپس زیرِ کفِ هر پولبکِ جدید (higher-low) بالا بیاور — تا سقفِ ${BROOKS_MAX_HOLD} کندل. ` +
+              `اگر روند شکست (EMA۲۰ زیرِ EMA۵۰ رفت) فوراً خارج شو، حتی قبل از TP.`,
+          },
+        },
+        reason: bh.reason,
+        direction: 'LONG', entry, tp, sl,
+        rr: `SL ثابت ${BROOKS_SL_POINT}pt (${bh.slDist.toFixed(2)}$) / TP ${BROOKS_TP_POINT}pt (${bh.tpDist.toFixed(2)}$) — R:R ≈ ۱:${(BROOKS_TP_POINT / BROOKS_SL_POINT).toFixed(1)}`,
+        probability: 55,
+        sizing: {
+          lotMultiplier: 1.0, label: 'Al Brooks High-2 (ساختاری)',
+          note: `لایهٔ مستقلِ price-action (S168). سهمِ مستقلِ OUT در بک‌تست +$۱٬۳۵۱، ناهمبسته با پرتفویِ زمان-محور.`,
+          lots: lots ?? undefined, riskDollars: rd, capital, riskPct,
+          capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% (ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، ` +
+            `حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. اگر SL بخورد ~${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        indicators: bhInd,
+      }
+    }
+
+    // ---- لایهٔ ۲: Signs of Strength (S171) — سنجهٔ عددیِ قدرتِ روند ----
+    const sos = computeSignsOfStrength(high, low, close)
+    const sosInd: RouterDecision['indicators'] = [
+      { name: 'نمرهٔ قدرتِ روندِ Brooks (Signs of Strength)', value: `${sos.score}/۴`,
+        status: sos.state === 'ENTRY' ? 'ok' : (sos.score >= 1 ? 'neutral' : 'warn') },
+      ...indicators,
+    ]
+    if (sos.state === 'ENTRY') {
+      const entry = a.price
+      const sl = entry - sos.slDist
+      const tp = entry + sos.tpDist
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, sos.slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'ورود خرید (LONG) — «نشانه‌های قدرتِ روند» Al Brooks تأیید شد',
+        sourceLayer: {
+          code: 'S171', name: 'Al Brooks Signs of Strength (روند-محور)', kind: 'price-action',
+          filters: [`نمرهٔ قدرتِ روند ≥ ${2} از ۴ نشانه`, 'لایهٔ مستقلِ ناهمبسته'],
+          manage: {
+            style: 'let-run-trail', beTriggerR: 1.0,
+            trailDistPrice: SOS_SL_POINT * pip, maxHoldBars: SOS_MAX_HOLD,
+            note: `مدیریتِ روند-دنبال‌کن: SL اولیه ${SOS_SL_POINT}pt. پس از ۱R سود بریک‌ایون؛ سپس trailing با فاصلهٔ ` +
+              `${(SOS_SL_POINT * pip).toFixed(1)}$ و تا سقفِ ${SOS_MAX_HOLD} کندل بگذار روندِ قوی بدود — طبقِ فصلِ ۱۹ کتابِ Brooks بردهای روندِ قوی بزرگ‌اند.`,
+          },
+        },
+        reason: sos.reason,
+        direction: 'LONG', entry, tp, sl,
+        rr: `SL ثابت ${SOS_SL_POINT}pt (${sos.slDist.toFixed(2)}$) / TP ${SOS_TP_POINT}pt (${sos.tpDist.toFixed(2)}$) — R:R ≈ ۱:${(SOS_TP_POINT / SOS_SL_POINT).toFixed(1)}`,
+        probability: 54,
+        sizing: {
+          lotMultiplier: 1.0, label: 'Al Brooks Signs of Strength (روند-محور)',
+          note: `لایهٔ مستقلِ price-action (S171). سهمِ مستقلِ ناهمبسته در بک‌تست +$۸٬۱۳۰.`,
+          lots: lots ?? undefined, riskDollars: rd, capital, riskPct,
+          capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% (ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، ` +
+            `حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. اگر SL بخورد ~${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+        },
+        indicators: sosInd,
+      }
+    }
+  }
+
   // --------- حالتِ ۱: رنج / بی‌روند → خنثی (کلیدِ سودِ خالص طبقِ L36) ---------
   // رفعِ باگ (User Note): رژیمِ «رنج» اینجا از سرِ ساختارِ EMA50/200 تعیین می‌شود،
   // نه صرفاً از ER. متنِ قبلی همیشه می‌گفت «ER زیرِ آستانهٔ ۰.۱۵»، حتی وقتی ER بالای
