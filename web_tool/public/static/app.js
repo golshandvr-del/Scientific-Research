@@ -330,6 +330,7 @@ function renderNeutral(a, d) {
       <p class="font-bold text-slate-200 mb-1"><i class="fas fa-circle-pause ml-1 text-slate-400"></i>${d.headline}</p>
       <p class="text-sm text-slate-400 leading-relaxed">${d.reason}</p>
     </div>
+    ${renderTimeGate(d)}
     ${renderIndicators(d)}`
 }
 
