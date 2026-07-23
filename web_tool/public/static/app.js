@@ -893,6 +893,8 @@ function bindCardEvents() {
         scalp: true,
         action: d.action,                 // 'BUY' | 'SELL'
         entry: Number(d.ref),             // قیمتِ مرجعِ ورود (فقط داخلی — به کاربر نمایش داده نمی‌شود)
+        tpPip: d.tp ? Number(d.tp) : null, // آستانهٔ پنهانِ مخصوصِ لایه (S214=300 ، M5-Scalp=120)
+        slPip: d.sl ? Number(d.sl) : null,
         openedAt: Math.floor(Date.now() / 1000),
       }
       setTrade(d.asset, trade)
