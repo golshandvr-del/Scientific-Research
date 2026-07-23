@@ -190,6 +190,15 @@ export function decideEurusd(
     return {
       state: 'ENTRY', regime: reg,
       headline: 'ورود خرید (LONG) — باز شدنِ سشنِ اروپا با pullback تأیید شد',
+      sourceLayer: {
+        code: 'S73', name: 'درایوِ باز شدنِ سشنِ اروپا (Session-Open Drift)', kind: 'session',
+        filters: [`کندلِ ${ENTRY_HOUR_UTC}:00 UTC`, 'شرطِ pullback (۴ کندلِ اخیر نزولی — buy-the-dip)'],
+        manage: {
+          style: 'fixed-tp-sl', maxHoldBars: 4,
+          note: `لبهٔ زمانیِ کوچک و ساختاری (drift): TP ${TP_PIP}pip / SL ${SL_PIP}pip ثابت. ` +
+            `بک‌تست تأیید کرد TPِ بزرگِ ATR-محور و جابه‌جاییِ SL این لبه را خراب می‌کند؛ پس TP/SL را جابه‌جا نکن و به همان پلنِ اولیه پایبند بمان.`,
+        },
+      },
       reason:
         `کندلِ ساعتِ ${ENTRY_HOUR_UTC}:00 UTC (باز شدنِ نقدینگیِ اروپا) با شرطِ pullback فعال شد: ` +
         `۴ کندلِ اخیر ${deltaPip.toFixed(1)} pip نزولی بوده‌اند (buy-the-dip). ` +
