@@ -322,7 +322,8 @@ function renderEntry(a, d) {
     ${renderIndicators(d)}
     <button class="btn-register mt-3 w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-white transition"
       data-asset="${a.id}"
-      data-dir="${d.direction}" data-entry="${d.entry}" data-tp="${d.tp}" data-sl="${d.sl}" data-prob="${d.probability || ''}">
+      data-dir="${d.direction}" data-entry="${d.entry}" data-tp="${d.tp}" data-sl="${d.sl}" data-prob="${d.probability || ''}"
+      data-plan="${d.sourceLayer && d.sourceLayer.manage ? encodeURIComponent(JSON.stringify({ ...d.sourceLayer.manage, layerCode: d.sourceLayer.code, layerName: d.sourceLayer.name })) : ''}">
       <i class="fas fa-check ml-2"></i>معامله را در دمو باز و ثبت کردم
     </button>
     <p class="text-[11px] text-slate-500 mt-1.5 text-center">تا معامله را ثبت نکنی، به مرحلهٔ مدیریت نمی‌رویم.</p>`
