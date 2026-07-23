@@ -428,6 +428,10 @@ export function decide(a: AnalysisResult, close: number[],
           `است و از آستانهٔ ${CONFIRM_MIN_SCORE} کمتر است. طبقِ نشستِ S163 (پاسخِ User Note)، ورود تنها ` +
           `وقتی رخ می‌دهد که شاخص‌های تأییدِ روند/مومنتوم/نوسان هم‌سو شوند — این فیلتر WR این لایه را ` +
           `از زیرِ ۴۰٪ به بالای ۴۰٪ رساند بدونِ آسیب به سودِ خالص.`,
+        sourceLayer: {
+          code: 'S140⁺', name: 'درایوِ ابتدای هفته (Monday Drift)', kind: 'time',
+          filters: [`تأییدِ امتیازیِ متعامد (S163): ${moConfirm!.score}/${moConfirm!.maxScore} — هنوز ناکافی`],
+        },
         confirmations: moConfirm!.breakdown.map(b => ({ label: b.label, met: b.met, detail: `مقدار: ${b.value}` })),
         indicators: moInd,
       }
@@ -485,6 +489,7 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'APPROACHING', regime: reg,
         headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ ابتدای هفته در حالِ باز شدن',
         reason: mo.reason,
+        sourceLayer: { code: 'S140⁺', name: 'درایوِ ابتدای هفته (Monday Drift)', kind: 'time' },
         confirmations: [
           { label: 'رسیدنِ ساعتِ UTC به ۱۸:۰۰ در روزِ دوشنبه (ورودِ پنجرهٔ درایوِ ابتدای هفته)', met: false,
             detail: 'با بسته‌شدنِ کندلِ دوشنبه ساعتِ ۱۸ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
