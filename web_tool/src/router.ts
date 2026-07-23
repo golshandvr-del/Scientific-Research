@@ -382,6 +382,7 @@ export function decide(a: AnalysisResult, close: number[],
         state: 'APPROACHING', regime: reg,
         headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ شبانه در حالِ باز شدن',
         reason: ov.reason,
+        sourceLayer: { code: 'S139', name: 'درایوِ شبانه (Overnight Drift)', kind: 'time' },
         confirmations: [
           { label: 'رسیدنِ ساعتِ UTC به ۲۲:۰۰ (ورودِ پنجرهٔ درایوِ شبانه)', met: false,
             detail: 'با بسته‌شدنِ کندلِ ساعتِ ۲۲ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
