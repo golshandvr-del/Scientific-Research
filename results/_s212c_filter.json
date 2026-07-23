@@ -1,0 +1,29 @@
+{
+ "layers": [
+  {
+   "name": "S140 Monday+",
+   "base_net": 9919.940000000053,
+   "base_wr": 42.084942084942085,
+   "best": "asym_lb32_thr2.0",
+   "delta": 537.1600000000035,
+   "accepted": true
+  },
+  {
+   "name": "S142 Mid-Month",
+   "base_net": 21012.37000000003,
+   "base_wr": 35.54502369668246,
+   "best": null,
+   "delta": 0.0,
+   "accepted": false
+  },
+  {
+   "name": "S143 EURUSD Mid-Month+",
+   "base_net": 4604.680000000491,
+   "base_wr": 43.58974358974359,
+   "best": "asym_lb20_thr1.0",
+   "delta": 0.0,
+   "accepted": false
+  }
+ ],
+ "total_delta": 537.1600000000035
+}
