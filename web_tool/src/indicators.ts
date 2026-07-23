@@ -199,3 +199,54 @@ export function rollingSlope(x: number[], period: number): number[] {
   }
   return out
 }
+
+// ============================================================================
+// Vortex Indicator (VI+ , VI-) — لایهٔ S211. تشخیصِ جهتِ روند.
+//   VMP = |high - low[t-1]|,  VMM = |low - high[t-1]|
+//   TR  = max(h-l, |h-c[t-1]|, |l-c[t-1]|)
+//   VI+ = sum(VMP,p)/sum(TR,p) ,  VI- = sum(VMM,p)/sum(TR,p)
+// بدونِ look-ahead — فقط از داده تا اندیسِ i استفاده می‌شود.
+// ============================================================================
+export function vortex(c: Candle[], period = 14): { viPlus: number[]; viMinus: number[] } {
+  const n = c.length
+  const viPlus = NaNArr(n)
+  const viMinus = NaNArr(n)
+  if (n < period + 1) return { viPlus, viMinus }
+  const vmp = NaNArr(n)
+  const vmm = NaNArr(n)
+  const tr = NaNArr(n)
+  for (let i = 1; i < n; i++) {
+    vmp[i] = Math.abs(c[i].high - c[i - 1].low)
+    vmm[i] = Math.abs(c[i].low - c[i - 1].high)
+    tr[i] = Math.max(
+      c[i].high - c[i].low,
+      Math.abs(c[i].high - c[i - 1].close),
+      Math.abs(c[i].low - c[i - 1].close),
+    )
+  }
+  for (let i = period; i < n; i++) {
+    let sP = 0, sM = 0, sT = 0
+    for (let k = i - period + 1; k <= i; k++) { sP += vmp[k]; sM += vmm[k]; sT += tr[k] }
+    if (sT > 0) { viPlus[i] = sP / sT; viMinus[i] = sM / sT }
+  }
+  return { viPlus, viMinus }
+}
+
+// ============================================================================
+// Kaufman Efficiency Ratio — لایهٔ S211. کیفیت/کاراییِ روند در بازهٔ period.
+//   ER = |close[t]-close[t-p]| / sum(|close diff|, p)   (۰..۱ ؛ ۱=روندِ خالص)
+// ============================================================================
+export function kaufmanER(close: number[], period = 10): number[] {
+  const n = close.length
+  const out = NaNArr(n)
+  if (n < period + 1) return out
+  const absd = NaNArr(n)
+  for (let i = 1; i < n; i++) absd[i] = Math.abs(close[i] - close[i - 1])
+  for (let i = period; i < n; i++) {
+    const change = Math.abs(close[i] - close[i - period])
+    let vol = 0
+    for (let k = i - period + 1; k <= i; k++) vol += absd[k]
+    out[i] = vol > 0 ? change / vol : NaN
+  }
+  return out
+}
