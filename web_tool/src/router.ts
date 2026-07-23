@@ -445,14 +445,15 @@ export function decide(a: AnalysisResult, close: number[],
     const moInd: RouterDecision['indicators'] = [
       { name: 'روزِ هفته (لایهٔ ابتدای هفته)', value: utcDay === 1 ? 'دوشنبه ✓' : 'غیرِ دوشنبه',
         status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
-      { name: 'پنجرهٔ درایوِ ابتدای هفته (دوشنبه ۱۸–۲۰ UTC — S140⁺⁺/M5)',
+      { name: `پنجرهٔ درایوِ ابتدای هفته (دوشنبه ${toIranRange([...MONDAY_ENTRY_HOURS])} به وقتِ ایران — S140⁺⁺/M5)`,
         value: mo.state === 'ENTRY' ? 'باز ✓' : mo.state === 'APPROACHING' ? 'در حالِ باز شدن' : 'بسته',
         status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
     ]
     const moGate: RouterDecision['timeGate'] = {
       layerCode: 'S140⁺⁺', label: 'درایوِ ابتدای هفتهٔ طلا (Monday — M5)',
-      entryHoursUtc: [...MONDAY_ENTRY_HOURS], activeDaysUtc: [MONDAY_UTC_DAY],
+      entryHoursUtc: [...MONDAY_ENTRY_HOURS], endHourUtc: Math.max(...MONDAY_ENTRY_HOURS) + 1,
+      activeDaysUtc: [MONDAY_UTC_DAY],
       windowOpen: mo.state === 'ENTRY',
     }
     // ★ فیلترِ تأییدِ امتیازی (S163): در نسخهٔ M15 برای رساندنِ WR از زیرِ ۴۰٪ به بالای ۴۰٪ لازم بود.
