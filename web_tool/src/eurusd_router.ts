@@ -127,7 +127,7 @@ export function decideEurusd(
   const s164Approaching = s164Day && nowUtcHour === S164_APPROACH_HOUR_UTC
   const s164Indicators: RouterDecision['indicators'] = [
     { name: 'روز کاری تا پایان ماه', value: `${businessDaysLeft} روز (با احتساب امروز)`, status: s164Day ? 'ok' : 'neutral' },
-    { name: 'پنجرهٔ S164', value: `${S164_ENTRY_HOUR_UTC}:00 UTC`, status: nowUtcHour === S164_ENTRY_HOUR_UTC ? 'ok' : (s164Approaching ? 'warn' : 'neutral') },
+    { name: 'پنجرهٔ S164', value: `${toIranHM(S164_ENTRY_HOUR_UTC)} به وقتِ ایران`, status: nowUtcHour === S164_ENTRY_HOUR_UTC ? 'ok' : (s164Approaching ? 'warn' : 'neutral') },
     { name: 'اثر پیش از London Fix', value: s164Day ? 'روز هدف تأیید شد' : 'خارج از روز هدف', status: s164Day ? 'ok' : 'neutral' },
     { name: 'ATR', value: (a.atr / PIP).toFixed(1) + ' pip', status: 'neutral' },
     { name: 'RSI(14)', value: a.rsi14.toFixed(1), status: 'neutral' },
