@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:sandbox": "wrangler pages dev dist --ip 0.0.0.0 --port 3000",
-    "build:client": "esbuild src/browser/signal_client.ts --bundle --format=esm --outfile=public/static/browser-signal.js --minify",
+    "build:client": "npx --no-install esbuild src/browser/signal_client.ts --bundle --format=esm --outfile=public/static/browser-signal.js --minify || npx esbuild src/browser/signal_client.ts --bundle --format=esm --outfile=public/static/browser-signal.js --minify",
     "build": "npm run build:client && vite build",
     "preview": "wrangler pages dev dist",
     "deploy": "npm run build && wrangler pages deploy dist"
