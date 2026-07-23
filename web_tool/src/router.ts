@@ -412,10 +412,13 @@ export function decide(a: AnalysisResult, close: number[],
         status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
     ]
-    // ★ فیلترِ تأییدِ امتیازی (S163): ورودِ Monday فقط وقتی امتیازِ تأیید کافی باشد.
+    // ★ فیلترِ تأییدِ امتیازی (S163): در نسخهٔ M15 برای رساندنِ WR از زیرِ ۴۰٪ به بالای ۴۰٪ لازم بود.
+    // اما S194 اثبات کرد این فیلتر روی نسخهٔ M5 (S140⁺⁺) net را کاهش می‌دهد و چون S140⁺⁺ خودش
+    // WR ۴۴.۵٪ دارد (بالای کف بدونِ فیلتر)، دیگر لازم نیست ⇒ فقط اطلاعاتی نمایش داده می‌شود،
+    // گیتِ ورود نیست (moConfirmed همیشه true تا با استراتژیِ رکورد هم‌راستا بماند).
     const moConfirm = (Array.isArray(high) && Array.isArray(low))
       ? confirmScore(close, high, low) : null
-    const moConfirmed = !moConfirm || moConfirm.score >= CONFIRM_MIN_SCORE
+    const moConfirmed = true
     if (moConfirm) {
       moInd.push({ name: `تأییدِ امتیازیِ Monday (S163)`,
         value: `${moConfirm.score}/${moConfirm.maxScore} ${moConfirmed ? '✓ (کافی)' : '✗ (ناکافی)'}`,
