@@ -25,9 +25,12 @@
           }
           const after = document.getElementsByTagName('*').length;
           const ms = Math.round(performance.now() - t0);
-          document.title = `leaktest-done before=${before} after=${after} loops=800 ms=${ms}`;
+          const msg = `LEAKTEST_RESULT before=${before} after=${after} delta=${after-before} loops=800 ms=${ms}`;
+          document.title = msg;
+          console.log(msg);
         } catch (e) {
           document.title = 'leaktest-error ' + e.message;
+          console.log('LEAKTEST_ERROR ' + e.message);
         }
       }, 4000);
     });
