@@ -124,6 +124,15 @@ export function decideGoldM30(a: AnalysisResult, close: number[],
     return {
       state: 'ENTRY', regime: reg,
       headline: 'ورود خرید (LONG) — پولبک در روندِ صعودیِ میان‌مدت (M30)',
+      sourceLayer: {
+        code: 'M30-Swing', name: 'نوسان‌گیریِ پولبکِ روندِ M30 (EMA20/100 + RSI)', kind: 'ma-confluence',
+        filters: [`روندِ صعودی EMA20>EMA100`, `پولبک: RSI(14) < ${RSI_ENTRY}`],
+        manage: {
+          style: 'let-run-trail', beTriggerR: 1.0, trailDistPrice: SL_DOLLARS, maxHoldBars: 144,
+          note: `هدفِ بزرگِ روندی (R:R≈۱:۱۰). پس از ۱R سود (${SL_DOLLARS}$) SL را به بریک‌ایون ببر؛ ` +
+            `سپس با فاصلهٔ ${SL_DOLLARS}$ trail کن و تا نگهداریِ ۳ روزه بگذار روندِ صعودی کامل استخراج شود — بگذار برد بدود.`,
+        },
+      },
       reason: `روندِ میان‌مدتِ طلا صعودی است و قیمت الان یک پولبک زده (RSI(14)=${rsi.toFixed(1)} ` +
         `زیرِ ${RSI_ENTRY}). این «خریدِ ارزان در روندِ صعودی» با هدفِ بزرگ (R:R≈۱:۱۰) است. ` +
         `سفارشِ خرید را باز کنید.` + (capWarn ? `\n${capWarn}` : ''),
