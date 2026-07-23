@@ -344,6 +344,10 @@ export function decide(a: AnalysisResult, close: number[],
         status: ov.state === 'ENTRY' ? 'ok' : ov.state === 'APPROACHING' ? 'warn' : 'neutral' },
       ...indicators,
     ]
+    const ovGate: RouterDecision['timeGate'] = {
+      layerCode: 'S139', label: 'درایوِ شبانهٔ طلا (Overnight)',
+      entryHoursUtc: [22, 23], windowOpen: ov.state === 'ENTRY',
+    }
     if (ov.state === 'ENTRY') {
       const entry = a.price
       const sl = entry - ov.slDist
@@ -389,7 +393,7 @@ export function decide(a: AnalysisResult, close: number[],
           note: `SL ثابت ${OVERNIGHT_SL_PIP}pip (${ov.slDist.toFixed(2)}$). اگر درایوِ شبانه شکل نگرفت، ` +
             `این SL ضرر را محدود می‌کند؛ اما بردهای واقعی به‌مراتب بزرگ‌ترند.`,
         },
-        indicators: ovInd,
+        indicators: ovInd, timeGate: ovGate,
       }
     }
     if (ov.state === 'APPROACHING') {
@@ -402,7 +406,7 @@ export function decide(a: AnalysisResult, close: number[],
           { label: 'رسیدنِ ساعتِ UTC به ۲۲:۰۰ (ورودِ پنجرهٔ درایوِ شبانه)', met: false,
             detail: 'با بسته‌شدنِ کندلِ ساعتِ ۲۲ UTC، سیگنالِ ورودِ خرید صادر می‌شود.' },
         ],
-        indicators: ovInd,
+        indicators: ovInd, timeGate: ovGate,
       }
     }
     // ov.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
