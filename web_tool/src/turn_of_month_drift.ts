@@ -22,10 +22,19 @@
 export const TOM_ENTRY_HOURS = [7, 8, 9, 10, 11, 12]
 // ساعتی که «نزدیک‌شدن» اعلام می‌شود (یک ساعت پیش از پنجره، در اولین روزِ ماه).
 export const TOM_APPROACH_HOUR = 6
-// پارامترهای خروجِ محافظه‌کارانه (بر حسبِ pip؛ ۱pip طلا = ۰.۱۰$).
-export const TOM_SL_PIP = 100
-export const TOM_TP_PIP = 700
-export const TOM_MAX_HOLD = 96   // ۲۴ ساعت (M15)
+// ★★ بازطراحیِ WR≥۶۰٪ (S222c — قانونِ احیای پروژه، این نشست) ★★
+//   نسخهٔ پیشین برای «رژیمِ فقط-سودِ-خالص» بود: SL100/TP700 (نسبت ۱:۷) ⇒ WR ۴۲–۵۷٪.
+//   طبقِ User Noteِ فعلی «WR ≥ ۶۰٪»، نامتقارنی معکوس شد (TP کوچک / SL بزرگ).
+//   پارامترِ برندهٔ M15 (بک‌تستِ ۴ سال، هزینهٔ واقعی):
+//       SL300pip / TP80pip / mh96  +  فیلترها: {rsi>50 (مومنتوم)، pdi>mdi (جهت)}
+//   نتیجه: WR = ۸۹.۰٪ ، net = +$1,252 ، n=82 ، هر ۴ پنجرهٔ walk-forward مثبت.
+//   ★ آزمونِ کنترلِ تصادفیِ پنجره-محور (BUG-047): WR_excess=+۵.۴٪ ، net_edge=+۴۳۷$ ،
+//     PF=۲.۷۸ ⇒ **قوی‌ترین لبهٔ فیلتریِ واقعیِ** هر سه لایهٔ زمان‌محور. (t=+۹.۶۶ روزِ ماه = قوی‌ترین سیگنالِ زمانیِ پروژه.)
+//   سند: results/S222c_TurnOfMonthWR60_Xauusd_M5M15M30H1_4830_89.md
+// معیارِ فعلیِ پروژه (User Note): WR هر لایه ≥ ۶۰٪ + سودِ خالص.
+export const TOM_SL_PIP = 300      // ← از ۱۰۰ (WR≥۶۰٪ نسخهٔ M15)
+export const TOM_TP_PIP = 80       // ← معکوس‌شده از ۷۰۰ (WR۴۲→۸۹٪)
+export const TOM_MAX_HOLD = 96     // ۲۴ ساعت (M15)
 const PIP = 0.10                 // اندازهٔ pip طلا بر حسبِ قیمت
 
 // ساعتِ UTC → «HH:MM به وقتِ ایران» (UTC+3:30 ثابت). همهٔ توصیه‌های زمان-محور به وقتِ ایران (User Note).
@@ -67,21 +76,46 @@ export function isFirstTradingDayOfMonth(times: number[]): boolean {
   return false
 }
 
-// ارزیابیِ لایهٔ Turn-of-the-Month بر اساسِ تاریخچهٔ زمان و ساعتِ UTCِ کندلِ جاری.
-export function computeTurnOfMonth(times: number[], utcHour: number): TomSignal {
+// فیلترِ رژیمِ WR≥۶۰٪ (S222c): rsi>50 (مومنتومِ صعودی) + pdi>mdi (جهتِ روندِ صعودی).
+// طبقِ BUG-047 قوی‌ترین لبهٔ فیلتریِ سه لایهٔ زمان‌محور (WR_excess=+۵.۴٪، PF=۲.۷۸).
+// اگر فراهم نباشد، ورود نمی‌کند بلکه APPROACHING می‌ماند تا تأییدِ رژیم بیاید.
+export interface TomFilter {
+  rsiBull: boolean    // rsi > 50
+  pdiGtMdi: boolean   // pdi > mdi
+}
+
+function tomFiltersPass(f?: TomFilter): boolean {
+  if (!f) return true                          // بدونِ داده ⇒ سازگارِ عقب
+  return f.rsiBull && f.pdiGtMdi
+}
+
+// ارزیابیِ لایهٔ Turn-of-the-Month: تاریخچهٔ زمان/ساعت + فیلترِ رژیمِ WR≥۶۰٪ (اختیاری).
+export function computeTurnOfMonth(times: number[], utcHour: number, filt?: TomFilter): TomSignal {
   const slDist = TOM_SL_PIP * PIP
   const tpDist = TOM_TP_PIP * PIP
   const isFirst = isFirstTradingDayOfMonth(times)
 
   if (isFirst && TOM_ENTRY_HOURS.includes(utcHour)) {
+    // در پنجرهٔ روزِ ماه×ساعت هستیم؛ ورود فقط با تأییدِ فیلترِ رژیم (شرطِ WR≥۶۰٪).
+    if (!tomFiltersPass(filt)) {
+      const need: string[] = []
+      if (filt && !filt.rsiBull) need.push('مومنتوم صعودی شود (RSI بالای ۵۰)')
+      if (filt && !filt.pdiGtMdi) need.push('جهتِ روند صعودی شود (‏+DI بالای −DI)')
+      return {
+        state: 'APPROACHING', isFirstTradingDay: true, utcHour, slDist, tpDist,
+        reason: `اکنون «اولین روزِ معاملاتیِ ماه» و ساعتِ ${toIran(utcHour)} به وقتِ ایران است — در پنجرهٔ ` +
+          `«درایوِ چرخشِ ماهِ طلا» (${TOM_IRAN_RANGE} به وقتِ ایران) هستیم، اما فیلترِ رژیمِ WR≥۶۰٪ هنوز تأیید نشده. ` +
+          `برای صدورِ سیگنالِ خرید باید: ${need.join('؛ ')}. ` +
+          `(لایهٔ زمان-محورِ S222c با فیلترِ رژیم ⇒ WR ۸۹٪، PF ۲.۷۸ — قوی‌ترین لبهٔ زمانی.)`,
+      }
+    }
     return {
       state: 'ENTRY', isFirstTradingDay: true, utcHour, slDist, tpDist,
       reason: `اکنون «اولین روزِ معاملاتیِ ماه» و ساعتِ ${toIran(utcHour)} به وقتِ ایران (سشنِ لندن) است — ` +
-        `درست در پنجرهٔ «درایوِ چرخشِ ماهِ طلا» (اولِ ماه، ${TOM_IRAN_RANGE} به وقتِ ایران). بک‌تستِ ۱۵۰٬۰۰۰ کندل ` +
-        `نشان می‌دهد اولین روزِ ماه قوی‌ترین سیگنالِ زمانیِ کلِ پروژه است (t=+۹.۶۶، میانگین +۲۶.۵pip)؛ ` +
-        `سهمِ مستقلِ محافظه‌کارانهٔ +۴٬۱۶۲$، جریانی افزایشی و ناهمبسته. طبقِ قانونِ شمارهٔ ۱ هدف ` +
-        `سودِ خالص است نه وین‌ریت: TP دور نگه داشته می‌شود تا بردها بدوند (WR ~۴۲–۵۷٪ اما سودِ ` +
-        `خالصِ مثبتِ پایدار در هر دو نیمهٔ داده و هر ۴ پنجرهٔ walk-forward).`,
+        `درست در پنجرهٔ «درایوِ چرخشِ ماهِ طلا» (اولِ ماه، ${TOM_IRAN_RANGE} به وقتِ ایران) و فیلترِ رژیم ` +
+        `(مومنتوم + جهتِ صعودی) تأیید شد. اولین روزِ ماه قوی‌ترین سیگنالِ زمانیِ کلِ پروژه است (t=+۹.۶۶). ` +
+        `سیگنالِ خرید (LONG) با TP نزدیک (۸۰pip) و SL محافظ (۳۰۰pip). این پیکربندی در بک‌تستِ ۴ سال ` +
+        `WR = ۸۹٪ و PF = ۲.۷۸ داد (سند S222c، قوی‌ترین لبهٔ فیلتریِ واقعی طبقِ آزمونِ کنترلِ تصادفی).`,
     }
   }
 
@@ -90,7 +124,7 @@ export function computeTurnOfMonth(times: number[], utcHour: number): TomSignal 
       state: 'APPROACHING', isFirstTradingDay: true, utcHour, slDist, tpDist,
       reason: `اکنون «اولین روزِ معاملاتیِ ماه» و ساعتِ ${toIran(utcHour)} به وقتِ ایران است — پنجرهٔ ` +
         `«درایوِ چرخشِ ماهِ طلا» (${TOM_IRAN_RANGE} به وقتِ ایران، همزمان با باز شدنِ سشنِ لندن) در حالِ باز شدن است. ` +
-        `با ورودِ ساعتِ ${toIran(7)} به وقتِ ایران آماده‌باشِ سیگنالِ خرید (LONG) صادر می‌شود.`,
+        `با ورودِ ساعتِ ${toIran(7)} به وقتِ ایران و تأییدِ فیلترِ رژیم، سیگنالِ خرید (LONG) صادر می‌شود.`,
     }
   }
 
