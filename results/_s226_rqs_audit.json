@@ -1,0 +1,215 @@
+{
+ "Overnight_M15": {
+  "name": "Overnight/M15",
+  "tf": "M15",
+  "sl": 150,
+  "tp": 40,
+  "filters": [
+   "pdi>mdi",
+   "bull_bar",
+   "atr<1.8med"
+  ],
+  "random_wr": 80.9,
+  "random_net": 1514.0,
+  "rqs": {
+   "rqs": 40.0,
+   "verdict": "مردود (نقطه‌ضعفِ خطرناک) ❌",
+   "passed_all": false,
+   "n_pass": 2,
+   "gates": {
+    "G1_edge_over_random": [
+     false,
+     "WR_excess=+1.2% (min 3.0), net_edge=+826"
+    ],
+    "G2_profit_factor": [
+     0.0,
+     "PF=1.26 (min 1.3)"
+    ],
+    "G3_tail_risk": [
+     true,
+     "maxDD=5.5% (max 8.0%), worst_loss=4.7x avg_win (max 8.0x)"
+    ],
+    "G4_stability": [
+     false,
+     "halves=(+165,+2174) wf=[-341, 480, 1276, 924]"
+    ],
+    "G5_expectancy": [
+     true,
+     "expectancy=$+4.41/trade (min $0.0)"
+    ]
+   },
+   "stats": {
+    "wr": 82.10922787193974,
+    "pf": 1.2592529382103097,
+    "net": 2339.330000000271,
+    "n": 531,
+    "wr_excess": 1.2,
+    "net_edge": 826.0,
+    "avg_win": 26.1,
+    "avg_loss": -95.0,
+    "worst_loss": -123.0,
+    "maxdd_pct": 5.5,
+    "expectancy": 4.41
+   }
+  }
+ },
+ "Monday_M15": {
+  "name": "Monday/M15",
+  "tf": "M15",
+  "sl": 200,
+  "tp": 40,
+  "filters": [
+   "adx>20",
+   "atr<1.8med",
+   "atr>0.5med"
+  ],
+  "random_wr": 86.0,
+  "random_net": 1325.0,
+  "rqs": {
+   "rqs": 40.0,
+   "verdict": "مردود (نقطه‌ضعفِ خطرناک) ❌",
+   "passed_all": false,
+   "n_pass": 3,
+   "gates": {
+    "G1_edge_over_random": [
+     false,
+     "WR_excess=+2.8% (min 3.0), net_edge=+309"
+    ],
+    "G2_profit_factor": [
+     1.0,
+     "PF=2.16 (min 1.3)"
+    ],
+    "G3_tail_risk": [
+     true,
+     "maxDD=3.4% (max 8.0%), worst_loss=6.4x avg_win (max 8.0x)"
+    ],
+    "G4_stability": [
+     false,
+     "halves=(+378,+1255) wf=[406, -46, 427, 847]"
+    ],
+    "G5_expectancy": [
+     true,
+     "expectancy=$+9.13/trade (min $0.0)"
+    ]
+   },
+   "stats": {
+    "wr": 88.8268156424581,
+    "pf": 2.159697032078535,
+    "net": 1633.7000000000644,
+    "n": 179,
+    "wr_excess": 2.8,
+    "net_edge": 309.0,
+    "avg_win": 19.1,
+    "avg_loss": -70.4,
+    "worst_loss": -122.0,
+    "maxdd_pct": 3.4,
+    "expectancy": 9.13
+   }
+  }
+ },
+ "TurnOfMonth_M15": {
+  "name": "TurnOfMonth/M15",
+  "tf": "M15",
+  "sl": 300,
+  "tp": 80,
+  "filters": [
+   "rsi>50",
+   "pdi>mdi"
+  ],
+  "random_wr": 83.8,
+  "random_net": 821.0,
+  "rqs": {
+   "rqs": 97.1,
+   "verdict": "واقعی/قابلِ‌اتصال ✅",
+   "passed_all": true,
+   "n_pass": 5,
+   "gates": {
+    "G1_edge_over_random": [
+     true,
+     "WR_excess=+5.3% (min 3.0), net_edge=+461"
+    ],
+    "G2_profit_factor": [
+     1.0,
+     "PF=2.78 (min 1.3)"
+    ],
+    "G3_tail_risk": [
+     true,
+     "maxDD=2.4% (max 8.0%), worst_loss=4.5x avg_win (max 8.0x)"
+    ],
+    "G4_stability": [
+     true,
+     "halves=(+464,+817) wf=[287, 154, 287, 554]"
+    ],
+    "G5_expectancy": [
+     true,
+     "expectancy=$+15.44/trade (min $0.0)"
+    ]
+   },
+   "stats": {
+    "wr": 89.1566265060241,
+    "pf": 2.7788697788697823,
+    "net": 1281.4800000000196,
+    "n": 83,
+    "wr_excess": 5.3,
+    "net_edge": 461.0,
+    "avg_win": 27.1,
+    "avg_loss": -80.0,
+    "worst_loss": -121.0,
+    "maxdd_pct": 2.4,
+    "expectancy": 15.44
+   }
+  }
+ },
+ "S81_Swing_M5": {
+  "name": "S81-Swing/M5",
+  "tf": "M5",
+  "sl": 150,
+  "tp": 40,
+  "filters": [
+   "ema20>50"
+  ],
+  "random_wr": 80.3,
+  "random_net": 19.0,
+  "rqs": {
+   "rqs": 0.0,
+   "verdict": "مردود (نقطه‌ضعفِ خطرناک) ❌",
+   "passed_all": false,
+   "n_pass": 0,
+   "gates": {
+    "G1_edge_over_random": [
+     false,
+     "WR_excess=-0.5% (min 3.0), net_edge=-320"
+    ],
+    "G2_profit_factor": [
+     0.0,
+     "PF=0.98 (min 1.3)"
+    ],
+    "G3_tail_risk": [
+     false,
+     "maxDD=18.9% (max 8.0%), worst_loss=4.7x avg_win (max 8.0x)"
+    ],
+    "G4_stability": [
+     0.0,
+     "halves=(+1189,-1490) wf=[1050, 113, -581, -883]"
+    ],
+    "G5_expectancy": [
+     false,
+     "expectancy=$-0.50/trade (min $0.0)"
+    ]
+   },
+   "stats": {
+    "wr": 79.734219269103,
+    "pf": 0.9764781338560101,
+    "net": -301.45999999969354,
+    "n": 602,
+    "wr_excess": -0.5,
+    "net_edge": -320.0,
+    "avg_win": 26.1,
+    "avg_loss": -105.1,
+    "worst_loss": -123.0,
+    "maxdd_pct": 18.9,
+    "expectancy": -0.5
+   }
+  }
+ }
+}
