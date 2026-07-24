@@ -12,6 +12,7 @@ import { decideGoldM5, manageGoldM5Scalp } from './gold_m5_router'
 import { decideGoldM30, decideGoldM30TrendLine } from './gold_m30_router'
 import { decideGoldH1, decideGoldH4, decideGoldD1 } from './gold_htf_router'
 import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
+import { channelDecision, CHANNEL_CFG } from './gold_channel'
 
 const app = new Hono()
 
@@ -526,6 +527,13 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
         const tl = trendLineDecision(TREND_LINE_CFG['XAUUSD-M15'], result,
           useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low), closes, capital, riskPct)
         if (tl.state === 'ENTRY' || tl.state === 'APPROACHING') dec = tl
+      }
+      // لایهٔ مکملِ مستقلِ S219 (کانالِ Al Brooks، position-in-channel): فقط وقتی هم لایه‌های
+      // اصلی و هم S215 خنثی‌اند (بدونِ تداخل). سهمِ مستقلِ M15 در s219_finalize = +$4,028 (WR ۵۰.۱٪، WF-4/4).
+      if (dec.state === 'NEUTRAL') {
+        const chn = channelDecision(CHANNEL_CFG['XAUUSD-M15'], result,
+          useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low), closes, capital, riskPct)
+        if (chn.state === 'ENTRY' || chn.state === 'APPROACHING') dec = chn
       }
     }
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
