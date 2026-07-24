@@ -210,6 +210,30 @@ function mergeLiveQuote(candles: Candle[], livePrice: number | null, intervalSec
   return { candles: out, livePriceUsed: true }
 }
 
+// ---------------------------------------------------------------------------
+// closedBars — رفعِ باگِ حیاتیِ «repainting سیگنال روی کندلِ ناتمام».
+// ----------------------------------------------------------------------------
+// مشکل: rebaseFuturesToSpot/mergeLiveQuote آخرین کندل را با قیمتِ زنده «در حالِ
+//   شکل‌گیری» به‌روز می‌کنند (برای نمایشِ قیمتِ لحظه‌ای). اگر همین آرایه به منطقِ
+//   ماشهٔ سیگنال داده شود، سیگنال روی کندلِ نهایی‌نشده صادر می‌شود و با هر تیک
+//   عوض می‌شود (repaint) — دقیقاً همان «۴۰۵۰ buy ← رفرش ← خنثی»ِ گزارشِ کاربر.
+// راه‌حل: اگر کندلِ آخر در سطلِ زمانیِ جاری باشد (هنوز بسته نشده) آن را حذف کن و
+//   آرایهٔ «فقط-کندل‌های-بسته‌شده» را برگردان. این معادلِ shift(1)ِ بک‌تست است:
+//   شرطِ سیگنال روی کندلِ بستهٔ قبلی سنجیده می‌شود، ورودِ واقعی روی قیمتِ زندهٔ
+//   «open کندلِ بعد» (که همان result.price است) انجام می‌شود.
+// ⚠️ فقط برای منطقِ تصمیم/ماشه؛ نمایشِ قیمت و مدیریتِ معاملهٔ باز از کندلِ زنده
+//   استفاده می‌کنند (آن‌ها ذاتاً باید لحظه‌ای باشند).
+// ---------------------------------------------------------------------------
+function closedBars(candles: Candle[], intervalSec: number): Candle[] {
+  if (candles.length < 2) return candles
+  const nowSec = Math.floor(Date.now() / 1000)
+  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec
+  const last = candles[candles.length - 1]
+  // اگر کندلِ آخر متعلق به سطلِ زمانیِ جاری است (هنوز در حالِ شکل‌گیری) ⇒ حذفش کن.
+  if (last.time >= curBucketStart) return candles.slice(0, -1)
+  return candles
+}
+
 // قیمت spot لحظه‌ای (تأخیر < چند ثانیه)
 app.get('/api/spot', async (c) => {
   try {
