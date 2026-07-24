@@ -23,6 +23,7 @@ import {
   computeMonday, MONDAY_MAX_HOLD, MONDAY_SL_PIP, MONDAY_TP_PIP,
   MONDAY_ENTRY_HOURS, MONDAY_UTC_DAY,
   inverseViewAsymRecent, MONDAY_INVVIEW_LB, MONDAY_INVVIEW_THR,
+  type MondayFilter,
 } from './monday_drift'
 import {
   computeTurnOfMonth, TOM_MAX_HOLD, TOM_SL_PIP, TOM_TP_PIP,
@@ -65,6 +66,36 @@ function buildOvernightFilter(open?: number[], high?: number[], low?: number[],
     pdiGtMdi: pdiV > mdiV,
     bullBar: close[last] > open[last],
     atrOk: atrV < 1.8 * med,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// فیلترِ رژیمِ WR≥۶۰٪ برای لایهٔ Monday (S222b): از آرایه‌های OHLC، سه شرطِ برندهٔ
+// بک‌تست را می‌سازد: adx>20 (روندِ جهت‌دار) ، atr<1.8×median (ضدِ climax) ،
+// atr>0.5×median (نه بازارِ مرده). طبقِ BUG-047 لبهٔ فیلتریِ واقعی می‌افزاید (PF ۲.۲۳).
+// اگر داده کافی نباشد، undefined ⇒ رفتارِ سازگارِ عقب (بدونِ گِیت).
+// ---------------------------------------------------------------------------
+function buildMondayFilter(open?: number[], high?: number[], low?: number[],
+                           close?: number[]): MondayFilter | undefined {
+  if (!open || !high || !low || !close) return undefined
+  const n = close.length
+  if (n < 30 || open.length !== n || high.length !== n || low.length !== n) return undefined
+  const candles: Candle[] = new Array(n)
+  for (let i = 0; i < n; i++) {
+    candles[i] = { time: i, open: open[i], high: high[i], low: low[i], close: close[i], volume: 0 }
+  }
+  const { adx } = adxIndicator(candles, 14)
+  const atrArr = atrIndicator(candles, 14)
+  const last = n - 1
+  const adxV = adx[last], atrV = atrArr[last]
+  if (!isFinite(adxV) || !isFinite(atrV)) return undefined
+  const valid = atrArr.filter((v) => isFinite(v)).slice().sort((x, y) => x - y)
+  if (!valid.length) return undefined
+  const med = valid[Math.floor(valid.length / 2)]
+  return {
+    adxOk: adxV > 20,
+    atrNotHigh: atrV < 1.8 * med,
+    atrNotDead: atrV > 0.5 * med,
   }
 }
 
@@ -488,7 +519,8 @@ export function decide(a: AnalysisResult, close: number[],
   // WR ۴۴.۵٪، اثرِ افزایشی +$1,553 (تأییدشده روی M15 ⇒ ساختاری، نه overfit).
   // این پنجره (۱۸–۲۰) با پنجرهٔ Overnight (۲۲–۲۳) هم‌پوشانی ندارد ⇒ تداخلِ ترتیبی نیست.
   if (spec.id === 'XAUUSD' && typeof utcHour === 'number' && typeof utcDay === 'number') {
-    const mo = computeMonday(utcDay, utcHour)
+    const moFilt = buildMondayFilter(open, high, low, close)
+    const mo = computeMonday(utcDay, utcHour, moFilt)
     const moInd: RouterDecision['indicators'] = [
       { name: 'روزِ هفته (لایهٔ ابتدای هفته)', value: utcDay === 1 ? 'دوشنبه ✓' : 'غیرِ دوشنبه',
         status: mo.state === 'ENTRY' ? 'ok' : mo.state === 'APPROACHING' ? 'warn' : 'neutral' },
