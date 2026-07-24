@@ -445,6 +445,9 @@ app.get('/api/context', async (c) => {
 const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' | 'placeholder' | 'htf'; tf?: string }[] = [
   { id: 'XAUUSD',     name: 'طلا / دلار — نوسانی (M15)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing' },
   { id: 'XAUUSD-M5',  name: 'طلا / دلار — اسکالپ (M5)',    symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
+  // XAUUSD-M30: در نشستِ S215 با لایهٔ «خطِ روندِ Al Brooks» (فصلِ ۱۳) دوباره فعال شد.
+  //   قبلاً S81 داشت که در S163 حذف شد؛ حالا لبهٔ trend-lineِ اثبات‌شده (+$5,599، مستقل).
+  { id: 'XAUUSD-M30', name: 'طلا / دلار — میان‌مدت (M30)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing-m30' },
   // --- تایم‌فریم‌های بالای طلا (درخواستِ User Note) — هر کارت منطقِ مستقلِ خودش را دارد ---
   //   H1/H4/D1 فعلاً در «حالتِ تحقیقِ فعال» هستند (بدونِ سیگنالِ ورودِ خام تا کشفِ لایهٔ
   //   اثبات‌شده) اما تحلیلِ روند/رژیمِ مخصوصِ همان تایم‌فریم را نمایش می‌دهند. منطق در
@@ -506,7 +509,8 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     if (a.id === 'XAUUSD-M5')      dec = decideGoldM5(result, closes, capital, riskPct,
                                      useCandles.map(k => k.open), useCandles.map(k => k.high),
                                      useCandles.map(k => k.low), goldTimes)
-    else if (a.id === 'XAUUSD-M30') dec = decideGoldM30(result, closes, capital, riskPct)
+    else if (a.id === 'XAUUSD-M30') dec = decideGoldM30TrendLine(result, closes, capital, riskPct,
+                                     useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low))
     else if (a.id === 'XAUUSD-H1')  dec = decideGoldH1(result, closes, capital, riskPct,
                                      useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low))
     else if (a.id === 'XAUUSD-H4')  dec = decideGoldH4(result, closes, capital, riskPct,
