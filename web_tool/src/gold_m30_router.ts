@@ -28,6 +28,7 @@ import type { AnalysisResult } from './signal'
 import type { RouterDecision, RegimeInfo, Confirmation } from './router'
 import { computeLots, assetSpec } from './router'
 import * as ind from './indicators'
+import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
 
 // پارامترهای نهاییِ S81 (وسطِ منطقهٔ پایدار — پرهیز از overfit)
 const EMA_FAST = 20
