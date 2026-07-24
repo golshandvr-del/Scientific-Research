@@ -135,8 +135,34 @@ function printBanner(actualPort) {
 // قدیمی را دستی بکشید.
 const MAX_PORT_TRIES = 20
 
+// --- پیش‌گرم‌سازیِ کش (Pre-warm) — ایدهٔ سرعت برای گوشی --------------------
+// به‌محضِ بالا آمدنِ سرور، در *پس‌زمینه* یک‌بار همهٔ دارایی‌ها را از طریقِ خودِ اپ
+// صدا می‌زنیم تا کشِ حافظه‌ایِ داخلِ باندل «گرم» شود. نتیجه: *اولین* کاربری هم که
+// صفحه را باز می‌کند، کارت‌ها را تقریباً فوری می‌بیند (به‌جای انتظارِ سرد برای Yahoo).
+// این کار کاملاً بی‌صداست و اگر شبکه در دسترس نباشد هیچ خطایی نشان نمی‌دهد.
+async function prewarm(port) {
+  try {
+    const base = `http://127.0.0.1:${port}`
+    // فهرستِ سبکِ کارت‌ها را می‌گیریم و برای هرکدام یک‌بار decision را گرم می‌کنیم.
+    const listRes = await app.fetch(new Request(`${base}/api/assets`), {}, {})
+    const list = await listRes.json().catch(() => null)
+    const ids = (list && list.ok && Array.isArray(list.assets)) ? list.assets.map(a => a.id) : []
+    if (!ids.length) return
+    console.log(`  🔥 در حالِ پیش‌گرم‌سازیِ کش برای ${ids.length} دارایی (در پس‌زمینه)...`)
+    // به‌صورتِ موازی ولی مقاوم به خطا؛ منتظرِ کاربر نمی‌مانیم.
+    await Promise.allSettled(ids.map(id =>
+      app.fetch(new Request(`${base}/api/decision/${id}`), {}, {}).then(r => r.arrayBuffer())
+    ))
+    console.log('  ✅ کش گرم شد — بارگذاریِ بعدی فوری خواهد بود.')
+  } catch { /* بی‌صدا: pre-warm اختیاری است */ }
+}
+
 function startListening(port, triesLeft) {
-  server.listen(port, HOST, () => printBanner(port))
+  server.listen(port, HOST, () => {
+    printBanner(port)
+    // چند لحظه بعد از بالا آمدن، در پس‌زمینه کش را گرم کن (بلوکه‌کننده نیست).
+    setTimeout(() => { void prewarm(port) }, 500)
+  })
 }
 
 server.on('error', (err) => {
