@@ -100,24 +100,42 @@ def main():
     print("=" * 84)
     print("S223 — ارتقای لایه‌های ساختاری/رژیم‌محور به WR≥۶۰٪ | max net s.t. WR≥۶۰ + گیت")
     print("=" * 84)
+    out = os.path.join(ROOT, 'results', '_s223_structural_wr60.json')
+    # ذخیرهٔ افزایشی + resume: اگر خروجیِ قبلی هست، لایه‌های تمام‌شده را دوباره حساب نکن
     all_res = {}
+    if os.path.exists(out):
+        try:
+            all_res = json.load(open(out))
+            print(f"↩️  resume: لایه‌های موجود = {list(all_res.keys())}")
+        except Exception:
+            all_res = {}
 
-    all_res['SHORT_MA'] = run_gold_layer('SHORT-MA-Confluence', base_short_ma, 'short')
-    all_res['BROOKS_HIGH2'] = run_gold_layer('Brooks High-2', lambda d: base_brooks(d, 'long'), 'long')
-    all_res['BROOKS_LOW2'] = run_gold_layer('Brooks Low-2', lambda d: base_brooks(d, 'short'), 'short')
+    def save():
+        with open(out, 'w') as f:
+            json.dump(all_res, f, ensure_ascii=False, indent=1, default=float)
+
+    plan = [
+        ('SHORT_MA', 'SHORT-MA-Confluence', base_short_ma, 'short'),
+        ('BROOKS_HIGH2', 'Brooks High-2', lambda d: base_brooks(d, 'long'), 'long'),
+        ('BROOKS_LOW2', 'Brooks Low-2', lambda d: base_brooks(d, 'short'), 'short'),
+    ]
+    for key, name, fn, side in plan:
+        if key in all_res and all_res[key]:
+            print(f"⏩ رد شد (قبلاً محاسبه شده): {key}")
+            continue
+        all_res[key] = run_gold_layer(name, fn, side)
+        save()  # ذخیرهٔ افزایشی: مقاوم در برابر ریستِ سندباکس
+        print(f"💾 ذخیرهٔ افزایشیِ {key} انجام شد.")
 
     total = 0.0
     for layer, tfres in all_res.items():
-        for tf, b in tfres.items():
+        for tf, b in (tfres or {}).items():
             total += b['net']
     print("\n" + "=" * 84)
     print(f"🥇 جمعِ net همهٔ لایه‌های ساختاریِ گیت-پاسِ WR≥۶۰ (این اسکریپت): {total:+,.0f}$")
     print("=" * 84)
-
-    out = os.path.join(ROOT, 'results', '_s223_structural_wr60.json')
-    with open(out, 'w') as f:
-        json.dump(all_res, f, ensure_ascii=False, indent=1, default=float)
-    print(f"✅ ذخیره شد: {out}")
+    save()
+    print(f"✅ ذخیرهٔ نهایی: {out}")
 
 
 if __name__ == '__main__':
