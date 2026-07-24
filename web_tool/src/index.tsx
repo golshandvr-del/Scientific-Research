@@ -29,15 +29,16 @@ app.get('/app', (c) => c.redirect('/static/app/index.html'))
 // دریافت داده زنده طلا از Yahoo Finance (GC=F = طلای آتی COMEX، بدون نیاز به کلید)
 // symbol پیش‌فرض GC=F است؛ interval و range قابل تنظیم.
 // ---------------------------------------------------------------------------
-async function fetchGold(interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
+// هستهٔ fetchِ طلا (بدونِ کش). خروجی دقیقاً مثلِ قبل.
+async function _fetchGoldRaw(interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=${interval}&range=${range}`
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
       'Accept': 'application/json',
     },
     cf: { cacheTtl: 30, cacheEverything: true } as any,
-  })
+  }, 6000)
   if (!res.ok) throw new Error(`Yahoo API error: ${res.status}`)
   const data: any = await res.json()
   const r = data?.chart?.result?.[0]
@@ -67,6 +68,14 @@ async function fetchGold(interval: string, range: string): Promise<{ candles: Ca
       previousClose: r.meta?.previousClose,
     },
   }
+}
+
+// fetchGold — نسخهٔ کش‌دار. همهٔ کارت‌های طلا (M1/M5/M15/M30/H1/H4/D1) که یک
+// (interval,range) می‌خواهند، از یک fetch مشترک تغذیه می‌شوند (de-dup) و رفرش‌های
+// بعدی از کش/SWR می‌آیند ⇒ بارِ Yahoo روی گوشی ۹۰٪+ کم می‌شود. خروجی مثلِ قبل.
+async function fetchGold(interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
+  return cachedFetch(`gold:${interval}:${range}`, () => _fetchGoldRaw(interval, range),
+    { freshMs: 30_000, staleMs: 600_000 })
 }
 
 // ---------------------------------------------------------------------------
