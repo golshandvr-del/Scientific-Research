@@ -88,7 +88,9 @@ def run_gold_layer(name, sig_fn, side):
         df = B.last_n_years(df, 4)
         df = B.add_indicators(B.add_calendar(df.copy().reset_index(drop=True)))
         base = sig_fn(df)
-        best = boost(tf, df, base, f'XAUUSD_{tf}', GOLD_MH[tf], side)
+        # M15 از کلیدِ پایهٔ 'XAUUSD' استفاده می‌کند؛ بقیه TFها کلیدِ per-TF
+        asset = 'XAUUSD' if tf == 'M15' else f'XAUUSD_{tf}'
+        best = boost(tf, df, base, asset, GOLD_MH[tf], side)
         if best:
             res[tf] = best
     return res
