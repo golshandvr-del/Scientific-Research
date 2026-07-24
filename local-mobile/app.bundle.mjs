@@ -3179,6 +3179,117 @@ function isSlBeyondEntry(t) {
   return t.side === "long" ? t.sl >= t.entry : t.sl <= t.entry;
 }
 
+// ../web_tool/src/cache.ts
+var _store = /* @__PURE__ */ new Map();
+var _inflight = /* @__PURE__ */ new Map();
+var cacheStats = { hits: 0, misses: 0, stale: 0, dedup: 0, revalidations: 0 };
+async function cachedFetch(key, producer, opts = {}) {
+  const freshMs = opts.freshMs ?? 3e4;
+  const staleMs = opts.staleMs ?? 3e5;
+  const now = Date.now();
+  const hit = _store.get(key);
+  if (hit) {
+    const age = now - hit.storedAt;
+    if (age < hit.freshMs) {
+      cacheStats.hits++;
+      return hit.value;
+    }
+    if (age < hit.freshMs + hit.staleMs) {
+      cacheStats.stale++;
+      void _revalidate(key, producer, freshMs, staleMs);
+      return hit.value;
+    }
+  }
+  cacheStats.misses++;
+  return _load(key, producer, freshMs, staleMs);
+}
+function _load(key, producer, freshMs, staleMs) {
+  const existing = _inflight.get(key);
+  if (existing) {
+    cacheStats.dedup++;
+    return existing;
+  }
+  const p = (async () => {
+    try {
+      const value = await producer();
+      _store.set(key, { value, storedAt: Date.now(), freshMs, staleMs });
+      return value;
+    } catch (err) {
+      const stale = _store.get(key);
+      if (stale) return stale.value;
+      throw err;
+    } finally {
+      _inflight.delete(key);
+    }
+  })();
+  _inflight.set(key, p);
+  return p;
+}
+async function _revalidate(key, producer, freshMs, staleMs) {
+  if (_inflight.has(key)) return;
+  cacheStats.revalidations++;
+  try {
+    await _load(key, producer, freshMs, staleMs);
+  } catch {
+  }
+}
+
+// ../web_tool/src/fast_fetch.ts
+async function fetchWithTimeout(url, init = {}, timeoutMs = 6e3) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    return await fetch(url, { ...init, signal: ctrl.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+async function fallbackChain(producers) {
+  let lastErr;
+  for (const p of producers) {
+    try {
+      return await p();
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr ?? new Error("all sources failed");
+}
+var STOOQ_SYMBOL = {
+  "GC=F": "xauusd",
+  // طلا
+  "EURUSD=X": "eurusd",
+  "GBPUSD=X": "gbpusd",
+  "AUDUSD=X": "audusd",
+  "USDJPY=X": "usdjpy"
+};
+function stooqSupports(symbol, interval) {
+  if (!STOOQ_SYMBOL[symbol]) return false;
+  return interval === "1d" || interval === "1wk" || interval === "1mo";
+}
+async function stooqDaily(symbol, timeoutMs = 6e3) {
+  const s = STOOQ_SYMBOL[symbol];
+  if (!s) throw new Error(`Stooq: no mapping for ${symbol}`);
+  const url = `https://stooq.com/q/d/l/?s=${s}&i=d`;
+  const res = await fetchWithTimeout(url, { headers: { "User-Agent": "Mozilla/5.0" } }, timeoutMs);
+  if (!res.ok) throw new Error(`Stooq ${symbol} error: ${res.status}`);
+  const text = await res.text();
+  const lines = text.trim().split("\n");
+  if (lines.length < 2) throw new Error("Stooq: empty");
+  const out = [];
+  for (let i = 1; i < lines.length; i++) {
+    const parts = lines[i].split(",");
+    if (parts.length < 5) continue;
+    const t = Date.parse(parts[0] + "T00:00:00Z") / 1e3;
+    const o = parseFloat(parts[1]), h = parseFloat(parts[2]), l = parseFloat(parts[3]), c = parseFloat(parts[4]);
+    const v = parts[5] ? parseFloat(parts[5]) : 0;
+    if (!isFinite(o) || !isFinite(h) || !isFinite(l) || !isFinite(c)) continue;
+    out.push({ time: t, open: o, high: h, low: l, close: c, volume: isFinite(v) ? v : 0 });
+  }
+  if (!out.length) throw new Error("Stooq: no rows");
+  return out;
+}
+
 // ../web_tool/src/external.ts
 var UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 async function spotFromSwissquote() {
@@ -3236,12 +3347,13 @@ async function getSpotGold() {
   }
   throw new Error("Spot gold unavailable from all sources");
 }
-async function yahooCandles(symbol, interval, range) {
+async function _yahooCandlesRaw(symbol, interval, range) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`;
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     headers: { "User-Agent": UA, "Accept": "application/json" },
     cf: { cacheTtl: 30, cacheEverything: true }
-  });
+    // روی CF مفید، روی Node بی‌اثر (کشِ ما جایش را می‌گیرد)
+  }, 6e3);
   if (!res.ok) throw new Error(`Yahoo ${symbol} error: ${res.status}`);
   const data = await res.json();
   const r = data?.chart?.result?.[0];
@@ -3265,6 +3377,21 @@ async function yahooCandles(symbol, interval, range) {
       previousClose: r.meta?.previousClose
     }
   };
+}
+async function yahooCandles(symbol, interval, range) {
+  const key = `candles:${symbol}:${interval}:${range}`;
+  return cachedFetch(key, async () => {
+    if (stooqSupports(symbol, interval)) {
+      return fallbackChain([
+        () => _yahooCandlesRaw(symbol, interval, range),
+        async () => {
+          const rows = await stooqDaily(symbol);
+          return { candles: rows, meta: { symbol, name: symbol, price: rows[rows.length - 1]?.close, previousClose: rows[rows.length - 2]?.close } };
+        }
+      ]);
+    }
+    return _yahooCandlesRaw(symbol, interval, range);
+  }, { freshMs: 3e4, staleMs: 6e5 });
 }
 var _quoteMem = {};
 var SWISSQUOTE_FX = {
@@ -6962,20 +7089,196 @@ function decideGoldD1(a, close, _capital = 1e4, _riskPct = 1) {
   return analyzeHtf(D1_CFG, a, close);
 }
 
+// ../web_tool/src/secondary_layers.ts
+var TL_KEY = {
+  "XAUUSD": "XAUUSD-M15",
+  "XAUUSD-M5": "XAUUSD-M5",
+  "XAUUSD-M30": "XAUUSD-M30",
+  "XAUUSD-H4": "XAUUSD-H4"
+};
+function probeSecondaryLayers(ctx) {
+  const out = [];
+  const { assetId, result, open, high, low, close, capital, riskPct } = ctx;
+  const isGoldM15 = assetId === "XAUUSD";
+  const push = (l) => {
+    if (ctx.primaryCode && l.code === ctx.primaryCode) return;
+    out.push(l);
+  };
+  if (isGoldM15 && typeof ctx.utcHour === "number") {
+    const ov = computeOvernight(ctx.utcHour);
+    if (ov.state === "ENTRY" || ov.state === "APPROACHING") {
+      push({
+        code: "S139",
+        name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647 (Overnight Drift)",
+        kind: "time",
+        state: ov.state,
+        direction: "LONG",
+        reason: ov.reason,
+        confirmations: ov.state === "APPROACHING" ? [
+          {
+            label: `\u0631\u0633\u06CC\u062F\u0646\u0650 \u0633\u0627\u0639\u062A \u0628\u0647 ${toIranHM(22)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646`,
+            met: false,
+            detail: "\u0628\u0627 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0633\u0627\u0639\u062A\u0650 \u0648\u0631\u0648\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F."
+          }
+        ] : void 0
+      });
+    }
+  }
+  if (isGoldM15 && typeof ctx.utcHour === "number" && typeof ctx.utcDay === "number") {
+    const mo = computeMonday(ctx.utcDay, ctx.utcHour);
+    if (mo.state === "ENTRY" || mo.state === "APPROACHING") {
+      push({
+        code: "S140",
+        name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 (Monday Drift)",
+        kind: "time",
+        state: mo.state,
+        direction: "LONG",
+        reason: mo.reason,
+        confirmations: mo.state === "APPROACHING" ? [
+          {
+            label: `\u0631\u0633\u06CC\u062F\u0646\u0650 \u0633\u0627\u0639\u062A \u0628\u0647 ${toIranHM(MONDAY_ENTRY_HOURS[0])} \u062F\u0631 \u062F\u0648\u0634\u0646\u0628\u0647`,
+            met: false,
+            detail: "\u0628\u0627 \u0648\u0631\u0648\u062F \u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F."
+          }
+        ] : void 0
+      });
+    }
+  }
+  if (isGoldM15 && Array.isArray(ctx.times) && typeof ctx.utcHour === "number") {
+    const tom = computeTurnOfMonth(ctx.times, ctx.utcHour);
+    if (tom.state === "ENTRY" || tom.state === "APPROACHING") {
+      push({
+        code: "S141",
+        name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647 (Turn-of-Month)",
+        kind: "time",
+        state: tom.state,
+        direction: "LONG",
+        reason: tom.reason,
+        confirmations: tom.state === "APPROACHING" ? [
+          {
+            label: "\u0631\u0633\u06CC\u062F\u0646\u0650 \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647 \u062F\u0631 \u0633\u0627\u0639\u062A\u0650 \u0648\u0631\u0648\u062F",
+            met: false,
+            detail: "\u0628\u0627 \u0648\u0631\u0648\u062F \u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0648\u0644\u0650 \u0645\u0627\u0647\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F."
+          }
+        ] : void 0
+      });
+    }
+  }
+  if (isGoldM15) {
+    const sm = computeShortMA(close, DEFAULT_SHORT_MA);
+    if (sm.active) {
+      push({
+        code: "SHORT-MA",
+        name: "\u0647\u0645\u200C\u06AF\u0631\u0627\u06CC\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (SHORT)",
+        kind: "ma-confluence",
+        state: "ENTRY",
+        direction: "SHORT",
+        reason: sm.reason
+      });
+    } else if (sm.approaching) {
+      push({
+        code: "SHORT-MA",
+        name: "\u0647\u0645\u200C\u06AF\u0631\u0627\u06CC\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (SHORT)",
+        kind: "ma-confluence",
+        state: "APPROACHING",
+        direction: "SHORT",
+        reason: sm.reason,
+        confirmations: [
+          {
+            label: "\u0642\u06CC\u0645\u062A \u0627\u0632 \u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 MA \u0631\u0648 \u0628\u0647 \u067E\u0627\u06CC\u06CC\u0646 \u0639\u0628\u0648\u0631 \u06A9\u0646\u062F",
+            met: false,
+            detail: `\u0627\u06A9\u0646\u0648\u0646 ${sm.distPct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u0645\u06CC\u0627\u0646\u0647 \u0648 \u0631\u0648 \u0628\u0647 \u06A9\u0627\u0647\u0634 \u0627\u0633\u062A.`
+          },
+          {
+            label: "\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (EMA50<EMA100<SMA200)",
+            met: sm.dnStack,
+            detail: sm.dnStack ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A \u2713" : "\u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A."
+          }
+        ]
+      });
+    }
+  }
+  if (isGoldM15) {
+    const sq = computeSqueeze(close, high, DEFAULT_SQUEEZE, low);
+    if (sq.active) {
+      push({
+        code: "S132",
+        name: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u2192\u0634\u06A9\u0633\u062A (Squeeze Breakout)",
+        kind: "squeeze",
+        state: "ENTRY",
+        direction: "LONG",
+        reason: sq.reason
+      });
+    } else if (sq.approaching) {
+      push({
+        code: "S132",
+        name: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u2192\u0634\u06A9\u0633\u062A (Squeeze Breakout)",
+        kind: "squeeze",
+        state: "APPROACHING",
+        direction: "LONG",
+        reason: sq.reason,
+        confirmations: [
+          {
+            label: "\u0634\u06A9\u0633\u062A\u0650 \u0633\u0642\u0641\u0650 \u0627\u062E\u06CC\u0631 \u0628\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0648\u06CC",
+            met: false,
+            detail: "\u067E\u0633 \u0627\u0632 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0646\u0648\u0633\u0627\u0646\u060C \u0634\u06A9\u0633\u062A\u0650 \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627 \u0645\u0627\u0634\u0647 \u0631\u0627 \u0634\u0644\u06CC\u06A9 \u0645\u06CC\u200C\u06A9\u0646\u062F."
+          }
+        ]
+      });
+    }
+  }
+  const tlKey = TL_KEY[assetId];
+  if (tlKey && TREND_LINE_CFG[tlKey]) {
+    try {
+      const tl = trendLineDecision(TREND_LINE_CFG[tlKey], result, open, high, low, close, capital, riskPct);
+      if (tl.state === "ENTRY" || tl.state === "APPROACHING") {
+        push({
+          code: "S215",
+          name: "\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line)",
+          kind: "price-action",
+          state: tl.state,
+          direction: tl.direction,
+          reason: tl.reason,
+          confirmations: tl.confirmations
+        });
+      }
+    } catch {
+    }
+  }
+  if (tlKey && CHANNEL_CFG[tlKey]) {
+    try {
+      const chn = channelDecision(CHANNEL_CFG[tlKey], result, open, high, low, close, capital, riskPct);
+      if (chn.state === "ENTRY" || chn.state === "APPROACHING") {
+        push({
+          code: "S219",
+          name: "\u06A9\u0627\u0646\u0627\u0644\u0650 Al Brooks (Channel)",
+          kind: "price-action",
+          state: chn.state,
+          direction: chn.direction,
+          reason: chn.reason,
+          confirmations: chn.confirmations
+        });
+      }
+    } catch {
+    }
+  }
+  return out;
+}
+
 // ../web_tool/src/index.tsx
 var app = new Hono2();
 app.use("/api/*", cors());
 app.use("/static/*", serveStatic2({ root: "./public" }));
 app.get("/app", (c) => c.redirect("/static/app/index.html"));
-async function fetchGold(interval, range) {
+async function _fetchGoldRaw(interval, range) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=${interval}&range=${range}`;
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
       "Accept": "application/json"
     },
     cf: { cacheTtl: 30, cacheEverything: true }
-  });
+  }, 6e3);
   if (!res.ok) throw new Error(`Yahoo API error: ${res.status}`);
   const data = await res.json();
   const r = data?.chart?.result?.[0];
@@ -7008,6 +7311,13 @@ async function fetchGold(interval, range) {
       previousClose: r.meta?.previousClose
     }
   };
+}
+async function fetchGold(interval, range) {
+  return cachedFetch(
+    `gold:${interval}:${range}`,
+    () => _fetchGoldRaw(interval, range),
+    { freshMs: 3e4, staleMs: 6e5 }
+  );
 }
 function aggregateCandles(candles, factorHours) {
   if (!candles.length) return [];
@@ -7338,6 +7648,14 @@ var ASSETS = [
   { id: "EURUSD-M30", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A (M30)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "placeholder", tf: "30m" },
   { id: "EURUSD-M1", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 \u0631\u06CC\u0632-\u0627\u0633\u06A9\u0627\u0644\u067E (M1)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "placeholder", tf: "1m" }
 ];
+function attachSecondary(dec, ctx) {
+  try {
+    const others = probeSecondaryLayers(ctx);
+    if (others.length) dec.otherLayers = others;
+  } catch {
+  }
+  return dec;
+}
 async function decideAsset(a, capital = 1e4, riskPct = 1) {
   if (a.isGold) {
     const GOLD_TF = {
@@ -7434,6 +7752,20 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
         if (chn.state === "ENTRY" || chn.state === "APPROACHING") dec2 = chn;
       }
     }
+    dec2 = attachSecondary(dec2, {
+      assetId: a.id,
+      result: result2,
+      open: useCandles2.map((k) => k.open),
+      high: useCandles2.map((k) => k.high),
+      low: useCandles2.map((k) => k.low),
+      close: closes,
+      capital,
+      riskPct,
+      utcHour: goldUtcHour,
+      utcDay: goldUtcDay,
+      times: goldTimes,
+      primaryCode: dec2.sourceLayer?.code
+    });
     return {
       asset: a.id,
       name: a.name,
@@ -7517,6 +7849,12 @@ function readCapitalParams(c) {
   const risk = Math.max(0.1, Math.min(5, parseFloat(c.req.query("risk")) || 1));
   return [cap, risk];
 }
+app.get("/api/assets", (c) => {
+  return c.json({
+    ok: true,
+    assets: ASSETS.map((a) => ({ id: a.id, name: a.name, decimals: a.decimals, layer: a.layer }))
+  });
+});
 app.get("/api/decision", async (c) => {
   const [capital, riskPct] = readCapitalParams(c);
   const results = await Promise.allSettled(ASSETS.map((a) => decideAsset(a, capital, riskPct)));
