@@ -123,6 +123,60 @@ class S302_PreEOM_Short_WedThu(S164_PreEOM_Short):
         return adv
 
 
+# ============================================================
+# S173 — Brooks Market-Inertia (SHORT, XAUUSD, M15)  ← لایهٔ سوختهٔ کاندیدِ احیا
+#   منطق (فصلِ ۱ Brooks، «trend-fade reversal-attempt»):
+#     روندِ نزولی: emaF(20) < emaS(50)  و  ADX(14) > adx_hi(28)
+#     تلاشِ برگشتی: close > بیشینهٔ سقفِ lb(20) کندلِ اخیر  ⇒ SHORT (fade)
+#   خام (برداری): WR≈50٪, PF≈1.36. رویداد-محور: WR=52.1٪ ⇒ فقط G0 رد (۵ گیت پاس).
+#   SL=250pip, TP=375pip, max_hold=48 کندلِ M15.
+#   اندیکاتورها یک‌بار روی کلِ df پیش‌محاسبه می‌شوند؛ در advise فقط تا اندیسِ i خوانده
+#   می‌شوند (سببی). shift(1) در سیگنال ⇒ تصمیم روی کندلِ بسته‌شده، اجرا روی open بعدی.
+# ============================================================
+class S173_MarketInertia_Short:
+    def __init__(self, ef=20, es=50, adx_hi=28, lb=20,
+                 sl_pip=250, tp_pip=375, max_hold=48):
+        self.ef = ef; self.es = es; self.adx_hi = adx_hi; self.lb = lb
+        self.sl_pip = sl_pip; self.tp_pip = tp_pip; self.max_hold = max_hold
+        self._sig = None
+
+    def _precompute(self, df):
+        import sys, os
+        ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if ROOT not in sys.path:
+            sys.path.insert(0, ROOT)
+        from engine import indicators as ind
+        c = df['close']
+        h = df['high'].to_numpy(); l = df['low'].to_numpy(); cl = c.to_numpy()
+        emaF = ind.ema(c, self.ef).to_numpy()
+        emaS = ind.ema(c, self.es).to_numpy()
+        adx = ind.adx(df, 14)
+        adx = adx[0] if isinstance(adx, tuple) else adx
+        adx = pd.Series(np.asarray(adx)).fillna(0).to_numpy()
+        trend = adx > self.adx_hi
+        prev_hh = pd.Series(h).rolling(self.lb).max().shift(1).to_numpy()
+        rev_attempt = cl > prev_hh                    # تلاشِ برگشتی در روندِ نزولی
+        raw = trend & (emaF < emaS) & rev_attempt
+        # shift(1): سیگنال روی کندلِ بسته‌شده تصمیم گرفته می‌شود
+        self._sig = pd.Series(raw).shift(1).fillna(False).to_numpy()
+
+    def advise(self, ctx):
+        if self._sig is None:
+            self._precompute(ctx.df)
+        i = ctx.i
+        if ctx.in_position():
+            pos = ctx.position
+            if (i + 1) - pos['entry_bar'] >= self.max_hold:
+                return {'action': 'CLOSE'}
+            return None
+        if self._sig[i]:
+            price = ctx.price(); pip = ctx.spec['pip']
+            sl = price + self.sl_pip * pip     # SHORT ⇒ SL بالاتر
+            tp = price - self.tp_pip * pip     # SHORT ⇒ TP پایین‌تر
+            return {'action': 'SHORT', 'sl': sl, 'tp': tp}
+        return None
+
+
 STRATEGY_REGISTRY = {
     'S164': dict(cls=S164_PreEOM_Short, asset='EURUSD', tf='EURUSD_M15',
                  label='S164 EURUSD Pre-EOM Short'),
@@ -130,4 +184,6 @@ STRATEGY_REGISTRY = {
                  label='S73 EURUSD Session Drift Long'),
     'S302': dict(cls=S302_PreEOM_Short_WedThu, asset='EURUSD', tf='EURUSD_M15',
                  label='S302 EURUSD Pre-EOM Short + Wed/Thu filter (revived S164)'),
+    'S173': dict(cls=S173_MarketInertia_Short, asset='XAUUSD', tf='XAUUSD_M15',
+                 label='S173 XAUUSD Market-Inertia Short (revival candidate)'),
 }
