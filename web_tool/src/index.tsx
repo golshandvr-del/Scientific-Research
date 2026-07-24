@@ -507,8 +507,10 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
                                      useCandles.map(k => k.open), useCandles.map(k => k.high),
                                      useCandles.map(k => k.low), goldTimes)
     else if (a.id === 'XAUUSD-M30') dec = decideGoldM30(result, closes, capital, riskPct)
-    else if (a.id === 'XAUUSD-H1')  dec = decideGoldH1(result, closes, capital, riskPct)
-    else if (a.id === 'XAUUSD-H4')  dec = decideGoldH4(result, closes, capital, riskPct)
+    else if (a.id === 'XAUUSD-H1')  dec = decideGoldH1(result, closes, capital, riskPct,
+                                     useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low))
+    else if (a.id === 'XAUUSD-H4')  dec = decideGoldH4(result, closes, capital, riskPct,
+                                     useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low))
     else if (a.id === 'XAUUSD-D1')  dec = decideGoldD1(result, closes, capital, riskPct)
     else dec = decide(result, closes, capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high), useCandles.map(k => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles.map(k => k.open))
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
