@@ -7408,6 +7408,14 @@ function mergeLiveQuote(candles, livePrice, intervalSec = 900) {
   }
   return { candles: out, livePriceUsed: true };
 }
+function closedBars(candles, intervalSec) {
+  if (candles.length < 2) return candles;
+  const nowSec = Math.floor(Date.now() / 1e3);
+  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
+  const last = candles[candles.length - 1];
+  if (last.time >= curBucketStart) return candles.slice(0, -1);
+  return candles;
+}
 app.get("/api/spot", async (c) => {
   try {
     const s = await getSpotGold();
@@ -7680,19 +7688,23 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     const merged2 = rebaseFuturesToSpot(candles2, spot, tfc.gap);
     const useCandles2 = merged2.candles;
     const result2 = analyze(useCandles2);
-    const goldUtcHour = new Date(useCandles2[useCandles2.length - 1].time * 1e3).getUTCHours();
-    const goldUtcDay = new Date(useCandles2[useCandles2.length - 1].time * 1e3).getUTCDay();
-    const goldTimes = useCandles2.map((k) => k.time);
-    const closes = useCandles2.map((k) => k.close);
+    const sig2 = closedBars(useCandles2, tfc.gap);
+    const sigOpen = sig2.map((k) => k.open), sigHigh = sig2.map((k) => k.high);
+    const sigLow = sig2.map((k) => k.low), sigClose = sig2.map((k) => k.close);
+    const sigTimes = sig2.map((k) => k.time);
+    const goldUtcHour = new Date(sig2[sig2.length - 1].time * 1e3).getUTCHours();
+    const goldUtcDay = new Date(sig2[sig2.length - 1].time * 1e3).getUTCDay();
+    const goldTimes = sigTimes;
+    const closes = sigClose;
     let dec2;
     if (a.id === "XAUUSD-M5") dec2 = decideGoldM5(
       result2,
       closes,
       capital,
       riskPct,
-      useCandles2.map((k) => k.open),
-      useCandles2.map((k) => k.high),
-      useCandles2.map((k) => k.low),
+      sigOpen,
+      sigHigh,
+      sigLow,
       goldTimes
     );
     else if (a.id === "XAUUSD-M30") dec2 = decideGoldM30TrendLine(
@@ -7700,38 +7712,38 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
       closes,
       capital,
       riskPct,
-      useCandles2.map((k) => k.open),
-      useCandles2.map((k) => k.high),
-      useCandles2.map((k) => k.low)
+      sigOpen,
+      sigHigh,
+      sigLow
     );
     else if (a.id === "XAUUSD-H1") dec2 = decideGoldH1(
       result2,
       closes,
       capital,
       riskPct,
-      useCandles2.map((k) => k.open),
-      useCandles2.map((k) => k.high),
-      useCandles2.map((k) => k.low)
+      sigOpen,
+      sigHigh,
+      sigLow
     );
     else if (a.id === "XAUUSD-H4") dec2 = decideGoldH4(
       result2,
       closes,
       capital,
       riskPct,
-      useCandles2.map((k) => k.open),
-      useCandles2.map((k) => k.high),
-      useCandles2.map((k) => k.low)
+      sigOpen,
+      sigHigh,
+      sigLow
     );
     else if (a.id === "XAUUSD-D1") dec2 = decideGoldD1(result2, closes, capital, riskPct);
     else {
-      dec2 = decide(result2, closes, capital, riskPct, assetSpec("XAUUSD"), useCandles2.map((k) => k.high), useCandles2.map((k) => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles2.map((k) => k.open));
+      dec2 = decide(result2, closes, capital, riskPct, assetSpec("XAUUSD"), sigHigh, sigLow, goldUtcHour, goldUtcDay, goldTimes, sigOpen);
       if (dec2.state === "NEUTRAL") {
         const tl = trendLineDecision(
           TREND_LINE_CFG["XAUUSD-M15"],
           result2,
-          useCandles2.map((k) => k.open),
-          useCandles2.map((k) => k.high),
-          useCandles2.map((k) => k.low),
+          sigOpen,
+          sigHigh,
+          sigLow,
           closes,
           capital,
           riskPct
@@ -7742,9 +7754,9 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
         const chn = channelDecision(
           CHANNEL_CFG["XAUUSD-M15"],
           result2,
-          useCandles2.map((k) => k.open),
-          useCandles2.map((k) => k.high),
-          useCandles2.map((k) => k.low),
+          sigOpen,
+          sigHigh,
+          sigLow,
           closes,
           capital,
           riskPct
@@ -7755,9 +7767,9 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     dec2 = attachSecondary(dec2, {
       assetId: a.id,
       result: result2,
-      open: useCandles2.map((k) => k.open),
-      high: useCandles2.map((k) => k.high),
-      low: useCandles2.map((k) => k.low),
+      open: sigOpen,
+      high: sigHigh,
+      low: sigLow,
       close: closes,
       capital,
       riskPct,
@@ -7795,25 +7807,26 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
   const merged = mergeLiveQuote(candles, live, gapForTf(tf));
   const useCandles = merged.candles;
   const result = analyze(useCandles);
+  const sig = closedBars(useCandles, gapForTf(tf));
   let dec;
   if (a.layer === "placeholder") {
     dec = placeholderDecision(a, result, tf);
   } else if (a.id === "EURUSD") {
-    const lastT = useCandles[useCandles.length - 1].time;
+    const lastT = sig[sig.length - 1].time;
     const nowUtcHour = new Date(lastT * 1e3).getUTCHours();
-    dec = decideEurusd(result, useCandles.map((k) => k.close), nowUtcHour, capital, riskPct, lastT);
+    dec = decideEurusd(result, sig.map((k) => k.close), nowUtcHour, capital, riskPct, lastT);
   } else if (a.id === "EURUSD-M15") {
     dec = decideEurusdM15(
       result,
-      useCandles.map((k) => k.open),
-      useCandles.map((k) => k.high),
-      useCandles.map((k) => k.low),
-      useCandles.map((k) => k.close),
+      sig.map((k) => k.open),
+      sig.map((k) => k.high),
+      sig.map((k) => k.low),
+      sig.map((k) => k.close),
       capital,
       riskPct
     );
   } else {
-    dec = decide(result, useCandles.map((k) => k.close), capital, riskPct, assetSpec(a.id));
+    dec = decide(result, sig.map((k) => k.close), capital, riskPct, assetSpec(a.id));
   }
   return {
     asset: a.id,
