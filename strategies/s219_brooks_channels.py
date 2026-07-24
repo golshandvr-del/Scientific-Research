@@ -207,8 +207,17 @@ def main():
     print("=" * 100, flush=True)
 
     # قانونِ مولتی‌تایم‌فریم: از XAUUSD شروع (M1 طلا موجود نیست ⇒ M5..D1)، سپس EURUSD.
-    TFS = ['XAUUSD_M5', 'XAUUSD_M15', 'XAUUSD_M30', 'XAUUSD_H1', 'XAUUSD_H4', 'XAUUSD_D1',
-           'EURUSD_M1', 'EURUSD_M5', 'EURUSD_M15', 'EURUSD_M30']
+    # امکانِ اجرای گروهی با آرگومان (xau / eur) برای پرهیز از timeout روی دیتاستِ حجیمِ EURUSD.
+    ALL_TFS = ['XAUUSD_M5', 'XAUUSD_M15', 'XAUUSD_M30', 'XAUUSD_H1', 'XAUUSD_H4', 'XAUUSD_D1',
+               'EURUSD_M1', 'EURUSD_M5', 'EURUSD_M15', 'EURUSD_M30']
+    grp = sys.argv[1] if len(sys.argv) > 1 else 'all'
+    if grp == 'xau':
+        TFS = [t for t in ALL_TFS if t.startswith('XAU')]
+    elif grp == 'eur':
+        TFS = [t for t in ALL_TFS if t.startswith('EUR')]
+    else:
+        TFS = ALL_TFS
+    OUT = f'_s219_channels_{grp}.json' if grp != 'all' else '_s219_channels.json'
 
     SL_TP = [(150, 300), (200, 400), (250, 500), (300, 450), (200, 300)]
     MH = {'M1': 96, 'M5': 96, 'M15': 48, 'M30': 32, 'H1': 24, 'H4': 16, 'D1': 10}
@@ -253,16 +262,20 @@ def main():
                                     print(f"  ✓ {side} ema{ef}/{es} k{k} pos{pmax} gap{mg} "
                                           f"SL{sl}/TP{tp}: net=${r['net']:+,.0f} WR{r['wr']} "
                                           f"n{r['n']} PF{r['pf']} WF{[w[0] for w in r['wf']]}", flush=True)
+        # ذخیرهٔ تدریجی پس از هر تایم‌فریم (مقاوم به قطع/timeout/ریستِ سندباکس)
+        os.makedirs(RESULTS, exist_ok=True)
+        with open(os.path.join(RESULTS, OUT), 'w') as f:
+            json.dump(all_rows, f, indent=1)
 
     os.makedirs(RESULTS, exist_ok=True)
-    with open(os.path.join(RESULTS, '_s219_channels.json'), 'w') as f:
+    with open(os.path.join(RESULTS, OUT), 'w') as f:
         json.dump(all_rows, f, indent=1)
     print(f"\n{'='*100}\nمجموع ردیف: {len(all_rows)} | گیت-پاس: {len(accepted)}")
     accepted.sort(key=lambda r: -r['net'])
     for r in accepted[:25]:
         print(f"  {r['tf']} {r['side']} ema{r['ema']} k{r['k']} pos{r['pos_max']} gap{r['max_gap']} "
               f"SL{r['sl']}/TP{r['tp']}: net=${r['net']:+,.0f} WR{r['wr']} n{r['n']}")
-    print("saved: results/_s219_channels.json")
+    print(f"saved: results/{OUT}")
 
 
 if __name__ == '__main__':
