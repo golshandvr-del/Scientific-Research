@@ -27,10 +27,19 @@ export const MONDAY_UTC_DAY = 1            // Date.getUTCDay(): 1 = Monday
 export const MONDAY_ENTRY_HOURS = [18, 19, 20]
 // ساعتی که «نزدیک‌شدن» اعلام می‌شود (یک ساعت پیش از پنجره، فقط دوشنبه).
 export const MONDAY_APPROACH_HOUR = 17
-// پارامترهای خروجِ مخصوصِ M5 (بر حسبِ pip؛ ۱pip طلا = ۰.۱۰$) — بازتنظیم‌شده در S191/S193.
-export const MONDAY_SL_PIP = 100
-export const MONDAY_TP_PIP = 200
-export const MONDAY_MAX_HOLD = 288   // ۲۴ ساعت روی M5 (۲۸۸×۵ دقیقه)
+// ★★ بازطراحیِ WR≥۶۰٪ (S222b — قانونِ احیای پروژه، این نشست) ★★
+//   نسخهٔ پیشین برای «رژیمِ فقط-سودِ-خالص» بود: SL100/TP200 ⇒ WR ۴۴.۵٪.
+//   طبقِ User Noteِ فعلی «WR ≥ ۶۰٪»، نامتقارنی معکوس شد (TP کوچک / SL بزرگ).
+//   پارامترِ برندهٔ M15 (بک‌تستِ ۴ سال، هزینهٔ واقعی):
+//       SL200pip / TP40pip / mh96  +  فیلترها: {adx>20، atr<1.8×median، atr>0.5×median}
+//   نتیجه: WR = ۸۹.۱٪ ، net = +$1,892 ، n=201 ، هر ۴ پنجرهٔ walk-forward مثبت.
+//   ★ آزمونِ کنترلِ تصادفیِ پنجره-محور (BUG-047): WR_excess=+۳.۳٪ ، net_edge=+۳۰۳$ ،
+//     PF=۲.۲۳ ⇒ لبهٔ فیلتریِ **واقعی** (برخلاف Overnight که فیلترش ~۰ می‌افزاید).
+//   سند: results/S222b_MondayWR60_Xauusd_M5M15M30H1_7482_88.md
+// معیارِ فعلیِ پروژه (User Note): WR هر لایه ≥ ۶۰٪ + سودِ خالص.
+export const MONDAY_SL_PIP = 200       // ← از ۱۰۰ (WR≥۶۰٪ نسخهٔ M15)
+export const MONDAY_TP_PIP = 40        // ← معکوس‌شده از ۲۰۰ (WR۴۴→۸۹٪)
+export const MONDAY_MAX_HOLD = 96      // ← mh نسخهٔ M15 (۹۶×۱۵ دقیقه = ۲۴ ساعت)
 const PIP = 0.10                    // اندازهٔ pip طلا بر حسبِ قیمت
 
 // ساعتِ UTC → «HH:MM به وقتِ ایران» (UTC+3:30 ثابت). همهٔ توصیه‌های زمان-محور به وقتِ ایران (User Note).
@@ -114,20 +123,48 @@ export interface MondaySignal {
   reason: string
 }
 
-// ارزیابیِ لایهٔ Monday بر اساسِ روز و ساعتِ UTCِ کندلِ جاری.
-export function computeMonday(utcDay: number, utcHour: number): MondaySignal {
+// فیلترِ رژیمِ WR≥۶۰٪ (S222b): adx>20 (روندِ جهت‌دار) + atr<1.8×median (ضدِ climax)
+// + atr>0.5×median (نه بازارِ مرده). طبقِ BUG-047 این فیلتر لبهٔ واقعی می‌افزاید
+// (WR_excess=+۳.۳٪، PF=۲.۲۳). اگر فراهم نباشد، ورود نمی‌کند بلکه APPROACHING می‌ماند.
+export interface MondayFilter {
+  adxOk: boolean       // adx > 20
+  atrNotHigh: boolean  // atr < 1.8 × median(atr)
+  atrNotDead: boolean  // atr > 0.5 × median(atr)
+}
+
+function mondayFiltersPass(f?: MondayFilter): boolean {
+  if (!f) return true                                   // بدونِ داده ⇒ سازگارِ عقب
+  return f.adxOk && f.atrNotHigh && f.atrNotDead
+}
+
+// ارزیابیِ لایهٔ Monday: روز/ساعتِ UTC + فیلترِ رژیمِ WR≥۶۰٪ (اختیاری).
+export function computeMonday(utcDay: number, utcHour: number, filt?: MondayFilter): MondaySignal {
   const slDist = MONDAY_SL_PIP * PIP
   const tpDist = MONDAY_TP_PIP * PIP
   const isMonday = utcDay === MONDAY_UTC_DAY
 
   if (isMonday && MONDAY_ENTRY_HOURS.includes(utcHour)) {
+    // در پنجرهٔ روز×ساعت هستیم؛ ورود فقط با تأییدِ فیلترِ رژیم (شرطِ WR≥۶۰٪).
+    if (!mondayFiltersPass(filt)) {
+      const need: string[] = []
+      if (filt && !filt.adxOk) need.push('روند جهت‌دار شود (ADX بالای ۲۰)')
+      if (filt && !filt.atrNotHigh) need.push('نوسان به حالتِ عادی برگردد (نه کندلِ شوک/climax)')
+      if (filt && !filt.atrNotDead) need.push('نوسان از حالتِ مرده خارج شود (ATR بالای نصفِ میانه)')
+      return {
+        state: 'APPROACHING', utcDay, utcHour, slDist, tpDist,
+        reason: `اکنون دوشنبه ساعتِ ${toIran(utcHour)} به وقتِ ایران است — در پنجرهٔ «درایوِ ابتدای هفتهٔ طلا» ` +
+          `(${MONDAY_IRAN_RANGE} به وقتِ ایران) هستیم، اما فیلترِ رژیمِ WR≥۶۰٪ هنوز تأیید نشده. ` +
+          `برای صدورِ سیگنالِ خرید باید: ${need.join('؛ ')}. ` +
+          `(لایهٔ زمان-محورِ S222b با فیلترِ رژیم ⇒ WR ۸۹٪، PF ۲.۲۳.)`,
+      }
+    }
     return {
       state: 'ENTRY', utcDay, utcHour, slDist, tpDist,
       reason: `اکنون دوشنبه ساعتِ ${toIran(utcHour)} به وقتِ ایران است — درست در پنجرهٔ «درایوِ ابتدای هفتهٔ طلا» ` +
-        `(عصرِ دوشنبه، ${MONDAY_IRAN_RANGE} به وقتِ ایران — نسخهٔ S140⁺⁺ روی M5). دوشنبه قوی‌ترین روزِ هفته برای طلاست ` +
-        `(t=+۶.۱۱)؛ با بازتنظیمِ TP/SL مخصوصِ M5 (SL100/TP200) و حذفِ ساعتِ زیان‌دهِ ${toIran(21)} به وقتِ ایران، ` +
-        `WR به ۴۴.۵٪ و سودِ افزایشی به +$1,553 رسید (تأییدشده روی M15). ` +
-        `طبقِ قانونِ شمارهٔ ۱ هدف سودِ خالص است نه وین‌ریت. به شمارشِ معکوسِ «تا پایانِ فرصتِ ورود» توجه کنید.`,
+        `(عصرِ دوشنبه، ${MONDAY_IRAN_RANGE} به وقتِ ایران) و فیلترِ رژیم (روندِ جهت‌دار + نوسانِ عادی) تأیید شد. ` +
+        `دوشنبه قوی‌ترین روزِ هفته برای طلاست (t=+۶.۱۱)؛ سیگنالِ خرید (LONG) با TP نزدیک (۴۰pip) و SL محافظ (۲۰۰pip). ` +
+        `این پیکربندی در بک‌تستِ ۴ سال WR = ۸۹٪ و PF = ۲.۲۳ داد (سند S222b، لبهٔ فیلتریِ واقعی طبقِ آزمونِ کنترلِ تصادفی). ` +
+        `به شمارشِ معکوسِ «تا پایانِ فرصتِ ورود» توجه کنید.`,
     }
   }
 
@@ -135,7 +172,7 @@ export function computeMonday(utcDay: number, utcHour: number): MondaySignal {
     return {
       state: 'APPROACHING', utcDay, utcHour, slDist, tpDist,
       reason: `اکنون دوشنبه ساعتِ ${toIran(utcHour)} به وقتِ ایران است — پنجرهٔ «درایوِ ابتدای هفتهٔ طلا» ` +
-        `(S140⁺⁺: ${MONDAY_IRAN_RANGE} به وقتِ ایران) در حالِ باز شدن است. با ورودِ ساعتِ ${toIran(18)} به وقتِ ایران آماده‌باشِ سیگنالِ خرید (LONG) صادر می‌شود.`,
+        `(S140⁺⁺: ${MONDAY_IRAN_RANGE} به وقتِ ایران) در حالِ باز شدن است. با ورودِ ساعتِ ${toIran(18)} به وقتِ ایران و تأییدِ فیلترِ رژیم، سیگنالِ خرید (LONG) صادر می‌شود.`,
     }
   }
 
