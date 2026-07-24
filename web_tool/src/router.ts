@@ -16,7 +16,9 @@ import { computeShortMA, DEFAULT_SHORT_MA } from './short_ma_confluence'
 import { computeSqueeze, DEFAULT_SQUEEZE } from './squeeze_breakout'
 import {
   computeOvernight, OVERNIGHT_MAX_HOLD, OVERNIGHT_SL_PIP, OVERNIGHT_TP_PIP,
+  type OvernightFilter,
 } from './overnight_drift'
+import { adx as adxIndicator, atr as atrIndicator, type Candle } from './indicators'
 import {
   computeMonday, MONDAY_MAX_HOLD, MONDAY_SL_PIP, MONDAY_TP_PIP,
   MONDAY_ENTRY_HOURS, MONDAY_UTC_DAY,
@@ -34,6 +36,37 @@ import { computeTripleSMA, DEFAULT_TRIPLE_SMA } from './triple_sma_pullback'
 // نشستِ S163: فیلترِ تأییدِ متعامد WR این لایه‌ها را از زیرِ ۴۰٪ به بالای ۴۰٪ رساند
 // (رجوع: results/EnforceWR40_RemoveS81_NetProfit_218739.md). پاسخِ صریحِ User Note.
 const CONFIRM_MIN_SCORE = 2
+
+// ---------------------------------------------------------------------------
+// فیلترِ رژیمِ WR≥۶۰٪ برای لایهٔ Overnight (S222a): از آرایه‌های OHLC که به decide()
+// پاس می‌شوند، سه شرطِ برندهٔ بک‌تست را می‌سازد:
+//   pdi>mdi (جهتِ روندِ صعودی) ، bull_bar (کندلِ صعودی) ، atr<1.8×median(atr).
+// اگر داده کافی نباشد، undefined برمی‌گرداند ⇒ رفتارِ سازگارِ عقب (بدونِ گِیت).
+// ---------------------------------------------------------------------------
+function buildOvernightFilter(open?: number[], high?: number[], low?: number[],
+                              close?: number[]): OvernightFilter | undefined {
+  if (!open || !high || !low || !close) return undefined
+  const n = close.length
+  if (n < 30 || open.length !== n || high.length !== n || low.length !== n) return undefined
+  const candles: Candle[] = new Array(n)
+  for (let i = 0; i < n; i++) {
+    candles[i] = { time: i, open: open[i], high: high[i], low: low[i], close: close[i], volume: 0 }
+  }
+  const { pdi, mdi } = adxIndicator(candles, 14)
+  const atrArr = atrIndicator(candles, 14)
+  const last = n - 1
+  const pdiV = pdi[last], mdiV = mdi[last], atrV = atrArr[last]
+  if (!isFinite(pdiV) || !isFinite(mdiV) || !isFinite(atrV)) return undefined
+  // median(atr) روی مقادیرِ معتبر
+  const valid = atrArr.filter((v) => isFinite(v)).slice().sort((x, y) => x - y)
+  if (!valid.length) return undefined
+  const med = valid[Math.floor(valid.length / 2)]
+  return {
+    pdiGtMdi: pdiV > mdiV,
+    bullBar: close[last] > open[last],
+    atrOk: atrV < 1.8 * med,
+  }
+}
 
 // ساعتِ UTC → «HH:MM به وقتِ ایران» (ایران آفستِ ثابتِ UTC+3:30، بدونِ DST از ۱۴۰۱).
 // همهٔ توصیه‌های زمان-محورِ نمایشی به وقتِ ایران بیان می‌شوند (پاسخِ صریحِ User Note).
@@ -368,7 +401,8 @@ export function decide(a: AnalysisResult, close: number[],
   // فقط وقتی ساعتِ UTCِ کندلِ جاری در دست است فعال می‌شود. درایوِ صعودیِ ساختاریِ
   // ابتدای سشنِ آسیا (۲۲–۲۳ UTC) کشفِ بک‌تست است (+$43,413 مستقل، افزایشی به رکورد).
   if (spec.id === 'XAUUSD' && typeof utcHour === 'number') {
-    const ov = computeOvernight(utcHour)
+    const ovFilt = buildOvernightFilter(open, high, low, close)
+    const ov = computeOvernight(utcHour, ovFilt)
     const ovInd: RouterDecision['indicators'] = [
       { name: 'ساعتِ فعلی (به وقتِ ایران)', value: `${toIranHM(utcHour)}`,
         status: ov.state === 'ENTRY' ? 'ok' : ov.state === 'APPROACHING' ? 'warn' : 'neutral' },
