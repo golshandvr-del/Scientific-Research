@@ -117,6 +117,8 @@ function lateEntryMomentum(open: number[], high: number[], low: number[], close:
 
   // رخ‌دادِ run: کندلی که run دقیقاً به N_RUN می‌رسد و غیر-climactic است
   const runEvt: boolean[] = new Array(n).fill(false)
+  // رخ‌دادِ run که *طولِ کافی* دارد ولی به‌خاطرِ بزرگ‌بودنِ کندل‌ها (climactic) رد شده.
+  const climaxEvt: boolean[] = new Array(n).fill(false)
   let run = 0
   for (let i = 0; i < n; i++) {
     run = trendBar[i] ? run + 1 : 0
@@ -125,6 +127,7 @@ function lateEntryMomentum(open: number[], high: number[], low: number[], close:
       for (let j = i - N_RUN + 1; j <= i; j++) sum += rng[j]
       const avgRunRng = sum / N_RUN
       if (avgRunRng <= CLX * atr[i]) runEvt[i] = true
+      else climaxEvt[i] = true            // رشتهٔ کافی بود، ولی رالیِ خیلی قوی/climactic
     }
   }
 
@@ -132,13 +135,29 @@ function lateEntryMomentum(open: number[], high: number[], low: number[], close:
   const i = n - 1
   const lo = Math.max(0, i - LOOK)
   let hadRecentRun = false
-  for (let k = lo; k <= i - 1; k++) { if (runEvt[k]) { hadRecentRun = true; break } }
+  let hadRecentClimax = false
+  for (let k = lo; k <= i - 1; k++) {
+    if (runEvt[k]) hadRecentRun = true
+    if (climaxEvt[k]) hadRecentClimax = true
+  }
 
   // شمارشِ run جاری (برای پیامِ «نزدیک‌شدن»)
   let curRun = 0
   for (let k = i; k >= 0; k--) { if (trendBar[k]) curRun++; else break }
 
-  return { active: hadRecentRun && regimeUp, regimeUp, hadRecentRun, curRun }
+  // بیشینهٔ طولِ رشتهٔ صعودیِ *هر نوع* (climactic یا نه) در پنجرهٔ اخیر —
+  // برای تشخیصِ «رالیِ قویِ در جریان» فارغ از فیلترِ ضدِ climax.
+  let maxRun = 0, cur = 0
+  for (let k = lo; k <= i; k++) { if (trendBar[k]) { cur++; if (cur > maxRun) maxRun = cur } else cur = 0 }
+
+  return {
+    active: hadRecentRun && regimeUp,
+    regimeUp, hadRecentRun, curRun,
+    // رالیِ قویِ climactic: رشتهٔ کافیِ صعودی هست ولی چون کندل‌ها بزرگ‌اند رد شده،
+    // یا رشتهٔ صعودیِ بلند (≥N_RUN) در جریان است ولی run رسمی ثبت نشده.
+    climaxBlocked: regimeUp && (hadRecentClimax || (maxRun >= N_RUN && !hadRecentRun)),
+    maxRun,
+  }
 }
 
 export interface LateEntryState {
@@ -150,6 +169,10 @@ export interface LateEntryState {
   regimeUp: boolean
   hadRecentRun: boolean
   curRun: number
+  /** رالیِ صعودیِ قویِ در جریان که فیلترِ ضدِ climax آن را رد کرده (شفافیتِ User Note). */
+  climaxBlocked: boolean
+  /** بلندترین رشتهٔ کندل‌های صعودیِ پیاپیِ اخیر (فارغ از فیلترِ climax). */
+  maxRun: number
   fromEnd: number
   utcHour: number
   price: number
@@ -178,6 +201,7 @@ export function evalGoldM5LateEntry(
   return {
     entry, inWindow,
     regimeUp: mom.regimeUp, hadRecentRun: mom.hadRecentRun, curRun: mom.curRun,
+    climaxBlocked: mom.climaxBlocked, maxRun: mom.maxRun,
     fromEnd, utcHour, price,
   }
 }
