@@ -44,13 +44,19 @@ def parse_ema(s):
     a, b = s.split('/'); return int(a), int(b)
 
 
+# MH مطابقِ runner (چون part rows فیلدِ mh را ذخیره نکرده‌اند، از tag بازسازی می‌شود).
+MH = {'M1': 96, 'M5': 96, 'M15': 48, 'M30': 32, 'H1': 24, 'H4': 16, 'D1': 10}
+
+
 def analyze(tf, cand):
     asset = 'XAUUSD'
     df = S.lastn(S.load(tf), y=4)
     ef, es = parse_ema(cand['ema'])
+    tag = tf.split('_')[1]
+    mh = cand.get('mh', MH.get(tag, 48))
     sig = X.trend_line_signals(df, cand['side'], ef, es, cand['k'], cand['pen'], cand['max_gap'])
     z = np.zeros(len(df), bool)
-    tr = S.sim(df, sig, z, cand['sl'], cand['tp'], cand['mh'], asset)
+    tr = S.sim(df, sig, z, cand['sl'], cand['tp'], mh, asset)
     if tr is None or len(tr) == 0:
         return None
 
