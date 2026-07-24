@@ -14,6 +14,8 @@ import { decideGoldH1, decideGoldH4, decideGoldD1 } from './gold_htf_router'
 import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
 import { channelDecision, CHANNEL_CFG } from './gold_channel'
 import { probeSecondaryLayers } from './secondary_layers'
+import { cachedFetch } from './cache'
+import { fetchWithTimeout } from './fast_fetch'
 
 const app = new Hono()
 
