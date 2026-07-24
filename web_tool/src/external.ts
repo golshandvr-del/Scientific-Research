@@ -13,6 +13,8 @@
 // ============================================================================
 import type { Candle } from './indicators'
 import { ema, rollingSlope } from './indicators'
+import { cachedFetch } from './cache'
+import { fetchWithTimeout, fallbackChain, stooqSupports, stooqDaily } from './fast_fetch'
 
 const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
 
