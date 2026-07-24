@@ -1,0 +1,112 @@
+[
+ {
+  "tf": "XAUUSD_M5",
+  "raw_net": 13155,
+  "raw_wr": 47.36,
+  "raw_n": 1533,
+  "overlap_pct": 66.6,
+  "indep_n": 651,
+  "indep_net": 3015,
+  "indep_wr": 45.78,
+  "indep_wf": [
+   459,
+   749,
+   1062,
+   911
+  ],
+  "indep_wfmin": 459,
+  "indep_h1h2": [
+   1302,
+   1871
+  ],
+  "indep_ok": true
+ },
+ {
+  "tf": "XAUUSD_M15",
+  "raw_net": 11082,
+  "raw_wr": 47.23,
+  "raw_n": 993,
+  "overlap_pct": 65.0,
+  "indep_n": 437,
+  "indep_net": 4028,
+  "indep_wr": 50.11,
+  "indep_wf": [
+   265,
+   1566,
+   892,
+   1052
+  ],
+  "indep_wfmin": 265,
+  "indep_h1h2": [
+   1832,
+   1842
+  ],
+  "indep_ok": true
+ },
+ {
+  "tf": "XAUUSD_M30",
+  "raw_net": 7816,
+  "raw_wr": 46.24,
+  "raw_n": 625,
+  "overlap_pct": 63.8,
+  "indep_n": 269,
+  "indep_net": 4457,
+  "indep_wr": 47.58,
+  "indep_wf": [
+   654,
+   1012,
+   194,
+   2218
+  ],
+  "indep_wfmin": 194,
+  "indep_h1h2": [
+   1666,
+   2305
+  ],
+  "indep_ok": true
+ },
+ {
+  "tf": "XAUUSD_H1",
+  "raw_net": 5452,
+  "raw_wr": 49.15,
+  "raw_n": 352,
+  "overlap_pct": 65.3,
+  "indep_n": 154,
+  "indep_net": 1928,
+  "indep_wr": 51.95,
+  "indep_wf": [
+   675,
+   374,
+   -299,
+   1336
+  ],
+  "indep_wfmin": -299,
+  "indep_h1h2": [
+   948,
+   936
+  ],
+  "indep_ok": false
+ },
+ {
+  "tf": "XAUUSD_H4",
+  "raw_net": 3613,
+  "raw_wr": 48.21,
+  "raw_n": 112,
+  "overlap_pct": 63.0,
+  "indep_n": 48,
+  "indep_net": 2911,
+  "indep_wr": 58.33,
+  "indep_wf": [
+   481,
+   1159,
+   777,
+   280
+  ],
+  "indep_wfmin": 280,
+  "indep_h1h2": [
+   1640,
+   1058
+  ],
+  "indep_ok": true
+ }
+]
