@@ -18,10 +18,30 @@
 
 ## 🥇 وضعیتِ رسمیِ رکورد (مرجعِ قطعیِ به‌روز)
 
-**سودِ خالصِ کلِ رکورد = `+$262,519`** (XAUUSD + EURUSD)، محاسبه‌شده با **مشخصاتِ دقیقِ
+**سودِ خالصِ کلِ رکورد = `+$293,236`** (XAUUSD + EURUSD)، محاسبه‌شده با **مشخصاتِ دقیقِ
 حسابِ کاربر** و قیدِ سختِ **WR≥40٪ برای تک‌تکِ لایه‌های فعال**.
 
-> **نشستِ جاری (S214 — کتاب: فصلِ ۱۱ «Late and Missed Entries» — لایهٔ مستقلِ LONG روی XAUUSD M5):**
+> **نشستِ جاری (S219 — کتاب: فصلِ ۱۵ «Channels» — لایهٔ مستقلِ نو، position-in-channel روی XAUUSD):**
+> طبقِ User Note (بخشِ کتاب‌ها، ادامهٔ ترتیبی)، فصلِ ۱۵ کتابِ `1 Trading Price Action - Trends.pdf`
+> استخراج شد. تزِ مرکزیِ فصل: channel = دو خطِ موازی (trend line + trend channel line)؛ «buy near
+> the bottom of the channel»، ورود «at the moving average where entry is not too close to the top
+> of the channel»، «bull channels usually have at least three pushes up». بُعدِ **نو** نسبت به S215
+> (که فقط penetration/resume بود) = **position-in-channel**: ورودِ LONG فقط در **نیمهٔ پایینِ کانالِ
+> صعودی** (pos≤posMax) + pullback + کندلِ صعودی + رژیمِ EMA + ضدِ رنج. **قانونِ مولتی‌تایم‌فریم:**
+> هر ۱۰ ترکیبِ TF×دارایی مستقل آزموده شد (از XAUUSD M5 شروع). **XAUUSD**: سهمِ مستقلِ گیت‌پاس در
+> **۴ TF** — M5 (+$3,015/WR۴۵.۸)، M15 (+$4,028/WR۵۰.۱)، M30 (+$4,457/WR۴۷.۶)، H4 (+$2,911/WR۵۸.۳).
+> **H1 رد** (پنجرهٔ walk-forward منفی). **EURUSD**: صفر لبه (bull-channel مخصوصِ روندِ صعودیِ طلاست).
+> **قانونِ همپوشانیِ اجباری:** همپوشانیِ خام با Union-All طلا **۶۳–۶۷٪** بود، اما سهمِ مستقلِ ~۳۳–۳۷٪
+> در هر ۴ TF گیتِ سختِ ۴-گانه (net>0 + هر دو نیمه مثبت + WF ۴/۴ + WR≥۴۰ + n≥۳۰) را پاس کرد ⇒ **لبهٔ
+> اصیلِ نو**. side=short هیچ گیت‌پاسی نداد. **Δ سودِ خالصِ مستقل = +$14,411.** **local-mobile و سایت
+> به‌روز شدند** (لایهٔ S219 به‌عنوان لایهٔ مکملِ مستقل روی کارت‌های XAUUSD M5/M15/M30/H4؛ فقط وقتی
+> لایه‌های اصلی و S215 خنثی‌اند ⇒ بدونِ تداخل — تستِ runtime تأیید شد: M15 اکنون APPROACHING از S219).
+> TP/SL مخصوصِ هر TF جدا اعمال شد. چرخهٔ checkpoint در تمامِ گام‌ها رعایت شد.
+> ⇒ رکورد **+$278,825 → +$293,236**.
+> سند: `results/S219_BrooksChannels_Xauusd_M5M15M30H4_293236_46.md`.
+> ▶ نشستِ بعد: **CHAPTER 16 «Micro Channels»** کتابِ `1 Trading Price Action - Trends.pdf`.
+>
+> **نشستِ پیشین (S214 — کتاب: فصلِ ۱۱ «Late and Missed Entries» — لایهٔ مستقلِ LONG روی XAUUSD M5):**
 > طبقِ User Note (بخشِ کتاب‌ها، ادامهٔ ترتیبی)، فصلِ ۱۱ کتابِ `1 Trading Price Action - Trends.pdf`
 > استخراج شد. تزِ مرکزیِ فصل (قرینهٔ فصلِ ۱۰): «اگر روندِ always-in واضح است و ورودِ اول را از
 > دست داده‌ای، **دیر هم که شده at-market وارد شو** — چون احتمالِ سود بالاست»؛ + قاعدهٔ عددیِ
