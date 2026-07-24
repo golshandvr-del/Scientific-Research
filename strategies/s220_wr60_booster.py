@@ -182,5 +182,89 @@ def build_filters(df):
     return F
 
 
+# ============================================================================
+# boost_layer — موتورِ دو-مرحله‌ایِ ارتقای WR (بهینه از نظرِ سرعت)
+#   مرحله A: فقط TP/SL grid روی سیگنالِ پایه (بدونِ فیلتر) ⇒ کدام (SL,TP) بیشترین
+#            «امتیازِ ترکیبی» (WR بالا + net مثبت) را می‌دهد. ارزان: |SL|×|TP| فراخوانی.
+#   مرحله B: با کاندیدهای برترِ TP/SL، ترکیبِ فیلترها (تا MAX_FILTERS) جستجو می‌شود تا
+#            WR≥۶۰ با بیشینهٔ net و گیتِ سختِ ضدِ overfit پاس شود.
+#   این ساختار فضای جستجو را از |F|×|SL|×|TP| به |SL|×|TP| + K×|F| کاهش می‌دهد.
+# ============================================================================
+def boost_layer(df, base_sig, asset, mh,
+                sl_grid, tp_grid, filter_pool, max_filters=3,
+                side='long', top_tpsl=4, be=None, trail=None, verbose=True):
+    """
+    ورودی:
+      df         : دیتافریمِ آماده (با add_indicators/add_calendar).
+      base_sig   : ماسکِ بولینِ سیگنالِ پایهٔ لایه (منطقِ ورودِ اصلی).
+      asset      : کلیدِ ASSETS.
+      mh         : max_hold.
+      sl_grid/tp_grid : فهرستِ کاندیدهای SL/TP (pip).
+      filter_pool: فهرستِ نامِ فیلترها (کلیدهای build_filters).
+      side       : 'long' یا 'short'.
+      top_tpsl   : چند کاندیدِ برترِ TP/SL از مرحله A وارد مرحله B شود.
+    خروجی: dict(best=..., best_wr_any=..., base_stat=...)
+    """
+    n = len(df); zeros = np.zeros(n, bool)
+    F = build_filters(df)
+
+    def run(mask, sl, tp):
+        if side == 'long':
+            return eval_signal(df, mask, zeros, sl, tp, mh, asset, be=be, trail=trail)
+        else:
+            return eval_signal(df, zeros, mask, sl, tp, mh, asset, be=be, trail=trail)
+
+    # آمارِ پایه (نسخهٔ رکورد، برای گزارش)
+    # --- مرحله A: TP/SL grid روی base ---
+    tpsl_results = []
+    for sl in sl_grid:
+        for tp in tp_grid:
+            r = run(base_sig, sl, tp)
+            if r is None or r['n'] < MIN_TRADES:
+                continue
+            # امتیازِ ترکیبی: اولویت با WR≥۶۰؛ در میانِ آن‌ها net بالاتر. اگر هیچ‌کدام
+            # WR≥۶۰ نبود، آن‌هایی که به ۶۰ نزدیک‌ترند و net مثبت دارند بالا می‌آیند.
+            score = (1 if r['wr'] >= WR_FLOOR else 0, r['wr'], r['net'])
+            tpsl_results.append((score, sl, tp, r))
+    if not tpsl_results:
+        return dict(best=None, best_wr_any=None, note='مرحله A: هیچ TP/SL با n کافی')
+    tpsl_results.sort(key=lambda x: x[0], reverse=True)
+    top = tpsl_results[:top_tpsl]
+
+    best_wr_any = None
+    for _, sl, tp, r in tpsl_results:
+        if best_wr_any is None or r['wr'] > best_wr_any['wr']:
+            best_wr_any = dict(wr=r['wr'], net=r['net'], n=r['n'], sl=sl, tp=tp, f=[])
+
+    # --- مرحله B: فیلترها روی کاندیدهای برترِ TP/SL ---
+    filter_combos = [()]
+    for k in range(1, max_filters + 1):
+        filter_combos += list(itertools.combinations(filter_pool, k))
+
+    best = None
+    for _, sl, tp, _r in top:
+        for fcombo in filter_combos:
+            mask = base_sig.copy()
+            for fname in fcombo:
+                mask = mask & F[fname]
+            if int(mask.sum()) < MIN_TRADES:
+                continue
+            r = run(mask, sl, tp)
+            if r is None or r['n'] < MIN_TRADES:
+                continue
+            if r['wr'] > best_wr_any['wr']:
+                best_wr_any = dict(wr=r['wr'], net=r['net'], n=r['n'], sl=sl, tp=tp,
+                                   f=list(fcombo))
+            if r['wr'] >= WR_FLOOR and r['net'] > 0:
+                passed, detail = antioverfit_gates(r, df)
+                if passed:
+                    cand = dict(wr=r['wr'], net=r['net'], n=r['n'], pf=r['pf'],
+                                sl=sl, tp=tp, mh=mh, side=side, f=list(fcombo),
+                                detail=detail)
+                    if best is None or cand['net'] > best['net']:
+                        best = cand
+    return dict(best=best, best_wr_any=best_wr_any)
+
+
 if __name__ == '__main__':
     print("s220_wr60_booster.py — ماژولِ کمکی. از boost_layer در اسکریپت‌های لایه استفاده کنید.")
