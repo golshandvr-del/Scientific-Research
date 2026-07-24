@@ -927,3 +927,41 @@ else { const { candles } = await yahooCandles(meta_asset.symbol, '15m', '1mo'); 
 با BUG-026 هماهنگ شود (تک‌منبعِ `tfSeconds` برای هر کارت).
 
 **وضعیت:** 🆕 ثبت‌شده — نیازمندِ نگاشتِ تایم‌فریمِ per-card در endpointِ advice.
+---
+
+### BUG-029 — 🔴🔴 CRITICAL — endpointِ `/api/scalp/manage` برای کارت‌های اسکالپِ EURUSD هم دادهٔ **طلا** را می‌گیرد (مقایسهٔ refPriceِ ۱.۰۸ یورو با livePriceِ ۲۶۵۰ طلا) 🆕
+**فایل‌ها:** `web_tool/src/index.tsx` (endpointِ `/api/scalp/manage`، خطوط ۳۷۷–۴۰۰؛ به‌ویژه خطِ
+۳۹۰) و `web_tool/public/static/app.js` (`refreshScalpManage`، بدنهٔ درخواست بدونِ `asset`).
+
+**شرح:** endpointِ مدیریتِ اسکالپ **هیچ‌گاه `body.asset` را نمی‌خواند** و همیشه دادهٔ **M5 طلا**
+را می‌گیرد:
+```ts
+const { candles } = await fetchGold('5m', '5d')   // خطِ ۳۹۰ — همیشه طلا
+…
+const livePrice = spot?.price ?? close[close.length - 1]   // قیمتِ طلا (~2650)
+const res = manageGoldM5Scalp({ action, refPrice, livePrice, close, … })
+```
+سمتِ فرانت‌اند هم (`refreshScalpManage`) در بدنهٔ درخواست فقط `{ action, refPrice, tpPip, slPip }`
+می‌فرستد و **`asset` را ارسال نمی‌کند**. پس endpoint اصلاً نمی‌داند دارایی چیست و پیش‌فرض همیشه طلاست.
+
+**چرا CRITICAL:** طبقِ `index.tsx` دارایی‌های `layer:'scalp'` شاملِ **`EURUSD` (M5)** و
+**`EURUSD-M15`** هستند و در `app.js` (خطِ ۴۳۱ `isScalp`, خطِ ۴۳۹) دقیقاً بخشِ
+`renderScalpManage` → `/api/scalp/manage` را می‌گیرند. در نتیجه وقتی کاربر روی کارتِ **EURUSD**
+یک معاملهٔ اسکالپ ثبت می‌کند:
+- `refPrice` = قیمتِ ورودِ یورو (~**۱.۰۸**)،
+- اما `livePrice` = قیمتِ زندهٔ **طلا** (~**۲۶۵۰**) و `close[]` = کندل‌های **طلا**.
+
+`manageGoldM5Scalp` این دو را مقایسه می‌کند ⇒ انحرافِ نجومی ⇒ حالتِ `take_profit`/`wrong` کاملاً
+بی‌معنا و تصادفی. کاربرِ EURUSD یک «مدیریتِ معاملهٔ» کاملاً غلط (بر پایهٔ طلا) دریافت می‌کند —
+مهم‌ترین بخشِ تعاملیِ سایت برای این کارت‌ها **به‌کل خراب** است.
+
+**تأییدِ دامنه:** `manageGoldM5Scalp` هم از نامش و هم از `pip`/آستانه‌هایش مخصوصِ طلاست؛ حتی اگر
+داده درست می‌شد، منطقِ pip/آستانه‌اش برای یورو غلط بود (هم‌خانوادهٔ BUG-013/027 — نبودِ per-asset).
+
+**پیشنهادِ رفع:** ۱) `app.js` باید `asset` را در بدنهٔ `/api/scalp/manage` بفرستد. ۲) endpoint باید
+با `ASSETS.find(id)` تشخیص دهد دارایی طلا است یا فارکس و دادهٔ همان دارایی و تایم‌فریمِ همان کارت
+را بگیرد (EURUSD-M5→`5m` یورو، EURUSD-M15→`15m` یورو). ۳) یک `manageScalp` عام با `pipSize`
+per-asset جایگزینِ `manageGoldM5Scalp`ِ طلا-محور شود (هم‌راستا با تک‌منبعِ pip در رفعِ خانوادهٔ
+BUG-013/020/021/022/027).
+
+**وضعیت:** 🆕 ثبت‌شده — نیازمندِ رفعِ فوری؛ مدیریتِ اسکالپِ EURUSD کاملاً روی دادهٔ طلا اجرا می‌شود.
