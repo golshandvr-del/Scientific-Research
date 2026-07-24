@@ -23,7 +23,9 @@
 
 import type { AnalysisResult } from './signal'
 import type { RouterDecision, RegimeInfo } from './router'
+import { computeLots, assetSpec } from './router'
 import * as ind from './indicators'
+import { computeTrendLine, TREND_LINE_CFG, type TrendLineConfig } from './gold_trend_line'
 
 // ---------------------------------------------------------------------------
 // پیکربندیِ اختصاصیِ هر تایم‌فریم (هر کارت پارامترهای مستقلِ خودش را دارد).
