@@ -956,37 +956,112 @@ function applyLatch(asset, raw) {
 // ============================================================================
 // دریافتِ داده
 // ============================================================================
-async function refreshAll() {
+// ----------------------------------------------------------------------------
+// 🚀 رفعِ کندیِ لود (User Note): رندرِ «تدریجی/هر-کارت-مستقل».
+// ----------------------------------------------------------------------------
+// قبلاً یک فراخوانِ سنگینِ /api/decision (هر ۱۲ دارایی با هم) انجام می‌شد و تا
+// کاملِ آن هیچ کارتی رندر نمی‌شد؛ اگر Yahoo یک دارایی را کند/rate-limit می‌کرد،
+// کلِ صفحه تا دقایق خالی می‌ماند («صفحهٔ پس‌زمینه می‌آید ولی کارت‌ها ظاهر نمی‌شوند»).
+//
+// راهِ نو (دو فاز):
+//   فاز ۱ — فوری: /api/assets (بدونِ هیچ fetchِ Yahoo، میلی‌ثانیه) ⇒ کارت‌ها همان
+//           لحظه با «اسکلتِ در حال تحلیل» رندر می‌شوند. کاربر دیگر صفحهٔ خالی نمی‌بیند.
+//   فاز ۲ — موازی و مستقل: هر کارت جداگانه از /api/decision/:asset پر می‌شود و به‌محضِ
+//           آماده‌شدن، همان کارت به‌روز می‌شود (کارت‌های سریع فوراً؛ کندها معطلِ بقیه نمی‌مانند).
+// این کار زمانِ «تا دیدنِ اولین کارتِ واقعی» را از «کندترین دارایی» به «سریع‌ترین
+// دارایی» کاهش می‌دهد و هر کارت مستقلِ خطای بقیه است.
+// ----------------------------------------------------------------------------
+
+// یک‌بار فهرستِ کارت‌ها را می‌گیرد و اسکلت را فوراً می‌سازد (فقط اگر هنوز نداریم).
+async function ensureAssetsMeta() {
+  if (assetsMeta.length) return true
   try {
-    const res = await fetch(`/api/decision?capital=${getCapital()}&risk=${getRisk()}`)
+    const res = await fetch('/api/assets')
     const data = await res.json()
-    if (!data.ok) throw new Error(data.error || 'خطای سرور')
-    if (!assetsMeta.length) {
-      assetsMeta = data.assets.map(a => ({ id: a.asset, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing' }))
+    if (data.ok && Array.isArray(data.assets) && data.assets.length) {
+      assetsMeta = data.assets.map(a => ({ id: a.id, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing' }))
+      render()   // رندرِ کاملِ اولیه: header + پنل + کارت‌های اسکلت (در حال تحلیل)
+      return true
     }
-    data.assets.forEach(a => {
-      store[a.asset] = store[a.asset] || {}
-      if (a.ok) {
-        // 🔒 اعمالِ قفلِ سیگنال: decisionِ خام را به تصمیمِ «پایدار» تبدیل می‌کند.
-        store[a.asset].decision = applyLatch(a.asset, a.decision)
-        store[a.asset].price = a.price
-        store[a.asset].error = null
-      } else {
-        store[a.asset].error = a.error
-      }
-    })
-    // رفرشِ دوره‌ای فقط کارت‌ها را به‌روز می‌کند (نه کلِ صفحه) تا نشتی/هنگ نداشته باشیم.
-    renderCardsOnly()
-    lastFetchAt = Date.now()   // لحظهٔ دریافتِ این پاسخ (ساعتِ خودِ مرورگر)
-    const lu = document.getElementById('last-update')
-    if (lu) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
-    // برای دارایی‌هایی که کاربر معامله دارد، advice را هم به‌روز کن
-    assetsMeta.forEach(a => { if (getTrade(a.id)) refreshAdvice(a.id) })
+  } catch (e) { /* پایین fallback داریم */ }
+  return false
+}
+
+// یک کارتِ مشخص را مستقلاً از سرور می‌گیرد و فقط همان کارت را در DOM به‌روز می‌کند.
+async function refreshOneAsset(id) {
+  try {
+    const res = await fetch(`/api/decision/${id}?capital=${getCapital()}&risk=${getRisk()}`)
+    const a = await res.json()
+    store[id] = store[id] || {}
+    if (a.ok) {
+      store[id].decision = applyLatch(id, a.decision)   // 🔒 قفلِ سیگنال
+      store[id].price = a.price
+      store[id].error = null
+    } else {
+      store[id].error = a.error || 'خطا'
+    }
+    updateOneCard(id)
+    if (getTrade(id)) refreshAdvice(id)
   } catch (e) {
-    if (!assetsMeta.length) {
-      app.innerHTML = `<div class="text-center text-rose-400 p-8"><i class="fas fa-triangle-exclamation text-2xl mb-2"></i><p>خطا در اتصال به سرور: ${e.message}</p></div>`
-    }
+    store[id] = store[id] || {}
+    store[id].error = e.message
+    updateOneCard(id)
   }
+}
+
+// فقط یک کارت را در DOM جایگزین می‌کند (بدونِ بازسازیِ کلِ گرید ⇒ ضدِ نشتی/پرش).
+function updateOneCard(id) {
+  const meta = assetsMeta.find(a => a.id === id)
+  if (!meta) return
+  const grid = document.getElementById('asset-grid')
+  if (!grid) return
+  // اگر کاربر کارت را مخفی کرده، کاری نکن.
+  if (isHidden(id)) return
+  const existing = grid.querySelector(`.asset-card[data-asset="${id}"]`)
+  const html = renderCard(meta)
+  if (existing) {
+    const tmp = document.createElement('div')
+    tmp.innerHTML = html
+    const fresh = tmp.firstElementChild
+    if (fresh) existing.replaceWith(fresh)
+  } else {
+    // کارت هنوز در گرید نیست (مثلاً تازه نمایان شد) ⇒ کلِ گرید را بازبساز.
+    grid.innerHTML = buildCardsHTML()
+  }
+  bindCardEvents()
+}
+
+async function refreshAll() {
+  const ok = await ensureAssetsMeta()
+  if (!ok && !assetsMeta.length) {
+    // fallback: اگر /api/assets در دسترس نبود، مثلِ قبل از /api/decision استفاده کن.
+    try {
+      const res = await fetch(`/api/decision?capital=${getCapital()}&risk=${getRisk()}`)
+      const data = await res.json()
+      if (!data.ok) throw new Error(data.error || 'خطای سرور')
+      assetsMeta = data.assets.map(a => ({ id: a.asset, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing' }))
+      data.assets.forEach(a => {
+        store[a.asset] = store[a.asset] || {}
+        if (a.ok) { store[a.asset].decision = applyLatch(a.asset, a.decision); store[a.asset].price = a.price; store[a.asset].error = null }
+        else { store[a.asset].error = a.error }
+      })
+      render()
+      lastFetchAt = Date.now()
+      const lu = document.getElementById('last-update')
+      if (lu) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
+      assetsMeta.forEach(a => { if (getTrade(a.id)) refreshAdvice(a.id) })
+    } catch (e) {
+      if (!assetsMeta.length) {
+        app.innerHTML = `<div class="text-center text-rose-400 p-8"><i class="fas fa-triangle-exclamation text-2xl mb-2"></i><p>خطا در اتصال به سرور: ${e.message}</p></div>`
+      }
+    }
+    return
+  }
+  // فاز ۲: هر کارت را مستقل و موازی پر کن (کارت‌های سریع فوراً می‌آیند).
+  await Promise.allSettled(assetsMeta.map(a => refreshOneAsset(a.id)))
+  lastFetchAt = Date.now()
+  const lu = document.getElementById('last-update')
+  if (lu) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
 }
 
 // --- بخشِ اسکالپ (User Note): مدیریتِ لحظه‌ای ---
