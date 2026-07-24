@@ -156,9 +156,12 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
     { name: 'قیمتِ زنده', value: price.toFixed(2) + '$', status: 'neutral' },
   ]
 
-  // --------- حالتِ ۱: روندِ M5 صعودی نیست → خنثی ---------
-  // (این لایه فقط BUY است؛ بدونِ روندِ صعودیِ M5 اصلاً وارد نمی‌شود — L51 long-bias طلا.)
+  // --------- حالتِ ۱: روندِ M5 صعودی نیست → خنثیِ اسکالپ ---------
+  // (لایهٔ اسکالپ فقط BUY است؛ بدونِ روندِ صعودیِ M5 اصلاً وارد نمی‌شود — L51 long-bias طلا.)
+  // ⇒ قبل از اعلامِ خنثی، لایهٔ مکملِ مستقلِ trend-line (S215) را می‌سنجیم (بندِ پایین).
   if (!trendUp) {
+    const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low)
+    if (tl) return tl
     return {
       state: 'NEUTRAL', regime: reg,
       headline: 'خنثی — شرایطِ اسکالپِ M5 برقرار نیست',
@@ -212,6 +215,11 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
   }
 
   // --------- حالتِ ۱ (شاخهٔ دوم): روند صعودی ولی RSI بالا → خنثی ---------
+  // ⇒ قبل از اعلامِ خنثی، لایهٔ مکملِ مستقلِ trend-line (S215) را می‌سنجیم.
+  {
+    const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low)
+    if (tl) return tl
+  }
   return {
     state: 'NEUTRAL', regime: reg,
     headline: 'خنثی — منتظرِ فرصتِ خرید',
@@ -219,6 +227,25 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
       `این لایه فقط هنگامِ پولبک وارد می‌شود؛ الان دنبالِ خرید در این قیمت نمی‌رویم و صبر می‌کنیم.`,
     indicators,
   }
+}
+
+// ---------------------------------------------------------------------------
+// maybeTrendLineM5 — لایهٔ مکملِ مستقلِ S215 (خطِ روندِ Al Brooks) روی کارتِ M5.
+// ---------------------------------------------------------------------------
+// طبقِ قانونِ همپوشانیِ پروژه: سهمِ مستقلِ trend-line روی M5 (پس از کسرِ همپوشانی با
+// S79/S214) در بک‌تستِ S215b برابرِ +$3,361 (WR ۵۲.۴٪، WF-4/4) بود ⇒ لبهٔ واقعیِ
+// غیرِ هم‌پوشان. این تابع فقط وقتی صدا زده می‌شود که لایه‌های اسکالپِ M5 (S214/S79)
+// سیگنالِ ENTRY/APPROACHING نداده‌اند ⇒ بدونِ تداخل. اگر trend-line هم ENTRY/APPROACHING
+// نداد، null برمی‌گرداند تا خنثیِ اسکالپِ عادی نمایش داده شود.
+// این یک سیگنالِ swing (با TP/SL) است، نه اسکالپِ لحظه‌ای؛ پس مدیریتِ scalp رویش سوار نیست.
+function maybeTrendLineM5(
+  a: AnalysisResult, close: number[], capital: number, riskPct: number,
+  open?: number[], high?: number[], low?: number[],
+): RouterDecision | null {
+  if (!(open && high && low && high.length === close.length && low.length === close.length)) return null
+  const dec = trendLineDecision(TREND_LINE_CFG['XAUUSD-M5'], a, open, high, low, close, capital, riskPct)
+  // فقط سیگنالِ فعال (ENTRY/APPROACHING) را نشان بده؛ در غیرِ این‌صورت بگذار خنثیِ اسکالپ بماند.
+  return (dec.state === 'ENTRY' || dec.state === 'APPROACHING') ? dec : null
 }
 
 // ============================================================================
