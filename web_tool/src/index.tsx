@@ -11,6 +11,7 @@ import { decideEurusd, decideEurusdM15 } from './eurusd_router'
 import { decideGoldM5, manageGoldM5Scalp } from './gold_m5_router'
 import { decideGoldM30, decideGoldM30TrendLine } from './gold_m30_router'
 import { decideGoldH1, decideGoldH4, decideGoldD1 } from './gold_htf_router'
+import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
 
 const app = new Hono()
 
