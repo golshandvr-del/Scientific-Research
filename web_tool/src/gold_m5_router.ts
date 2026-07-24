@@ -33,6 +33,7 @@ import type { RouterDecision, RegimeInfo, Confirmation } from './router'
 import * as ind from './indicators'
 import { evalGoldM5LateEntry, S214_HIDDEN_TP_PIP, S214_HIDDEN_SL_PIP } from './gold_m5_late_entry'
 import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
+import { channelDecision, CHANNEL_CFG } from './gold_channel'
 
 // پارامترهای ورودِ S79 (وسطِ منطقهٔ پایدار — پرهیز از overfit)
 const EMA_FAST = 20
@@ -186,6 +187,8 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
   if (!trendUp) {
     const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low)
     if (tl) return tl
+    const chn = maybeChannelM5(a, close, _capital, _riskPct, open, high, low)
+    if (chn) return chn
     return {
       state: 'NEUTRAL', regime: reg,
       headline: 'خنثی — شرایطِ اسکالپِ M5 برقرار نیست',
@@ -243,6 +246,8 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
   {
     const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low)
     if (tl) return tl
+    const chn = maybeChannelM5(a, close, _capital, _riskPct, open, high, low)
+    if (chn) return chn
   }
   return {
     state: 'NEUTRAL', regime: reg,
@@ -272,6 +277,22 @@ function maybeTrendLineM5(
   if (!(open && high && low && high.length === close.length && low.length === close.length)) return null
   const dec = trendLineDecision(TREND_LINE_CFG['XAUUSD-M5'], a, open, high, low, close, capital, riskPct)
   // فقط سیگنالِ فعال (ENTRY/APPROACHING) را نشان بده؛ در غیرِ این‌صورت بگذار خنثیِ اسکالپ بماند.
+  return (dec.state === 'ENTRY' || dec.state === 'APPROACHING') ? dec : null
+}
+
+// ---------------------------------------------------------------------------
+// maybeChannelM5 — لایهٔ مکملِ مستقلِ S219 (کانالِ Al Brooks، position-in-channel) روی M5.
+// ---------------------------------------------------------------------------
+// طبقِ فصلِ ۱۵ کتاب: «خرید در نیمهٔ پایینِ کانالِ صعودی». سهمِ مستقلِ اثبات‌شده روی M5
+// (پس از کسرِ همپوشانی با Union-All) در s219_finalize برابرِ +$3,015 (WR ۴۵.۸٪، WF-4/4).
+// این تابع فقط وقتی صدا زده می‌شود که هم اسکالپِ M5 و هم S215 سیگنالِ فعال نداده‌اند
+// ⇒ بدونِ تداخل. اگر کانال هم ENTRY/APPROACHING نداد، null برمی‌گرداند.
+function maybeChannelM5(
+  a: AnalysisResult, close: number[], capital: number, riskPct: number,
+  open?: number[], high?: number[], low?: number[],
+): RouterDecision | null {
+  if (!(open && high && low && high.length === close.length && low.length === close.length)) return null
+  const dec = channelDecision(CHANNEL_CFG['XAUUSD-M5'], a, open, high, low, close, capital, riskPct)
   return (dec.state === 'ENTRY' || dec.state === 'APPROACHING') ? dec : null
 }
 
