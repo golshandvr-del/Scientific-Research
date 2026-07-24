@@ -187,3 +187,25 @@ export function decideGoldM30(a: AnalysisResult, close: number[],
     indicators,
   }
 }
+
+// ===========================================================================
+// decideGoldM30TrendLine — لایهٔ فعالِ اثبات‌شدهٔ کارتِ M30 (S215، فصلِ ۱۳ Al Brooks).
+// ---------------------------------------------------------------------------
+// ⚠️ تاریخچه: کارتِ M30 قبلاً لایهٔ S81 را داشت که در نشستِ S163 حذف شد (WR ۲۸٪،
+//    رساندنِ آن به WR≥۴۰٪ سود را نابود می‌کرد). از آن پس این کارت «خالی» بود.
+// ✅ حالا (نشستِ S215) کارتِ M30 با لایهٔ «خطِ روندِ Al Brooks» فعال می‌شود:
+//    بک‌تستِ S215b روی M30 بالاترین سهمِ مستقلِ همهٔ تایم‌فریم‌ها را داد
+//    (+$5,599، WR ۵۲.۴٪، WF-4/4) — کاملاً مستقل از سایرِ لایه‌های سایت.
+//    منطق و مدیریتِ معامله از تابعِ مشترکِ trendLineDecision می‌آید (منبعِ واحد).
+//    امضاء OHLC می‌گیرد چون خطِ روند به high/low/open نیاز دارد.
+// ===========================================================================
+export function decideGoldM30TrendLine(
+  a: AnalysisResult, close: number[], capital = 10000, riskPct = 1.0,
+  open?: number[], high?: number[], low?: number[],
+): RouterDecision {
+  if (open && high && low && high.length === close.length && low.length === close.length) {
+    return trendLineDecision(TREND_LINE_CFG['XAUUSD-M30'], a, open, high, low, close, capital, riskPct)
+  }
+  // داده OHLC کامل نیست ⇒ به تحلیلِ رژیمِ S81 (فقط نمایشِ روند) برمی‌گردیم.
+  return decideGoldM30(a, close, capital, riskPct)
+}
