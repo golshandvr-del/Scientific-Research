@@ -102,9 +102,32 @@ class S73_SessionDrift_Long:
         return None
 
 
+# ============================================================
+# S302 — S164 احیا‌شده با فیلترِ روزِ هفته (Wed/Thu)
+#   کشف: پدیدهٔ month-end-fix در وسطِ هفته (چهارشنبه/پنج‌شنبه) تمیزتر و قوی‌تر است؛
+#   دوشنبه/جمعه نویزِ بازکردن/بستنِ هفته دارند. فیلتر WR را 59.5٪→70.0٪ و PF را
+#   1.69→2.50 می‌برد و RQS+=93.1 (همه ۶ گیت پاس، هر ۹ سالِ walk-forward مثبت).
+# ============================================================
+class S302_PreEOM_Short_WedThu(S164_PreEOM_Short):
+    """S164 + فیلترِ روزِ هفته: فقط اگر روزِ ورود چهارشنبه(2) یا پنج‌شنبه(3) باشد."""
+    ALLOWED_DOW = (2, 3)
+
+    def advise(self, ctx):
+        adv = super().advise(ctx)
+        if adv and adv.get('action') == 'SHORT':
+            nb = ctx.i + 1
+            if nb < len(ctx.df):
+                dow = ctx.df['dt'].dt.dayofweek.values[nb]
+                if dow not in self.ALLOWED_DOW:
+                    return None
+        return adv
+
+
 STRATEGY_REGISTRY = {
     'S164': dict(cls=S164_PreEOM_Short, asset='EURUSD', tf='EURUSD_M15',
                  label='S164 EURUSD Pre-EOM Short'),
     'S73':  dict(cls=S73_SessionDrift_Long, asset='EURUSD', tf='EURUSD_M5',
                  label='S73 EURUSD Session Drift Long'),
+    'S302': dict(cls=S302_PreEOM_Short_WedThu, asset='EURUSD', tf='EURUSD_M15',
+                 label='S302 EURUSD Pre-EOM Short + Wed/Thu filter (revived S164)'),
 }
