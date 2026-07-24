@@ -5805,6 +5805,291 @@ function evalGoldM5LateEntry(open, high, low, close, times, price) {
   };
 }
 
+// ../web_tool/src/gold_trend_line.ts
+var TREND_LINE_CFG = {
+  "XAUUSD-M5": { id: "XAUUSD-M5", tfFa: "M5 (\u067E\u0646\u062C\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 10, emaSlow: 30, k: 5, pen: 0.6, maxGap: 40, slPip: 250, tpPip: 500, maxHoldBars: 96, indepNet: 3361, indepWr: 52.4 },
+  "XAUUSD-M15": { id: "XAUUSD-M15", tfFa: "M15 (\u067E\u0627\u0646\u0632\u062F\u0647\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 20, emaSlow: 50, k: 5, pen: 1, maxGap: 80, slPip: 300, tpPip: 450, maxHoldBars: 48, indepNet: 2714, indepWr: 57.1 },
+  "XAUUSD-M30": { id: "XAUUSD-M30", tfFa: "M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 10, emaSlow: 30, k: 5, pen: 1, maxGap: 40, slPip: 150, tpPip: 300, maxHoldBars: 32, indepNet: 5599, indepWr: 52.4 },
+  "XAUUSD-H1": { id: "XAUUSD-H1", tfFa: "H1 (\u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647)", emaFast: 20, emaSlow: 50, k: 3, pen: 1, maxGap: 40, slPip: 150, tpPip: 300, maxHoldBars: 24, indepNet: 3217, indepWr: 47.6 },
+  "XAUUSD-H4": { id: "XAUUSD-H4", tfFa: "H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)", emaFast: 20, emaSlow: 50, k: 5, pen: 1, maxGap: 80, slPip: 250, tpPip: 500, maxHoldBars: 16, indepNet: 1415, indepWr: 48.9 }
+};
+var PIP5 = 0.1;
+function swingPivots(high, low, k) {
+  const n = high.length;
+  const sh = new Array(n).fill(false);
+  const sl = new Array(n).fill(false);
+  for (let i = k; i < n - k; i++) {
+    let isHigh = true, isLow = true;
+    for (let j = 1; j <= k; j++) {
+      if (!(high[i] > high[i - j] && high[i] > high[i + j])) isHigh = false;
+      if (!(low[i] < low[i - j] && low[i] < low[i + j])) isLow = false;
+      if (!isHigh && !isLow) break;
+    }
+    sh[i] = isHigh;
+    sl[i] = isLow;
+  }
+  return { sh, sl };
+}
+function isRange(high, low, t, lb = 3) {
+  if (t < lb) return false;
+  let hiMax = -Infinity, loMin = Infinity, indiv = 0;
+  for (let i = t - lb + 1; i <= t; i++) {
+    hiMax = Math.max(hiMax, high[i]);
+    loMin = Math.min(loMin, low[i]);
+    indiv += high[i] - low[i];
+  }
+  const span = hiMax - loMin;
+  if (span <= 0) return true;
+  return indiv / span >= 2.3;
+}
+function computeTrendLine(open, high, low, close, cfg) {
+  const n = close.length;
+  const empty = {
+    state: "NEUTRAL",
+    hasLine: false,
+    lineValue: NaN,
+    slope: NaN,
+    pivot1Idx: -1,
+    pivot2Idx: -1,
+    gapBars: 0,
+    regimeUp: false,
+    atr: NaN,
+    tol: NaN,
+    distToLinePct: NaN,
+    penetrated: false,
+    closedBack: false,
+    bullBar: false,
+    isRange: false,
+    slDist: cfg.slPip * PIP5,
+    tpDist: cfg.tpPip * PIP5,
+    reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0633\u0627\u062E\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0646\u06CC\u0633\u062A."
+  };
+  if (n < cfg.emaSlow + cfg.k + 5) return empty;
+  const candles = close.map((cl, i) => ({
+    time: i,
+    open: open[i],
+    high: high[i],
+    low: low[i],
+    close: cl,
+    volume: 0
+  }));
+  const atrArr = atr(candles, 14);
+  const ef = ema(close, cfg.emaFast);
+  const es = ema(close, cfg.emaSlow);
+  const { sl: slPiv } = swingPivots(high, low, cfg.k);
+  const piv = [];
+  for (let i = 0; i < n; i++) if (slPiv[i]) piv.push(i);
+  const t = n - 1;
+  const confirmed = piv.filter((p) => p + cfg.k <= t);
+  if (confirmed.length < 2) return { ...empty, reason: "\u0647\u0646\u0648\u0632 \u062F\u0648 \u06A9\u0641\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0634\u062F\u0647 \u0628\u0631\u0627\u06CC \u0631\u0633\u0645\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0646\u062F\u0627\u0631\u06CC\u0645." };
+  const i1 = confirmed[confirmed.length - 2];
+  const i2 = confirmed[confirmed.length - 1];
+  const gap = i2 - i1;
+  const atr2 = atrArr[t];
+  const regimeUp = ef[t] > es[t];
+  if (gap <= 0 || gap > cfg.maxGap || !isFinite(atr2) || atr2 <= 0) {
+    return {
+      ...empty,
+      hasLine: false,
+      gapBars: gap,
+      regimeUp,
+      atr: atr2,
+      reason: gap > cfg.maxGap ? `\u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631 \u062E\u06CC\u0644\u06CC \u062F\u0648\u0631 \u0627\u0632 \u0647\u0645\u200C\u0627\u0646\u062F (${gap} \u06A9\u0646\u062F\u0644 > \u0633\u0642\u0641\u0650 ${cfg.maxGap})\u061B \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u062F\u06CC\u06AF\u0631 \xAB\u062A\u0627\u0632\u0647\xBB \u0646\u06CC\u0633\u062A.` : "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0633\u0627\u062E\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0645\u0639\u062A\u0628\u0631 \u0641\u0631\u0627\u0647\u0645 \u0646\u06CC\u0633\u062A."
+    };
+  }
+  const m = (low[i2] - low[i1]) / (i2 - i1);
+  const lineT = low[i2] + m * (t - i2);
+  const tol = cfg.pen * atr2;
+  const distPct = (close[t] - lineT) / lineT * 100;
+  const validUpLine = low[i2] > low[i1] && m > 0 && regimeUp;
+  const penetrated = low[t] < lineT;
+  const closedBack = close[t] > lineT - tol;
+  const bullBar = close[t] >= open[t];
+  const rng = isRange(high, low, t);
+  const base = {
+    ...empty,
+    hasLine: validUpLine,
+    lineValue: lineT,
+    slope: m,
+    pivot1Idx: i1,
+    pivot2Idx: i2,
+    gapBars: gap,
+    regimeUp,
+    atr: atr2,
+    tol,
+    distToLinePct: distPct,
+    penetrated,
+    closedBack,
+    bullBar,
+    isRange: rng
+  };
+  if (!validUpLine) {
+    return {
+      ...base,
+      state: "NEUTRAL",
+      reason: !regimeUp ? "\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A (EMA\u0650 \u062A\u0646\u062F \u0632\u06CC\u0631\u0650 EMA\u0650 \u06A9\u0646\u062F)\u061B \u0633\u062A\u0627\u067E\u0650 \xAB\u062A\u0633\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\xBB \u063A\u06CC\u0631\u0641\u0639\u0627\u0644 \u0627\u0633\u062A." : "\u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631 \u06CC\u06A9 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0645\u0639\u062A\u0628\u0631 (\u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631 + \u0634\u06CC\u0628\u0650 \u0645\u062B\u0628\u062A) \u0646\u0645\u06CC\u200C\u0633\u0627\u0632\u0646\u062F."
+    };
+  }
+  if (penetrated && closedBack && bullBar && !rng) {
+    return {
+      ...base,
+      state: "ENTRY",
+      reason: `\u0642\u06CC\u0645\u062A \u062F\u0631 \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (${lineT.toFixed(2)}$) \u0631\u0641\u062A \u0627\u0645\u0627 \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u0622\u0646 \u0628\u0633\u062A\u0647 \u0634\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F). \u0637\u0628\u0642\u0650 \u0641\u0635\u0644\u0650 \u06F1\u06F3 \u06A9\u062A\u0627\u0628\u0650 Al Brooks\u060C \u0627\u06CC\u0646 \u0633\u062A\u0627\u067E\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A: \u062A\u0627\u0632\u0647\u200C\u06A9\u0627\u0631\u0647\u0627 \u0627\u06CC\u0646\u062C\u0627 \u0645\u06CC\u200C\u0641\u0631\u0648\u0634\u0646\u062F \u0648\u0644\u06CC \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06AF\u0631\u0627\u0646\u0650 \u0628\u0627\u062A\u062C\u0631\u0628\u0647 \u0645\u06CC\u200C\u062E\u0631\u0646\u062F. \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u062F\u0631 \u0628\u0627\u0632\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F.`
+    };
+  }
+  const near = Math.abs(close[t] - lineT) < 0.5 * tol || penetrated && !closedBack;
+  if (near) {
+    let why;
+    if (penetrated && !closedBack) {
+      why = `\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (${lineT.toFixed(2)}$) \u0646\u0641\u0648\u0630 \u06A9\u0631\u062F\u0647 \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC \u0622\u0646 \u0646\u0628\u0633\u062A\u0647 \u0627\u0633\u062A. \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642)\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0645\u0627\u0646\u06CC\u062F.`;
+    } else if (rng) {
+      why = `\u0642\u06CC\u0645\u062A \u0646\u0632\u062F\u06CC\u06A9\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0627\u0633\u062A \u0627\u0645\u0627 \u0633\u0647 \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 \u06A9\u0627\u0645\u0644\u0627\u064B \u0647\u0645\u200C\u067E\u0648\u0634\u200C\u0627\u0646\u062F (\u0628\u0627\u0632\u0627\u0631\u0650 \u0631\u0646\u062C). \u0637\u0628\u0642\u0650 Brooks \u062F\u0631 \u0631\u0646\u062C\u060C \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637 \u0628\u06CC\u200C\u062B\u0645\u0631 \u0627\u0633\u062A\u061B \u062A\u0627 \u062E\u0631\u0648\u062C \u0627\u0632 \u062D\u0627\u0644\u062A\u0650 \u0631\u0646\u062C \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u06CC\u0645.`;
+    } else {
+      why = `\u0642\u06CC\u0645\u062A \u0628\u0647 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (${lineT.toFixed(2)}$) \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F\u0647 \u0627\u0633\u062A (\u0641\u0627\u0635\u0644\u0647 ${distPct.toFixed(2)}%). \u0627\u06AF\u0631 \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u0642\u06CC\u0645\u062A \u0631\u0627 \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637 \u0628\u0628\u0631\u062F \u0648 \u0633\u067E\u0633 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F\u060C \u0633\u062A\u0627\u067E\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u06A9\u0627\u0645\u0644 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
+    }
+    return { ...base, state: "APPROACHING", reason: why };
+  }
+  return {
+    ...base,
+    state: "NEUTRAL",
+    reason: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0641\u0639\u0627\u0644 \u0627\u0633\u062A (${lineT.toFixed(2)}$) \u0627\u0645\u0627 \u0642\u06CC\u0645\u062A (${close[t].toFixed(2)}$) \u0641\u0627\u0635\u0644\u0647\u0654 \u0645\u0639\u0646\u0627\u062F\u0627\u0631\u06CC \u0628\u0627 \u0622\u0646 \u062F\u0627\u0631\u062F (${distPct.toFixed(2)}%). \u062A\u0627 \u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646\u0650 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062E\u0637 \u0648 \u0634\u06A9\u0644\u200C\u06AF\u06CC\u0631\u06CC\u0650 \xAB\u062A\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\xBB\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u06CC \u0646\u062F\u0627\u0631\u06CC\u0645.`
+  };
+}
+function trendLineRegime(tl) {
+  return {
+    regime: tl.regimeUp ? "trend_up" : "range",
+    efficiencyRatio: 0,
+    trendy: tl.regimeUp,
+    adx: 0,
+    activeStream: tl.regimeUp ? "bull" : "none",
+    bucket: tl.regimeUp ? "trend_line" : "none"
+  };
+}
+function trendLineDecision(cfg, a, open, high, low, close, capital = 1e4, riskPct = 1, fallback) {
+  const tl = computeTrendLine(open, high, low, close, cfg);
+  const reg = trendLineRegime(tl);
+  const spec = assetSpec("XAUUSD");
+  const tlInd = [
+    { name: "\u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645", value: cfg.tfFa, status: "neutral" },
+    {
+      name: "\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0627\u0632 \u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631)",
+      value: tl.hasLine && isFinite(tl.lineValue) ? tl.lineValue.toFixed(2) + "$" : "\u2014",
+      status: tl.hasLine ? "ok" : "neutral"
+    },
+    {
+      name: "\u0631\u0627\u0628\u0637\u0647\u0654 \u0642\u06CC\u0645\u062A \u0628\u0627 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F",
+      value: isFinite(tl.distToLinePct) ? tl.penetrated ? "\u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637 (\u062A\u0633\u062A)" : `${tl.distToLinePct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u062E\u0637` : "\u2014",
+      status: tl.state === "ENTRY" ? "ok" : tl.penetrated ? "warn" : "neutral"
+    },
+    {
+      name: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA${cfg.emaFast}/${cfg.emaSlow})`,
+      value: tl.regimeUp ? "\u0635\u0639\u0648\u062F\u06CC \u2713" : "\u0646\u0647\u200C\u0635\u0639\u0648\u062F\u06CC",
+      status: tl.regimeUp ? "ok" : "neutral"
+    },
+    {
+      name: "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637 (\u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637)",
+      value: tl.penetrated ? tl.closedBack ? "\u0628\u0644\u0647 \u2713" : "\u0647\u0646\u0648\u0632 \u0646\u0647" : "\u062E\u06CC\u0631",
+      status: tl.state === "ENTRY" ? "ok" : "neutral"
+    },
+    { name: "ATR", value: isFinite(tl.atr) ? tl.atr.toFixed(2) + "$" : "\u2014", status: "neutral" },
+    { name: "\u0642\u06CC\u0645\u062A\u0650 \u0641\u0639\u0644\u06CC", value: a.price ? a.price.toFixed(2) : "\u2014", status: "neutral" }
+  ];
+  if (tl.state === "ENTRY") {
+    const entry = a.price;
+    const sl = entry - tl.slDist;
+    const tp = entry + tl.tpDist;
+    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, tl.slDist, 1, spec);
+    const rd = Math.round(riskDollars * 100) / 100;
+    return {
+      state: "ENTRY",
+      regime: reg,
+      headline: `\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062A\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0637\u0644\u0627 ${cfg.tfFa})`,
+      reason: tl.reason,
+      sourceLayer: {
+        code: "S215",
+        name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line Failed-Breakout) \u2014 ${cfg.tfFa}`,
+        kind: "price-action",
+        filters: [
+          `\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA${cfg.emaFast}>EMA${cfg.emaSlow}`,
+          "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u060C \u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637)",
+          "\u0642\u06CC\u062F\u0650 \u0636\u062F\u0650 \u0631\u0646\u062C (\u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u063A\u06CC\u0631\u0650 \u0647\u0645\u200C\u067E\u0648\u0634)"
+        ],
+        manage: {
+          style: "structural-trail",
+          beTriggerR: 1,
+          trailDistPrice: tl.slDist,
+          maxHoldBars: cfg.maxHoldBars,
+          note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC (\u062E\u0637\u0650 \u0631\u0648\u0646\u062F): SL \u0627\u0648\u0644\u06CC\u0647 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0646\u0641\u0648\u0630 (${tl.slDist.toFixed(2)}$). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u06CC\u0627 \u06A9\u0641\u0650 \u0647\u0631 \u067E\u0648\u0644\u0628\u06A9\u0650 \u062C\u062F\u06CC\u062F \u0628\u0627\u0644\u0627 \u0628\u06CC\u0627\u0648\u0631 \u2014 \u062A\u0627 \u0633\u0642\u0641\u0650 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa}. \u0627\u06AF\u0631 \u0642\u06CC\u0645\u062A \u0642\u0627\u0637\u0639\u0627\u0646\u0647 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0628\u0633\u062A\u0647 \u0634\u062F \u0648 \u0628\u0627\u0644\u0627 \u0646\u06CC\u0627\u0645\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0631\u0648\u0646\u062F)\u060C \u0641\u0648\u0631\u0627\u064B \u062E\u0627\u0631\u062C \u0634\u0648 \u062D\u062A\u06CC \u0642\u0628\u0644 \u0627\u0632 TP.`
+        }
+      },
+      direction: "LONG",
+      entry,
+      tp,
+      sl,
+      rr: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) / TP ${cfg.tpPip}pip (${tl.tpDist.toFixed(2)}$) \u2014 R:R \u2248 \u06F1:${(cfg.tpPip / cfg.slPip).toFixed(1)} (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F)`,
+      probability: Math.round(cfg.indepWr),
+      sizing: {
+        lotMultiplier: 1,
+        label: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (${cfg.tfFa})`,
+        note: `\u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B \u0627\u0633\u067E\u0631\u062F\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0637\u0644\u0627 \u0644\u062D\u0627\u0638 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0644\u0628\u0647 \u0641\u0642\u0637 \u0631\u0648\u06CC \u0637\u0644\u0627 \u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0631\u0648\u06CC EURUSD \u0628\u06CC\u200C\u0627\u062B\u0631 \u0628\u0648\u062F) \u0648 \u0645\u0633\u062A\u0642\u0644 \u0627\u0632 \u0633\u0627\u06CC\u0631\u0650 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627\u06CC \u0633\u0627\u06CC\u062A \u0627\u0633\u062A \u21D2 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0628\u0631\u062F.`,
+        lots: lots ?? void 0,
+        riskDollars: rd,
+        capital,
+        riskPct,
+        capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${tl.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
+      },
+      tpPlan: {
+        multiplier: cfg.tpPip,
+        note: `TP \u062F\u0648\u0631\u0650 ${cfg.tpPip}pip. \u067E\u0633 \u0627\u0632 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u060C \u062D\u0631\u06A9\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0632\u0631\u06AF \u0627\u0633\u062A\u061B TP \u062F\u0648\u0631 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u062F \u062D\u0631\u06A9\u062A \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F. \u062A\u0627 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
+      },
+      slPlan: {
+        multiplier: cfg.slPip,
+        note: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) \u0632\u06CC\u0631\u0650 \u0646\u0642\u0637\u0647\u0654 \u0646\u0641\u0648\u0630\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F. \u0627\u06AF\u0631 \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637 \u0648\u0627\u0642\u0639\u06CC \u0628\u0648\u062F (\u0646\u0647 \u0646\u0627\u0645\u0648\u0641\u0642)\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
+      },
+      indicators: tlInd
+    };
+  }
+  if (tl.state === "APPROACHING") {
+    return {
+      state: "APPROACHING",
+      regime: reg,
+      headline: `\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F (\u0637\u0644\u0627 ${cfg.tfFa})`,
+      reason: tl.reason,
+      sourceLayer: { code: "S215", name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${cfg.tfFa}`, kind: "price-action" },
+      confirmations: [
+        {
+          label: "\u0642\u06CC\u0645\u062A \u062F\u0631 \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0648\u062F",
+          met: tl.penetrated,
+          detail: tl.penetrated ? "\u0631\u062E \u062F\u0627\u062F \u2713 (\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u062E\u0637 \u0646\u0641\u0648\u0630 \u06A9\u0631\u062F)" : `\u0627\u06A9\u0646\u0648\u0646 ${tl.distToLinePct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0627\u0633\u062A.`
+        },
+        {
+          label: "\u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0628\u0628\u0646\u062F\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642)",
+          met: tl.closedBack && tl.penetrated,
+          detail: tl.penetrated && !tl.closedBack ? "\u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0646\u0628\u0633\u062A\u0647 \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646 \u0628\u0645\u0627\u0646\u06CC\u062F." : tl.closedBack ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u0647\u0646\u0648\u0632 \u0646\u0647"
+        },
+        { label: "\u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (close \u2265 open)", met: tl.bullBar, detail: tl.bullBar ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u06A9\u0646\u062F\u0644\u0650 \u0641\u0639\u0644\u06CC \u0646\u0632\u0648\u0644\u06CC \u0627\u0633\u062A." }
+      ],
+      indicators: tlInd
+    };
+  }
+  if (fallback) {
+    const base = fallback();
+    base.reason = `\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0644\u0627\u06CC\u0647\u0654 \xAB\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks\xBB (S215) \u0631\u0627 \u0631\u0648\u06CC \u0627\u0641\u0642\u0650 ${cfg.tfFa} \u067E\u0627\u06CC\u0634 \u0645\u06CC\u200C\u06A9\u0646\u062F. ` + tl.reason + ` \u0648\u0642\u062A\u06CC \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u0642\u06CC\u0645\u062A \u0631\u0627 \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0628\u0631\u062F \u0648 \u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
+    base.sourceLayer = { code: "S215", name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${cfg.tfFa}`, kind: "price-action" };
+    base.indicators = tlInd;
+    base.headline = `\u0637\u0644\u0627 ${cfg.tfFa} \u2014 \u067E\u0627\u06CC\u0634\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u0641\u0639\u0644\u0627\u064B \u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644)`;
+    return base;
+  }
+  return {
+    state: "NEUTRAL",
+    regime: reg,
+    headline: `\u0637\u0644\u0627 ${cfg.tfFa} \u2014 \u067E\u0627\u06CC\u0634\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u0641\u0639\u0644\u0627\u064B \u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644)`,
+    reason: tl.reason + ` \u0648\u0642\u062A\u06CC \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u0642\u06CC\u0645\u062A \u0631\u0627 \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0628\u0631\u062F \u0648 \u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0648 \u0641\u0642\u0637 \u0631\u0648\u06CC \u0637\u0644\u0627 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A.`,
+    sourceLayer: { code: "S215", name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${cfg.tfFa}`, kind: "price-action" },
+    indicators: tlInd
+  };
+}
+
 // ../web_tool/src/gold_m5_router.ts
 var EMA_FAST2 = 20;
 var EMA_SLOW2 = 100;
@@ -5813,7 +6098,7 @@ var RSI_ENTRY = 35;
 var RSI_APPROACH = 42;
 var HIDDEN_TP_PIP = 120;
 var HIDDEN_SL_PIP = 80;
-var PIP5 = 0.01;
+var PIP6 = 0.01;
 function m5Regime(emaFast, emaSlow) {
   const up = emaFast > emaSlow;
   return {
@@ -5906,6 +6191,8 @@ function decideGoldM5(a, close, _capital = 1e4, _riskPct = 1, open, high, low, t
     { name: "\u0642\u06CC\u0645\u062A\u0650 \u0632\u0646\u062F\u0647", value: price.toFixed(2) + "$", status: "neutral" }
   ];
   if (!trendUp) {
+    const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low);
+    if (tl) return tl;
     return {
       state: "NEUTRAL",
       regime: reg,
@@ -5955,6 +6242,10 @@ function decideGoldM5(a, close, _capital = 1e4, _riskPct = 1, open, high, low, t
       indicators
     };
   }
+  {
+    const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low);
+    if (tl) return tl;
+  }
   return {
     state: "NEUTRAL",
     regime: reg,
@@ -5963,9 +6254,14 @@ function decideGoldM5(a, close, _capital = 1e4, _riskPct = 1, open, high, low, t
     indicators
   };
 }
+function maybeTrendLineM5(a, close, capital, riskPct, open, high, low) {
+  if (!(open && high && low && high.length === close.length && low.length === close.length)) return null;
+  const dec = trendLineDecision(TREND_LINE_CFG["XAUUSD-M5"], a, open, high, low, close, capital, riskPct);
+  return dec.state === "ENTRY" || dec.state === "APPROACHING" ? dec : null;
+}
 function manageGoldM5Scalp(inp) {
   const dir = inp.action === "BUY" ? 1 : -1;
-  const favorPip = dir * (inp.livePrice - inp.refPrice) / PIP5;
+  const favorPip = dir * (inp.livePrice - inp.refPrice) / PIP6;
   const tp = inp.tpPip != null && inp.tpPip > 0 ? inp.tpPip : HIDDEN_TP_PIP;
   const sl = inp.slPip != null && inp.slPip > 0 ? inp.slPip : HIDDEN_SL_PIP;
   const emaF = ema(inp.close, EMA_FAST2);
@@ -6125,6 +6421,12 @@ ${capWarn}` : ""),
     indicators
   };
 }
+function decideGoldM30TrendLine(a, close, capital = 1e4, riskPct = 1, open, high, low) {
+  if (open && high && low && high.length === close.length && low.length === close.length) {
+    return trendLineDecision(TREND_LINE_CFG["XAUUSD-M30"], a, open, high, low, close, capital, riskPct);
+  }
+  return decideGoldM30(a, close, capital, riskPct);
+}
 
 // ../web_tool/src/gold_htf_router.ts
 var H1_CFG = { id: "XAUUSD-H1", tfFa: "H1 (\u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647)", emaFast: 20, emaSlow: 50, rsiPeriod: 14, adxTrendMin: 22, bucket: "h1_research" };
@@ -6175,10 +6477,138 @@ function analyzeHtf(cfg, a, close) {
     ]
   };
 }
-function decideGoldH1(a, close, _capital = 1e4, _riskPct = 1) {
+function trendLineEntry(cfg, htfCfg, a, open, high, low, close, capital, riskPct) {
+  const tl = computeTrendLine(open, high, low, close, cfg);
+  const n = close.length;
+  const emaFast = ema(close, htfCfg.emaFast)[n - 1];
+  const emaSlow = ema(close, htfCfg.emaSlow)[n - 1];
+  const adx2 = a.adx ?? 0;
+  const regime = htfRegime(htfCfg, emaFast, emaSlow, adx2);
+  const spec = assetSpec("XAUUSD");
+  const tlInd = [
+    { name: "\u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645", value: htfCfg.tfFa, status: "neutral" },
+    {
+      name: "\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0627\u0632 \u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631)",
+      value: tl.hasLine && isFinite(tl.lineValue) ? tl.lineValue.toFixed(2) + "$" : "\u2014",
+      status: tl.hasLine ? "ok" : "neutral"
+    },
+    {
+      name: "\u0631\u0627\u0628\u0637\u0647\u0654 \u0642\u06CC\u0645\u062A \u0628\u0627 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F",
+      value: isFinite(tl.distToLinePct) ? tl.penetrated ? "\u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637 (\u062A\u0633\u062A)" : `${tl.distToLinePct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u062E\u0637` : "\u2014",
+      status: tl.state === "ENTRY" ? "ok" : tl.penetrated ? "warn" : "neutral"
+    },
+    {
+      name: "\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA" + htfCfg.emaFast + "/" + htfCfg.emaSlow + ")",
+      value: tl.regimeUp ? "\u0635\u0639\u0648\u062F\u06CC \u2713" : "\u0646\u0647\u200C\u0635\u0639\u0648\u062F\u06CC",
+      status: tl.regimeUp ? "ok" : "neutral"
+    },
+    {
+      name: "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637 (\u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637)",
+      value: tl.penetrated ? tl.closedBack ? "\u0628\u0644\u0647 \u2713" : "\u0647\u0646\u0648\u0632 \u0646\u0647" : "\u062E\u06CC\u0631",
+      status: tl.state === "ENTRY" ? "ok" : "neutral"
+    },
+    { name: "ATR", value: isFinite(tl.atr) ? tl.atr.toFixed(2) + "$" : "\u2014", status: "neutral" },
+    { name: "\u0642\u06CC\u0645\u062A\u0650 \u0641\u0639\u0644\u06CC", value: a.price ? a.price.toFixed(2) : "\u2014", status: "neutral" }
+  ];
+  if (tl.state === "ENTRY") {
+    const entry = a.price;
+    const sl = entry - tl.slDist;
+    const tp = entry + tl.tpDist;
+    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, tl.slDist, 1, spec);
+    const rd = Math.round(riskDollars * 100) / 100;
+    return {
+      state: "ENTRY",
+      regime,
+      headline: `\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062A\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0637\u0644\u0627 ${htfCfg.tfFa})`,
+      reason: tl.reason,
+      sourceLayer: {
+        code: "S215",
+        name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line Failed-Breakout) \u2014 ${htfCfg.tfFa}`,
+        kind: "price-action",
+        filters: [
+          "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA" + htfCfg.emaFast + ">EMA" + htfCfg.emaSlow,
+          "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u060C \u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637)",
+          "\u0642\u06CC\u062F\u0650 \u0636\u062F\u0650 \u0631\u0646\u062C (\u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u063A\u06CC\u0631\u0650 \u0647\u0645\u200C\u067E\u0648\u0634)"
+        ],
+        manage: {
+          style: "structural-trail",
+          beTriggerR: 1,
+          trailDistPrice: tl.slDist,
+          maxHoldBars: cfg.maxHoldBars,
+          note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC (\u062E\u0637\u0650 \u0631\u0648\u0646\u062F): SL \u0627\u0648\u0644\u06CC\u0647 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0646\u0641\u0648\u0630 (${tl.slDist.toFixed(2)}$). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u06CC\u0627 \u06A9\u0641\u0650 \u0647\u0631 \u067E\u0648\u0644\u0628\u06A9\u0650 \u062C\u062F\u06CC\u062F \u0628\u0627\u0644\u0627 \u0628\u06CC\u0627\u0648\u0631 \u2014 \u062A\u0627 \u0633\u0642\u0641\u0650 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${htfCfg.tfFa}. \u0627\u06AF\u0631 \u0642\u06CC\u0645\u062A \u0642\u0627\u0637\u0639\u0627\u0646\u0647 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0628\u0633\u062A\u0647 \u0634\u062F \u0648 \u0628\u0627\u0644\u0627 \u0646\u06CC\u0627\u0645\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0631\u0648\u0646\u062F)\u060C \u0641\u0648\u0631\u0627\u064B \u062E\u0627\u0631\u062C \u0634\u0648 \u062D\u062A\u06CC \u0642\u0628\u0644 \u0627\u0632 TP.`
+        }
+      },
+      direction: "LONG",
+      entry,
+      tp,
+      sl,
+      rr: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) / TP ${cfg.tpPip}pip (${tl.tpDist.toFixed(2)}$) \u2014 R:R \u2248 \u06F1:${(cfg.tpPip / cfg.slPip).toFixed(1)} (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F)`,
+      probability: Math.round(cfg.indepWr),
+      sizing: {
+        lotMultiplier: 1,
+        label: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (${htfCfg.tfFa})`,
+        note: `\u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B \u0627\u0633\u067E\u0631\u062F\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0637\u0644\u0627 \u0644\u062D\u0627\u0638 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0644\u0628\u0647 \u0641\u0642\u0637 \u0631\u0648\u06CC \u0637\u0644\u0627 \u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0631\u0648\u06CC EURUSD \u0628\u06CC\u200C\u0627\u062B\u0631 \u0628\u0648\u062F) \u0648 \u0645\u0633\u062A\u0642\u0644 \u0627\u0632 \u0633\u0627\u06CC\u0631\u0650 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627\u06CC \u0633\u0627\u06CC\u062A \u0627\u0633\u062A \u21D2 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0628\u0631\u062F.`,
+        lots: lots ?? void 0,
+        riskDollars: rd,
+        capital,
+        riskPct,
+        capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${tl.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
+      },
+      tpPlan: {
+        multiplier: cfg.tpPip,
+        note: `TP \u062F\u0648\u0631\u0650 ${cfg.tpPip}pip. \u067E\u0633 \u0627\u0632 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u060C \u062D\u0631\u06A9\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0632\u0631\u06AF \u0627\u0633\u062A\u061B TP \u062F\u0648\u0631 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u062F \u062D\u0631\u06A9\u062A \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F. \u062A\u0627 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${htfCfg.tfFa} \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
+      },
+      slPlan: {
+        multiplier: cfg.slPip,
+        note: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) \u0632\u06CC\u0631\u0650 \u0646\u0642\u0637\u0647\u0654 \u0646\u0641\u0648\u0630\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F. \u0627\u06AF\u0631 \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637 \u0648\u0627\u0642\u0639\u06CC \u0628\u0648\u062F (\u0646\u0647 \u0646\u0627\u0645\u0648\u0641\u0642)\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
+      },
+      indicators: tlInd
+    };
+  }
+  if (tl.state === "APPROACHING") {
+    return {
+      state: "APPROACHING",
+      regime,
+      headline: `\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F (\u0637\u0644\u0627 ${htfCfg.tfFa})`,
+      reason: tl.reason,
+      sourceLayer: {
+        code: "S215",
+        name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${htfCfg.tfFa}`,
+        kind: "price-action"
+      },
+      confirmations: [
+        {
+          label: "\u0642\u06CC\u0645\u062A \u062F\u0631 \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0648\u062F",
+          met: tl.penetrated,
+          detail: tl.penetrated ? "\u0631\u062E \u062F\u0627\u062F \u2713 (\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u062E\u0637 \u0646\u0641\u0648\u0630 \u06A9\u0631\u062F)" : `\u0627\u06A9\u0646\u0648\u0646 ${tl.distToLinePct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0627\u0633\u062A.`
+        },
+        {
+          label: "\u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0628\u0628\u0646\u062F\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642)",
+          met: tl.closedBack && tl.penetrated,
+          detail: tl.penetrated && !tl.closedBack ? "\u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0646\u0628\u0633\u062A\u0647 \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646 \u0628\u0645\u0627\u0646\u06CC\u062F." : tl.closedBack ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u0647\u0646\u0648\u0632 \u0646\u0647"
+        },
+        { label: "\u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (close \u2265 open)", met: tl.bullBar, detail: tl.bullBar ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u06A9\u0646\u062F\u0644\u0650 \u0641\u0639\u0644\u06CC \u0646\u0632\u0648\u0644\u06CC \u0627\u0633\u062A." }
+      ],
+      indicators: tlInd
+    };
+  }
+  const base = analyzeHtf(htfCfg, a, close);
+  base.reason = `\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0644\u0627\u06CC\u0647\u0654 \xAB\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks\xBB (S215) \u0631\u0627 \u0631\u0648\u06CC \u0627\u0641\u0642\u0650 ${htfCfg.tfFa} \u067E\u0627\u06CC\u0634 \u0645\u06CC\u200C\u06A9\u0646\u062F. ` + tl.reason + ` \u0648\u0642\u062A\u06CC \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u0642\u06CC\u0645\u062A \u0631\u0627 \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0628\u0631\u062F \u0648 \u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
+  base.sourceLayer = { code: "S215", name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${htfCfg.tfFa}`, kind: "price-action" };
+  base.indicators = tlInd;
+  base.headline = `\u0637\u0644\u0627 ${htfCfg.tfFa} \u2014 \u067E\u0627\u06CC\u0634\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u0641\u0639\u0644\u0627\u064B \u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644)`;
+  return base;
+}
+function decideGoldH1(a, close, capital = 1e4, riskPct = 1, open, high, low) {
+  if (open && high && low && high.length === close.length && low.length === close.length) {
+    return trendLineEntry(TREND_LINE_CFG["XAUUSD-H1"], H1_CFG, a, open, high, low, close, capital, riskPct);
+  }
   return analyzeHtf(H1_CFG, a, close);
 }
-function decideGoldH4(a, close, _capital = 1e4, _riskPct = 1) {
+function decideGoldH4(a, close, capital = 1e4, riskPct = 1, open, high, low) {
+  if (open && high && low && high.length === close.length && low.length === close.length) {
+    return trendLineEntry(TREND_LINE_CFG["XAUUSD-H4"], H4_CFG, a, open, high, low, close, capital, riskPct);
+  }
   return analyzeHtf(H4_CFG, a, close);
 }
 function decideGoldD1(a, close, _capital = 1e4, _riskPct = 1) {
@@ -6536,6 +6966,9 @@ app.get("/api/context", async (c) => {
 var ASSETS = [
   { id: "XAUUSD", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u0646\u0648\u0633\u0627\u0646\u06CC (M15)", symbol: "GC=F", isGold: true, decimals: 2, layer: "swing" },
   { id: "XAUUSD-M5", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u0627\u0633\u06A9\u0627\u0644\u067E (M5)", symbol: "GC=F", isGold: true, decimals: 2, layer: "scalp" },
+  // XAUUSD-M30: در نشستِ S215 با لایهٔ «خطِ روندِ Al Brooks» (فصلِ ۱۳) دوباره فعال شد.
+  //   قبلاً S81 داشت که در S163 حذف شد؛ حالا لبهٔ trend-lineِ اثبات‌شده (+$5,599، مستقل).
+  { id: "XAUUSD-M30", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A (M30)", symbol: "GC=F", isGold: true, decimals: 2, layer: "swing-m30" },
   // --- تایم‌فریم‌های بالای طلا (درخواستِ User Note) — هر کارت منطقِ مستقلِ خودش را دارد ---
   //   H1/H4/D1 فعلاً در «حالتِ تحقیقِ فعال» هستند (بدونِ سیگنالِ ورودِ خام تا کشفِ لایهٔ
   //   اثبات‌شده) اما تحلیلِ روند/رژیمِ مخصوصِ همان تایم‌فریم را نمایش می‌دهند. منطق در
@@ -6597,11 +7030,50 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
       useCandles2.map((k) => k.low),
       goldTimes
     );
-    else if (a.id === "XAUUSD-M30") dec2 = decideGoldM30(result2, closes, capital, riskPct);
-    else if (a.id === "XAUUSD-H1") dec2 = decideGoldH1(result2, closes, capital, riskPct);
-    else if (a.id === "XAUUSD-H4") dec2 = decideGoldH4(result2, closes, capital, riskPct);
+    else if (a.id === "XAUUSD-M30") dec2 = decideGoldM30TrendLine(
+      result2,
+      closes,
+      capital,
+      riskPct,
+      useCandles2.map((k) => k.open),
+      useCandles2.map((k) => k.high),
+      useCandles2.map((k) => k.low)
+    );
+    else if (a.id === "XAUUSD-H1") dec2 = decideGoldH1(
+      result2,
+      closes,
+      capital,
+      riskPct,
+      useCandles2.map((k) => k.open),
+      useCandles2.map((k) => k.high),
+      useCandles2.map((k) => k.low)
+    );
+    else if (a.id === "XAUUSD-H4") dec2 = decideGoldH4(
+      result2,
+      closes,
+      capital,
+      riskPct,
+      useCandles2.map((k) => k.open),
+      useCandles2.map((k) => k.high),
+      useCandles2.map((k) => k.low)
+    );
     else if (a.id === "XAUUSD-D1") dec2 = decideGoldD1(result2, closes, capital, riskPct);
-    else dec2 = decide(result2, closes, capital, riskPct, assetSpec("XAUUSD"), useCandles2.map((k) => k.high), useCandles2.map((k) => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles2.map((k) => k.open));
+    else {
+      dec2 = decide(result2, closes, capital, riskPct, assetSpec("XAUUSD"), useCandles2.map((k) => k.high), useCandles2.map((k) => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles2.map((k) => k.open));
+      if (dec2.state === "NEUTRAL") {
+        const tl = trendLineDecision(
+          TREND_LINE_CFG["XAUUSD-M15"],
+          result2,
+          useCandles2.map((k) => k.open),
+          useCandles2.map((k) => k.high),
+          useCandles2.map((k) => k.low),
+          closes,
+          capital,
+          riskPct
+        );
+        if (tl.state === "ENTRY" || tl.state === "APPROACHING") dec2 = tl;
+      }
+    }
     return {
       asset: a.id,
       name: a.name,
