@@ -32,6 +32,7 @@ import type { AnalysisResult } from './signal'
 import type { RouterDecision, RegimeInfo, Confirmation } from './router'
 import * as ind from './indicators'
 import { evalGoldM5LateEntry, S214_HIDDEN_TP_PIP, S214_HIDDEN_SL_PIP } from './gold_m5_late_entry'
+import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
 
 // پارامترهای ورودِ S79 (وسطِ منطقهٔ پایدار — پرهیز از overfit)
 const EMA_FAST = 20
