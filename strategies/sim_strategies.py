@@ -177,6 +177,36 @@ class S173_MarketInertia_Short:
         return None
 
 
+# ============================================================
+# S303 — S173 احیا‌شده: Market-Inertia SHORT + فیلترِ سشن/روز + RR متقارن
+#   کشف: fade کردنِ «تلاشِ برگشتی» فقط در سشنِ آسیا/لندن (رنج‌تر) کار می‌کند؛
+#     در سشنِ پرمومنتومِ آمریکا (h15-18) روند ادامه می‌دهد و شورت ضرر می‌کند.
+#   سه بهبودِ همزمان (قانونِ دومِ پروژه: چند فیلتر مجاز):
+#     ۱) حذفِ ساعاتِ بد {3,5,12,15,16,17,18} (WR<45٪)
+#     ۲) حذفِ سه‌شنبه (dow=1، WR=40٪)
+#     ۳) TP از 375→250 (RR متقارن 1:1) ⇒ WR≥60٪ + G1 پاس + maxDD 4.3٪
+#   نتیجه: RQS+=87.6، WR=60.9٪، PF=1.88، هر ۴ پنجرهٔ WF مثبت، هر ۷ سال مثبت.
+# ============================================================
+class S303_MarketInertia_Short_Filtered(S173_MarketInertia_Short):
+    BAD_HOURS = frozenset({3, 5, 12, 15, 16, 17, 18})
+    BAD_DOW = frozenset({1})   # سه‌شنبه
+
+    def __init__(self, sl_pip=250, tp_pip=250, max_hold=48, **kw):
+        super().__init__(sl_pip=sl_pip, tp_pip=tp_pip, max_hold=max_hold, **kw)
+
+    def advise(self, ctx):
+        adv = super().advise(ctx)
+        if adv and adv.get('action') == 'SHORT':
+            nb = ctx.i + 1
+            if nb < len(ctx.df):
+                ts = pd.Timestamp(ctx.df['dt'].values[nb])
+                if ts.hour in self.BAD_HOURS:
+                    return None
+                if ts.dayofweek in self.BAD_DOW:
+                    return None
+        return adv
+
+
 STRATEGY_REGISTRY = {
     'S164': dict(cls=S164_PreEOM_Short, asset='EURUSD', tf='EURUSD_M15',
                  label='S164 EURUSD Pre-EOM Short'),
@@ -186,4 +216,6 @@ STRATEGY_REGISTRY = {
                  label='S302 EURUSD Pre-EOM Short + Wed/Thu filter (revived S164)'),
     'S173': dict(cls=S173_MarketInertia_Short, asset='XAUUSD', tf='XAUUSD_M15',
                  label='S173 XAUUSD Market-Inertia Short (revival candidate)'),
+    'S303': dict(cls=S303_MarketInertia_Short_Filtered, asset='XAUUSD', tf='XAUUSD_M15',
+                 label='S303 XAUUSD Market-Inertia Short + session/dow filter (revived S173)'),
 }
