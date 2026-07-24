@@ -98,12 +98,14 @@ export async function getSpotGold(): Promise<SpotPrice> {
 }
 
 // -------------------------- کمکی: fetch کندل از Yahoo --------------------------
-export async function yahooCandles(symbol: string, interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
+// هستهٔ fetchِ واقعیِ Yahoo (بدونِ کش) — خروجی دقیقاً مثلِ قبل.
+async function _yahooCandlesRaw(symbol: string, interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`
-  const res = await fetch(url, {
+  // fetchWithTimeout: جلویِ هنگِ نامحدودِ یک منبعِ کند را می‌گیرد (علتِ صفحهٔ خالیِ گوشی).
+  const res = await fetchWithTimeout(url, {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },
-    cf: { cacheTtl: 30, cacheEverything: true } as any,
-  })
+    cf: { cacheTtl: 30, cacheEverything: true } as any,   // روی CF مفید، روی Node بی‌اثر (کشِ ما جایش را می‌گیرد)
+  }, 6000)
   if (!res.ok) throw new Error(`Yahoo ${symbol} error: ${res.status}`)
   const data: any = await res.json()
   const r = data?.chart?.result?.[0]
@@ -126,6 +128,30 @@ export async function yahooCandles(symbol: string, interval: string, range: stri
       previousClose: r.meta?.previousClose,
     },
   }
+}
+
+// ----------------------------------------------------------------------------
+// yahooCandles — نسخهٔ «کش‌دار + چند-منبعی». امضا و خروجی دقیقاً مثلِ قبل، پس
+// منطقِ تصمیم‌گیری هیچ تفاوتی نمی‌بیند. تنها تفاوت: سرعت روی گوشی.
+//   • کش (TTL 30s + SWR): چند دارایی که یک TF می‌خواهند، یک fetch مشترک ⇒ de-dup.
+//   • fallback به Stooq: فقط برای تایم‌فریمِ روزانه‌به‌بالا و در صورتِ خطا/کندیِ Yahoo.
+// TTLِ کندل کوتاه است (کندلِ اینترادی هر ~۳۰s تازه می‌شود کافی است).
+// ----------------------------------------------------------------------------
+export async function yahooCandles(symbol: string, interval: string, range: string): Promise<{ candles: Candle[]; meta: any }> {
+  const key = `candles:${symbol}:${interval}:${range}`
+  return cachedFetch(key, async () => {
+    // منبعِ اصلی همیشه Yahoo (دادهٔ همیشگی، منطق دست‌نخورده). Stooq فقط پشتیبانِ روزانه.
+    if (stooqSupports(symbol, interval)) {
+      return fallbackChain([
+        () => _yahooCandlesRaw(symbol, interval, range),
+        async () => {
+          const rows = await stooqDaily(symbol)
+          return { candles: rows as Candle[], meta: { symbol, name: symbol, price: rows[rows.length - 1]?.close, previousClose: rows[rows.length - 2]?.close } }
+        },
+      ])
+    }
+    return _yahooCandlesRaw(symbol, interval, range)
+  }, { freshMs: 30_000, staleMs: 600_000 })
 }
 
 // ============================================================================
