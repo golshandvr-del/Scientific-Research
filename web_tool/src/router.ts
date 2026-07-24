@@ -119,6 +119,18 @@ export interface RouterDecision {
   }
   // فقط در APPROACHING: تأییدهایِ لازم
   confirmations?: Confirmation[]
+  // --- لایه‌های ثانویهٔ نزدیک به فعال‌سازی (پاسخِ User Note) ---
+  // به‌جز لایهٔ اصلی (این تصمیم)، هر لایهٔ دیگری که هم‌اکنون ENTRY/APPROACHING است
+  // اینجا فهرست می‌شود تا فرانت‌اند آن‌ها را به‌صورتِ collapsed زیرِ سیگنالِ اصلی نشان دهد.
+  otherLayers?: {
+    code: string
+    name: string
+    kind: string
+    state: 'ENTRY' | 'APPROACHING'
+    direction?: 'LONG' | 'SHORT'
+    reason: string
+    confirmations?: Confirmation[]
+  }[]
   // شاخص‌های کلیدی برای شفافیت (همیشه)
   indicators: { name: string; value: string; status: 'ok' | 'warn' | 'bad' | 'neutral' }[]
 
