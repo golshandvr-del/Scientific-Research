@@ -54,7 +54,6 @@ def run_tf(tf):
     df = B.last_n_years(df, 4)
     df = B.add_indicators(B.add_calendar(df.copy().reset_index(drop=True)))
     n = len(df)
-    zeros = np.zeros(n, bool)
     mh = max(4, int(round(MH_BASE_M15 * MH_SCALE[tf])))
 
     base = base_signal_s142(df)
@@ -64,41 +63,9 @@ def run_tf(tf):
         print(f"  ⏭️  سیگنالِ پایه کمتر از {B.MIN_TRADES} ⇒ رد این TF.")
         return None
 
-    F = B.build_filters(df)
-    # فهرستِ ترکیب‌های فیلتر: از صفر (فقط بازطراحیِ TP/SL) تا MAX_FILTERS
-    filter_combos = [()]
-    for k in range(1, MAX_FILTERS + 1):
-        filter_combos += list(itertools.combinations(FILTER_POOL, k))
-
-    best = None
-    best_wr_any = None  # بهترین WR حتی اگر net منفی (برای گزارشِ تشخیصی)
-    tested = 0
-    for fcombo in filter_combos:
-        fmask = base.copy()
-        for fname in fcombo:
-            fmask = fmask & F[fname]
-        if int(fmask.sum()) < B.MIN_TRADES:
-            continue
-        for sl in B.__dict__.get('SL_GRID_OVERRIDE', SL_GRID):
-            for tp in TP_GRID:
-                tested += 1
-                res = B.eval_signal(df, fmask, zeros, sl, tp, mh, asset)
-                if res is None or res['n'] < B.MIN_TRADES:
-                    continue
-                if best_wr_any is None or res['wr'] > best_wr_any['wr']:
-                    best_wr_any = dict(wr=res['wr'], net=res['net'], n=res['n'],
-                                       sl=sl, tp=tp, f=fcombo)
-                # قیدِ اصلی: WR≥۶۰ و net>0
-                if res['wr'] >= B.WR_FLOOR and res['net'] > 0:
-                    passed, detail = B.antioverfit_gates(res, df)
-                    if passed:
-                        cand = dict(wr=res['wr'], net=res['net'], n=res['n'],
-                                    pf=res['pf'], sl=sl, tp=tp, mh=mh,
-                                    f=list(fcombo), detail=detail)
-                        # بیشینهٔ net میانِ گیت-پاس‌ها
-                        if best is None or cand['net'] > best['net']:
-                            best = cand
-    print(f"  تعدادِ پیکربندیِ آزموده‌شده: {tested}")
+    out = B.boost_layer(df, base, asset, mh, SL_GRID, TP_GRID, FILTER_POOL,
+                        max_filters=MAX_FILTERS, side='long', top_tpsl=4)
+    best = out['best']; best_wr_any = out['best_wr_any']
     if best:
         print(f"  ✅ برنده: WR={best['wr']:.1f}%  net={best['net']:+,.0f}$  n={best['n']}  "
               f"SL{best['sl']}/TP{best['tp']} mh{best['mh']}")
