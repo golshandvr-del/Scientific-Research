@@ -1,0 +1,80 @@
+{
+  "S171_SignsOfStrength": {
+    "asset": "XAUUSD",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": "False",
+      "G3": "False",
+      "G4": true,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 920,
+      "win_rate": 51.85,
+      "net_profit": 10192.0,
+      "profit_factor": 1.289,
+      "max_dd_pct": 8.09,
+      "max_consec_losses": 8,
+      "expectancy_pip": 23.8851,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 40.0,
+      "wr_excess": 11.85,
+      "p_value": 0.0,
+      "sl_pip": 300,
+      "tp_pip": 450,
+      "wf_nets": [
+        147.6,
+        345.3,
+        2780.5,
+        5006.5
+      ],
+      "half_nets": [
+        572.8,
+        8993.1
+      ]
+    },
+    "passed": false,
+    "rqs_score": 24.9,
+    "verdict": "REJECT"
+  },
+  "S168_BrooksHigh2": {
+    "asset": "XAUUSD",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": "False",
+      "G3": "False",
+      "G4": true,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 1728,
+      "win_rate": 43.98,
+      "net_profit": 20697.7,
+      "profit_factor": 1.109,
+      "max_dd_pct": 37.22,
+      "max_consec_losses": 9,
+      "expectancy_pip": 10.9626,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 33.33,
+      "wr_excess": 10.65,
+      "p_value": 0.0,
+      "sl_pip": 150,
+      "tp_pip": 300,
+      "wf_nets": [
+        765.4,
+        2150.5,
+        12088.4,
+        981.9
+      ],
+      "half_nets": [
+        2848.9,
+        14042.1
+      ]
+    },
+    "passed": false,
+    "rqs_score": 23.1,
+    "verdict": "REJECT"
+  }
+}

@@ -1,0 +1,119 @@
+{
+  "S173_MarketInertia_SHORT": {
+    "asset": "XAUUSD",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": "True",
+      "G3": true,
+      "G4": true,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 315,
+      "win_rate": 52.06,
+      "net_profit": 3204.6,
+      "profit_factor": 1.405,
+      "max_dd_pct": 5.37,
+      "max_consec_losses": 5,
+      "expectancy_pip": 22.4276,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 40.0,
+      "wr_excess": 12.06,
+      "p_value": 1e-05,
+      "sl_pip": 250,
+      "tp_pip": 375,
+      "wf_nets": [
+        285.6,
+        549.2,
+        696.7,
+        1267.4
+      ],
+      "half_nets": [
+        834.8,
+        1925.8
+      ]
+    },
+    "passed": false,
+    "rqs_score": 26.8,
+    "verdict": "REJECT"
+  },
+  "S172_TwoLegs_LONG": {
+    "asset": "XAUUSD",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": "False",
+      "G3": "False",
+      "G4": false,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 1558,
+      "win_rate": 52.05,
+      "net_profit": 5520.6,
+      "profit_factor": 1.136,
+      "max_dd_pct": 12.98,
+      "max_consec_losses": 11,
+      "expectancy_pip": 7.2683,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 40.0,
+      "wr_excess": 12.05,
+      "p_value": 0.0,
+      "sl_pip": 250,
+      "tp_pip": 375,
+      "wf_nets": [
+        -624.4,
+        969.8,
+        1007.7,
+        3403.9
+      ],
+      "half_nets": [
+        345.5,
+        4971.0
+      ]
+    },
+    "passed": false,
+    "rqs_score": 21.4,
+    "verdict": "REJECT"
+  },
+  "S186_CloseStrength_LONG": {
+    "asset": "XAUUSD",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": "False",
+      "G3": "False",
+      "G4": false,
+      "G5": false
+    },
+    "metrics": {
+      "n_trades": 1401,
+      "win_rate": 47.68,
+      "net_profit": 417.2,
+      "profit_factor": 1.006,
+      "max_dd_pct": 37.71,
+      "max_consec_losses": 10,
+      "expectancy_pip": 1.2814,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 40.0,
+      "wr_excess": 7.68,
+      "p_value": 0.0,
+      "sl_pip": 200,
+      "tp_pip": 300,
+      "wf_nets": [
+        612.0,
+        -284.4,
+        3699.2,
+        -2819.9
+      ],
+      "half_nets": [
+        359.0,
+        150.7
+      ]
+    },
+    "passed": false,
+    "rqs_score": 11.6,
+    "verdict": "REJECT"
+  }
+}

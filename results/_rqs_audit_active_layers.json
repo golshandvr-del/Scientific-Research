@@ -1,0 +1,197 @@
+{
+  "S139_Overnight": {
+    "asset": "XAUUSD",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": "False",
+      "G3": false,
+      "G4": false,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 1744,
+      "win_rate": 48.85,
+      "net_profit": 10264.1,
+      "profit_factor": 1.221,
+      "max_dd_pct": 7.16,
+      "max_consec_losses": 9,
+      "expectancy_pip": 6.4394,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 33.33,
+      "wr_excess": 15.52,
+      "p_value": 0.0,
+      "sl_pip": 150,
+      "tp_pip": 300,
+      "wf_nets": [
+        -226.2,
+        -132.1,
+        1915.7,
+        7769.5
+      ],
+      "half_nets": [
+        -308.9,
+        10791.3
+      ]
+    },
+    "passed": false,
+    "rqs_score": 18.0,
+    "verdict": "REJECT"
+  },
+  "S141_TurnOfMonth": {
+    "asset": "XAUUSD",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": "False",
+      "G3": "False",
+      "G4": false,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 561,
+      "win_rate": 49.2,
+      "net_profit": 1936.6,
+      "profit_factor": 1.09,
+      "max_dd_pct": 13.88,
+      "max_consec_losses": 7,
+      "expectancy_pip": 4.9717,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 33.33,
+      "wr_excess": 15.86,
+      "p_value": 0.0,
+      "sl_pip": 150,
+      "tp_pip": 300,
+      "wf_nets": [
+        818.5,
+        955.3,
+        613.0,
+        -811.0
+      ],
+      "half_nets": [
+        1868.8,
+        -37.0
+      ]
+    },
+    "passed": false,
+    "rqs_score": 15.9,
+    "verdict": "REJECT"
+  },
+  "S144_EndOfMonth": {
+    "asset": "XAUUSD",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": "False",
+      "G3": "False",
+      "G4": false,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 796,
+      "win_rate": 48.49,
+      "net_profit": 958.2,
+      "profit_factor": 1.039,
+      "max_dd_pct": 27.27,
+      "max_consec_losses": 14,
+      "expectancy_pip": 2.3716,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 33.33,
+      "wr_excess": 15.16,
+      "p_value": 0.0,
+      "sl_pip": 150,
+      "tp_pip": 300,
+      "wf_nets": [
+        -444.8,
+        115.0,
+        -714.8,
+        2373.5
+      ],
+      "half_nets": [
+        -356.9,
+        1494.5
+      ]
+    },
+    "passed": false,
+    "rqs_score": 11.3,
+    "verdict": "REJECT"
+  },
+  "S164_EUR_PreEOM": {
+    "asset": "EURUSD",
+    "gates": {
+      "G0": true,
+      "G1": true,
+      "G2": "True",
+      "G3": true,
+      "G4": true,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 112,
+      "win_rate": 60.71,
+      "net_profit": 3473.1,
+      "profit_factor": 1.708,
+      "max_dd_pct": 4.7,
+      "max_consec_losses": 5,
+      "expectancy_pip": 4.0786,
+      "spread_cost_pip": 1.0,
+      "wr_breakeven": 42.86,
+      "wr_excess": 17.86,
+      "p_value": 0.00011,
+      "sl_pip": 15,
+      "tp_pip": 20,
+      "wf_nets": [
+        866.9,
+        352.1,
+        1601.8,
+        322.2
+      ],
+      "half_nets": [
+        1249.7,
+        1974.8
+      ]
+    },
+    "passed": true,
+    "rqs_score": 85.1,
+    "verdict": "ACCEPT"
+  },
+  "S73_EUR_SessDrift": {
+    "asset": "EURUSD",
+    "gates": {
+      "G0": true,
+      "G1": true,
+      "G2": "True",
+      "G3": true,
+      "G4": true,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 1168,
+      "win_rate": 61.56,
+      "net_profit": 19792.4,
+      "profit_factor": 1.822,
+      "max_dd_pct": 2.94,
+      "max_consec_losses": 7,
+      "expectancy_pip": 1.1331,
+      "spread_cost_pip": 1.0,
+      "wr_breakeven": 50.0,
+      "wr_excess": 11.56,
+      "p_value": 0.0,
+      "sl_pip": 12,
+      "tp_pip": 12,
+      "wf_nets": [
+        4467.6,
+        1387.4,
+        1636.1,
+        5545.3
+      ],
+      "half_nets": [
+        6473.2,
+        8092.8
+      ]
+    },
+    "passed": true,
+    "rqs_score": 81.1,
+    "verdict": "ACCEPT"
+  }
+}
