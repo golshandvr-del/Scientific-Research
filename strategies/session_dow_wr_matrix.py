@@ -262,4 +262,8 @@ def main(layer_filter=None):
 
 if __name__ == '__main__':
     md_all, results = main()
-    print("\n\n" + "".join(md_all[:4]))
+    out_path = os.path.join(ROOT, 'results',
+                            'SESSION_DOW_WR_MATRIX_XAU_M15.md')
+    with open(out_path, 'w') as f:
+        f.write("".join(md_all))
+    print(f"\n✅ ذخیره شد: {out_path}")
