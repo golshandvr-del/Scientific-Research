@@ -517,7 +517,17 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     else if (a.id === 'XAUUSD-H4')  dec = decideGoldH4(result, closes, capital, riskPct,
                                      useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low))
     else if (a.id === 'XAUUSD-D1')  dec = decideGoldD1(result, closes, capital, riskPct)
-    else dec = decide(result, closes, capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high), useCandles.map(k => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles.map(k => k.open))
+    else {
+      // کارتِ M15 طلا (id=XAUUSD): لایه‌های زمان-محور/ML عمومی (S67/S132/S168…) اولویت دارند.
+      dec = decide(result, closes, capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high), useCandles.map(k => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles.map(k => k.open))
+      // لایهٔ مکملِ مستقلِ S215 (خطِ روندِ Al Brooks): فقط وقتی لایه‌های اصلی خنثی‌اند
+      // بررسی می‌شود (بدونِ تداخل). سهمِ مستقلِ M15 در بک‌تستِ S215b = +$2,714 (WR ۵۷.۱٪، WF-4/4).
+      if (dec.state === 'NEUTRAL') {
+        const tl = trendLineDecision(TREND_LINE_CFG['XAUUSD-M15'], result,
+          useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low), closes, capital, riskPct)
+        if (tl.state === 'ENTRY' || tl.state === 'APPROACHING') dec = tl
+      }
+    }
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
