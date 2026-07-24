@@ -231,3 +231,142 @@ export function computeTrendLine(
       `سیگنالی نداریم.`,
   }
 }
+
+// ===========================================================================
+// trendLineDecision — تابعِ سطح‌بالای مشترکِ ماژولار (منبعِ واحد برای همهٔ کارت‌ها).
+// ---------------------------------------------------------------------------
+// این تابع خروجیِ خامِ computeTrendLine را به یک RouterDecisionِ کاملِ ۴-حالته
+// (شاملِ بخشِ مدیریتِ معامله) ترجمه می‌کند. همهٔ کارت‌های طلا (M5/M15/M30/H1/H4)
+// دقیقاً همین تابع را با پیکربندیِ اثبات‌شدهٔ خودشان صدا می‌زنند ⇒ صفر تکرارِ کد،
+// و افزودن/تغییرِ یک کارت بقیه را دست نمی‌زند (ماژولار).
+//
+// `fallback`: اگر ماشهٔ trend-line فعال نبود، تصمیمِ «حالتِ پایه»ی همان کارت
+//   (مثلاً تحلیلِ رژیمِ HTF) را می‌گیرد و فقط شاخص‌ها/توضیحِ خطِ روند را رویش سوار
+//   می‌کند. اگر fallback ندهیم، یک تصمیمِ NEUTRAL/APPROACHINGِ خودبسنده می‌سازد.
+// ===========================================================================
+import type { RouterDecision, RegimeInfo } from './router'
+import { computeLots, assetSpec } from './router'
+
+/** رژیمِ سبکِ مبتنی بر خطِ روند (برای سازگاریِ ساختاری با RouterDecision). */
+function trendLineRegime(tl: TrendLineResult): RegimeInfo {
+  return {
+    regime: tl.regimeUp ? 'trend_up' : 'range',
+    efficiencyRatio: 0,
+    trendy: tl.regimeUp,
+    adx: 0,
+    activeStream: tl.regimeUp ? 'bull' : 'none',
+    bucket: tl.regimeUp ? 'trend_line' : 'none',
+  }
+}
+
+export function trendLineDecision(
+  cfg: TrendLineConfig, a: { price: number; adx?: number },
+  open: number[], high: number[], low: number[], close: number[],
+  capital = 10000, riskPct = 1.0,
+  fallback?: () => RouterDecision,
+): RouterDecision {
+  const tl = computeTrendLine(open, high, low, close, cfg)
+  const reg = trendLineRegime(tl)
+  const spec = assetSpec('XAUUSD')
+
+  // شاخص‌های شفافِ کاربر (طبقِ قانونِ طراحی: فقط مفید، بدونِ آمارِ داخلیِ تحقیق).
+  const tlInd: RouterDecision['indicators'] = [
+    { name: 'تایم‌فریم', value: cfg.tfFa, status: 'neutral' },
+    { name: 'خطِ روندِ صعودی (از دو کفِ اخیر)',
+      value: tl.hasLine && isFinite(tl.lineValue) ? tl.lineValue.toFixed(2) + '$' : '—',
+      status: tl.hasLine ? 'ok' : 'neutral' },
+    { name: 'رابطهٔ قیمت با خطِ روند',
+      value: isFinite(tl.distToLinePct) ? (tl.penetrated ? 'کمی زیرِ خط (تست)' : `${tl.distToLinePct.toFixed(2)}% بالای خط`) : '—',
+      status: tl.state === 'ENTRY' ? 'ok' : tl.penetrated ? 'warn' : 'neutral' },
+    { name: `روندِ کلان (EMA${cfg.emaFast}/${cfg.emaSlow})`,
+      value: tl.regimeUp ? 'صعودی ✓' : 'نه‌صعودی', status: tl.regimeUp ? 'ok' : 'neutral' },
+    { name: 'شکستِ ناموفقِ خط (بازگشت به بالای خط)',
+      value: tl.penetrated ? (tl.closedBack ? 'بله ✓' : 'هنوز نه') : 'خیر',
+      status: tl.state === 'ENTRY' ? 'ok' : 'neutral' },
+    { name: 'ATR', value: isFinite(tl.atr) ? tl.atr.toFixed(2) + '$' : '—', status: 'neutral' },
+    { name: 'قیمتِ فعلی', value: a.price ? a.price.toFixed(2) : '—', status: 'neutral' },
+  ]
+
+  // --------- حالتِ ۳: ورود (failed breakout کامل) ---------
+  if (tl.state === 'ENTRY') {
+    const entry = a.price
+    const sl = entry - tl.slDist
+    const tp = entry + tl.tpDist
+    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, tl.slDist, 1.0, spec)
+    const rd = Math.round(riskDollars * 100) / 100
+    return {
+      state: 'ENTRY', regime: reg,
+      headline: `ورود خرید (LONG) — تستِ ناموفقِ خطِ روندِ صعودی (طلا ${cfg.tfFa})`,
+      reason: tl.reason,
+      sourceLayer: {
+        code: 'S215', name: `خطِ روندِ Al Brooks (Trend-Line Failed-Breakout) — ${cfg.tfFa}`, kind: 'price-action',
+        filters: [`گیتِ روندِ صعودی EMA${cfg.emaFast}>EMA${cfg.emaSlow}`,
+          'شکستِ ناموفقِ خطِ روند (کمی زیرِ خط، بازگشت به بالای خط)', 'قیدِ ضدِ رنج (کندل‌های غیرِ هم‌پوش)'],
+        manage: {
+          style: 'structural-trail', beTriggerR: 1.0,
+          trailDistPrice: tl.slDist, maxHoldBars: cfg.maxHoldBars,
+          note: `مدیریتِ ساختاری (خطِ روند): SL اولیه زیرِ کفِ نفوذ (${tl.slDist.toFixed(2)}$). پس از ۱R سود، SL را ` +
+            `به بریک‌ایون ببر؛ سپس زیرِ خطِ روندِ صعودی یا کفِ هر پولبکِ جدید بالا بیاور — تا سقفِ ${cfg.maxHoldBars} کندلِ ` +
+            `${cfg.tfFa}. اگر قیمت قاطعانه زیرِ خطِ روند بسته شد و بالا نیامد (شکستِ واقعیِ روند)، فوراً خارج شو حتی قبل از TP.`,
+        },
+      },
+      direction: 'LONG', entry, tp, sl,
+      rr: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) / TP ${cfg.tpPip}pip (${tl.tpDist.toFixed(2)}$) — ` +
+        `R:R ≈ ۱:${(cfg.tpPip / cfg.slPip).toFixed(1)} (بگذار بردها بدوند)`,
+      probability: Math.round(cfg.indepWr),
+      sizing: {
+        lotMultiplier: 1.0, label: `خطِ روندِ Al Brooks (${cfg.tfFa})`,
+        note: `ورودِ open کندلِ بعد؛ اسپردِ واقعیِ طلا لحاظ می‌شود. این لبه فقط روی طلا کار می‌کند ` +
+          `(روی EURUSD بی‌اثر بود) و مستقل از سایرِ لایه‌های سایت است ⇒ سودِ خالصِ کل را بالا می‌برد.`,
+        lots: lots ?? undefined, riskDollars: rd, capital, riskPct,
+        capitalNote: `با سرمایهٔ ${capital.toLocaleString('en-US')}$ و ریسکِ ${riskPct}% ` +
+          `(ریسکِ مؤثر ${effRiskPct.toFixed(2)}%)، حجمِ پیشنهادی ${lots?.toFixed(2) ?? '—'} ${spec.lotUnitFa}. ` +
+          `اگر SL (فاصلهٔ ${tl.slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید.`,
+      },
+      tpPlan: { multiplier: cfg.tpPip,
+        note: `TP دورِ ${cfg.tpPip}pip. پس از تأییدِ ادامهٔ روند، حرکتِ صعودی معمولاً بزرگ است؛ ` +
+          `TP دور اجازه می‌دهد حرکت کامل استخراج شود. تا ${cfg.maxHoldBars} کندلِ ${cfg.tfFa} نگه دارید یا تا برخورد به TP/SL.` },
+      slPlan: { multiplier: cfg.slPip,
+        note: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) زیرِ نقطهٔ نفوذِ خطِ روند. اگر شکستِ خط واقعی بود ` +
+          `(نه ناموفق)، این SL ضرر را محدود می‌کند.` },
+      indicators: tlInd,
+    }
+  }
+
+  // --------- حالتِ ۲: نزدیک‌شدن ---------
+  if (tl.state === 'APPROACHING') {
+    return {
+      state: 'APPROACHING', regime: reg,
+      headline: `نزدیک‌شدن به سیگنالِ خرید (LONG) — قیمت به خطِ روندِ صعودی نزدیک شد (طلا ${cfg.tfFa})`,
+      reason: tl.reason,
+      sourceLayer: { code: 'S215', name: `خطِ روندِ Al Brooks (Trend-Line) — ${cfg.tfFa}`, kind: 'price-action' },
+      confirmations: [
+        { label: 'قیمت در یک sell-offِ تند کمی زیرِ خطِ روندِ صعودی برود', met: tl.penetrated,
+          detail: tl.penetrated ? 'رخ داد ✓ (قیمت زیرِ خط نفوذ کرد)' : `اکنون ${tl.distToLinePct.toFixed(2)}% بالای خط است.` },
+        { label: 'قیمت دوباره بالای خطِ روند ببندد (شکستِ ناموفق)', met: tl.closedBack && tl.penetrated,
+          detail: tl.penetrated && !tl.closedBack ? 'هنوز بالای خط نبسته — منتظرِ بسته‌شدن بمانید.' : (tl.closedBack ? 'برقرار ✓' : 'هنوز نه') },
+        { label: 'کندلِ صعودی (close ≥ open)', met: tl.bullBar, detail: tl.bullBar ? 'برقرار ✓' : 'کندلِ فعلی نزولی است.' },
+      ],
+      indicators: tlInd,
+    }
+  }
+
+  // --------- ماشه فعال نیست ---------
+  if (fallback) {
+    const base = fallback()
+    base.reason = `این کارت لایهٔ «خطِ روندِ Al Brooks» (S215) را روی افقِ ${cfg.tfFa} پایش می‌کند. ` + tl.reason +
+      ` وقتی یک sell-offِ تند قیمت را کمی زیرِ خطِ روندِ صعودی ببرد و قیمت دوباره بالای خط ببندد، سیگنالِ ورودِ خرید صادر می‌شود.`
+    base.sourceLayer = { code: 'S215', name: `خطِ روندِ Al Brooks (Trend-Line) — ${cfg.tfFa}`, kind: 'price-action' }
+    base.indicators = tlInd
+    base.headline = `طلا ${cfg.tfFa} — پایشِ خطِ روند (فعلاً بدونِ سیگنال)`
+    return base
+  }
+  return {
+    state: 'NEUTRAL', regime: reg,
+    headline: `طلا ${cfg.tfFa} — پایشِ خطِ روند (فعلاً بدونِ سیگنال)`,
+    reason: tl.reason + ` وقتی یک sell-offِ تند قیمت را کمی زیرِ خطِ روندِ صعودی ببرد و قیمت دوباره بالای خط ببندد، ` +
+      `سیگنالِ ورودِ خرید (LONG) صادر می‌شود. این لایه فقط در روندِ صعودی و فقط روی طلا فعال است.`,
+    sourceLayer: { code: 'S215', name: `خطِ روندِ Al Brooks (Trend-Line) — ${cfg.tfFa}`, kind: 'price-action' },
+    indicators: tlInd,
+  }
+}
