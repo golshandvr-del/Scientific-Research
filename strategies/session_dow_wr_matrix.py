@@ -198,6 +198,21 @@ def layer_signals(df):
     sh = prev_above & (price < mid)
     out['SHORT-MA-Confluence (Short)'] = (zeros, sh, 40, 200, 12, 8, 8)
 
+    # S168 Brooks High-2: long, ema20/50, SL300/TP450, mh32 (منبع: نتیجهٔ نهایی)
+    from s168_brooks_high2_low2 import count_high2_low2
+    long_evt, _ = count_high2_low2(df, 20, 50)
+    ls = pd.Series(long_evt).shift(1).fillna(False).to_numpy()
+    out['S168 Brooks High-2 (Long)'] = (ls, zeros, 300, 450, 32, None, None)
+
+    # S171 Brooks Signs-of-Strength: long, w32/thr2, SL300/TP450, mh96 (منبع: نتیجهٔ نهایی)
+    from s171_brooks_signs_of_strength_filter import signs_of_strength_bull
+    sos = signs_of_strength_bull(df, ema_period=20, win=32)
+    strong = sos['score'].to_numpy() >= 2
+    prev = pd.Series(strong).shift(1).fillna(False).to_numpy()
+    edge = strong & (~prev)
+    ls = pd.Series(edge).shift(1).fillna(False).to_numpy()
+    out['S171 Signs-of-Strength (Long)'] = (ls, zeros, 300, 450, 96, None, None)
+
     return out
 
 
@@ -208,6 +223,42 @@ def run_layer_engine(df, name, spec):
                             be_trigger_pip=be, trail_pip=trail)
     pt = per_trade_net(tr, 'XAUUSD')
     return pt
+
+
+def run_squeeze_pertrade(df):
+    """S138 Squeeze نهایی: brk≥0.30 + rsi14≤75، paper_broker hidden(300,90).
+    خروجی: per-trade با entry_bar و net_usd (حجمِ ثابت 0.01)."""
+    from s132_squeeze_breakout_m15 import build_entries_squeeze, MAX_HOLD_M15
+    from s94_scalp_hidden_target import make_hidden_exit
+    import s91_scalp_signal_exit as s91
+    s91.SPREAD_PIP = 3.3; s91.SLIP_PIP = 0.0; s91.COMM_PER_LOT = 0.0
+    s91.COST_PIP = s91.SPREAD_PIP + 2.0 * s91.SLIP_PIP
+    from s91_scalp_signal_exit import paper_broker, atr as s91atr
+
+    TRIG = dict(sqz_pct=0.25, breakout_lookback=6)
+    entries = build_entries_squeeze(df, **TRIG)
+    cvals = df['close'].values.astype(np.float64); hvals = df['high'].values.astype(np.float64)
+    a14 = s91atr(df, 14); brk = TRIG['breakout_lookback']
+
+    def brkstr(i):
+        ph = hvals[i - brk:i].max() if i >= brk else np.nan
+        a = a14[i] if (np.isfinite(a14[i]) and a14[i] > 0) else np.nan
+        return float((cvals[i] - ph) / a) if (np.isfinite(ph) and np.isfinite(a)) else 0.0
+
+    ent = [(i, s) for (i, s) in entries if brkstr(i) >= 0.30]
+    r14 = ind.rsi(df['close'], 14).values
+    ent = [(i, s) for (i, s) in ent if np.isfinite(r14[i]) and r14[i] <= 75.0]
+    exit_fn = make_hidden_exit(300.0, 90.0, use_trend_break=False)
+    tr = paper_broker(df, ent, exit_fn, catastrophic_sl_pip=400.0, max_hold=MAX_HOLD_M15)
+    if tr is None or len(tr) == 0:
+        return pd.DataFrame(columns=['entry_bar', 'net_usd'])
+    # paper_broker: ستونِ ورود ممکن است entry_bar یا entry_idx باشد
+    col = 'entry_bar' if 'entry_bar' in tr.columns else ('entry_idx' if 'entry_idx' in tr.columns else None)
+    if col is None:
+        return pd.DataFrame(columns=['entry_bar', 'net_usd'])
+    out = pd.DataFrame({'entry_bar': tr[col].values.astype(int),
+                        'net_usd': tr['net_usd'].values})
+    return out
 
 
 def main(layer_filter=None):
@@ -256,6 +307,40 @@ def main(layer_filter=None):
             print("  — هیچ خانه‌ای WR≥60 با n≥15 ندارد.", flush=True)
         md_all.append(matrix_to_md(rows, name, n, total_wr, total_net))
         results[name] = dict(n=n, wr=total_wr, net=total_net, rows=rows, hits=hits)
+
+    # --- Squeeze (paper_broker جداگانه) ---
+    sq_name = 'S132/S136/S138 Squeeze→Breakout (Long)'
+    if not layer_filter or sq_name in layer_filter:
+        print(f"\n{'='*70}\nلایه: {sq_name}", flush=True)
+        try:
+            pt = run_squeeze_pertrade(df)
+            n = len(pt)
+            if n == 0:
+                print("  صفر معامله.", flush=True)
+                md_all.append(matrix_to_md(None, sq_name, 0, 0, 0))
+            else:
+                net = pt['net_usd'].values
+                total_net = float(net.sum())
+                total_wr = float((net > 0).sum() / n * 100.0)
+                rows = build_matrix(pt, df)
+                print(f"  کل: n={n}  WR={total_wr:.1f}%  net={total_net:+,.0f}$", flush=True)
+                hits = []
+                for r in rows:
+                    for cn, _ in SESSION_COLS:
+                        nn, ww, wr = r[cn]
+                        if nn >= 15 and wr is not None and wr >= 60.0:
+                            hits.append(f"{r['dow_name'].split()[0]}×{cn}: WR{wr:.0f}% (n={nn})")
+                if hits:
+                    print("  🎯 خانه‌های WR≥60 (n≥15):", flush=True)
+                    for hh in hits:
+                        print("     " + hh, flush=True)
+                else:
+                    print("  — هیچ خانه‌ای WR≥60 با n≥15 ندارد.", flush=True)
+                md_all.append(matrix_to_md(rows, sq_name, n, total_wr, total_net))
+                results[sq_name] = dict(n=n, wr=total_wr, net=total_net, rows=rows, hits=hits)
+        except Exception as ex:
+            print(f"  ⚠️ خطا در Squeeze: {ex}", flush=True)
+            md_all.append(f"### {sq_name}\n\n_خطا در اجرا: {ex}_\n\n")
 
     return md_all, results
 
