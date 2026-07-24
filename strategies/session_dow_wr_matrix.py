@@ -207,7 +207,7 @@ def layer_signals(df):
     # S171 Brooks Signs-of-Strength: long, w32/thr2, SL300/TP450, mh96 (منبع: نتیجهٔ نهایی)
     from s171_brooks_signs_of_strength_filter import signs_of_strength_bull
     sos = signs_of_strength_bull(df, ema_period=20, win=32)
-    strong = sos['score'].to_numpy() >= 2
+    strong = np.asarray(sos['score']) >= 2
     prev = pd.Series(strong).shift(1).fillna(False).to_numpy()
     edge = strong & (~prev)
     ls = pd.Series(edge).shift(1).fillna(False).to_numpy()
