@@ -618,21 +618,23 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   const merged = mergeLiveQuote(candles, live, gapForTf(tf))
   const useCandles = merged.candles
   const result = analyze(useCandles)
+  // 🔧 رفعِ باگِ repainting (هم‌سان با طلا): ماشهٔ سیگنال روی کندل‌های بسته‌شده اجرا شود.
+  const sig = closedBars(useCandles, gapForTf(tf))
   // EURUSD (M5): منطقِ مخصوصِ S73 (Session-Open Drift) — نه decide()ِ عمومیِ طلا.
   // کارت‌های placeholder (EURUSD-M15/M30/M1): قالبِ خام — «در دستِ تحقیق».
   let dec
   if (a.layer === 'placeholder') {
     dec = placeholderDecision(a, result, tf)
   } else if (a.id === 'EURUSD') {
-    const lastT = useCandles[useCandles.length - 1].time
+    const lastT = sig[sig.length - 1].time
     const nowUtcHour = new Date(lastT * 1000).getUTCHours()
-    dec = decideEurusd(result, useCandles.map(k => k.close), nowUtcHour, capital, riskPct, lastT)
+    dec = decideEurusd(result, sig.map(k => k.close), nowUtcHour, capital, riskPct, lastT)
   } else if (a.id === 'EURUSD-M15') {
     // کارتِ M15 مخصوصِ لایهٔ S213 (Second-Entry SHORT، Brooks فصلِ ۱۰) — دادهٔ M15.
-    dec = decideEurusdM15(result, useCandles.map(k => k.open), useCandles.map(k => k.high),
-      useCandles.map(k => k.low), useCandles.map(k => k.close), capital, riskPct)
+    dec = decideEurusdM15(result, sig.map(k => k.open), sig.map(k => k.high),
+      sig.map(k => k.low), sig.map(k => k.close), capital, riskPct)
   } else {
-    dec = decide(result, useCandles.map(k => k.close), capital, riskPct, assetSpec(a.id))
+    dec = decide(result, sig.map(k => k.close), capital, riskPct, assetSpec(a.id))
   }
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
     price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
