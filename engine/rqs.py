@@ -35,16 +35,34 @@ EXP_COST_MULT  = 0.5      # G5 (expectancy > 0.5 × spread_cost)
 
 
 def _binom_pvalue_one_sided(wins, n, p0):
-    """P(X >= wins) under Binomial(n, p0) — آزمونِ یک‌دامنه که لبه از رندوم بهتر است."""
+    """P(X >= wins) under Binomial(n, p0) — آزمونِ یک‌دامنه که لبه از رندوم بهتر است.
+
+    برای n بزرگ از تقریبِ نرمال (با تصحیحِ پیوستگی) استفاده می‌شود تا از سرریزِ
+    ضریبِ دوجمله‌ای جلوگیری شود؛ برای n کوچک جمعِ دقیق.
+    """
     if n <= 0:
         return 1.0
     wins = int(round(wins))
     p0 = min(max(p0, 1e-9), 1 - 1e-9)
-    # جمعِ دم بالا
-    tail = 0.0
-    for k in range(wins, n + 1):
-        tail += comb(n, k) * (p0 ** k) * ((1 - p0) ** (n - k))
-    return float(min(1.0, tail))
+    if wins <= 0:
+        return 1.0
+    if wins > n:
+        return 0.0
+    # n کوچک: جمعِ دقیقِ دمِ بالا
+    if n <= 300:
+        tail = 0.0
+        for k in range(wins, n + 1):
+            tail += comb(n, k) * (p0 ** k) * ((1 - p0) ** (n - k))
+        return float(min(1.0, tail))
+    # n بزرگ: تقریبِ نرمالِ CLT با تصحیحِ پیوستگی
+    mu = n * p0
+    sigma = (n * p0 * (1 - p0)) ** 0.5
+    if sigma <= 0:
+        return 1.0 if wins <= mu else 0.0
+    z = (wins - 0.5 - mu) / sigma
+    # P(X >= wins) ≈ 1 - Phi(z) = 0.5·erfc(z/√2)
+    from math import erfc, sqrt
+    return float(min(1.0, max(0.0, 0.5 * erfc(z / sqrt(2)))))
 
 
 def _max_consec_losses(outcomes):
