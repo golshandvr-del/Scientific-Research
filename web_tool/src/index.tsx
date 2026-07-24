@@ -546,39 +546,46 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     const merged = rebaseFuturesToSpot(candles, spot, tfc.gap)
     const useCandles = merged.candles
     const result = analyze(useCandles)
+    // 🔧 رفعِ باگِ repainting: منطقِ ماشهٔ سیگنال باید روی «کندل‌های بسته‌شده» اجرا شود
+    //   (معادلِ shift(1)ِ بک‌تست)، نه روی کندلِ زندهٔ در حالِ شکل‌گیری. result.price هم‌چنان
+    //   قیمتِ زنده است ⇒ entry روی «open کندلِ بعد» می‌نشیند، اما شرطِ سیگنال ثابت (بدونِ
+    //   repaint) روی کندلِ بستهٔ قبلی سنجیده می‌شود. تنها آرایه‌های OHLCِ ماشه از sig گرفته می‌شوند.
+    const sig = closedBars(useCandles, tfc.gap)
+    const sigOpen = sig.map(k => k.open), sigHigh = sig.map(k => k.high)
+    const sigLow = sig.map(k => k.low), sigClose = sig.map(k => k.close)
+    const sigTimes = sig.map(k => k.time)
     // هر تایم‌فریم منطقِ decide مخصوصِ خودش را دارد (کاملاً مستقل — ماژولار):
     //   M5→S79 ، M30→S81 ، M15→S67 (زمان-محورها) ، H1/H4/D1→gold_htf_router (حالتِ تحقیقِ فعال).
-    // ساعت/روز/زمانِ کندلِ جاری — برای لایه‌های زمان-محورِ روی طلا M15 (S139/S140/S141).
-    const goldUtcHour = new Date(useCandles[useCandles.length - 1].time * 1000).getUTCHours()
-    const goldUtcDay = new Date(useCandles[useCandles.length - 1].time * 1000).getUTCDay()
-    const goldTimes = useCandles.map(k => k.time)
-    const closes = useCandles.map(k => k.close)
+    // ساعت/روز/زمانِ آخرین کندلِ *بسته‌شده* — برای لایه‌های زمان-محورِ روی طلا M15 (S139/S140/S141).
+    const goldUtcHour = new Date(sig[sig.length - 1].time * 1000).getUTCHours()
+    const goldUtcDay = new Date(sig[sig.length - 1].time * 1000).getUTCDay()
+    const goldTimes = sigTimes
+    const closes = sigClose
     let dec
     if (a.id === 'XAUUSD-M5')      dec = decideGoldM5(result, closes, capital, riskPct,
-                                     useCandles.map(k => k.open), useCandles.map(k => k.high),
-                                     useCandles.map(k => k.low), goldTimes)
+                                     sigOpen, sigHigh, sigLow, goldTimes)
     else if (a.id === 'XAUUSD-M30') dec = decideGoldM30TrendLine(result, closes, capital, riskPct,
-                                     useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low))
+                                     sigOpen, sigHigh, sigLow)
     else if (a.id === 'XAUUSD-H1')  dec = decideGoldH1(result, closes, capital, riskPct,
-                                     useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low))
+                                     sigOpen, sigHigh, sigLow)
     else if (a.id === 'XAUUSD-H4')  dec = decideGoldH4(result, closes, capital, riskPct,
-                                     useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low))
+                                     sigOpen, sigHigh, sigLow)
     else if (a.id === 'XAUUSD-D1')  dec = decideGoldD1(result, closes, capital, riskPct)
     else {
       // کارتِ M15 طلا (id=XAUUSD): لایه‌های زمان-محور/ML عمومی (S67/S132/S168…) اولویت دارند.
-      dec = decide(result, closes, capital, riskPct, assetSpec('XAUUSD'), useCandles.map(k => k.high), useCandles.map(k => k.low), goldUtcHour, goldUtcDay, goldTimes, useCandles.map(k => k.open))
+      dec = decide(result, closes, capital, riskPct, assetSpec('XAUUSD'), sigHigh, sigLow, goldUtcHour, goldUtcDay, goldTimes, sigOpen)
       // لایهٔ مکملِ مستقلِ S215 (خطِ روندِ Al Brooks): فقط وقتی لایه‌های اصلی خنثی‌اند
       // بررسی می‌شود (بدونِ تداخل). سهمِ مستقلِ M15 در بک‌تستِ S215b = +$2,714 (WR ۵۷.۱٪، WF-4/4).
       if (dec.state === 'NEUTRAL') {
         const tl = trendLineDecision(TREND_LINE_CFG['XAUUSD-M15'], result,
-          useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low), closes, capital, riskPct)
+          sigOpen, sigHigh, sigLow, closes, capital, riskPct)
         if (tl.state === 'ENTRY' || tl.state === 'APPROACHING') dec = tl
       }
       // لایهٔ مکملِ مستقلِ S219 (کانالِ Al Brooks، position-in-channel): فقط وقتی هم لایه‌های
       // اصلی و هم S215 خنثی‌اند (بدونِ تداخل). سهمِ مستقلِ M15 در s219_finalize = +$4,028 (WR ۵۰.۱٪، WF-4/4).
       if (dec.state === 'NEUTRAL') {
         const chn = channelDecision(CHANNEL_CFG['XAUUSD-M15'], result,
-          useCandles.map(k => k.open), useCandles.map(k => k.high), useCandles.map(k => k.low), closes, capital, riskPct)
+          sigOpen, sigHigh, sigLow, closes, capital, riskPct)
         if (chn.state === 'ENTRY' || chn.state === 'APPROACHING') dec = chn
       }
     }
@@ -586,8 +593,8 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     // لایه‌های ثانویهٔ فعال (ENTRY/APPROACHING) را کاوش و به تصمیمِ اصلی پیوست می‌کنیم؛
     // فرانت‌اند آن‌ها را جمع‌شونده زیرِ سیگنالِ اصلی نمایش می‌دهد. (منطقِ برندهٔ dec دست‌نخورده)
     dec = attachSecondary(dec, {
-      assetId: a.id, result, open: useCandles.map(k => k.open), high: useCandles.map(k => k.high),
-      low: useCandles.map(k => k.low), close: closes, capital, riskPct,
+      assetId: a.id, result, open: sigOpen, high: sigHigh,
+      low: sigLow, close: closes, capital, riskPct,
       utcHour: goldUtcHour, utcDay: goldUtcDay, times: goldTimes,
       primaryCode: dec.sourceLayer?.code,
     })
