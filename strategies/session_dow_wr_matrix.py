@@ -345,10 +345,45 @@ def main(layer_filter=None):
     return md_all, results
 
 
+def summary_section(results, n_min=30, wr_target=60.0, wr_soft=55.0):
+    """خلاصهٔ تحلیلی: برای هر لایه، بهترین ترکیب‌های (روز×سشن) با n≥n_min.
+    هدف: یافتنِ پنجره‌ای که WR را به کفِ هدف (۶۰٪) برساند یا نزدیک کند."""
+    md = ["## 📊 خلاصهٔ تحلیلی — بهترین ترکیب‌های روز×سشن (کفِ آماری n≥%d)\n\n" % n_min]
+    md.append("> این بخش پاسخِ مستقیمِ حدسِ User Note است: آیا محدودکردنِ هر لایه به یک "
+              "زیرمجموعهٔ روز×سشن، WR را به **≥۶۰٪** می‌رساند؟\n\n")
+    md.append("| لایه | بهترین ترکیب (روز×سشن) | WR | n | وضعیت نسبت به کف ۶۰٪ |\n")
+    md.append("|---|---|---|---|---|\n")
+    for name, r in results.items():
+        if r is None:
+            md.append(f"| {name} | — | — | 0 | صفر معامله |\n")
+            continue
+        best = None
+        for row in r['rows']:
+            for cn, _ in SESSION_COLS:
+                nn, ww, wr = row[cn]
+                if nn >= n_min and wr is not None:
+                    if best is None or wr > best[2]:
+                        best = (row['dow_name'].split()[0], cn, wr, nn)
+        if best is None:
+            md.append(f"| {name} | هیچ سلولی n≥{n_min} ندارد | — | — | آمار ناکافی |\n")
+        else:
+            d, cn, wr, nn = best
+            status = ("✅ پاس (≥۶۰)" if wr >= wr_target
+                      else ("🟡 نزدیک (≥۵۵)" if wr >= wr_soft else "❌ زیر کف"))
+            md.append(f"| {name} | {d} × {cn} | {wr:.1f}% | {nn} | {status} |\n")
+    md.append("\n**نتیجه‌گیری:** ترکیب‌هایی با WR≥۶۰ و n≥%d کاندیدِ «بهبودِ روز×سشن» "
+              "برای رساندنِ لایه به کفِ جدیدِ پروژه (۶۰٪) هستند.\n\n" % n_min)
+    return "".join(md)
+
+
 if __name__ == '__main__':
     md_all, results = main()
+    # افزودنِ بخشِ خلاصهٔ تحلیلی در ابتدای گزارش (پس از مقدمه)
+    summ = summary_section(results, n_min=30)
+    md_all.insert(4, summ + "---\n\n")
     out_path = os.path.join(ROOT, 'results',
                             'SESSION_DOW_WR_MATRIX_XAU_M15.md')
     with open(out_path, 'w') as f:
         f.write("".join(md_all))
     print(f"\n✅ ذخیره شد: {out_path}")
+    print("\n" + summ)
