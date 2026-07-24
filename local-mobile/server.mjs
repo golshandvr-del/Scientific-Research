@@ -172,7 +172,10 @@ server.on('error', (err) => {
     if (next - PORT < MAX_PORT_TRIES) {
       console.log(`  ⚠️  پورتِ ${busy} اشغال است (احتمالاً سرورِ قبلی هنوز روشن است) → امتحانِ پورتِ ${next} ...`)
       // اجازه می‌دهیم رویدادِ error تمام شود، بعد دوباره listen می‌کنیم.
-      setTimeout(() => server.listen(next, HOST, () => printBanner(next)), 300)
+      setTimeout(() => server.listen(next, HOST, () => {
+        printBanner(next)
+        setTimeout(() => { void prewarm(next) }, 500)   // پیش‌گرم‌سازی روی پورتِ واقعی
+      }), 300)
       return
     }
     console.error(`❌ هیچ پورتِ آزادی بینِ ${PORT} تا ${PORT + MAX_PORT_TRIES} پیدا نشد.`)
