@@ -1,0 +1,3017 @@
+[
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -952.0,
+  "wr": 24.24,
+  "n": 33,
+  "pf": 0.599,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": -602.4,
+  "wr": 29.03,
+  "n": 31,
+  "pf": 0.731,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": -651.1,
+  "wr": 32.26,
+  "n": 31,
+  "pf": 0.695,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -1065.2,
+  "wr": 24.32,
+  "n": 37,
+  "pf": 0.601,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": -409.0,
+  "wr": 31.43,
+  "n": 35,
+  "pf": 0.832,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 399.4,
+  "wr": 40.0,
+  "n": 30,
+  "pf": 1.219,
+  "wf": [
+   [
+    -7.9,
+    33.3,
+    6
+   ],
+   [
+    131.0,
+    50.0,
+    6
+   ],
+   [
+    -11.9,
+    33.3,
+    9
+   ],
+   [
+    288.1,
+    44.4,
+    9
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 223.5,
+  "wr": 45.16,
+  "n": 31,
+  "pf": 1.145,
+  "wf": [
+   [
+    -95.9,
+    33.3,
+    6
+   ],
+   [
+    248.3,
+    66.7,
+    6
+   ],
+   [
+    -143.9,
+    33.3,
+    9
+   ],
+   [
+    215.1,
+    50.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": -557.7,
+  "wr": 34.29,
+  "n": 35,
+  "pf": 0.761,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -619.2,
+  "wr": 29.73,
+  "n": 37,
+  "pf": 0.765,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": -210.7,
+  "wr": 33.33,
+  "n": 36,
+  "pf": 0.914,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 250,
+  "tp": 500,
+  "net": 699.4,
+  "wr": 43.33,
+  "n": 30,
+  "pf": 1.406,
+  "wf": [
+   [
+    -7.9,
+    33.3,
+    6
+   ],
+   [
+    427.1,
+    55.6,
+    9
+   ],
+   [
+    -11.9,
+    33.3,
+    9
+   ],
+   [
+    292.1,
+    50.0,
+    6
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 300,
+  "tp": 450,
+  "net": 314.5,
+  "wr": 46.67,
+  "n": 30,
+  "pf": 1.216,
+  "wf": [
+   [
+    -95.9,
+    33.3,
+    6
+   ],
+   [
+    291.3,
+    62.5,
+    8
+   ],
+   [
+    -143.9,
+    33.3,
+    9
+   ],
+   [
+    263.1,
+    57.1,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": -409.4,
+  "wr": 36.11,
+  "n": 36,
+  "pf": 0.825,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -718.1,
+  "wr": 29.27,
+  "n": 41,
+  "pf": 0.756,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": -17.3,
+  "wr": 35.0,
+  "n": 40,
+  "pf": 0.993,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 894.1,
+  "wr": 44.12,
+  "n": 34,
+  "pf": 1.464,
+  "wf": [
+   [
+    -7.9,
+    33.3,
+    6
+   ],
+   [
+    427.1,
+    55.6,
+    9
+   ],
+   [
+    -11.9,
+    33.3,
+    9
+   ],
+   [
+    486.8,
+    50.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 370.2,
+  "wr": 47.06,
+  "n": 34,
+  "pf": 1.222,
+  "wf": [
+   [
+    -95.9,
+    33.3,
+    6
+   ],
+   [
+    291.3,
+    62.5,
+    8
+   ],
+   [
+    -143.9,
+    33.3,
+    9
+   ],
+   [
+    349.1,
+    54.5,
+    11
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": -316.0,
+  "wr": 37.5,
+  "n": 40,
+  "pf": 0.876,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -1000.5,
+  "wr": 26.19,
+  "n": 42,
+  "pf": 0.662,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": -418.9,
+  "wr": 31.71,
+  "n": 41,
+  "pf": 0.853,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 250,
+  "tp": 500,
+  "net": 570.3,
+  "wr": 41.18,
+  "n": 34,
+  "pf": 1.281,
+  "wf": [
+   [
+    -133.0,
+    28.6,
+    7
+   ],
+   [
+    427.1,
+    55.6,
+    9
+   ],
+   [
+    -214.5,
+    27.3,
+    11
+   ],
+   [
+    490.8,
+    57.1,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 300,
+  "tp": 450,
+  "net": 175.6,
+  "wr": 44.12,
+  "n": 34,
+  "pf": 1.102,
+  "wf": [
+   [
+    -186.9,
+    28.6,
+    7
+   ],
+   [
+    291.3,
+    62.5,
+    8
+   ],
+   [
+    -325.9,
+    27.3,
+    11
+   ],
+   [
+    397.1,
+    62.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": -667.6,
+  "wr": 34.15,
+  "n": 41,
+  "pf": 0.757,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -1113.7,
+  "wr": 26.09,
+  "n": 46,
+  "pf": 0.657,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": -225.5,
+  "wr": 33.33,
+  "n": 45,
+  "pf": 0.926,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 765.0,
+  "wr": 42.11,
+  "n": 38,
+  "pf": 1.343,
+  "wf": [
+   [
+    -133.0,
+    28.6,
+    7
+   ],
+   [
+    427.1,
+    55.6,
+    9
+   ],
+   [
+    -214.5,
+    27.3,
+    11
+   ],
+   [
+    685.5,
+    54.5,
+    11
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 261.6,
+  "wr": 44.74,
+  "n": 38,
+  "pf": 1.137,
+  "wf": [
+   [
+    -186.9,
+    28.6,
+    7
+   ],
+   [
+    291.3,
+    62.5,
+    8
+   ],
+   [
+    -325.9,
+    27.3,
+    11
+   ],
+   [
+    483.1,
+    58.3,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": -574.2,
+  "wr": 35.56,
+  "n": 45,
+  "pf": 0.805,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": 358.4,
+  "wr": 38.24,
+  "n": 34,
+  "pf": 1.161,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": 1109.8,
+  "wr": 46.67,
+  "n": 30,
+  "pf": 1.666,
+  "wf": [
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    585.1,
+    55.6,
+    9
+   ],
+   [
+    183.5,
+    40.0,
+    10
+   ],
+   [
+    488.5,
+    57.1,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": 598.9,
+  "wr": 48.39,
+  "n": 31,
+  "pf": 1.368,
+  "wf": [
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    335.1,
+    55.6,
+    9
+   ],
+   [
+    -16.5,
+    40.0,
+    10
+   ],
+   [
+    288.5,
+    57.1,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -172.6,
+  "wr": 33.33,
+  "n": 33,
+  "pf": 0.919,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": 200.5,
+  "wr": 43.33,
+  "n": 30,
+  "pf": 1.116,
+  "wf": [
+   [
+    -211.5,
+    28.6,
+    7
+   ],
+   [
+    483.5,
+    60.0,
+    10
+   ],
+   [
+    -266.5,
+    30.0,
+    10
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": 96.8,
+  "wr": 35.9,
+  "n": 39,
+  "pf": 1.039,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": 1070.6,
+  "wr": 45.71,
+  "n": 35,
+  "pf": 1.549,
+  "wf": [
+   [
+    -309.9,
+    16.7,
+    6
+   ],
+   [
+    632.2,
+    60.0,
+    10
+   ],
+   [
+    81.9,
+    36.4,
+    11
+   ],
+   [
+    686.8,
+    62.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 1096.7,
+  "wr": 46.88,
+  "n": 32,
+  "pf": 1.637,
+  "wf": [
+   [
+    -206.6,
+    20.0,
+    5
+   ],
+   [
+    727.1,
+    66.7,
+    9
+   ],
+   [
+    85.5,
+    36.4,
+    11
+   ],
+   [
+    490.8,
+    57.1,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 357.5,
+  "wr": 46.88,
+  "n": 32,
+  "pf": 1.231,
+  "wf": [
+   [
+    -229.9,
+    20.0,
+    5
+   ],
+   [
+    425.3,
+    66.7,
+    9
+   ],
+   [
+    -100.9,
+    36.4,
+    11
+   ],
+   [
+    263.1,
+    57.1,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": 590.6,
+  "wr": 47.22,
+  "n": 36,
+  "pf": 1.306,
+  "wf": [
+   [
+    -211.5,
+    28.6,
+    7
+   ],
+   [
+    483.5,
+    60.0,
+    10
+   ],
+   [
+    -118.1,
+    36.4,
+    11
+   ],
+   [
+    436.8,
+    62.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -149.4,
+  "wr": 33.33,
+  "n": 39,
+  "pf": 0.946,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": 304.2,
+  "wr": 40.0,
+  "n": 35,
+  "pf": 1.143,
+  "wf": [
+   [
+    -99.9,
+    37.5,
+    8
+   ],
+   [
+    632.2,
+    60.0,
+    10
+   ],
+   [
+    -421.4,
+    23.1,
+    13
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 250,
+  "tp": 500,
+  "net": 607.3,
+  "wr": 43.75,
+  "n": 32,
+  "pf": 1.333,
+  "wf": [
+   [
+    1.4,
+    42.9,
+    7
+   ],
+   [
+    727.1,
+    66.7,
+    9
+   ],
+   [
+    -417.2,
+    23.1,
+    13
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 300,
+  "tp": 450,
+  "net": 5.5,
+  "wr": 43.75,
+  "n": 32,
+  "pf": 1.003,
+  "wf": [
+   [
+    -89.0,
+    42.9,
+    7
+   ],
+   [
+    425.3,
+    66.7,
+    9
+   ],
+   [
+    -507.9,
+    23.1,
+    13
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": 90.6,
+  "wr": 41.67,
+  "n": 36,
+  "pf": 1.042,
+  "wf": [
+   [
+    85.2,
+    44.4,
+    9
+   ],
+   [
+    483.5,
+    60.0,
+    10
+   ],
+   [
+    -571.4,
+    23.1,
+    13
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": 181.4,
+  "wr": 35.56,
+  "n": 45,
+  "pf": 1.058,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": 874.0,
+  "wr": 43.9,
+  "n": 41,
+  "pf": 1.371,
+  "wf": [
+   [
+    -99.9,
+    37.5,
+    8
+   ],
+   [
+    632.2,
+    60.0,
+    10
+   ],
+   [
+    -223.1,
+    28.6,
+    14
+   ],
+   [
+    585.2,
+    55.6,
+    9
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 1199.4,
+  "wr": 47.37,
+  "n": 38,
+  "pf": 1.592,
+  "wf": [
+   [
+    1.4,
+    42.9,
+    7
+   ],
+   [
+    727.1,
+    66.7,
+    9
+   ],
+   [
+    -218.5,
+    28.6,
+    14
+   ],
+   [
+    689.4,
+    62.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 359.6,
+  "wr": 47.37,
+  "n": 38,
+  "pf": 1.198,
+  "wf": [
+   [
+    -89.0,
+    42.9,
+    7
+   ],
+   [
+    425.3,
+    66.7,
+    9
+   ],
+   [
+    -373.9,
+    28.6,
+    14
+   ],
+   [
+    397.1,
+    62.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "10/30",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": 480.7,
+  "wr": 45.24,
+  "n": 42,
+  "pf": 1.206,
+  "wf": [
+   [
+    85.2,
+    44.4,
+    9
+   ],
+   [
+    483.5,
+    60.0,
+    10
+   ],
+   [
+    -423.1,
+    28.6,
+    14
+   ],
+   [
+    335.2,
+    55.6,
+    9
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -1319.9,
+  "wr": 21.62,
+  "n": 37,
+  "pf": 0.519,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": -409.0,
+  "wr": 31.43,
+  "n": 35,
+  "pf": 0.832,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 250,
+  "tp": 500,
+  "net": 399.4,
+  "wr": 40.0,
+  "n": 30,
+  "pf": 1.219,
+  "wf": [
+   [
+    -7.9,
+    33.3,
+    6
+   ],
+   [
+    131.0,
+    50.0,
+    6
+   ],
+   [
+    284.2,
+    41.7,
+    12
+   ],
+   [
+    -7.9,
+    33.3,
+    6
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 300,
+  "tp": 450,
+  "net": 89.5,
+  "wr": 43.33,
+  "n": 30,
+  "pf": 1.058,
+  "wf": [
+   [
+    -95.9,
+    33.3,
+    6
+   ],
+   [
+    248.3,
+    66.7,
+    6
+   ],
+   [
+    -100.9,
+    36.4,
+    11
+   ],
+   [
+    38.1,
+    42.9,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": -557.7,
+  "wr": 34.29,
+  "n": 35,
+  "pf": 0.761,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -1494.5,
+  "wr": 21.43,
+  "n": 42,
+  "pf": 0.517,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": -317.3,
+  "wr": 32.5,
+  "n": 40,
+  "pf": 0.884,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 492.8,
+  "wr": 40.0,
+  "n": 35,
+  "pf": 1.232,
+  "wf": [
+   [
+    -109.2,
+    28.6,
+    7
+   ],
+   [
+    131.0,
+    50.0,
+    6
+   ],
+   [
+    284.2,
+    41.7,
+    12
+   ],
+   [
+    186.8,
+    40.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 309.6,
+  "wr": 45.71,
+  "n": 35,
+  "pf": 1.179,
+  "wf": [
+   [
+    38.1,
+    42.9,
+    7
+   ],
+   [
+    248.3,
+    66.7,
+    6
+   ],
+   [
+    -100.9,
+    36.4,
+    11
+   ],
+   [
+    124.1,
+    45.5,
+    11
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": -566.0,
+  "wr": 35.0,
+  "n": 40,
+  "pf": 0.786,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -780.4,
+  "wr": 28.57,
+  "n": 42,
+  "pf": 0.743,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": 282.7,
+  "wr": 37.5,
+  "n": 40,
+  "pf": 1.111,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 250,
+  "tp": 500,
+  "net": 1168.8,
+  "wr": 47.06,
+  "n": 34,
+  "pf": 1.632,
+  "wf": [
+   [
+    -7.9,
+    33.3,
+    6
+   ],
+   [
+    727.1,
+    66.7,
+    9
+   ],
+   [
+    284.2,
+    41.7,
+    12
+   ],
+   [
+    190.8,
+    42.9,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 300,
+  "tp": 450,
+  "net": 430.9,
+  "wr": 48.48,
+  "n": 33,
+  "pf": 1.268,
+  "wf": [
+   [
+    -95.9,
+    33.3,
+    6
+   ],
+   [
+    516.3,
+    75.0,
+    8
+   ],
+   [
+    -100.9,
+    36.4,
+    11
+   ],
+   [
+    172.1,
+    50.0,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": 184.0,
+  "wr": 42.5,
+  "n": 40,
+  "pf": 1.079,
+  "wf": [
+   [
+    -164.8,
+    33.3,
+    9
+   ],
+   [
+    585.2,
+    66.7,
+    9
+   ],
+   [
+    76.9,
+    42.9,
+    14
+   ],
+   [
+    -313.2,
+    25.0,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -660.3,
+  "wr": 29.79,
+  "n": 47,
+  "pf": 0.809,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": 593.1,
+  "wr": 40.0,
+  "n": 45,
+  "pf": 1.21,
+  "wf": [
+   [
+    -116.5,
+    30.0,
+    10
+   ],
+   [
+    733.9,
+    66.7,
+    9
+   ],
+   [
+    76.9,
+    35.7,
+    14
+   ],
+   [
+    -19.8,
+    33.3,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 1559.2,
+  "wr": 48.72,
+  "n": 39,
+  "pf": 1.708,
+  "wf": [
+   [
+    190.8,
+    42.9,
+    7
+   ],
+   [
+    727.1,
+    66.7,
+    9
+   ],
+   [
+    284.2,
+    41.7,
+    12
+   ],
+   [
+    385.5,
+    45.5,
+    11
+   ]
+  ],
+  "wf_ok": true,
+  "both_ok": true,
+  "accepted": true
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 558.3,
+  "wr": 50.0,
+  "n": 38,
+  "pf": 1.283,
+  "wf": [
+   [
+    38.1,
+    42.9,
+    7
+   ],
+   [
+    516.3,
+    75.0,
+    8
+   ],
+   [
+    -100.9,
+    36.4,
+    11
+   ],
+   [
+    258.1,
+    50.0,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": 425.8,
+  "wr": 44.44,
+  "n": 45,
+  "pf": 1.168,
+  "wf": [
+   [
+    -16.5,
+    40.0,
+    10
+   ],
+   [
+    585.2,
+    66.7,
+    9
+   ],
+   [
+    76.9,
+    42.9,
+    14
+   ],
+   [
+    -219.8,
+    33.3,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -1178.0,
+  "wr": 25.53,
+  "n": 47,
+  "pf": 0.654,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": -225.5,
+  "wr": 33.33,
+  "n": 45,
+  "pf": 0.926,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 250,
+  "tp": 500,
+  "net": 765.0,
+  "wr": 42.11,
+  "n": 38,
+  "pf": 1.343,
+  "wf": [
+   [
+    -133.0,
+    28.6,
+    7
+   ],
+   [
+    727.1,
+    66.7,
+    9
+   ],
+   [
+    -218.5,
+    28.6,
+    14
+   ],
+   [
+    389.4,
+    50.0,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 300,
+  "tp": 450,
+  "net": 297.9,
+  "wr": 45.95,
+  "n": 37,
+  "pf": 1.164,
+  "wf": [
+   [
+    -186.9,
+    28.6,
+    7
+   ],
+   [
+    516.3,
+    75.0,
+    8
+   ],
+   [
+    -337.5,
+    30.8,
+    13
+   ],
+   [
+    306.1,
+    55.6,
+    9
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": -324.2,
+  "wr": 37.78,
+  "n": 45,
+  "pf": 0.886,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -1144.9,
+  "wr": 26.92,
+  "n": 52,
+  "pf": 0.695,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": 166.2,
+  "wr": 36.0,
+  "n": 50,
+  "pf": 1.051,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 1158.4,
+  "wr": 44.19,
+  "n": 43,
+  "pf": 1.476,
+  "wf": [
+   [
+    65.7,
+    37.5,
+    8
+   ],
+   [
+    727.1,
+    66.7,
+    9
+   ],
+   [
+    -218.5,
+    28.6,
+    14
+   ],
+   [
+    584.2,
+    50.0,
+    12
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 487.7,
+  "wr": 47.62,
+  "n": 42,
+  "pf": 1.24,
+  "wf": [
+   [
+    -52.9,
+    37.5,
+    8
+   ],
+   [
+    516.3,
+    75.0,
+    8
+   ],
+   [
+    -337.5,
+    30.8,
+    13
+   ],
+   [
+    392.1,
+    53.8,
+    13
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 3,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": -82.5,
+  "wr": 40.0,
+  "n": 50,
+  "pf": 0.973,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.3,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -399.6,
+  "wr": 31.25,
+  "n": 32,
+  "pf": 0.824,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -174.1,
+  "wr": 34.21,
+  "n": 38,
+  "pf": 0.934,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": 1361.3,
+  "wr": 47.06,
+  "n": 34,
+  "pf": 1.705,
+  "wf": [
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    585.1,
+    55.6,
+    9
+   ],
+   [
+    478.6,
+    46.2,
+    13
+   ],
+   [
+    386.8,
+    50.0,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 1223.4,
+  "wr": 50.0,
+  "n": 30,
+  "pf": 1.779,
+  "wf": [
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    503.1,
+    62.5,
+    8
+   ],
+   [
+    482.8,
+    46.2,
+    13
+   ],
+   [
+    292.1,
+    50.0,
+    6
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.3,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": 692.3,
+  "wr": 48.57,
+  "n": 35,
+  "pf": 1.378,
+  "wf": [
+   [
+    0.0,
+    0.0,
+    0
+   ],
+   [
+    335.1,
+    55.6,
+    9
+   ],
+   [
+    178.6,
+    46.2,
+    13
+   ],
+   [
+    186.8,
+    50.0,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -470.8,
+  "wr": 30.77,
+  "n": 39,
+  "pf": 0.821,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": 973.9,
+  "wr": 45.45,
+  "n": 33,
+  "pf": 1.526,
+  "wf": [
+   [
+    -309.9,
+    16.7,
+    6
+   ],
+   [
+    830.6,
+    63.6,
+    11
+   ],
+   [
+    280.2,
+    41.7,
+    12
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": 692.3,
+  "wr": 48.57,
+  "n": 35,
+  "pf": 1.378,
+  "wf": [
+   [
+    -211.5,
+    28.6,
+    7
+   ],
+   [
+    631.9,
+    63.6,
+    11
+   ],
+   [
+    178.6,
+    46.2,
+    13
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -258.7,
+  "wr": 33.33,
+  "n": 45,
+  "pf": 0.913,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": 1580.4,
+  "wr": 48.72,
+  "n": 39,
+  "pf": 1.72,
+  "wf": [
+   [
+    -309.9,
+    16.7,
+    6
+   ],
+   [
+    830.6,
+    63.6,
+    11
+   ],
+   [
+    478.6,
+    46.2,
+    13
+   ],
+   [
+    585.2,
+    55.6,
+    9
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 1689.8,
+  "wr": 51.43,
+  "n": 35,
+  "pf": 1.902,
+  "wf": [
+   [
+    -206.6,
+    20.0,
+    5
+   ],
+   [
+    925.8,
+    70.0,
+    10
+   ],
+   [
+    482.8,
+    46.2,
+    13
+   ],
+   [
+    490.8,
+    57.1,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 593.6,
+  "wr": 50.0,
+  "n": 34,
+  "pf": 1.356,
+  "wf": [
+   [
+    -229.9,
+    20.0,
+    5
+   ],
+   [
+    559.3,
+    70.0,
+    10
+   ],
+   [
+    33.1,
+    41.7,
+    12
+   ],
+   [
+    263.1,
+    57.1,
+    7
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 0.6,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": 1041.7,
+  "wr": 51.22,
+  "n": 41,
+  "pf": 1.502,
+  "wf": [
+   [
+    -211.5,
+    28.6,
+    7
+   ],
+   [
+    631.9,
+    63.6,
+    11
+   ],
+   [
+    326.9,
+    50.0,
+    14
+   ],
+   [
+    335.2,
+    55.6,
+    9
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 150,
+  "tp": 300,
+  "net": -416.0,
+  "wr": 31.11,
+  "n": 45,
+  "pf": 0.871,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 400,
+  "net": 497.6,
+  "wr": 41.03,
+  "n": 39,
+  "pf": 1.213,
+  "wf": [
+   [
+    -99.9,
+    37.5,
+    8
+   ],
+   [
+    830.5,
+    63.6,
+    11
+   ],
+   [
+    -324.7,
+    26.7,
+    15
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 250,
+  "tp": 500,
+  "net": 903.4,
+  "wr": 45.71,
+  "n": 35,
+  "pf": 1.469,
+  "wf": [
+   [
+    1.4,
+    42.9,
+    7
+   ],
+   [
+    925.8,
+    70.0,
+    10
+   ],
+   [
+    -319.8,
+    26.7,
+    15
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 300,
+  "tp": 450,
+  "net": 188.5,
+  "wr": 47.06,
+  "n": 34,
+  "pf": 1.113,
+  "wf": [
+   [
+    -89.0,
+    42.9,
+    7
+   ],
+   [
+    559.3,
+    70.0,
+    10
+   ],
+   [
+    -428.5,
+    28.6,
+    14
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 40,
+  "sl": 200,
+  "tp": 300,
+  "net": 332.4,
+  "wr": 43.9,
+  "n": 41,
+  "pf": 1.142,
+  "wf": [
+   [
+    85.2,
+    44.4,
+    9
+   ],
+   [
+    631.9,
+    63.6,
+    11
+   ],
+   [
+    -376.4,
+    31.2,
+    16
+   ],
+   [
+    0.0,
+    0.0,
+    0
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 150,
+  "tp": 300,
+  "net": -206.8,
+  "wr": 33.33,
+  "n": 51,
+  "pf": 0.943,
+  "wf": [],
+  "wf_ok": false,
+  "both_ok": false,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 400,
+  "net": 1006.4,
+  "wr": 44.44,
+  "n": 45,
+  "pf": 1.384,
+  "wf": [
+   [
+    -99.9,
+    37.5,
+    8
+   ],
+   [
+    830.5,
+    63.6,
+    11
+   ],
+   [
+    -126.4,
+    31.2,
+    16
+   ],
+   [
+    483.5,
+    50.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 250,
+  "tp": 500,
+  "net": 1444.8,
+  "wr": 48.78,
+  "n": 41,
+  "pf": 1.663,
+  "wf": [
+   [
+    1.4,
+    42.9,
+    7
+   ],
+   [
+    925.8,
+    70.0,
+    10
+   ],
+   [
+    -121.1,
+    31.2,
+    16
+   ],
+   [
+    689.4,
+    62.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 300,
+  "tp": 450,
+  "net": 481.9,
+  "wr": 50.0,
+  "n": 40,
+  "pf": 1.252,
+  "wf": [
+   [
+    -89.0,
+    42.9,
+    7
+   ],
+   [
+    559.3,
+    70.0,
+    10
+   ],
+   [
+    -294.5,
+    33.3,
+    15
+   ],
+   [
+    397.1,
+    62.5,
+    8
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ },
+ {
+  "tf": "XAUUSD_D1",
+  "side": "long",
+  "ema": "20/50",
+  "k": 5,
+  "pen": 1.0,
+  "max_gap": 80,
+  "sl": 200,
+  "tp": 300,
+  "net": 722.5,
+  "wr": 46.81,
+  "n": 47,
+  "pf": 1.284,
+  "wf": [
+   [
+    85.2,
+    44.4,
+    9
+   ],
+   [
+    631.9,
+    63.6,
+    11
+   ],
+   [
+    -228.0,
+    35.3,
+    17
+   ],
+   [
+    233.5,
+    50.0,
+    10
+   ]
+  ],
+  "wf_ok": false,
+  "both_ok": true,
+  "accepted": false
+ }
+]
