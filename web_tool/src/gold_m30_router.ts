@@ -29,6 +29,7 @@ import type { RouterDecision, RegimeInfo, Confirmation } from './router'
 import { computeLots, assetSpec } from './router'
 import * as ind from './indicators'
 import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
+import { channelDecision, CHANNEL_CFG } from './gold_channel'
 
 // پارامترهای نهاییِ S81 (وسطِ منطقهٔ پایدار — پرهیز از overfit)
 const EMA_FAST = 20
@@ -204,7 +205,12 @@ export function decideGoldM30TrendLine(
   open?: number[], high?: number[], low?: number[],
 ): RouterDecision {
   if (open && high && low && high.length === close.length && low.length === close.length) {
-    return trendLineDecision(TREND_LINE_CFG['XAUUSD-M30'], a, open, high, low, close, capital, riskPct)
+    // لایهٔ اصلی: خطِ روندِ Al Brooks (S215). اگر سیگنالِ فعال داد، همان را نشان بده.
+    const tl = trendLineDecision(TREND_LINE_CFG['XAUUSD-M30'], a, open, high, low, close, capital, riskPct)
+    if (tl.state === 'ENTRY' || tl.state === 'APPROACHING') return tl
+    // لایهٔ مکملِ مستقلِ S219 (کانال، position-in-channel): سهمِ مستقلِ +$4,457 روی M30
+    // (WR ۴۷.۶٪، WF-4/4). فقط وقتی S215 غیرفعال است ⇒ بدونِ تداخل. fallback = تصمیمِ خطِ روند.
+    return channelDecision(CHANNEL_CFG['XAUUSD-M30'], a, open, high, low, close, capital, riskPct, () => tl)
   }
   // داده OHLC کامل نیست ⇒ به تحلیلِ رژیمِ S81 (فقط نمایشِ روند) برمی‌گردیم.
   return decideGoldM30(a, close, capital, riskPct)
