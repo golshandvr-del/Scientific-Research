@@ -474,6 +474,16 @@ const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decim
   { id: 'EURUSD-M1',  name: 'یورو / دلار — ریز-اسکالپ (M1)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '1m' },
 ]
 
+// پیوستِ لایه‌های ثانویهٔ فعال به یک تصمیم (بدونِ تغییرِ منطقِ برندهٔ آن).
+// otherLayers فقط برای «نمایشِ collapsed» در فرانت‌اند است (پاسخِ User Note).
+function attachSecondary(dec: any, ctx: Parameters<typeof probeSecondaryLayers>[0]) {
+  try {
+    const others = probeSecondaryLayers(ctx)
+    if (others.length) dec.otherLayers = others
+  } catch { /* کاوش اختیاری است؛ خطای آن نباید سیگنالِ اصلی را خراب کند */ }
+  return dec
+}
+
 // تصمیمِ یک دارایی: کندلِ زنده → analyze → decide (۴-حالته).
 async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 1.0) {
   if (a.isGold) {
@@ -537,6 +547,15 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
         if (chn.state === 'ENTRY' || chn.state === 'APPROACHING') dec = chn
       }
     }
+    // 🔎 پاسخِ User Note: «همهٔ لایه‌های نزدیک به فعال‌سازی را (collapsed) نشان بده».
+    // لایه‌های ثانویهٔ فعال (ENTRY/APPROACHING) را کاوش و به تصمیمِ اصلی پیوست می‌کنیم؛
+    // فرانت‌اند آن‌ها را جمع‌شونده زیرِ سیگنالِ اصلی نمایش می‌دهد. (منطقِ برندهٔ dec دست‌نخورده)
+    dec = attachSecondary(dec, {
+      assetId: a.id, result, open: useCandles.map(k => k.open), high: useCandles.map(k => k.high),
+      low: useCandles.map(k => k.low), close: closes, capital, riskPct,
+      utcHour: goldUtcHour, utcDay: goldUtcDay, times: goldTimes,
+      primaryCode: dec.sourceLayer?.code,
+    })
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
