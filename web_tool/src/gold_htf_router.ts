@@ -26,6 +26,7 @@ import type { RouterDecision, RegimeInfo } from './router'
 import { computeLots, assetSpec } from './router'
 import * as ind from './indicators'
 import { computeTrendLine, TREND_LINE_CFG, type TrendLineConfig } from './gold_trend_line'
+import { channelDecision, CHANNEL_CFG } from './gold_channel'
 
 // ---------------------------------------------------------------------------
 // پیکربندیِ اختصاصیِ هر تایم‌فریم (هر کارت پارامترهای مستقلِ خودش را دارد).
@@ -248,7 +249,13 @@ export function decideGoldH4(
   open?: number[], high?: number[], low?: number[],
 ): RouterDecision {
   if (open && high && low && high.length === close.length && low.length === close.length) {
-    return trendLineEntry(TREND_LINE_CFG['XAUUSD-H4'], H4_CFG, a, open, high, low, close, capital, riskPct)
+    // لایهٔ اصلی: خطِ روندِ Al Brooks (S215). اگر سیگنالِ فعال داد، همان را نشان بده.
+    const tl = trendLineEntry(TREND_LINE_CFG['XAUUSD-H4'], H4_CFG, a, open, high, low, close, capital, riskPct)
+    if (tl.state === 'ENTRY' || tl.state === 'APPROACHING') return tl
+    // لایهٔ مکملِ مستقلِ S219 (کانال، position-in-channel): سهمِ مستقلِ +$2,911 روی H4
+    // (WR ۵۸.۳٪، WF-4/4). فقط وقتی S215 غیرفعال است ⇒ بدونِ تداخل. fallback = تصمیمِ خطِ روند.
+    // (H1 عمداً کانال ندارد: پنجرهٔ walk-forwardِ سهمِ مستقلش منفی شد ⇒ رد.)
+    return channelDecision(CHANNEL_CFG['XAUUSD-H4'], a, open, high, low, close, capital, riskPct, () => tl)
   }
   return analyzeHtf(H4_CFG, a, close)
 }
