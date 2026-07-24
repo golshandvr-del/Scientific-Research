@@ -1057,8 +1057,12 @@ async function refreshAll() {
     }
     return
   }
-  // فاز ۲: هر کارت را مستقل و موازی پر کن (کارت‌های سریع فوراً می‌آیند).
-  await Promise.allSettled(assetsMeta.map(a => refreshOneAsset(a.id)))
+  // فاز ۲: هر کارتِ *نمایان* را مستقل و موازی پر کن (کارت‌های سریع فوراً می‌آیند).
+  // 🚀 ایدهٔ کاربر: کارت‌هایی که کاربر مخفی/غیرفعال کرده اصلاً fetch نمی‌شوند ⇒ هر
+  // دارایی که غیرفعال شود، یک دسته درخواست به Yahoo کمتر ⇒ سایت سریع‌تر بالا می‌آید.
+  // (سمت سرور هم چون هیچ درخواستی برایشان نمی‌رسد، هیچ محاسبه/داده‌ای مصرف نمی‌کند.)
+  const active = assetsMeta.filter(a => !isHidden(a.id))
+  await Promise.allSettled(active.map(a => refreshOneAsset(a.id)))
   lastFetchAt = Date.now()
   const lu = document.getElementById('last-update')
   if (lu) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
