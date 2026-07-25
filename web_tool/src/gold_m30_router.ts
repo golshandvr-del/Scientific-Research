@@ -206,11 +206,15 @@ export function decideGoldM30TrendLine(
   open?: number[], high?: number[], low?: number[],
 ): RouterDecision {
   if (open && high && low && high.length === close.length && low.length === close.length) {
-    // لایهٔ اصلی: خطِ روندِ Al Brooks (S215). اگر سیگنالِ فعال داد، همان را نشان بده.
+    // لایهٔ اصلیِ اثبات‌شده روی M30: S313 (Squeeze→Breakout احیاشده + فیلترِ ADX≥30،
+    // RQS+=92.5 — بالاترین RQS+ روی این کارت). اگر ماشه فعال/نزدیک بود همان را نشان بده.
+    const s313 = decideS313(S313_M30, a, open, high, low, close, capital, riskPct)
+    if (s313.state === 'ENTRY' || s313.state === 'APPROACHING') return s313
+    // لایهٔ مکملِ خطِ روندِ Al Brooks (S215). اگر سیگنالِ فعال داد، همان را نشان بده.
     const tl = trendLineDecision(TREND_LINE_CFG['XAUUSD-M30'], a, open, high, low, close, capital, riskPct)
     if (tl.state === 'ENTRY' || tl.state === 'APPROACHING') return tl
     // لایهٔ مکملِ مستقلِ S219 (کانال، position-in-channel): سهمِ مستقلِ +$4,457 روی M30
-    // (WR ۴۷.۶٪، WF-4/4). فقط وقتی S215 غیرفعال است ⇒ بدونِ تداخل. fallback = تصمیمِ خطِ روند.
+    // (WR ۴۷.۶٪، WF-4/4). فقط وقتی S313 و S215 غیرفعال‌اند ⇒ بدونِ تداخل. fallback = تصمیمِ خطِ روند.
     return channelDecision(CHANNEL_CFG['XAUUSD-M30'], a, open, high, low, close, capital, riskPct, () => tl)
   }
   // داده OHLC کامل نیست ⇒ به تحلیلِ رژیمِ S81 (فقط نمایشِ روند) برمی‌گردیم.
