@@ -30,6 +30,7 @@ import { computeLots, assetSpec } from './router'
 import * as ind from './indicators'
 import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
 import { channelDecision, CHANNEL_CFG } from './gold_channel'
+import { decideS313, S313_M30 } from './squeeze_revival_s313'
 
 // پارامترهای نهاییِ S81 (وسطِ منطقهٔ پایدار — پرهیز از overfit)
 const EMA_FAST = 20
