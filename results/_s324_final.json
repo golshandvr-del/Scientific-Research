@@ -1,0 +1,102 @@
+{
+  "XAUUSD_M15": {
+    "rqs": 93.2,
+    "cfg": {
+      "swing_len": 16,
+      "depth_min": 0.7,
+      "disp_min": 0.9,
+      "regime": false,
+      "rsi_on": true,
+      "rsi_lo": 40,
+      "rsi_hi": 60,
+      "kill": false,
+      "sl_mult": 2.4,
+      "tp_mult": 0.8,
+      "side": "long",
+      "max_hold": 48
+    },
+    "metrics": {
+      "n_trades": 62,
+      "win_rate": 87.1,
+      "net_profit": 794.7,
+      "profit_factor": 1.915,
+      "max_dd_pct": 1.67,
+      "max_consec_losses": 1,
+      "expectancy_pip": 20.3172,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 75.0,
+      "wr_excess": 12.1,
+      "p_value": 0.01542,
+      "sl_pip": 77.66068007156248,
+      "tp_pip": 25.886893357187496,
+      "wf_nets": [
+        296.5,
+        176.3,
+        162.3,
+        144.2
+      ],
+      "half_nets": [
+        473.4,
+        290.5
+      ]
+    },
+    "gates": {
+      "G0": true,
+      "G1": true,
+      "G2": "True",
+      "G3": true,
+      "G4": true,
+      "G5": true
+    }
+  },
+  "XAUUSD_M30": {
+    "rqs": 86.7,
+    "cfg": {
+      "swing_len": 8,
+      "depth_min": 0.25,
+      "disp_min": 0.5,
+      "regime": true,
+      "rsi_on": true,
+      "rsi_lo": 40,
+      "rsi_hi": 60,
+      "kill": false,
+      "sl_mult": 3.1,
+      "tp_mult": 1.0,
+      "side": "short",
+      "max_hold": 48
+    },
+    "metrics": {
+      "n_trades": 77,
+      "win_rate": 85.71,
+      "net_profit": 687.8,
+      "profit_factor": 1.572,
+      "max_dd_pct": 1.84,
+      "max_consec_losses": 1,
+      "expectancy_pip": 10.586,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 75.61,
+      "wr_excess": 10.1,
+      "p_value": 0.02213,
+      "sl_pip": 84.40577723862387,
+      "tp_pip": 27.22767007697544,
+      "wf_nets": [
+        134.8,
+        100.5,
+        123.2,
+        319.5
+      ],
+      "half_nets": [
+        228.8,
+        446.2
+      ]
+    },
+    "gates": {
+      "G0": true,
+      "G1": true,
+      "G2": "True",
+      "G3": true,
+      "G4": true,
+      "G5": true
+    }
+  }
+}
