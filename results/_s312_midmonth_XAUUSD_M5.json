@@ -1,0 +1,87 @@
+{
+  "no-filter": {
+    "kw": {
+      "sl_pip": 195,
+      "tp_pip": 195,
+      "max_hold": 60
+    },
+    "rqs": 21.0,
+    "verdict": "REJECT",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": 0.0,
+      "G3": 0.0,
+      "G4": false,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 325,
+      "win_rate": 57.23,
+      "net_profit": 2014.0,
+      "profit_factor": 1.166,
+      "max_dd_pct": 15.89,
+      "max_consec_losses": 6,
+      "expectancy_pip": 11.0274,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 50.0,
+      "wr_excess": 7.23,
+      "p_value": 0.00536,
+      "sl_pip": 195,
+      "tp_pip": 195,
+      "wf_nets": [
+        295.1,
+        1376.9,
+        1818.3,
+        -1405.3
+      ],
+      "half_nets": [
+        1772.8,
+        162.7
+      ]
+    }
+  },
+  "quality(EMA200)": {
+    "kw": {
+      "sl_pip": 195,
+      "tp_pip": 195,
+      "max_hold": 60,
+      "quality_filter": true
+    },
+    "rqs": 15.3,
+    "verdict": "REJECT",
+    "gates": {
+      "G0": false,
+      "G1": true,
+      "G2": 0.0,
+      "G3": 0.0,
+      "G4": false,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 206,
+      "win_rate": 57.28,
+      "net_profit": 591.8,
+      "profit_factor": 1.091,
+      "max_dd_pct": 16.38,
+      "max_consec_losses": 7,
+      "expectancy_pip": 6.7816,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 50.0,
+      "wr_excess": 7.28,
+      "p_value": 0.02153,
+      "sl_pip": 195,
+      "tp_pip": 195,
+      "wf_nets": [
+        297.4,
+        465.8,
+        1844.0,
+        -1652.0
+      ],
+      "half_nets": [
+        735.3,
+        -118.8
+      ]
+    }
+  }
+}
