@@ -264,8 +264,15 @@ def phase_search(tf='M15', asset='XAUUSD', rel=(-7,), quiet_top=12):
 if __name__ == '__main__':
     import warnings
     warnings.filterwarnings('ignore')
-    phase_baseline()
-    phase_autopsy('M15')
-    phase_autopsy('M5')
-    phase_search('M15')
-    phase_search('M5')
+    what = sys.argv[1] if len(sys.argv) > 1 else 'all'
+    if what == 'base':
+        phase_baseline()
+    elif what == 'autopsy':
+        phase_autopsy('M15'); phase_autopsy('M5')
+    elif what.startswith('search:'):
+        # search:M15  یا  search:M5
+        phase_search(what.split(':', 1)[1])
+    else:
+        phase_baseline()
+        phase_autopsy('M15'); phase_autopsy('M5')
+        phase_search('M15'); phase_search('M5')
