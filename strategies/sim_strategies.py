@@ -361,14 +361,21 @@ class S313_SqueezeBreakout_Long:
         mid = c.rolling(self.bb_period).mean()
         std = c.rolling(self.bb_period).std(ddof=0)
         bw = (2.0 * self.bb_k * std / mid).to_numpy()
-        # --- صدکِ غلتانِ BandWidth (فشردگی = صدکِ پایین) ---
-        bw_pct = np.full(n, np.nan)
+        # --- صدکِ غلتانِ BandWidth (فشردگی = صدکِ پایین) — برداری با sliding-window ---
+        #   pct[i] = نسبتِ کندل‌های پنجرهٔ [i-lb .. i] که BandWidth ≤ BandWidth[i].
+        #   از numpy.lib.stride_tricks برای پنجرهٔ غلتان (بدونِ loop پایتونی).
         lb = self.sqz_lookback
-        for i in range(lb, n):
-            w = bw[i - lb:i + 1]
-            w2 = w[~np.isnan(w)]
-            if len(w2) >= 5 and not np.isnan(bw[i]):
-                bw_pct[i] = (w2 <= bw[i]).mean()
+        bw_pct = np.full(n, np.nan)
+        win = lb + 1
+        if n >= win:
+            sw = np.lib.stride_tricks.sliding_window_view(bw, win)  # (n-lb, win)
+            last = sw[:, -1][:, None]
+            valid = ~np.isnan(sw)
+            le = (sw <= last) & valid                # ≤ آخرین، با نادیده‌گرفتنِ NaN
+            cnt_valid = valid.sum(axis=1)
+            frac = np.where(cnt_valid >= 5,
+                            le.sum(axis=1) / np.maximum(cnt_valid, 1), np.nan)
+            bw_pct[win - 1:] = frac
         # --- روند و ATR ---
         ef = ind.ema(c, self.ema_fast).to_numpy()
         es = ind.ema(c, self.ema_slow).to_numpy()
