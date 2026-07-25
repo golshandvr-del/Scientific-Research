@@ -313,6 +313,99 @@ class S312_MidMonth_Long:
         return None
 
 
+# ============================================================
+# S313 — Bollinger-Squeeze → Breakout (LONG, XAUUSD)  ← احیای S132/S136/S138
+#   منشأ سوخته: S132 (Bollinger Squeeze → Expansion Breakout). در ممیزیِ S300
+#   با WR≈40٪ رد شد (G0 fail) چون از پارادایمِ قدیم (max_hold=96 کندل + خروجِ
+#   هدف-پنهانِ نامتقارن) استفاده می‌کرد ⇒ انفجارِ اولیه‌ی سریع را رها می‌کرد و
+#   معامله ساعت‌ها باز می‌ماند تا drift کوچک آن را به هزینهٔ اسپرد برساند.
+#
+#   منطقِ ریاضیِ لایه (Volatility-Clustering / «فنرِ فشرده»):
+#     BandWidth = (BB_upper − BB_lower)/BB_mid = 2·k·σ/mean. وقتی BandWidth در
+#     پایین‌ترین صدکِ تاریخیِ غلتان است، بازار کم‌نوسان (انرژیِ ذخیره‌شده) است؛
+#     شکستِ سقفِ اخیر در آپ‌ترند ⇒ آزادسازیِ آن انرژی رو به بالا (Mandelbrot/ARCH:
+#     دوره‌های کم‌نوسان به پرنوسان ختم می‌شوند).
+#
+#   بهبودهای احیا (قانونِ دومِ پروژه — چند بهبودِ همزمان مجاز؛ «همه چیز شناور»):
+#     ۱) SL/TP بر حسبِ ATR در لحظهٔ سیگنال (نه عددِ رندِ ثابت) — ذاتِ فشردگی این
+#        است که ATR بین رژیم‌ها متفاوت است؛ ثابت‌کردنِ TP اشتباهِ رایجِ #7/#6 است.
+#     ۲) max_hold کوتاه (انفجار سریع است؛ اگر در پنجرهٔ کوتاه TP نخورد، فنر خالی
+#        شده) — رفعِ علتِ اصلیِ WR-پایینِ S132.
+#     ۳) گیتِ روندِ EMA(fast)>EMA(slow) + گیتِ قدرتِ شکست (اختیاری).
+# ============================================================
+class S313_SqueezeBreakout_Long:
+    def __init__(self, bb_period=20, bb_k=2.0, sqz_lookback=100, sqz_pct=0.15,
+                 breakout_lb=10, ema_fast=50, ema_slow=200,
+                 atr_period=14, sl_atr=1.7, tp_atr=1.7, max_hold=20,
+                 adx_min=0.0, trend_gate=True):
+        self.bb_period = bb_period; self.bb_k = bb_k
+        self.sqz_lookback = sqz_lookback; self.sqz_pct = sqz_pct
+        self.breakout_lb = breakout_lb
+        self.ema_fast = ema_fast; self.ema_slow = ema_slow
+        self.atr_period = atr_period
+        self.sl_atr = sl_atr; self.tp_atr = tp_atr
+        self.max_hold = max_hold
+        self.adx_min = adx_min; self.trend_gate = trend_gate
+        self._sig = None; self._atr = None
+
+    def _precompute(self, df):
+        import sys, os
+        ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        if ROOT not in sys.path:
+            sys.path.insert(0, ROOT)
+        from engine import indicators as ind
+        c = df['close']
+        cl = c.to_numpy(); h = df['high'].to_numpy()
+        n = len(cl)
+        # --- BandWidth (بولینگر) ---
+        mid = c.rolling(self.bb_period).mean()
+        std = c.rolling(self.bb_period).std(ddof=0)
+        bw = (2.0 * self.bb_k * std / mid).to_numpy()
+        # --- صدکِ غلتانِ BandWidth (فشردگی = صدکِ پایین) ---
+        bw_pct = np.full(n, np.nan)
+        lb = self.sqz_lookback
+        for i in range(lb, n):
+            w = bw[i - lb:i + 1]
+            w2 = w[~np.isnan(w)]
+            if len(w2) >= 5 and not np.isnan(bw[i]):
+                bw_pct[i] = (w2 <= bw[i]).mean()
+        # --- روند و ATR ---
+        ef = ind.ema(c, self.ema_fast).to_numpy()
+        es = ind.ema(c, self.ema_slow).to_numpy()
+        self._atr = ind.atr(df, self.atr_period).to_numpy()
+        adx = ind.adx(df, 14)
+        adx = adx[0] if isinstance(adx, tuple) else adx
+        adx = pd.Series(np.asarray(adx)).fillna(0).to_numpy()
+        # --- بالاترین high در breakout_lb کندلِ گذشته (i-breakout_lb .. i-1) ---
+        prior_high = pd.Series(h).rolling(self.breakout_lb).max().shift(1).to_numpy()
+        # --- سیگنالِ خام روی کندلِ i (تصمیم روی close[i]، اجرا open[i+1]) ---
+        sqz_prev = np.concatenate([[np.nan], bw_pct[:-1]])   # فشردگی درست پیش از i
+        squeeze = sqz_prev <= self.sqz_pct
+        breakout = cl > prior_high
+        trend = (ef > es) if self.trend_gate else np.ones(n, dtype=bool)
+        strong = adx >= self.adx_min
+        raw = squeeze & breakout & trend & strong
+        self._sig = np.where(np.isnan(raw), False, raw).astype(bool)
+
+    def advise(self, ctx):
+        if self._sig is None:
+            self._precompute(ctx.df)
+        i = ctx.i
+        if ctx.in_position():
+            if (i + 1) - ctx.position['entry_bar'] >= self.max_hold:
+                return {'action': 'CLOSE'}
+            return None
+        if self._sig[i]:
+            price = ctx.price()
+            a = self._atr[i]
+            if not np.isfinite(a) or a <= 0:
+                return None
+            return {'action': 'LONG',
+                    'sl': price - self.sl_atr * a,
+                    'tp': price + self.tp_atr * a}
+        return None
+
+
 STRATEGY_REGISTRY = {
     'S164': dict(cls=S164_PreEOM_Short, asset='EURUSD', tf='EURUSD_M15',
                  label='S164 EURUSD Pre-EOM Short'),
@@ -328,4 +421,6 @@ STRATEGY_REGISTRY = {
                  label='S306 XAUUSD Turn-of-Month Drift Long + symmetric RR (revived S141)'),
     'S312': dict(cls=S312_MidMonth_Long, asset='XAUUSD', tf='XAUUSD_M15',
                  label='S312 XAUUSD Mid-Month Drift Long + symmetric RR (revived S142)'),
+    'S313': dict(cls=S313_SqueezeBreakout_Long, asset='XAUUSD', tf='XAUUSD_M5',
+                 label='S313 XAUUSD Bollinger-Squeeze Breakout Long + ATR-scaled RR (revived S132/S136/S138)'),
 }
