@@ -95,7 +95,10 @@ def run_config(df, feats, cfg, asset):
         df, long_sig, short_sig, sl_pip, tp_pip, asset,
         max_hold=cfg['max_hold'], allow_overlap=False,
     )
-    return trades
+    # median TP بر مبنای barهای سیگنال (برای محاسبهٔ breakeven در RQS)
+    sig_mask = long_sig | short_sig
+    med_tp = float(np.median(tp_pip[sig_mask])) if sig_mask.any() else float(np.median(tp_pip))
+    return trades, med_tp
 
 
 def main():
@@ -133,13 +136,13 @@ def main():
     for combo in itertools.product(*[grid[k] for k in keys]):
         cfg = dict(zip(keys, combo))
         # قیدِ منطقی: نسبتِ RR معنادار
-        trades = run_config(df, feats, cfg, asset)
+        trades, med_tp = run_config(df, feats, cfg, asset)
         tested += 1
         if trades is None or len(trades) < rqs.N_FLOOR:
             continue
         r = rqs.compute_rqs(trades, asset,
                             sl_pip=float(np.median(trades['sl_pip'])),
-                            tp_pip=float(np.median(trades['tp_pip'])))
+                            tp_pip=med_tp)
         m = r['metrics']
         # فقط کاندیداهای امیدوارکننده را نگه دار (برای سرعت)
         if m['win_rate'] >= 55 and m['profit_factor'] >= 1.15:
