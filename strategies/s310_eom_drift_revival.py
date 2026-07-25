@@ -262,6 +262,51 @@ def phase_search(tf='M15', asset='XAUUSD', rel=(-7,), quiet_top=12):
     return results
 
 
+def phase_rel_stability(tf='M15', asset='XAUUSD'):
+    """گامِ ۴: فیلترِ کیفیتِ برنده ثابت، جاروبِ ترکیب‌های rel برای پاس‌کردنِ G4.
+
+    کشفِ فاز ۳: با atr_min+close_pos+ema=above هر ۵ گیت پاس شد جز G4 (پنجرهٔ دومِ WF منفی).
+    فرضیه: rel=-7 تنها، نمونه را نازک و یک پنجره را شکننده می‌کند. افزودنِ rel های مجاور
+    (نمونهٔ بیشتر، هموارتر) ممکن است پایداری را بازگرداند بدونِ قربانی‌کردنِ کیفیت.
+    """
+    print("\n" + "=" * 78)
+    print(f"PHASE 4 — REL sweep with winning quality filter ({asset} {tf}) to pass G4")
+    print("=" * 78)
+    tfn = f'{asset}_{tf}'
+    hours = HOURS_BY_TF[tf]; mh = MH_BY_TF[tf]
+    rel_options = [(-7,), (-6, -7), (-7, -8), (-6, -7, -8),
+                   (-5, -6, -7), (-5, -6, -7, -8)]
+    # چند نسخهٔ فیلترِ کیفیت (بر پایهٔ فاز ۳)
+    filt_options = [
+        dict(atr_min_mult=0.9, min_close_pos=0.5, ema_trend='above'),
+        dict(atr_min_mult=0.8, min_close_pos=0.5, ema_trend='above'),
+        dict(atr_min_mult=0.9, min_close_pos=0.45, ema_trend='above'),
+        dict(atr_min_mult=1.0, min_close_pos=0.5, ema_trend='above'),
+    ]
+    tpsl_options = [(180, 220), (200, 200), (170, 250), (190, 240)]
+    best = []
+    for rel in rel_options:
+        for filt in filt_options:
+            for sl, tp in tpsl_options:
+                strat = EOMDriftLong(rel=rel, hours=hours, sl_pip=sl, tp_pip=tp,
+                                     max_hold=mh, **filt)
+                r, tr = run(tfn, asset, strat)
+                m = r['metrics']
+                if m['n_trades'] < 30:
+                    continue
+                best.append((r['rqs_score'], r['passed'], m, rel, filt, (sl, tp),
+                             r['gates']))
+    best.sort(key=lambda x: (x[1], x[0]), reverse=True)
+    for score, passed, m, rel, filt, tpsl, gates in best[:15]:
+        tag = 'ACCEPT' if passed else 'reject'
+        gl = ''.join('1' if v else '0' for v in gates.values())
+        print(f"  RQS={score:5.1f} {tag} [{gl}] | n={m['n_trades']:3d} WR={m['win_rate']:.1f}% "
+              f"PF={m['profit_factor']:.2f} DD={m['max_dd_pct']:.1f}% MCL={m['max_consec_losses']} | "
+              f"rel={rel} amin={filt.get('atr_min_mult')} cpos={filt.get('min_close_pos')} "
+              f"SL{tpsl[0]}/TP{tpsl[1]} wf={m['wf_nets']}")
+    return best
+
+
 if __name__ == '__main__':
     import warnings
     warnings.filterwarnings('ignore')
@@ -273,6 +318,9 @@ if __name__ == '__main__':
     elif what.startswith('search:'):
         # search:M15  یا  search:M5
         phase_search(what.split(':', 1)[1])
+    elif what.startswith('rel:'):
+        # rel:M15  — همان فیلترِ برنده اما جاروبِ ترکیب‌های rel برای پایداریِ G4
+        phase_rel_stability(what.split(':', 1)[1])
     else:
         phase_baseline()
         phase_autopsy('M15'); phase_autopsy('M5')
