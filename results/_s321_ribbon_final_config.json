@@ -1,0 +1,54 @@
+{
+  "strategy": "S321",
+  "name": "MA_Ribbon_Revival",
+  "base_layer": "S52 (MA-Ribbon / GMMA-Alligator)",
+  "asset": "XAUUSD",
+  "timeframe": "M30",
+  "side": "both",
+  "verdict": "ACCEPTED",
+  "rqs_plus": 88.2,
+  "params": {
+    "ribbon_periods": [8, 13, 21, 34, 55, 89, 144],
+    "ord_thr": 0.40,
+    "wz_gate": 0.15,
+    "pull_min": 0.05,
+    "pull_max": 0.82,
+    "rsi_min": 45,
+    "rsi_max": 85,
+    "slope_min": 0.055,
+    "slope_ema_period": 34,
+    "slope_lookback": 5,
+    "sl_mult_atr": 2.7,
+    "tp_mult_atr": 2.7,
+    "atr_period": 14,
+    "be_mult": 0.0,
+    "max_hold": 36
+  },
+  "metrics": {
+    "n_trades": 78,
+    "win_rate": 65.4,
+    "profit_factor": 1.75,
+    "max_dd_pct": 2.5,
+    "max_consec_losses": 3,
+    "p_value": 0.004,
+    "net_pip": 1878,
+    "walk_forward_nets": [588.7, 880.7, 87.8, 183.5],
+    "walk_forward_all_positive": true
+  },
+  "gates": {"G0": true, "G1": true, "G2": true, "G3": true, "G4": true, "G5": true},
+  "overlap": {
+    "vs_S313_squeeze": 11.5,
+    "independent_pct": 88.5,
+    "note": "pullback-to-ribbon (S321) vs squeeze-breakout (S313) are orthogonal price-cycle phases"
+  },
+  "account_spec": {
+    "contract_size": 100,
+    "spread_usd_per_oz": 0.33,
+    "commission": 0,
+    "margin_per_lot": 40
+  },
+  "stability": {
+    "passing_configs_in_neighborhood": 157,
+    "note": "wide stable plateau, not a single overfit point"
+  }
+}
