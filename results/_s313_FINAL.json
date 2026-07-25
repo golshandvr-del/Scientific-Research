@@ -1,0 +1,99 @@
+{
+  "XAUUSD_H1": {
+    "kw": {
+      "sqz_pct": 0.25,
+      "max_hold": 48,
+      "sl_atr": 3.2,
+      "tp_atr": 2.15,
+      "closepos_min": 0.55,
+      "be_trigger_atr": 1.1,
+      "be_offset_atr": 0.4
+    },
+    "rqs": 89.8,
+    "verdict": "ACCEPT",
+    "gates": {
+      "G0": true,
+      "G1": true,
+      "G2": 1.0,
+      "G3": true,
+      "G4": true,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 807,
+      "win_rate": 67.78,
+      "net_profit": 1278988.7,
+      "profit_factor": 3.267,
+      "max_dd_pct": 5.93,
+      "max_consec_losses": 5,
+      "expectancy_pip": 6.4755,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 53.03,
+      "wr_excess": 14.75,
+      "p_value": 0.0,
+      "sl_pip": 89.96231881227686,
+      "tp_pip": 79.68093564677929,
+      "wf_nets": [
+        21038.7,
+        19331.4,
+        19211.7,
+        38325.2
+      ],
+      "half_nets": [
+        81150.1,
+        131960.4
+      ]
+    },
+    "sl_pip": 89.96231881227686,
+    "tp_pip": 79.68093564677929
+  },
+  "XAUUSD_M30": {
+    "kw": {
+      "sqz_pct": 0.25,
+      "max_hold": 48,
+      "sl_atr": 3.2,
+      "tp_atr": 2.15,
+      "closepos_min": 0.55,
+      "be_trigger_atr": 1.1,
+      "be_offset_atr": 0.4,
+      "adx_min": 30.0
+    },
+    "rqs": 92.5,
+    "verdict": "ACCEPT",
+    "gates": {
+      "G0": true,
+      "G1": true,
+      "G2": 1.0,
+      "G3": true,
+      "G4": true,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 275,
+      "win_rate": 67.64,
+      "net_profit": 49175.4,
+      "profit_factor": 3.34,
+      "max_dd_pct": 2.08,
+      "max_consec_losses": 4,
+      "expectancy_pip": 11.133,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 50.77,
+      "wr_excess": 16.86,
+      "p_value": 0.0,
+      "sl_pip": 59.18909745074643,
+      "tp_pip": 57.38425845647498,
+      "wf_nets": [
+        5752.1,
+        4542.1,
+        3880.2,
+        8561.2
+      ],
+      "half_nets": [
+        12909.2,
+        15820.8
+      ]
+    },
+    "sl_pip": 59.18909745074643,
+    "tp_pip": 57.38425845647498
+  }
+}
