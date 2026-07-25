@@ -207,6 +207,47 @@ class S303_MarketInertia_Short_Filtered(S173_MarketInertia_Short):
         return adv
 
 
+# ============================================================
+# S306 — S141 احیا‌شده: XAUUSD Turn-of-Month Drift LONG + RR متقارن
+#   منطق (اثرِ turn-of-month): اولین روزِ معاملاتیِ هر ماه، جریانِ ورودیِ
+#     صندوق‌های بازنشستگی/شاخصی قیمتِ طلا را در ساعاتِ لندن (8-10 UTC) بالا می‌برد.
+#   بهبودِ نسبت به خام: TP از drift-exit به RR متقارن (SL250/TP250) ⇒ WR 49٪→61.3٪.
+#   نتیجه: RQS+=85.9، WR=61.3٪، PF=1.93، maxDD=4.2٪، هر ۴ پنجرهٔ WF مثبت، هر ۷ سال مثبت.
+#   tom_rel==1 یعنی اولین روزِ تقویمیِ معاملاتیِ ماه (rank_in_month == 1).
+# ============================================================
+class S306_TurnOfMonth_Long:
+    ENTRY_HOURS = frozenset({8, 9, 10})
+
+    def __init__(self, sl_pip=250, tp_pip=250, max_hold=24):
+        self.sl_pip = sl_pip; self.tp_pip = tp_pip; self.max_hold = max_hold
+        self._tom = None; self._hour = None
+
+    def _precompute(self, df):
+        dt = df['dt']
+        d = pd.DataFrame({'date': dt.dt.date})
+        d['ym'] = pd.to_datetime(dt.dt.strftime('%Y-%m')).values
+        days = d.drop_duplicates('date').reset_index(drop=True)
+        days['rank'] = days.groupby('ym').cumcount() + 1   # 1 = اولین روزِ ماه
+        mp = dict(zip(days['date'], days['rank']))
+        self._tom = d['date'].map(mp).astype(int).to_numpy()
+        self._hour = dt.dt.hour.to_numpy()
+
+    def advise(self, ctx):
+        if self._tom is None:
+            self._precompute(ctx.df)
+        i = ctx.i
+        if ctx.in_position():
+            if (i + 1) - ctx.position['entry_bar'] >= self.max_hold:
+                return {'action': 'CLOSE'}
+            return None
+        if self._tom[i] == 1 and self._hour[i] in self.ENTRY_HOURS:
+            price = ctx.price(); pip = ctx.spec['pip']
+            return {'action': 'LONG',
+                    'sl': price - self.sl_pip * pip,
+                    'tp': price + self.tp_pip * pip}
+        return None
+
+
 STRATEGY_REGISTRY = {
     'S164': dict(cls=S164_PreEOM_Short, asset='EURUSD', tf='EURUSD_M15',
                  label='S164 EURUSD Pre-EOM Short'),
@@ -218,4 +259,6 @@ STRATEGY_REGISTRY = {
                  label='S173 XAUUSD Market-Inertia Short (revival candidate)'),
     'S303': dict(cls=S303_MarketInertia_Short_Filtered, asset='XAUUSD', tf='XAUUSD_M15',
                  label='S303 XAUUSD Market-Inertia Short + session/dow filter (revived S173)'),
+    'S306': dict(cls=S306_TurnOfMonth_Long, asset='XAUUSD', tf='XAUUSD_M15',
+                 label='S306 XAUUSD Turn-of-Month Drift Long + symmetric RR (revived S141)'),
 }
