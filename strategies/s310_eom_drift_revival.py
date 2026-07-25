@@ -208,9 +208,64 @@ def phase_autopsy(tf='M15'):
                   f"avg_pnl={sub.pnl_pip.mean():+.1f}")
 
 
+def phase_search(tf='M15', asset='XAUUSD', rel=(-7,), quiet_top=12):
+    """گامِ ۳: جستجوی فیلترهای کیفیت برای شکستنِ تنشِ G0↔G2 روی یک TF.
+
+    محورها (طبقِ کالبدشکافی): atr_min (ضدِ رنجِ مرده)، body/close_pos، atr_max (ضدِ climax)،
+    ema_trend، و TP/SL مخصوصِ TF. هدف: RQS+≥80 (هر ۶ گیت).
+    """
+    print("\n" + "=" * 78)
+    print(f"PHASE 3 — FILTER SEARCH to break G0<->G2 tension  ({asset} {tf}, rel={rel})")
+    print("=" * 78)
+    tfn = f'{asset}_{tf}'
+    df = TS.load_data(tfn)
+    hours = HOURS_BY_TF[tf]
+    mh = MH_BY_TF[tf]
+
+    atr_min_grid  = [None, 0.8, 0.9, 1.0]
+    atr_max_grid  = [None, 1.4, 1.6]
+    body_grid     = [None, 0.35, 0.45]
+    cpos_grid     = [None, 0.45, 0.55]
+    ema_grid      = [None, 'above']
+    # TP/SL مخصوصِ TF (نه اعدادِ رند — طیفِ ریز)
+    tpsl_grid = {
+        'M5':  [(150, 190), (170, 210), (200, 200), (180, 260)],
+        'M15': [(160, 210), (180, 220), (200, 200), (170, 250), (190, 240)],
+        'M30': [(200, 240), (220, 260), (240, 240)],
+        'H1':  [(240, 300), (260, 320), (300, 300)],
+    }[tf]
+
+    results = []
+    combos = itertools.product(atr_min_grid, atr_max_grid, body_grid,
+                               cpos_grid, ema_grid, tpsl_grid)
+    for amin, amax, body, cpos, ema, (sl, tp) in combos:
+        if amin is not None and amax is not None and amin >= amax:
+            continue
+        strat = EOMDriftLong(rel=rel, hours=hours, sl_pip=sl, tp_pip=tp, max_hold=mh,
+                             atr_min_mult=amin, atr_max_mult=amax,
+                             min_body_ratio=body, min_close_pos=cpos, ema_trend=ema)
+        r, tr = run(tfn, asset, strat)
+        m = r['metrics']
+        if m['n_trades'] < 30:
+            continue
+        results.append((r['rqs_score'], r['passed'], m, dict(
+            amin=amin, amax=amax, body=body, cpos=cpos, ema=ema, sl=sl, tp=tp)))
+    results.sort(key=lambda x: (x[1], x[0]), reverse=True)
+    print(f"tested combos with n>=30: {len(results)}")
+    for score, passed, m, cfg in results[:quiet_top]:
+        tag = 'ACCEPT' if passed else 'reject'
+        print(f"  RQS={score:5.1f} {tag} | n={m['n_trades']:3d} WR={m['win_rate']:.1f}% "
+              f"PF={m['profit_factor']:.2f} DD={m['max_dd_pct']:.1f}% MCL={m['max_consec_losses']} "
+              f"p={m['p_value']:.3f} | amin={cfg['amin']} amax={cfg['amax']} "
+              f"body={cfg['body']} cpos={cfg['cpos']} ema={cfg['ema']} SL{cfg['sl']}/TP{cfg['tp']}")
+    return results
+
+
 if __name__ == '__main__':
     import warnings
     warnings.filterwarnings('ignore')
     phase_baseline()
     phase_autopsy('M15')
     phase_autopsy('M5')
+    phase_search('M15')
+    phase_search('M5')
