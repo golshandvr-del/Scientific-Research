@@ -42,7 +42,7 @@ def dilate(mask, W=2):
 def s313_signals(df):
     """بازتولیدِ منطقِ S313: BB-squeeze سپس شکست + ADX≥30 (فقط جهتِ سیگنال)."""
     c = df['close']
-    _, up, lo = ind.bollinger(c, 20, 2.0)
+    lo, _, up = ind.bollinger(c, 20, 2.0)   # امضای درست: (lower, mid, upper)
     up = up.values; lo = lo.values
     adx14 = ind.adx(df, 14)
     adx14 = (adx14[0] if isinstance(adx14, tuple) else adx14)
