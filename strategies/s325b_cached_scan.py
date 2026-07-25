@@ -30,6 +30,7 @@ STRUCT = dict(ema=[(10, 30), (20, 50)], k=[3, 5],
 RSI = [(True, 40), (True, 45), (False, 0)]
 SLTP = [(1.9, 0.9), (2.5, 1.0), (2.5, 1.3), (3.2, 1.0), (3.2, 1.5)]
 BE = [None, 0.8, 1.2]   # breakeven trigger (×ATR)
+# NOTE: budget داخل حلقهٔ گرید نیز چک می‌شود (خط داخل scan_asset) تا اسکن ناتمام نماند.
 
 
 def eval_fast(df, asset, raw_sig, side, rsi_arr, rsi_on, rsi_lo, rsi_hi,
@@ -76,12 +77,14 @@ def scan_asset(asset, tf, budget=300):
     mhs = mh_map.get(tf, [32, 64])
 
     t0 = time.time()
-    rows = []; passed = []
+    rows = []; passed = []; n_eval = 0; budget_hit = False
     struct_keys = list(STRUCT.keys())
     for side in ['long', 'short']:
+        if budget_hit:
+            break
         for combo in itertools.product(*[STRUCT[k] for k in struct_keys]):
             if time.time() - t0 > budget:
-                print(f"  [budget hit {asset} {tf}]"); break
+                print(f"  [budget hit {asset} {tf} after {n_eval} evals]"); budget_hit = True; break
             d = dict(zip(struct_keys, combo))
             raw = S219.channel_signals(df, side, d['ema'][0], d['ema'][1],
                                        d['k'], d['pos_max'], d['max_gap'],
@@ -93,6 +96,9 @@ def scan_asset(asset, tf, budget=300):
                 for (slm, tpm) in SLTP:
                     for be in BE:
                         for mh in mhs:
+                            if time.time() - t0 > budget:
+                                budget_hit = True; break
+                            n_eval += 1
                             r = eval_fast(df, asset, raw, side, rsi_arr, rsi_on, rlo, rhi,
                                           atr_pip, slm, tpm, mh, be)
                             if r is None:
@@ -106,8 +112,12 @@ def scan_asset(asset, tf, budget=300):
                             rows.append((r['rqs_score'], cfg, m, r['gates'], r['passed']))
                             if r['passed']:
                                 passed.append((r['rqs_score'], cfg, m, r['gates']))
+                        if budget_hit: break
+                    if budget_hit: break
+                if budget_hit: break
     rows.sort(key=lambda x: x[0], reverse=True)
     passed.sort(key=lambda x: x[0], reverse=True)
+    print(f"  [done {asset} {tf}: {n_eval} evals in {time.time()-t0:.0f}s]")
     return rows, passed
 
 
