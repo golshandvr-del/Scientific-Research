@@ -1,0 +1,12 @@
+{
+  "tf": "XAUUSD_M15",
+  "n312": 138,
+  "n221": 428,
+  "n306": 94,
+  "day_overlap_s221": 100.0,
+  "day_overlap_s306": 0.0,
+  "bar_overlap_s221": 31.0,
+  "bar_overlap_s306": 0.0,
+  "shared_days_s221": 116,
+  "unique_days_s312": 0
+}
