@@ -103,6 +103,39 @@ function buildMondayFilter(open?: number[], high?: number[], low?: number[],
   }
 }
 
+// ---------------------------------------------------------------------------
+// فیلترِ کیفیتِ ورودِ لایهٔ End-of-Month (S310): سه شرطِ برندهٔ بک‌تستِ رویداد-محور:
+//   atrLive = ATR جاری ≥ ۱.۰×میانهٔ ATR (ضدِ رنجِ مرده — کشفِ کالبدشکافیِ فاز ۲)
+//   closeStrong = close در نیمهٔ بالای کندلِ جاری (close_pos ≥ ۰.۵)
+//   aboveEma = close > EMA200 (روندِ کلانِ صعودی)
+// این ترکیب تنشِ G0↔G2 را شکست و RQS+ را به ۸۷.۳ رساند (سند S310).
+// اگر داده کافی نباشد ⇒ undefined ⇒ رفتارِ سازگارِ عقب (لایه ورود نمی‌کند).
+// ---------------------------------------------------------------------------
+function buildEomFilter(high?: number[], low?: number[], close?: number[],
+                        ema200?: number): EomFilter | undefined {
+  if (!high || !low || !close) return undefined
+  const n = close.length
+  if (n < 30 || high.length !== n || low.length !== n) return undefined
+  const candles: Candle[] = new Array(n)
+  for (let i = 0; i < n; i++) {
+    candles[i] = { time: i, open: close[i], high: high[i], low: low[i], close: close[i], volume: 0 }
+  }
+  const atrArr = atrIndicator(candles, 14)
+  const last = n - 1
+  const atrV = atrArr[last]
+  if (!isFinite(atrV)) return undefined
+  const valid = atrArr.filter((v) => isFinite(v)).slice().sort((x, y) => x - y)
+  if (!valid.length) return undefined
+  const med = valid[Math.floor(valid.length / 2)]
+  const rng = high[last] - low[last]
+  const closePos = rng > 0 ? (close[last] - low[last]) / rng : 0.5
+  return {
+    atrLive: atrV >= EOM_ATR_MIN_MULT * med,
+    closeStrong: closePos >= EOM_CLOSE_POS_MIN,
+    aboveEma: typeof ema200 === 'number' ? close[last] > ema200 : true,
+  }
+}
+
 // ساعتِ UTC → «HH:MM به وقتِ ایران» (ایران آفستِ ثابتِ UTC+3:30، بدونِ DST از ۱۴۰۱).
 // همهٔ توصیه‌های زمان-محورِ نمایشی به وقتِ ایران بیان می‌شوند (پاسخِ صریحِ User Note).
 export function toIranHM(utcHour: number): string {
