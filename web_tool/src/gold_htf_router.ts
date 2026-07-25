@@ -240,6 +240,11 @@ export function decideGoldH1(
   open?: number[], high?: number[], low?: number[],
 ): RouterDecision {
   if (open && high && low && high.length === close.length && low.length === close.length) {
+    // لایهٔ اصلیِ اثبات‌شده روی H1: S313 (Squeeze→Breakout احیاشده، RQS+=89.8، مستقل).
+    // اگر ماشهٔ S313 فعال/نزدیک بود همان را نشان بده (اولویتِ لایهٔ RQS+-پذیرفته).
+    const s313 = decideS313(S313_H1, a, open, high, low, close, capital, riskPct)
+    if (s313.state === 'ENTRY' || s313.state === 'APPROACHING') return s313
+    // در غیرِ این‌صورت لایهٔ مکملِ خطِ روندِ Al Brooks (S215) — بدونِ تداخل با S313.
     return trendLineEntry(TREND_LINE_CFG['XAUUSD-H1'], H1_CFG, a, open, high, low, close, capital, riskPct)
   }
   return analyzeHtf(H1_CFG, a, close)
