@@ -32,6 +32,9 @@ import {
   computeEndOfMonth, EOM_MAX_HOLD, EOM_SL_PIP, EOM_TP_PIP,
   EOM_ATR_MIN_MULT, EOM_CLOSE_POS_MIN, type EomFilter,
 } from './end_of_month_drift'
+import {
+  computeMidMonth, MID_MAX_HOLD, MID_SL_PIP, MID_TP_PIP, type MidFilter,
+} from './mid_month_drift'
 import { confirmScore } from './confirmation_filter'
 import { computeBrooksHigh2, BROOKS_SL_POINT, BROOKS_TP_POINT, BROOKS_MAX_HOLD } from './brooks_high2'
 import { computeSignsOfStrength, SOS_SL_POINT, SOS_TP_POINT, SOS_MAX_HOLD } from './signs_of_strength'
