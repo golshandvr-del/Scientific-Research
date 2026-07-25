@@ -338,7 +338,8 @@ class S313_SqueezeBreakout_Long:
                  breakout_lb=10, ema_fast=50, ema_slow=200,
                  atr_period=14, sl_atr=1.7, tp_atr=1.7, max_hold=20,
                  adx_min=0.0, trend_gate=True,
-                 body_min=0.0, closepos_min=0.0, breakout_atr_min=0.0):
+                 body_min=0.0, closepos_min=0.0, breakout_atr_min=0.0,
+                 be_trigger_atr=0.0, be_offset_atr=0.0):
         self.bb_period = bb_period; self.bb_k = bb_k
         self.sqz_lookback = sqz_lookback; self.sqz_pct = sqz_pct
         self.breakout_lb = breakout_lb
@@ -351,6 +352,11 @@ class S313_SqueezeBreakout_Long:
         self.body_min = body_min             # حداقلِ نسبتِ بدنه به دامنهٔ کندل (0..1)
         self.closepos_min = closepos_min     # حداقلِ موقعیتِ close در دامنهٔ کندل (0..1)
         self.breakout_atr_min = breakout_atr_min  # حداقلِ فاصلهٔ عبور از سقف بر حسبِ ATR
+        # --- Breakeven-trailing (بهبودِ کلیدیِ trade-off G0/G2؛ ۰ = غیرفعال) ---
+        #   وقتی سود ≥ be_trigger_atr × ATRِ ورودی شد، SL را به
+        #   entry + be_offset_atr × ATR منتقل کن ⇒ باختِ بزرگ → باختِ ناچیز/سربه‌سر.
+        self.be_trigger_atr = be_trigger_atr
+        self.be_offset_atr = be_offset_atr
         self._sig = None; self._atr = None
 
     def _precompute(self, df):
@@ -419,8 +425,22 @@ class S313_SqueezeBreakout_Long:
             self._precompute(ctx.df)
         i = ctx.i
         if ctx.in_position():
-            if (i + 1) - ctx.position['entry_bar'] >= self.max_hold:
+            pos = ctx.position
+            if (i + 1) - pos['entry_bar'] >= self.max_hold:
                 return {'action': 'CLOSE'}
+            # --- Breakeven-trailing: باختِ بزرگ → سربه‌سر وقتی سود کافی محقق شد ---
+            if self.be_trigger_atr > 0 and pos['side'] == 'LONG':
+                eb = pos['entry_bar']
+                a_entry = self._atr[eb - 1] if eb - 1 < len(self._atr) else np.nan
+                if np.isfinite(a_entry) and a_entry > 0:
+                    entry = pos['entry_price']
+                    price = ctx.price()
+                    profit = price - entry
+                    be_level = entry + self.be_offset_atr * a_entry
+                    # فقط یک‌بار و فقط رو به بالا (SL هرگز عقب نرود)
+                    if (profit >= self.be_trigger_atr * a_entry
+                            and (pos['sl'] is None or pos['sl'] < be_level)):
+                        return {'action': 'MANAGE', 'sl': be_level}
             return None
         if self._sig[i]:
             price = ctx.price()
