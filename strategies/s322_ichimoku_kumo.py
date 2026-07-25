@@ -49,6 +49,11 @@ def build_features(df):
     tk_cross_up = (tk_diff > 0) & (np.r_[True, tk_diff[:-1] <= 0])
     tk_cross_dn = (tk_diff < 0) & (np.r_[True, tk_diff[:-1] >= 0])
 
+    # بهبودهای کیفیتِ کاشف‌شده (کلیدِ عبور از walk-forward):
+    tk_gap = (s['tenkan'] - s['kijun']) / a            # B7) پهنای مومنتوم بر ATR
+    dist_above = (c - s['cloud_top']) / a              # B8) جدایی قیمت از سقفِ ابر بر ATR
+    dist_below = (s['cloud_bot'] - c) / a              # قرینه برای short
+
     return dict(
         close=c, atr_pip=atr_pip, rsi=rsi_,
         above_cloud=s['above_cloud'], below_cloud=s['below_cloud'],
@@ -57,6 +62,9 @@ def build_features(df):
         kslope=np.nan_to_num(kslope, nan=0.0),
         cloud_thick_atr=np.nan_to_num(cloud_thick_atr, nan=0.0),
         tk_cross_up=tk_cross_up, tk_cross_dn=tk_cross_dn,
+        tk_gap=np.nan_to_num(tk_gap, nan=0.0),
+        dist_above=np.nan_to_num(dist_above, nan=-99),
+        dist_below=np.nan_to_num(dist_below, nan=-99),
     )
 
 
