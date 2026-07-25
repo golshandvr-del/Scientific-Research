@@ -161,7 +161,56 @@ def phase_baseline():
         print(RQS.format_report(f'EOM base {tf}', r))
 
 
+def phase_autopsy(tf='M15'):
+    """گامِ ۲: کالبدشکافیِ بازنده‌ها روی TFِ منتخب — کدام بُعد بازنده‌های بزرگ را جدا می‌کند؟"""
+    print("\n" + "=" * 78)
+    print(f"PHASE 2 — AUTOPSY of winners vs losers ({tf}) — where do big losses hide?")
+    print("=" * 78)
+    tfn = f'XAUUSD_{tf}'
+    strat = EOMDriftLong(rel=(-7,), hours=HOURS_BY_TF[tf],
+                         sl_pip=180, tp_pip=220, max_hold=MH_BY_TF[tf])
+    strat._precompute(TS.load_data(tfn))
+    r, tr = run(tfn, 'XAUUSD', strat)
+    # ضمیمهٔ ویژگی‌های کندلِ ورود به هر معامله
+    df = TS.load_data(tfn)
+    strat2 = EOMDriftLong(rel=(-7,), hours=HOURS_BY_TF[tf],
+                          sl_pip=180, tp_pip=220, max_hold=MH_BY_TF[tf])
+    strat2._precompute(df)
+    rows = []
+    for _, t in tr.iterrows():
+        eb = int(t['entry_bar']) - 1  # کندلِ تصمیم (بستهٔ i)؛ ورود روی i+1
+        if eb < 0 or eb >= len(df):
+            continue
+        rows.append(dict(
+            outcome=t['outcome'], pnl_pip=t['pnl_pip'],
+            body=strat2._body_ratio[eb], cpos=strat2._close_pos[eb],
+            atr=strat2._atr_ratio[eb], upbar=strat2._up_bar[eb],
+            above=strat2._above_ema[eb], hour=strat2._hour[eb],
+        ))
+    a = pd.DataFrame(rows)
+    if len(a) == 0:
+        print("no trades"); return
+    win = a[a.outcome == 'win']; los = a[a.outcome == 'loss']
+    print(f"n={len(a)}  wins={len(win)}  losses={len(los)}")
+    print(f"avg WIN  pnl_pip = {win.pnl_pip.mean():+.1f}  |  avg LOSS pnl_pip = {los.pnl_pip.mean():+.1f}")
+    print(f"sum WINS = {win.pnl_pip.sum():+.0f}  |  sum LOSSES = {los.pnl_pip.sum():+.0f}  ⇒ PF≈{-win.pnl_pip.sum()/los.pnl_pip.sum():.2f}")
+    print("--- means (win vs loss) — a discriminating feature separates them ---")
+    for col in ['body', 'cpos', 'atr']:
+        print(f"  {col:6s}: win={win[col].mean():.3f}  loss={los[col].mean():.3f}  "
+              f"Δ={win[col].mean()-los[col].mean():+.3f}")
+    print(f"  upbar%: win={100*win.upbar.mean():.0f}%  loss={100*los.upbar.mean():.0f}%")
+    print(f"  above%: win={100*win.above.mean():.0f}%  loss={100*los.above.mean():.0f}%")
+    print("--- loss rate by ATR-regime bucket (climax hypothesis) ---")
+    for lo, hi in [(0, 0.8), (0.8, 1.1), (1.1, 1.5), (1.5, 99)]:
+        sub = a[(a.atr >= lo) & (a.atr < hi)]
+        if len(sub):
+            print(f"  ATR[{lo},{hi}): n={len(sub):3d}  loss_rate={100*(sub.outcome=='loss').mean():.0f}%  "
+                  f"avg_pnl={sub.pnl_pip.mean():+.1f}")
+
+
 if __name__ == '__main__':
     import warnings
     warnings.filterwarnings('ignore')
     phase_baseline()
+    phase_autopsy('M15')
+    phase_autopsy('M5')
