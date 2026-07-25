@@ -1,0 +1,819 @@
+{
+  "tf": "XAUUSD_H1",
+  "tested": 52,
+  "passed": [
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.4
+      },
+      "rqs": 86.0,
+      "s": {
+        "n": 822,
+        "wr": 68.9,
+        "pf": 3.57,
+        "net": 2887598.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 822,
+        "win_rate": 68.86,
+        "net_profit": 2887597.9,
+        "profit_factor": 3.569,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 6,
+        "expectancy_pip": 4.4691,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 48.71,
+        "wr_excess": 20.15,
+        "p_value": 0.0,
+        "sl_pip": 75.59120584611264,
+        "tp_pip": 79.59690430503429,
+        "wf_nets": [
+          22760.3,
+          32292.8,
+          26330.8,
+          47265.0
+        ],
+        "half_nets": [
+          128890.5,
+          198459.8
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.15
+      },
+      "rqs": 88.2,
+      "s": {
+        "n": 807,
+        "wr": 64.3,
+        "pf": 2.68,
+        "net": 9538355.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 807,
+        "win_rate": 64.31,
+        "net_profit": 9538355.0,
+        "profit_factor": 2.682,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 8,
+        "expectancy_pip": 6.3737,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 52.83,
+        "wr_excess": 11.49,
+        "p_value": 0.0,
+        "sl_pip": 89.22658854775591,
+        "tp_pip": 79.68093564677929,
+        "wf_nets": [
+          194868.7,
+          149871.3,
+          237711.0,
+          759386.2
+        ],
+        "half_nets": [
+          1236682.5,
+          5922933.7
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.4
+      },
+      "rqs": 89.8,
+      "s": {
+        "n": 807,
+        "wr": 67.8,
+        "pf": 3.27,
+        "net": 1278989.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 807,
+        "win_rate": 67.78,
+        "net_profit": 1278988.7,
+        "profit_factor": 3.267,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 5,
+        "expectancy_pip": 6.4755,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 53.03,
+        "wr_excess": 14.75,
+        "p_value": 0.0,
+        "sl_pip": 89.96231881227686,
+        "tp_pip": 79.68093564677929,
+        "wf_nets": [
+          21038.7,
+          19331.4,
+          19211.7,
+          38325.2
+        ],
+        "half_nets": [
+          81150.1,
+          131960.4
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.15
+      },
+      "rqs": 88.8,
+      "s": {
+        "n": 795,
+        "wr": 63.8,
+        "pf": 2.91,
+        "net": 3469198.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 795,
+        "win_rate": 63.77,
+        "net_profit": 3469198.1,
+        "profit_factor": 2.908,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 7,
+        "expectancy_pip": 7.4552,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 57.9,
+        "wr_excess": 5.87,
+        "p_value": 0.00045,
+        "sl_pip": 110.19460774765093,
+        "tp_pip": 80.12265683205214,
+        "wf_nets": [
+          31782.2,
+          30787.4,
+          40843.6,
+          46943.1
+        ],
+        "half_nets": [
+          160676.4,
+          280584.2
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.4
+      },
+      "rqs": 87.1,
+      "s": {
+        "n": 795,
+        "wr": 64.8,
+        "pf": 1.87,
+        "net": 89413.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 795,
+        "win_rate": 64.78,
+        "net_profit": 89412.6,
+        "profit_factor": 1.871,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 7,
+        "expectancy_pip": 7.4096,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 57.9,
+        "wr_excess": 6.88,
+        "p_value": 5e-05,
+        "sl_pip": 110.19460774765093,
+        "tp_pip": 80.12265683205214,
+        "wf_nets": [
+          6004.1,
+          6267.3,
+          8869.7,
+          10340.0
+        ],
+        "half_nets": [
+          16071.2,
+          28287.3
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.4
+      },
+      "rqs": 86.1,
+      "s": {
+        "n": 832,
+        "wr": 67.9,
+        "pf": 3.53,
+        "net": 2569095.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 832,
+        "win_rate": 67.91,
+        "net_profit": 2569094.8,
+        "profit_factor": 3.527,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 6,
+        "expectancy_pip": 4.5617,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 48.84,
+        "wr_excess": 19.06,
+        "p_value": 0.0,
+        "sl_pip": 75.9286340694473,
+        "tp_pip": 79.52269497409588,
+        "wf_nets": [
+          20514.1,
+          31043.8,
+          26411.3,
+          46152.5
+        ],
+        "half_nets": [
+          115139.7,
+          195890.4
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.15
+      },
+      "rqs": 86.6,
+      "s": {
+        "n": 825,
+        "wr": 63.0,
+        "pf": 2.7,
+        "net": 9294902.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 825,
+        "win_rate": 63.03,
+        "net_profit": 9294902.1,
+        "profit_factor": 2.697,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 8,
+        "expectancy_pip": 5.6042,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 53.06,
+        "wr_excess": 9.97,
+        "p_value": 0.0,
+        "sl_pip": 89.96231881227686,
+        "tp_pip": 79.58388897434816,
+        "wf_nets": [
+          145443.1,
+          144779.9,
+          218082.1,
+          738994.4
+        ],
+        "half_nets": [
+          1091739.5,
+          5777555.6
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.4
+      },
+      "rqs": 87.9,
+      "s": {
+        "n": 825,
+        "wr": 66.3,
+        "pf": 3.14,
+        "net": 1050094.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 825,
+        "win_rate": 66.3,
+        "net_profit": 1050094.3,
+        "profit_factor": 3.145,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 5,
+        "expectancy_pip": 5.5375,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 53.23,
+        "wr_excess": 13.07,
+        "p_value": 0.0,
+        "sl_pip": 90.57544125653294,
+        "tp_pip": 79.58388897434816,
+        "wf_nets": [
+          17373.1,
+          18617.7,
+          18329.4,
+          37559.3
+        ],
+        "half_nets": [
+          68425.6,
+          125908.4
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.4
+      },
+      "rqs": 85.7,
+      "s": {
+        "n": 816,
+        "wr": 63.0,
+        "pf": 1.85,
+        "net": 75852.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 816,
+        "win_rate": 62.99,
+        "net_profit": 75852.2,
+        "profit_factor": 1.846,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 8,
+        "expectancy_pip": 7.0819,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 58.05,
+        "wr_excess": 4.94,
+        "p_value": 0.00237,
+        "sl_pip": 110.14675945273325,
+        "tp_pip": 79.59690430503429,
+        "wf_nets": [
+          3464.5,
+          6721.4,
+          8945.8,
+          10230.3
+        ],
+        "half_nets": [
+          12523.0,
+          28266.9
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.3,
+        "max_hold": 24,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.4
+      },
+      "rqs": 83.7,
+      "s": {
+        "n": 1002,
+        "wr": 67.0,
+        "pf": 3.52,
+        "net": 6114839.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 1002,
+        "win_rate": 66.97,
+        "net_profit": 6114839.1,
+        "profit_factor": 3.517,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 6,
+        "expectancy_pip": 3.3337,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 48.9,
+        "wr_excess": 18.07,
+        "p_value": 0.0,
+        "sl_pip": 77.25086523188452,
+        "tp_pip": 80.72672754217933,
+        "wf_nets": [
+          31250.2,
+          36989.5,
+          25140.8,
+          81292.4
+        ],
+        "half_nets": [
+          183735.9,
+          310546.3
+        ]
+      }
+    },
+    {
+      "kw": {
+        "sqz_pct": 0.3,
+        "max_hold": 24,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.4
+      },
+      "rqs": 87.3,
+      "s": {
+        "n": 994,
+        "wr": 65.3,
+        "pf": 3.26,
+        "net": 2646506.0,
+        "dd": 5.9
+      },
+      "gates": {
+        "G0": true,
+        "G1": true,
+        "G2": 1.0,
+        "G3": true,
+        "G4": true,
+        "G5": true
+      },
+      "metrics": {
+        "n_trades": 994,
+        "win_rate": 65.29,
+        "net_profit": 2646506.1,
+        "profit_factor": 3.259,
+        "max_dd_pct": 5.93,
+        "max_consec_losses": 7,
+        "expectancy_pip": 5.5958,
+        "spread_cost_pip": 3.3,
+        "wr_breakeven": 53.39,
+        "wr_excess": 11.9,
+        "p_value": 0.0,
+        "sl_pip": 92.45753448878531,
+        "tp_pip": 80.72672754217933,
+        "wf_nets": [
+          25789.1,
+          25742.3,
+          18132.2,
+          63511.3
+        ],
+        "half_nets": [
+          118152.6,
+          196793.8
+        ]
+      }
+    }
+  ],
+  "top_pf": [
+    {
+      "pf": 3.57,
+      "wr": 68.9,
+      "net": 2887598.0,
+      "dd": 5.9,
+      "n": 822,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 3.53,
+      "wr": 67.9,
+      "net": 2569095.0,
+      "dd": 5.9,
+      "n": 832,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 3.52,
+      "wr": 67.0,
+      "net": 6114839.0,
+      "dd": 5.9,
+      "n": 1002,
+      "kw": {
+        "sqz_pct": 0.3,
+        "max_hold": 24,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 3.27,
+      "wr": 67.8,
+      "net": 1278989.0,
+      "dd": 5.9,
+      "n": 807,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 3.26,
+      "wr": 65.3,
+      "net": 2646506.0,
+      "dd": 5.9,
+      "n": 994,
+      "kw": {
+        "sqz_pct": 0.3,
+        "max_hold": 24,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 3.14,
+      "wr": 66.3,
+      "net": 1050094.0,
+      "dd": 5.9,
+      "n": 825,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 3.01,
+      "wr": 61.9,
+      "net": 3069586.0,
+      "dd": 5.9,
+      "n": 816,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 2.95,
+      "wr": 61.1,
+      "net": 4739701.0,
+      "dd": 5.9,
+      "n": 986,
+      "kw": {
+        "sqz_pct": 0.3,
+        "max_hold": 24,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 2.91,
+      "wr": 63.8,
+      "net": 3469198.0,
+      "dd": 5.9,
+      "n": 795,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 2.7,
+      "wr": 63.0,
+      "net": 9294902.0,
+      "dd": 5.9,
+      "n": 825,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 2.68,
+      "wr": 64.3,
+      "net": 9538355.0,
+      "dd": 5.9,
+      "n": 807,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 2.66,
+      "wr": 62.5,
+      "net": 10937311.0,
+      "dd": 5.8,
+      "n": 831,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.15
+      }
+    }
+  ],
+  "best": {
+    "kw": {
+      "sqz_pct": 0.25,
+      "max_hold": 48,
+      "sl_atr": 3.2,
+      "tp_atr": 2.15,
+      "closepos_min": 0.55,
+      "be_trigger_atr": 1.1,
+      "be_offset_atr": 0.4
+    },
+    "rqs": 89.8,
+    "s": {
+      "n": 807,
+      "wr": 67.8,
+      "pf": 3.27,
+      "net": 1278989.0,
+      "dd": 5.9
+    },
+    "gates": {
+      "G0": true,
+      "G1": true,
+      "G2": 1.0,
+      "G3": true,
+      "G4": true,
+      "G5": true
+    },
+    "metrics": {
+      "n_trades": 807,
+      "win_rate": 67.78,
+      "net_profit": 1278988.7,
+      "profit_factor": 3.267,
+      "max_dd_pct": 5.93,
+      "max_consec_losses": 5,
+      "expectancy_pip": 6.4755,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 53.03,
+      "wr_excess": 14.75,
+      "p_value": 0.0,
+      "sl_pip": 89.96231881227686,
+      "tp_pip": 79.68093564677929,
+      "wf_nets": [
+        21038.7,
+        19331.4,
+        19211.7,
+        38325.2
+      ],
+      "half_nets": [
+        81150.1,
+        131960.4
+      ]
+    }
+  }
+}

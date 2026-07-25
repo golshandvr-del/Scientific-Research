@@ -1,0 +1,244 @@
+{
+  "tf": "XAUUSD_M30",
+  "tested": 26,
+  "passed": [],
+  "top_pf": [
+    {
+      "pf": 2.41,
+      "wr": 64.9,
+      "net": 9260750.0,
+      "dd": 3.3,
+      "n": 1512,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 2.34,
+      "wr": 64.7,
+      "net": 9613729.0,
+      "dd": 2.8,
+      "n": 1616,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 2.27,
+      "wr": 65.9,
+      "net": 9366385.0,
+      "dd": 4.5,
+      "n": 1529,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 2.18,
+      "wr": 65.4,
+      "net": 9613845.0,
+      "dd": 4.4,
+      "n": 1634,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 1.89,
+      "wr": 59.7,
+      "net": 5290651.0,
+      "dd": 4.3,
+      "n": 1500,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 1.84,
+      "wr": 61.8,
+      "net": 431324.0,
+      "dd": 4.3,
+      "n": 1500,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 1.83,
+      "wr": 59.4,
+      "net": 5345885.0,
+      "dd": 3.7,
+      "n": 1606,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 1.83,
+      "wr": 61.6,
+      "net": 499056.0,
+      "dd": 3.6,
+      "n": 1606,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 1.5,
+        "be_offset_atr": 0.4
+      }
+    },
+    {
+      "pf": 1.78,
+      "wr": 58.5,
+      "net": 10039611.0,
+      "dd": 3.9,
+      "n": 1512,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 1.76,
+      "wr": 58.0,
+      "net": 10602821.0,
+      "dd": 4.1,
+      "n": 1616,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 1.1,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 1.7,
+      "wr": 56.3,
+      "net": 9704037.0,
+      "dd": 5.6,
+      "n": 1528,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 48,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "closepos_min": 0.55,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.15
+      }
+    },
+    {
+      "pf": 1.68,
+      "wr": 55.7,
+      "net": 10114390.0,
+      "dd": 5.5,
+      "n": 1633,
+      "kw": {
+        "sqz_pct": 0.25,
+        "max_hold": 36,
+        "sl_atr": 3.2,
+        "tp_atr": 2.15,
+        "be_trigger_atr": 0.8,
+        "be_offset_atr": 0.15
+      }
+    }
+  ],
+  "best": {
+    "kw": {
+      "sqz_pct": 0.25,
+      "max_hold": 36,
+      "sl_atr": 3.2,
+      "tp_atr": 2.15,
+      "be_trigger_atr": 1.1,
+      "be_offset_atr": 0.4
+    },
+    "rqs": 26.9,
+    "s": {
+      "n": 1616,
+      "wr": 64.7,
+      "pf": 2.34,
+      "net": 9613729.0,
+      "dd": 2.8
+    },
+    "gates": {
+      "G0": true,
+      "G1": true,
+      "G2": 1.0,
+      "G3": true,
+      "G4": true,
+      "G5": false
+    },
+    "metrics": {
+      "n_trades": 1616,
+      "win_rate": 64.67,
+      "net_profit": 9613729.2,
+      "profit_factor": 2.336,
+      "max_dd_pct": 2.85,
+      "max_consec_losses": 7,
+      "expectancy_pip": 1.6239,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 53.03,
+      "wr_excess": 11.64,
+      "p_value": 0.0,
+      "sl_pip": 58.755221612212836,
+      "tp_pip": 52.04877563568516,
+      "wf_nets": [
+        55649.3,
+        76651.9,
+        53519.4,
+        147686.7
+      ],
+      "half_nets": [
+        555199.8,
+        992917.9
+      ]
+    }
+  }
+}
