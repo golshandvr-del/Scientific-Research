@@ -47,8 +47,9 @@ def main():
               f'DD={m["max_dd_pct"]:.1f} MCL={m["max_consec_losses"]} p={m["p_value"]:.4f} '
               f'net={m["net_profit"]:.0f} exp={m["expectancy_pip"]:.2f} '
               f'wf={m["wf_nets"]} half={m["half_nets"]}')
-        out[f'{asset}_{tf}'] = {'cfg': cfg, 'rqs': r['rqs_score'], 'passed': r['passed'],
-                                'metrics': m, 'gates': g}
+        out[f'{asset}_{tf}'] = {'cfg': cfg, 'rqs': float(r['rqs_score']),
+                                'passed': bool(r['passed']), 'metrics': m,
+                                'gates': {k: bool(v) for k, v in g.items()}}
     with open('results/_s323_sr_pullback_revival.json', 'w') as fh:
         json.dump(out, fh, indent=2, ensure_ascii=False)
     total_net = sum(v['metrics']['net_profit'] for v in out.values())
