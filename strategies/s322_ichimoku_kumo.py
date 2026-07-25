@@ -109,56 +109,62 @@ def lite_stats(tr):
     return len(tr), wr, pf, pnl.sum()
 
 
+# گرید متمرکز حولِ ناحیهٔ walk-forward-passing (kmax0.6 gap0.2 da0.3 sl2.2 tp2.8 mh72)
+# با گام‌های غیر-رند (اجتناب از اشتباه #۷).
 GRID = dict(
-    kijun_atr_max=[0.8, 1.2, 1.8],
-    thick_min=[0.0, 0.3],
-    kslope_min=[0.0, 0.15],
-    rsi_min=[40, 45],
-    rsi_max=[80, 90],
-    sl_mult=[2.2, 2.6, 3.0],
-    tp_mult=[2.4, 2.9, 3.6],
+    kijun_atr_max=[0.55, 0.70, 0.85],
+    thick_min=[0.25, 0.35],
+    kslope_min=[0.0],
+    gap_min=[0.15, 0.22, 0.30],
+    da_min=[0.25, 0.35],
+    rsi_min=[45],
+    rsi_max=[90],
+    sl_mult=[2.1, 2.4],
+    tp_mult=[2.7, 3.1],
 )
 
 
 def main():
     tf = sys.argv[1] if len(sys.argv) > 1 else 'M15'
     side = sys.argv[2] if len(sys.argv) > 2 else 'long'
-    max_hold = int(sys.argv[3]) if len(sys.argv) > 3 else 36
     df = se.load_data(f'data/XAUUSD_{tf}.csv')
     f = build_features(df)
-    print(f'[XAUUSD {tf}] rows={len(df)} side={side} mh={max_hold}')
+    print(f'[XAUUSD {tf}] rows={len(df)} side={side}')
 
     import time; t0 = time.time()
     keys = list(GRID.keys())
+    MHS = [48, 72, 96]
     res = []
     for combo in itertools.product(*[GRID[k] for k in keys]):
-        if time.time() - t0 > 90:
+        if time.time() - t0 > 100:
             print('time budget hit'); break
         cfg = dict(zip(keys, combo))
         if cfg['tp_mult'] <= cfg['sl_mult'] - 0.6:
             continue
-        ls, ss, sl, tp = make_signals(f, cfg, side)
-        tr = se.simulate_trades(df, ls, ss, sl, tp, 'XAUUSD',
-                                max_hold=max_hold, allow_overlap=False)
-        n, wr, pf, net = lite_stats(tr)
-        if n >= 40 and wr >= 58 and pf >= 1.25:
-            sig = ls | ss
-            med_tp = float(np.median(tp[sig])) if sig.any() else float(np.median(tp))
-            r = rqs.compute_rqs(tr, 'XAUUSD',
-                                sl_pip=float(np.median(tr['sl_pip'])), tp_pip=med_tp)
-            res.append((r['rqs_score'], r['passed'], cfg, r['metrics'], r['gates']))
+        for max_hold in MHS:
+            ls, ss, sl, tp = make_signals(f, cfg, side)
+            tr = se.simulate_trades(df, ls, ss, sl, tp, 'XAUUSD',
+                                    max_hold=max_hold, allow_overlap=False)
+            n, wr, pf, net = lite_stats(tr)
+            if n >= 45 and wr >= 58 and pf >= 1.3:
+                sig = ls | ss
+                med_tp = float(np.median(tp[sig])) if sig.any() else float(np.median(tp))
+                r = rqs.compute_rqs(tr, 'XAUUSD',
+                                    sl_pip=float(np.median(tr['sl_pip'])), tp_pip=med_tp)
+                cfg2 = dict(cfg); cfg2['max_hold'] = max_hold
+                res.append((r['rqs_score'], r['passed'], cfg2, r['metrics'], r['gates']))
 
     res.sort(key=lambda x: (x[1], x[0]), reverse=True)
-    print(f'candidates (WR>=58 & PF>=1.25): {len(res)}  ({time.time()-t0:.0f}s)')
+    print(f'candidates (WR>=58 & PF>=1.3): {len(res)}  ({time.time()-t0:.0f}s)')
     print('=' * 118)
-    for score, passed, cfg, m, g in res[:15]:
+    for score, passed, cfg, m, g in res[:18]:
         gl = ''.join('1' if g[k] else '0' for k in ['G0', 'G1', 'G2', 'G3', 'G4', 'G5'])
         print(f'RQS={score:5.1f} {"PASS" if passed else "FAIL"} G[{gl}] '
               f'n={m["n_trades"]:3d} WR={m["win_rate"]:4.1f} PF={m["profit_factor"]:.2f} '
               f'DD={m["max_dd_pct"]:.1f} MCL={m["max_consec_losses"]} p={m["p_value"]:.3f} '
               f'net={m["net_profit"]:.0f} wf={[round(x) for x in m["wf_nets"]]} | '
-              f'kmax{cfg["kijun_atr_max"]} th{cfg["thick_min"]} ks{cfg["kslope_min"]} '
-              f'rsi{cfg["rsi_min"]}-{cfg["rsi_max"]} sl{cfg["sl_mult"]}tp{cfg["tp_mult"]}')
+              f'kmax{cfg["kijun_atr_max"]} th{cfg["thick_min"]} gap{cfg["gap_min"]} '
+              f'da{cfg["da_min"]} sl{cfg["sl_mult"]}tp{cfg["tp_mult"]} mh{cfg["max_hold"]}')
     if not res:
         print('NONE passed lite screen')
 
