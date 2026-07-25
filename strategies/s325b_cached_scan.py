@@ -49,7 +49,13 @@ def eval_fast(df, asset, raw_sig, side, rsi_arr, rsi_on, rsi_lo, rsi_hi,
     ss = sig if side == 'short' else np.zeros(n, bool)
     sl_pip = np.clip(sl_mult * atr_pip, 5.0, None)
     tp_pip = np.clip(tp_mult * atr_pip, 5.0, None)
-    be_trig = None if be_mult is None else np.clip(be_mult * atr_pip, 3.0, None)
+    # be_trigger_pip باید اسکالر باشد (مقایسهٔ peak_favor >= be_trigger_pip*pip در موتور)
+    # ⇒ از میانهٔ ATR *روی همان سیگنال‌ها* به‌عنوان یک آستانهٔ نمایندهٔ اسکالر استفاده می‌کنیم.
+    if be_mult is None:
+        be_trig = None
+    else:
+        med_atr = float(np.median(atr_pip[sig])) if sig.sum() else float(np.median(atr_pip))
+        be_trig = max(be_mult * med_atr, 3.0)
     tr = se.simulate_trades(df, ls, ss, sl_pip, tp_pip, asset, max_hold=mh,
                             allow_overlap=False, be_trigger_pip=be_trig)
     if tr is None or len(tr) < 30:
