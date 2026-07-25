@@ -248,6 +248,71 @@ class S306_TurnOfMonth_Long:
         return None
 
 
+# ============================================================
+# S312 — S142 احیا‌شده: XAUUSD Mid-Month Drift LONG + RR متقارن + فیلترِ کیفیت
+#   منشأ: S142 (قوی‌ترین t-stat کلِ پروژه: خوشهٔ dom{10,13,20}، t=+16.16).
+#   در ممیزیِ S300 با WR≈41.8٪ رد شد چون از پارادایمِ قدیم (TP بزرگ، RR نامتقارن
+#   ~SL100/TP500) استفاده می‌کرد ⇒ WR ذاتاً پایین (TP دور دیر می‌خورد).
+#   منطقِ احیا (همان کشفِ موفقِ S306): drift صعودیِ میانهٔ ماه واقعی است (t بالا)،
+#   پس RR متقارن (SL≈TP) هم لبهٔ واقعی می‌دهد (G1) هم WR≥60٪ (G0) — چون در drift
+#   مثبت، TP نزدیک زودتر می‌خورد. اندیکاتور یا خطِ حمایت دخیل نیست؛ صرفاً بُعدِ زمان.
+#
+#   پارامترها (قابلِ grid برای مولتی‌تایم‌فریم — اشتباهِ رایجِ #6: TP/SL یکسان برای
+#   همهٔ TFها ممنوع؛ هر TF SL/TP خودش را می‌گیرد):
+#     dom_set   : روزهای تقویمیِ کاندید (پیش‌فرض خوشهٔ اثبات‌شدهٔ {10,13,20})
+#     hours     : بازهٔ ساعتِ ورود (پیش‌فرض 1..12 UTC — سشنِ آسیا/لندن)
+#     sl_pip/tp_pip : فاصله بر حسبِ pip (RR متقارن؛ مقادیرِ غیررند مجاز)
+#     quality_filter : اگر True، فیلترِ کیفیتِ روند (close>EMA و ATR در بازهٔ سالم)
+# ============================================================
+class S312_MidMonth_Long:
+    def __init__(self, dom_set=(10, 13, 20), hours=tuple(range(1, 13)),
+                 sl_pip=250, tp_pip=250, max_hold=24,
+                 quality_filter=False, ema_period=200, atr_period=14,
+                 atr_lo=0.0, atr_hi=1e9):
+        self.dom_set = frozenset(dom_set)
+        self.hours = frozenset(hours)
+        self.sl_pip = sl_pip; self.tp_pip = tp_pip; self.max_hold = max_hold
+        self.quality_filter = quality_filter
+        self.ema_period = ema_period; self.atr_period = atr_period
+        self.atr_lo = atr_lo; self.atr_hi = atr_hi
+        self._dom = None; self._hour = None; self._ema = None; self._atr = None
+
+    def _precompute(self, df):
+        dt = df['dt']
+        self._dom = dt.dt.day.to_numpy()
+        self._hour = dt.dt.hour.to_numpy()
+        if self.quality_filter:
+            import sys, os
+            ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            if ROOT not in sys.path:
+                sys.path.insert(0, ROOT)
+            from engine import indicators as ind
+            self._ema = ind.ema(df['close'], self.ema_period).to_numpy()
+            self._atr = ind.atr(df, self.atr_period).to_numpy()
+
+    def advise(self, ctx):
+        if self._dom is None:
+            self._precompute(ctx.df)
+        i = ctx.i
+        if ctx.in_position():
+            if (i + 1) - ctx.position['entry_bar'] >= self.max_hold:
+                return {'action': 'CLOSE'}
+            return None
+        if self._dom[i] in self.dom_set and self._hour[i] in self.hours:
+            if self.quality_filter:
+                cl = ctx.df['close'].values[i]
+                if not (cl > self._ema[i]):          # فقط در روندِ صعودیِ ساختاری
+                    return None
+                a = self._atr[i]
+                if not (self.atr_lo <= a <= self.atr_hi):   # اجتناب از رژیمِ نوسانِ بد
+                    return None
+            price = ctx.price(); pip = ctx.spec['pip']
+            return {'action': 'LONG',
+                    'sl': price - self.sl_pip * pip,
+                    'tp': price + self.tp_pip * pip}
+        return None
+
+
 STRATEGY_REGISTRY = {
     'S164': dict(cls=S164_PreEOM_Short, asset='EURUSD', tf='EURUSD_M15',
                  label='S164 EURUSD Pre-EOM Short'),
@@ -261,4 +326,6 @@ STRATEGY_REGISTRY = {
                  label='S303 XAUUSD Market-Inertia Short + session/dow filter (revived S173)'),
     'S306': dict(cls=S306_TurnOfMonth_Long, asset='XAUUSD', tf='XAUUSD_M15',
                  label='S306 XAUUSD Turn-of-Month Drift Long + symmetric RR (revived S141)'),
+    'S312': dict(cls=S312_MidMonth_Long, asset='XAUUSD', tf='XAUUSD_M15',
+                 label='S312 XAUUSD Mid-Month Drift Long + symmetric RR (revived S142)'),
 }
