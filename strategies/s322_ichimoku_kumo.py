@@ -78,15 +78,20 @@ def make_signals(f, cfg, side):
     long_sig = np.zeros(n, bool)
     short_sig = np.zeros(n, bool)
 
+    gap_min = cfg.get('gap_min', 0.0)
+    da_min = cfg.get('da_min', 0.0)
+
     if side in ('long', 'both'):
         long_sig = (trend_up & f['tk_cross_up'] & common_ok
                     & (f['dist_kijun'] >= -0.2) & (f['dist_kijun'] <= cfg['kijun_atr_max'])
                     & (f['kslope'] >= cfg['kslope_min'])
+                    & (f['tk_gap'] >= gap_min) & (f['dist_above'] >= da_min)
                     & (f['rsi'] >= cfg['rsi_min']) & (f['rsi'] <= cfg['rsi_max']))
     if side in ('short', 'both'):
         short_sig = (trend_dn & f['tk_cross_dn'] & common_ok
                      & (f['dist_kijun'] <= 0.2) & (f['dist_kijun'] >= -cfg['kijun_atr_max'])
                      & (f['kslope'] <= -cfg['kslope_min'])
+                     & (-f['tk_gap'] >= gap_min) & (f['dist_below'] >= da_min)
                      & (f['rsi'] <= 100 - cfg['rsi_min']) & (f['rsi'] >= 100 - cfg['rsi_max']))
 
     sl_pip = np.clip(cfg['sl_mult'] * f['atr_pip'], 5.0, None)
