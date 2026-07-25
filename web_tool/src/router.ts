@@ -793,6 +793,72 @@ export function decide(a: AnalysisResult, close: number[],
   }
 
   // ========================================================================
+  // لایهٔ «End-of-the-Month Drift» (S310 — احیای S144) — سیگنالِ زمان-محور × کیفیت
+  // ------------------------------------------------------------------------
+  // طلا در «هفتمین روزِ مانده به پایانِ ماه» در سشنِ نیویورک (۲۰–۲۳ UTC) درایوِ
+  // صعودیِ بازتوازنِ پرتفوی دارد. لایهٔ سوختهٔ S144 با فیلترِ کیفیتِ ورود احیا شد:
+  //   ATR≥۱.۰×میانه + close_pos≥۰.۵ + close>EMA200 ⇒ RQS+ ۸۷.۳ (هر ۶ گیت).
+  // همپوشانی با S306 (اولِ ماه، صبحِ لندن) = ۰.۰٪ ⇒ لبهٔ کاملاً مستقل و افزایشی.
+  if (spec.id === 'XAUUSD' && typeof utcHour === 'number' && Array.isArray(times) && times.length > 1) {
+    const eomFilt = buildEomFilter(high, low, close, a.ema200)
+    const eom = computeEndOfMonth(times, utcHour, eomFilt)
+    const eomInd: RouterDecision['indicators'] = [
+      { name: 'روزِ ماه (لایهٔ پایانِ ماه)', value: eom.isEomWindow ? '۷ روزِ پایانیِ ماه ✓' : 'خارج از پنجرهٔ پایانِ ماه',
+        status: eom.state === 'ENTRY' ? 'ok' : eom.state === 'APPROACHING' ? 'warn' : 'neutral' },
+      { name: `پنجرهٔ درایوِ پایانِ ماه (سشنِ نیویورک، ${toIranRange([20, 23])} به وقتِ ایران)`,
+        value: eom.state === 'ENTRY' ? 'باز ✓' : eom.state === 'APPROACHING' ? 'در حالِ باز شدن' : 'بسته',
+        status: eom.state === 'ENTRY' ? 'ok' : eom.state === 'APPROACHING' ? 'warn' : 'neutral' },
+      ...indicators,
+    ]
+    const eomGate: RouterDecision['timeGate'] = {
+      layerCode: 'S310', label: 'درایوِ پایانِ ماهِ طلا (End-of-Month)',
+      entryHoursUtc: [20, 21, 22, 23], endHourUtc: 24,
+      dayOfMonthNote: 'فقط در حوالیِ ۷ روزِ پایانیِ هر ماه فعال است',
+      windowOpen: eom.state === 'ENTRY',
+    }
+    if (eom.state === 'ENTRY') {
+      const entry = a.price
+      const sl = entry - eom.slDist
+      const tp = entry + eom.tpDist
+      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, eom.slDist, 1.0, spec)
+      const rd = Math.round(riskDollars * 100) / 100
+      return {
+        state: 'ENTRY', regime: reg,
+        headline: 'سیگنالِ خرید (LONG) — درایوِ پایانِ ماهِ طلا (S310)',
+        reason: eom.reason,
+        sourceLayer: {
+          code: 'S310', name: 'درایوِ پایانِ ماه (End-of-Month) — احیای S144', kind: 'time',
+          filters: ['ATR زنده (≥ میانه)', 'کندلِ قوی (close در نیمهٔ بالا)', 'روندِ صعودیِ کلان (بالای EMA200)'],
+        },
+        direction: 'LONG', entry, sl, tp, lots,
+        rr: `SL ثابت ${EOM_SL_PIP}pip (${eom.slDist.toFixed(2)}$) / TP ${EOM_TP_PIP}pip ` +
+          `(${eom.tpDist.toFixed(2)}$) — نسبتِ R:R ≈ ۱:${(EOM_TP_PIP / EOM_SL_PIP).toFixed(1)}`,
+        risk: {
+          riskPct: effRiskPct, riskDollars: rd, lots,
+          note: `اگر SL (فاصلهٔ ${eom.slDist.toFixed(2)}$) بخورد، حدودِ ${rd.toLocaleString('en-US')}$ ضرر می‌کنید. ` +
+            `این لبهٔ زمان-محور × کیفیت است (RQS+ ۸۷.۳). حداکثر نگه‌داری ${EOM_MAX_HOLD} کندلِ M15 (~۸ ساعت).`,
+        },
+        indicators: eomInd, timeGate: eomGate,
+      }
+    }
+    if (eom.state === 'APPROACHING') {
+      return {
+        state: 'APPROACHING', regime: reg,
+        headline: 'نزدیک‌شدن به سیگنالِ خرید (LONG) — پنجرهٔ درایوِ پایانِ ماه',
+        reason: eom.reason,
+        sourceLayer: { code: 'S310', name: 'درایوِ پایانِ ماه (End-of-Month)', kind: 'time' },
+        confirmations: [
+          { label: 'نوسانِ زنده (ATR بالای میانه)', met: !!eomFilt?.atrLive, detail: 'ضدِ رنجِ مرده' },
+          { label: 'کندلِ ورودِ قوی (close در نیمهٔ بالا)', met: !!eomFilt?.closeStrong, detail: 'close_pos ≥ ۰.۵' },
+          { label: 'روندِ صعودیِ کلان (بالای EMA200)', met: !!eomFilt?.aboveEma, detail: 'close > EMA200' },
+        ],
+        indicators: eomInd, timeGate: eomGate,
+      }
+    }
+    // eom.state === 'NEUTRAL' ⇒ خارج از پنجره؛ لایه ساکت است و به لایه‌های بعدی می‌رویم.
+  }
+
+  // ========================================================================
   // لایهٔ SHORTِ مستقل (S97–S102 / پاسخِ User Note: «چرا سیگنالِ نزولی نمی‌دهی؟»)
   // ------------------------------------------------------------------------
   // قانونِ شمارهٔ ۱: فقط «سودِ خالصِ بیشتر» مهم است — WR مهم نیست.
