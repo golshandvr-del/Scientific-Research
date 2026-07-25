@@ -337,7 +337,8 @@ class S313_SqueezeBreakout_Long:
     def __init__(self, bb_period=20, bb_k=2.0, sqz_lookback=100, sqz_pct=0.15,
                  breakout_lb=10, ema_fast=50, ema_slow=200,
                  atr_period=14, sl_atr=1.7, tp_atr=1.7, max_hold=20,
-                 adx_min=0.0, trend_gate=True):
+                 adx_min=0.0, trend_gate=True,
+                 body_min=0.0, closepos_min=0.0, breakout_atr_min=0.0):
         self.bb_period = bb_period; self.bb_k = bb_k
         self.sqz_lookback = sqz_lookback; self.sqz_pct = sqz_pct
         self.breakout_lb = breakout_lb
@@ -346,6 +347,10 @@ class S313_SqueezeBreakout_Long:
         self.sl_atr = sl_atr; self.tp_atr = tp_atr
         self.max_hold = max_hold
         self.adx_min = adx_min; self.trend_gate = trend_gate
+        # --- فیلترهای کیفیتِ کندلِ شکست (بهبودهای احیا؛ ۰ = غیرفعال) ---
+        self.body_min = body_min             # حداقلِ نسبتِ بدنه به دامنهٔ کندل (0..1)
+        self.closepos_min = closepos_min     # حداقلِ موقعیتِ close در دامنهٔ کندل (0..1)
+        self.breakout_atr_min = breakout_atr_min  # حداقلِ فاصلهٔ عبور از سقف بر حسبِ ATR
         self._sig = None; self._atr = None
 
     def _precompute(self, df):
@@ -385,13 +390,28 @@ class S313_SqueezeBreakout_Long:
         adx = pd.Series(np.asarray(adx)).fillna(0).to_numpy()
         # --- بالاترین high در breakout_lb کندلِ گذشته (i-breakout_lb .. i-1) ---
         prior_high = pd.Series(h).rolling(self.breakout_lb).max().shift(1).to_numpy()
+        # --- کیفیتِ کندلِ شکست (بدنه، موقعیتِ close، عمقِ عبور بر حسبِ ATR) ---
+        o = df['open'].to_numpy(); lo = df['low'].to_numpy()
+        rng = np.maximum(h - lo, 1e-9)
+        body_ratio = np.abs(cl - o) / rng                 # نسبتِ بدنه
+        close_pos = (cl - lo) / rng                       # موقعیتِ close در دامنه (۱=سقف)
+        bull_body = cl > o                                # کندلِ صعودی
+        atr_np = self._atr
+        with np.errstate(invalid='ignore'):
+            breakout_depth_atr = (cl - prior_high) / np.where(atr_np > 0, atr_np, np.nan)
         # --- سیگنالِ خام روی کندلِ i (تصمیم روی close[i]، اجرا open[i+1]) ---
         sqz_prev = np.concatenate([[np.nan], bw_pct[:-1]])   # فشردگی درست پیش از i
         squeeze = sqz_prev <= self.sqz_pct
         breakout = cl > prior_high
         trend = (ef > es) if self.trend_gate else np.ones(n, dtype=bool)
         strong = adx >= self.adx_min
-        raw = squeeze & breakout & trend & strong
+        q_body = body_ratio >= self.body_min if self.body_min > 0 else np.ones(n, bool)
+        q_cpos = close_pos >= self.closepos_min if self.closepos_min > 0 else np.ones(n, bool)
+        q_bull = bull_body if (self.body_min > 0 or self.closepos_min > 0) else np.ones(n, bool)
+        q_depth = (breakout_depth_atr >= self.breakout_atr_min
+                   if self.breakout_atr_min > 0 else np.ones(n, bool))
+        q_depth = np.where(np.isnan(q_depth), False, q_depth).astype(bool)
+        raw = squeeze & breakout & trend & strong & q_body & q_cpos & q_bull & q_depth
         self._sig = np.where(np.isnan(raw), False, raw).astype(bool)
 
     def advise(self, ctx):
