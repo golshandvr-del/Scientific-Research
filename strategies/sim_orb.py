@@ -98,8 +98,9 @@ class SessionORB:
 
         # SMAِ بلندِ ATR برای فیلترِ رژیمِ نوسان (بهبودِ S330)
         if self.regime_atr_ratio_max > 0:
+            _mp = min(50, max(5, self.regime_atr_ma // 2))  # min_periods هرگز > window نشود
             self._atr_ma = (pd.Series(self._atr)
-                            .rolling(self.regime_atr_ma, min_periods=50)
+                            .rolling(self.regime_atr_ma, min_periods=_mp)
                             .mean().to_numpy())
         else:
             self._atr_ma = None
