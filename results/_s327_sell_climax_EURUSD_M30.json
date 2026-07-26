@@ -1,0 +1,48 @@
+{
+  "key": "EURUSD_M30",
+  "cfg": {
+    "k_body": 1.6,
+    "br_min": 0.6,
+    "streak_n": 2,
+    "rsi_lo": 30,
+    "regime": "trend",
+    "sl_m": 2.0,
+    "tp_m": 0.7,
+    "hold": 16
+  },
+  "rqs": 86.9,
+  "passed": true,
+  "gates": {
+    "G0": true,
+    "G1": true,
+    "G2": true,
+    "G3": true,
+    "G4": true,
+    "G5": true
+  },
+  "metrics": {
+    "n_trades": 95,
+    "win_rate": 84.21,
+    "net_profit": 716.1,
+    "profit_factor": 1.437,
+    "max_dd_pct": 2.9,
+    "max_consec_losses": 2,
+    "expectancy_pip": 2.2788,
+    "spread_cost_pip": 1.0,
+    "wr_breakeven": 50.0,
+    "wr_excess": 34.21,
+    "p_value": 0.0,
+    "sl_pip": 22.052225853341902,
+    "tp_pip": 22.052225853341902,
+    "wf_nets": [
+      9.9,
+      153.5,
+      413.8,
+      123.4
+    ],
+    "half_nets": [
+      163.7,
+      540.9
+    ]
+  }
+}
