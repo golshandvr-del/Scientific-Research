@@ -51,6 +51,10 @@ export interface RawSignal {
   reason: string                // دلیلِ فارسیِ وضعیت
   approachReason?: string       // اگر approaching: چه تأییدی لازم است
   indicators: RouterDecision['indicators']
+  // 🕒 باگِ User Note (نکتهٔ سوم): دروازهٔ زمانی برای شمارشِ معکوسِ ۲۴ساعته زیرِ کارت.
+  //   لایه‌های زمان-محور (S310/S312/...) این را پر می‌کنند تا فرانت‌اند نوارِ ریزِ
+  //   «عنوانِ لایه · ساعتِ فعال‌سازی به وقتِ ایران · شمارشِ معکوس» را بسازد.
+  timeGate?: RouterDecision['timeGate']
 }
 
 // ---------------------------------------------------------------------------
@@ -116,6 +120,7 @@ export function rawToDecision(
           `(فاصلهٔ SL ≈ ${raw.slDist.toFixed(2)}$ به ازای هر اونس).`,
       } : undefined,
       indicators: raw.indicators,
+      timeGate: raw.timeGate,
     }
   }
 
@@ -131,6 +136,7 @@ export function rawToDecision(
         ? [{ label: raw.approachReason, met: false, detail: raw.approachReason }]
         : undefined,
       indicators: raw.indicators,
+      timeGate: raw.timeGate,
     }
   }
 
@@ -142,6 +148,7 @@ export function rawToDecision(
     reason: raw.reason,
     sourceLayer,
     indicators: raw.indicators,
+    timeGate: raw.timeGate,
   }
 }
 
