@@ -530,72 +530,31 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
       'XAUUSD-M30':{ interval: '30m', range: '1mo', gap: 1800 },
       'XAUUSD-H1': { interval: '1h',  range: '3mo', gap: 3600 },
       'XAUUSD-H4': { interval: '1h',  range: '1y',  gap: 3600 },  // H4 از تجمیعِ H1 ساخته می‌شود
-      'XAUUSD-D1': { interval: '1d',  range: '2y',  gap: 86400 },
     }
     const tfc = GOLD_TF[a.id] || GOLD_TF['XAUUSD']
     const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range)
     // H4: Yahoo تایم‌فریمِ ۴ساعته را مستقیم نمی‌دهد ⇒ از تجمیعِ کندل‌های H1 می‌سازیم.
     const candles = a.id === 'XAUUSD-H4' ? aggregateCandles(rawCandles, 4) : rawCandles
-    // آستانهٔ حداقلِ کندل بسته به تایم‌فریم (D1/H4 داده کمتری دارند، اما برای EMA200 کافی است).
-    const minBars = a.id === 'XAUUSD-D1' ? 60 : (a.id === 'XAUUSD-H4' ? 60 : 220)
+    // آستانهٔ حداقلِ کندل بسته به تایم‌فریم (H4 داده کمتری دارد، اما برای EMA200 کافی است).
+    const minBars = a.id === 'XAUUSD-H4' ? 60 : 220
     if (candles.length < minBars) throw new Error('داده کافی برای تحلیل نیست')
     let spot: SpotPrice | null = null
     try { spot = await getSpotGold() } catch {}
     const merged = rebaseFuturesToSpot(candles, spot, tfc.gap)
     const useCandles = merged.candles
     const result = analyze(useCandles)
-    // 🔧 رفعِ باگِ repainting: منطقِ ماشهٔ سیگنال باید روی «کندل‌های بسته‌شده» اجرا شود
-    //   (معادلِ shift(1)ِ بک‌تست)، نه روی کندلِ زندهٔ در حالِ شکل‌گیری. result.price هم‌چنان
-    //   قیمتِ زنده است ⇒ entry روی «open کندلِ بعد» می‌نشیند، اما شرطِ سیگنال ثابت (بدونِ
-    //   repaint) روی کندلِ بستهٔ قبلی سنجیده می‌شود. تنها آرایه‌های OHLCِ ماشه از sig گرفته می‌شوند.
+    // 🔧 رفعِ باگِ repainting: منطقِ ماشهٔ سیگنال روی «کندل‌های بسته‌شده» اجرا می‌شود
+    //   (معادلِ shift(1)ِ بک‌تست)، نه کندلِ زندهٔ در حالِ شکل‌گیری. result.price هم‌چنان قیمتِ
+    //   زنده است ⇒ entry روی «open کندلِ بعد» می‌نشیند، اما شرطِ سیگنال روی کندلِ بستهٔ قبلی.
     const sig = closedBars(useCandles, tfc.gap)
-    const sigOpen = sig.map(k => k.open), sigHigh = sig.map(k => k.high)
-    const sigLow = sig.map(k => k.low), sigClose = sig.map(k => k.close)
-    const sigTimes = sig.map(k => k.time)
-    // هر تایم‌فریم منطقِ decide مخصوصِ خودش را دارد (کاملاً مستقل — ماژولار):
-    //   M5→S79 ، M30→S81 ، M15→S67 (زمان-محورها) ، H1/H4/D1→gold_htf_router (حالتِ تحقیقِ فعال).
-    // ساعت/روز/زمانِ آخرین کندلِ *بسته‌شده* — برای لایه‌های زمان-محورِ روی طلا M15 (S139/S140/S141).
-    const goldUtcHour = new Date(sig[sig.length - 1].time * 1000).getUTCHours()
-    const goldUtcDay = new Date(sig[sig.length - 1].time * 1000).getUTCDay()
-    const goldTimes = sigTimes
-    const closes = sigClose
-    let dec
-    if (a.id === 'XAUUSD-M5')      dec = decideGoldM5(result, closes, capital, riskPct,
-                                     sigOpen, sigHigh, sigLow, goldTimes)
-    else if (a.id === 'XAUUSD-M30') dec = decideGoldM30TrendLine(result, closes, capital, riskPct,
-                                     sigOpen, sigHigh, sigLow)
-    else if (a.id === 'XAUUSD-H1')  dec = decideGoldH1(result, closes, capital, riskPct,
-                                     sigOpen, sigHigh, sigLow)
-    else if (a.id === 'XAUUSD-H4')  dec = decideGoldH4(result, closes, capital, riskPct,
-                                     sigOpen, sigHigh, sigLow)
-    else if (a.id === 'XAUUSD-D1')  dec = decideGoldD1(result, closes, capital, riskPct)
-    else {
-      // کارتِ M15 طلا (id=XAUUSD): لایه‌های زمان-محور/ML عمومی (S67/S132/S168…) اولویت دارند.
-      dec = decide(result, closes, capital, riskPct, assetSpec('XAUUSD'), sigHigh, sigLow, goldUtcHour, goldUtcDay, goldTimes, sigOpen)
-      // لایهٔ مکملِ مستقلِ S215 (خطِ روندِ Al Brooks): فقط وقتی لایه‌های اصلی خنثی‌اند
-      // بررسی می‌شود (بدونِ تداخل). سهمِ مستقلِ M15 در بک‌تستِ S215b = +$2,714 (WR ۵۷.۱٪، WF-4/4).
-      if (dec.state === 'NEUTRAL') {
-        const tl = trendLineDecision(TREND_LINE_CFG['XAUUSD-M15'], result,
-          sigOpen, sigHigh, sigLow, closes, capital, riskPct)
-        if (tl.state === 'ENTRY' || tl.state === 'APPROACHING') dec = tl
-      }
-      // لایهٔ مکملِ مستقلِ S219 (کانالِ Al Brooks، position-in-channel): فقط وقتی هم لایه‌های
-      // اصلی و هم S215 خنثی‌اند (بدونِ تداخل). سهمِ مستقلِ M15 در s219_finalize = +$4,028 (WR ۵۰.۱٪، WF-4/4).
-      if (dec.state === 'NEUTRAL') {
-        const chn = channelDecision(CHANNEL_CFG['XAUUSD-M15'], result,
-          sigOpen, sigHigh, sigLow, closes, capital, riskPct)
-        if (chn.state === 'ENTRY' || chn.state === 'APPROACHING') dec = chn
-      }
+    const lastClosed = sig[sig.length - 1]
+    const goldUtcHour = new Date(lastClosed.time * 1000).getUTCHours()
+    // --- مغزِ تصمیم: رجیستریِ ماژولار (لایه‌های احیاشدهٔ همین کارت) ---
+    const ctx: LayerContext = {
+      cardId: a.card, a: result, candles: sig,
+      utcHour: goldUtcHour, times: sig.map(k => k.time), capital, riskPct,
     }
-    // 🔎 پاسخِ User Note: «همهٔ لایه‌های نزدیک به فعال‌سازی را (collapsed) نشان بده».
-    // لایه‌های ثانویهٔ فعال (ENTRY/APPROACHING) را کاوش و به تصمیمِ اصلی پیوست می‌کنیم؛
-    // فرانت‌اند آن‌ها را جمع‌شونده زیرِ سیگنالِ اصلی نمایش می‌دهد. (منطقِ برندهٔ dec دست‌نخورده)
-    dec = attachSecondary(dec, {
-      assetId: a.id, result, open: sigOpen, high: sigHigh,
-      low: sigLow, close: closes, capital, riskPct,
-      utcHour: goldUtcHour, utcDay: goldUtcDay, times: goldTimes,
-      primaryCode: dec.sourceLayer?.code,
-    })
+    const dec = runCard(ctx)
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
