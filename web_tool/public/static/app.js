@@ -679,6 +679,56 @@ function renderApproaching(a, d) {
 }
 
 // -------------------------- حالت ۳: ورود --------------------------
+// 🧭 باگِ User Note #۵: راهنمای «سبکِ مدیریتِ TP/SL» در همان لحظهٔ ورود.
+// ---------------------------------------------------------------------------
+// بعضی لایه‌ها TP/SL *ثابت* دارند (fixed-tp-sl) و بعضی *متحرک/ساختاری*
+// (let-run-trail / structural-trail / regime-atr-trail). پیش از این، بنرِ قفل به
+// همهٔ لایه‌ها یکسان می‌گفت «TP/SL ثابت می‌ماند» که برای لایه‌های trailing **گمراه‌کننده**
+// بود. این تابع سبکِ واقعیِ لایهٔ سیگنال را می‌خواند و به کاربر می‌گوید که پس از ورود
+// دقیقاً چه انتظاری داشته باشد (ثابت بمان، یا آماده باش که SL را جلو بکشی).
+const MANAGE_STYLE_FA = {
+  'let-run-trail': 'بگذار بردها بدوند (تریلِ متحرک)',
+  'structural-trail': 'تریلِ ساختاری (پرایس-اکشن)',
+  'regime-atr-trail': 'تریلِ رژیم-آگاه (ATR)',
+  'fixed-tp-sl': 'TP/SL ثابت',
+}
+function manageStyleGuide(d) {
+  const mg = d && d.sourceLayer && d.sourceLayer.manage
+  const style = mg && mg.style
+  if (!style) return ''   // لایه‌ای که سبکِ مدیریت اعلام نکرده ⇒ چیزی نشان نده (fail-safe)
+  const styleFa = MANAGE_STYLE_FA[style] || style
+  if (style === 'fixed-tp-sl') {
+    // لایهٔ ثابت: صریحاً بگو جابه‌جا نکن.
+    return `
+      <div class="mt-2 rounded-lg bg-slate-800/60 border border-slate-600/50 p-2.5">
+        <div class="flex items-center gap-2">
+          <i class="fas fa-lock text-slate-400"></i>
+          <span class="text-xs font-bold text-slate-200">سبکِ مدیریت: ${styleFa}</span>
+        </div>
+        <p class="text-[11px] text-slate-400 leading-relaxed mt-1">
+          این لایه TP/SL <b class="text-slate-200">ثابت</b> دارد. بعد از ورود، TP و SL را
+          <b class="text-slate-200">جابه‌جا نکن</b>؛ بگذار معامله تا برخورد به TP/SL یا سقفِ نگه‌داری
+          ادامه یابد. جابه‌جاییِ دستی معمولاً نتیجهٔ این لایه را خراب می‌کند.
+        </p>
+      </div>`
+  }
+  // لایه‌های متحرک: به کاربر آماده‌باش بده که پس از ورود trail خواهد کرد.
+  const beTrig = (mg.beTriggerR != null) ? mg.beTriggerR : 1.0
+  return `
+    <div class="mt-2 rounded-lg bg-sky-500/10 border border-sky-500/30 p-2.5">
+      <div class="flex items-center gap-2">
+        <i class="fas fa-arrows-up-to-line text-sky-300"></i>
+        <span class="text-xs font-bold text-sky-200">سبکِ مدیریت: ${styleFa} — TP/SL متحرک</span>
+      </div>
+      <p class="text-[11px] text-sky-100/75 leading-relaxed mt-1">
+        این لایه TP/SL <b class="text-sky-100">متحرک</b> دارد. الان با همین SL وارد شو؛ اما به‌محضِ رسیدن به
+        <b class="text-sky-100">${beTrig}R سود</b>، سایت در بخشِ «مدیریتِ معامله» به تو می‌گوید که SL را ابتدا به
+        نقطهٔ ورود (بریک‌ایون) و سپس پشتِ قیمت بکشی تا سود قفل شود. <b class="text-sky-100">همین حالا SL را دستی جلو نبر</b> —
+        منتظرِ فرمانِ گام‌به‌گامِ سایت بمان.
+      </p>
+    </div>`
+}
+
 function renderEntry(a, d) {
   const isLong = d.direction === 'LONG'
   const dirColor = isLong ? 'text-emerald-400' : 'text-rose-400'
