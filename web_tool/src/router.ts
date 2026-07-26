@@ -234,7 +234,20 @@ export interface RouterDecision {
     direction?: 'LONG' | 'SHORT'
     reason: string
     confirmations?: Confirmation[]
+    // 🔧 باگِ User Note #۴: برای لایه‌های همزمانِ ENTRY، اعدادِ کاملِ معامله هم منتقل
+    //   می‌شود تا کاربر بتواند هر لایهٔ فعال را به‌طورِ مستقل معامله کند (نه فقط ببیند).
+    entry?: number
+    tp?: number
+    sl?: number
+    rr?: string
+    probability?: number
+    sizing?: RouterDecision['sizing']
+    tpPlan?: RouterDecision['tpPlan']
   }[]
+  // 🕒 باگِ User Note #۳: فهرستِ *همهٔ* دروازه‌های زمانیِ لایه‌های این کارت (فارغ از
+  //   اینکه کدام لایه اکنون primary است) تا فرانت‌اند یک نوارِ شمارشِ معکوسِ مستقلِ
+  //   ۲۴ساعته زیرِ کارت بسازد: «عنوانِ لایه · ساعتِ فعال‌سازی (ایران) · countdown».
+  cardTimeGates?: NonNullable<RouterDecision['timeGate']>[]
   // شاخص‌های کلیدی برای شفافیت (همیشه)
   indicators: { name: string; value: string; status: 'ok' | 'warn' | 'bad' | 'neutral' }[]
 
