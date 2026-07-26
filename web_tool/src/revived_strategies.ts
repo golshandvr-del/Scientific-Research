@@ -215,3 +215,123 @@ export function decideS328(cfg: S328Config, a: AnalysisResult, candles: Candle[]
     filters: [isFinite(cfg.adxMax) ? `فیلترِ رژیم ADX≤${cfg.adxMax}` : 'بدونِ فیلترِ ADX (H1)', `RSI-${cfg.rsiPeriod} cross-back از ${cfg.hi}`],
   }, cfg.id, a.price, reg, capital, riskPct)
 }
+
+// ===========================================================================
+// S330 — Session-ORB Fade (سشنِ آسیا) + فیلترِ رژیمِ نوسان   منشأ: S21
+// ---------------------------------------------------------------------------
+// بازهٔ افتتاحیهٔ سشنِ آسیا (شروع ۰ UTC، or_bars=12 کندلِ M5 = ۱ ساعت) را می‌سازیم.
+// در پنجرهٔ trade_window_bars=48 پس از بسته‌شدنِ بازه، اگر یک کندل بیرون از بازه بسته
+// شود سپس کندلِ بعدی close را **به داخلِ بازه بازگرداند** ⇒ شکستِ کاذب ⇒ fade:
+//   شکستِ بالا که پس گرفته شد ⇒ SHORT ؛ شکستِ پایین که پس گرفته شد ⇒ LONG.
+// TP/SL = or_range × k (k_sl=k_tp=1.0 ⇒ RR متقارن، شناور بر حسبِ عرضِ بازه).
+// فیلترِ رژیم: ATR14/ATR_MA(500) ≤ 1.1 (نوسانِ غیرِ افراطی — بهبودِ کلیدیِ احیا).
+// ===========================================================================
+export interface S330Config {
+  id: string                    // XAUUSD-M5
+  sessionStartHourUtc: number   // 0
+  orBars: number                // 12
+  tradeWindowBars: number       // 48
+  kSl: number                   // 1.0
+  kTp: number                   // 1.0
+  maxHold: number               // 48
+  regimeAtrRatioMax: number     // 1.1
+  regimeAtrMa: number           // 500
+}
+
+export const S330_CFG: Record<string, S330Config> = {
+  'XAUUSD-M5': {
+    id: 'XAUUSD-M5', sessionStartHourUtc: 0, orBars: 12, tradeWindowBars: 48,
+    kSl: 1.0, kTp: 1.0, maxHold: 48, regimeAtrRatioMax: 1.1, regimeAtrMa: 500,
+  },
+}
+
+// بازهٔ افتتاحیهٔ سشنِ جاری را پیدا می‌کند (اندیسِ شروع = اولین کندلِ ساعتِ session_start).
+function findSessionOpen(times: number[], startHourUtc: number): number {
+  for (let i = times.length - 1; i >= 1; i--) {
+    const h = new Date(times[i] * 1000).getUTCHours()
+    const hPrev = new Date(times[i - 1] * 1000).getUTCHours()
+    if (h === startHourUtc && hPrev !== startHourUtc) return i
+  }
+  return -1
+}
+
+export function computeS330(candles: Candle[], cfg: S330Config): RawSignal {
+  const n = candles.length
+  const close = candles.map(c => c.close)
+  const times = candles.map(c => c.time)
+  const atr14 = atr(candles, 14)
+  const atrMa = sma(atr14, cfg.regimeAtrMa)
+  const i = n - 1
+
+  const empty = (reason: string, ind: RouterDecision['indicators']): RawSignal => ({
+    active: false, approaching: false, direction: 'LONG', slDist: 0, tpDist: 0,
+    maxHoldBars: cfg.maxHold, reason, indicators: ind,
+  })
+
+  // فیلترِ رژیمِ نوسان
+  const atrRatio = atrMa[i] > 0 ? atr14[i] / atrMa[i] : NaN
+  const regimeOk = Number.isFinite(atrRatio) && atrRatio <= cfg.regimeAtrRatioMax
+  const indBase: RouterDecision['indicators'] = [
+    { name: `رژیمِ نوسان (ATR14/ATR_MA${cfg.regimeAtrMa} ≤ ${cfg.regimeAtrRatioMax})`,
+      value: Number.isFinite(atrRatio) ? atrRatio.toFixed(2) + (regimeOk ? ' ✔' : ' ✘ نوسانِ افراطی') : '—',
+      status: (regimeOk ? 'ok' : 'bad') as 'ok' | 'bad' },
+  ]
+
+  const openIdx = findSessionOpen(times, cfg.sessionStartHourUtc)
+  if (openIdx < 0 || openIdx + cfg.orBars >= n) {
+    return empty('بازهٔ افتتاحیهٔ سشنِ آسیا هنوز کامل نشده یا یافت نشد؛ صبر می‌کنیم.', indBase)
+  }
+  // بازهٔ افتتاحیه: [openIdx , openIdx+orBars)
+  let orHi = -Infinity, orLo = Infinity
+  for (let k = openIdx; k < openIdx + cfg.orBars; k++) { orHi = Math.max(orHi, candles[k].high); orLo = Math.min(orLo, candles[k].low) }
+  const orRange = orHi - orLo
+  const winStart = openIdx + cfg.orBars
+  const inWindow = i >= winStart && i <= winStart + cfg.tradeWindowBars
+  indBase.push({ name: 'بازهٔ افتتاحیهٔ آسیا (OR)', value: `${orLo.toFixed(2)}–${orHi.toFixed(2)} (${(orRange / GOLD_PIP).toFixed(0)} pip)`, status: 'neutral' })
+
+  if (!(orRange > 0) || !inWindow) {
+    return empty(inWindow ? 'عرضِ بازهٔ افتتاحیه نامعتبر است.' : 'خارج از پنجرهٔ معاملاتیِ پس از بازهٔ افتتاحیه؛ سیگنالی نیست.', indBase)
+  }
+  if (!regimeOk) return empty('نوسانِ بازار افراطی است (فیلترِ رژیم رد شد)؛ fade نمی‌کنیم.', indBase)
+
+  const slDist = cfg.kSl * orRange
+  const tpDist = cfg.kTp * orRange
+
+  // شکستِ کاذب: کندلِ قبل بیرونِ بازه بسته شد، کندلِ جاری close را داخلِ بازه بازگرداند
+  const prevBreakUp = close[i - 1] > orHi
+  const prevBreakDn = close[i - 1] < orLo
+  const backInside = close[i] <= orHi && close[i] >= orLo
+  const fadeShort = prevBreakUp && backInside      // شکستِ بالا پس گرفته شد ⇒ فروش
+  const fadeLong = prevBreakDn && backInside       // شکستِ پایین پس گرفته شد ⇒ خرید
+
+  if (fadeShort || fadeLong) {
+    const dir: 'LONG' | 'SHORT' = fadeLong ? 'LONG' : 'SHORT'
+    return {
+      active: true, approaching: false, direction: dir, slDist, tpDist, maxHoldBars: cfg.maxHold,
+      reason: `شکستِ کاذبِ ${fadeLong ? 'پایینِ' : 'بالای'} بازهٔ افتتاحیهٔ آسیا پس گرفته شد (close داخلِ بازه) و رژیمِ نوسان سالم است ⇒ ${fadeLong ? 'خرید' : 'فروش'} (fade).`,
+      indicators: indBase,
+    }
+  }
+
+  // approaching: قیمت هم‌اکنون بیرونِ بازه است (منتظرِ بازگشتِ close به داخل)
+  const outsideNow = close[i] > orHi || close[i] < orLo
+  return {
+    active: false, approaching: outsideNow, direction: close[i] > orHi ? 'SHORT' : 'LONG',
+    slDist, tpDist, maxHoldBars: cfg.maxHold,
+    reason: outsideNow
+      ? `قیمت بیرونِ بازهٔ افتتاحیهٔ آسیاست؛ منتظرِ بازگشتِ close به داخلِ بازه برای تأییدِ شکستِ کاذب (fade).`
+      : `قیمت داخلِ بازهٔ افتتاحیه است؛ هنوز شکستِ کاذبی برای fade رخ نداده.`,
+    approachReason: outsideNow ? 'بازگشتِ close به داخلِ بازهٔ افتتاحیه' : undefined,
+    indicators: indBase,
+  }
+}
+
+export function decideS330(cfg: S330Config, a: AnalysisResult, candles: Candle[], capital = 10000, riskPct = 1.0): RouterDecision {
+  const raw = computeS330(candles, cfg)
+  const reg = lightRegime(candles.map(c => c.close), 0, false, 's330_orb_fade')
+  return rawToDecision(raw, {
+    code: 'S330', name: 'Session-ORB Fade (آسیا)', kind: 'session' as any,
+    manageStyle: 'fixed-tp-sl', manageNote: 'TP/SL شناور بر عرضِ بازهٔ افتتاحیه (RR متقارن). تا max_hold یا برخورد نگه‌دار.',
+    filters: ['سشنِ آسیا (۰ UTC)', 'شکستِ کاذبِ بازهٔ افتتاحیه', `فیلترِ رژیم ATR14/ATR_MA${cfg.regimeAtrMa}≤${cfg.regimeAtrRatioMax}`],
+  }, cfg.id, a.price, reg, capital, riskPct)
+}
