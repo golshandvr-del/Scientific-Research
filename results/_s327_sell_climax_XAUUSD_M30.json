@@ -1,0 +1,49 @@
+{
+  "key": "XAUUSD_M30",
+  "cfg": {
+    "k_body": 2.5,
+    "br_min": 0.45,
+    "streak_n": 2,
+    "rsi_lo": 35,
+    "regime": "trend",
+    "sl_m": 2.4,
+    "tp_m": 1.0,
+    "hold": 16,
+    "be": null
+  },
+  "rqs": 83.5,
+  "passed": true,
+  "gates": {
+    "G0": true,
+    "G1": true,
+    "G2": true,
+    "G3": true,
+    "G4": true,
+    "G5": true
+  },
+  "metrics": {
+    "n_trades": 288,
+    "win_rate": 77.08,
+    "net_profit": 2282.9,
+    "profit_factor": 1.371,
+    "max_dd_pct": 4.63,
+    "max_consec_losses": 3,
+    "expectancy_pip": 12.0796,
+    "spread_cost_pip": 3.3,
+    "wr_breakeven": 50.0,
+    "wr_excess": 27.08,
+    "p_value": 0.0,
+    "sl_pip": 66.36082797069115,
+    "tp_pip": 66.36082797069115,
+    "wf_nets": [
+      2.5,
+      215.5,
+      700.1,
+      1318.5
+    ],
+    "half_nets": [
+      218.0,
+      2096.7
+    ]
+  }
+}
