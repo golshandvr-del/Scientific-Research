@@ -117,7 +117,7 @@ export function rawToDecision(
       reason: raw.reason,
       sourceLayer,
       confirmations: raw.approachReason
-        ? [{ label: raw.approachReason, met: false } as any]
+        ? [{ label: raw.approachReason, met: false, detail: raw.approachReason }]
         : undefined,
       indicators: raw.indicators,
     }
