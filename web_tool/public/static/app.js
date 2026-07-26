@@ -503,6 +503,40 @@ function renderSourceLayer(d) {
     </div>`
 }
 
+// --- لایه‌های همزمانِ فعال (otherLayers) — قانونِ همپوشانی + User Note #4 ---
+// وقتی چند لایهٔ احیاشدهٔ همان کارت همزمان ENTRY/APPROACHING می‌دهند، لایهٔ اصلی
+// نمایشِ کامل دارد و بقیه این‌جا (جمع‌شونده) فهرست می‌شوند تا کاربر شفافیتِ کامل
+// داشته باشد که «چند لایه هم‌جهت تأیید کرده‌اند».
+function renderOtherLayers(d) {
+  const others = d.otherLayers
+  if (!others || !others.length) return ''
+  const rows = others.map(o => {
+    const stFa = o.state === 'ENTRY' ? 'ورود' : 'نزدیک‌شدن'
+    const stColor = o.state === 'ENTRY' ? 'text-emerald-300' : 'text-amber-300'
+    const dirFa = o.direction === 'LONG' ? 'خرید' : o.direction === 'SHORT' ? 'فروش' : '—'
+    const kindFa = LAYER_KIND_FA[o.kind] || o.kind || ''
+    return `
+      <li class="flex items-start gap-2 py-1.5 border-t border-slate-700/40 first:border-t-0">
+        <span class="rounded bg-slate-700/60 px-1.5 py-0.5 text-[10px] text-slate-200 tabular-nums" dir="ltr">${o.code}</span>
+        <div class="flex-1">
+          <div class="flex items-center gap-1.5 text-[11px]">
+            <span class="font-bold text-slate-200">${o.name}</span>
+            <span class="${stColor}">(${stFa} ${dirFa})</span>
+            <span class="text-[10px] text-slate-500">${kindFa}</span>
+          </div>
+          ${o.reason ? `<p class="text-[10px] text-slate-500 leading-relaxed mt-0.5">${o.reason}</p>` : ''}
+        </div>
+      </li>`
+  }).join('')
+  return `
+    <details class="mt-2 rounded-md bg-slate-800/40 border border-slate-700/50 px-2.5 py-1.5">
+      <summary class="cursor-pointer text-[11px] text-slate-300 font-bold select-none">
+        <i class="fas fa-layer-group text-indigo-300 ml-1"></i>${others.length} لایهٔ هم‌جهتِ دیگر هم تأیید کرده‌اند
+      </summary>
+      <ul class="mt-1.5">${rows}</ul>
+    </details>`
+}
+
 // -------------------------- حالت ۱: خنثی --------------------------
 // طبقِ تعریفِ سایت: در خنثی ربات باید صریحاً بگوید «به‌دلیلِ کدام لایه/شاخص‌ها»
 // هنوز واردِ معامله نمی‌شود ⇒ منبعِ لایهٔ ناظر + شاخص‌های نامشخص نمایش داده می‌شوند.
