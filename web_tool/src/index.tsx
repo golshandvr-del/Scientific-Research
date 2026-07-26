@@ -482,33 +482,29 @@ app.get('/api/context', async (c) => {
 //    صریحاً می‌گوید «در دستِ تحقیق»؛ آماده برای گسترشِ آینده بدونِ تغییرِ معماری).
 // فیلدِ `tf`: تایم‌فریمِ Yahoo برای دریافتِ کندل (5m/15m/30m/1m). فقط برای کارت‌های
 //   غیرطلا کاربرد دارد (طلا تایم‌فریمش را از id می‌گیرد).
-const ASSETS: { id: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' | 'placeholder' | 'htf'; tf?: string }[] = [
-  { id: 'XAUUSD',     name: 'طلا / دلار — نوسانی (M15)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing' },
-  { id: 'XAUUSD-M5',  name: 'طلا / دلار — اسکالپ (M5)',    symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
-  // XAUUSD-M30: در نشستِ S215 با لایهٔ «خطِ روندِ Al Brooks» (فصلِ ۱۳) دوباره فعال شد.
-  //   قبلاً S81 داشت که در S163 حذف شد؛ حالا لبهٔ trend-lineِ اثبات‌شده (+$5,599، مستقل).
-  { id: 'XAUUSD-M30', name: 'طلا / دلار — میان‌مدت (M30)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing-m30' },
-  // --- تایم‌فریم‌های بالای طلا (درخواستِ User Note) — هر کارت منطقِ مستقلِ خودش را دارد ---
-  //   H1/H4/D1 فعلاً در «حالتِ تحقیقِ فعال» هستند (بدونِ سیگنالِ ورودِ خام تا کشفِ لایهٔ
-  //   اثبات‌شده) اما تحلیلِ روند/رژیمِ مخصوصِ همان تایم‌فریم را نمایش می‌دهند. منطق در
-  //   gold_htf_router.ts (decideGoldH1/H4/D1) — کاملاً مستقل و ماژولار.
-  { id: 'XAUUSD-H1',  name: 'طلا / دلار — یک‌ساعته (H1)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
-  { id: 'XAUUSD-H4',  name: 'طلا / دلار — چهارساعته (H4)', symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
-  { id: 'XAUUSD-D1',  name: 'طلا / دلار — روزانه (D1)',    symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
-  // ⛔ S81 (XAUUSD-M30 / Swing Trend-Pullback) در نشستِ S163 طبقِ تصمیمِ صریحِ کاربر
-  //    کاملاً حذف شد: WR=۲۸٪ داشت و رساندنِ آن به WR≥۴۰٪ سود را −۹٬۵۳۱$ نابود می‌کرد.
-  //    کاربر خواست هر لایه‌ای که برای WR≥۴۰ ضررده می‌شود حذف شود. (روتر decideGoldM30 باقی
-  //    مانده اما دیگر فراخوانی نمی‌شود.) رجوع: results/EnforceWR40_RemoveS81_NetProfit_218739.md
-  // EURUSD: در S187–S189 لایهٔ S73 به تایم‌فریمِ M5 ارتقا یافت (net +$8,911/WR ۵۹.۶٪ روی M5
-  //   در برابرِ +$4,224/۵۵.۳٪ روی M15؛ گیتِ سختِ کامل + قانونِ همپوشانی ⇒ ارتقا نه افزودن).
-  //   منبعِ کندل حالا 5m است؛ منطقِ decideEurusd (ساعتِ ۰ UTC + pullback ۴-کندلی) دست‌نخورده.
-  { id: 'EURUSD',     name: 'یورو / دلار — اسکالپ (M5)',   symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp',  tf: '5m'  },
-  // --- تفکیکِ تایم‌فریمِ EURUSD (درخواستِ کاربر) — هم‌ساختار با طلا ---
-  //   این کارت‌ها فعلاً استراتژیِ اثبات‌شدهٔ اختصاصیِ خود را ندارند ⇒ قالبِ خام (placeholder).
-  //   داده/قیمتِ زنده را نشان می‌دهند و آماده‌ی افزودنِ منطق در تحقیقِ آینده‌اند (هر کارت مستقل).
-  { id: 'EURUSD-M15', name: 'یورو / دلار — نوسانی (M15)',  symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '15m' },
-  { id: 'EURUSD-M30', name: 'یورو / دلار — میان‌مدت (M30)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '30m' },
-  { id: 'EURUSD-M1',  name: 'یورو / دلار — ریز-اسکالپ (M1)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'placeholder', tf: '1m' },
+// ---------------------------------------------------------------------------
+// ASSETS — فهرستِ کارت‌های سایت. پس از حذفِ کاملِ استراتژی‌های قدیمی (User Note)،
+// فقط کارت‌هایی می‌مانند که ≥۱ لایهٔ احیاشدهٔ ACCEPTED (RQS+≥80) در رجیستری دارند.
+//   فیلدِ `card` = کلیدِ CARD_LAYERS در strategy_registry.ts (منبعِ منطقِ تصمیم).
+//   هر کارت مستقل است؛ افزودنِ کارت/لایهٔ جدید فقط این جدول + CARD_LAYERS را تغییر می‌دهد.
+//
+//   کارت         لایه‌های ACCEPTED
+//   XAUUSD-M5    S330·S328·S327·S326
+//   XAUUSD-M15   S324·S322·S323·S310·S312
+//   XAUUSD-M30   S313·S324·S321·S327·S326·S323·S312
+//   XAUUSD-H1    S313·S328·S327·S323·S312
+//   XAUUSD-H4    S327
+//   EURUSD-M15   S326
+//   EURUSD-M30   S327
+// ---------------------------------------------------------------------------
+const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' | 'placeholder' | 'htf'; tf?: string }[] = [
+  { id: 'XAUUSD-M5',  card: 'XAUUSD-M5',  name: 'طلا / دلار — M5 (پنج‌دقیقه‌ای)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
+  { id: 'XAUUSD',     card: 'XAUUSD-M15', name: 'طلا / دلار — M15 (پانزده‌دقیقه‌ای)', symbol: 'GC=F',   isGold: true,  decimals: 2, layer: 'swing' },
+  { id: 'XAUUSD-M30', card: 'XAUUSD-M30', name: 'طلا / دلار — M30 (سی‌دقیقه‌ای)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing-m30' },
+  { id: 'XAUUSD-H1',  card: 'XAUUSD-H1',  name: 'طلا / دلار — H1 (یک‌ساعته)',      symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
+  { id: 'XAUUSD-H4',  card: 'XAUUSD-H4',  name: 'طلا / دلار — H4 (چهارساعته)',     symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
+  { id: 'EURUSD-M15', card: 'EURUSD-M15', name: 'یورو / دلار — M15 (پانزده‌دقیقه‌ای)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '15m' },
+  { id: 'EURUSD-M30', card: 'EURUSD-M30', name: 'یورو / دلار — M30 (سی‌دقیقه‌ای)',  symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '30m' },
 ]
 
 // پیوستِ لایه‌های ثانویهٔ فعال به یک تصمیم (بدونِ تغییرِ منطقِ برندهٔ آن).
