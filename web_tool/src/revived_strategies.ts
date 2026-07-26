@@ -335,3 +335,114 @@ export function decideS330(cfg: S330Config, a: AnalysisResult, candles: Candle[]
     filters: ['سشنِ آسیا (۰ UTC)', 'شکستِ کاذبِ بازهٔ افتتاحیه', `فیلترِ رژیم ATR14/ATR_MA${cfg.regimeAtrMa}≤${cfg.regimeAtrRatioMax}`],
   }, cfg.id, a.price, reg, capital, riskPct)
 }
+
+// ===========================================================================
+// S322 — Ichimoku Kumo breakout-pullback (LONG)   XAUUSD M15
+// ---------------------------------------------------------------------------
+// اجزای Ichimoku (Bill Williams / Goichi Hosoda): Tenkan(9)، Kijun(26)،
+//   Senkou-A=(Tenkan+Kijun)/2، Senkou-B=(max52High+min52Low)/2، ابر=Kumo.
+// ورود LONG: قیمت بالای Kumo با da_min (جدایی/ATR)، ابرِ ضخیم (thick_min/ATR)،
+//   gap کافی (gap_min/ATR بینِ Senkouها)، و pullback به Kijun (فاصله ≤ kijun_atr_max×ATR)،
+//   RSI ∈ [rsi_min, rsi_max]. SL=2.5×ATR، TP=3.3×ATR، max_hold=56. غیر-رند.
+// ===========================================================================
+export interface S322Config {
+  id: string
+  tenkan: number; kijun: number; senkouB: number
+  kijunAtrMax: number; thickMin: number; gapMin: number; daMin: number
+  rsiMin: number; rsiMax: number
+  slMult: number; tpMult: number; maxHold: number
+}
+
+export const S322_CFG: Record<string, S322Config> = {
+  'XAUUSD-M15': {
+    id: 'XAUUSD-M15', tenkan: 9, kijun: 26, senkouB: 52,
+    kijunAtrMax: 0.62, thickMin: 0.32, gapMin: 0.22, daMin: 0.25,
+    rsiMin: 45, rsiMax: 90, slMult: 2.5, tpMult: 3.3, maxHold: 56,
+  },
+}
+
+function donchianMid(high: number[], low: number[], i: number, len: number): number {
+  if (i < len - 1) return NaN
+  let hi = -Infinity, lo = Infinity
+  for (let k = i - len + 1; k <= i; k++) { hi = Math.max(hi, high[k]); lo = Math.min(lo, low[k]) }
+  return (hi + lo) / 2
+}
+
+export function computeS322(candles: Candle[], cfg: S322Config): RawSignal {
+  const high = candles.map(c => c.high), low = candles.map(c => c.low), close = candles.map(c => c.close)
+  const atr14 = atr(candles, 14)
+  const r = rsi(close, 14)
+  const i = close.length - 1
+  const atrVal = atr14[i]
+
+  const empty = (reason: string, ind: RouterDecision['indicators']): RawSignal => ({
+    active: false, approaching: false, direction: 'LONG', slDist: 0, tpDist: 0,
+    maxHoldBars: cfg.maxHold, reason, indicators: ind,
+  })
+
+  // Ichimoku جاری (ابر با شیفتِ ۲۶ به جلو ⇒ برای کندلِ جاری از داده‌ی ۲۶ کندلِ قبل)
+  const tenkanNow = donchianMid(high, low, i, cfg.tenkan)
+  const kijunNow = donchianMid(high, low, i, cfg.kijun)
+  const shift = cfg.kijun
+  const spanAAt = (j: number) => (donchianMid(high, low, j, cfg.tenkan) + donchianMid(high, low, j, cfg.kijun)) / 2
+  const spanBAt = (j: number) => donchianMid(high, low, j, cfg.senkouB)
+  const jSrc = i - shift
+  const senkouA = jSrc >= 0 ? spanAAt(jSrc) : NaN
+  const senkouB = jSrc >= 0 ? spanBAt(jSrc) : NaN
+
+  if ([atrVal, kijunNow, senkouA, senkouB, r[i]].some(v => !Number.isFinite(v)) || !(atrVal > 0)) {
+    return empty('دادهٔ کافی برای محاسبهٔ Ichimoku/ATR نیست.', [])
+  }
+
+  const cloudTop = Math.max(senkouA, senkouB)
+  const cloudBot = Math.min(senkouA, senkouB)
+  const thickness = (cloudTop - cloudBot) / atrVal          // ضخامتِ ابر / ATR
+  const gap = Math.abs(senkouA - senkouB) / atrVal          // فاصلهٔ SenkouA/B / ATR
+  const price = close[i]
+  const da = (price - cloudTop) / atrVal                    // جدایی از سقفِ ابر / ATR
+  const kijunDist = Math.abs(price - kijunNow) / atrVal     // فاصله تا Kijun (pullback)
+  const rsiNow = r[i]
+
+  const aboveCloud = price > cloudTop
+  const daOk = da >= cfg.daMin
+  const thickOk = thickness >= cfg.thickMin
+  const gapOk = gap >= cfg.gapMin
+  const pullbackOk = kijunDist <= cfg.kijunAtrMax
+  const rsiOk = rsiNow >= cfg.rsiMin && rsiNow <= cfg.rsiMax
+
+  const ind: RouterDecision['indicators'] = [
+    { name: 'قیمت نسبت به ابرِ Kumo', value: aboveCloud ? `بالای ابر (جدایی ${da.toFixed(2)}×ATR)` : 'داخل/زیرِ ابر', status: aboveCloud && daOk ? 'ok' : 'warn' },
+    { name: `ضخامتِ ابر (≥${cfg.thickMin}×ATR)`, value: thickness.toFixed(2) + (thickOk ? ' ✔' : ' ✘'), status: thickOk ? 'ok' : 'warn' },
+    { name: `pullback به Kijun (≤${cfg.kijunAtrMax}×ATR)`, value: kijunDist.toFixed(2) + (pullbackOk ? ' ✔' : ' ✘'), status: pullbackOk ? 'ok' : 'neutral' },
+    { name: `RSI-14 ∈ [${cfg.rsiMin},${cfg.rsiMax}]`, value: rsiNow.toFixed(0) + (rsiOk ? ' ✔' : ' ✘'), status: rsiOk ? 'ok' : 'warn' },
+  ]
+
+  const slDist = cfg.slMult * atrVal
+  const tpDist = cfg.tpMult * atrVal
+  const active = aboveCloud && daOk && thickOk && gapOk && pullbackOk && rsiOk
+  // approaching: بالای ابرِ سالم اما هنوز pullback به Kijun نرسیده
+  const approaching = !active && aboveCloud && daOk && thickOk && gapOk && rsiOk && !pullbackOk
+
+  return {
+    active, approaching, direction: 'LONG', slDist, tpDist, maxHoldBars: cfg.maxHold,
+    reason: active
+      ? `قیمت بالای ابرِ ضخیمِ Kumo (جدایی ${da.toFixed(2)}×ATR) و در pullback به Kijun است، RSI سالم ⇒ خرید.`
+      : approaching
+        ? `روندِ صعودیِ Ichimoku تأیید است اما قیمت هنوز به Kijun برنگشته؛ منتظرِ pullback برای ورود.`
+        : `شرایطِ کاملِ Ichimoku (بالای ابرِ ضخیم + pullback + RSI) برقرار نیست.`,
+    approachReason: approaching ? `pullback قیمت به نزدیکیِ Kijun (≤${cfg.kijunAtrMax}×ATR)` : undefined,
+    indicators: ind,
+  }
+}
+
+export function decideS322(cfg: S322Config, a: AnalysisResult, candles: Candle[], capital = 10000, riskPct = 1.0): RouterDecision {
+  const raw = computeS322(candles, cfg)
+  const { adx: adxArr } = adx(candles, 14)
+  const reg = lightRegime(candles.map(c => c.close), nz(last(adxArr)), raw.active || raw.approaching, 's322_ichimoku')
+  return rawToDecision(raw, {
+    code: 'S322', name: 'Ichimoku Kumo خرید', kind: 'ma-confluence' as any,
+    manageStyle: 'structural-trail', beTriggerR: 1.0,
+    manageNote: 'پس از ۱R سود، SL را به بریک‌ایون ببر؛ سپس زیرِ Kijun تریل کن. با شکستِ Kijun خارج شو.',
+    filters: [`ابرِ Kumo ضخیم (≥${cfg.thickMin}×ATR)`, `pullback به Kijun`, `RSI-14 ∈ [${cfg.rsiMin},${cfg.rsiMax}]`],
+  }, cfg.id, a.price, reg, capital, riskPct)
+}
