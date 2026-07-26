@@ -353,6 +353,15 @@ function tickCountdowns() {
     const r = msUntilWindowEnd(gate)
     el.textContent = r ? fmtCountdown(r.ms) : '—'
   })
+  // 🕒 نوارِ مستقلِ زیرِ کارت (renderCardTimeGates) — data-mode مشخص می‌کند «شروع» یا «پایان».
+  document.querySelectorAll('[id^="cdgate-"]').forEach(el => {
+    const raw = el.getAttribute('data-gate')
+    if (!raw) return
+    let gate
+    try { gate = JSON.parse(decodeURIComponent(raw)) } catch { return }
+    const r = el.getAttribute('data-mode') === 'end' ? msUntilWindowEnd(gate) : msUntilGate(gate)
+    el.textContent = r ? fmtCountdown(r.ms) : '—'
+  })
 }
 
 // -------------------------- رنگ/برچسبِ حالت --------------------------
