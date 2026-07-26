@@ -182,7 +182,10 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
 
   // سود/زیان فعلی بر حسب دلار (جهت‌دار) و بر حسب R
   const rawMove = isLong ? (price - t.entry) : (t.entry - price)
-  const pnlUsd = round2(rawMove)
+  // BUG-003 رفع: pnlUsd باید سود/زیانِ دلاریِ واقعیِ ۱ لات باشد، نه صرفاً اختلافِ قیمت.
+  //   برای طلا حرکتِ ۱.۰۰$ = ۱۰۰$/لات (CONTRACT_SIZE=100) ⇒ rawMove × valuePerPrice.
+  const valuePerPrice = t.valuePerPrice ?? 100
+  const pnlUsd = round2(rawMove * valuePerPrice)
   const pnlR = round2(rawMove / riskDist)
 
   // ==========================================================================
