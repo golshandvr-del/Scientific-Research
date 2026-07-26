@@ -1,0 +1,280 @@
+{
+ "XAUUSD_M5": {
+  "rqs": 92.0,
+  "passed": true,
+  "metrics": {
+   "n_trades": 77,
+   "win_rate": 84.42,
+   "net_profit": 814.9,
+   "profit_factor": 1.658,
+   "max_dd_pct": 1.79,
+   "max_consec_losses": 1,
+   "expectancy_pip": 12.2816,
+   "spread_cost_pip": 3.3,
+   "wr_breakeven": 50.0,
+   "wr_excess": 34.42,
+   "p_value": 0.0,
+   "sl_pip": 61.251222899532884,
+   "tp_pip": 61.251222899532884,
+   "wf_nets": [
+    93.7,
+    285.8,
+    153.2,
+    261.8
+   ],
+   "half_nets": [
+    381.7,
+    420.9
+   ]
+  },
+  "gates": {
+   "G0": true,
+   "G1": true,
+   "G2": "True",
+   "G3": true,
+   "G4": true,
+   "G5": true
+  },
+  "cfg": {
+   "streak_n": 5,
+   "run_min": 0.0,
+   "rsi_lo": 30,
+   "regime": "trend",
+   "sl_m": 3.1,
+   "tp_m": 1.15,
+   "hold": 24
+  }
+ },
+ "XAUUSD_M15": null,
+ "XAUUSD_M30": {
+  "rqs": 87.4,
+  "passed": true,
+  "metrics": {
+   "n_trades": 54,
+   "win_rate": 79.63,
+   "net_profit": 434.2,
+   "profit_factor": 1.418,
+   "max_dd_pct": 2.73,
+   "max_consec_losses": 1,
+   "expectancy_pip": 11.4324,
+   "spread_cost_pip": 3.3,
+   "wr_breakeven": 50.0,
+   "wr_excess": 29.63,
+   "p_value": 1e-05,
+   "sl_pip": 89.94361407738845,
+   "tp_pip": 89.94361407738845,
+   "wf_nets": [
+    19.3,
+    81.1,
+    248.9,
+    80.4
+   ],
+   "half_nets": [
+    104.7,
+    318.3
+   ]
+  },
+  "gates": {
+   "G0": true,
+   "G1": true,
+   "G2": "True",
+   "G3": true,
+   "G4": true,
+   "G5": true
+  },
+  "cfg": {
+   "streak_n": 5,
+   "run_min": 2.5,
+   "rsi_lo": 30,
+   "regime": "trend",
+   "sl_m": 3.5,
+   "tp_m": 1.3,
+   "hold": 48
+  }
+ },
+ "XAUUSD_H1": {
+  "rqs": 28.1,
+  "passed": false,
+  "metrics": {
+   "n_trades": 98,
+   "win_rate": 82.65,
+   "net_profit": 739.8,
+   "profit_factor": 1.4,
+   "max_dd_pct": 3.59,
+   "max_consec_losses": 3,
+   "expectancy_pip": 6.6614,
+   "spread_cost_pip": 3.3,
+   "wr_breakeven": 50.0,
+   "wr_excess": 32.65,
+   "p_value": 0.0,
+   "sl_pip": 80.1342600810377,
+   "tp_pip": 80.1342600810377,
+   "wf_nets": [
+    460.9,
+    63.9,
+    -60.6,
+    273.9
+   ],
+   "half_nets": [
+    532.9,
+    210.3
+   ]
+  },
+  "gates": {
+   "G0": true,
+   "G1": true,
+   "G2": "True",
+   "G3": true,
+   "G4": false,
+   "G5": true
+  },
+  "cfg": {
+   "streak_n": 6,
+   "run_min": 1.8,
+   "rsi_lo": 42,
+   "regime": "trend",
+   "sl_m": 2.0,
+   "tp_m": 0.7,
+   "hold": 24
+  }
+ },
+ "XAUUSD_H4": {
+  "rqs": 30.8,
+  "passed": false,
+  "metrics": {
+   "n_trades": 33,
+   "win_rate": 78.79,
+   "net_profit": 302.5,
+   "profit_factor": 1.488,
+   "max_dd_pct": 1.77,
+   "max_consec_losses": 1,
+   "expectancy_pip": 52.266,
+   "spread_cost_pip": 3.3,
+   "wr_breakeven": 50.0,
+   "wr_excess": 28.79,
+   "p_value": 0.00066,
+   "sl_pip": 309.57259912143286,
+   "tp_pip": 309.57259912143286,
+   "wf_nets": [
+    133.6,
+    140.9,
+    -106.8,
+    128.5
+   ],
+   "half_nets": [
+    280.9,
+    21.7
+   ]
+  },
+  "gates": {
+   "G0": true,
+   "G1": true,
+   "G2": "True",
+   "G3": true,
+   "G4": false,
+   "G5": true
+  },
+  "cfg": {
+   "streak_n": 5,
+   "run_min": 0.0,
+   "rsi_lo": 35,
+   "regime": "trend",
+   "sl_m": 3.1,
+   "tp_m": 1.15,
+   "hold": 24
+  }
+ },
+ "EURUSD_M5": null,
+ "EURUSD_M15": {
+  "rqs": 84.1,
+  "passed": true,
+  "metrics": {
+   "n_trades": 98,
+   "win_rate": 81.63,
+   "net_profit": 601.8,
+   "profit_factor": 1.325,
+   "max_dd_pct": 2.89,
+   "max_consec_losses": 2,
+   "expectancy_pip": 1.8155,
+   "spread_cost_pip": 1.0,
+   "wr_breakeven": 50.0,
+   "wr_excess": 31.63,
+   "p_value": 0.0,
+   "sl_pip": 20.66231575194326,
+   "tp_pip": 20.66231575194326,
+   "wf_nets": [
+    74.3,
+    55.6,
+    200.6,
+    262.7
+   ],
+   "half_nets": [
+    127.0,
+    466.6
+   ]
+  },
+  "gates": {
+   "G0": true,
+   "G1": true,
+   "G2": "True",
+   "G3": true,
+   "G4": true,
+   "G5": true
+  },
+  "cfg": {
+   "streak_n": 4,
+   "run_min": 0.0,
+   "rsi_lo": 30,
+   "regime": "trend",
+   "sl_m": 3.5,
+   "tp_m": 1.3,
+   "hold": 48
+  }
+ },
+ "EURUSD_M30": {
+  "rqs": 30.8,
+  "passed": false,
+  "metrics": {
+   "n_trades": 49,
+   "win_rate": 85.71,
+   "net_profit": 480.8,
+   "profit_factor": 1.605,
+   "max_dd_pct": 3.12,
+   "max_consec_losses": 2,
+   "expectancy_pip": 3.9123,
+   "spread_cost_pip": 1.0,
+   "wr_breakeven": 50.0,
+   "wr_excess": 35.71,
+   "p_value": 0.0,
+   "sl_pip": 23.802633203090497,
+   "tp_pip": 23.802633203090497,
+   "wf_nets": [
+    373.0,
+    84.8,
+    63.5,
+    -45.6
+   ],
+   "half_nets": [
+    460.4,
+    17.3
+   ]
+  },
+  "gates": {
+   "G0": true,
+   "G1": true,
+   "G2": "True",
+   "G3": true,
+   "G4": false,
+   "G5": true
+  },
+  "cfg": {
+   "streak_n": 5,
+   "run_min": 2.5,
+   "rsi_lo": 30,
+   "regime": "trend",
+   "sl_m": 2.0,
+   "tp_m": 0.7,
+   "hold": 24
+  }
+ }
+}
