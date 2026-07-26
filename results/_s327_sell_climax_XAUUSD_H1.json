@@ -1,0 +1,48 @@
+{
+  "key": "XAUUSD_H1",
+  "cfg": {
+    "k_body": 1.6,
+    "br_min": 0.6,
+    "streak_n": 3,
+    "rsi_lo": 42,
+    "regime": "trend",
+    "sl_m": 2.8,
+    "tp_m": 1.0,
+    "hold": 48
+  },
+  "rqs": 83.8,
+  "passed": true,
+  "gates": {
+    "G0": true,
+    "G1": true,
+    "G2": true,
+    "G3": true,
+    "G4": true,
+    "G5": true
+  },
+  "metrics": {
+    "n_trades": 227,
+    "win_rate": 81.06,
+    "net_profit": 1796.0,
+    "profit_factor": 1.386,
+    "max_dd_pct": 5.08,
+    "max_consec_losses": 3,
+    "expectancy_pip": 17.7124,
+    "spread_cost_pip": 3.3,
+    "wr_breakeven": 50.0,
+    "wr_excess": 31.06,
+    "p_value": 0.0,
+    "sl_pip": 118.51320014524151,
+    "tp_pip": 118.51320014524151,
+    "wf_nets": [
+      37.3,
+      421.1,
+      430.5,
+      805.3
+    ],
+    "half_nets": [
+      454.8,
+      1320.9
+    ]
+  }
+}
