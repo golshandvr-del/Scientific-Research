@@ -346,7 +346,9 @@ app.post('/api/trade/advice', async (c) => {
     // همان سبکِ مدیریتِ همان لایه را اجرا کند (TP/SL متحرکِ هم‌خوان با لایه — User Note #3).
     const managePlan = (tr.managePlan && typeof tr.managePlan === 'object') ? tr.managePlan : undefined
     const barsHeld = (typeof tr.barsHeld === 'number' && tr.barsHeld >= 0) ? tr.barsHeld : undefined
-    const trade: OpenTrade = { side, entry, tp, sl, openedAt: tr.openedAt, barsHeld, managePlan }
+    // BUG-003: ارزشِ دلاریِ هر واحدِ حرکت به‌ازای ۱ لات (طلا=۱۰۰=CONTRACT_SIZE؛ فارکس=۱۰۰٬۰۰۰).
+    const valuePerPrice = meta_asset.isGold ? 100 : 100_000
+    const trade: OpenTrade = { side, entry, tp, sl, openedAt: tr.openedAt, barsHeld, managePlan, valuePerPrice }
     const modelProbPct = typeof body.modelProbPct === 'number' ? body.modelProbPct : undefined
     const status = evaluateTrade(trade, a, modelProbPct)
 
