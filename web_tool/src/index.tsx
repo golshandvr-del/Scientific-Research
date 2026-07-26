@@ -579,34 +579,9 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
 }
 
-// ---------------------------------------------------------------------------
-// قالبِ خامِ کارت‌های بدونِ استراتژیِ اثبات‌شده (placeholder) — درخواستِ کاربر.
-// همیشه NEUTRAL برمی‌گرداند و صریحاً می‌گوید «این تایم‌فریم هنوز در دستِ تحقیق است».
-// چند شاخصِ پایه (RSI/ATR/ADX) را برای شفافیت نشان می‌دهد. آماده برای گسترش:
-// در تحقیقِ آینده کافی است این تابع با منطقِ واقعیِ همان تایم‌فریم جایگزین شود
-// (هر کارت مستقل است ⇒ افزودنِ منطق به یک تایم‌فریم بقیه را تغییر نمی‌دهد).
-// ---------------------------------------------------------------------------
-const TF_FA: Record<string, string> = { '1m': 'M1 (یک‌دقیقه‌ای)', '5m': 'M5 (پنج‌دقیقه‌ای)', '15m': 'M15 (پانزده‌دقیقه‌ای)', '30m': 'M30 (سی‌دقیقه‌ای)' }
-function placeholderDecision(a: typeof ASSETS[number], result: any, tf: string): RouterDecision {
-  const tfFa = TF_FA[tf] || tf
-  return {
-    state: 'NEUTRAL',
-    regime: { regime: 'range', efficiencyRatio: 0, trendy: false, adx: result.adx ?? 0, activeStream: 'none', bucket: 'research' },
-    headline: `${a.name} — قالبِ خام (در دستِ تحقیق)`,
-    reason:
-      `این کارت برای تایم‌فریمِ ${tfFa} ساخته شده اما هنوز استراتژیِ اثبات‌شده و بک‌تست‌شده‌ای ` +
-      `روی این تایم‌فریم برایش تعریف نشده است. طبقِ قانونِ اصلیِ پروژه (فقط سودِ خالصِ اثبات‌شده)، ` +
-      `تا وقتی لبه‌ای با WR≥۴۰٪ و سودِ خالصِ مثبت روی این تایم‌فریم کشف نشود، این کارت سیگنالِ ورود ` +
-      `نمی‌دهد و صرفاً «قالبِ خامِ آمادهٔ گسترش» است. داده و قیمتِ زنده در حالِ پایش است.`,
-    sourceLayer: { code: '—', name: `EURUSD ${tfFa} — بدونِ لایهٔ فعال`, kind: 'time' },
-    indicators: [
-      { name: 'وضعیتِ تحقیق', value: 'قالبِ خام (placeholder)', status: 'neutral' },
-      { name: 'تایم‌فریم', value: tfFa, status: 'neutral' },
-      { name: 'RSI(14)', value: (result.rsi14 ?? 0).toFixed(1), status: 'neutral' },
-      { name: 'ATR', value: (result.atr ?? 0).toFixed(5), status: 'neutral' },
-    ],
-  }
-}
+// یادداشت: تابعِ قدیمیِ placeholderDecision حذف شد — پس از حذفِ کارت‌های بدونِ
+// لایه (EURUSD-M1 و …)، هیچ کارتی «قالبِ خام» نیست؛ هر ۷ کارت لایهٔ احیاشدهٔ
+// ACCEPTED دارند و از طریقِ runCard تصمیم می‌گیرند.
 
 // خواندنِ سرمایه/ریسکِ کاربر از query (پیش‌فرض ۱۰k$ ، ۱٪) — کشفِ L41 (S67)
 function readCapitalParams(c: any): [number, number] {
