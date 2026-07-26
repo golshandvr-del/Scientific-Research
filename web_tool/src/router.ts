@@ -349,9 +349,11 @@ export interface AssetSpec {
 
 // نگاشتِ مشخصاتِ قراردادِ استاندارد. XAUUSD همان مدلِ برندهٔ S67 است (بدونِ تغییرِ عددی).
 export const ASSET_SPECS: Record<string, AssetSpec> = {
-  XAUUSD: { id: 'XAUUSD', valuePerPricePerLot: 100,     tradableLots: true,  commissionPerLot: 7.0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰ اونس)' },
-  EURUSD: { id: 'EURUSD', valuePerPricePerLot: 100_000, tradableLots: true,  commissionPerLot: 7.0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰k)' },
-  AUDUSD: { id: 'AUDUSD', valuePerPricePerLot: 100_000, tradableLots: true,  commissionPerLot: 7.0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰k)' },
+  // BUG-014 رفع: کمیسیونِ جداگانه = ۰ (مشخصاتِ رسمیِ حسابِ دمو: «کمیسیونِ جداگانه ندارد؛
+  //   هزینه فقط از اسپرد است»). مدلِ قدیمیِ ۷$/لات ریسکِ واقعی را کمتر از تعیین‌شده می‌کرد.
+  XAUUSD: { id: 'XAUUSD', valuePerPricePerLot: 100,     tradableLots: true,  commissionPerLot: 0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰ اونس)' },
+  EURUSD: { id: 'EURUSD', valuePerPricePerLot: 100_000, tradableLots: true,  commissionPerLot: 0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰k)' },
+  AUDUSD: { id: 'AUDUSD', valuePerPricePerLot: 100_000, tradableLots: true,  commissionPerLot: 0, minLot: 0.01, maxLot: 100, lotUnitFa: 'لات (۱۰۰k)' },
   DXY:    { id: 'DXY',    valuePerPricePerLot: 0,       tradableLots: false, commissionPerLot: 0,   minLot: 0.01, maxLot: 100, lotUnitFa: '—' },
 }
 
