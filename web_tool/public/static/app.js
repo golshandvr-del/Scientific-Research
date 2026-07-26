@@ -287,6 +287,52 @@ function renderTimeGate(d) {
     </div>`
 }
 
+// 🕒 باگِ User Note #۳: نوارِ مستقلِ شمارشِ معکوسِ ۲۴ساعته زیرِ *هر* کارت.
+// ---------------------------------------------------------------------------
+// این نوار مستقل از حالتِ فعلیِ کارت (خنثی/نزدیک/ورود) نمایش داده می‌شود و «همهٔ»
+// لایه‌های زمان-محورِ آن کارت (d.cardTimeGates) را که تا کمتر از ۲۴ ساعتِ دیگر فعال
+// می‌شوند، با «عنوانِ لایه · ساعتِ فعال‌سازی به وقتِ ایران · شمارشِ معکوسِ ساعت/دقیقه/ثانیه»
+// نشان می‌دهد. اگر پنجره هم‌اکنون باز باشد، «تا پایانِ فرصتِ ورود» را می‌شمارد.
+const DAY_MS = 24 * 60 * 60 * 1000
+function renderCardTimeGates(d) {
+  const gates = d && d.cardTimeGates
+  if (!Array.isArray(gates) || !gates.length) return ''
+  const aid = d._assetId || ''
+  const rows = []
+  for (const g of gates) {
+    if (!g || !Array.isArray(g.entryHoursUtc) || !g.entryHoursUtc.length) continue
+    const gid = `cdgate-${aid}-${g.layerCode}`
+    const gateAttr = encodeURIComponent(JSON.stringify(g))
+    const hoursIran = g.entryHoursUtc.map(utcHourToIran).join('، ')
+    if (g.windowOpen) {
+      // پنجره هم‌اکنون باز است ⇒ شمارشِ «تا پایانِ فرصتِ ورود».
+      rows.push(`
+        <div class="flex items-center flex-wrap gap-x-2 gap-y-1 py-1 border-t border-slate-700/40 first:border-t-0">
+          <span class="rounded bg-emerald-500/20 text-emerald-200 px-1.5 py-0.5 text-[10px] font-bold shrink-0">${g.label || g.layerCode}</span>
+          <span class="rounded bg-emerald-500/15 text-emerald-300 px-1.5 py-0.5 text-[9px] font-bold shrink-0">پنجره باز ✓</span>
+          <span class="text-[10px] text-slate-500">تا پایانِ فرصت:</span>
+          <span id="${gid}" data-mode="end" data-gate='${gateAttr}' class="rounded bg-emerald-500/20 text-emerald-100 px-1.5 py-0.5 text-[11px] font-extrabold tabular-nums shrink-0" dir="ltr">—</span>
+        </div>`)
+    } else {
+      // پنجره بسته ⇒ فقط اگر تا کمتر از ۲۴ ساعتِ دیگر فعال می‌شود، نمایش بده (درخواستِ کاربر).
+      const r = msUntilGate(g)
+      if (!r || r.ms > DAY_MS) continue
+      rows.push(`
+        <div class="flex items-center flex-wrap gap-x-2 gap-y-1 py-1 border-t border-slate-700/40 first:border-t-0">
+          <span class="rounded bg-indigo-500/20 text-indigo-200 px-1.5 py-0.5 text-[10px] font-bold shrink-0">${g.label || g.layerCode}</span>
+          <span class="text-[10px] text-slate-500">فعال در <span class="text-indigo-200 tabular-nums font-bold" dir="ltr">${hoursIran}</span> (ایران) ⇐</span>
+          <span id="${gid}" data-mode="start" data-gate='${gateAttr}' class="rounded bg-indigo-500/20 text-indigo-100 px-1.5 py-0.5 text-[11px] font-extrabold tabular-nums shrink-0" dir="ltr">—</span>
+        </div>`)
+    }
+  }
+  if (!rows.length) return ''
+  return `
+    <div class="mt-2 rounded-md bg-slate-800/50 border border-indigo-500/25 px-2.5 py-1.5">
+      <div class="text-[10px] text-indigo-300/90 font-bold mb-0.5"><i class="fas fa-stopwatch ml-1"></i>لایه‌های زمان-محورِ نزدیک به فعال‌شدن</div>
+      ${rows.join('')}
+    </div>`
+}
+
 // تیکِ زندهٔ شمارشِ معکوس (هر ثانیه) — فقط متنِ badgeها را عوض می‌کند (بدونِ رندرِ کامل).
 function tickCountdowns() {
   // تایمرِ «تا فعال‌شدنِ سیگنال» (پنجره بسته).
