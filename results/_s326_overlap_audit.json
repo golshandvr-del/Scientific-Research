@@ -1,0 +1,23 @@
+{
+ "XAUUSD_M5": {
+  "n_signals": 115,
+  "overlap_squeeze": 0.0,
+  "overlap_triple_sma": 0.9,
+  "overlap_union": 0.9,
+  "non_overlap": 99.1
+ },
+ "XAUUSD_M30": {
+  "n_signals": 79,
+  "overlap_squeeze": 0.0,
+  "overlap_triple_sma": 2.5,
+  "overlap_union": 2.5,
+  "non_overlap": 97.5
+ },
+ "EURUSD_M15": {
+  "n_signals": 139,
+  "overlap_squeeze": 0.0,
+  "overlap_triple_sma": 0.7,
+  "overlap_union": 0.7,
+  "non_overlap": 99.3
+ }
+}
