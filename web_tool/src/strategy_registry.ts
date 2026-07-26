@@ -289,6 +289,8 @@ export function runCard(ctx: LayerContext): RouterDecision {
   const primary = decisions[0]
   const others = decisions.slice(1).filter(d => d.state === 'ENTRY' || d.state === 'APPROACHING')
   if (others.length > 0) {
+    // 🔧 باگِ User Note #۴: هر لایهٔ همزمانِ فعال، اعدادِ کاملِ معاملهٔ خودش را حمل می‌کند
+    //   تا کاربر بتواند *همزمان چند لایه* را مستقل معامله کند (نه فقط لایهٔ اصلی را).
     primary.otherLayers = others.map(d => ({
       code: d.sourceLayer?.code || '—',
       name: d.sourceLayer?.name || d.headline,
@@ -297,7 +299,28 @@ export function runCard(ctx: LayerContext): RouterDecision {
       direction: d.direction,
       reason: d.reason,
       confirmations: d.confirmations,
+      // اعدادِ معامله فقط وقتی state=ENTRY است معنا دارند:
+      entry: d.state === 'ENTRY' ? d.entry : undefined,
+      tp: d.state === 'ENTRY' ? d.tp : undefined,
+      sl: d.state === 'ENTRY' ? d.sl : undefined,
+      rr: d.state === 'ENTRY' ? d.rr : undefined,
+      probability: d.probability,
+      sizing: d.state === 'ENTRY' ? d.sizing : undefined,
+      tpPlan: d.state === 'ENTRY' ? d.tpPlan : undefined,
     }))
+  }
+  // 🕒 باگِ User Note #۳: جمع‌آوریِ دروازه‌های زمانیِ *همهٔ* لایه‌های این کارت (نه فقط
+  //   primary) برای نوارِ شمارشِ معکوسِ مستقلِ ۲۴ساعته. حذفِ تکراری بر پایهٔ layerCode.
+  const gates = decisions
+    .map(d => d.timeGate)
+    .filter((g): g is NonNullable<RouterDecision['timeGate']> => !!g)
+  if (gates.length > 0) {
+    const seen = new Set<string>()
+    primary.cardTimeGates = gates.filter(g => {
+      if (seen.has(g.layerCode)) return false
+      seen.add(g.layerCode)
+      return true
+    })
   }
   return primary
 }
