@@ -559,40 +559,27 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
   }
-  // سایر دارایی‌ها: کندلِ Yahoo + به‌روزرسانیِ کندلِ جاری با قیمتِ زنده
-  // (رفعِ اختلافِ قیمتِ لحظه‌ای — User Note نکتهٔ اول)
-  // تایم‌فریم از فیلدِ `tf` می‌آید (پیش‌فرض 15m). range و gap متناسب با تایم‌فریم
-  // انتخاب می‌شود تا هم داده کافی باشد و هم Yahoo پاسخ دهد (M1 فقط ~۷ روز می‌دهد).
+  // EURUSD: کندلِ Yahoo + به‌روزرسانیِ کندلِ جاری با قیمتِ زنده (رفعِ اختلافِ لحظه‌ای).
+  // تایم‌فریم از فیلدِ `tf` (M15/M30). منطقِ تصمیم = رجیستریِ ماژولار (S326/S327).
   const tf = a.tf || '15m'
-  const rangeFor = (t: string) => (t === '1m' || t === '5m') ? '5d' : '1mo'
-  const gapForTf = (t: string) => t === '1m' ? 60 : t === '5m' ? 300 : t === '30m' ? 1800 : 900
-  const { candles } = await yahooCandles(a.symbol, tf, rangeFor(tf))
-  // آستانهٔ داده برای placeholder سبک‌تر است (فقط نمایشِ قیمت/داده، نه تحلیلِ سنگین).
-  const minBars = a.layer === 'placeholder' ? 30 : 220
+  const gapForTf = (t: string) => t === '5m' ? 300 : t === '30m' ? 1800 : 900
+  const { candles } = await yahooCandles(a.symbol, tf, '1mo')
+  const minBars = 220
   if (candles.length < minBars) throw new Error('داده کافی برای تحلیل نیست')
   let live: number | null = null, liveAge = 0, liveSrc = ''
   try { const q = await getLiveQuote(a.symbol); live = q.price; liveAge = q.ageSec; liveSrc = q.source } catch {}
   const merged = mergeLiveQuote(candles, live, gapForTf(tf))
   const useCandles = merged.candles
   const result = analyze(useCandles)
-  // 🔧 رفعِ باگِ repainting (هم‌سان با طلا): ماشهٔ سیگنال روی کندل‌های بسته‌شده اجرا شود.
+  // 🔧 رفعِ باگِ repainting (هم‌سان با طلا): ماشهٔ سیگنال روی کندل‌های بسته‌شده.
   const sig = closedBars(useCandles, gapForTf(tf))
-  // EURUSD (M5): منطقِ مخصوصِ S73 (Session-Open Drift) — نه decide()ِ عمومیِ طلا.
-  // کارت‌های placeholder (EURUSD-M15/M30/M1): قالبِ خام — «در دستِ تحقیق».
-  let dec
-  if (a.layer === 'placeholder') {
-    dec = placeholderDecision(a, result, tf)
-  } else if (a.id === 'EURUSD') {
-    const lastT = sig[sig.length - 1].time
-    const nowUtcHour = new Date(lastT * 1000).getUTCHours()
-    dec = decideEurusd(result, sig.map(k => k.close), nowUtcHour, capital, riskPct, lastT)
-  } else if (a.id === 'EURUSD-M15') {
-    // کارتِ M15 مخصوصِ لایهٔ S213 (Second-Entry SHORT، Brooks فصلِ ۱۰) — دادهٔ M15.
-    dec = decideEurusdM15(result, sig.map(k => k.open), sig.map(k => k.high),
-      sig.map(k => k.low), sig.map(k => k.close), capital, riskPct)
-  } else {
-    dec = decide(result, sig.map(k => k.close), capital, riskPct, assetSpec(a.id))
+  const lastClosed = sig[sig.length - 1]
+  const eurUtcHour = new Date(lastClosed.time * 1000).getUTCHours()
+  const ctx: LayerContext = {
+    cardId: a.card, a: result, candles: sig,
+    utcHour: eurUtcHour, times: sig.map(k => k.time), capital, riskPct,
   }
+  const dec = runCard(ctx)
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
     price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
