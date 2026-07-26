@@ -167,6 +167,7 @@ function s312Layer(slPip: number, tpPip: number, maxHold: number): LayerFn {
         layerCode: 'S312', label: 'درایوِ میانهٔ ماه',
         entryHoursUtc: MID_ENTRY_HOURS,
         dayOfMonthNote: 'روزهای ۱۰، ۱۳ و ۲۰ هر ماه',
+        activeDaysOfMonth: [10, 13, 20],
         windowOpen: sig.isMidWindow && MID_ENTRY_HOURS.includes(sig.utcHour),
         endHourUtc: Math.max(...MID_ENTRY_HOURS) + 1,
       },
