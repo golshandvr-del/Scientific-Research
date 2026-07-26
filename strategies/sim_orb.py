@@ -96,6 +96,14 @@ class SessionORB:
         else:
             self._ema = None
 
+        # SMAِ بلندِ ATR برای فیلترِ رژیمِ نوسان (بهبودِ S330)
+        if self.regime_atr_ratio_max > 0:
+            self._atr_ma = (pd.Series(self._atr)
+                            .rolling(self.regime_atr_ma, min_periods=50)
+                            .mean().to_numpy())
+        else:
+            self._atr_ma = None
+
         # برای هر کندل: آیا در «پنجرهٔ فعالِ شکست» یک سشنِ معتبر است؟ اگر بله،
         # or_high/or_low/or_range همان سشن را ذخیره کن. بازهٔ افتتاحیه از کندل‌هایی
         # ساخته می‌شود که ساعتشان == session_start_hour است و or_bars تای اول آن روز.
