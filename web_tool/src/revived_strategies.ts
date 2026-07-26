@@ -144,3 +144,74 @@ function lightRegime(close: number[], adxVal: number, trendy: boolean, bucket: s
 
 const nz = (v: number) => (Number.isFinite(v) ? v : 0)
 const last = <T,>(a: T[]) => a[a.length - 1]
+
+// ===========================================================================
+// S328 — RSI-21 cross-back Fade (SHORT)   منشأ: S167 / Subarkah 2009
+// ---------------------------------------------------------------------------
+// ماشه: RSI21 از بالای hi عبور کرده و به پایین برمی‌گردد (اشباعِ خرید تخلیه می‌شود)
+//   ⇒ فروش. فیلترِ رژیم: ADX14(کندلِ قبل) ≤ adx_max (رنج، نه روندِ قوی).
+//   TP/SL ثابتِ pip (spike-fade با هدفِ ثابت)، max_hold=24. غیر-رند، per-TF.
+// ===========================================================================
+export interface S328Config {
+  id: string          // XAUUSD-M5 | XAUUSD-H1
+  rsiPeriod: number   // 21
+  hi: number          // آستانهٔ اشباعِ خرید (M5:75، H1:82)
+  adxMax: number      // سقفِ ADX (M5:30، H1:Infinity=خاموش)
+  slPip: number       // فاصلهٔ SL بر حسبِ pip (M5:62، H1:195)
+  tpPip: number       // فاصلهٔ TP بر حسبِ pip (M5:43، H1:210)
+  maxHold: number     // 24
+}
+
+export const S328_CFG: Record<string, S328Config> = {
+  'XAUUSD-M5': { id: 'XAUUSD-M5', rsiPeriod: 21, hi: 75, adxMax: 30, slPip: 62, tpPip: 43, maxHold: 24 },
+  'XAUUSD-H1': { id: 'XAUUSD-H1', rsiPeriod: 21, hi: 82, adxMax: Infinity, slPip: 195, tpPip: 210, maxHold: 24 },
+}
+
+export function computeS328(candles: Candle[], cfg: S328Config): RawSignal {
+  const close = candles.map(c => c.close)
+  const r = rsi(close, cfg.rsiPeriod)
+  const { adx: adxArr } = adx(candles, 14)
+  const i = close.length - 1
+  const slDist = cfg.slPip * GOLD_PIP
+  const tpDist = cfg.tpPip * GOLD_PIP
+
+  const rsiNow = r[i], rsiPrev = r[i - 1]
+  const adxPrev = adxArr[i - 1]
+  const adxOk = !isFinite(cfg.adxMax) || (Number.isFinite(adxPrev) && adxPrev <= cfg.adxMax)
+  const crossBack = Number.isFinite(rsiNow) && Number.isFinite(rsiPrev) && rsiPrev > cfg.hi && rsiNow <= cfg.hi
+
+  const indicators: RouterDecision['indicators'] = [
+    { name: `RSI-${cfg.rsiPeriod} (اشباعِ خرید > ${cfg.hi})`,
+      value: Number.isFinite(rsiNow) ? rsiNow.toFixed(1) + (rsiNow > cfg.hi ? ' (اشباع)' : '') : '—',
+      status: crossBack ? 'ok' : (Number.isFinite(rsiNow) && rsiNow > cfg.hi ? 'warn' : 'neutral') },
+    ...(isFinite(cfg.adxMax) ? [{ name: `فیلترِ رژیم (ADX≤${cfg.adxMax})`,
+      value: Number.isFinite(adxPrev) ? adxPrev.toFixed(0) + (adxOk ? ' ✔' : ' ✘ روندِ قوی') : '—',
+      status: (adxOk ? 'ok' : 'bad') as 'ok' | 'bad' }] : []),
+  ]
+
+  const active = crossBack && adxOk
+  // approaching: RSI هنوز بالای hi است (هنوز برنگشته) و رژیم اجازه می‌دهد
+  const approaching = !active && Number.isFinite(rsiNow) && rsiNow > cfg.hi && adxOk
+
+  return {
+    active, approaching, direction: 'SHORT', slDist, tpDist, maxHoldBars: cfg.maxHold,
+    reason: active
+      ? `RSI-${cfg.rsiPeriod} از بالای ${cfg.hi} به ${rsiNow.toFixed(1)} برگشت (تخلیهٔ اشباعِ خرید) و رژیم رنج است ⇒ فروش.`
+      : approaching
+        ? `RSI-${cfg.rsiPeriod}=${rsiNow.toFixed(1)} بالای آستانهٔ اشباع (${cfg.hi}) است؛ منتظرِ بازگشت به زیرِ آستانه برای ماشهٔ فروش.`
+        : `شرطِ اشباعِ خرید/بازگشت برقرار نیست؛ سیگنالِ S328 نداریم.`,
+    approachReason: approaching ? `بازگشتِ RSI-${cfg.rsiPeriod} به زیرِ ${cfg.hi}` : undefined,
+    indicators,
+  }
+}
+
+export function decideS328(cfg: S328Config, a: AnalysisResult, candles: Candle[], capital = 10000, riskPct = 1.0): RouterDecision {
+  const raw = computeS328(candles, cfg)
+  const { adx: adxArr } = adx(candles, 14)
+  const reg = lightRegime(candles.map(c => c.close), nz(last(adxArr)), false, 's328_fade')
+  return rawToDecision(raw, {
+    code: 'S328', name: 'RSI-21 Fade فروش', kind: 'mean-reversion' as any,
+    manageStyle: 'fixed-tp-sl', manageNote: 'هدف/حدِ ثابت (spike-fade). SL/TP جابه‌جا نشود؛ تا max_hold یا برخوردِ سطح نگه‌دار.',
+    filters: [isFinite(cfg.adxMax) ? `فیلترِ رژیم ADX≤${cfg.adxMax}` : 'بدونِ فیلترِ ADX (H1)', `RSI-${cfg.rsiPeriod} cross-back از ${cfg.hi}`],
+  }, cfg.id, a.price, reg, capital, riskPct)
+}
