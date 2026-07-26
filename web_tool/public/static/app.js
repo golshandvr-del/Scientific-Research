@@ -618,7 +618,7 @@ function renderEntry(a, d) {
       ${d.sizing ? `
       <div class="mt-3 rounded-lg bg-amber-500/10 border border-amber-500/30 p-2.5">
         <div class="flex items-center justify-between">
-          <span class="text-xs text-amber-300 font-bold"><i class="fas fa-coins ml-1"></i>حجمِ پیشنهادی (اهرمِ سودِ خالص)</span>
+          <span class="text-xs text-amber-300 font-bold"><i class="fas fa-coins ml-1"></i>حجمِ پیشنهادیِ معامله</span>
           <span class="text-sm font-extrabold text-amber-200 tabular-nums">${d.sizing.label}</span>
         </div>
         ${d.sizing.lots != null ? `
