@@ -446,3 +446,117 @@ export function decideS322(cfg: S322Config, a: AnalysisResult, candles: Candle[]
     filters: [`ابرِ Kumo ضخیم (≥${cfg.thickMin}×ATR)`, `pullback به Kijun`, `RSI-14 ∈ [${cfg.rsiMin},${cfg.rsiMax}]`],
   }, cfg.id, a.price, reg, capital, riskPct)
 }
+
+// ===========================================================================
+// S324 — Liquidity-Sweep Reversal (fade)   XAUUSD M15(LONG) / M30(SHORT)
+// ---------------------------------------------------------------------------
+// یک swing-pivot (سطحِ نقدینگی) شناسایی می‌شود؛ قیمت آن را «جارو» (sweep) می‌کند
+//   (فراتر می‌رود) سپس بلافاصله بازمی‌گردد و سطح را پس می‌گیرد (reclaim) با کندلِ
+//   بازگشتیِ قوی (displacement). این یک الگوی fade/mean-reversion است.
+//   فیلترها per-TF شناور: swing_len، depth_min (عمقِ جارو/ATR)، disp_min (قدرتِ
+//   بازگشت/ATR)، regime (M30: short فقط زیرِ EMA200)، RSI (long≤rsi_lo، short≥rsi_hi).
+//   TP<SL کلیدِ عبور از گیتِ WR در fade است (M15: SL2.4/TP0.8، M30: SL3.1/TP1.2 ×ATR).
+// ===========================================================================
+export interface S324Config {
+  id: string
+  side: 'LONG' | 'SHORT'
+  swingLen: number
+  depthMin: number      // عمقِ نفوذ فراتر از pivot / ATR
+  dispMin: number       // بدنهٔ کندلِ بازگشت / ATR
+  regimeOn: boolean     // فیلترِ EMA200
+  rsiOn: boolean
+  rsiLo?: number        // برای LONG (RSI ≤ rsiLo)
+  rsiHi?: number        // برای SHORT (RSI ≥ rsiHi)
+  slMult: number; tpMult: number; maxHold: number
+}
+
+export const S324_CFG: Record<string, S324Config> = {
+  'XAUUSD-M15': { id: 'XAUUSD-M15', side: 'LONG', swingLen: 16, depthMin: 0.70, dispMin: 0.90, regimeOn: false, rsiOn: true, rsiLo: 40, slMult: 2.4, tpMult: 0.8, maxHold: 48 },
+  'XAUUSD-M30': { id: 'XAUUSD-M30', side: 'SHORT', swingLen: 8, depthMin: 0.25, dispMin: 0.50, regimeOn: true, rsiOn: true, rsiHi: 60, slMult: 3.1, tpMult: 1.2, maxHold: 48 },
+}
+
+export function computeS324(candles: Candle[], cfg: S324Config): RawSignal {
+  const high = candles.map(c => c.high), low = candles.map(c => c.low), close = candles.map(c => c.close), open = candles.map(c => c.open)
+  const atr14 = atr(candles, 14)
+  const e200 = ema(close, 200)
+  const r = rsi(close, 14)
+  const i = close.length - 1
+  const atrVal = atr14[i]
+
+  const empty = (reason: string): RawSignal => ({
+    active: false, approaching: false, direction: cfg.side, slDist: 0, tpDist: 0,
+    maxHoldBars: cfg.maxHold, reason, indicators: [],
+  })
+  if (!(atrVal > 0) || i < cfg.swingLen + 2 || !Number.isFinite(r[i])) return empty('دادهٔ کافی برای S324 نیست.')
+
+  const slDist = cfg.slMult * atrVal
+  const tpDist = cfg.tpMult * atrVal
+
+  // pivotِ نقدینگی: بالاترین/پایین‌ترینِ swing_len کندلِ پیش از کندلِ جاری (به‌جز خودِ کندل)
+  let priorHi = -Infinity, priorLo = Infinity
+  for (let k = i - cfg.swingLen; k < i; k++) { priorHi = Math.max(priorHi, high[k]); priorLo = Math.min(priorLo, low[k]) }
+
+  const body = Math.abs(close[i] - open[i]) / atrVal
+  const rsiNow = r[i]
+
+  const ind: RouterDecision['indicators'] = []
+
+  if (cfg.side === 'LONG') {
+    // جاروبِ کفِ نقدینگی: low کندلِ جاری زیرِ priorLo رفت (عمق کافی) اما close بالای priorLo پس گرفت
+    const sweptDepth = (priorLo - low[i]) / atrVal
+    const reclaimed = close[i] > priorLo
+    const dispOk = body >= cfg.dispMin
+    const depthOk = sweptDepth >= cfg.depthMin
+    const rsiOk = !cfg.rsiOn || rsiNow <= (cfg.rsiLo ?? 100)
+    const regimeOk = !cfg.regimeOn || close[i] > e200[i]
+    ind.push(
+      { name: `جاروبِ کفِ نقدینگی (عمق ≥${cfg.depthMin}×ATR)`, value: sweptDepth > 0 ? sweptDepth.toFixed(2) + (depthOk ? ' ✔' : ' ✘') : 'بدونِ جارو', status: depthOk ? 'ok' : 'neutral' },
+      { name: `بازگشت/reclaim (بدنه ≥${cfg.dispMin}×ATR)`, value: body.toFixed(2) + (reclaimed && dispOk ? ' ✔' : ' ✘'), status: (reclaimed && dispOk) ? 'ok' : 'warn' },
+      { name: `RSI-14 اشباعِ فروش (≤${cfg.rsiLo})`, value: rsiNow.toFixed(0) + (rsiOk ? ' ✔' : ' ✘'), status: rsiOk ? 'ok' : 'warn' },
+    )
+    const active = depthOk && reclaimed && dispOk && rsiOk && regimeOk
+    const approaching = !active && depthOk && !reclaimed
+    return {
+      active, approaching, direction: 'LONG', slDist, tpDist, maxHoldBars: cfg.maxHold,
+      reason: active ? 'کفِ نقدینگی جارو و بلافاصله پس گرفته شد (کندلِ بازگشتِ قوی، RSI اشباعِ فروش) ⇒ خرید (fade).'
+        : approaching ? 'کفِ نقدینگی جارو شد اما هنوز reclaim/بازگشت تأیید نشده؛ منتظرِ بستنِ قوی بالای سطح.'
+        : 'الگوی جاروب-و-بازگشتِ کف برقرار نیست.',
+      approachReason: approaching ? 'بستنِ کندلِ قوی بالای سطحِ جاروشده' : undefined,
+      indicators: ind,
+    }
+  } else {
+    // SHORT: جاروبِ سقفِ نقدینگی: high فراتر از priorHi اما close زیرِ priorHi پس گرفت
+    const sweptDepth = (high[i] - priorHi) / atrVal
+    const reclaimed = close[i] < priorHi
+    const dispOk = body >= cfg.dispMin
+    const depthOk = sweptDepth >= cfg.depthMin
+    const rsiOk = !cfg.rsiOn || rsiNow >= (cfg.rsiHi ?? 0)
+    const regimeOk = !cfg.regimeOn || close[i] < e200[i]
+    ind.push(
+      { name: `جاروبِ سقفِ نقدینگی (عمق ≥${cfg.depthMin}×ATR)`, value: sweptDepth > 0 ? sweptDepth.toFixed(2) + (depthOk ? ' ✔' : ' ✘') : 'بدونِ جارو', status: depthOk ? 'ok' : 'neutral' },
+      { name: `بازگشت/reclaim (بدنه ≥${cfg.dispMin}×ATR)`, value: body.toFixed(2) + (reclaimed && dispOk ? ' ✔' : ' ✘'), status: (reclaimed && dispOk) ? 'ok' : 'warn' },
+      { name: `RSI-14 اشباعِ خرید (≥${cfg.rsiHi})`, value: rsiNow.toFixed(0) + (rsiOk ? ' ✔' : ' ✘'), status: rsiOk ? 'ok' : 'warn' },
+      { name: 'رژیم (close<EMA200)', value: (close[i] < e200[i] ? 'نزولی ✔' : 'صعودی ✘'), status: regimeOk ? 'ok' : 'bad' },
+    )
+    const active = depthOk && reclaimed && dispOk && rsiOk && regimeOk
+    const approaching = !active && depthOk && !reclaimed && regimeOk
+    return {
+      active, approaching, direction: 'SHORT', slDist, tpDist, maxHoldBars: cfg.maxHold,
+      reason: active ? 'سقفِ نقدینگی جارو و بلافاصله پس گرفته شد (کندلِ بازگشتِ قوی زیرِ EMA200، RSI اشباعِ خرید) ⇒ فروش (fade).'
+        : approaching ? 'سقفِ نقدینگی جارو شد اما هنوز reclaim تأیید نشده؛ منتظرِ بستنِ قوی زیرِ سطح.'
+        : 'الگوی جاروب-و-بازگشتِ سقف (زیرِ EMA200) برقرار نیست.',
+      approachReason: approaching ? 'بستنِ کندلِ قوی زیرِ سطحِ جاروشده' : undefined,
+      indicators: ind,
+    }
+  }
+}
+
+export function decideS324(cfg: S324Config, a: AnalysisResult, candles: Candle[], capital = 10000, riskPct = 1.0): RouterDecision {
+  const raw = computeS324(candles, cfg)
+  const reg = lightRegime(candles.map(c => c.close), 0, false, 's324_sweep')
+  return rawToDecision(raw, {
+    code: 'S324', name: 'Liquidity-Sweep بازگشتی', kind: 'mean-reversion' as any,
+    manageStyle: 'fixed-tp-sl', manageNote: 'الگوی fade با TP<SL؛ هدفِ نزدیک را زود بگیر، SL را جابه‌جا نکن. تا max_hold نگه‌دار.',
+    filters: [`swing_len=${cfg.swingLen}`, `عمقِ جارو≥${cfg.depthMin}×ATR`, `بازگشت≥${cfg.dispMin}×ATR`, cfg.regimeOn ? 'رژیمِ EMA200' : 'بدونِ فیلترِ رژیم', cfg.side === 'LONG' ? `RSI≤${cfg.rsiLo}` : `RSI≥${cfg.rsiHi}`],
+  }, cfg.id, a.price, reg, capital, riskPct)
+}
