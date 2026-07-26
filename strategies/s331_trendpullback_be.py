@@ -32,6 +32,17 @@ from engine import scalp_engine as SE
 DEFAULTS = dict(ema_fast=20, ema_slow=100, rsi_p=21, rsi_th=36, adx_min=18,
                 sl_atr=2.8, tp_atr=1.7, be_atr=1.2, max_hold=40, atr_p=14)
 
+# ---- پروفایلِ مستقلِ هر تایم‌فریمِ تأییدشده (قانونِ شناوری: هر TF پارامترِ خودش) ----
+# کشف‌شده در s331_mtf_sweep.py؛ SL/TP/BE همه ATR-scaled (ضدِ اشتباهِ #۶ و #۷).
+TF_PROFILES = {
+    ('XAUUSD', 'M5'):  dict(ema_fast=20, ema_slow=100, rsi_p=21, rsi_th=36, adx_min=18,
+                            sl_atr=2.8, tp_atr=1.7, be_atr=1.2, max_hold=40, atr_p=14),
+    ('XAUUSD', 'M30'): dict(ema_fast=20, ema_slow=100, rsi_p=21, rsi_th=34, adx_min=26,
+                            sl_atr=2.0, tp_atr=1.4, be_atr=None, max_hold=24, atr_p=14),
+    ('XAUUSD', 'H4'):  dict(ema_fast=20, ema_slow=100, rsi_p=21, rsi_th=40, adx_min=26,
+                            sl_atr=2.0, tp_atr=1.4, be_atr=None, max_hold=24, atr_p=14),
+}
+
 
 def ema(x, s):
     return pd.Series(x).ewm(span=s, adjust=False).mean().values
