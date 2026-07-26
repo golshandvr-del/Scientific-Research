@@ -1,0 +1,22 @@
+{
+  "XAUUSD-M5": {
+    "asset": "XAUUSD",
+    "tf": "M5",
+    "s328_short_trades": 40,
+    "s327_long_trades": 1007,
+    "overlap_pct": 10.0,
+    "overlap_hits": 4,
+    "same_bar_signals": 0,
+    "direction_note": "S328=SHORT vs S327=LONG (جهت‌ها مخالف)"
+  },
+  "XAUUSD-H1": {
+    "asset": "XAUUSD",
+    "tf": "H1",
+    "s328_short_trades": 31,
+    "s327_long_trades": 767,
+    "overlap_pct": 9.7,
+    "overlap_hits": 3,
+    "same_bar_signals": 0,
+    "direction_note": "S328=SHORT vs S327=LONG (جهت‌ها مخالف)"
+  }
+}
