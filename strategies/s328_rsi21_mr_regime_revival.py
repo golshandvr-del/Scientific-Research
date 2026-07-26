@@ -166,6 +166,70 @@ TFSPEC = {
 }
 
 
+def regime_sweep_deep(asset, tf, f, sl_grid, tp_grid, side='short', max_holds=(16, 24, 36)):
+    """
+    جاروبِ عمیقِ SHORT-fade با آستانه‌های ریزترِ RSI + ترکیبِ فیلترِ ADX×ER هم‌زمان
+    (قانونِ شناوری: چند متغیر برحسبِ هم). هدف: احیای TF های بالاتر که در جاروبِ اولیه رد شدند.
+    """
+    ADX_MAXES = [None, 35, 28, 22]
+    ER_MAXES  = [None, 0.40, 0.30, 0.22, 0.16]
+    THRESHES  = [(25, 75), (20, 80), (22, 78), (18, 82), (25, 78)]
+    results = []
+    df = se.load_data(f)
+    for (lo, hi) in THRESHES:
+        for adx_max in ADX_MAXES:
+            for er_max in ER_MAXES:
+                long_sig, short_sig = build_signals(df, 21, lo, hi, adx_max, er_max)
+                if side == 'long':
+                    short_sig = np.zeros(len(df), dtype=bool)
+                else:
+                    long_sig = np.zeros(len(df), dtype=bool)
+                if int(long_sig.sum() + short_sig.sum()) < 30:
+                    continue
+                for sl in sl_grid:
+                    for tp in tp_grid:
+                        for mh in max_holds:
+                            tr = se.simulate_trades(df, long_sig, short_sig, sl, tp,
+                                                    asset, max_hold=mh, allow_overlap=False)
+                            if tr is None or len(tr) < 30:
+                                continue
+                            r = rqs.compute_rqs(tr, asset, sl_pip=sl, tp_pip=tp)
+                            m = r['metrics']
+                            results.append(dict(asset=asset, tf=tf, side=side, lo=lo, hi=hi,
+                                adx_max=adx_max, er_max=er_max, sl=sl, tp=tp, mh=mh,
+                                rqs=r['rqs_score'], passed=r['passed'], n=m['n_trades'],
+                                wr=m['win_rate'], pf=m['profit_factor'], dd=m['max_dd_pct'],
+                                mcl=m['max_consec_losses'], p=m['p_value'], net=m['net_profit'],
+                                gates=''.join('1' if v else '0' for v in r['gates'].values())))
+    results.sort(key=lambda x: (x['passed'], x['rqs']), reverse=True)
+    return results
+
+
+def deep_revival(asset='XAUUSD', side='short'):
+    """جاروبِ عمیقِ احیا (تمرکز بر SHORT-fade) روی همهٔ TF."""
+    print("=" * 110)
+    print(f"S328 DEEP REVIVAL — {asset} — side={side} — RSI21-MR-fade + رژیمِ رنجِ ADX×ER + شناوری")
+    print("=" * 110)
+    all_pass = {}
+    for tf, f in TFS[asset].items():
+        if not os.path.exists(f):
+            continue
+        spec = TFSPEC.get((asset, tf))
+        if spec is None:
+            continue
+        res = regime_sweep_deep(asset, tf, f, spec['sl'], spec['tp'], side=side)
+        passers = [r for r in res if r['passed'] and r['rqs'] >= 80]
+        all_pass[tf] = passers
+        top = res[:1]
+        print(f"\n--- {asset}-{tf} : {len(res)} combos | gate-pass(RQS≥80)={len(passers)} ---")
+        for r in (passers[:6] if passers else top):
+            print(f"  RQS={r['rqs']:5.1f} {'PASS' if r['passed'] else 'rej '} | "
+                  f"lo{r['lo']}/hi{r['hi']} adx≤{r['adx_max']} er≤{r['er_max']} "
+                  f"SL{r['sl']}/TP{r['tp']} mh{r['mh']} | n={r['n']} WR={r['wr']:.1f}% "
+                  f"PF={r['pf']:.2f} DD={r['dd']:.1f}% MCL={r['mcl']} p={r['p']:.3f} net={r['net']:+.0f}")
+    return all_pass
+
+
 def full_revival(asset='XAUUSD', side='long'):
     """جاروبِ کاملِ احیا روی همهٔ TF های یک دارایی."""
     print("=" * 110)
@@ -197,3 +261,7 @@ if __name__ == '__main__':
         asset = sys.argv[2] if len(sys.argv) > 2 else 'XAUUSD'
         side = sys.argv[3] if len(sys.argv) > 3 else 'long'
         full_revival(asset, side)
+    elif mode == 'deep':
+        asset = sys.argv[2] if len(sys.argv) > 2 else 'XAUUSD'
+        side = sys.argv[3] if len(sys.argv) > 3 else 'short'
+        deep_revival(asset, side)
