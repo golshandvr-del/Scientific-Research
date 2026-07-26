@@ -1,0 +1,58 @@
+{
+ "XAUUSD_M5": {
+  "n_signals": 112,
+  "overlap_s326_streak": 43.8,
+  "overlap_squeeze": 0.0,
+  "overlap_triple_sma": 4.5,
+  "overlap_union": 47.3,
+  "non_overlap": 52.7
+ },
+ "XAUUSD_M15": {
+  "n_signals": 146,
+  "overlap_s326_streak": null,
+  "overlap_squeeze": 0.0,
+  "overlap_triple_sma": 6.2,
+  "overlap_union": 6.2,
+  "non_overlap": 93.8
+ },
+ "XAUUSD_M30": {
+  "n_signals": 301,
+  "overlap_s326_streak": 13.0,
+  "overlap_squeeze": 2.0,
+  "overlap_triple_sma": 13.6,
+  "overlap_union": 27.9,
+  "non_overlap": 72.1
+ },
+ "XAUUSD_H1": {
+  "n_signals": 245,
+  "overlap_s326_streak": null,
+  "overlap_squeeze": 1.2,
+  "overlap_triple_sma": 10.2,
+  "overlap_union": 11.0,
+  "non_overlap": 89.0
+ },
+ "XAUUSD_H4": {
+  "n_signals": 47,
+  "overlap_s326_streak": null,
+  "overlap_squeeze": 0.0,
+  "overlap_triple_sma": 12.8,
+  "overlap_union": 12.8,
+  "non_overlap": 87.2
+ },
+ "EURUSD_M15": {
+  "n_signals": 63,
+  "overlap_s326_streak": 77.8,
+  "overlap_squeeze": 0.0,
+  "overlap_triple_sma": 0.0,
+  "overlap_union": 77.8,
+  "non_overlap": 22.2
+ },
+ "EURUSD_M30": {
+  "n_signals": 100,
+  "overlap_s326_streak": null,
+  "overlap_squeeze": 0.0,
+  "overlap_triple_sma": 5.0,
+  "overlap_union": 5.0,
+  "non_overlap": 95.0
+ }
+}

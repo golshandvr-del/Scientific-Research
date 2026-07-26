@@ -1,0 +1,104 @@
+{
+ "XAUUSD_M5": {
+  "n_total": 112,
+  "n_overlap": 49,
+  "n_unique": 63,
+  "rqs_all": 97.6,
+  "rqs_overlap": 29.4,
+  "rqs_unique": 97.5,
+  "unique_passed": true,
+  "unique_metrics": {
+   "n_trades": 62,
+   "win_rate": 91.94,
+   "net_profit": 1492.6,
+   "profit_factor": 4.36,
+   "max_dd_pct": 1.38,
+   "max_consec_losses": 1,
+   "expectancy_pip": 26.1653,
+   "spread_cost_pip": 3.3,
+   "wr_breakeven": 50.0,
+   "wr_excess": 41.94,
+   "p_value": 0.0,
+   "sl_pip": 67.15858892855711,
+   "tp_pip": 67.15858892855711,
+   "wf_nets": [
+    359.8,
+    267.6,
+    362.5,
+    437.7
+   ],
+   "half_nets": [
+    631.0,
+    808.5
+   ]
+  }
+ },
+ "XAUUSD_M30": {
+  "n_total": 301,
+  "n_overlap": 39,
+  "n_unique": 262,
+  "rqs_all": 83.5,
+  "rqs_overlap": 1.0,
+  "rqs_unique": 89.5,
+  "unique_passed": true,
+  "unique_metrics": {
+   "n_trades": 254,
+   "win_rate": 79.53,
+   "net_profit": 3186.1,
+   "profit_factor": 1.648,
+   "max_dd_pct": 2.59,
+   "max_consec_losses": 3,
+   "expectancy_pip": 14.8388,
+   "spread_cost_pip": 3.3,
+   "wr_breakeven": 50.0,
+   "wr_excess": 29.53,
+   "p_value": 0.0,
+   "sl_pip": 66.44114207723145,
+   "tp_pip": 66.44114207723145,
+   "wf_nets": [
+    431.0,
+    324.7,
+    725.5,
+    1436.5
+   ],
+   "half_nets": [
+    762.9,
+    2237.8
+   ]
+  }
+ },
+ "EURUSD_M15": {
+  "n_total": 63,
+  "n_overlap": 49,
+  "n_unique": 14,
+  "rqs_all": 97.8,
+  "rqs_overlap": 96.6,
+  "rqs_unique": 36.5,
+  "unique_passed": false,
+  "unique_metrics": {
+   "n_trades": 14,
+   "win_rate": 92.86,
+   "net_profit": 258.7,
+   "profit_factor": 3.429,
+   "max_dd_pct": 1.04,
+   "max_consec_losses": 1,
+   "expectancy_pip": 2.8926,
+   "spread_cost_pip": 1.0,
+   "wr_breakeven": 50.0,
+   "wr_excess": 42.86,
+   "p_value": 0.00092,
+   "sl_pip": 17.56443507222309,
+   "tp_pip": 17.56443507222309,
+   "wf_nets": [
+    82.0,
+    -25.5,
+    94.6,
+    105.0
+   ],
+   "half_nets": [
+    57.8,
+    200.1
+   ]
+  }
+ }
+}
