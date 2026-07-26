@@ -151,21 +151,47 @@ const DOW_FA = ['یک‌شنبه', 'دوشنبه', 'سه‌شنبه', 'چهار�
 // میلی‌ثانیهٔ باقی‌مانده تا بعدیِ «رسیدن به ساعتِ UTC مشخص در روزِ مجاز».
 // gate: { entryHoursUtc:[..], activeDaysUtc?:[..], windowOpen, dayOfMonthNote? }
 // خروجی: { ms, targetLabelIran } یا null اگر قابلِ محاسبه نباشد (مثلِ قیدِ روزِ ماه).
+// آیا این تاریخِ UTC داخلِ «۷ روزِ معاملاتیِ پایانِ ماه» است؟ (بازتولیدِ منطقِ بک‌اندِ S310)
+function isEomWindowDate(dt) {
+  const dow = dt.getUTCDay()
+  if (dow < 1 || dow > 5) return false                 // فقط روزهای کاری
+  const y = dt.getUTCFullYear(), m = dt.getUTCMonth()
+  const lastDay = new Date(Date.UTC(y, m + 1, 0)).getUTCDate()
+  let rem = 0
+  for (let day = dt.getUTCDate(); day <= lastDay; day++) {
+    const d2 = new Date(Date.UTC(y, m, day)).getUTCDay()
+    if (d2 >= 1 && d2 <= 5) rem++                       // روزهای کاریِ باقی‌مانده تا آخرِ ماه
+  }
+  return rem >= 6 && rem <= 8                           // ۷ ± ۱ (هم‌راستا با بک‌اند)
+}
+
+// آیا این تاریخِ UTC یک روزِ مجازِ این gate است؟ (روزِ هفته + روزِ ماه + پنجرهٔ EOM)
+function gateDayAllowed(gate, cand) {
+  if (Array.isArray(gate.activeDaysUtc) && gate.activeDaysUtc.length) {
+    if (!gate.activeDaysUtc.includes(cand.getUTCDay())) return false
+  }
+  if (Array.isArray(gate.activeDaysOfMonth) && gate.activeDaysOfMonth.length) {
+    if (!gate.activeDaysOfMonth.includes(cand.getUTCDate())) return false
+  }
+  // پنجرهٔ «۷ روزِ پایانِ ماه» (S310): روزِ ماهِ ثابتی ندارد ⇒ با الگوریتم چک می‌شود.
+  if (gate.layerCode === 'S310' && !isEomWindowDate(cand)) return false
+  return true
+}
+
+// میلی‌ثانیهٔ باقی‌مانده تا بعدیِ «رسیدن به ساعتِ UTC مشخص در روزِ مجاز».
+// اکنون علاوه بر روزِ هفته، روزِ ماه (activeDaysOfMonth) و پنجرهٔ EOM را نیز لحاظ می‌کند
+// تا شمارشِ معکوس *دقیق* باشد (پاسخِ علمی به User Note #۳).
 function msUntilGate(gate) {
   if (!gate || !Array.isArray(gate.entryHoursUtc) || !gate.entryHoursUtc.length) return null
   const firstHour = Math.min(...gate.entryHoursUtc)   // ابتدای پنجرهٔ ورود
   const nowUtc = new Date()
-  // کاندیدا: امروز و تا ۷ روزِ آینده، اولین لحظه‌ای که (روز مجاز است) و ساعت=firstHour:00 UTC.
-  for (let addDay = 0; addDay <= 8; addDay++) {
+  // کاندیدا: امروز و تا ۴۰ روزِ آینده (کافی برای رسیدن به روزِ ماهِ بعدی).
+  for (let addDay = 0; addDay <= 40; addDay++) {
     const cand = new Date(Date.UTC(
       nowUtc.getUTCFullYear(), nowUtc.getUTCMonth(), nowUtc.getUTCDate() + addDay,
       firstHour, 0, 0, 0))
     if (cand.getTime() <= nowUtc.getTime()) continue
-    // فیلترِ روزِ هفته (اگر لایه روز-محور باشد)
-    if (Array.isArray(gate.activeDaysUtc) && gate.activeDaysUtc.length) {
-      if (!gate.activeDaysUtc.includes(cand.getUTCDay())) continue
-    }
-    // قیدِ روزِ ماه (Turn-of-Month / S164) قابلِ پیش‌بینیِ ساده نیست ⇒ countdown نمی‌دهیم.
+    if (!gateDayAllowed(gate, cand)) continue
     const ms = cand.getTime() - nowUtc.getTime()
     return { ms, targetLabelIran: utcHourToIran(firstHour) }
   }
