@@ -182,7 +182,7 @@ export interface RouterDecision {
   sourceLayer?: {
     code: string                // کدِ لایه (مثلِ S139، S168، S171، S67)
     name: string                // نامِ فارسیِ لایه
-    kind: 'time' | 'price-action' | 'regime-ml' | 'ma-confluence' | 'squeeze' | 'session'
+    kind: 'time' | 'price-action' | 'regime-ml' | 'ma-confluence' | 'squeeze' | 'session' | 'mean-reversion'
     filters?: string[]          // فیلترهای اعمال‌شده (مثلِ «تأییدِ امتیازیِ S163»)
     // پلنِ مدیریتِ معامله‌ی مخصوصِ همین لایه (برای trade_manager — User Note #3):
     manage?: {
