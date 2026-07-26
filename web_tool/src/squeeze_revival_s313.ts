@@ -286,10 +286,12 @@ export function decideS313(
   }
 
   // ---------- حالتِ NEUTRAL: شرایط برقرار نیست (روتر به fallback می‌رود) ----------
+  // طبقِ تعریفِ سایت: در خنثی هم باید صریحاً بگوید کدام لایه ناظرِ این کارت است.
   return {
     state: 'NEUTRAL', regime: reg,
     headline: `خنثی — شرایطِ انفجارِ فشردگی برقرار نیست (${cfg.tfFa})`,
     reason: sig.reason,
+    sourceLayer: { code: 'S313', name: `انفجارِ فشردگیِ بولینگر (${cfg.tfFa})`, kind: 'squeeze' },
     indicators,
   }
 }
