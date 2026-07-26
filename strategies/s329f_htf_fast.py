@@ -23,9 +23,12 @@ from engine import rqs as RQS
 from engine import indicators as ind
 
 
-def build_htf_down(df_m15, htf_ema, htf_lb):
-    """آرایهٔ بولیِ هم‌طولِ M15: روندِ H1 نزولی؟ (بدون look-ahead، merge_asof backward)."""
-    df_h1 = TS.load_data('EURUSD_H1')
+def build_htf_down(df_m15, htf_ema, htf_lb, htf_tf='M30'):
+    """آرایهٔ بولیِ هم‌طولِ M15: روندِ تایم‌فریمِ بالاتر نزولی؟
+    (بدون look-ahead، merge_asof backward). EURUSD فقط M1/M5/M15/M30 دارد؛
+    پس HTF = M30 (دو برابرِ M15) به‌جای H1.
+    """
+    df_h1 = TS.load_data(f'EURUSD_{htf_tf}')
     ema_h1 = ind.ema(df_h1['close'], htf_ema).to_numpy()
     ema_prev = pd.Series(ema_h1).shift(htf_lb).to_numpy()
     down = ema_h1 < ema_prev
