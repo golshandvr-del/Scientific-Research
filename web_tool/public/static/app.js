@@ -551,6 +551,7 @@ function renderCard(a) {
           <span id="price-${a.id}" class="text-lg font-bold text-slate-100 tabular-nums" dir="ltr">${d || trade ? fmt(s.price ?? (d && d.price) ?? (trade && trade.entry), a.decimals) : '—'}</span>
         </div>
         ${body}
+        ${d ? renderCardTimeGates(d) : ''}
       </div>
     </section>`
 }
