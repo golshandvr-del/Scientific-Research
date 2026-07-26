@@ -560,3 +560,129 @@ export function decideS324(cfg: S324Config, a: AnalysisResult, candles: Candle[]
     filters: [`swing_len=${cfg.swingLen}`, `عمقِ جارو≥${cfg.depthMin}×ATR`, `بازگشت≥${cfg.dispMin}×ATR`, cfg.regimeOn ? 'رژیمِ EMA200' : 'بدونِ فیلترِ رژیم', cfg.side === 'LONG' ? `RSI≤${cfg.rsiLo}` : `RSI≥${cfg.rsiHi}`],
   }, cfg.id, a.price, reg, capital, riskPct)
 }
+
+// ===========================================================================
+// S321 — MA-Ribbon (GMMA/Alligator) pullback، دوطرفهٔ متقارن   XAUUSD M30
+// ---------------------------------------------------------------------------
+// ribbonِ فیبوناچیِ ۷-خطی EMA[8,13,21,34,55,89,144] (هم‌خانوادهٔ GMMA/Alligator).
+// ورود کلاسیک «buy/sell-the-pullback-to-the-ribbon»:
+//   (1) ribbon کاملاً مرتب (order ratio ≥ ord_thr): fan صعودی یا نزولی
+//   (2) رژیمِ عرضِ ribbon کافی (width z-score ≥ wz_gate): ribbon منبسط، نه درهم
+//   (3) pullback قیمت به بدنهٔ ribbon (عمق ∈ [pull_min, pull_max])
+//   (4) شیبِ EMA34 نرمال‌شده با ATR ≥ slope_min
+//   (5) RSI ∈ [rsi_min, rsi_max]
+//   SL=TP=2.7×ATR (RR متقارن، غیر-رند)، max_hold=36. دوطرفه (LONG/SHORT).
+// ===========================================================================
+export interface S321Config {
+  id: string
+  ribbon: number[]      // [8,13,21,34,55,89,144]
+  ordThr: number        // 0.40
+  wzGate: number        // 0.15
+  pullMin: number; pullMax: number   // 0.05 / 0.82
+  rsiMin: number; rsiMax: number     // 45 / 85
+  slopeMin: number      // 0.055 (شیبِ EMA34/ATR، lookback=5)
+  slMult: number; tpMult: number; maxHold: number   // 2.7 / 2.7 / 36
+}
+
+export const S321_CFG: Record<string, S321Config> = {
+  'XAUUSD-M30': {
+    id: 'XAUUSD-M30', ribbon: [8, 13, 21, 34, 55, 89, 144],
+    ordThr: 0.40, wzGate: 0.15, pullMin: 0.05, pullMax: 0.82,
+    rsiMin: 45, rsiMax: 85, slopeMin: 0.055, slMult: 2.7, tpMult: 2.7, maxHold: 36,
+  },
+}
+
+export function computeS321(candles: Candle[], cfg: S321Config): RawSignal {
+  const close = candles.map(c => c.close)
+  const atr14 = atr(candles, 14)
+  const r = rsi(close, 14)
+  const i = close.length - 1
+  const atrVal = atr14[i]
+
+  const empty = (reason: string): RawSignal => ({
+    active: false, approaching: false, direction: 'LONG', slDist: 0, tpDist: 0,
+    maxHoldBars: cfg.maxHold, reason, indicators: [],
+  })
+  if (!(atrVal > 0) || i < 150 || !Number.isFinite(r[i])) return empty('دادهٔ کافی برای ribbon نیست.')
+
+  // مقادیرِ EMAهای ribbon در کندلِ جاری
+  const emas = cfg.ribbon.map(p => ema(close, p))
+  const vals = emas.map(e => e[i])
+  if (vals.some(v => !Number.isFinite(v))) return empty('ribbon هنوز محاسبه نشده.')
+
+  // order ratio: نسبتِ جفت‌های مجاورِ مرتب (صعودی: هر EMAِ کوتاه‌تر بالای بلندتر)
+  let ascPairs = 0, descPairs = 0
+  for (let k = 0; k < vals.length - 1; k++) {
+    if (vals[k] > vals[k + 1]) ascPairs++      // کوتاه بالای بلند ⇒ صعودی
+    else if (vals[k] < vals[k + 1]) descPairs++
+  }
+  const nPairs = vals.length - 1
+  const ascRatio = ascPairs / nPairs
+  const descRatio = descPairs / nPairs
+
+  // عرضِ ribbon = (max-min)/ATR، و z-score آن روی ۱۰۰ کندلِ اخیر
+  const widthSeries: number[] = []
+  for (let j = Math.max(0, i - 120); j <= i; j++) {
+    const vv = emas.map(e => e[j])
+    if (vv.some(v => !Number.isFinite(v))) { widthSeries.push(NaN); continue }
+    widthSeries.push((Math.max(...vv) - Math.min(...vv)) / (atr14[j] || atrVal))
+  }
+  const valid = widthSeries.filter(v => Number.isFinite(v))
+  const mean = valid.reduce((s, v) => s + v, 0) / (valid.length || 1)
+  const sd = Math.sqrt(valid.reduce((s, v) => s + (v - mean) ** 2, 0) / (valid.length || 1)) || 1
+  const widthZ = (last(widthSeries) - mean) / sd
+
+  // شیبِ EMA34 نرمال با ATR (lookback=5)
+  const e34 = emas[3]  // index 3 = EMA34
+  const slope = Number.isFinite(e34[i - 5]) ? (e34[i] - e34[i - 5]) / (5 * atrVal) : NaN
+
+  // pullback: عمقِ نفوذِ قیمت به بدنهٔ ribbon (۰=لبهٔ نزدیک، ۱=لبهٔ دور)
+  const rHi = Math.max(...vals), rLo = Math.min(...vals)
+  const price = close[i]
+  const band = rHi - rLo || atrVal
+  const rsiNow = r[i]
+
+  const slDist = cfg.slMult * atrVal
+  const tpDist = cfg.tpMult * atrVal
+  const wzOk = Number.isFinite(widthZ) && widthZ >= cfg.wzGate
+  const slopeMag = Number.isFinite(slope) ? Math.abs(slope) : 0
+  const slopeOk = slopeMag >= cfg.slopeMin
+  const rsiOk = rsiNow >= cfg.rsiMin && rsiNow <= cfg.rsiMax
+
+  const ind: RouterDecision['indicators'] = [
+    { name: `ترتیبِ ribbon (≥${cfg.ordThr})`, value: `صعودی ${ascRatio.toFixed(2)} / نزولی ${descRatio.toFixed(2)}`, status: (ascRatio >= cfg.ordThr || descRatio >= cfg.ordThr) ? 'ok' : 'warn' },
+    { name: `عرضِ ribbon (z≥${cfg.wzGate})`, value: (Number.isFinite(widthZ) ? widthZ.toFixed(2) : '—') + (wzOk ? ' ✔' : ' ✘'), status: wzOk ? 'ok' : 'neutral' },
+    { name: `شیبِ EMA34 (≥${cfg.slopeMin})`, value: slopeMag.toFixed(3) + (slopeOk ? ' ✔' : ' ✘'), status: slopeOk ? 'ok' : 'warn' },
+    { name: `RSI-14 ∈ [${cfg.rsiMin},${cfg.rsiMax}]`, value: rsiNow.toFixed(0) + (rsiOk ? ' ✔' : ' ✘'), status: rsiOk ? 'ok' : 'warn' },
+  ]
+
+  // LONG: ribbon صعودیِ مرتب، شیبِ مثبت، pullback قیمت به بدنهٔ ribbon از بالا
+  if (ascRatio >= cfg.ordThr && slope > 0 && wzOk && slopeOk && rsiOk) {
+    const depth = (rHi - price) / band     // ۰ = روی سقفِ ribbon، ۱ = روی کفِ ribbon
+    const pullOk = depth >= cfg.pullMin && depth <= cfg.pullMax
+    ind.push({ name: `عمقِ pullback ∈ [${cfg.pullMin},${cfg.pullMax}]`, value: depth.toFixed(2) + (pullOk ? ' ✔' : ''), status: pullOk ? 'ok' : 'neutral' })
+    if (pullOk) return { active: true, approaching: false, direction: 'LONG', slDist, tpDist, maxHoldBars: cfg.maxHold, reason: 'ribbonِ GMMA صعودیِ مرتب و منبسط + pullback قیمت به بدنهٔ ribbon + شیب و RSI سالم ⇒ خرید.', indicators: ind }
+    return { active: false, approaching: true, direction: 'LONG', slDist, tpDist, maxHoldBars: cfg.maxHold, reason: 'ribbonِ صعودی مرتب است؛ منتظرِ pullback قیمت به بدنهٔ ribbon برای ورودِ خرید.', approachReason: 'pullback قیمت به بدنهٔ ribbon', indicators: ind }
+  }
+  // SHORT: ribbon نزولیِ مرتب، شیبِ منفی، pullback قیمت به بدنه از پایین
+  if (descRatio >= cfg.ordThr && slope < 0 && wzOk && slopeOk && rsiOk) {
+    const depth = (price - rLo) / band     // ۰ = روی کفِ ribbon، ۱ = روی سقفِ ribbon
+    const pullOk = depth >= cfg.pullMin && depth <= cfg.pullMax
+    ind.push({ name: `عمقِ pullback ∈ [${cfg.pullMin},${cfg.pullMax}]`, value: depth.toFixed(2) + (pullOk ? ' ✔' : ''), status: pullOk ? 'ok' : 'neutral' })
+    if (pullOk) return { active: true, approaching: false, direction: 'SHORT', slDist, tpDist, maxHoldBars: cfg.maxHold, reason: 'ribbonِ GMMA نزولیِ مرتب و منبسط + pullback قیمت به بدنهٔ ribbon + شیب و RSI سالم ⇒ فروش.', indicators: ind }
+    return { active: false, approaching: true, direction: 'SHORT', slDist, tpDist, maxHoldBars: cfg.maxHold, reason: 'ribbonِ نزولی مرتب است؛ منتظرِ pullback قیمت به بدنهٔ ribbon برای ورودِ فروش.', approachReason: 'pullback قیمت به بدنهٔ ribbon', indicators: ind }
+  }
+
+  return empty('ribbon مرتب/منبسط با شیب و RSیِ لازم نیست؛ سیگنالِ S321 نداریم.')
+}
+
+export function decideS321(cfg: S321Config, a: AnalysisResult, candles: Candle[], capital = 10000, riskPct = 1.0): RouterDecision {
+  const raw = computeS321(candles, cfg)
+  const reg = lightRegime(candles.map(c => c.close), 0, raw.active || raw.approaching, 's321_ribbon')
+  return rawToDecision(raw, {
+    code: 'S321', name: 'MA-Ribbon (GMMA) pullback', kind: 'ma-confluence' as any,
+    manageStyle: 'structural-trail', beTriggerR: 1.0,
+    manageNote: 'پس از ۱R، SL به بریک‌ایون؛ سپس پشتِ EMA34/55ِ ribbon تریل کن. با شکستِ ribbon خارج شو.',
+    filters: [`ترتیبِ ribbon≥${cfg.ordThr}`, `عرض z≥${cfg.wzGate}`, `شیب≥${cfg.slopeMin}`, `pullback [${cfg.pullMin},${cfg.pullMax}]`],
+  }, cfg.id, a.price, reg, capital, riskPct)
+}
