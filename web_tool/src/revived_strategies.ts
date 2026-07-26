@@ -82,6 +82,12 @@ export function rawToDecision(
     },
   }
 
+  // درصدِ اطمینانِ شفاف: نسبتِ شاخص‌های تأییدکننده (ok) به کلِ شاخص‌های تصمیم‌ساز
+  //   (neutralها شمرده نمی‌شوند). صرفاً بازتابِ «چند شرط برقرار است»؛ نه احتمالِ آماری.
+  const decisive = raw.indicators.filter(i => i.status === 'ok' || i.status === 'warn' || i.status === 'bad')
+  const okCount = raw.indicators.filter(i => i.status === 'ok').length
+  const confPct = decisive.length > 0 ? Math.round((okCount / decisive.length) * 100) : undefined
+
   if (raw.active) {
     const entry = price
     const sl = raw.direction === 'LONG' ? entry - raw.slDist : entry + raw.slDist
@@ -99,7 +105,7 @@ export function rawToDecision(
       direction: raw.direction,
       entry, tp, sl,
       rr: `1:${rrNum.toFixed(2)}`,
-      probability: undefined,
+      probability: confPct,
       sizing: lots != null ? {
         lotMultiplier: 1.0, label: 'واحدِ پایه',
         note: `حجمِ سرمایه‌محور بر پایهٔ ریسکِ ${riskPct}% و فاصلهٔ SL`,
@@ -116,6 +122,8 @@ export function rawToDecision(
       headline: `احتمالِ نزدیک‌شدن به سیگنال — ${meta.name}`,
       reason: raw.reason,
       sourceLayer,
+      direction: raw.direction,
+      probability: confPct,
       confirmations: raw.approachReason
         ? [{ label: raw.approachReason, met: false, detail: raw.approachReason }]
         : undefined,
@@ -123,10 +131,13 @@ export function rawToDecision(
     }
   }
 
+  // NEUTRAL: طبقِ تعریفِ سایت، ربات باید صریحاً بگوید «به‌دلیلِ کدام لایه/شاخص‌ها»
+  //   هنوز واردِ معامله نمی‌شود ⇒ sourceLayer را نگه می‌داریم (کدِ لایهٔ ناظر).
   return {
     state: 'NEUTRAL', regime: reg,
     headline: `خنثی — ${meta.name}`,
     reason: raw.reason,
+    sourceLayer,
     indicators: raw.indicators,
   }
 }
