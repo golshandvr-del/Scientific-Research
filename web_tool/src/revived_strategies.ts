@@ -110,7 +110,10 @@ export function rawToDecision(
         lotMultiplier: 1.0, label: 'واحدِ پایه',
         note: `حجمِ سرمایه‌محور بر پایهٔ ریسکِ ${riskPct}% و فاصلهٔ SL`,
         lots, riskDollars: rd, capital, riskPct,
-        capitalNote: `SL≈${raw.slDist.toFixed(2)}$ ⇒ ریسک ${rd}$`,
+        // 🔧 باگِ User Note (نکتهٔ دوم): متن باید ضررِ *واقعیِ* دلاری با حجمِ نهایی را بگوید.
+        //   فاصلهٔ SL «دلار به ازای هر اونس» است؛ ضررِ کلِ معامله = فاصله × ۱۰۰ × لات.
+        capitalNote: `با حجمِ ${lots.toFixed(2)} لات، اگر SL بخورد حدودِ ${rd}$ ضرر می‌کنید ` +
+          `(فاصلهٔ SL ≈ ${raw.slDist.toFixed(2)}$ به ازای هر اونس).`,
       } : undefined,
       indicators: raw.indicators,
     }
