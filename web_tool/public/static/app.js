@@ -589,31 +589,54 @@ function renderSourceLayer(d) {
 // وقتی چند لایهٔ احیاشدهٔ همان کارت همزمان ENTRY/APPROACHING می‌دهند، لایهٔ اصلی
 // نمایشِ کامل دارد و بقیه این‌جا (جمع‌شونده) فهرست می‌شوند تا کاربر شفافیتِ کامل
 // داشته باشد که «چند لایه هم‌جهت تأیید کرده‌اند».
-function renderOtherLayers(d) {
+function renderOtherLayers(d, a) {
   const others = d.otherLayers
   if (!others || !others.length) return ''
+  const dec = a ? a.decimals : 2
   const rows = others.map(o => {
     const stFa = o.state === 'ENTRY' ? 'ورود' : 'نزدیک‌شدن'
     const stColor = o.state === 'ENTRY' ? 'text-emerald-300' : 'text-amber-300'
     const dirFa = o.direction === 'LONG' ? 'خرید' : o.direction === 'SHORT' ? 'فروش' : '—'
     const kindFa = LAYER_KIND_FA[o.kind] || o.kind || ''
+    // 🔧 باگِ User Note #۴: اگر این لایهٔ همزمان در حالتِ ENTRY است، اعدادِ کاملِ معامله‌اش
+    //   را نشان بده تا کاربر بتواند آن را هم مستقل در دمو باز کند (نه فقط ببیند که وجود دارد).
+    let entryBox = ''
+    if (o.state === 'ENTRY' && o.entry != null) {
+      const sz = o.sizing
+      entryBox = `
+        <div class="mt-1 grid grid-cols-3 gap-1 text-center" dir="ltr">
+          <div class="bg-slate-800/70 rounded p-1"><div class="text-[9px] text-slate-400">ورود</div><div class="text-[11px] font-bold text-slate-100 tabular-nums">${fmt(o.entry, dec)}</div></div>
+          <div class="bg-emerald-900/30 rounded p-1"><div class="text-[9px] text-emerald-400">TP</div><div class="text-[11px] font-bold text-emerald-300 tabular-nums">${fmt(o.tp, dec)}</div></div>
+          <div class="bg-rose-900/30 rounded p-1"><div class="text-[9px] text-rose-400">SL</div><div class="text-[11px] font-bold text-rose-300 tabular-nums">${fmt(o.sl, dec)}</div></div>
+        </div>
+        <div class="flex items-center justify-between mt-0.5 text-[10px] text-slate-500">
+          <span>R:R ${o.rr || '—'}</span>
+          ${sz && sz.lots != null ? `<span>حجم: <b class="text-amber-200" dir="ltr">${fmt(sz.lots, 2)}</b> لات · ریسک <b class="text-rose-200" dir="ltr">${fmt(sz.riskDollars, 2)}$</b></span>` : ''}
+        </div>`
+    }
     return `
       <li class="flex items-start gap-2 py-1.5 border-t border-slate-700/40 first:border-t-0">
-        <span class="rounded bg-slate-700/60 px-1.5 py-0.5 text-[10px] text-slate-200 tabular-nums" dir="ltr">${o.code}</span>
-        <div class="flex-1">
-          <div class="flex items-center gap-1.5 text-[11px]">
+        <span class="rounded bg-slate-700/60 px-1.5 py-0.5 text-[10px] text-slate-200 tabular-nums shrink-0" dir="ltr">${o.code}</span>
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center flex-wrap gap-1.5 text-[11px]">
             <span class="font-bold text-slate-200">${o.name}</span>
             <span class="${stColor}">(${stFa} ${dirFa})</span>
             <span class="text-[10px] text-slate-500">${kindFa}</span>
           </div>
           ${o.reason ? `<p class="text-[10px] text-slate-500 leading-relaxed mt-0.5">${o.reason}</p>` : ''}
+          ${entryBox}
         </div>
       </li>`
   }).join('')
+  // چند لایه همزمان می‌توانند ENTRY یا APPROACHING باشند (رفعِ باگِ «گیرکردنِ یک لایه»).
+  const nEntry = others.filter(o => o.state === 'ENTRY').length
+  const summaryTxt = nEntry > 0
+    ? `${others.length} لایهٔ فعالِ دیگر (${nEntry} سیگنالِ آماده) — برای دیدنِ جزئیات بزنید`
+    : `${others.length} لایهٔ دیگر هم در حالِ انتظار/نزدیک‌شدن‌اند — برای دیدن بزنید`
   return `
     <details class="mt-2 rounded-md bg-slate-800/40 border border-slate-700/50 px-2.5 py-1.5">
       <summary class="cursor-pointer text-[11px] text-slate-300 font-bold select-none">
-        <i class="fas fa-layer-group text-indigo-300 ml-1"></i>${others.length} لایهٔ هم‌جهتِ دیگر هم تأیید کرده‌اند
+        <i class="fas fa-layer-group text-indigo-300 ml-1"></i>${summaryTxt}
       </summary>
       <ul class="mt-1.5">${rows}</ul>
     </details>`
@@ -645,7 +668,7 @@ function renderApproaching(a, d) {
     <div class="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 mb-3">
       <p class="font-bold text-amber-300 mb-1"><i class="fas fa-hourglass-half ml-1"></i>${d.headline}</p>
       ${renderSourceLayer(d)}
-      ${renderOtherLayers(d)}
+      ${renderOtherLayers(d, a)}
       ${renderTimeGate(d)}
       <p class="text-sm text-slate-300 leading-relaxed mb-2 mt-2">${d.reason}</p>
       <p class="text-xs text-amber-200/80 font-bold mb-1">تأییدهایِ موردِ انتظار:</p>
@@ -677,7 +700,7 @@ function renderEntry(a, d) {
       </p>
       ${latchBanner}
       ${renderSourceLayer(d)}
-      ${renderOtherLayers(d)}
+      ${renderOtherLayers(d, a)}
       <p class="text-sm text-slate-300 leading-relaxed mb-3 mt-2">${d.reason}</p>
       <div class="grid grid-cols-3 gap-2 text-center" dir="ltr">
         <div class="bg-slate-800/70 rounded-lg p-2">
