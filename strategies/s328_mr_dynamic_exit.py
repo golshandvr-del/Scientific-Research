@@ -107,8 +107,13 @@ def simulate_mr_dynamic(df, entry_sig, side, sl_pip, rsi_arr, mid, asset,
             else:
                 gross = (exit_price - fill) / pip
             pnl_pip = gross - spread / 2   # نیمِ دیگرِ اسپرد در خروج
-            trades.append(dict(entry_i=i, exit_i=j, dt=dt[i], pnl_pip=pnl_pip,
-                               side=side))
+            # ستون‌های سازگار با engine/rqs و engine/run_capital
+            trades.append(dict(
+                signal_bar=int(i), entry_bar=int(i + 1), exit_bar=int(j),
+                direction=(-1 if side == 'short' else 1),
+                pnl_pip=float(pnl_pip), sl_pip=float(sl_pip),
+                outcome=('win' if pnl_pip > 0 else 'loss'),
+                bars_held=int(j - i)))
             i = j + 1   # allow_overlap=False
         else:
             i += 1
