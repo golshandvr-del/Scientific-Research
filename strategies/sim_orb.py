@@ -187,6 +187,16 @@ class SessionORB:
         if self._dow[nb] in self.bad_dow:
             return None
 
+        # فیلترِ رژیمِ نوسان (بهبودِ کلیدیِ S330): fade فقط در بازارِ آرام.
+        # ATR جاری ÷ SMAِ بلندِ ATR باید ≤ آستانه باشد (رژیمِ کم‌نوسان/رنج).
+        if self._atr_ma is not None:
+            am = self._atr_ma[i]
+            if not np.isfinite(am) or am <= 0:
+                return None
+            regime_ratio = self._atr[i] / am
+            if regime_ratio > self.regime_atr_ratio_max:
+                return None
+
         # coiled-spring: بازهٔ باریک نسبت به ATR (فنرِ فشرده)
         if or_atr and np.isfinite(or_atr) and or_atr > 0:
             ratio = or_rng / or_atr
