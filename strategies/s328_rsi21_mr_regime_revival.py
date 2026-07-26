@@ -252,6 +252,79 @@ def full_revival(asset='XAUUSD', side='long'):
                   f"PF={r['pf']:.2f} DD={r['dd']:.1f}% MCL={r['mcl']} G={r['gates']} net={r['net']:+.0f}")
 
 
+def unified_sweep(asset, tf, f, sl_grid, tp_grid, side='short'):
+    """جاروبِ یکپارچه: همهٔ آستانه‌های RSI × فیلترها × TP/SL × max_hold برای یک TF."""
+    ADX_MAXES = [None, 35, 28, 22]
+    ER_MAXES  = [None, 0.40, 0.30, 0.22]
+    THRESHES  = [(25, 75), (22, 78), (20, 80), (18, 82), (25, 78), (25, 80)]
+    MAX_HOLDS = [16, 24, 36]
+    results = []
+    df = se.load_data(f)
+    for (lo, hi) in THRESHES:
+        for adx_max in ADX_MAXES:
+            for er_max in ER_MAXES:
+                long_sig, short_sig = build_signals(df, 21, lo, hi, adx_max, er_max)
+                if side == 'long':
+                    short_sig = np.zeros(len(df), dtype=bool)
+                else:
+                    long_sig = np.zeros(len(df), dtype=bool)
+                if int(long_sig.sum() + short_sig.sum()) < 30:
+                    continue
+                for sl in sl_grid:
+                    for tp in tp_grid:
+                        for mh in MAX_HOLDS:
+                            tr = se.simulate_trades(df, long_sig, short_sig, sl, tp,
+                                                    asset, max_hold=mh, allow_overlap=False)
+                            if tr is None or len(tr) < 30:
+                                continue
+                            r = rqs.compute_rqs(tr, asset, sl_pip=sl, tp_pip=tp)
+                            m = r['metrics']
+                            results.append(dict(asset=asset, tf=tf, side=side, lo=lo, hi=hi,
+                                adx_max=adx_max, er_max=er_max, sl=sl, tp=tp, mh=mh,
+                                rqs=r['rqs_score'], passed=bool(r['passed']), n=int(m['n_trades']),
+                                wr=m['win_rate'], pf=m['profit_factor'], dd=m['max_dd_pct'],
+                                mcl=int(m['max_consec_losses']), p=m['p_value'], net=m['net_profit'],
+                                wf=m['wf_nets'], half=m['half_nets'],
+                                gates=''.join('1' if v else '0' for v in r['gates'].values())))
+    results.sort(key=lambda x: (x['passed'], x['rqs']), reverse=True)
+    return results
+
+
+def finalize(asset='XAUUSD', side='short'):
+    """جاروبِ نهاییِ یکپارچه روی همهٔ TF؛ ذخیرهٔ بهترین کاندیدِ گیت-پاسِ هر TF در JSON."""
+    import json
+    print("=" * 110)
+    print(f"S328 FINALIZE — {asset} — side={side} — انتخابِ بهترین کاندیدِ گیت-پاسِ هر TF")
+    print("=" * 110)
+    winners = {}
+    for tf, f in TFS[asset].items():
+        if not os.path.exists(f):
+            continue
+        spec = TFSPEC.get((asset, tf))
+        if spec is None:
+            continue
+        res = unified_sweep(asset, tf, f, spec['sl'], spec['tp'], side=side)
+        passers = [r for r in res if r['passed'] and r['rqs'] >= 80]
+        if passers:
+            # ترجیح: n بالاتر میانِ RQS≥80 (استواریِ آماری بیشتر)، سپس RQS
+            passers.sort(key=lambda x: (x['n'] >= 40, x['rqs']), reverse=True)
+            best = passers[0]
+            winners[tf] = best
+            print(f"\n✅ {asset}-{tf}: {len(passers)} گیت-پاس | BEST: RQS={best['rqs']} WR={best['wr']:.1f}% "
+                  f"PF={best['pf']:.2f} n={best['n']} DD={best['dd']:.1f}% MCL={best['mcl']} "
+                  f"| lo{best['lo']}/hi{best['hi']} adx≤{best['adx_max']} er≤{best['er_max']} "
+                  f"SL{best['sl']}/TP{best['tp']} mh{best['mh']} WF={best['wf']}")
+        else:
+            top = res[0] if res else None
+            print(f"\n❌ {asset}-{tf}: هیچ گیت-پاس. بهترین: " +
+                  (f"RQS={top['rqs']} WR={top['wr']:.1f}% G={top['gates']}" if top else "no trades"))
+    out = f"results/_s328_winners_{asset}_{side}.json"
+    with open(out, 'w') as fp:
+        json.dump(winners, fp, indent=2, ensure_ascii=False)
+    print(f"\n💾 ذخیره شد: {out}  ({len(winners)} TF زنده)")
+    return winners
+
+
 if __name__ == '__main__':
     import sys
     mode = sys.argv[1] if len(sys.argv) > 1 else 'baseline'
@@ -265,3 +338,7 @@ if __name__ == '__main__':
         asset = sys.argv[2] if len(sys.argv) > 2 else 'XAUUSD'
         side = sys.argv[3] if len(sys.argv) > 3 else 'short'
         deep_revival(asset, side)
+    elif mode == 'finalize':
+        asset = sys.argv[2] if len(sys.argv) > 2 else 'XAUUSD'
+        side = sys.argv[3] if len(sys.argv) > 3 else 'short'
+        finalize(asset, side)
