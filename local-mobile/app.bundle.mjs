@@ -4088,6 +4088,7 @@ function decideS313(cfg, a, open, high, low, close, capital = 1e4, riskPct = 1) 
     regime: reg,
     headline: `\u062E\u0646\u062B\u06CC \u2014 \u0634\u0631\u0627\u06CC\u0637\u0650 \u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A (${cfg.tfFa})`,
     reason: sig.reason,
+    sourceLayer: { code: "S313", name: `\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (${cfg.tfFa})`, kind: "squeeze" },
     indicators
   };
 }
