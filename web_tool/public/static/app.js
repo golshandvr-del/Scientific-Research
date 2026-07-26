@@ -807,6 +807,7 @@ function renderEntry(a, d) {
         </div>
         <p class="text-[11px] text-rose-100/70 leading-relaxed mt-1">${d.slPlan.note}</p>
       </div>` : ''}
+      ${manageStyleGuide(d)}
     </div>
     ${renderIndicators(d)}
     <button class="btn-register mt-3 w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-white transition"
