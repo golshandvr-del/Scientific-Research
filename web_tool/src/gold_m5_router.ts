@@ -34,6 +34,7 @@ import * as ind from './indicators'
 import { evalGoldM5LateEntry, S214_HIDDEN_TP_PIP, S214_HIDDEN_SL_PIP } from './gold_m5_late_entry'
 import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
 import { channelDecision, CHANNEL_CFG } from './gold_channel'
+import { computeStreakReversal, STREAK_REV_CFG } from './streak_reversal_s326'
 
 // پارامترهای ورودِ S79 (وسطِ منطقهٔ پایدار — پرهیز از overfit)
 const EMA_FAST = 20
@@ -185,6 +186,8 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
   // (لایهٔ اسکالپ فقط BUY است؛ بدونِ روندِ صعودیِ M5 اصلاً وارد نمی‌شود — L51 long-bias طلا.)
   // ⇒ قبل از اعلامِ خنثی، لایهٔ مکملِ مستقلِ trend-line (S215) را می‌سنجیم (بندِ پایین).
   if (!trendUp) {
+    const sr = maybeStreakRevM5(a, close, reg, open, high, low)
+    if (sr) return sr
     const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low)
     if (tl) return tl
     const chn = maybeChannelM5(a, close, _capital, _riskPct, open, high, low)
@@ -244,6 +247,8 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
   // --------- حالتِ ۱ (شاخهٔ دوم): روند صعودی ولی RSI بالا → خنثی ---------
   // ⇒ قبل از اعلامِ خنثی، لایهٔ مکملِ مستقلِ trend-line (S215) را می‌سنجیم.
   {
+    const sr = maybeStreakRevM5(a, close, reg, open, high, low)
+    if (sr) return sr
     const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low)
     if (tl) return tl
     const chn = maybeChannelM5(a, close, _capital, _riskPct, open, high, low)
@@ -259,6 +264,58 @@ export function decideGoldM5(a: AnalysisResult, close: number[],
       `تا یک پولبک بدهد.`,
     indicators,
   }
+}
+
+// ---------------------------------------------------------------------------
+// maybeStreakRevM5 — لایهٔ مکملِ مستقلِ S326 (Streak-Reversal / mean-reversion) روی M5.
+// ---------------------------------------------------------------------------
+// طبقِ ممیزیِ همپوشانی (results/_s326_overlap_audit.json): همپوشانی با لایه‌های فعالِ M5
+// فقط ۰.۹٪ ⇒ لایهٔ کاملاً مستقل. این یک fade/بازگشتِ contrarian است (RSI≤۳۰ + رگهٔ
+// نزولی + close>EMA200) با TP<SL؛ RQS+ 92.0 روی XAUUSD M5. فقط ENTRY/APPROACHING را
+// برمی‌گرداند تا با اسکالپِ پولبک تداخل نکند؛ در غیرِ این‌صورت null.
+// swing با TP/SL شناورِ ATR-محور (نه اسکالپِ لحظه‌ای) ⇒ مدیریتِ scalp رویش سوار نیست.
+function maybeStreakRevM5(
+  a: AnalysisResult, close: number[], reg: RegimeInfo,
+  open?: number[], high?: number[], low?: number[],
+): RouterDecision | null {
+  if (!(open && high && low && high.length === close.length && low.length === close.length)) return null
+  const candles = close.map((c, i) => ({ open: open[i], high: high[i], low: low[i], close: c }))
+  const s = computeStreakReversal(candles, STREAK_REV_CFG['XAUUSD-M5'])
+  if (s.active && s.entry != null && s.sl != null && s.tp != null) {
+    return {
+      state: 'ENTRY', regime: reg,
+      headline: 'ورود خرید (LONG) — بازگشتِ میانگین پس از فروشِ هیجانی (طلا M5)',
+      sourceLayer: { code: 'S326', name: 'Streak-Reversal (احیای S22) — M5', kind: 'mean-reversion',
+        filters: [`رگهٔ نزولی ≥ ${STREAK_REV_CFG['XAUUSD-M5'].streakN}`, `RSI14 ≤ ${STREAK_REV_CFG['XAUUSD-M5'].rsiMax}`, 'close>EMA200'] },
+      reason: s.reason,
+      direction: 'LONG', entry: s.entry, tp: s.tp, sl: s.sl,
+      rr: `SL=${(s.entry - s.sl).toFixed(2)}$ (${STREAK_REV_CFG['XAUUSD-M5'].slMult}×ATR) / ` +
+        `TP=${(s.tp - s.entry).toFixed(2)}$ (${STREAK_REV_CFG['XAUUSD-M5'].tpMult}×ATR) — هدفِ کوچکِ سریع (WR بالا).`,
+      probability: 84,
+      indicators: [
+        { name: 'رگهٔ نزولیِ متوالی', value: `${s.streak} کندل`, status: s.streak >= STREAK_REV_CFG['XAUUSD-M5'].streakN ? 'ok' : 'neutral' },
+        { name: 'RSI14 (اشباعِ فروش)', value: s.rsiVal.toFixed(1), status: s.rsiVal <= STREAK_REV_CFG['XAUUSD-M5'].rsiMax ? 'ok' : 'warn' },
+        { name: 'رژیمِ کلان (EMA200)', value: s.aboveTrend ? 'صعودی ✔' : 'صعودی نیست ✘', status: s.aboveTrend ? 'ok' : 'bad' },
+      ],
+    }
+  }
+  if (s.approaching) {
+    return {
+      state: 'APPROACHING', regime: reg,
+      headline: 'نزدیکِ سیگنالِ بازگشتی (LONG) — منتظرِ اشباعِ فروش (طلا M5)',
+      sourceLayer: { code: 'S326', name: 'Streak-Reversal (احیای S22) — M5', kind: 'mean-reversion' },
+      reason: s.reason,
+      confirmations: [
+        { label: `رگهٔ نزولی ≥ ${STREAK_REV_CFG['XAUUSD-M5'].streakN}`, met: s.streak >= STREAK_REV_CFG['XAUUSD-M5'].streakN, detail: `${s.streak} کندلِ نزولیِ متوالی.` },
+        { label: `RSI14 ≤ ${STREAK_REV_CFG['XAUUSD-M5'].rsiMax}`, met: false, detail: `RSI14 الان ${s.rsiVal.toFixed(1)} است؛ منتظرِ رسیدن به اشباعِ فروش.` },
+      ],
+      indicators: [
+        { name: 'رگهٔ نزولیِ متوالی', value: `${s.streak} کندل`, status: 'ok' },
+        { name: 'RSI14', value: s.rsiVal.toFixed(1), status: 'warn' },
+      ],
+    }
+  }
+  return null
 }
 
 // ---------------------------------------------------------------------------
