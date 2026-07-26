@@ -97,12 +97,13 @@ def main():
     df = TS.load_data(f'{asset}_{tf}')
     bad_hours = {8, 9, 12, 17}; bad_dow = {0, 1}
 
-    print('===== S329e — EURUSD M15 + گیتِ رژیمِ H1 (HTF) =====')
+    print('===== S329e — EURUSD M15 + گیتِ رژیمِ H1 (HTF) =====', flush=True)
     best = None; best_kw = None
+    # grid فشرده: adx>22 (بهینهٔ S329c/d) ثابت؛ تمرکز روی htf_ema/htf_lb/rr.
     for htf_ema in (30, 50, 80):
         for htf_lb in (12, 24, 48):
-            for adx_hi in (20, 22, 25):
-                for rr in (1.0, 1.1, 1.2):
+            for adx_hi in (22,):
+                for rr in (1.1, 1.2):
                     sl = 56.9; tp = round(sl * rr, 1)
                     strat = HTFRegimeShort(
                         htf_ema=htf_ema, htf_lb=htf_lb,
@@ -120,7 +121,8 @@ def main():
                     print(f"  {tag:30s} | {r['verdict']:6s} RQS={r['rqs_score']:5.1f} "
                           f"n={m.get('n_trades',0):3d} WR={m.get('win_rate',0):4.1f}% "
                           f"PF={m.get('profit_factor',0):.2f} DD={m.get('max_dd_pct',0):.1f}% "
-                          f"MCL={m.get('max_consec_losses',0)} p={m.get('p_value',1):.3f} {g}{mark}")
+                          f"MCL={m.get('max_consec_losses',0)} p={m.get('p_value',1):.3f} {g}{mark}",
+                          flush=True)
                     if best is None or r['rqs_score'] > best['rqs_score']:
                         best = r; best_kw = (htf_ema, htf_lb, adx_hi, rr)
 
