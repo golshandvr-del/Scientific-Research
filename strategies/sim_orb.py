@@ -210,4 +210,24 @@ class SessionORB:
             tp = entry - self.k_tp * or_rng
             return {'action': 'SHORT', 'sl': sl, 'tp': tp}
 
+        # ---------------- منطقِ FADE (شکستِ کاذب / liquidity-grab) ----------------
+        # فرضیهٔ معکوس: شکستِ بازهٔ افتتاحیه اغلب کاذب است ⇒ در جهتِ مخالف معامله کن.
+        if self.side == 'FADE':
+            hi_i = ctx.df['high'].values[i]
+            lo_i = ctx.df['low'].values[i]
+            # سقف را زد ولی close داخلِ بازه بازگشت ⇒ SHORT (fade)
+            if hi_i > or_hi and cl < or_hi:
+                self._traded_session.add(sid)
+                entry = ctx.df['open'].values[nb]
+                sl = entry + self.k_sl * or_rng
+                tp = entry - self.k_tp * or_rng
+                return {'action': 'SHORT', 'sl': sl, 'tp': tp}
+            # کف را زد ولی close داخلِ بازه بازگشت ⇒ LONG (fade)
+            if lo_i < or_lo and cl > or_lo:
+                self._traded_session.add(sid)
+                entry = ctx.df['open'].values[nb]
+                sl = entry - self.k_sl * or_rng
+                tp = entry + self.k_tp * or_rng
+                return {'action': 'LONG', 'sl': sl, 'tp': tp}
+
         return None
