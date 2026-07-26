@@ -2909,9 +2909,10 @@ function evaluateTrade(t, a, modelProbPct) {
   const riskDist = Math.abs(t.entry - t.sl) || atr2;
   const rewardDist = Math.abs(t.tp - t.entry) || atr2;
   const rawMove = isLong ? price - t.entry : t.entry - price;
-  const pnlUsd = round2(rawMove);
+  const valuePerPrice = t.valuePerPrice ?? 100;
+  const pnlUsd = round2(rawMove * valuePerPrice);
   const pnlR = round2(rawMove / riskDist);
-  const spreadEst = price >= 100 ? 0.35 : price >= 5 ? 0.03 : 2e-4;
+  const spreadEst = price >= 100 ? 0.33 : price >= 5 ? 0.03 : 2e-4;
   const neutralBand = Math.max(spreadEst, 0.12 * riskDist, 0.15 * atr2);
   const ageSec = t.openedAt ? Math.max(0, Math.floor(Date.now() / 1e3) - t.openedAt) : Infinity;
   const withinGraceTime = ageSec < 45 * 60;
@@ -3728,9 +3729,11 @@ function computeEndOfMonth(times, utcHour, filt) {
 
 // ../web_tool/src/router.ts
 var ASSET_SPECS = {
-  XAUUSD: { id: "XAUUSD", valuePerPricePerLot: 100, tradableLots: true, commissionPerLot: 7, minLot: 0.01, maxLot: 100, lotUnitFa: "\u0644\u0627\u062A (\u06F1\u06F0\u06F0 \u0627\u0648\u0646\u0633)" },
-  EURUSD: { id: "EURUSD", valuePerPricePerLot: 1e5, tradableLots: true, commissionPerLot: 7, minLot: 0.01, maxLot: 100, lotUnitFa: "\u0644\u0627\u062A (\u06F1\u06F0\u06F0k)" },
-  AUDUSD: { id: "AUDUSD", valuePerPricePerLot: 1e5, tradableLots: true, commissionPerLot: 7, minLot: 0.01, maxLot: 100, lotUnitFa: "\u0644\u0627\u062A (\u06F1\u06F0\u06F0k)" },
+  // BUG-014 رفع: کمیسیونِ جداگانه = ۰ (مشخصاتِ رسمیِ حسابِ دمو: «کمیسیونِ جداگانه ندارد؛
+  //   هزینه فقط از اسپرد است»). مدلِ قدیمیِ ۷$/لات ریسکِ واقعی را کمتر از تعیین‌شده می‌کرد.
+  XAUUSD: { id: "XAUUSD", valuePerPricePerLot: 100, tradableLots: true, commissionPerLot: 0, minLot: 0.01, maxLot: 100, lotUnitFa: "\u0644\u0627\u062A (\u06F1\u06F0\u06F0 \u0627\u0648\u0646\u0633)" },
+  EURUSD: { id: "EURUSD", valuePerPricePerLot: 1e5, tradableLots: true, commissionPerLot: 0, minLot: 0.01, maxLot: 100, lotUnitFa: "\u0644\u0627\u062A (\u06F1\u06F0\u06F0k)" },
+  AUDUSD: { id: "AUDUSD", valuePerPricePerLot: 1e5, tradableLots: true, commissionPerLot: 0, minLot: 0.01, maxLot: 100, lotUnitFa: "\u0644\u0627\u062A (\u06F1\u06F0\u06F0k)" },
   DXY: { id: "DXY", valuePerPricePerLot: 0, tradableLots: false, commissionPerLot: 0, minLot: 0.01, maxLot: 100, lotUnitFa: "\u2014" }
 };
 function assetSpec(id) {
@@ -5383,7 +5386,8 @@ app.post("/api/trade/advice", async (c) => {
     }
     const managePlan = tr.managePlan && typeof tr.managePlan === "object" ? tr.managePlan : void 0;
     const barsHeld = typeof tr.barsHeld === "number" && tr.barsHeld >= 0 ? tr.barsHeld : void 0;
-    const trade = { side, entry, tp, sl, openedAt: tr.openedAt, barsHeld, managePlan };
+    const valuePerPrice = meta_asset.isGold ? 100 : 1e5;
+    const trade = { side, entry, tp, sl, openedAt: tr.openedAt, barsHeld, managePlan, valuePerPrice };
     const modelProbPct = typeof body.modelProbPct === "number" ? body.modelProbPct : void 0;
     const status = evaluateTrade(trade, a, modelProbPct);
     return c.json({
