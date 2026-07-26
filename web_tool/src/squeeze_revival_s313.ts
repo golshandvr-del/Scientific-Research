@@ -250,8 +250,7 @@ export function decideS313(
             `روندِ صعودی کامل استخراج شود.`,
         },
       },
-      reason: `${sig.reason} این ستاپ روی ${cfg.tfFa} با معیارِ مقاومِ RQS+ اثبات شده ` +
-        `(WR ~۶۸٪). سفارشِ خرید را باز کنید و طبقِ پلنِ مدیریت، پس از سودِ اولیه SL را به بریک‌ایون ببرید.`,
+      reason: `${sig.reason} سفارشِ خرید را باز کنید و طبقِ پلنِ مدیریت، پس از سودِ اولیه SL را به بریک‌ایون ببرید.`,
       direction: 'LONG', entry, tp, sl,
       rr: `SL ${slDist.toFixed(2)}$ (${cfg.slAtr}×ATR) / TP ${tpDist.toFixed(2)}$ (${cfg.tpAtr}×ATR) — نگهداریِ تا ${cfg.maxHold} کندل`,
       sizing: {
