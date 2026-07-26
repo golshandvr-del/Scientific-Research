@@ -28,7 +28,7 @@ TOL = 2
 
 S327_WINNERS = {
     'XAUUSD_M5':  dict(k_body=1.6, br_min=0.6,  streak_n=2, rsi_lo=30, regime='trend', sl_m=3.5, tp_m=1.3,  hold=24),
-    'XAUUSD_M30': dict(k_body=1.6, br_min=0.6,  streak_n=2, rsi_lo=30, regime='trend', sl_m=2.4, tp_m=1.0,  hold=16),
+    'XAUUSD_M30': dict(k_body=2.5, br_min=0.45, streak_n=2, rsi_lo=35, regime='trend', sl_m=2.4, tp_m=1.0,  hold=16),
     'EURUSD_M15': dict(k_body=2.0, br_min=0.6,  streak_n=3, rsi_lo=30, regime='trend', sl_m=3.1, tp_m=1.15, hold=16),
 }
 S326_WINNERS = {
