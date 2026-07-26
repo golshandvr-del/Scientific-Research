@@ -376,19 +376,28 @@ const MAX_EFFECTIVE_RISK_PCT = 5.0
  */
 export function computeLots(capital: number, riskPct: number, slDist: number, lotMult: number, spec: AssetSpec) {
   const effRiskPct = Math.min(riskPct * lotMult, MAX_EFFECTIVE_RISK_PCT)
-  const riskDollars = capital * effRiskPct / 100
+  // ریسکِ «هدف»: مبلغی که *می‌خواهیم* اگر SL بخورد از دست برود (بر پایهٔ درصدِ ریسکِ کاربر).
+  const targetRiskDollars = capital * effRiskPct / 100
   // دارایی‌های غیرقابلِ‌معامله (شاخص مثلِ DXY): لات معنا ندارد.
   if (!spec.tradableLots || spec.valuePerPricePerLot <= 0) {
-    return { lots: null as number | null, riskDollars, effRiskPct }
+    return { lots: null as number | null, riskDollars: targetRiskDollars, targetRiskDollars, effRiskPct }
   }
   let lots = spec.minLot
+  let lossPerLotAtSl = 0
   if (slDist > 0) {
     // ضررِ دلاریِ هر لات اگر SL بخورد = فاصلهٔ SL × ارزشِ حرکتِ همان دارایی + کمیسیون
-    const lossPerLotAtSl = slDist * spec.valuePerPricePerLot + spec.commissionPerLot
-    lots = riskDollars / lossPerLotAtSl
+    lossPerLotAtSl = slDist * spec.valuePerPricePerLot + spec.commissionPerLot
+    lots = targetRiskDollars / lossPerLotAtSl
   }
   lots = Math.min(Math.max(Math.round(lots * 100) / 100, spec.minLot), spec.maxLot)
-  return { lots: lots as number | null, riskDollars, effRiskPct }
+  // 🔧 رفعِ باگِ User Note (نکتهٔ دوم): «ریسکِ دلاری» باید ریسکِ *واقعیِ* حجمِ نهایی
+  //   (پس از گِرد/کلمپ به minLot) باشد، نه ریسکِ هدف. وقتی SL بزرگ و سرمایه کوچک است،
+  //   لات به کفِ ۰.۰۱ گیر می‌کند و ریسکِ واقعی از هدف بالاتر می‌رود (مثلِ ۱$ هدف اما ۱۵.۱۸$ واقعی).
+  //   حالا هر دو عدد را برمی‌گردانیم؛ نمایشِ اصلی «ریسکِ واقعی» است تا کاربر گمراه نشود.
+  const actualRiskDollars = (lossPerLotAtSl > 0 && lots != null)
+    ? lots * lossPerLotAtSl
+    : targetRiskDollars
+  return { lots: lots as number | null, riskDollars: actualRiskDollars, targetRiskDollars, effRiskPct }
 }
 
 // آستانه‌ها — هم‌راستا با بک‌تستِ برندهٔ فعلی S66/L40 (راهکار A از User Note)
