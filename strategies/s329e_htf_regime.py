@@ -32,6 +32,9 @@ from engine import indicators as ind
 from strategies.s329_market_inertia_mtf import MarketInertiaShortMTF
 
 
+_HTF_CACHE = {}
+
+
 def htf_downtrend_on_m15(df_m15, htf_ema=50, htf_lb=24):
     """آرایهٔ بولیِ هم‌طولِ df_m15: آیا روندِ H1 نزولی است؟ (بدون look-ahead)
 
@@ -39,7 +42,13 @@ def htf_downtrend_on_m15(df_m15, htf_ema=50, htf_lb=24):
     (نزولی؟) را حساب می‌کنیم، سپس با merge_asof (backward) به هر کندلِ M15 آخرین
     مقدارِ H1 که زمانِ بازشدنش <= زمانِ کندلِ M15 است را می‌چسبانیم و یک قدم عقب
     (shift) می‌بریم تا فقط از کندلِ H1 قطعاً‌بسته استفاده شود.
+
+    نتیجه بر اساسِ (htf_ema, htf_lb, len) کش می‌شود تا در grid صدها بار H1 دوباره
+    لود/merge نشود (بهبودِ کارایی، بدون تغییرِ منطق).
     """
+    ckey = (htf_ema, htf_lb, len(df_m15))
+    if ckey in _HTF_CACHE:
+        return _HTF_CACHE[ckey]
     df_h1 = TS.load_data('EURUSD_H1')
     ch = df_h1['close']
     ema_h1 = ind.ema(ch, htf_ema).to_numpy()
@@ -55,7 +64,9 @@ def htf_downtrend_on_m15(df_m15, htf_ema=50, htf_lb=24):
     merged['down'] = merged['down'].fillna(False)
     # بازگردانی به ترتیبِ اصلیِ df_m15
     merged = merged.set_index(m.index).sort_index()
-    return merged['down'].to_numpy().astype(bool)
+    out = merged['down'].to_numpy().astype(bool)
+    _HTF_CACHE[ckey] = out
+    return out
 
 
 class HTFRegimeShort(MarketInertiaShortMTF):
