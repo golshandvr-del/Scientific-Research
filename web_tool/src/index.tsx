@@ -507,17 +507,11 @@ const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: 
   { id: 'EURUSD-M30', card: 'EURUSD-M30', name: 'یورو / دلار — M30 (سی‌دقیقه‌ای)',  symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '30m' },
 ]
 
-// پیوستِ لایه‌های ثانویهٔ فعال به یک تصمیم (بدونِ تغییرِ منطقِ برندهٔ آن).
-// otherLayers فقط برای «نمایشِ collapsed» در فرانت‌اند است (پاسخِ User Note).
-function attachSecondary(dec: any, ctx: Parameters<typeof probeSecondaryLayers>[0]) {
-  try {
-    const others = probeSecondaryLayers(ctx)
-    if (others.length) dec.otherLayers = others
-  } catch { /* کاوش اختیاری است؛ خطای آن نباید سیگنالِ اصلی را خراب کند */ }
-  return dec
-}
+// یادداشت: پیوستِ لایه‌های ثانویه اکنون درونِ runCard (strategy_registry) انجام
+// می‌شود — otherLayers مستقیماً از خودِ لایه‌های احیاشدهٔ همان کارت ساخته می‌شود.
+// تابعِ قدیمیِ attachSecondary/probeSecondaryLayers حذف شد (منطق به رجیستری منتقل شد).
 
-// تصمیمِ یک دارایی: کندلِ زنده → analyze → decide (۴-حالته).
+// تصمیمِ یک دارایی: کندلِ زنده → analyze → runCard (۴-حالته، رجیستریِ ماژولار).
 async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 1.0) {
   if (a.isGold) {
     // --- نگاشتِ ماژولارِ تایم‌فریمِ طلا → (interval, range, gapSec) ---
