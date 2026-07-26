@@ -122,6 +122,21 @@ def make_signals(feat, streak_n, run_min, rsi_lo, regime, atr, c):
     return sig
 
 
+def _cheap_prefilter(tr, asset):
+    """پیش‌فیلترِ ارزان بدونِ WF: (n, WR, PF) مستقیم از pnl_pip.
+    فقط کاندیدهایی که پتانسیلِ گیت‌پاسِ G0/G2 دارند به compute_rqs گران داده می‌شوند."""
+    if tr is None or len(tr) < rqs.N_FLOOR:
+        return None
+    pnl = tr['pnl_pip'].values
+    wins = int((pnl > 0).sum())
+    n = len(pnl)
+    wr = wins / n * 100.0
+    gains = pnl[pnl > 0].sum()
+    losses = -pnl[pnl < 0].sum()
+    pf = gains / losses if losses > 0 else 999.0
+    return dict(n=n, wr=wr, pf=pf)
+
+
 def scan(asset, tf, verbose=False):
     df = load(asset, tf)
     feat = build_features(df, asset)
@@ -129,6 +144,7 @@ def scan(asset, tf, verbose=False):
     c = feat['c']
     pip = se.ASSETS[asset]['pip']
     n = feat['n']
+    atr_pip = np.where(atr > 0, atr / pip, np.nan)
 
     best = None
     grid_streak = [3, 4, 5, 6]
@@ -140,30 +156,27 @@ def scan(asset, tf, verbose=False):
     grid_hold   = [24, 48]
 
     evals = 0
+    rqs_calls = 0
+    short_sig = np.zeros(n, dtype=bool)
     for streak_n, run_min, rsi_lo, regime in itertools.product(
             grid_streak, grid_run, grid_rsi, grid_regime):
         sig = make_signals(feat, streak_n, run_min, rsi_lo, regime, atr, c)
-        if sig.sum() < 30:
+        valid_sig = sig & np.isfinite(atr_pip) & (atr_pip > 0)
+        if valid_sig.sum() < 30:
             continue
-        long_sig = sig
-        short_sig = np.zeros(n, dtype=bool)
         for (sl_m, tp_m), hold in itertools.product(grid_sltp, grid_hold):
-            # SL/TP شناورِ per-bar بر پایهٔ ATR (به pip)
-            atr_pip = np.where(atr > 0, atr / pip, np.nan)
-            sl_pip = sl_m * atr_pip
-            tp_pip = tp_m * atr_pip
-            valid = np.isfinite(sl_pip) & (sl_pip > 0)
-            if valid.sum() < 30:
-                continue
-            sl_pip = np.where(valid, sl_pip, 1.0)
-            tp_pip = np.where(valid, tp_pip, 1.0)
-            tr = se.simulate_trades(df, long_sig & valid, short_sig,
+            sl_pip = np.where(np.isfinite(atr_pip), sl_m * atr_pip, 1.0)
+            tp_pip = np.where(np.isfinite(atr_pip), tp_m * atr_pip, 1.0)
+            tr = se.simulate_trades(df, valid_sig, short_sig,
                                     sl_pip, tp_pip, asset,
                                     max_hold=hold, allow_overlap=False)
             evals += 1
-            if tr is None or len(tr) < 30:
+            # پیش‌فیلترِ ارزان: فقط اگر G0(WR≥58) و G2(PF≥1.25) تقریبی پاس شد
+            pre = _cheap_prefilter(tr, asset)
+            if pre is None or pre['wr'] < 58.0 or pre['pf'] < 1.25:
                 continue
             r = rqs.compute_rqs(tr, asset)
+            rqs_calls += 1
             score = r['rqs_score']
             cfg = dict(streak_n=streak_n, run_min=run_min, rsi_lo=rsi_lo,
                        regime=regime, sl_m=sl_m, tp_m=tp_m, hold=hold)
@@ -171,6 +184,8 @@ def scan(asset, tf, verbose=False):
                 best = (score, r, cfg)
                 if verbose and r['passed']:
                     print(f"  [{asset} {tf}] {rqs.format_report('S326', r)}  cfg={cfg}")
+    if verbose:
+        print(f"  [{asset} {tf}] evals={evals} rqs_calls={rqs_calls}")
     return best, evals
 
 
