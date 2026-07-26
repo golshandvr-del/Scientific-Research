@@ -594,7 +594,8 @@ function renderEntry(a, d) {
       </p>
       ${latchBanner}
       ${renderSourceLayer(d)}
-      <p class="text-sm text-slate-300 leading-relaxed mb-3">${d.reason}</p>
+      ${renderOtherLayers(d)}
+      <p class="text-sm text-slate-300 leading-relaxed mb-3 mt-2">${d.reason}</p>
       <div class="grid grid-cols-3 gap-2 text-center" dir="ltr">
         <div class="bg-slate-800/70 rounded-lg p-2">
           <div class="text-[11px] text-slate-400">ورود</div>
