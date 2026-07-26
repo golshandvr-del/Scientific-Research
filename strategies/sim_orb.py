@@ -60,7 +60,7 @@ class SessionORB:
     def __init__(self, session_start_hour=7, or_bars=4, trade_window_bars=32,
                  side='LONG', atr_max=0.0, atr_period=14, trend_ema=0,
                  k_sl=1.0, k_tp=1.0, max_hold=48, min_range_atr=0.0,
-                 bad_dow=()):
+                 bad_dow=(), regime_atr_ratio_max=0.0, regime_atr_ma=500):
         self.session_start_hour = session_start_hour
         self.or_bars = or_bars
         self.trade_window_bars = trade_window_bars
@@ -73,6 +73,10 @@ class SessionORB:
         self.max_hold = max_hold
         self.min_range_atr = min_range_atr
         self.bad_dow = frozenset(bad_dow)
+        # فیلترِ رژیمِ نوسان (بهبودِ کلیدیِ S330): فقط اگر ATR جاری ÷ SMAِ بلندِ ATR
+        # ≤ آستانه (رژیمِ آرام/رنج). fade فقط در بازارِ آرام معتبر است. (۰=غیرفعال)
+        self.regime_atr_ratio_max = regime_atr_ratio_max
+        self.regime_atr_ma = regime_atr_ma
         self._prepared = False
 
     # ---------------- پیش‌محاسبهٔ بازه‌های افتتاحیهٔ روزانه ----------------
