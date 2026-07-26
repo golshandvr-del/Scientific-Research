@@ -1,0 +1,35 @@
+
+===== XAUUSD M30  (lb cands=[5, 10, 15, 20]) =====
+medianATR=26.6pip  max_hold=24  combos=432  PASSED=0
+  lb= 20 adx>28 ema10/30 SL= 213.2 rr=1.1 | REJECT RQS= 14.6 n= 161 WR=55.3% PF=1.14 DD=6.2% MCL=5 p=0.031 ✗✓✗✓✗✓
+  lb= 20 adx>28 ema10/30 SL= 213.2 rr=0.9 | REJECT RQS= 11.1 n= 161 WR=55.9% PF=1.13 DD=6.3% MCL=5 p=0.226 ✗✗✗✓✗✓
+  lb= 20 adx>28 ema10/30 SL= 213.2 rr=1.0 | REJECT RQS= 10.5 n= 161 WR=55.3% PF=1.11 DD=6.4% MCL=5 p=0.104 ✗✗✗✓✗✓
+  lb= 20 adx>28 ema10/30 SL= 253.2 rr=0.9 | REJECT RQS=  8.9 n= 161 WR=55.3% PF=1.08 DD=5.7% MCL=5 p=0.276 ✗✗✗✓✗✓
+  lb= 20 adx>28 ema10/30 SL= 293.1 rr=0.9 | REJECT RQS=  8.6 n= 161 WR=54.7% PF=1.07 DD=4.3% MCL=5 p=0.332 ✗✗✗✓✗✓
+  lb= 10 adx>32 ema10/30 SL= 293.1 rr=1.1 | REJECT RQS=  7.7 n= 356 WR=48.9% PF=1.23 DD=4.4% MCL=6 p=0.337 ✗✗✗✓✗✓
+  lb= 20 adx>25 ema10/30 SL= 213.2 rr=1.1 | REJECT RQS=  7.4 n= 218 WR=51.4% PF=1.04 DD=9.0% MCL=6 p=0.149 ✗✗✗✗✗✓
+  lb= 10 adx>22 ema10/30 SL= 293.1 rr=1.1 | REJECT RQS=  7.2 n= 764 WR=47.6% PF=1.09 DD=10.4% MCL=7 p=0.509 ✗✗✗✗✗✓
+
+===== XAUUSD H1  (lb cands=[3, 5, 7, 10]) =====
+medianATR=38.9pip  max_hold=12  combos=432  PASSED=0
+  lb=  3 adx>32 ema13/34 SL= 428.0 rr=1.1 | REJECT RQS= 11.1 n= 524 WR=48.9% PF=1.07 DD=5.5% MCL=8 p=0.301 ✗✗✗✓✗✓
+  lb=  3 adx>28 ema13/34 SL= 369.7 rr=1.1 | REJECT RQS=  9.3 n= 689 WR=47.9% PF=1.06 DD=7.2% MCL=11 p=0.457 ✗✗✗✗✗✓
+  lb=  3 adx>32 ema20/50 SL= 428.0 rr=1.1 | REJECT RQS=  8.6 n= 523 WR=49.3% PF=1.06 DD=6.3% MCL=8 p=0.230 ✗✗✗✓✗✓
+  lb=  3 adx>28 ema20/50 SL= 311.3 rr=1.1 | REJECT RQS=  8.2 n= 696 WR=48.3% PF=1.19 DD=9.3% MCL=9 p=0.379 ✗✗✗✗✗✗
+  lb=  3 adx>28 ema13/34 SL= 369.7 rr=1.0 | REJECT RQS=  8.0 n= 689 WR=48.0% PF=1.05 DD=7.9% MCL=11 p=0.857 ✗✗✗✗✗✗
+  lb=  3 adx>28 ema20/50 SL= 311.3 rr=1.0 | REJECT RQS=  7.8 n= 698 WR=48.4% PF=1.18 DD=9.5% MCL=9 p=0.808 ✗✗✗✗✗✗
+  lb=  3 adx>28 ema20/50 SL= 311.3 rr=0.9 | REJECT RQS=  7.7 n= 698 WR=48.6% PF=1.17 DD=10.0% MCL=9 p=0.986 ✗✗✗✗✗✗
+  lb=  3 adx>32 ema13/34 SL= 369.7 rr=1.1 | REJECT RQS=  7.5 n= 525 WR=49.0% PF=1.05 DD=8.4% MCL=8 p=0.285 ✗✗✗✗✗✓
+
+===== XAUUSD H4  (lb cands=[3, 4, 6]) =====
+medianATR=78.8pip  max_hold=12  combos=324  PASSED=0
+  lb=  6 adx>32 ema20/50 SL= 630.7 rr=1.0 | REJECT RQS= 17.2 n=  85 WR=47.1% PF=1.32 DD=3.5% MCL=9 p=0.742 ✗✗✓✗✗✓
+  lb=  6 adx>32 ema20/50 SL= 748.9 rr=1.1 | REJECT RQS= 17.2 n=  84 WR=46.4% PF=1.32 DD=1.8% MCL=9 p=0.628 ✗✗✓✗✗✓
+  lb=  6 adx>32 ema20/50 SL= 630.7 rr=1.1 | REJECT RQS= 16.9 n=  84 WR=46.4% PF=1.29 DD=3.4% MCL=9 p=0.628 ✗✗✗✗✗✓
+  lb=  6 adx>32 ema20/50 SL= 867.2 rr=1.1 | REJECT RQS= 16.9 n=  84 WR=46.4% PF=1.29 DD=1.8% MCL=9 p=0.628 ✗✗✗✗✗✓
+  lb=  6 adx>32 ema10/30 SL= 630.7 rr=1.0 | REJECT RQS= 16.8 n=  81 WR=48.1% PF=1.28 DD=3.4% MCL=8 p=0.671 ✗✗✗✓✗✓
+  lb=  6 adx>32 ema10/30 SL= 748.9 rr=1.1 | REJECT RQS= 16.8 n=  80 WR=47.5% PF=1.28 DD=1.8% MCL=8 p=0.552 ✗✗✗✓✗✓
+  lb=  6 adx>32 ema13/34 SL= 630.7 rr=1.0 | REJECT RQS= 16.7 n=  82 WR=47.6% PF=1.26 DD=3.5% MCL=9 p=0.709 ✗✗✗✗✗✓
+  lb=  6 adx>32 ema13/34 SL= 748.9 rr=1.1 | REJECT RQS= 16.7 n=  81 WR=46.9% PF=1.27 DD=1.8% MCL=9 p=0.593 ✗✗✗✗✗✓
+
+saved: /home/user/webapp/results/_s329b_struct_XAUUSD.json
