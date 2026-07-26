@@ -504,10 +504,13 @@ function renderSourceLayer(d) {
 }
 
 // -------------------------- حالت ۱: خنثی --------------------------
+// طبقِ تعریفِ سایت: در خنثی ربات باید صریحاً بگوید «به‌دلیلِ کدام لایه/شاخص‌ها»
+// هنوز واردِ معامله نمی‌شود ⇒ منبعِ لایهٔ ناظر + شاخص‌های نامشخص نمایش داده می‌شوند.
 function renderNeutral(a, d) {
   return `
     <div class="rounded-lg bg-slate-800/40 p-3 mb-3">
       <p class="font-bold text-slate-200 mb-1"><i class="fas fa-circle-pause ml-1 text-slate-400"></i>${d.headline}</p>
+      ${renderSourceLayer(d)}
       <p class="text-sm text-slate-400 leading-relaxed">${d.reason}</p>
     </div>
     ${renderTimeGate(d)}
