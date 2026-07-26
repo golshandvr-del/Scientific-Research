@@ -95,8 +95,9 @@
 ## API
 | مسیر | پارامتر | توضیح |
 |------|---------|-------|
-| `GET /api/decision` | — | تصمیمِ ۴-حالتهٔ **همهٔ دارایی‌ها** یک‌جا (موازی، مقاوم به خطای هر دارایی) |
-| `GET /api/decision/:asset` | `asset` ∈ {XAUUSD,EURUSD} | تصمیمِ یک دارایی |
+| `GET /api/assets` | — | فهرستِ فوریِ متادیتای ۷ کارت (میلی‌ثانیه‌ای — برای اسکلتِ کارت‌ها) |
+| `GET /api/decision` | — | تصمیمِ ۴-حالتهٔ **همهٔ ۷ کارت** یک‌جا (موازی، مقاوم به خطای هر کارت) |
+| `GET /api/decision/:asset` | `asset` ∈ {XAUUSD-M5, XAUUSD, XAUUSD-M30, XAUUSD-H1, XAUUSD-H4, EURUSD-M15, EURUSD-M30} | تصمیمِ یک کارت (از `runCard`) |
 | `POST /api/trade/advice` | body: `{ asset, trade:{side,entry,tp,sl}, modelProbPct? }` | مدیریتِ معاملهٔ باز (حالت ۴) برای دارایی مشخص |
 | `GET /api/health` | — | بررسی سلامت سرویس |
 | `GET /api/candles` | `interval`,`range` | (قدیمی/داخلی) کندل‌های خامِ طلا |
