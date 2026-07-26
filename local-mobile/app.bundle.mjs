@@ -2524,51 +2524,6 @@ function rollingSlope(x, period) {
   }
   return out;
 }
-function vortex(c, period = 14) {
-  const n = c.length;
-  const viPlus = NaNArr(n);
-  const viMinus = NaNArr(n);
-  if (n < period + 1) return { viPlus, viMinus };
-  const vmp = NaNArr(n);
-  const vmm = NaNArr(n);
-  const tr = NaNArr(n);
-  for (let i = 1; i < n; i++) {
-    vmp[i] = Math.abs(c[i].high - c[i - 1].low);
-    vmm[i] = Math.abs(c[i].low - c[i - 1].high);
-    tr[i] = Math.max(
-      c[i].high - c[i].low,
-      Math.abs(c[i].high - c[i - 1].close),
-      Math.abs(c[i].low - c[i - 1].close)
-    );
-  }
-  for (let i = period; i < n; i++) {
-    let sP = 0, sM = 0, sT = 0;
-    for (let k = i - period + 1; k <= i; k++) {
-      sP += vmp[k];
-      sM += vmm[k];
-      sT += tr[k];
-    }
-    if (sT > 0) {
-      viPlus[i] = sP / sT;
-      viMinus[i] = sM / sT;
-    }
-  }
-  return { viPlus, viMinus };
-}
-function kaufmanER(close, period = 10) {
-  const n = close.length;
-  const out = NaNArr(n);
-  if (n < period + 1) return out;
-  const absd = NaNArr(n);
-  for (let i = 1; i < n; i++) absd[i] = Math.abs(close[i] - close[i - 1]);
-  for (let i = period; i < n; i++) {
-    const change = Math.abs(close[i] - close[i - period]);
-    let vol = 0;
-    for (let k = i - period + 1; k <= i; k++) vol += absd[k];
-    out[i] = vol > 0 ? change / vol : NaN;
-  }
-  return out;
-}
 
 // ../web_tool/src/structure.ts
 function findPivots(c, left = 5, right = 5) {
@@ -3493,12 +3448,12 @@ function classifyTrend(timeframe, candles) {
   const close = candles.map((c) => c.close);
   const e50 = ema(close, 50);
   const e200 = ema(close, 200);
-  const slope2 = rollingSlope(e50, 10);
+  const slope = rollingSlope(e50, 10);
   const i = close.length - 1;
   const price = close[i];
   const ema50 = e50[i];
   const ema200 = e200[i];
-  const slope50 = ema50 ? slope2[i] / ema50 * 100 : 0;
+  const slope50 = ema50 ? slope[i] / ema50 * 100 : 0;
   let trend = "range";
   let score = 0;
   const aboveBoth = price > ema50 && ema50 > ema200;
@@ -3666,423 +3621,27 @@ async function getNews(env) {
   return { events: events.slice(0, 20), highImpactSoon, riskWindow, note };
 }
 
-// ../web_tool/src/short_ma_confluence.ts
-var DEFAULT_SHORT_MA = {
-  emaFast: 50,
-  emaMid: 100,
-  smaSlow: 200,
-  slPip: 70,
-  bePip: 6,
-  trailPip: 6,
-  maxHold: 48,
-  tpPip: 800
-};
-function computeShortMA(close, cfg = DEFAULT_SHORT_MA) {
-  const n = close.length;
-  const need = cfg.smaSlow + 2;
-  if (n < need) {
-    return {
-      active: false,
-      approaching: false,
-      dnStack: false,
-      mid: NaN,
-      emaFast: NaN,
-      emaMid: NaN,
-      smaSlow: NaN,
-      distPct: 0,
-      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A."
-    };
-  }
-  const ef = ema(close, cfg.emaFast);
-  const em = ema(close, cfg.emaMid);
-  const ss = sma(close, cfg.smaSlow);
-  const i = n - 1;
-  const j = n - 2;
-  const midNow = (ef[i] + em[i] + ss[i]) / 3;
-  const midPrev = (ef[j] + em[j] + ss[j]) / 3;
-  const pNow = close[i];
-  const pPrev = close[j];
-  const crossedDown = pPrev > midPrev && pNow < midNow;
-  const dnStack = ef[i] < em[i] && em[i] < ss[i];
-  const distPct = midNow ? (pNow - midNow) / midNow * 100 : 0;
-  const approaching = !crossedDown && pNow > midNow && distPct < 0.15 && pNow - midNow < pPrev - midPrev;
-  let reason;
-  if (crossedDown) {
-    reason = `\u0642\u06CC\u0645\u062A (${pNow.toFixed(2)}) \u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0633\u0647 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 EMA${cfg.emaFast}/EMA${cfg.emaMid}/SMA${cfg.smaSlow} (${midNow.toFixed(2)}) \u0631\u0627 \u0627\u0632 \u0628\u0627\u0644\u0627 \u0631\u0648 \u0628\u0647 \u067E\u0627\u06CC\u06CC\u0646 \u0642\u0637\u0639 \u06A9\u0631\u062F` + (dnStack ? " \u0648 \u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 \u06A9\u0627\u0645\u0644\u0627\u064B \u0646\u0632\u0648\u0644\u06CC \u0627\u0633\u062A (EMA50<EMA100<SMA200) \u2014 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u06A9\u06CC\u0641\u06CC\u062A." : " (\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 \u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644\u0627\u064B \u0646\u0632\u0648\u0644\u06CC \u0646\u06CC\u0633\u062A\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u06A9\u0645\u200C\u06A9\u06CC\u0641\u06CC\u062A\u200C\u062A\u0631).");
-  } else if (approaching) {
-    reason = `\u0642\u06CC\u0645\u062A (${pNow.toFixed(2)}) \u0628\u0647 \u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (${midNow.toFixed(2)}) \u0646\u0632\u062F\u06CC\u06A9 \u0648 \u0631\u0648 \u0628\u0647 \u06A9\u0627\u0647\u0634 \u0627\u0633\u062A (\u0641\u0627\u0635\u0644\u0647 ${distPct.toFixed(2)}%). \u0627\u06AF\u0631 \u0627\u0632 \u0645\u06CC\u0627\u0646\u0647 \u0631\u0648 \u0628\u0647 \u067E\u0627\u06CC\u06CC\u0646 \u0639\u0628\u0648\u0631 \u06A9\u0646\u062F\u060C \u0645\u0627\u0634\u0647\u0654 SHORT \u0634\u0644\u06CC\u06A9 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
-  } else if (pNow < midNow) {
-    reason = `\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 \u0627\u0633\u062A \u0627\u0645\u0627 \u0647\u0645\u06CC\u0646\u200C\u0627\u0644\u0627\u0646 \u0642\u0637\u0639 \u0646\u06A9\u0631\u062F (\u0639\u0628\u0648\u0631 \u0642\u0628\u0644\u0627\u064B \u0631\u062E \u062F\u0627\u062F\u0647). \u0645\u0646\u062A\u0638\u0631\u0650 \u0645\u0627\u0634\u0647\u0654 \u062A\u0627\u0632\u0647 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645 \u062A\u0627 \u062F\u06CC\u0631 \u0648\u0627\u0631\u062F \u0646\u0634\u0648\u06CC\u0645.`;
-  } else {
-    reason = `\u0642\u06CC\u0645\u062A (${pNow.toFixed(2)}) \u0628\u0627\u0644\u0627\u06CC \u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (${midNow.toFixed(2)}) \u0627\u0633\u062A\u061B \u0634\u0631\u0637\u0650 SHORT \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A.`;
-  }
-  return {
-    active: crossedDown,
-    approaching,
-    dnStack,
-    mid: midNow,
-    emaFast: ef[i],
-    emaMid: em[i],
-    smaSlow: ss[i],
-    distPct,
-    reason
-  };
-}
-
-// ../web_tool/src/squeeze_breakout.ts
-var BRK_STRENGTH_MIN = 0.3;
-var RSI_OVERBOUGHT_MAX = 75;
-var DEFAULT_SQUEEZE = {
-  bbPeriod: 20,
-  bbMult: 2,
-  sqzLookback: 100,
-  sqzPct: 0.25,
-  breakoutLookback: 6,
-  emaFast: 50,
-  emaSlow: 200,
-  tpPip: 300,
-  slPip: 90,
-  maxHold: 96
-};
-function computeSqueeze(close, high, cfg = DEFAULT_SQUEEZE, low) {
-  const n = close.length;
-  const need = cfg.bbPeriod + cfg.sqzLookback + 2;
-  if (n < need) {
-    return {
-      active: false,
-      approaching: false,
-      squeezed: false,
-      bandwidth: NaN,
-      bwPct: 1,
-      priorHigh: NaN,
-      emaFast: NaN,
-      emaSlow: NaN,
-      trendUp: false,
-      brkStrength: NaN,
-      strongBreak: false,
-      rsi14: NaN,
-      notOverbought: true,
-      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 / \u067E\u0646\u062C\u0631\u0647\u0654 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A."
-    };
-  }
-  const bb = bollinger(close, cfg.bbPeriod, cfg.bbMult);
-  const bw = new Array(n).fill(NaN);
-  for (let i2 = 0; i2 < n; i2++) {
-    const mid = bb.mid[i2];
-    if (isFinite(mid) && mid !== 0 && isFinite(bb.upper[i2]) && isFinite(bb.lower[i2])) {
-      bw[i2] = (bb.upper[i2] - bb.lower[i2]) / mid;
-    }
-  }
-  const ef = ema(close, cfg.emaFast);
-  const es = ema(close, cfg.emaSlow);
-  const i = n - 1;
-  const prev = i - 1;
-  const lo = Math.max(0, prev - cfg.sqzLookback + 1);
-  const window = bw.slice(lo, prev + 1).filter((v) => isFinite(v));
-  const bwPrev = bw[prev];
-  let bwPct = 1;
-  if (window.length > 5 && isFinite(bwPrev)) {
-    const below = window.filter((v) => v <= bwPrev).length;
-    bwPct = below / window.length;
-  }
-  const squeezed = isFinite(bwPrev) && bwPct <= cfg.sqzPct;
-  const bLo = Math.max(0, i - cfg.breakoutLookback);
-  let priorHigh = -Infinity;
-  for (let k = bLo; k < i; k++) if (isFinite(high[k])) priorHigh = Math.max(priorHigh, high[k]);
-  const breakout = isFinite(close[i]) && close[i] > priorHigh;
-  const trendUp = isFinite(ef[i]) && isFinite(es[i]) && ef[i] > es[i];
-  let brkStrength = NaN;
-  if (low && low.length === n && isFinite(priorHigh) && isFinite(close[i])) {
-    const candles = new Array(n);
-    for (let k = 0; k < n; k++) {
-      candles[k] = { time: 0, open: close[k], high: high[k], low: low[k], close: close[k], volume: 0 };
-    }
-    const atr14 = atr(candles, 14);
-    const a = atr14[i];
-    if (isFinite(a) && a > 0) brkStrength = (close[i] - priorHigh) / a;
-  }
-  const strongBreak = !isFinite(brkStrength) || brkStrength >= BRK_STRENGTH_MIN;
-  const rsiArr = rsi(close, 14);
-  const rsi14 = rsiArr[i];
-  const notOverbought = !isFinite(rsi14) || rsi14 <= RSI_OVERBOUGHT_MAX;
-  const active = squeezed && breakout && trendUp && strongBreak && notOverbought;
-  const approaching = squeezed && trendUp && !breakout;
-  const bsTxt = isFinite(brkStrength) ? brkStrength.toFixed(2) : "\u2014";
-  let reason;
-  if (active) {
-    reason = `\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 \u0631\u0647\u0627 \u0634\u062F: \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u062F\u0631 \u06A9\u0641\u0650 \u0645\u062D\u0644\u06CC \u0628\u0648\u062F (\u0635\u062F\u06A9 ${(bwPct * 100).toFixed(0)}\u066A \u2264 ${(cfg.sqzPct * 100).toFixed(0)}\u066A) \u0648 \u0642\u06CC\u0645\u062A \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 (${priorHigh.toFixed(2)}) \u0631\u0627 \u0628\u0627 \u0642\u062F\u0631\u062A \u0634\u06A9\u0633\u062A (\u0642\u062F\u0631\u062A\u0650 \u0634\u06A9\u0633\u062A=${bsTxt} \u2265 ${BRK_STRENGTH_MIN}) \u2014 \u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0627\u0637\u0639 \u0647\u0645\u200C\u0633\u0648 \u0628\u0627 \u0631\u0648\u0646\u062F (EMA50>EMA200).`;
-  } else if (squeezed && breakout && trendUp && !strongBreak) {
-    reason = `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0631\u062E \u062F\u0627\u062F \u0627\u0645\u0627 \u0636\u0639\u06CC\u0641 \u0628\u0648\u062F (\u0642\u062F\u0631\u062A\u0650 \u0634\u06A9\u0633\u062A=${bsTxt} < ${BRK_STRENGTH_MIN}\u061B close \u0641\u0642\u0637 \u06A9\u0645\u06CC \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${priorHigh.toFixed(2)}). \u0637\u0628\u0642\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u0627\u0647\u0634\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u063A\u0644\u0637 (S136)\u060C \u0634\u06A9\u0633\u062A\u200C\u0647\u0627\u06CC \u06A9\u0645\u200C\u0642\u062F\u0631\u062A \u0627\u063A\u0644\u0628 \u06A9\u0627\u0630\u0628\u200C\u0627\u0646\u062F \u0648 \u0636\u0631\u0631\u0650 \u06A9\u0648\u0686\u06A9\u0650 \u067E\u0631\u062A\u06A9\u0631\u0627\u0631 \u0645\u06CC\u200C\u0633\u0627\u0632\u0646\u062F \u21D2 \u0648\u0631\u0648\u062F \u0627\u0646\u062C\u0627\u0645 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F (\u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u06A9\u0633\u062A\u0650 \u0642\u0627\u0637\u0639\u200C\u062A\u0631 \u0628\u0645\u0627\u0646\u06CC\u062F).`;
-  } else if (squeezed && breakout && trendUp && strongBreak && !notOverbought) {
-    reason = `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC \u0631\u062E \u062F\u0627\u062F \u0627\u0645\u0627 \u062F\u0631 \u062D\u0627\u0644\u062A\u0650 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F\u0650 \u0634\u062F\u06CC\u062F (RSI14=${isFinite(rsi14) ? rsi14.toFixed(1) : "\u2014"} > ${RSI_OVERBOUGHT_MAX}). \u0637\u0628\u0642\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u062F\u0648\u0645\u0650 \u06A9\u0627\u0647\u0634\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u063A\u0644\u0637 (S138)\u060C \u0634\u06A9\u0633\u062A \u062F\u0631 \u0627\u0648\u062C\u0650 \u0627\u0634\u0628\u0627\u0639 \u0627\u063A\u0644\u0628 \xAB\u0634\u06A9\u0633\u062A\u0650 \u062E\u0633\u062A\u0647\xBB \u0627\u0633\u062A \u06A9\u0647 \u0633\u0631\u06CC\u0639 \u0628\u0631\u0645\u06CC\u200C\u06AF\u0631\u062F\u062F \u21D2 \u0648\u0631\u0648\u062F \u0627\u0646\u062C\u0627\u0645 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F (\u0645\u0646\u062A\u0638\u0631\u0650 \u062E\u0646\u06A9\u200C\u0634\u062F\u0646\u0650 RSI \u06CC\u0627 \u0633\u062A\u0627\u067E\u0650 \u0628\u0639\u062F\u06CC \u0628\u0645\u0627\u0646\u06CC\u062F).`;
-  } else if (approaching) {
-    reason = `\u0628\u0627\u0632\u0627\u0631 \u0641\u0634\u0631\u062F\u0647 \u0627\u0633\u062A (\u0635\u062F\u06A9\u0650 \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F ${(bwPct * 100).toFixed(0)}\u066A) \u0648 \u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \xAB\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0634\u06A9\u0633\u062A\xBB: \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 (${priorHigh.toFixed(2)}$).`;
-  } else if (!trendUp) {
-    reason = `\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA50>EMA200) \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A \u2014 \u0645\u0627\u0634\u0647\u0654 Squeeze \u0641\u0642\u0637 \u062F\u0631 \u0628\u0627\u06CC\u0627\u0633\u0650 \u0635\u0639\u0648\u062F\u06CC LONG \u0645\u06CC\u200C\u06AF\u06CC\u0631\u062F.`;
-  } else {
-    reason = `\u0628\u0627\u0632\u0627\u0631 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0641\u0634\u0631\u062F\u0647 \u0646\u06CC\u0633\u062A (\u0635\u062F\u06A9\u0650 \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F ${(bwPct * 100).toFixed(0)}\u066A > ${(cfg.sqzPct * 100).toFixed(0)}\u066A).`;
-  }
-  return {
-    active,
-    approaching,
-    squeezed,
-    bandwidth: isFinite(bwPrev) ? bwPrev : NaN,
-    bwPct,
-    priorHigh: isFinite(priorHigh) ? priorHigh : NaN,
-    emaFast: ef[i],
-    emaSlow: es[i],
-    trendUp,
-    brkStrength,
-    strongBreak,
-    rsi14,
-    notOverbought,
-    reason
-  };
-}
-
 // ../web_tool/src/overnight_drift.ts
-var OVERNIGHT_ENTRY_HOURS = [22, 23];
-var OVERNIGHT_APPROACH_HOUR = 21;
-var OVERNIGHT_SL_PIP = 150;
-var OVERNIGHT_TP_PIP = 40;
-var OVERNIGHT_MAX_HOLD = 96;
-var PIP = 0.1;
 function toIran(utcHour) {
   const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
   const hh = Math.floor(total / 60), mm = total % 60;
   return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
 }
 var ENTRY_IRAN_RANGE = `${toIran(22)}\u2013${toIran(23)}`;
-function filtersPass(f) {
-  if (!f) return true;
-  return f.pdiGtMdi && f.bullBar && f.atrOk;
-}
-function computeOvernight(utcHour, filt) {
-  const slDist = OVERNIGHT_SL_PIP * PIP;
-  const tpDist = OVERNIGHT_TP_PIP * PIP;
-  if (OVERNIGHT_ENTRY_HOURS.includes(utcHour)) {
-    if (!filtersPass(filt)) {
-      const need = [];
-      if (filt && !filt.pdiGtMdi) need.push("\u062C\u0647\u062A\u0650 \u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0634\u0648\u062F (\u200F+DI \u0628\u0627\u0644\u0627\u06CC \u2212DI)");
-      if (filt && !filt.bullBar) need.push("\u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC \u0635\u0639\u0648\u062F\u06CC \u0628\u0633\u062A\u0647 \u0634\u0648\u062F");
-      if (filt && !filt.atrOk) need.push("\u0646\u0648\u0633\u0627\u0646 \u0628\u0647 \u062D\u0627\u0644\u062A\u0650 \u0639\u0627\u062F\u06CC \u0628\u0631\u06AF\u0631\u062F\u062F (\u0646\u0647 \u06A9\u0646\u062F\u0644\u0650 \u0634\u0648\u06A9/climax)");
-      return {
-        state: "APPROACHING",
-        utcHour,
-        slDist,
-        tpDist,
-        reason: `\u0627\u06A9\u0646\u0648\u0646 \u0633\u0627\u0639\u062A\u0650 ${toIran(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647\u0654 \u0637\u0644\u0627\xBB (${ENTRY_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u0647\u0633\u062A\u06CC\u0645\u060C \u0627\u0645\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u0650 WR\u2265\u06F6\u06F0\u066A \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647. \u0628\u0631\u0627\u06CC \u0635\u062F\u0648\u0631\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0628\u0627\u06CC\u062F: ${need.join("\u061B ")}. (\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 S222a \u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 \u21D2 WR \u06F8\u06F4\u066A.)`
-      };
-    }
-    return {
-      state: "ENTRY",
-      utcHour,
-      slDist,
-      tpDist,
-      reason: `\u0627\u06A9\u0646\u0648\u0646 \u0633\u0627\u0639\u062A\u0650 ${toIran(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u062F\u0631\u0633\u062A \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647\u0654 \u0637\u0644\u0627\xBB (\u0627\u0628\u062A\u062F\u0627\u06CC \u0633\u0634\u0646\u0650 \u0622\u0633\u06CC\u0627\u060C ${ENTRY_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u0648 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u062C\u0647\u062A\u200C\u062F\u0627\u0631 + \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC + \u0646\u0648\u0633\u0627\u0646\u0650 \u0639\u0627\u062F\u06CC) \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F. \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0628\u0627 TP \u0646\u0632\u062F\u06CC\u06A9 (\u06F4\u06F0pip) \u0648 SL \u0645\u062D\u0627\u0641\u0638 (\u06F1\u06F5\u06F0pip). \u0627\u06CC\u0646 \u067E\u06CC\u06A9\u0631\u0628\u0646\u062F\u06CC \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A\u0650 \u06F4 \u0633\u0627\u0644 WR = \u06F8\u06F4\u066A \u062F\u0627\u062F (\u0633\u0646\u062F S222a\u060C \u0647\u0631 \u06F4 \u067E\u0646\u062C\u0631\u0647\u0654 walk-forward \u0645\u062B\u0628\u062A).`
-    };
-  }
-  if (utcHour === OVERNIGHT_APPROACH_HOUR) {
-    return {
-      state: "APPROACHING",
-      utcHour,
-      slDist,
-      tpDist,
-      reason: `\u0627\u06A9\u0646\u0648\u0646 \u0633\u0627\u0639\u062A\u0650 ${toIran(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647\u0654 \u0637\u0644\u0627\xBB (${ENTRY_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646 \u0627\u0633\u062A. \u0628\u0627 \u0648\u0631\u0648\u062F\u0650 \u0633\u0627\u0639\u062A\u0650 ${toIran(22)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0648 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`
-    };
-  }
-  return {
-    state: "NEUTRAL",
-    utcHour,
-    slDist,
-    tpDist,
-    reason: `\u0627\u06A9\u0646\u0648\u0646 \u0633\u0627\u0639\u062A\u0650 ${toIran(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647\u0654 \u0637\u0644\u0627\xBB (${ENTRY_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646). \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631 \u0627\u0633\u062A \u0648 \u0641\u0642\u0637 \u062F\u0631 \u0622\u0646 \u0633\u0627\u0639\u062A\u200C\u0647\u0627 \u0648 \u0628\u0627 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 \u0648\u0631\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
-  };
-}
 
 // ../web_tool/src/monday_drift.ts
-var MONDAY_UTC_DAY = 1;
-var MONDAY_ENTRY_HOURS = [18, 19, 20];
-var MONDAY_APPROACH_HOUR = 17;
-var MONDAY_SL_PIP = 200;
-var MONDAY_TP_PIP = 40;
-var MONDAY_MAX_HOLD = 96;
-var PIP2 = 0.1;
 function toIran2(utcHour) {
   const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 var MONDAY_IRAN_RANGE = `${toIran2(18)}\u2013${toIran2(20)}`;
-var MONDAY_INVVIEW_LB = 12;
-var MONDAY_INVVIEW_THR = 0.5;
-function slope(y) {
-  const n = y.length;
-  if (n < 2) return 0;
-  let sx = 0, sy = 0, sxx = 0, sxy = 0;
-  for (let i = 0; i < n; i++) {
-    sx += i;
-    sy += y[i];
-    sxx += i * i;
-    sxy += i * y[i];
-  }
-  const denom = n * sxx - sx * sx;
-  if (denom === 0) return 0;
-  return (n * sxy - sx * sy) / denom;
-}
-function inverseViewAsymRecent(close, high, low, lb = MONDAY_INVVIEW_LB) {
-  const n = close.length;
-  if (n < lb + 2) return NaN;
-  const hi = high.slice(n - 1 - lb, n - 1);
-  const lo = low.slice(n - 1 - lb, n - 1);
-  const cl = close.slice(n - 1 - lb, n - 1);
-  const m = cl.length;
-  if (m < lb) return NaN;
-  let pk = 0;
-  for (let i = 1; i < m; i++) if (hi[i] > hi[pk]) pk = i;
-  if (pk >= lb - 3) return NaN;
-  let tr = pk;
-  for (let i = pk; i < m; i++) if (lo[i] < lo[tr]) tr = i;
-  if (tr - pk < 4) return NaN;
-  const leg = cl.slice(pk, tr + 1);
-  const mm = leg.length;
-  const half = Math.floor(mm / 2);
-  const first = leg.slice(0, half);
-  const second = leg.slice(half);
-  if (first.length < 2 || second.length < 2) return NaN;
-  const s1 = slope(first);
-  const s2 = slope(second);
-  const rng = Math.max(hi[pk] - lo[tr], 1e-9);
-  return (s1 - s2) / (rng / mm);
-}
-function mondayFiltersPass(f) {
-  if (!f) return true;
-  return f.adxOk && f.atrNotHigh && f.atrNotDead;
-}
-function computeMonday(utcDay, utcHour, filt) {
-  const slDist = MONDAY_SL_PIP * PIP2;
-  const tpDist = MONDAY_TP_PIP * PIP2;
-  const isMonday = utcDay === MONDAY_UTC_DAY;
-  if (isMonday && MONDAY_ENTRY_HOURS.includes(utcHour)) {
-    if (!mondayFiltersPass(filt)) {
-      const need = [];
-      if (filt && !filt.adxOk) need.push("\u0631\u0648\u0646\u062F \u062C\u0647\u062A\u200C\u062F\u0627\u0631 \u0634\u0648\u062F (ADX \u0628\u0627\u0644\u0627\u06CC \u06F2\u06F0)");
-      if (filt && !filt.atrNotHigh) need.push("\u0646\u0648\u0633\u0627\u0646 \u0628\u0647 \u062D\u0627\u0644\u062A\u0650 \u0639\u0627\u062F\u06CC \u0628\u0631\u06AF\u0631\u062F\u062F (\u0646\u0647 \u06A9\u0646\u062F\u0644\u0650 \u0634\u0648\u06A9/climax)");
-      if (filt && !filt.atrNotDead) need.push("\u0646\u0648\u0633\u0627\u0646 \u0627\u0632 \u062D\u0627\u0644\u062A\u0650 \u0645\u0631\u062F\u0647 \u062E\u0627\u0631\u062C \u0634\u0648\u062F (ATR \u0628\u0627\u0644\u0627\u06CC \u0646\u0635\u0641\u0650 \u0645\u06CC\u0627\u0646\u0647)");
-      return {
-        state: "APPROACHING",
-        utcDay,
-        utcHour,
-        slDist,
-        tpDist,
-        reason: `\u0627\u06A9\u0646\u0648\u0646 \u062F\u0648\u0634\u0646\u0628\u0647 \u0633\u0627\u0639\u062A\u0650 ${toIran2(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647\u0654 \u0637\u0644\u0627\xBB (${MONDAY_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u0647\u0633\u062A\u06CC\u0645\u060C \u0627\u0645\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u0650 WR\u2265\u06F6\u06F0\u066A \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647. \u0628\u0631\u0627\u06CC \u0635\u062F\u0648\u0631\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0628\u0627\u06CC\u062F: ${need.join("\u061B ")}. (\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 S222b \u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 \u21D2 WR \u06F8\u06F9\u066A\u060C PF \u06F2.\u06F2\u06F3.)`
-      };
-    }
-    return {
-      state: "ENTRY",
-      utcDay,
-      utcHour,
-      slDist,
-      tpDist,
-      reason: `\u0627\u06A9\u0646\u0648\u0646 \u062F\u0648\u0634\u0646\u0628\u0647 \u0633\u0627\u0639\u062A\u0650 ${toIran2(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u062F\u0631\u0633\u062A \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647\u0654 \u0637\u0644\u0627\xBB (\u0639\u0635\u0631\u0650 \u062F\u0648\u0634\u0646\u0628\u0647\u060C ${MONDAY_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u0648 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (\u0631\u0648\u0646\u062F\u0650 \u062C\u0647\u062A\u200C\u062F\u0627\u0631 + \u0646\u0648\u0633\u0627\u0646\u0650 \u0639\u0627\u062F\u06CC) \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F. \u062F\u0648\u0634\u0646\u0628\u0647 \u0642\u0648\u06CC\u200C\u062A\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0647\u0641\u062A\u0647 \u0628\u0631\u0627\u06CC \u0637\u0644\u0627\u0633\u062A (t=+\u06F6.\u06F1\u06F1)\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0628\u0627 TP \u0646\u0632\u062F\u06CC\u06A9 (\u06F4\u06F0pip) \u0648 SL \u0645\u062D\u0627\u0641\u0638 (\u06F2\u06F0\u06F0pip). \u0627\u06CC\u0646 \u067E\u06CC\u06A9\u0631\u0628\u0646\u062F\u06CC \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A\u0650 \u06F4 \u0633\u0627\u0644 WR = \u06F8\u06F9\u066A \u0648 PF = \u06F2.\u06F2\u06F3 \u062F\u0627\u062F (\u0633\u0646\u062F S222b\u060C \u0644\u0628\u0647\u0654 \u0641\u06CC\u0644\u062A\u0631\u06CC\u0650 \u0648\u0627\u0642\u0639\u06CC \u0637\u0628\u0642\u0650 \u0622\u0632\u0645\u0648\u0646\u0650 \u06A9\u0646\u062A\u0631\u0644\u0650 \u062A\u0635\u0627\u062F\u0641\u06CC). \u0628\u0647 \u0634\u0645\u0627\u0631\u0634\u0650 \u0645\u0639\u06A9\u0648\u0633\u0650 \xAB\u062A\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0641\u0631\u0635\u062A\u0650 \u0648\u0631\u0648\u062F\xBB \u062A\u0648\u062C\u0647 \u06A9\u0646\u06CC\u062F.`
-    };
-  }
-  if (isMonday && utcHour === MONDAY_APPROACH_HOUR) {
-    return {
-      state: "APPROACHING",
-      utcDay,
-      utcHour,
-      slDist,
-      tpDist,
-      reason: `\u0627\u06A9\u0646\u0648\u0646 \u062F\u0648\u0634\u0646\u0628\u0647 \u0633\u0627\u0639\u062A\u0650 ${toIran2(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647\u0654 \u0637\u0644\u0627\xBB (S140\u207A\u207A: ${MONDAY_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646 \u0627\u0633\u062A. \u0628\u0627 \u0648\u0631\u0648\u062F\u0650 \u0633\u0627\u0639\u062A\u0650 ${toIran2(18)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0648 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`
-    };
-  }
-  const dayName = isMonday ? "\u062F\u0648\u0634\u0646\u0628\u0647" : "\u0631\u0648\u0632\u06CC \u063A\u06CC\u0631 \u0627\u0632 \u062F\u0648\u0634\u0646\u0628\u0647";
-  return {
-    state: "NEUTRAL",
-    utcDay,
-    utcHour,
-    slDist,
-    tpDist,
-    reason: `\u0627\u06A9\u0646\u0648\u0646 ${dayName}\u060C \u0633\u0627\u0639\u062A\u0650 ${toIran2(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647\u0654 \u0637\u0644\u0627\xBB (S140\u207A\u207A: \u062F\u0648\u0634\u0646\u0628\u0647 ${MONDAY_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646). \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0635\u0631\u0641\u0627\u064B \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631 (\u0631\u0648\u0632\xD7\u0633\u0627\u0639\u062A) \u0627\u0633\u062A \u0648 \u0641\u0642\u0637 \u062F\u0631 \u0622\u0646 \u067E\u0646\u062C\u0631\u0647 \u0648\u0631\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
-  };
-}
 
 // ../web_tool/src/turn_of_month_drift.ts
-var TOM_ENTRY_HOURS = [7, 8, 9, 10, 11, 12];
-var TOM_APPROACH_HOUR = 6;
-var TOM_SL_PIP = 300;
-var TOM_TP_PIP = 80;
-var TOM_MAX_HOLD = 96;
-var PIP3 = 0.1;
 function toIran3(utcHour) {
   const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
 var TOM_IRAN_RANGE = `${toIran3(7)}\u2013${toIran3(12)}`;
-function isFirstTradingDayOfMonth(times) {
-  if (times.length < 2) return false;
-  const last = new Date(times[times.length - 1] * 1e3);
-  const curMonth = last.getUTCFullYear() * 100 + last.getUTCMonth();
-  const curDay = last.getUTCFullYear() * 1e4 + last.getUTCMonth() * 100 + last.getUTCDate();
-  for (let i = times.length - 2; i >= 0; i--) {
-    const d = new Date(times[i] * 1e3);
-    const dDay = d.getUTCFullYear() * 1e4 + d.getUTCMonth() * 100 + d.getUTCDate();
-    if (dDay === curDay) continue;
-    const prevMonth = d.getUTCFullYear() * 100 + d.getUTCMonth();
-    return prevMonth !== curMonth;
-  }
-  return false;
-}
-function tomFiltersPass(f) {
-  if (!f) return true;
-  return f.rsiBull && f.pdiGtMdi;
-}
-function computeTurnOfMonth(times, utcHour, filt) {
-  const slDist = TOM_SL_PIP * PIP3;
-  const tpDist = TOM_TP_PIP * PIP3;
-  const isFirst = isFirstTradingDayOfMonth(times);
-  if (isFirst && TOM_ENTRY_HOURS.includes(utcHour)) {
-    if (!tomFiltersPass(filt)) {
-      const need = [];
-      if (filt && !filt.rsiBull) need.push("\u0645\u0648\u0645\u0646\u062A\u0648\u0645 \u0635\u0639\u0648\u062F\u06CC \u0634\u0648\u062F (RSI \u0628\u0627\u0644\u0627\u06CC \u06F5\u06F0)");
-      if (filt && !filt.pdiGtMdi) need.push("\u062C\u0647\u062A\u0650 \u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0634\u0648\u062F (\u200F+DI \u0628\u0627\u0644\u0627\u06CC \u2212DI)");
-      return {
-        state: "APPROACHING",
-        isFirstTradingDay: true,
-        utcHour,
-        slDist,
-        tpDist,
-        reason: `\u0627\u06A9\u0646\u0648\u0646 \xAB\u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647\xBB \u0648 \u0633\u0627\u0639\u062A\u0650 ${toIran3(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627\xBB (${TOM_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u0647\u0633\u062A\u06CC\u0645\u060C \u0627\u0645\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u0650 WR\u2265\u06F6\u06F0\u066A \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647. \u0628\u0631\u0627\u06CC \u0635\u062F\u0648\u0631\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0628\u0627\u06CC\u062F: ${need.join("\u061B ")}. (\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 S222c \u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 \u21D2 WR \u06F8\u06F9\u066A\u060C PF \u06F2.\u06F7\u06F8 \u2014 \u0642\u0648\u06CC\u200C\u062A\u0631\u06CC\u0646 \u0644\u0628\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC.)`
-      };
-    }
-    return {
-      state: "ENTRY",
-      isFirstTradingDay: true,
-      utcHour,
-      slDist,
-      tpDist,
-      reason: `\u0627\u06A9\u0646\u0648\u0646 \xAB\u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647\xBB \u0648 \u0633\u0627\u0639\u062A\u0650 ${toIran3(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 (\u0633\u0634\u0646\u0650 \u0644\u0646\u062F\u0646) \u0627\u0633\u062A \u2014 \u062F\u0631\u0633\u062A \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627\xBB (\u0627\u0648\u0644\u0650 \u0645\u0627\u0647\u060C ${TOM_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u0648 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (\u0645\u0648\u0645\u0646\u062A\u0648\u0645 + \u062C\u0647\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC) \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F. \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0627\u0647 \u0642\u0648\u06CC\u200C\u062A\u0631\u06CC\u0646 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0632\u0645\u0627\u0646\u06CC\u0650 \u06A9\u0644\u0650 \u067E\u0631\u0648\u0698\u0647 \u0627\u0633\u062A (t=+\u06F9.\u06F6\u06F6). \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0628\u0627 TP \u0646\u0632\u062F\u06CC\u06A9 (\u06F8\u06F0pip) \u0648 SL \u0645\u062D\u0627\u0641\u0638 (\u06F3\u06F0\u06F0pip). \u0627\u06CC\u0646 \u067E\u06CC\u06A9\u0631\u0628\u0646\u062F\u06CC \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A\u0650 \u06F4 \u0633\u0627\u0644 WR = \u06F8\u06F9\u066A \u0648 PF = \u06F2.\u06F7\u06F8 \u062F\u0627\u062F (\u0633\u0646\u062F S222c\u060C \u0642\u0648\u06CC\u200C\u062A\u0631\u06CC\u0646 \u0644\u0628\u0647\u0654 \u0641\u06CC\u0644\u062A\u0631\u06CC\u0650 \u0648\u0627\u0642\u0639\u06CC \u0637\u0628\u0642\u0650 \u0622\u0632\u0645\u0648\u0646\u0650 \u06A9\u0646\u062A\u0631\u0644\u0650 \u062A\u0635\u0627\u062F\u0641\u06CC).`
-    };
-  }
-  if (isFirst && utcHour === TOM_APPROACH_HOUR) {
-    return {
-      state: "APPROACHING",
-      isFirstTradingDay: true,
-      utcHour,
-      slDist,
-      tpDist,
-      reason: `\u0627\u06A9\u0646\u0648\u0646 \xAB\u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647\xBB \u0648 \u0633\u0627\u0639\u062A\u0650 ${toIran3(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627\xBB (${TOM_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646\u060C \u0647\u0645\u0632\u0645\u0627\u0646 \u0628\u0627 \u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0633\u0634\u0646\u0650 \u0644\u0646\u062F\u0646) \u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646 \u0627\u0633\u062A. \u0628\u0627 \u0648\u0631\u0648\u062F\u0650 \u0633\u0627\u0639\u062A\u0650 ${toIran3(7)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0648 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`
-    };
-  }
-  return {
-    state: "NEUTRAL",
-    isFirstTradingDay: isFirst,
-    utcHour,
-    slDist,
-    tpDist,
-    reason: isFirst ? `\u0627\u06A9\u0646\u0648\u0646 \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647 \u0627\u0633\u062A \u0627\u0645\u0627 \u0633\u0627\u0639\u062A\u0650 ${toIran3(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0642\u0648\u06CC\u0650 ${TOM_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 (\u0633\u0634\u0646\u0650 \u0644\u0646\u062F\u0646) \u0627\u0633\u062A. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0622\u0646 \u067E\u0646\u062C\u0631\u0647 \u0648\u0631\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.` : `\u0627\u06A9\u0646\u0648\u0646 \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647 \u0646\u06CC\u0633\u062A (\u0633\u0627\u0639\u062A\u0650 ${toIran3(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u2014 \u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627\xBB. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0635\u0631\u0641\u0627\u064B \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631 (\u0631\u0648\u0632\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u0645\u0627\u0647 \xD7 \u0633\u0627\u0639\u062A) \u0627\u0633\u062A \u0648 \u0641\u0642\u0637 \u062F\u0631 \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0647\u0631 \u0645\u0627\u0647\u060C \u0633\u0627\u0639\u0627\u062A\u0650 ${TOM_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0648\u0631\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
-  };
-}
 
 // ../web_tool/src/end_of_month_drift.ts
 var EOM_ENTRY_HOURS = [20, 21, 22, 23];
@@ -4091,9 +3650,7 @@ var EOM_REL_DAY = 7;
 var EOM_SL_PIP = 170;
 var EOM_TP_PIP = 250;
 var EOM_MAX_HOLD = 32;
-var EOM_ATR_MIN_MULT = 1;
-var EOM_CLOSE_POS_MIN = 0.5;
-var PIP4 = 0.1;
+var PIP = 0.1;
 function toIran4(utcHour) {
   const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
   return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
@@ -4122,8 +3679,8 @@ function eomFiltersPass(f) {
   return f.atrLive && f.closeStrong && f.aboveEma;
 }
 function computeEndOfMonth(times, utcHour, filt) {
-  const slDist = EOM_SL_PIP * PIP4;
-  const tpDist = EOM_TP_PIP * PIP4;
+  const slDist = EOM_SL_PIP * PIP;
+  const tpDist = EOM_TP_PIP * PIP;
   const inWindow = isEndOfMonthWindow(times);
   if (inWindow && EOM_ENTRY_HOURS.includes(utcHour)) {
     if (!eomFiltersPass(filt)) {
@@ -4169,485 +3726,7 @@ function computeEndOfMonth(times, utcHour, filt) {
   };
 }
 
-// ../web_tool/src/confirmation_filter.ts
-function atrRaw(close, high, low, period) {
-  const n = close.length;
-  const tr = new Array(n).fill(NaN);
-  for (let i = 0; i < n; i++) {
-    if (i === 0) {
-      tr[i] = high[i] - low[i];
-      continue;
-    }
-    const a = high[i] - low[i];
-    const b = Math.abs(high[i] - close[i - 1]);
-    const c = Math.abs(low[i] - close[i - 1]);
-    tr[i] = Math.max(a, b, c);
-  }
-  const out = new Array(n).fill(NaN);
-  let sum = 0;
-  for (let i = 0; i < n; i++) {
-    sum += tr[i];
-    if (i >= period) sum -= tr[i - period];
-    if (i >= period - 1) out[i] = sum / period;
-  }
-  return out;
-}
-function confirmScore(close, high, low) {
-  const n = close.length;
-  const i = n - 1;
-  const ema50 = ema(close, 50)[i];
-  const ema200 = ema(close, 200)[i];
-  const atr14 = atrRaw(close, high, low, 14)[i];
-  const atr100 = atrRaw(close, high, low, 100)[i];
-  const rsi14 = rsi(close, 14)[i];
-  const { hist } = macd(close);
-  const macdHist = hist[i];
-  const price = close[i];
-  const conds = [
-    {
-      label: "\u0642\u06CC\u0645\u062A > EMA200 (\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0628\u0644\u0646\u062F\u0645\u062F\u062A)",
-      met: Number.isFinite(ema200) && price > ema200,
-      value: `${price.toFixed(2)} vs ${Number.isFinite(ema200) ? ema200.toFixed(2) : "\u2014"}`
-    },
-    {
-      label: "EMA50 > EMA200 (\u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0635\u0639\u0648\u062F\u06CC)",
-      met: Number.isFinite(ema50) && Number.isFinite(ema200) && ema50 > ema200,
-      value: `${Number.isFinite(ema50) ? ema50.toFixed(2) : "\u2014"} vs ${Number.isFinite(ema200) ? ema200.toFixed(2) : "\u2014"}`
-    },
-    {
-      label: "ATR14 > ATR100 (\u0631\u0698\u06CC\u0645\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u0641\u0639\u0627\u0644)",
-      met: Number.isFinite(atr14) && Number.isFinite(atr100) && atr100 > 0 && atr14 > atr100,
-      value: `${Number.isFinite(atr14) ? atr14.toFixed(3) : "\u2014"} vs ${Number.isFinite(atr100) ? atr100.toFixed(3) : "\u2014"}`
-    },
-    {
-      label: "MACD histogram > 0 (\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0645\u062B\u0628\u062A)",
-      met: Number.isFinite(macdHist) && macdHist > 0,
-      value: `${Number.isFinite(macdHist) ? macdHist.toFixed(4) : "\u2014"}`
-    },
-    {
-      label: "RSI14 \u2208 [35,70] (\u0628\u062F\u0648\u0646\u0650 \u0627\u0634\u0628\u0627\u0639)",
-      met: Number.isFinite(rsi14) && rsi14 >= 35 && rsi14 <= 70,
-      value: `${Number.isFinite(rsi14) ? rsi14.toFixed(1) : "\u2014"}`
-    }
-  ];
-  const score = conds.reduce((s, c) => s + (c.met ? 1 : 0), 0);
-  return { score, maxScore: conds.length, breakdown: conds };
-}
-
-// ../web_tool/src/brooks_high2.ts
-var BROOKS_SL_POINT = 300;
-var BROOKS_TP_POINT = 450;
-var BROOKS_MAX_HOLD = 32;
-var BROOKS_EMA_FAST = 20;
-var BROOKS_EMA_SLOW = 50;
-var POINT = 0.01;
-function ema2(values, period) {
-  const out = new Array(values.length).fill(NaN);
-  const k = 2 / (period + 1);
-  let prev = values[0];
-  out[0] = prev;
-  for (let i = 1; i < values.length; i++) {
-    prev = values[i] * k + prev * (1 - k);
-    out[i] = prev;
-  }
-  return out;
-}
-function computeBrooksHigh2(high, low, close) {
-  const slDist = BROOKS_SL_POINT * POINT;
-  const tpDist = BROOKS_TP_POINT * POINT;
-  const n = close.length;
-  if (n < BROOKS_EMA_SLOW + 5) {
-    return {
-      state: "NEUTRAL",
-      slDist,
-      tpDist,
-      upCount: 0,
-      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0634\u0645\u0627\u0631\u0634\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 Brooks \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A."
-    };
-  }
-  const ef = ema2(close, BROOKS_EMA_FAST);
-  const es = ema2(close, BROOKS_EMA_SLOW);
-  let upCount = 0;
-  let sawPullback = false;
-  let signalAtLast = false;
-  for (let i = 1; i < n; i++) {
-    const bull = ef[i] > es[i];
-    if (bull) {
-      if (high[i] < high[i - 1]) {
-        sawPullback = true;
-      } else if (high[i] > high[i - 1] && sawPullback) {
-        upCount += 1;
-        sawPullback = false;
-        if (upCount === 2) {
-          if (i === n - 1) signalAtLast = true;
-          upCount = 0;
-        } else if (upCount >= 4) {
-          upCount = 0;
-        }
-      }
-    } else {
-      upCount = 0;
-      sawPullback = false;
-    }
-  }
-  const bullNow = ef[n - 1] > es[n - 1];
-  if (signalAtLast && bullNow) {
-    return {
-      state: "ENTRY",
-      slDist,
-      tpDist,
-      upCount: 2,
-      reason: `\u0627\u0644\u06AF\u0648\u06CC \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \xABHigh-2\xBB \u0627\u062B\u0631\u0650 Al Brooks \u06A9\u0627\u0645\u0644 \u0634\u062F: \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA\u06F2\u06F0>EMA\u06F5\u06F0) \u062F\u0648 \u067E\u0627\u06CC\u0647\u0654 \u0627\u0635\u0644\u0627\u062D \u062A\u0634\u06A9\u06CC\u0644 \u0648 \u067E\u0627\u06CC\u0647\u0654 \u062F\u0648\u0645 \u0628\u0627 \u0634\u06A9\u0633\u062A\u0650 \u0633\u0642\u0641\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F. \u0637\u0628\u0642\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A\u0650 \u06F1\u06F5\u06F0\u066C\u06F0\u06F0\u06F0 \u06A9\u0646\u062F\u0644 \u0627\u06CC\u0646 \u0644\u0628\u0647\u0654 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u0645\u0633\u062A\u0642\u0644 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 +$\u06F4\u066C\u06F1\u06F3\u06F7 (\u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 +$\u06F1\u066C\u06F3\u06F5\u06F1\u060C WR \u06F4\u06F8.\u06F8\u066A\u060C PF \u06F1.\u06F1\u06F0) \u062F\u0627\u0634\u062A. \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG): SL=\u06F3.\u06F0\u06F0$ \u0632\u06CC\u0631\u0650 \u0648\u0631\u0648\u062F\u060C TP=\u06F4.\u06F5\u06F0$ \u0628\u0627\u0644\u0627\u06CC \u0648\u0631\u0648\u062F (R:R=\u06F1.\u06F5). \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 \u0634\u0645\u0627\u0631\u0647\u0654 \u06F1 \u0647\u062F\u0641 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0627\u0633\u062A \u0646\u0647 \u0648\u06CC\u0646\u200C\u0631\u06CC\u062A.`
-    };
-  }
-  if (bullNow && (upCount === 1 || sawPullback)) {
-    return {
-      state: "APPROACHING",
-      slDist,
-      tpDist,
-      upCount,
-      reason: `\u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A (EMA\u06F2\u06F0>EMA\u06F5\u06F0) \u0648 \u067E\u0627\u06CC\u0647\u0654 \u0627\u0648\u0644\u0650 \u0627\u0635\u0644\u0627\u062D (High-1) ${upCount === 1 ? "\u062A\u0634\u06A9\u06CC\u0644 \u0634\u062F\u0647" : "\u062F\u0631 \u062D\u0627\u0644\u0650 \u062A\u0634\u06A9\u06CC\u0644 \u0627\u0633\u062A"}. \u0627\u06AF\u0631 \u067E\u0633 \u0627\u0632 \u06CC\u06A9 \u067E\u0627\u06CC\u0647\u0654 \u0627\u0635\u0644\u0627\u062D\u0650 \u062F\u06CC\u06AF\u0631\u060C \u0633\u0642\u0641\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u062F\u0648\u0628\u0627\u0631\u0647 \u0634\u06A9\u0633\u062A\u0647 \u0634\u0648\u062F\u060C \u0627\u0644\u06AF\u0648\u06CC \xABHigh-2\xBB \u06A9\u0627\u0645\u0644 \u0648 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0644\u0627\u0632\u0645: \u0634\u06A9\u0633\u062A\u0650 high \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644\u06CC \u067E\u0633 \u0627\u0632 \u062D\u062F\u0627\u0642\u0644 \u06CC\u06A9 \u0628\u0627\u0631\u0650 pullback.`
-    };
-  }
-  return {
-    state: "NEUTRAL",
-    slDist,
-    tpDist,
-    upCount,
-    reason: bullNow ? `\u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 \u0627\u0644\u06AF\u0648\u06CC \u0627\u0635\u0644\u0627\u062D\u0650 \u062F\u0648-\u067E\u0627\u06CC\u0647\u0654 Brooks \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u0647 (\u0647\u06CC\u0686 High-1 \u0641\u0639\u0627\u0644\u06CC \u0646\u06CC\u0633\u062A). \u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u0631\u0648\u0639\u0650 \u06CC\u06A9 \u0627\u0635\u0644\u0627\u062D\u0650 \u06A9\u0648\u062A\u0627\u0647 \u062F\u0631 \u062F\u0644\u0650 \u0631\u0648\u0646\u062F \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.` : `\u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A (EMA\u06F2\u06F0\u2264EMA\u06F5\u06F0)\u061B \u0644\u0627\u06CC\u0647\u0654 High-2 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0648\u0631\u0648\u062F\u0650 Long \u0645\u06CC\u200C\u062F\u0647\u062F.`
-  };
-}
-
-// ../web_tool/src/signs_of_strength.ts
-var SOS_SL_POINT = 300;
-var SOS_TP_POINT = 450;
-var SOS_MAX_HOLD = 96;
-var SOS_EMA_PERIOD = 20;
-var SOS_WINDOW = 32;
-var SOS_THRESHOLD = 2;
-var POINT2 = 0.01;
-function ema3(values, period) {
-  const out = new Array(values.length).fill(NaN);
-  const k = 2 / (period + 1);
-  let prev = values[0];
-  out[0] = prev;
-  for (let i = 1; i < values.length; i++) {
-    prev = values[i] * k + prev * (1 - k);
-    out[i] = prev;
-  }
-  return out;
-}
-function computeScores(open, high, low, close, emaPeriod, win) {
-  const n = close.length;
-  const emaArr = ema3(close, emaPeriod);
-  const half = Math.floor(win / 2);
-  const s1 = new Array(n).fill(false);
-  const s2 = new Array(n).fill(false);
-  const s3 = new Array(n).fill(false);
-  const s4 = new Array(n).fill(false);
-  const score = new Array(n).fill(0);
-  for (let i = 0; i < n; i++) {
-    if (i < win - 1) continue;
-    let bullBars = 0;
-    let bodyFracSum = 0;
-    let belowCnt = 0;
-    for (let j = i - win + 1; j <= i; j++) {
-      if (close[j] > open[j]) bullBars++;
-      const rng = Math.max(high[j] - low[j], 1e-12);
-      bodyFracSum += Math.abs(close[j] - open[j]) / rng;
-      if (close[j] < emaArr[j]) belowCnt++;
-    }
-    s1[i] = bullBars / win >= 0.6;
-    s2[i] = bodyFracSum / win >= 0.55;
-    s3[i] = belowCnt <= 0;
-    let hhRecent = -Infinity, hhPrev = -Infinity, llRecent = Infinity, llPrev = Infinity;
-    for (let j = i - half + 1; j <= i; j++) {
-      if (high[j] > hhRecent) hhRecent = high[j];
-      if (low[j] < llRecent) llRecent = low[j];
-    }
-    for (let j = i - win + 1; j <= i - half; j++) {
-      if (high[j] > hhPrev) hhPrev = high[j];
-      if (low[j] < llPrev) llPrev = low[j];
-    }
-    s4[i] = hhRecent > hhPrev && llRecent > llPrev;
-    score[i] = (s1[i] ? 1 : 0) + (s2[i] ? 1 : 0) + (s3[i] ? 1 : 0) + (s4[i] ? 1 : 0);
-  }
-  return { score, s1, s2, s3, s4 };
-}
-function computeSignsOfStrength(open, high, low, close) {
-  const slDist = SOS_SL_POINT * POINT2;
-  const tpDist = SOS_TP_POINT * POINT2;
-  const n = close.length;
-  if (n < SOS_WINDOW + SOS_EMA_PERIOD + 2) {
-    return {
-      state: "NEUTRAL",
-      slDist,
-      tpDist,
-      score: 0,
-      s1: false,
-      s2: false,
-      s3: false,
-      s4: false,
-      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0633\u0646\u062C\u0647\u0654 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 Brooks \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A."
-    };
-  }
-  const { score, s1, s2, s3, s4 } = computeScores(
-    open,
-    high,
-    low,
-    close,
-    SOS_EMA_PERIOD,
-    SOS_WINDOW
-  );
-  const last = n - 1;
-  const scLast = score[last];
-  const scPrev = score[last - 1];
-  const strongNow = scLast >= SOS_THRESHOLD;
-  const strongPrev = scPrev >= SOS_THRESHOLD;
-  const risingEdge = strongNow && !strongPrev;
-  const signList = () => {
-    const parts = [];
-    if (s1[last]) parts.push("\u0627\u06A9\u062B\u0631\u0650 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627 \u0631\u0648\u0646\u062F\u06CC\u200C\u0627\u0646\u062F");
-    if (s2[last]) parts.push("\u0628\u062F\u0646\u0647\u200C\u0647\u0627 \u0628\u0632\u0631\u06AF/\u0633\u0627\u06CC\u0647\u200C\u0647\u0627 \u06A9\u0648\u062A\u0627\u0647 (\u0641\u0648\u0631\u06CC\u062A)");
-    if (s3[last]) parts.push("\u0642\u06CC\u0645\u062A \u067E\u06CC\u0648\u0633\u062A\u0647 \u0628\u0627\u0644\u0627\u06CC EMA\u06F2\u06F0");
-    if (s4[last]) parts.push("\u0633\u0642\u0641\u200C\u0648\u06A9\u0641\u0650 \u0635\u0639\u0648\u062F\u06CC (swings)");
-    return parts.length ? parts.join("\u060C ") : "\u0647\u06CC\u0686 \u0646\u0634\u0627\u0646\u0647\u0654 \u0642\u0648\u0651\u062A\u06CC \u0641\u0639\u0627\u0644 \u0646\u06CC\u0633\u062A";
-  };
-  if (risingEdge) {
-    return {
-      state: "ENTRY",
-      slDist,
-      tpDist,
-      score: scLast,
-      s1: s1[last],
-      s2: s2[last],
-      s3: s3[last],
-      s4: s4[last],
-      reason: `\u0627\u0644\u06AF\u0648\u06CC \xABSigns of Strength\xBB \u0627\u062B\u0631\u0650 Al Brooks (\u0641\u0635\u0644\u0650 \u06F1\u06F9) \u062A\u0627\u0632\u0647 \u0641\u0639\u0627\u0644 \u0634\u062F: \u0646\u0645\u0631\u0647\u0654 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F \u0627\u0632 \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647 \u0628\u0647 ${scLast}/\u06F4 \u0631\u0633\u06CC\u062F (\u0646\u0634\u0627\u0646\u0647\u200C\u0647\u0627\u06CC \u0641\u0639\u0627\u0644: ${signList()}). \u0627\u06CC\u0646 \xABrising-edge\xBB \u0646\u0642\u0637\u0647\u0654 \u0634\u0631\u0648\u0639\u0650 \u0641\u0627\u0632\u0650 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A. \u0637\u0628\u0642\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A\u0650 \u06F4 \u0633\u0627\u0644\u0647 \u0627\u06CC\u0646 \u0644\u0628\u0647\u0654 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u0645\u0633\u062A\u0642\u0644 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 +$\u06F8\u066C\u06F1\u06F3\u06F0 (WR \u06F5\u06F5.\u06F9\u066A\u060C PF \u06F1.\u06F5\u06F3\u060C \u0647\u0631 \u06F4 \u067E\u0646\u062C\u0631\u0647\u0654 walk-forward \u0645\u062B\u0628\u062A) \u062F\u0627\u0634\u062A. \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG): SL=\u06F3.\u06F0\u06F0$ \u0632\u06CC\u0631\u0650 \u0648\u0631\u0648\u062F\u060C TP=\u06F4.\u06F5\u06F0$ \u0628\u0627\u0644\u0627\u06CC \u0648\u0631\u0648\u062F (R:R=\u06F1.\u06F5). \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 \u0634\u0645\u0627\u0631\u0647\u0654 \u06F1 \u0647\u062F\u0641 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0627\u0633\u062A \u0646\u0647 \u0648\u06CC\u0646\u200C\u0631\u06CC\u062A.`
-    };
-  }
-  if (strongNow && !risingEdge) {
-    return {
-      state: "APPROACHING",
-      slDist,
-      tpDist,
-      score: scLast,
-      s1: s1[last],
-      s2: s2[last],
-      s3: s3[last],
-      s4: s4[last],
-      reason: `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0647\u0645\u0686\u0646\u0627\u0646 \u0642\u0648\u06CC \u0627\u0633\u062A (\u0646\u0645\u0631\u0647\u0654 Signs-of-Strength = ${scLast}/\u06F4\u061B ${signList()}) \u0627\u0645\u0627 \u0641\u0627\u0632\u0650 \u0642\u062F\u0631\u062A \u067E\u06CC\u0634\u200C\u062A\u0631 \u0634\u0631\u0648\u0639 \u0634\u062F\u0647 \u0648 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062A\u0627\u0632\u0647 (rising-edge) \u0647\u0645\u06CC\u0646\u200C\u0627\u0644\u0627\u0646 \u0646\u06CC\u0633\u062A. \u0644\u0627\u06CC\u0647\u0654 S171 \u0641\u0642\u0637 \u062F\u0631 \xAB\u0644\u062D\u0638\u0647\u0654 \u062A\u0627\u0632\u0647 \u0634\u062F\u0646\u0650 \u0642\u062F\u0631\u062A\xBB \u0648\u0627\u0631\u062F \u0645\u06CC\u200C\u0634\u0648\u062F \u062A\u0627 \u0627\u0632 \u0648\u0631\u0648\u062F\u0650 \u062F\u06CC\u0631\u0647\u0646\u06AF\u0627\u0645 \u067E\u0631\u0647\u06CC\u0632 \u06A9\u0646\u062F. \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0644\u0627\u0632\u0645: \u0627\u0641\u062A\u0650 \u0646\u0645\u0631\u0647 \u0628\u0647 \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647 \u0648 \u0633\u067E\u0633 \u0639\u0628\u0648\u0631\u0650 \u0645\u062C\u062F\u062F\u0650 \u0622\u0646.`
-    };
-  }
-  if (scLast === SOS_THRESHOLD - 1) {
-    return {
-      state: "APPROACHING",
-      slDist,
-      tpDist,
-      score: scLast,
-      s1: s1[last],
-      s2: s2[last],
-      s3: s3[last],
-      s4: s4[last],
-      reason: `\u0646\u0645\u0631\u0647\u0654 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F ${scLast}/\u06F4 \u0627\u0633\u062A \u0648 \u062A\u0646\u0647\u0627 \u06CC\u06A9 \u0646\u0634\u0627\u0646\u0647 \u062A\u0627 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0648\u0631\u0648\u062F (${SOS_THRESHOLD}/\u06F4) \u0641\u0627\u0635\u0644\u0647 \u062F\u0627\u0631\u062F (\u0646\u0634\u0627\u0646\u0647\u200C\u0647\u0627\u06CC \u0641\u0639\u0627\u0644: ${signList()}). \u0627\u06AF\u0631 \u06CC\u06A9 \u0646\u0634\u0627\u0646\u0647\u0654 \u0642\u0648\u0651\u062A\u0650 \u062F\u06CC\u06AF\u0631 (\u0645\u062B\u0644\u0627\u064B \u0628\u062F\u0646\u0647\u200C\u0647\u0627\u06CC \u0628\u0632\u0631\u06AF\u200C\u062A\u0631\u0650 \u0631\u0648\u0646\u062F\u06CC \u06CC\u0627 \u0633\u0642\u0641\u200C\u0648\u06A9\u0641\u0650 \u0635\u0639\u0648\u062F\u06CC) \u0627\u0636\u0627\u0641\u0647 \u0634\u0648\u062F\u060C \u0627\u0644\u06AF\u0648\u06CC Signs-of-Strength \u06A9\u0627\u0645\u0644 \u0648 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`
-    };
-  }
-  return {
-    state: "NEUTRAL",
-    slDist,
-    tpDist,
-    score: scLast,
-    s1: s1[last],
-    s2: s2[last],
-    s3: s3[last],
-    s4: s4[last],
-    reason: `\u0646\u0645\u0631\u0647\u0654 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u067E\u0627\u06CC\u06CC\u0646 \u0627\u0633\u062A (${scLast}/\u06F4\u061B ${signList()}). \u0637\u0628\u0642\u0650 \u0641\u0635\u0644\u0650 \u06F1\u06F9 \u06A9\u062A\u0627\u0628\u0650 Brooks\u060C \u0631\u0648\u0646\u062F \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \xAB\u0642\u0648\u06CC\xBB \u0646\u06CC\u0633\u062A \u062A\u0627 \u0648\u0631\u0648\u062F\u0650 \u0631\u0648\u0646\u062F-\u062F\u0646\u0628\u0627\u0644\u200C\u06A9\u0646 \u062A\u0648\u062C\u06CC\u0647 \u0634\u0648\u062F\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0646\u0634\u0627\u0646\u0647\u200C\u0647\u0627\u06CC \u0628\u06CC\u0634\u062A\u0631\u0650 \u0642\u0648\u0651\u062A \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`
-  };
-}
-
-// ../web_tool/src/triple_sma_pullback.ts
-var DEFAULT_TRIPLE_SMA = {
-  fast: 13,
-  mid: 100,
-  slow: 200,
-  vortexP: 14,
-  erP: 10,
-  erMin: 0.2,
-  slPip: 150,
-  tpPip: 300,
-  maxHold: 32
-};
-function computeTripleSMA(candles, cfg = DEFAULT_TRIPLE_SMA) {
-  const n = candles.length;
-  const need = cfg.slow + cfg.vortexP + 2;
-  const empty = {
-    active: false,
-    approaching: false,
-    upStack: false,
-    fast: NaN,
-    mid: NaN,
-    slow: NaN,
-    viPlus: NaN,
-    viMinus: NaN,
-    er: NaN,
-    distFastPct: 0,
-    reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627/\u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631\u0647\u0627 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A."
-  };
-  if (n < need) return empty;
-  const close = candles.map((c) => c.close);
-  const low = candles.map((c) => c.low);
-  const sf = sma(close, cfg.fast);
-  const sm = sma(close, cfg.mid);
-  const ss = sma(close, cfg.slow);
-  const { viPlus, viMinus } = vortex(candles, cfg.vortexP);
-  const er = kaufmanER(close, cfg.erP);
-  const i = n - 1;
-  const j = n - 2;
-  if ([sf[i], sm[i], ss[i], sf[j], viPlus[i], viMinus[i], er[i]].some((v) => Number.isNaN(v))) return empty;
-  const pNow = close[i];
-  const upStack = sf[i] > sm[i] && sm[i] > ss[i];
-  const pulledBack = low[j] <= sf[j];
-  const closedBack = pNow > sf[i];
-  const trendOk = viPlus[i] > viMinus[i] && er[i] > cfg.erMin;
-  const active = upStack && pulledBack && closedBack && trendOk;
-  const distFastPct = sf[i] ? (pNow - sf[i]) / sf[i] * 100 : 0;
-  const nearFast = Math.abs(distFastPct) < 0.12;
-  const approaching = !active && upStack && nearFast && (!trendOk || !closedBack || !pulledBack);
-  let reason;
-  const trendTxt = `VI+ ${viPlus[i].toFixed(2)} ${viPlus[i] > viMinus[i] ? ">" : "\u2264"} VI- ${viMinus[i].toFixed(2)} \u060C ER ${er[i].toFixed(2)} ${er[i] > cfg.erMin ? ">" : "\u2264"} ${cfg.erMin}`;
-  let entry, sl, tp;
-  if (active) {
-    entry = pNow;
-    sl = pNow - cfg.slPip * 0.01;
-    tp = pNow + cfg.tpPip * 0.01;
-    reason = `\u0645\u0627\u0634\u0647\u0654 LONG \u0634\u0644\u06CC\u06A9 \u0634\u062F: \u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0635\u0639\u0648\u062F\u06CC SMA13(${sf[i].toFixed(2)})>SMA100(${sm[i].toFixed(2)})>SMA200(${ss[i].toFixed(2)})\u060C \u0642\u06CC\u0645\u062A \u067E\u0633 \u0627\u0632 pullback \u0628\u0647 SMA13 \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u0622\u0646 \u0628\u0633\u062A (${pNow.toFixed(2)})\u060C \u0648 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0631\u0648\u0646\u062F \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A (${trendTxt}). \u0648\u0631\u0648\u062F LONG. SL=${sl.toFixed(2)} \u060C TP=${tp.toFixed(2)} (R:R=1:2).`;
-  } else if (approaching) {
-    const miss = [];
-    if (!pulledBack) miss.push("\u0647\u0646\u0648\u0632 pullback \u0628\u0647 SMA13 \u06A9\u0627\u0645\u0644 \u0646\u0634\u062F\u0647");
-    if (!closedBack) miss.push("\u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC SMA13 \u0646\u0628\u0633\u062A\u0647");
-    if (!trendOk) miss.push(`\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0631\u0648\u0646\u062F \u0646\u0627\u0642\u0635 (${trendTxt})`);
-    reason = `\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0633\u0647 SMA \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A \u0648 \u0642\u06CC\u0645\u062A \u0646\u0632\u062F\u06CC\u06A9\u0650 SMA13 (\u0641\u0627\u0635\u0644\u0647 ${distFastPct.toFixed(2)}%). \u0645\u0646\u062A\u0638\u0631\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0647\u0627 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645: ${miss.join(" \u061B ")}. \u0628\u0631\u06AF\u0631\u0641\u062A\u0647 \u0627\u0632 \u0644\u0627\u06CC\u0647\u0654 Triple-SMA (S211).`;
-  } else if (!upStack) {
-    reason = `\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0633\u0647 SMA \u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644\u0627\u064B \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A (SMA13 ${sf[i].toFixed(2)} / SMA100 ${sm[i].toFixed(2)} / SMA200 ${ss[i].toFixed(2)}). \u0634\u0631\u0637\u0650 \u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A \u21D2 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`;
-  } else {
-    reason = `\u0686\u06CC\u062F\u0645\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u0627\u0645\u0627 \u0645\u0627\u0634\u0647\u0654 \u062A\u0627\u0632\u0647 \u0646\u062F\u0627\u0631\u06CC\u0645 (pullback/\u0628\u0633\u062A\u0646\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC/\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0631\u0648\u0646\u062F \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u0634\u062F\u061B ${trendTxt}). \u0645\u0646\u062A\u0638\u0631\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062A\u0627\u0632\u0647 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
-  }
-  return {
-    active,
-    approaching,
-    upStack,
-    fast: sf[i],
-    mid: sm[i],
-    slow: ss[i],
-    viPlus: viPlus[i],
-    viMinus: viMinus[i],
-    er: er[i],
-    distFastPct,
-    reason,
-    entry,
-    sl,
-    tp
-  };
-}
-
 // ../web_tool/src/router.ts
-var CONFIRM_MIN_SCORE = 2;
-function buildOvernightFilter(open, high, low, close) {
-  if (!open || !high || !low || !close) return void 0;
-  const n = close.length;
-  if (n < 30 || open.length !== n || high.length !== n || low.length !== n) return void 0;
-  const candles = new Array(n);
-  for (let i = 0; i < n; i++) {
-    candles[i] = { time: i, open: open[i], high: high[i], low: low[i], close: close[i], volume: 0 };
-  }
-  const { pdi, mdi } = adx(candles, 14);
-  const atrArr = atr(candles, 14);
-  const last = n - 1;
-  const pdiV = pdi[last], mdiV = mdi[last], atrV = atrArr[last];
-  if (!isFinite(pdiV) || !isFinite(mdiV) || !isFinite(atrV)) return void 0;
-  const valid = atrArr.filter((v) => isFinite(v)).slice().sort((x, y) => x - y);
-  if (!valid.length) return void 0;
-  const med = valid[Math.floor(valid.length / 2)];
-  return {
-    pdiGtMdi: pdiV > mdiV,
-    bullBar: close[last] > open[last],
-    atrOk: atrV < 1.8 * med
-  };
-}
-function buildMondayFilter(open, high, low, close) {
-  if (!open || !high || !low || !close) return void 0;
-  const n = close.length;
-  if (n < 30 || open.length !== n || high.length !== n || low.length !== n) return void 0;
-  const candles = new Array(n);
-  for (let i = 0; i < n; i++) {
-    candles[i] = { time: i, open: open[i], high: high[i], low: low[i], close: close[i], volume: 0 };
-  }
-  const { adx: adx2 } = adx(candles, 14);
-  const atrArr = atr(candles, 14);
-  const last = n - 1;
-  const adxV = adx2[last], atrV = atrArr[last];
-  if (!isFinite(adxV) || !isFinite(atrV)) return void 0;
-  const valid = atrArr.filter((v) => isFinite(v)).slice().sort((x, y) => x - y);
-  if (!valid.length) return void 0;
-  const med = valid[Math.floor(valid.length / 2)];
-  return {
-    adxOk: adxV > 20,
-    atrNotHigh: atrV < 1.8 * med,
-    atrNotDead: atrV > 0.5 * med
-  };
-}
-function buildEomFilter(high, low, close, ema200) {
-  if (!high || !low || !close) return void 0;
-  const n = close.length;
-  if (n < 30 || high.length !== n || low.length !== n) return void 0;
-  const candles = new Array(n);
-  for (let i = 0; i < n; i++) {
-    candles[i] = { time: i, open: close[i], high: high[i], low: low[i], close: close[i], volume: 0 };
-  }
-  const atrArr = atr(candles, 14);
-  const last = n - 1;
-  const atrV = atrArr[last];
-  if (!isFinite(atrV)) return void 0;
-  const valid = atrArr.filter((v) => isFinite(v)).slice().sort((x, y) => x - y);
-  if (!valid.length) return void 0;
-  const med = valid[Math.floor(valid.length / 2)];
-  const rng = high[last] - low[last];
-  const closePos = rng > 0 ? (close[last] - low[last]) / rng : 0.5;
-  return {
-    atrLive: atrV >= EOM_ATR_MIN_MULT * med,
-    closeStrong: closePos >= EOM_CLOSE_POS_MIN,
-    aboveEma: typeof ema200 === "number" ? close[last] > ema200 : true
-  };
-}
-function toIranHM(utcHour) {
-  const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
-  const hh = Math.floor(total / 60), mm = total % 60;
-  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-}
-function toIranRange(hoursUtc) {
-  if (!hoursUtc.length) return "";
-  const lo = Math.min(...hoursUtc), hi = Math.max(...hoursUtc);
-  return `${toIranHM(lo)}\u2013${toIranHM(hi)}`;
-}
-var BUCKET_PLAN = {
-  // سطلِ قوی: روندِ کارآمد + probaِ بالا → بیشترین حجم و دورترین TP
-  trend_hi: { lot: 2, tpBull: 2, tpBear: 2.6, slBull: 2, slBear: 1.7, desc: "\u0631\u0648\u0646\u062F\u0650 \u06A9\u0627\u0631\u0622\u0645\u062F + \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0628\u0627\u0644\u0627 \u2014 \u0642\u0648\u06CC\u200C\u062A\u0631\u06CC\u0646 \u0633\u0637\u0644" },
-  // روندِ کارآمد ولی probaِ متوسط → حجمِ متوسط، TP نیمه-دور
-  trend_lo: { lot: 1.3, tpBull: 1.3, tpBear: 1.8, slBull: 2, slBear: 2.2, desc: "\u0631\u0648\u0646\u062F\u0650 \u06A9\u0627\u0631\u0622\u0645\u062F + \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0645\u062A\u0648\u0633\u0637" },
-  // probaِ بالا ولی رژیمِ کم‌کارا → حجمِ کمی بالای پایه، TP نزدیک‌تر
-  chop_hi: { lot: 1.2, tpBull: 1, tpBear: 1.4, slBull: 2, slBear: 1.45, desc: "\u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0628\u0627\u0644\u0627 \u0648\u0644\u06CC \u0631\u0648\u0646\u062F\u0650 \u06A9\u0645\u200C\u06A9\u0627\u0631\u0627" },
-  // ضعیف‌ترین سطلِ فعال → حجمِ محافظه‌کارانه، TP نزدیک
-  chop_lo: { lot: 0.7, tpBull: 0.8, tpBear: 1, slBull: 2, slBear: 1.95, desc: "\u0633\u0637\u0644\u0650 \u0645\u0631\u0632\u06CC \u2014 \u062D\u062C\u0645\u0650 \u0645\u062D\u0627\u0641\u0638\u0647\u200C\u06A9\u0627\u0631\u0627\u0646\u0647" }
-};
-function bucketPlan(bucket) {
-  return BUCKET_PLAN[bucket] ?? { lot: 1, tpBull: 1, tpBear: 1.4, slBull: 1.5, slBear: 1.7, desc: "\u067E\u0627\u06CC\u0647" };
-}
-function lotLabel(m) {
-  if (m >= 1.9) return `~\u06F2 \u0628\u0631\u0627\u0628\u0631\u0650 \u062D\u062C\u0645\u0650 \u067E\u0627\u06CC\u0647`;
-  if (m >= 1.25) return `~${m.toFixed(1)} \u0628\u0631\u0627\u0628\u0631\u0650 \u062D\u062C\u0645\u0650 \u067E\u0627\u06CC\u0647`;
-  if (m >= 0.95) return `\u062D\u062C\u0645\u0650 \u067E\u0627\u06CC\u0647 (\u06F1\xD7)`;
-  return `~${m.toFixed(1)} \u0628\u0631\u0627\u0628\u0631\u0650 \u067E\u0627\u06CC\u0647 (\u06A9\u0627\u0647\u0634\u200C\u06CC\u0627\u0641\u062A\u0647)`;
-}
 var ASSET_SPECS = {
   XAUUSD: { id: "XAUUSD", valuePerPricePerLot: 100, tradableLots: true, commissionPerLot: 7, minLot: 0.01, maxLot: 100, lotUnitFa: "\u0644\u0627\u062A (\u06F1\u06F0\u06F0 \u0627\u0648\u0646\u0633)" },
   EURUSD: { id: "EURUSD", valuePerPricePerLot: 1e5, tradableLots: true, commissionPerLot: 7, minLot: 0.01, maxLot: 100, lotUnitFa: "\u0644\u0627\u062A (\u06F1\u06F0\u06F0k)" },
@@ -4657,8 +3736,6 @@ var ASSET_SPECS = {
 function assetSpec(id) {
   return id && ASSET_SPECS[id] || ASSET_SPECS.XAUUSD;
 }
-var DEFAULT_CAPITAL = 1e4;
-var DEFAULT_RISK_PCT = 1;
 var MAX_EFFECTIVE_RISK_PCT = 5;
 function computeLots(capital, riskPct, slDist, lotMult, spec) {
   const effRiskPct = Math.min(riskPct * lotMult, MAX_EFFECTIVE_RISK_PCT);
@@ -4674,2348 +3751,103 @@ function computeLots(capital, riskPct, slDist, lotMult, spec) {
   lots = Math.min(Math.max(Math.round(lots * 100) / 100, spec.minLot), spec.maxLot);
   return { lots, riskDollars, effRiskPct };
 }
-var ER_TREND_THR = 0.15;
-var P_HI = 66;
-var P_MIN = 58;
-var P_APPROACH = 52;
-function efficiencyRatio(close, win = 32) {
-  const n = close.length;
-  if (n < win + 2) return 0;
-  const end = n - 1;
-  const start = end - win;
-  const net = Math.abs(close[end] - close[start]);
-  let vol = 0;
-  for (let i = start + 1; i <= end; i++) vol += Math.abs(close[i] - close[i - 1]);
-  return vol > 0 ? net / vol : 0;
-}
-function computeRegime(a, close) {
-  const er = efficiencyRatio(close, 32);
-  const trendy = er >= ER_TREND_THR;
-  let regime = "range";
-  let activeStream = "none";
-  if (a.regimeOk) {
-    regime = "trend_up";
-    activeStream = "bull";
-  } else if (a.trend === "down" && a.price < a.ema50 && a.ema50 < a.ema200) {
-    regime = "trend_down";
-    activeStream = "bear";
-  }
-  const p = a.probability;
-  const pw = p >= P_HI ? "hi" : "lo";
-  const ef = trendy ? "trend" : "chop";
-  const bucket = activeStream === "none" ? "none" : `${ef}_${pw}`;
-  return { regime, efficiencyRatio: er, trendy, adx: a.adx, activeStream, bucket };
-}
-function decide(a, close, capital = DEFAULT_CAPITAL, riskPct = DEFAULT_RISK_PCT, spec = ASSET_SPECS.XAUUSD, high, low, utcHour, utcDay, times, open) {
-  const reg = computeRegime(a, close);
-  const p = a.probability;
-  const atr2 = a.atr || 1;
-  const indicators = [
-    {
-      name: "\u0631\u0648\u0646\u062F (EMA50/200)",
-      value: reg.regime === "trend_up" ? "\u0635\u0639\u0648\u062F\u06CC" : reg.regime === "trend_down" ? "\u0646\u0632\u0648\u0644\u06CC" : "\u0631\u0646\u062C",
-      status: reg.regime === "range" ? "neutral" : "ok"
-    },
-    {
-      name: "\u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0646\u062F (ER)",
-      value: reg.efficiencyRatio.toFixed(3) + (reg.trendy ? " (\u0631\u0648\u0646\u062F\u06CC)" : " (\u0631\u0646\u062C)"),
-      status: reg.trendy ? "ok" : "warn"
-    },
-    { name: "\u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F (ADX)", value: a.adx.toFixed(1), status: a.adx >= 20 ? "ok" : "warn" },
-    { name: "\u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0645\u062F\u0644", value: p.toFixed(1) + "%", status: p >= P_MIN ? "ok" : p >= P_APPROACH ? "warn" : "bad" },
-    { name: "RSI(14)", value: a.rsi14.toFixed(1), status: "neutral" },
-    { name: "ATR", value: atr2.toFixed(2) + "$", status: "neutral" }
-  ];
-  if (spec.id === "XAUUSD" && typeof utcHour === "number") {
-    const ovFilt = buildOvernightFilter(open, high, low, close);
-    const ov = computeOvernight(utcHour, ovFilt);
-    const ovInd = [
-      {
-        name: "\u0633\u0627\u0639\u062A\u0650 \u0641\u0639\u0644\u06CC (\u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646)",
-        value: `${toIranHM(utcHour)}`,
-        status: ov.state === "ENTRY" ? "ok" : ov.state === "APPROACHING" ? "warn" : "neutral"
-      },
-      {
-        name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647 (${toIranRange([22, 23])} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646)`,
-        value: ov.state === "ENTRY" ? "\u0628\u0627\u0632 \u2713" : ov.state === "APPROACHING" ? "\u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646" : "\u0628\u0633\u062A\u0647",
-        status: ov.state === "ENTRY" ? "ok" : ov.state === "APPROACHING" ? "warn" : "neutral"
-      },
-      ...indicators
-    ];
-    const ovGate = {
-      layerCode: "S139",
-      label: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647\u0654 \u0637\u0644\u0627 (Overnight)",
-      entryHoursUtc: [22, 23],
-      endHourUtc: 24,
-      windowOpen: ov.state === "ENTRY"
-    };
-    if (ov.state === "ENTRY") {
-      const entry = a.price;
-      const sl = entry - ov.slDist;
-      const tp = entry + ov.tpDist;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, ov.slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647\u0654 \u0637\u0644\u0627 (\u0627\u0628\u062A\u062F\u0627\u06CC \u0633\u0634\u0646\u0650 \u0622\u0633\u06CC\u0627)",
-        reason: ov.reason,
-        sourceLayer: {
-          code: "S139",
-          name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647 (Overnight Drift)",
-          kind: "time",
-          manage: {
-            style: "let-run-trail",
-            beTriggerR: 1,
-            trailDistPrice: OVERNIGHT_SL_PIP * 0.1,
-            maxHoldBars: OVERNIGHT_MAX_HOLD,
-            note: `\u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631 \u0628\u0627 R:R \u0628\u0627\u0644\u0627 (\u06F1:${(OVERNIGHT_TP_PIP / OVERNIGHT_SL_PIP).toFixed(1)}) \u0637\u0631\u0627\u062D\u06CC\u0650 \xAB\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F\xBB \u062F\u0627\u0631\u062F. \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 ${(OVERNIGHT_SL_PIP * 0.1).toFixed(1)}$ trail \u06A9\u0646 \u0648 \u062A\u0627 \u0633\u0642\u0641\u0650 ${OVERNIGHT_MAX_HOLD} \u06A9\u0646\u062F\u0644 (\u06F2\u06F4 \u0633\u0627\u0639\u062A) \u0646\u06AF\u0647 \u062F\u0627\u0631.`
-          }
-        },
-        direction: "LONG",
-        entry,
-        tp,
-        sl,
-        rr: `SL \u062B\u0627\u0628\u062A ${OVERNIGHT_SL_PIP}pip (${ov.slDist.toFixed(2)}$) / TP ${OVERNIGHT_TP_PIP}pip (${ov.tpDist.toFixed(2)}$) \u2014 \u0646\u0633\u0628\u062A\u0650 R:R \u2248 \u06F1:${(OVERNIGHT_TP_PIP / OVERNIGHT_SL_PIP).toFixed(1)} (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F)`,
-        probability: 56,
-        sizing: {
-          lotMultiplier: 1,
-          label: "Overnight Drift (\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 S139)",
-          note: `\u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u0650 S139 (\u06A9\u0634\u0641\u0650 \u0646\u0648\u060C \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 \u062E\u0627\u0644\u0635 \u2014 \u0628\u062F\u0648\u0646\u0650 \u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631). \u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F. \u0647\u0645\u0628\u0633\u062A\u06AF\u06CC\u0650 \u0631\u0648\u0632\u0627\u0646\u0647 +\u06F0.\u06F1\u06F3 \u0628\u0627 S67 \u0648 +\u06F0.\u06F2\u06F7 \u0628\u0627 Squeeze \u21D2 \u062C\u0631\u06CC\u0627\u0646\u0650 \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647 \u06A9\u0647 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0628\u0631\u062F.`,
-          lots: lots ?? void 0,
-          riskDollars: rd,
-          capital,
-          riskPct,
-          capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${ov.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-        },
-        tpPlan: {
-          multiplier: OVERNIGHT_TP_PIP,
-          note: `TP \u062F\u0648\u0631\u0650 ${OVERNIGHT_TP_PIP}pip. \u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647 \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0686\u0646\u062F \u0633\u0627\u0639\u062A \u0627\u062F\u0627\u0645\u0647 \u062F\u0627\u0631\u062F\u061B TP \u062F\u0648\u0631 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u062F \u062D\u0631\u06A9\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F. \u062A\u0627 ${OVERNIGHT_MAX_HOLD} \u06A9\u0646\u062F\u0644 (\u06F2\u06F4 \u0633\u0627\u0639\u062A) \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
-        },
-        slPlan: {
-          multiplier: OVERNIGHT_SL_PIP,
-          note: `SL \u062B\u0627\u0628\u062A ${OVERNIGHT_SL_PIP}pip (${ov.slDist.toFixed(2)}$). \u0627\u06AF\u0631 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647 \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F\u061B \u0627\u0645\u0627 \u0628\u0631\u062F\u0647\u0627\u06CC \u0648\u0627\u0642\u0639\u06CC \u0628\u0647\u200C\u0645\u0631\u0627\u062A\u0628 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631\u0646\u062F.`
-        },
-        indicators: ovInd,
-        timeGate: ovGate
-      };
-    }
-    if (ov.state === "APPROACHING") {
-      return {
-        state: "APPROACHING",
-        regime: reg,
-        headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647 \u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646",
-        reason: ov.reason,
-        sourceLayer: { code: "S139", name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647 (Overnight Drift)", kind: "time" },
-        confirmations: [
-          {
-            label: `\u0631\u0633\u06CC\u062F\u0646\u0650 \u0633\u0627\u0639\u062A \u0628\u0647 ${toIranHM(22)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 (\u0648\u0631\u0648\u062F\u0650 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647)`,
-            met: false,
-            detail: `\u0628\u0627 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0633\u0627\u0639\u062A\u0650 ${toIranHM(22)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`
-          }
-        ],
-        indicators: ovInd,
-        timeGate: ovGate
-      };
-    }
-  }
-  if (spec.id === "XAUUSD" && typeof utcHour === "number" && typeof utcDay === "number") {
-    const moFilt = buildMondayFilter(open, high, low, close);
-    const mo = computeMonday(utcDay, utcHour, moFilt);
-    const moInd = [
-      {
-        name: "\u0631\u0648\u0632\u0650 \u0647\u0641\u062A\u0647 (\u0644\u0627\u06CC\u0647\u0654 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647)",
-        value: utcDay === 1 ? "\u062F\u0648\u0634\u0646\u0628\u0647 \u2713" : "\u063A\u06CC\u0631\u0650 \u062F\u0648\u0634\u0646\u0628\u0647",
-        status: mo.state === "ENTRY" ? "ok" : mo.state === "APPROACHING" ? "warn" : "neutral"
-      },
-      {
-        name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 (\u062F\u0648\u0634\u0646\u0628\u0647 ${toIranRange([...MONDAY_ENTRY_HOURS])} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u2014 S140\u207A\u207A/M5)`,
-        value: mo.state === "ENTRY" ? "\u0628\u0627\u0632 \u2713" : mo.state === "APPROACHING" ? "\u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646" : "\u0628\u0633\u062A\u0647",
-        status: mo.state === "ENTRY" ? "ok" : mo.state === "APPROACHING" ? "warn" : "neutral"
-      },
-      ...indicators
-    ];
-    const moGate = {
-      layerCode: "S140\u207A\u207A",
-      label: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647\u0654 \u0637\u0644\u0627 (Monday \u2014 M5)",
-      entryHoursUtc: [...MONDAY_ENTRY_HOURS],
-      endHourUtc: Math.max(...MONDAY_ENTRY_HOURS) + 1,
-      activeDaysUtc: [MONDAY_UTC_DAY],
-      windowOpen: mo.state === "ENTRY"
-    };
-    const moConfirm = Array.isArray(high) && Array.isArray(low) ? confirmScore(close, high, low) : null;
-    if (moConfirm) {
-      moInd.push({
-        name: `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u0645\u062A\u06CC\u0627\u0632\u06CC\u0650 Monday (S163 \u2014 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u06CC)`,
-        value: `${moConfirm.score}/${moConfirm.maxScore} ${moConfirm.score >= CONFIRM_MIN_SCORE ? "(\u0647\u0645\u200C\u0633\u0648)" : "(\u062E\u0646\u062B\u06CC)"}`,
-        status: "neutral"
-      });
-    }
-    let moAsym = NaN;
-    if (mo.state === "ENTRY" && Array.isArray(high) && Array.isArray(low) && Array.isArray(close)) {
-      moAsym = inverseViewAsymRecent(close, high, low, MONDAY_INVVIEW_LB);
-    }
-    const moAsymTrap = mo.state === "ENTRY" && Number.isFinite(moAsym) && moAsym > MONDAY_INVVIEW_THR;
-    if (Number.isFinite(moAsym)) {
-      moInd.push({
-        name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u062F\u06CC\u062F\u0650 \u0645\u0639\u06A9\u0648\u0633 (S212 \u2014 \u0639\u062F\u0645\u200C\u062A\u0642\u0627\u0631\u0646\u0650 \u0627\u0635\u0644\u0627\u062D\u060C \u0641\u0635\u0644\u0650 \u06F9 Brooks)`,
-        value: `asym=${moAsym.toFixed(2)} (\u0622\u0633\u062A\u0627\u0646\u0647 ${MONDAY_INVVIEW_THR}) ${moAsymTrap ? "\u21D2 \u062A\u0644\u0647/\u0631\u062F" : "\u21D2 \u0633\u0627\u0644\u0645"}`,
-        status: moAsymTrap ? "bad" : "ok"
-      });
-    }
-    if (moAsymTrap) {
-      return {
-        state: "NEUTRAL",
-        regime: reg,
-        headline: "\u062E\u0646\u062B\u06CC \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0648\u0634\u0646\u0628\u0647 \u0628\u0627\u0632 \u0627\u0633\u062A \u0627\u0645\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \xAB\u062F\u06CC\u062F\u0650 \u0645\u0639\u06A9\u0648\u0633\xBB \u0648\u0631\u0648\u062F \u0631\u0627 \u0631\u062F \u06A9\u0631\u062F",
-        reason: `\u067E\u0646\u062C\u0631\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 (S140\u207A\u207A) \u0628\u0627\u0632 \u0627\u0633\u062A\u060C \u0627\u0645\u0627 \u0637\u0628\u0642\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \xAB\u062F\u06CC\u062F\u0650 \u0645\u0639\u06A9\u0648\u0633\xBB (Al Brooks \u0641\u0635\u0644\u0650 \u06F9): \u0627\u0635\u0644\u0627\u062D\u0650 \u0627\u062E\u06CC\u0631\u0650 \u0642\u06CC\u0645\u062A \u062F\u0631 \u0646\u06CC\u0645\u0647\u0654 \u062F\u0648\u0645\u0634 \u0628\u0647\u200C\u062C\u0627\u06CC \u06A9\u0646\u062F \u0634\u062F\u0646\u060C \u0634\u062A\u0627\u0628\u0650 \u0646\u0632\u0648\u0644\u06CC \u06AF\u0631\u0641\u062A\u0647 (\u062F\u0631 \u0645\u0646\u0638\u0631\u0650 \u0645\u0639\u06A9\u0648\u0633 \u06CC\u06A9 \u0634\u06A9\u0633\u062A/\u0627\u062F\u0627\u0645\u0647\u0654 \u0641\u0631\u0648\u0634\u0650 \u0634\u062A\u0627\u0628\u0627\u0646 \u062F\u06CC\u062F\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F\u061B \u0634\u0627\u062E\u0635\u0650 \u0639\u062F\u0645\u200C\u062A\u0642\u0627\u0631\u0646 asym=${moAsym.toFixed(2)} > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${MONDAY_INVVIEW_THR}). \u0627\u06CC\u0646 \u0646\u0634\u0627\u0646\u0647\u0654 \u06CC\u06A9 \u0633\u062A\u0627\u067E\u0650 \u062A\u0644\u0647 \u0627\u0633\u062A\u061B \u0628\u06A9\u200C\u062A\u0633\u062A (S212d \u0631\u0648\u06CC M5) \u0646\u0634\u0627\u0646 \u062F\u0627\u062F \u0631\u062F \u06A9\u0631\u062F\u0646\u0650 \u0686\u0646\u06CC\u0646 \u0645\u0648\u0642\u0639\u06CC\u062A\u200C\u0647\u0627\u06CC\u06CC WR \u0631\u0627 \u0627\u0632 \u06F4\u06F4\u066A \u0628\u0647 \u06F4\u06F6.\u06F2\u066A \u0648 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0631\u0627 +$2,566 \u0627\u0641\u0632\u0627\u06CC\u0634 \u0645\u06CC\u200C\u062F\u0647\u062F. \u067E\u0633 \u0627\u06CC\u0646 \u0646\u0648\u0628\u062A \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`,
-        sourceLayer: { code: "S212", name: "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0639\u062F\u0645\u200C\u062A\u0642\u0627\u0631\u0646\u0650 \u062F\u06CC\u062F\u0650 \u0645\u0639\u06A9\u0648\u0633 (Brooks \u0641\u0635\u0644\u0650 \u06F9) \u0631\u0648\u06CC S140\u207A\u207A", kind: "time" },
-        indicators: moInd,
-        timeGate: moGate
-      };
-    }
-    if (mo.state === "ENTRY") {
-      const entry = a.price;
-      const sl = entry - mo.slDist;
-      const tp = entry + mo.tpDist;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, mo.slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647\u0654 \u0637\u0644\u0627 (\u0639\u0635\u0631\u0650 \u062F\u0648\u0634\u0646\u0628\u0647)",
-        reason: mo.reason,
-        sourceLayer: {
-          code: "S140\u207A\u207A",
-          name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 (Monday Drift \u2014 M5, \u062F\u0648\u0634\u0646\u0628\u0647 \u06F2\u06F1:\u06F3\u06F0\u2013\u06F2\u06F3:\u06F3\u06F0 \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646)",
-          kind: "time",
-          filters: moConfirm ? [`\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u0645\u062A\u06CC\u0627\u0632\u06CC\u0650 \u0645\u062A\u0639\u0627\u0645\u062F (S163): ${moConfirm.score}/${moConfirm.maxScore}`] : void 0,
-          manage: {
-            style: "let-run-trail",
-            beTriggerR: 1,
-            trailDistPrice: MONDAY_SL_PIP * 0.1,
-            maxHoldBars: MONDAY_MAX_HOLD,
-            note: `\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 \u0631\u0648\u0632\xD7\u0633\u0627\u0639\u062A (M5). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646\u061B \u0633\u067E\u0633 trailing \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 ${(MONDAY_SL_PIP * 0.1).toFixed(1)}$ \u062A\u0627 \u0633\u0642\u0641\u0650 ${MONDAY_MAX_HOLD} \u06A9\u0646\u062F\u0644\u0650 M5 (\u06F2\u06F4 \u0633\u0627\u0639\u062A).`
-          }
-        },
-        direction: "LONG",
-        entry,
-        tp,
-        sl,
-        rr: `SL \u062B\u0627\u0628\u062A ${MONDAY_SL_PIP}pip (${mo.slDist.toFixed(2)}$) / TP ${MONDAY_TP_PIP}pip (${mo.tpDist.toFixed(2)}$) \u2014 \u0646\u0633\u0628\u062A\u0650 R:R \u2248 \u06F1:${(MONDAY_TP_PIP / MONDAY_SL_PIP).toFixed(1)} (\u0628\u0627\u0632\u062A\u0646\u0638\u06CC\u0645\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 M5)`,
-        probability: 55,
-        sizing: {
-          lotMultiplier: 1,
-          label: "Monday Week-Start Drift (\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 S140\u207A\u207A \u2014 M5)",
-          note: `\u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u0650 S140\u207A\u207A (\u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 \u0631\u0648\u0632\xD7\u0633\u0627\u0639\u062A \u0631\u0648\u06CC M5 \u2014 \u0628\u062F\u0648\u0646\u0650 \u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631). \u062F\u0648\u0634\u0646\u0628\u0647 \u0633\u0627\u0639\u062A\u0650 \u06F2\u06F1:\u06F3\u06F0/\u06F2\u06F2:\u06F3\u06F0/\u06F2\u06F3:\u06F3\u06F0 \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646\u060C \u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F. \u0627\u0631\u062A\u0642\u0627 \u0627\u0632 M15 \u0628\u0647 M5 \u0628\u0627 TP/SL \u0628\u0627\u0632\u062A\u0646\u0638\u06CC\u0645\u200C\u0634\u062F\u0647 \u0648 \u062D\u0630\u0641\u0650 \u0633\u0627\u0639\u062A\u0650 \u0632\u06CC\u0627\u0646\u200C\u062F\u0647\u0650 \u06F0\u06F0:\u06F3\u06F0 \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u21D2 WR \u06F4\u06F4.\u06F5\u066A\u060C \u0627\u062B\u0631\u0650 \u0627\u0641\u0632\u0627\u06CC\u0634\u06CC +$1,553 (\u062A\u0623\u06CC\u06CC\u062F\u0634\u062F\u0647 \u0631\u0648\u06CC M15).`,
-          lots: lots ?? void 0,
-          riskDollars: rd,
-          capital,
-          riskPct,
-          capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${mo.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-        },
-        tpPlan: {
-          multiplier: MONDAY_TP_PIP,
-          note: `TP ${MONDAY_TP_PIP}pip (\u0628\u0627\u0632\u062A\u0646\u0638\u06CC\u0645\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 M5). \u0686\u0648\u0646 ATR \u0645\u06CC\u0627\u0646\u0647\u0654 M5 \u0646\u0635\u0641\u0650 M15 \u0627\u0633\u062A\u060C TP \u0646\u0632\u062F\u06CC\u06A9\u200C\u062A\u0631\u0650 \u06F2\u06F0\u06F0pip \u0631\u0648\u06CC M5 \u0633\u0631\u06CC\u0639\u200C\u062A\u0631 \u067E\u064F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F \u0648 WR \u0631\u0627 \u0627\u0632 \u0632\u06CC\u0631\u0650 \u06A9\u0641 \u0628\u0647 \u06F4\u06F4.\u06F5\u066A \u0645\u06CC\u200C\u0628\u064E\u0631\u064E\u062F. \u062A\u0627 ${MONDAY_MAX_HOLD} \u06A9\u0646\u062F\u0644\u0650 M5 (\u06F2\u06F4 \u0633\u0627\u0639\u062A) \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
-        },
-        slPlan: {
-          multiplier: MONDAY_SL_PIP,
-          note: `SL \u062B\u0627\u0628\u062A ${MONDAY_SL_PIP}pip (${mo.slDist.toFixed(2)}$). \u0627\u06AF\u0631 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F\u061B \u0627\u0645\u0627 \u0628\u0631\u062F\u0647\u0627\u06CC \u0648\u0627\u0642\u0639\u06CC \u0628\u0647\u200C\u0645\u0631\u0627\u062A\u0628 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631\u0646\u062F.`
-        },
-        indicators: moInd,
-        timeGate: moGate
-      };
-    }
-    if (mo.state === "APPROACHING") {
-      return {
-        state: "APPROACHING",
-        regime: reg,
-        headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 \u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646",
-        reason: mo.reason,
-        sourceLayer: { code: "S140\u207A\u207A", name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 (Monday Drift \u2014 M5, \u062F\u0648\u0634\u0646\u0628\u0647 \u06F2\u06F1:\u06F3\u06F0\u2013\u06F2\u06F3:\u06F3\u06F0 \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646)", kind: "time" },
-        confirmations: [
-          {
-            label: `\u0631\u0633\u06CC\u062F\u0646\u0650 \u0633\u0627\u0639\u062A \u0628\u0647 ${toIranHM(18)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u062F\u0631 \u0631\u0648\u0632\u0650 \u062F\u0648\u0634\u0646\u0628\u0647 (\u0648\u0631\u0648\u062F\u0650 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647)`,
-            met: false,
-            detail: `\u0628\u0627 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u062F\u0648\u0634\u0646\u0628\u0647 \u0633\u0627\u0639\u062A\u0650 ${toIranHM(18)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`
-          }
-        ],
-        indicators: moInd,
-        timeGate: moGate
-      };
-    }
-  }
-  if (spec.id === "XAUUSD" && typeof utcHour === "number" && Array.isArray(times) && times.length > 1) {
-    const tom = computeTurnOfMonth(times, utcHour);
-    const tomInd = [
-      {
-        name: "\u0631\u0648\u0632\u0650 \u0645\u0627\u0647 (\u0644\u0627\u06CC\u0647\u0654 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647)",
-        value: tom.isFirstTradingDay ? "\u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647 \u2713" : "\u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647",
-        status: tom.state === "ENTRY" ? "ok" : tom.state === "APPROACHING" ? "warn" : "neutral"
-      },
-      {
-        name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0648\u0644\u0650 \u0645\u0627\u0647 (\u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0627\u0647\u060C ${toIranRange([7, 12])} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646)`,
-        value: tom.state === "ENTRY" ? "\u0628\u0627\u0632 \u2713" : tom.state === "APPROACHING" ? "\u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646" : "\u0628\u0633\u062A\u0647",
-        status: tom.state === "ENTRY" ? "ok" : tom.state === "APPROACHING" ? "warn" : "neutral"
-      },
-      ...indicators
-    ];
-    const tomGate = {
-      layerCode: "S141",
-      label: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0648\u0644\u0650 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627 (Turn-of-Month)",
-      entryHoursUtc: [7, 8, 9, 10, 11, 12],
-      endHourUtc: 13,
-      dayOfMonthNote: "\u0641\u0642\u0637 \u062F\u0631 \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0647\u0631 \u0645\u0627\u0647 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A",
-      windowOpen: tom.state === "ENTRY"
-    };
-    const tomConfirm = Array.isArray(high) && Array.isArray(low) ? confirmScore(close, high, low) : null;
-    const tomConfirmed = !tomConfirm || tomConfirm.score >= CONFIRM_MIN_SCORE;
-    if (tomConfirm) {
-      tomInd.push({
-        name: `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u0645\u062A\u06CC\u0627\u0632\u06CC\u0650 Turn-of-Month (S163)`,
-        value: `${tomConfirm.score}/${tomConfirm.maxScore} ${tomConfirmed ? "\u2713 (\u06A9\u0627\u0641\u06CC)" : "\u2717 (\u0646\u0627\u06A9\u0627\u0641\u06CC)"}`,
-        status: tomConfirmed ? "ok" : "warn"
-      });
-    }
-    if (tom.state === "ENTRY" && !tomConfirmed) {
-      return {
-        state: "APPROACHING",
-        regime: reg,
-        headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647 \u0628\u0627\u0632 \u0627\u0633\u062A \u0627\u0645\u0627 \u062A\u0623\u06CC\u06CC\u062F\u0647\u0627 \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A",
-        reason: `${tom.reason}
 
-\u26A0\uFE0F \u0641\u06CC\u0644\u062A\u0631\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0645\u062A\u0639\u0627\u0645\u062F (S163): \u0627\u0645\u062A\u06CC\u0627\u0632\u0650 \u062A\u0623\u06CC\u06CC\u062F ${tomConfirm.score} \u0627\u0632 ${tomConfirm.maxScore} \u0627\u0633\u062A \u0648 \u0627\u0632 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${CONFIRM_MIN_SCORE} \u06A9\u0645\u062A\u0631 \u0627\u0633\u062A. \u0637\u0628\u0642\u0650 \u0646\u0634\u0633\u062A\u0650 S163 (\u067E\u0627\u0633\u062E\u0650 User Note)\u060C \u0648\u0631\u0648\u062F \u062A\u0646\u0647\u0627 \u0648\u0642\u062A\u06CC \u0631\u062E \u0645\u06CC\u200C\u062F\u0647\u062F \u06A9\u0647 \u0634\u0627\u062E\u0635\u200C\u0647\u0627\u06CC \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0631\u0648\u0646\u062F/\u0645\u0648\u0645\u0646\u062A\u0648\u0645/\u0646\u0648\u0633\u0627\u0646 \u0647\u0645\u200C\u0633\u0648 \u0634\u0648\u0646\u062F \u2014 \u0627\u06CC\u0646 \u0641\u06CC\u0644\u062A\u0631 WR \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0631\u0627 \u0628\u0627\u0644\u0627\u06CC \u06F4\u06F0\u066A \u0628\u0631\u062F.`,
-        sourceLayer: {
-          code: "S141",
-          name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647 (Turn-of-Month)",
-          kind: "time",
-          filters: [`\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u0645\u062A\u06CC\u0627\u0632\u06CC\u0650 \u0645\u062A\u0639\u0627\u0645\u062F (S163): ${tomConfirm.score}/${tomConfirm.maxScore} \u2014 \u0647\u0646\u0648\u0632 \u0646\u0627\u06A9\u0627\u0641\u06CC`]
-        },
-        confirmations: tomConfirm.breakdown.map((b) => ({ label: b.label, met: b.met, detail: `\u0645\u0642\u062F\u0627\u0631: ${b.value}` })),
-        indicators: tomInd,
-        timeGate: tomGate
-      };
-    }
-    if (tom.state === "ENTRY") {
-      const entry = a.price;
-      const sl = entry - tom.slDist;
-      const tp = entry + tom.tpDist;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, tom.slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627 (\u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647)",
-        reason: tom.reason,
-        sourceLayer: {
-          code: "S141",
-          name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647 (Turn-of-Month)",
-          kind: "time",
-          filters: tomConfirm ? [`\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u0645\u062A\u06CC\u0627\u0632\u06CC\u0650 \u0645\u062A\u0639\u0627\u0645\u062F (S163): ${tomConfirm.score}/${tomConfirm.maxScore}`] : void 0,
-          manage: {
-            style: "let-run-trail",
-            beTriggerR: 1,
-            trailDistPrice: TOM_SL_PIP * 0.1,
-            maxHoldBars: TOM_MAX_HOLD,
-            note: `\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC \u0628\u0627 R:R \u0628\u0633\u06CC\u0627\u0631 \u0628\u0627\u0644\u0627 (\u06F1:\u06F7). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646\u061B \u0633\u067E\u0633 trailing \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 ${(TOM_SL_PIP * 0.1).toFixed(1)}$ \u062A\u0627 \u0633\u0642\u0641\u0650 ${TOM_MAX_HOLD} \u06A9\u0646\u062F\u0644 \u2014 \u0628\u06AF\u0630\u0627\u0631 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0633\u0634\u0646\u0650 \u0644\u0646\u062F\u0646 \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F.`
-          }
-        },
-        direction: "LONG",
-        entry,
-        tp,
-        sl,
-        rr: `SL \u062B\u0627\u0628\u062A ${TOM_SL_PIP}pip (${tom.slDist.toFixed(2)}$) / TP ${TOM_TP_PIP}pip (${tom.tpDist.toFixed(2)}$) \u2014 \u0646\u0633\u0628\u062A\u0650 R:R \u2248 \u06F1:${(TOM_TP_PIP / TOM_SL_PIP).toFixed(1)} (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F)`,
-        probability: 57,
-        sizing: {
-          lotMultiplier: 1,
-          label: "Turn-of-the-Month Drift (\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 S141)",
-          note: `\u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u0650 S141 (\u06A9\u0634\u0641\u0650 \u0646\u0648\u060C \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 \u0631\u0648\u0632\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u0645\u0627\u0647 \xD7 \u0633\u0627\u0639\u062A \u2014 \u0628\u062F\u0648\u0646\u0650 \u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631). \u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F. \u0647\u0645\u0628\u0633\u062A\u06AF\u06CC\u0650 \u0631\u0648\u0632\u0627\u0646\u0647 +\u06F0.\u06F0\u06F9 \u0628\u0627 Overnight\u060C +\u06F0.\u06F0\u06F6 \u0628\u0627 Monday \u0648 +\u06F0.\u06F1\u06F3 \u0628\u0627 S67 (\u067E\u0627\u06CC\u06CC\u0646\u200C\u062A\u0631\u06CC\u0646 \u062F\u0631 \u067E\u0631\u0648\u0698\u0647) \u21D2 \u062C\u0631\u06CC\u0627\u0646\u0650 \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647 \u06A9\u0647 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0628\u0631\u062F.`,
-          lots: lots ?? void 0,
-          riskDollars: rd,
-          capital,
-          riskPct,
-          capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${tom.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-        },
-        tpPlan: {
-          multiplier: TOM_TP_PIP,
-          note: `TP \u062F\u0648\u0631\u0650 ${TOM_TP_PIP}pip. \u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647 \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u062F\u0631 \u0637\u0648\u0644\u0650 \u0633\u0634\u0646\u0650 \u0644\u0646\u062F\u0646 \u0627\u062F\u0627\u0645\u0647 \u062F\u0627\u0631\u062F\u061B TP \u062F\u0648\u0631 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u062F \u062D\u0631\u06A9\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F. \u062A\u0627 ${TOM_MAX_HOLD} \u06A9\u0646\u062F\u0644 (\u06F2\u06F4 \u0633\u0627\u0639\u062A) \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
-        },
-        slPlan: {
-          multiplier: TOM_SL_PIP,
-          note: `SL \u062B\u0627\u0628\u062A ${TOM_SL_PIP}pip (${tom.slDist.toFixed(2)}$). \u0627\u06AF\u0631 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0648\u0644\u0650 \u0645\u0627\u0647 \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F\u061B \u0627\u0645\u0627 \u0628\u0631\u062F\u0647\u0627\u06CC \u0648\u0627\u0642\u0639\u06CC \u0628\u0647\u200C\u0645\u0631\u0627\u062A\u0628 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631\u0646\u062F (R:R \u06F1:\u06F7).`
-        },
-        indicators: tomInd,
-        timeGate: tomGate
-      };
-    }
-    if (tom.state === "APPROACHING") {
-      return {
-        state: "APPROACHING",
-        regime: reg,
-        headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647 \u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646",
-        reason: tom.reason,
-        sourceLayer: { code: "S141", name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647 (Turn-of-Month)", kind: "time" },
-        confirmations: [
-          {
-            label: `\u0631\u0633\u06CC\u062F\u0646\u0650 \u0633\u0627\u0639\u062A \u0628\u0647 ${toIranHM(7)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u062F\u0631 \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647 (\u0648\u0631\u0648\u062F\u0650 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0648\u0644\u0650 \u0645\u0627\u0647)`,
-            met: false,
-            detail: `\u0628\u0627 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0633\u0627\u0639\u062A\u0650 ${toIranHM(7)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u062F\u0631 \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0627\u0647\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`
-          }
-        ],
-        indicators: tomInd,
-        timeGate: tomGate
-      };
-    }
-  }
-  if (spec.id === "XAUUSD" && typeof utcHour === "number" && Array.isArray(times) && times.length > 1) {
-    const eomFilt = buildEomFilter(high, low, close, a.ema200);
-    const eom = computeEndOfMonth(times, utcHour, eomFilt);
-    const eomInd = [
-      {
-        name: "\u0631\u0648\u0632\u0650 \u0645\u0627\u0647 (\u0644\u0627\u06CC\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647)",
-        value: eom.isEomWindow ? "\u06F7 \u0631\u0648\u0632\u0650 \u067E\u0627\u06CC\u0627\u0646\u06CC\u0650 \u0645\u0627\u0647 \u2713" : "\u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647",
-        status: eom.state === "ENTRY" ? "ok" : eom.state === "APPROACHING" ? "warn" : "neutral"
-      },
-      {
-        name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (\u0633\u0634\u0646\u0650 \u0646\u06CC\u0648\u06CC\u0648\u0631\u06A9\u060C ${toIranRange([20, 23])} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646)`,
-        value: eom.state === "ENTRY" ? "\u0628\u0627\u0632 \u2713" : eom.state === "APPROACHING" ? "\u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646" : "\u0628\u0633\u062A\u0647",
-        status: eom.state === "ENTRY" ? "ok" : eom.state === "APPROACHING" ? "warn" : "neutral"
-      },
-      ...indicators
-    ];
-    const eomGate = {
-      layerCode: "S310",
-      label: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627 (End-of-Month)",
-      entryHoursUtc: [20, 21, 22, 23],
-      endHourUtc: 24,
-      dayOfMonthNote: "\u0641\u0642\u0637 \u062F\u0631 \u062D\u0648\u0627\u0644\u06CC\u0650 \u06F7 \u0631\u0648\u0632\u0650 \u067E\u0627\u06CC\u0627\u0646\u06CC\u0650 \u0647\u0631 \u0645\u0627\u0647 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A",
-      windowOpen: eom.state === "ENTRY"
-    };
-    if (eom.state === "ENTRY") {
-      const entry = a.price;
-      const sl = entry - eom.slDist;
-      const tp = entry + eom.tpDist;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, eom.slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062F\u0631\u0627\u06CC\u0648\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627 (S310)",
-        reason: eom.reason,
-        sourceLayer: {
-          code: "S310",
-          name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (End-of-Month) \u2014 \u0627\u062D\u06CC\u0627\u06CC S144",
-          kind: "time",
-          filters: ["ATR \u0632\u0646\u062F\u0647 (\u2265 \u0645\u06CC\u0627\u0646\u0647)", "\u06A9\u0646\u062F\u0644\u0650 \u0642\u0648\u06CC (close \u062F\u0631 \u0646\u06CC\u0645\u0647\u0654 \u0628\u0627\u0644\u0627)", "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646 (\u0628\u0627\u0644\u0627\u06CC EMA200)"]
-        },
-        direction: "LONG",
-        entry,
-        sl,
-        tp,
-        lots,
-        rr: `SL \u062B\u0627\u0628\u062A ${EOM_SL_PIP}pip (${eom.slDist.toFixed(2)}$) / TP ${EOM_TP_PIP}pip (${eom.tpDist.toFixed(2)}$) \u2014 \u0646\u0633\u0628\u062A\u0650 R:R \u2248 \u06F1:${(EOM_TP_PIP / EOM_SL_PIP).toFixed(1)}`,
-        risk: {
-          riskPct: effRiskPct,
-          riskDollars: rd,
-          lots,
-          note: `\u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${eom.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F. \u0627\u06CC\u0646 \u0644\u0628\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631 \xD7 \u06A9\u06CC\u0641\u06CC\u062A \u0627\u0633\u062A (RQS+ \u06F8\u06F7.\u06F3). \u062D\u062F\u0627\u06A9\u062B\u0631 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC ${EOM_MAX_HOLD} \u06A9\u0646\u062F\u0644\u0650 M15 (~\u06F8 \u0633\u0627\u0639\u062A).`
-        },
-        indicators: eomInd,
-        timeGate: eomGate
-      };
-    }
-    if (eom.state === "APPROACHING") {
-      return {
-        state: "APPROACHING",
-        regime: reg,
-        headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647",
-        reason: eom.reason,
-        sourceLayer: { code: "S310", name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (End-of-Month)", kind: "time" },
-        confirmations: [
-          { label: "\u0646\u0648\u0633\u0627\u0646\u0650 \u0632\u0646\u062F\u0647 (ATR \u0628\u0627\u0644\u0627\u06CC \u0645\u06CC\u0627\u0646\u0647)", met: !!eomFilt?.atrLive, detail: "\u0636\u062F\u0650 \u0631\u0646\u062C\u0650 \u0645\u0631\u062F\u0647" },
-          { label: "\u06A9\u0646\u062F\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u0642\u0648\u06CC (close \u062F\u0631 \u0646\u06CC\u0645\u0647\u0654 \u0628\u0627\u0644\u0627)", met: !!eomFilt?.closeStrong, detail: "close_pos \u2265 \u06F0.\u06F5" },
-          { label: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646 (\u0628\u0627\u0644\u0627\u06CC EMA200)", met: !!eomFilt?.aboveEma, detail: "close > EMA200" }
-        ],
-        indicators: eomInd,
-        timeGate: eomGate
-      };
-    }
-  }
-  if (spec.id === "XAUUSD" && reg.activeStream !== "bull") {
-    const sm = computeShortMA(close, DEFAULT_SHORT_MA);
-    const pip = 0.1;
-    const slDist = DEFAULT_SHORT_MA.slPip * pip;
-    const trailDist = DEFAULT_SHORT_MA.trailPip * pip;
-    const beDist = DEFAULT_SHORT_MA.bePip * pip;
-    const shortInd = [
-      {
-        name: "\u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 MA (EMA50/EMA100/SMA200)",
-        value: isFinite(sm.mid) ? sm.mid.toFixed(2) + "$" : "\u2014",
-        status: sm.active ? "ok" : sm.approaching ? "warn" : "neutral"
-      },
-      {
-        name: "\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 MA (EMA50<EMA100<SMA200)",
-        value: sm.dnStack ? "\u0628\u0644\u0647 \u2713" : "\u062E\u06CC\u0631",
-        status: sm.dnStack ? "ok" : "neutral"
-      },
-      {
-        name: "\u0641\u0627\u0635\u0644\u0647\u0654 \u0642\u06CC\u0645\u062A \u0627\u0632 \u0645\u06CC\u0627\u0646\u0647",
-        value: sm.distPct.toFixed(2) + "%",
-        status: sm.distPct < 0 ? "ok" : "neutral"
-      },
-      ...indicators
-    ];
-    if (sm.active) {
-      const entry = a.price;
-      const sl = entry + slDist;
-      const tpNominal = entry - DEFAULT_SHORT_MA.tpPip * pip;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      const qualNote = sm.dnStack ? "\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 \u06A9\u0627\u0645\u0644\u0627\u064B \u0646\u0632\u0648\u0644\u06CC \u0627\u0633\u062A (EMA50<EMA100<SMA200) \u2014 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0628\u0627\u06A9\u06CC\u0641\u06CC\u062A." : "\u0647\u0634\u062F\u0627\u0631: \u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 \u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644\u0627\u064B \u0646\u0632\u0648\u0644\u06CC \u0646\u06CC\u0633\u062A\u061B \u062D\u062C\u0645 \u0631\u0627 \u0645\u062D\u0627\u0641\u0638\u0647\u200C\u06A9\u0627\u0631\u0627\u0646\u0647 \u0628\u06AF\u06CC\u0631\u06CC\u062F.";
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0648\u0631\u0648\u062F \u0641\u0631\u0648\u0634 (SHORT) \u2014 \u0642\u06CC\u0645\u062A \u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 \u0631\u0627 \u0627\u0632 \u0628\u0627\u0644\u0627 \u0634\u06A9\u0633\u062A",
-        sourceLayer: {
-          code: "SHORT-MA",
-          name: "\u0647\u0645\u200C\u06AF\u0631\u0627\u06CC\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (SHORT-MA-Confluence)",
-          kind: "ma-confluence",
-          manage: {
-            style: "let-run-trail",
-            beTriggerR: 0.086,
-            // ~۶pip روی SL۷۰pip
-            trailDistPrice: DEFAULT_SHORT_MA.trailPip * 0.1,
-            maxHoldBars: 48,
-            note: `\u062A\u0646\u0647\u0627 \u0644\u0628\u0647\u0654 SHORT\u0650 \u0627\u062B\u0628\u0627\u062A\u200C\u0634\u062F\u0647\u0654 \u067E\u0631\u0648\u0698\u0647 (\u062E\u0631\u0648\u062C\u0650 \u0628\u0627\u0632\u0637\u0631\u0627\u062D\u06CC\u0650 s118 \xAB\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F\xBB): \u067E\u0633 \u0627\u0632 \u06F6pip (\u06F0.\u06F6$) \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 \u06F6pip trail \u06A9\u0646 \u0648 \u062A\u0627 \u06F4\u06F8 \u06A9\u0646\u062F\u0644 \u0628\u06AF\u0630\u0627\u0631 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u062F\u0648\u062F \u2014 \u0641\u0642\u0637 \u0628\u0627 \u0628\u0631\u062E\u0648\u0631\u062F\u0650 trailing \u06CC\u0627 \u0633\u0642\u0641\u0650 \u06F4\u06F8 \u06A9\u0646\u062F\u0644 \u062E\u0627\u0631\u062C \u0634\u0648. \u0627\u06CC\u0646 \u06A9\u0644\u06CC\u062F\u0650 \u0631\u06A9\u0648\u0631\u062F\u0650 SHORT (+$\u06F3\u06F4\u066C\u06F5\u06F4\u06F2) \u0627\u0633\u062A.`
-          }
-        },
-        reason: `${sm.reason} \u0627\u06CC\u0646 \u0647\u0645\u0627\u0646 \u0627\u0644\u06AF\u0648\u06CC\u06CC \u0627\u0633\u062A \u06A9\u0647 \xAB\u062E\u0637\u0650 \u0686\u0627\u0631\u062A\u060C \u062E\u0637\u0648\u0637\u0650 MA \u0631\u0627 \u0627\u0632 \u0628\u0627\u0644\u0627 \u0642\u0637\u0639 \u0645\u06CC\u200C\u06A9\u0646\u062F\xBB \u2014 \u0634\u062A\u0627\u0628\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A. ${qualNote} \u0637\u0628\u0642\u0650 \u06A9\u0634\u0641\u0650 MFE (s117)\u060C \u0628\u0631\u062F\u0647\u0627\u06CC \u0628\u0632\u0631\u06AF\u0650 \u0646\u0632\u0648\u0644\u06CC \u0631\u0627 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0642\u0637\u0639 \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645: \u067E\u0633 \u0627\u0632 \u06F6 \u067E\u06CC\u067E \u0633\u0648\u062F\u060C \u062D\u062F \u0636\u0631\u0631 \u0628\u0647 \u0633\u0631\u0628\u0647\u200C\u0633\u0631 \u0645\u06CC\u200C\u0622\u06CC\u062F \u0648 \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 \u06F6 \u067E\u06CC\u067E \u0633\u0648\u062F \u0631\u0627 \u062F\u0646\u0628\u0627\u0644 \u0645\u06CC\u200C\u06A9\u0646\u062F\u060C \u0627\u0645\u0627 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u06CC\u0645 \u0645\u0639\u0627\u0645\u0644\u0647 \u062A\u0627 \u06F4\u06F8 \u06A9\u0646\u062F\u0644 \u0628\u062F\u0648\u062F (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F). \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 \u0634\u0645\u0627\u0631\u0647\u0654 \u06F1\u060C \u0647\u062F\u0641 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u0628\u06CC\u0634\u062A\u0631 \u0627\u0633\u062A \u0646\u0647 \u0648\u06CC\u0646\u200C\u0631\u06CC\u062A\u0650 \u0628\u0627\u0644\u0627 (\u0627\u06CC\u0646 \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC WR \u067E\u0627\u06CC\u06CC\u0646 \u0627\u0645\u0627 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u0628\u0627\u0644\u0627 \u062F\u0627\u0631\u062F \u2014 \u0633\u0647\u0645\u0650 +\u06F3\u06F4\u066C\u06F5\u06F4\u06F2$).`,
-        direction: "SHORT",
-        entry,
-        tp: tpNominal,
-        sl,
-        rr: `SL \u062B\u0627\u0628\u062A \u06F7\u06F0pip (${slDist.toFixed(2)}$) + \u062E\u0631\u0648\u062C\u0650 \u067E\u0648\u06CC\u0627: BE=\u06F6pip\u060C trailing=\u06F6pip\u060C \u062D\u062F\u0627\u06A9\u062B\u0631 \u06F4\u06F8 \u06A9\u0646\u062F\u0644 (TP \u0633\u0642\u0641\u0650 \u06F8\u06F0\u06F0pip)`,
-        probability: sm.dnStack ? 62 : 55,
-        sizing: {
-          lotMultiplier: 1,
-          label: sm.dnStack ? "\u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0628\u0627\u0644\u0627 (\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0627\u0645\u0644)" : "\u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0645\u062A\u0648\u0633\u0637",
-          note: `\u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u0650 SHORT-MA-Confluence (\u062E\u0631\u0648\u062C\u0650 \u0628\u0627\u0632\u0637\u0631\u0627\u062D\u06CC\u200C\u0634\u062F\u0647\u0654 s118). \u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u060C \u0627\u0633\u067E\u0631\u062F\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u06F3.\u06F3pip \u0644\u062D\u0627\u0638 \u0634\u062F\u0647. \u0647\u0645\u0628\u0633\u062A\u06AF\u06CC\u0650 \u0631\u0648\u0632\u0627\u0646\u0647 \u0628\u0627 \u062C\u0631\u06CC\u0627\u0646\u0650 long = +0.16 \u21D2 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0645\u06A9\u0645\u0644\u0650 \u0633\u0628\u062F\u0650 long \u0627\u0633\u062A \u0648 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0627\u0641\u0632\u0627\u06CC\u0634 \u0645\u06CC\u200C\u062F\u0647\u062F (\u062A\u0646\u0647\u0627 \u0644\u0628\u0647\u0654 SHORT\u0650 \u0627\u062B\u0628\u0627\u062A\u200C\u0634\u062F\u0647\u0654 \u067E\u0631\u0648\u0698\u0647\u060C \u0633\u0647\u0645\u0650 +\u06F3\u06F4\u066C\u06F5\u06F4\u06F2$).`,
-          lots: lots ?? void 0,
-          riskDollars: rd,
-          capital,
-          riskPct,
-          capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-        },
-        tpPlan: {
-          multiplier: DEFAULT_SHORT_MA.tpPip,
-          note: `\u0627\u06CC\u0646 \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC TP\u0650 \u062B\u0627\u0628\u062A \u0646\u062F\u0627\u0631\u062F\u061B \u0639\u062F\u062F\u0650 \u06F8\u06F0\u06F0pip \u0641\u0642\u0637 \xAB\u0633\u0642\u0641\u0650 \u0627\u06CC\u0645\u0646\u06CC\xBB \u0627\u0633\u062A. \u062E\u0631\u0648\u062C\u0650 \u0627\u0635\u0644\u06CC \u0628\u0627 trailing \u0648 max_hold \u0627\u0646\u062C\u0627\u0645 \u0645\u06CC\u200C\u0634\u0648\u062F: \u0633\u0648\u062F \u0631\u0627 \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 \u06F6pip \u062F\u0646\u0628\u0627\u0644 \u06A9\u0646\u06CC\u062F \u0648 \u0627\u062C\u0627\u0632\u0647 \u062F\u0647\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647 \u062A\u0627 \u06F4\u06F8 \u06A9\u0646\u062F\u0644 \u0628\u062F\u0648\u062F. \u0637\u0628\u0642\u0650 \u06A9\u0634\u0641\u0650 MFE (s117) \xAB\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F\xBB \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0631\u0627 \u0628\u06CC\u0634\u06CC\u0646\u0647 \u0645\u06CC\u200C\u06A9\u0646\u062F.`
-        },
-        slPlan: {
-          multiplier: DEFAULT_SHORT_MA.slPip,
-          note: `SL \u062B\u0627\u0628\u062A \u06F7\u06F0pip (${slDist.toFixed(2)}$). \u067E\u0633 \u0627\u0632 \u0631\u0633\u06CC\u062F\u0646 \u0628\u0647 \u06F6pip \u0633\u0648\u062F\u060C \u0628\u0647 \u0633\u0631\u0628\u0647\u200C\u0633\u0631 \u0645\u0646\u062A\u0642\u0644 \u06A9\u0646\u06CC\u062F\u061B \u0633\u067E\u0633 \u0628\u0627 trailing \u06F6pip (${trailDist.toFixed(2)}$) \u0633\u0648\u062F \u0631\u0627 \u062F\u0646\u0628\u0627\u0644 \u06A9\u0646\u06CC\u062F \u0648 \u0628\u06AF\u0630\u0627\u0631\u06CC\u062F \u062D\u0631\u06A9\u062A\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0628\u0632\u0631\u06AF \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F (\u062A\u0627 \u06F4\u06F8 \u06A9\u0646\u062F\u0644). \u0627\u06CC\u0646 \xAB\u0627\u062C\u0627\u0632\u0647\u200C\u062F\u0627\u062F\u0646 \u0628\u0647 \u0628\u0631\u062F\u0647\u0627\xBB \u06A9\u0644\u06CC\u062F\u0650 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u0644\u0627\u06CC\u0647\u0654 SHORT \u0627\u0633\u062A (s118).`
-        },
-        indicators: shortInd
-      };
-    }
-    if (sm.approaching && reg.activeStream !== "bear") {
-      return {
-        state: "APPROACHING",
-        regime: reg,
-        headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0641\u0631\u0648\u0634 (SHORT) \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u0639\u0628\u0648\u0631 \u0627\u0632 \u0645\u06CC\u0627\u0646\u0647",
-        reason: sm.reason,
-        sourceLayer: { code: "SHORT-MA", name: "\u0647\u0645\u200C\u06AF\u0631\u0627\u06CC\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (SHORT-MA-Confluence)", kind: "ma-confluence" },
-        confirmations: [
-          {
-            label: "\u0642\u06CC\u0645\u062A \u0627\u0632 \u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 MA \u0631\u0648 \u0628\u0647 \u067E\u0627\u06CC\u06CC\u0646 \u0639\u0628\u0648\u0631 \u06A9\u0646\u062F",
-            met: false,
-            detail: `\u0627\u06A9\u0646\u0648\u0646 ${sm.distPct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u0645\u06CC\u0627\u0646\u0647 \u0627\u0633\u062A \u0648 \u0631\u0648 \u0628\u0647 \u06A9\u0627\u0647\u0634.`
-          },
-          {
-            label: "\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (EMA50<EMA100<SMA200)",
-            met: sm.dnStack,
-            detail: sm.dnStack ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A \u2713" : "\u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A \u2014 \u0628\u0631\u0627\u06CC \u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0628\u0627\u0644\u0627\u062A\u0631 \u0645\u0646\u062A\u0638\u0631 \u0628\u0645\u0627\u0646\u06CC\u062F."
-          }
-        ],
-        indicators: shortInd
-      };
-    }
-  }
-  if (spec.id === "XAUUSD" && high && high.length === close.length) {
-    const sq = computeSqueeze(close, high, DEFAULT_SQUEEZE, low);
-    const pip = 0.1;
-    const slDist = DEFAULT_SQUEEZE.slPip * pip;
-    const tpDist = DEFAULT_SQUEEZE.tpPip * pip;
-    const sqInd = [
-      {
-        name: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (\u0635\u062F\u06A9\u0650 \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F)",
-        value: isFinite(sq.bwPct) ? (sq.bwPct * 100).toFixed(0) + "%" : "\u2014",
-        status: sq.squeezed ? "ok" : "neutral"
-      },
-      {
-        name: "\u0633\u0642\u0641\u0650 \u0634\u06A9\u0633\u062A\u0650 \u0627\u062E\u06CC\u0631",
-        value: isFinite(sq.priorHigh) ? sq.priorHigh.toFixed(2) + "$" : "\u2014",
-        status: sq.active ? "ok" : "neutral"
-      },
-      {
-        name: "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA50>EMA200)",
-        value: sq.trendUp ? "\u0628\u0644\u0647 \u2713" : "\u062E\u06CC\u0631",
-        status: sq.trendUp ? "ok" : "neutral"
-      },
-      {
-        name: "\u0642\u062F\u0631\u062A\u0650 \u0634\u06A9\u0633\u062A (S136\u060C \u0622\u0633\u062A\u0627\u0646\u0647 \u2265 \u06F0.\u06F3\u06F0)",
-        value: isFinite(sq.brkStrength) ? sq.brkStrength.toFixed(2) : "\u2014",
-        status: sq.active ? "ok" : sq.strongBreak ? "neutral" : "warn"
-      },
-      {
-        name: "RSI\u06F1\u06F4 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F (S138\u060C \u0622\u0633\u062A\u0627\u0646\u0647 \u2264 \u06F7\u06F5)",
-        value: isFinite(sq.rsi14) ? sq.rsi14.toFixed(1) : "\u2014",
-        status: sq.notOverbought ? sq.active ? "ok" : "neutral" : "warn"
-      },
-      ...indicators
-    ];
-    if (sq.active) {
-      const entry = a.price;
-      const sl = entry - slDist;
-      const tp = entry + tpDist;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0635\u0639\u0648\u062F\u06CC \u067E\u0633 \u0627\u0632 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0646\u0648\u0633\u0627\u0646",
-        sourceLayer: {
-          code: "S132",
-          name: "\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u067E\u0633 \u0627\u0632 \u0641\u0634\u0631\u062F\u06AF\u06CC (Squeeze\u2192Breakout)",
-          kind: "squeeze",
-          filters: ["\u0642\u062F\u0631\u062A\u0650 \u0634\u06A9\u0633\u062A (S136) \u2265 \u06F0.\u06F3\u06F0", "RSI\u06F1\u06F4 (S138) \u2264 \u06F7\u06F5 (\u0646\u0647 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F)"],
-          manage: {
-            style: "let-run-trail",
-            beTriggerR: 1,
-            trailDistPrice: DEFAULT_SQUEEZE.slPip * 0.1,
-            maxHoldBars: 96,
-            note: `\u0627\u0646\u0641\u062C\u0627\u0631\u0647\u0627\u06CC \u067E\u0633 \u0627\u0632 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0632\u0631\u06AF\u200C\u0627\u0646\u062F (R:R \u06F1:\u06F3.\u06F3). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 ${(DEFAULT_SQUEEZE.slPip * 0.1).toFixed(1)}$ trail \u06A9\u0646 \u0648 \u062A\u0627 \u0633\u0642\u0641\u0650 \u06F9\u06F6 \u06A9\u0646\u062F\u0644 (\u06F2\u06F4 \u0633\u0627\u0639\u062A) \u0628\u06AF\u0630\u0627\u0631 \u062D\u0631\u06A9\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F \u2014 \u062E\u0631\u0648\u062C \u0641\u0642\u0637 \u0628\u0627 TP \u062F\u0648\u0631 \u06CC\u0627 trailing.`
-          }
-        },
-        reason: `${sq.reason} \u0627\u06CC\u0646 \xAB\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647\xBB \u0627\u0633\u062A: \u0628\u0627\u0632\u0627\u0631 \u0645\u062F\u062A\u06CC \u06A9\u0645\u200C\u0646\u0648\u0633\u0627\u0646 \u0648 \u0645\u062A\u0631\u0627\u06A9\u0645 \u0628\u0648\u062F \u0648 \u062D\u0627\u0644\u0627 \u0628\u0627 \u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC\u060C \u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0646\u0648\u0633\u0627\u0646 \u0622\u063A\u0627\u0632 \u0634\u062F\u0647. \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 \u0634\u0645\u0627\u0631\u0647\u0654 \u06F1 \u0647\u062F\u0641 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u0628\u06CC\u0634\u062A\u0631 \u0627\u0633\u062A\u060C \u0646\u0647 \u0648\u06CC\u0646\u200C\u0631\u06CC\u062A: TP \u062F\u0648\u0631 (\u06F3\u06F0\u06F0pip) \u0646\u06AF\u0647 \u062F\u0627\u0634\u062A\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u062A\u0627 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F (WR ~\u06F4\u06F0\u066A \u0627\u0645\u0627 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u0628\u0627\u0644\u0627\u061B \u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644 +\u06F2\u06F0\u066C\u06F4\u06F3\u06F5$\u060C \u062C\u0631\u06CC\u0627\u0646\u06CC \u0627\u0641\u0632\u0627\u06CC\u0634\u06CC \u0648 \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647).`,
-        direction: "LONG",
-        entry,
-        tp,
-        sl,
-        rr: `SL \u062B\u0627\u0628\u062A \u06F9\u06F0pip (${slDist.toFixed(2)}$) / TP \u06F3\u06F0\u06F0pip (${tpDist.toFixed(2)}$) \u2014 \u0646\u0633\u0628\u062A\u0650 R:R \u2248 \u06F1:\u06F3.\u06F3 (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F)`,
-        probability: 58,
-        sizing: {
-          lotMultiplier: 1,
-          label: "Squeeze\u2192Breakout (\u0641\u0634\u0631\u062F\u06AF\u06CC \u21D2 \u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0635\u0639\u0648\u062F\u06CC)",
-          note: `\u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u0650 S132 (\u06A9\u0634\u0641\u0650 \u0646\u0648). \u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u060C \u0627\u0633\u067E\u0631\u062F \u06F4pip \u0644\u062D\u0627\u0638 \u0634\u062F\u0647. \u0647\u0645\u0628\u0633\u062A\u06AF\u06CC\u0650 \u0631\u0648\u0632\u0627\u0646\u0647 \u0628\u0627 \u067E\u0631\u062A\u0641\u0648\u06CC\u0650 \u067E\u0627\u06CC\u0647 = +0.28 \u21D2 \u062C\u0631\u06CC\u0627\u0646\u0650 \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647 \u06A9\u0647 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0628\u0631\u062F.`,
-          lots: lots ?? void 0,
-          riskDollars: rd,
-          capital,
-          riskPct,
-          capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-        },
-        tpPlan: {
-          multiplier: DEFAULT_SQUEEZE.tpPip,
-          note: `TP \u062F\u0648\u0631\u0650 \u06F3\u06F0\u06F0pip. \u0627\u0646\u0641\u062C\u0627\u0631\u0647\u0627\u06CC \u067E\u0633 \u0627\u0632 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0632\u0631\u06AF\u200C\u0627\u0646\u062F\u061B TP \u062F\u0648\u0631 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u062F \u062D\u0631\u06A9\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F. \u062A\u0627 \u06F9\u06F6 \u06A9\u0646\u062F\u0644 (\u06F2\u06F4 \u0633\u0627\u0639\u062A) \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
-        },
-        slPlan: {
-          multiplier: DEFAULT_SQUEEZE.slPip,
-          note: `SL \u062B\u0627\u0628\u062A \u06F9\u06F0pip (${slDist.toFixed(2)}$) \u0632\u06CC\u0631\u0650 \u0646\u0642\u0637\u0647\u0654 \u0634\u06A9\u0633\u062A. \u0627\u06AF\u0631 \u0627\u0646\u0641\u062C\u0627\u0631 \u06A9\u0627\u0630\u0628 \u0628\u0648\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642)\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631\u0650 \u06A9\u0648\u0686\u06A9 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F\u061B \u0627\u0645\u0627 \u0628\u0631\u062F\u0647\u0627\u06CC \u0648\u0627\u0642\u0639\u06CC \u0628\u0647\u200C\u0645\u0631\u0627\u062A\u0628 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631\u0646\u062F (R:R \u06F1:\u06F3.\u06F3).`
-        },
-        indicators: sqInd
-      };
-    }
-    if (sq.approaching && reg.activeStream !== "bull") {
-      return {
-        state: "APPROACHING",
-        regime: reg,
-        headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647\u060C \u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u06A9\u0633\u062A",
-        reason: sq.reason,
-        sourceLayer: { code: "S132", name: "\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u067E\u0633 \u0627\u0632 \u0641\u0634\u0631\u062F\u06AF\u06CC (Squeeze\u2192Breakout)", kind: "squeeze" },
-        confirmations: [
-          {
-            label: `\u0642\u06CC\u0645\u062A \u0633\u0642\u0641\u0650 ${DEFAULT_SQUEEZE.breakoutLookback} \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 (${isFinite(sq.priorHigh) ? sq.priorHigh.toFixed(2) + "$" : "\u2014"}) \u0631\u0627 \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627 \u0628\u0634\u06A9\u0646\u062F`,
-            met: false,
-            detail: "\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641 \u0628\u0645\u0627\u0646\u06CC\u062F."
-          },
-          {
-            label: "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA50>EMA200)",
-            met: sq.trendUp,
-            detail: sq.trendUp ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A \u2713" : "\u0647\u0646\u0648\u0632 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A."
-          }
-        ],
-        indicators: sqInd
-      };
-    }
-  }
-  if (spec.id === "XAUUSD" && high && low && high.length === close.length && low.length === close.length) {
-    const pip = 0.1;
-    const bh = computeBrooksHigh2(high, low, close);
-    const bhInd = [
-      {
-        name: "\u0633\u0627\u062E\u062A\u0627\u0631\u0650 Brooks High-2 (\u0634\u0645\u0627\u0631\u0646\u062F\u0647\u0654 \u0627\u0635\u0644\u0627\u062D)",
-        value: `${bh.upCount}/\u06F2`,
-        status: bh.state === "ENTRY" ? "ok" : bh.upCount >= 1 ? "neutral" : "warn"
-      },
-      ...indicators
-    ];
-    if (bh.state === "ENTRY") {
-      const entry = a.price;
-      const sl = entry - bh.slDist;
-      const tp = entry + bh.tpDist;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, bh.slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0627\u0644\u06AF\u0648\u06CC \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 Al Brooks \xABHigh-2\xBB \u06A9\u0627\u0645\u0644 \u0634\u062F",
-        sourceLayer: {
-          code: "S168",
-          name: "Al Brooks High-2 (\u0633\u0627\u062E\u062A\u0627\u0631\u06CC/price-action)",
-          kind: "price-action",
-          filters: ["\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA\u06F2\u06F0>EMA\u06F5\u06F0", "\u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0645\u0633\u062A\u0642\u0644: \u062E\u0627\u0631\u062C \u0627\u0632 \u0647\u0645\u0647\u0654 \u067E\u0646\u062C\u0631\u0647\u200C\u0647\u0627\u06CC \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631 (\u0628\u062E\u0634\u0650 OUT)"],
-          manage: {
-            style: "structural-trail",
-            beTriggerR: 1,
-            trailDistPrice: BROOKS_SL_POINT * pip,
-            maxHoldBars: BROOKS_MAX_HOLD,
-            note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC (price-action): SL \u0627\u0648\u0644\u06CC\u0647 ${BROOKS_SL_POINT}pt \u0632\u06CC\u0631\u0650 \u067E\u0627\u06CC\u0647\u0654 \u0627\u0635\u0644\u0627\u062D. \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0647\u0631 \u067E\u0648\u0644\u0628\u06A9\u0650 \u062C\u062F\u06CC\u062F (higher-low) \u0628\u0627\u0644\u0627 \u0628\u06CC\u0627\u0648\u0631 \u2014 \u062A\u0627 \u0633\u0642\u0641\u0650 ${BROOKS_MAX_HOLD} \u06A9\u0646\u062F\u0644. \u0627\u06AF\u0631 \u0631\u0648\u0646\u062F \u0634\u06A9\u0633\u062A (EMA\u06F2\u06F0 \u0632\u06CC\u0631\u0650 EMA\u06F5\u06F0 \u0631\u0641\u062A) \u0641\u0648\u0631\u0627\u064B \u062E\u0627\u0631\u062C \u0634\u0648\u060C \u062D\u062A\u06CC \u0642\u0628\u0644 \u0627\u0632 TP.`
-          }
-        },
-        reason: bh.reason,
-        direction: "LONG",
-        entry,
-        tp,
-        sl,
-        rr: `SL \u062B\u0627\u0628\u062A ${BROOKS_SL_POINT}pt (${bh.slDist.toFixed(2)}$) / TP ${BROOKS_TP_POINT}pt (${bh.tpDist.toFixed(2)}$) \u2014 R:R \u2248 \u06F1:${(BROOKS_TP_POINT / BROOKS_SL_POINT).toFixed(1)}`,
-        probability: 55,
-        sizing: {
-          lotMultiplier: 1,
-          label: "Al Brooks High-2 (\u0633\u0627\u062E\u062A\u0627\u0631\u06CC)",
-          note: `\u0644\u0627\u06CC\u0647\u0654 \u0645\u0633\u062A\u0642\u0644\u0650 price-action (S168). \u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 OUT \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A +$\u06F1\u066C\u06F3\u06F5\u06F1\u060C \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647 \u0628\u0627 \u067E\u0631\u062A\u0641\u0648\u06CC\u0650 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631.`,
-          lots: lots ?? void 0,
-          riskDollars: rd,
-          capital,
-          riskPct,
-          capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL \u0628\u062E\u0648\u0631\u062F ~${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-        },
-        indicators: bhInd
-      };
-    }
-    const openArr = Array.isArray(open) && open.length === close.length ? open : close.map((_, i) => i > 0 ? close[i - 1] : close[0]);
-    const sos = computeSignsOfStrength(openArr, high, low, close);
-    const sosInd = [
-      {
-        name: "\u0646\u0645\u0631\u0647\u0654 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 Brooks (Signs of Strength)",
-        value: `${sos.score}/\u06F4`,
-        status: sos.state === "ENTRY" ? "ok" : sos.score >= 1 ? "neutral" : "warn"
-      },
-      ...indicators
-    ];
-    if (sos.state === "ENTRY") {
-      const entry = a.price;
-      const sl = entry - sos.slDist;
-      const tp = entry + sos.tpDist;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, sos.slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \xAB\u0646\u0634\u0627\u0646\u0647\u200C\u0647\u0627\u06CC \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F\xBB Al Brooks \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F",
-        sourceLayer: {
-          code: "S171",
-          name: "Al Brooks Signs of Strength (\u0631\u0648\u0646\u062F-\u0645\u062D\u0648\u0631)",
-          kind: "price-action",
-          filters: [`\u0646\u0645\u0631\u0647\u0654 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F \u2265 ${2} \u0627\u0632 \u06F4 \u0646\u0634\u0627\u0646\u0647`, "\u0644\u0627\u06CC\u0647\u0654 \u0645\u0633\u062A\u0642\u0644\u0650 \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647"],
-          manage: {
-            style: "let-run-trail",
-            beTriggerR: 1,
-            trailDistPrice: SOS_SL_POINT * pip,
-            maxHoldBars: SOS_MAX_HOLD,
-            note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F-\u062F\u0646\u0628\u0627\u0644\u200C\u06A9\u0646: SL \u0627\u0648\u0644\u06CC\u0647 ${SOS_SL_POINT}pt. \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646\u061B \u0633\u067E\u0633 trailing \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 ${(SOS_SL_POINT * pip).toFixed(1)}$ \u0648 \u062A\u0627 \u0633\u0642\u0641\u0650 ${SOS_MAX_HOLD} \u06A9\u0646\u062F\u0644 \u0628\u06AF\u0630\u0627\u0631 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC \u0628\u062F\u0648\u062F \u2014 \u0637\u0628\u0642\u0650 \u0641\u0635\u0644\u0650 \u06F1\u06F9 \u06A9\u062A\u0627\u0628\u0650 Brooks \u0628\u0631\u062F\u0647\u0627\u06CC \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC \u0628\u0632\u0631\u06AF\u200C\u0627\u0646\u062F.`
-          }
-        },
-        reason: sos.reason,
-        direction: "LONG",
-        entry,
-        tp,
-        sl,
-        rr: `SL \u062B\u0627\u0628\u062A ${SOS_SL_POINT}pt (${sos.slDist.toFixed(2)}$) / TP ${SOS_TP_POINT}pt (${sos.tpDist.toFixed(2)}$) \u2014 R:R \u2248 \u06F1:${(SOS_TP_POINT / SOS_SL_POINT).toFixed(1)}`,
-        probability: 54,
-        sizing: {
-          lotMultiplier: 1,
-          label: "Al Brooks Signs of Strength (\u0631\u0648\u0646\u062F-\u0645\u062D\u0648\u0631)",
-          note: `\u0644\u0627\u06CC\u0647\u0654 \u0645\u0633\u062A\u0642\u0644\u0650 price-action (S171). \u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647 \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A +$\u06F8\u066C\u06F1\u06F3\u06F0.`,
-          lots: lots ?? void 0,
-          riskDollars: rd,
-          capital,
-          riskPct,
-          capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL \u0628\u062E\u0648\u0631\u062F ~${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-        },
-        indicators: sosInd
-      };
-    }
-    const hi = Array.isArray(high) && high.length === close.length ? high : close;
-    const lo = Array.isArray(low) && low.length === close.length ? low : close;
-    const candles = close.map((cl, i) => ({
-      time: Array.isArray(times) && times[i] != null ? times[i] : i,
-      open: openArr[i],
-      high: hi[i],
-      low: lo[i],
-      close: cl,
-      volume: 0
-    }));
-    const tsma = computeTripleSMA(candles);
-    const tsmaInd = [
-      {
-        name: "\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0633\u0647 SMA (\u06F1\u06F3/\u06F1\u06F0\u06F0/\u06F2\u06F0\u06F0)",
-        value: tsma.upStack ? "\u0635\u0639\u0648\u062F\u06CC \u2713" : "\u0646\u0627\u0645\u0646\u0638\u0645",
-        status: tsma.upStack ? "ok" : "neutral"
-      },
-      {
-        name: "Vortex VI+ / VI\u2212",
-        value: `${tsma.viPlus.toFixed(2)} / ${tsma.viMinus.toFixed(2)}`,
-        status: tsma.viPlus > tsma.viMinus ? "ok" : "warn"
-      },
-      {
-        name: "\u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0646\u062F Kaufman-ER",
-        value: `${tsma.er.toFixed(2)}`,
-        status: tsma.er > 0.2 ? "ok" : "warn"
-      },
-      ...indicators
-    ];
-    if (tsma.active && tsma.entry != null && tsma.sl != null && tsma.tp != null) {
-      const slDist = tsma.entry - tsma.sl;
-      const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1, spec);
-      const rd = Math.round(riskDollars * 100) / 100;
-      return {
-        state: "ENTRY",
-        regime: reg,
-        headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 Triple-SMA(\u06F1\u06F3/\u06F1\u06F0\u06F0/\u06F2\u06F0\u06F0) + Vortex + Kaufman-ER \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F",
-        sourceLayer: {
-          code: "S211",
-          name: "Triple-SMA Stack-Pullback (\u0631\u0648\u0646\u062F-\u0645\u062D\u0648\u0631)",
-          kind: "price-action",
-          filters: [
-            "\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 SMA13>SMA100>SMA200",
-            "pullback \u0628\u0647 SMA13",
-            "Vortex VI+>VI\u2212",
-            "Kaufman-ER>0.20",
-            "\u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647 +$6,338 (WR \u06F5\u06F1.\u06F7\u066A)"
-          ],
-          manage: {
-            style: "let-run-trail",
-            beTriggerR: 1,
-            trailDistPrice: DEFAULT_TRIPLE_SMA.slPip * pip,
-            maxHoldBars: DEFAULT_TRIPLE_SMA.maxHold,
-            note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F-\u062F\u0646\u0628\u0627\u0644\u200C\u06A9\u0646: SL \u0627\u0648\u0644\u06CC\u0647 ${DEFAULT_TRIPLE_SMA.slPip}pip (\u06F1.\u06F5$). \u067E\u0633 \u0627\u0632 \u06F1R \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646\u061B \u0633\u067E\u0633 trailing \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 ${(DEFAULT_TRIPLE_SMA.slPip * pip).toFixed(1)}$ \u062A\u0627 \u0633\u0642\u0641\u0650 ${DEFAULT_TRIPLE_SMA.maxHold} \u06A9\u0646\u062F\u0644.`
-          }
-        },
-        reason: tsma.reason,
-        direction: "LONG",
-        entry: tsma.entry,
-        tp: tsma.tp,
-        sl: tsma.sl,
-        rr: `SL \u062B\u0627\u0628\u062A ${DEFAULT_TRIPLE_SMA.slPip}pip (${slDist.toFixed(2)}$) / TP ${DEFAULT_TRIPLE_SMA.tpPip}pip (${(tsma.tp - tsma.entry).toFixed(2)}$) \u2014 R:R \u2248 \u06F1:\u06F2`,
-        probability: 52,
-        sizing: {
-          lotMultiplier: 1,
-          label: "Triple-SMA Stack-Pullback (\u0631\u0648\u0646\u062F-\u0645\u062D\u0648\u0631)",
-          note: `\u0644\u0627\u06CC\u0647\u0654 \u0645\u0633\u062A\u0642\u0644\u0650 price-action (S211). \u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u0646\u0627\u0647\u0645\u0628\u0633\u062A\u0647 \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A +$\u06F6\u066C\u06F3\u06F3\u06F8.`,
-          lots: lots ?? void 0,
-          riskDollars: rd,
-          capital,
-          riskPct,
-          capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL \u0628\u062E\u0648\u0631\u062F ~${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-        },
-        indicators: tsmaInd
-      };
-    }
-    if (tsma.approaching) {
-      return {
-        state: "APPROACHING",
-        regime: reg,
-        headline: "\u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u2014 Triple-SMA(\u06F1\u06F3/\u06F1\u06F0\u06F0/\u06F2\u06F0\u06F0)",
-        sourceLayer: { code: "S211", name: "Triple-SMA Stack-Pullback (\u0631\u0648\u0646\u062F-\u0645\u062D\u0648\u0631)", kind: "price-action" },
-        reason: tsma.reason,
-        direction: "LONG",
-        probability: 40,
-        indicators: tsmaInd
-      };
-    }
-  }
-  if (reg.activeStream === "none" || reg.regime === "range") {
-    const erIsTrendy = reg.efficiencyRatio >= ER_TREND_THR;
-    const erPhrase = erIsTrendy ? `\u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0646\u062F ER=${reg.efficiencyRatio.toFixed(3)} \u0647\u0631\u0686\u0646\u062F \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${ER_TREND_THR} \u0627\u0633\u062A\u060C \u0627\u0645\u0627 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (EMA50/200) \u0647\u0646\u0648\u0632 \u062C\u0647\u062A\u0650 \u0631\u0648\u0634\u0646\u06CC \u0646\u0645\u06CC\u200C\u062F\u0647\u062F` : `\u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0646\u062F ER=${reg.efficiencyRatio.toFixed(3)} \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${ER_TREND_THR} \u0627\u0633\u062A \u0648 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (EMA50/200) \u0646\u06CC\u0632 \u062C\u0647\u062A\u0650 \u0631\u0648\u0634\u0646\u06CC \u0646\u062F\u0627\u0631\u062F`;
-    return {
-      state: "NEUTRAL",
-      regime: reg,
-      headline: "\u062E\u0646\u062B\u06CC \u2014 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645",
-      reason: `\u0628\u0627\u0632\u0627\u0631 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C/\u0628\u06CC\u200C\u0631\u0648\u0646\u062F \u0627\u0633\u062A (${erPhrase}). \u0637\u0628\u0642\u0650 \u06A9\u0634\u0641\u0650 L36\u060C \u0641\u0639\u0627\u0644\u200C\u0634\u062F\u0646 \u062F\u0631 \u0686\u0646\u06CC\u0646 \u0631\u0698\u06CC\u0645\u06CC \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0631\u0627 \u0627\u0632 \u0628\u06CC\u0646 \u0645\u06CC\u200C\u0628\u0631\u062F\u061B \u067E\u0633 \u0645\u0646\u062A\u0638\u0631\u0650 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u0634\u062F\u0646\u0650 \u0631\u0648\u0646\u062F (\u062A\u062B\u0628\u06CC\u062A\u0650 \u062C\u0647\u062A\u0650 EMA \u0628\u0647\u200C\u0647\u0645\u0631\u0627\u0647\u0650 \u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u06A9\u0627\u0641\u06CC) \u0645\u06CC\u200C\u0645\u0627\u0646\u0645.`,
-      indicators
-    };
-  }
-  if (!reg.trendy) {
-    return {
-      state: "NEUTRAL",
-      regime: reg,
-      headline: "\u062E\u0646\u062B\u06CC \u2014 \u0631\u0648\u0646\u062F \u0636\u0639\u06CC\u0641 \u0627\u0633\u062A",
-      reason: `\u062C\u0647\u062A\u0650 ${reg.regime === "trend_up" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC"} \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A \u0627\u0645\u0627 \u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0646\u062F (ER=${reg.efficiencyRatio.toFixed(3)}) \u0647\u0646\u0648\u0632 \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${ER_TREND_THR} \u0627\u0633\u062A \u2014 \u06CC\u0639\u0646\u06CC \u062D\u0631\u06A9\u062A \u067E\u0631\u0646\u0648\u0633\u0627\u0646 \u0648 \u0646\u0627\u06A9\u0627\u0631\u0627\u0633\u062A. \u062A\u0627 \u062A\u062B\u0628\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u06A9\u0627\u0631\u0627 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645.`,
-      indicators
-    };
-  }
-  const isBull = reg.activeStream === "bull";
-  const dir = isBull ? "LONG" : "SHORT";
-  const plan = bucketPlan(reg.bucket);
-  const slM = isBull ? plan.slBull : plan.slBear;
-  const tpM = isBull ? plan.tpBull : plan.tpBear;
-  const lotM = plan.lot;
-  if (p >= P_MIN) {
-    const entry = a.price;
-    const tp = isBull ? entry + tpM * atr2 : entry - tpM * atr2;
-    const sl = isBull ? entry - slM * atr2 : entry + slM * atr2;
-    const slDist = Math.abs(entry - sl);
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, lotM, spec);
-    const rd = Math.round(riskDollars * 100) / 100;
-    const capitalNote = lots == null ? `\xAB${spec.id}\xBB \u06CC\u06A9 \u0634\u0627\u062E\u0635 \u0627\u0633\u062A \u0648 \u0645\u0633\u062A\u0642\u06CC\u0645\u0627\u064B \u0628\u0627 \u0644\u0627\u062A \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F\u061B \u067E\u0633 \u062D\u062C\u0645\u0650 \u0644\u0627\u062A \u067E\u06CC\u0634\u0646\u0647\u0627\u062F \u0646\u0645\u06CC\u200C\u062F\u0647\u06CC\u0645. \u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u0631\u06CC\u0633\u06A9\u0650 \u062F\u0644\u0627\u0631\u06CC\u0650 \u0647\u062F\u0641 ${rd.toLocaleString("en-US")}$ \u0627\u0633\u062A \u2014 \u0627\u06CC\u0646 \u062F\u0627\u0631\u0627\u06CC\u06CC \u0631\u0627 \u0628\u0631\u0627\u06CC \xAB\u062C\u0647\u062A\u0650 \u06A9\u0644\u0627\u0646\u0650 \u062F\u0644\u0627\u0631\xBB \u0628\u0647\u200C\u06A9\u0627\u0631 \u0628\u0628\u0631\u06CC\u062F\u060C \u0646\u0647 \u0628\u0631\u0627\u06CC \u0627\u062C\u0631\u0627\u06CC \u0645\u0633\u062A\u0642\u06CC\u0645\u0650 \u0645\u0639\u0627\u0645\u0644\u0647.` : `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\xD7 \u0636\u0631\u06CC\u0628\u0650 \u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0633\u0637\u0644 ${lotM} \u21D2 \u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots.toFixed(2)} ${spec.lotUnitFa} \u0627\u0633\u062A. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${slDist.toFixed(spec.id === "XAUUSD" ? 2 : 5)} \u0648\u0627\u062D\u062F\u0650 \u0642\u06CC\u0645\u062A) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F \u2014 \u062F\u0642\u06CC\u0642\u0627\u064B \u0647\u0645\u0627\u0646 \u0631\u06CC\u0633\u06A9\u06CC \u06A9\u0647 \u062A\u0639\u06CC\u06CC\u0646 \u06A9\u0631\u062F\u06CC\u062F. (\u0631\u0641\u0639\u0650 \u0628\u0627\u06AF: \u0645\u062F\u0644\u0650 \u0644\u0627\u062A \u0627\u06A9\u0646\u0648\u0646 \u0645\u062E\u0635\u0648\u0635\u0650 \xAB${spec.id}\xBB \u0627\u0633\u062A\u060C \u0646\u0647 \u062B\u0627\u0628\u062A\u0650 \u0637\u0644\u0627\u061B \u06A9\u0634\u0641\u0650 L41: \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0641\u0642\u0637 \u0628\u0627 \u0645\u062F\u0644\u0650 \u0633\u0631\u0645\u0627\u06CC\u0647 \u0645\u0639\u0646\u0627 \u062F\u0627\u0631\u062F.)`;
-    return {
-      state: "ENTRY",
-      regime: reg,
-      headline: `\u0648\u0631\u0648\u062F ${isBull ? "\u062E\u0631\u06CC\u062F (LONG)" : "\u0641\u0631\u0648\u0634 (SHORT)"} \u2014 \u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u06CC\u0650 ${isBull ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC"} \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F`,
-      sourceLayer: {
-        code: "S67",
-        name: `VWAP-Regime Selective ML (\u0633\u0637\u0644\u0650 \xAB${reg.bucket}\xBB)`,
-        kind: "regime-ml",
-        filters: [`\u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0645\u062F\u0644 \u2265 ${P_MIN}%`, `\u06AF\u06CC\u062A\u0650 \u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u06CC\u0650 \u06A9\u0627\u0631\u0627 (ER \u2265 ${ER_TREND_THR})`],
-        manage: {
-          style: "regime-atr-trail",
-          beTriggerR: 1,
-          trailAtrMult: slM,
-          maxHoldBars: 64,
-          note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0631\u0698\u06CC\u0645-\u0622\u06AF\u0627\u0647: \u0641\u0627\u0635\u0644\u0647\u0654 trailing = ${slM}\xD7ATR (\u0647\u0645\u0627\u0646 \u0636\u0631\u06CC\u0628\u0650 SL\u0650 \u0633\u0637\u0644\u0650 \xAB${reg.bucket}\xBB). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0628\u0627 ${slM}\xD7ATR \u062F\u0646\u0628\u0627\u0644 \u06A9\u0646. TP \u0647\u062F\u0641 ${tpM}\xD7ATR \u0627\u0633\u062A \u0648\u0644\u06CC \u0627\u06AF\u0631 \u0631\u0698\u06CC\u0645 \u0642\u0648\u06CC \u0645\u0627\u0646\u062F (trend_hi) \u0628\u06AF\u0630\u0627\u0631 \u0628\u062F\u0648\u062F. \u0627\u06AF\u0631 ER \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647 \u0627\u0641\u062A\u0627\u062F \u06CC\u0627 \u0633\u0637\u0644 \u062A\u063A\u06CC\u06CC\u0631\u0650 \u06A9\u06CC\u0641\u06CC \u062F\u0627\u062F \u21D2 \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645.`
-        }
-      },
-      reason: `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u06CC\u0650 ${isBull ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC"} \u06A9\u0627\u0631\u0627 (ER=${reg.efficiencyRatio.toFixed(3)}) + \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0645\u062F\u0644 ${p.toFixed(1)}% (\u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${P_MIN}%). ${!isBull ? "\u0627\u06CC\u0646 \xAB\u0645\u062D\u0644\u0650 \u062F\u0631\u0633\u062A\u0650 \u0627\u0633\u062A\u0641\u0627\u062F\u0647\u0654\xBB \u062C\u0631\u06CC\u0627\u0646\u0650 Bear \u0627\u0633\u062A \u06A9\u0647 \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A \u0628\u0627\u0644\u0627\u062A\u0631\u06CC\u0646 \u0627\u06A9\u0633\u067E\u06A9\u062A\u0646\u0633\u06CC \u0631\u0627 \u062F\u0627\u0634\u062A (L34)." : "\u062C\u0631\u06CC\u0627\u0646\u0650 Bull \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0627\u0631\u0627 \u0641\u0639\u0627\u0644 \u0634\u062F."}`,
-      direction: dir,
-      entry,
-      tp,
-      sl,
-      rr: `TP ${tpM}\xD7ATR / SL ${slM}\xD7ATR (\u2248 1:${(tpM / slM).toFixed(2)})`,
-      probability: p,
-      // S64 — حجمِ پیشنهادی (Kelly رژیم-آگاه):
-      sizing: {
-        lotMultiplier: lotM,
-        label: lotLabel(lotM),
-        note: `\u0633\u0637\u0644\u0650 \u0631\u0698\u06CC\u0645 \xAB${reg.bucket}\xBB (${plan.desc}). \u0637\u0628\u0642\u0650 \u06A9\u0634\u0641\u0650 L38\u060C \u062D\u062C\u0645\u0650 \u0628\u06CC\u0634\u062A\u0631 \u062F\u0631 \u0633\u0637\u0644\u200C\u0647\u0627\u06CC \u0628\u0627\u06A9\u06CC\u0641\u06CC\u062A\u200C\u062A\u0631 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0631\u0627 ~\u06F8\u06F3\u066A \u0628\u0627\u0644\u0627 \u0628\u0631\u062F \u2014 \u0627\u06CC\u0646 \xAB\u062A\u062E\u0635\u06CC\u0635\u0650 \u0633\u0631\u0645\u0627\u06CC\u0647\xBB \u0627\u0633\u062A \u0646\u0647 \u0627\u0647\u0631\u0645\u0650 \u062E\u0627\u0645.`,
-        // S67 (L41): لاتِ واقعیِ سرمایه‌محور (per-asset — رفعِ باگِ لات)
-        lots: lots ?? void 0,
-        riskDollars: rd,
-        capital,
-        riskPct,
-        capitalNote
-      },
-      // S65 — TPِ رژیم-آگاه:
-      tpPlan: {
-        multiplier: tpM,
-        note: reg.bucket === "trend_hi" ? `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0627\u0631\u0622\u0645\u062F \u0627\u062C\u0627\u0632\u0647\u0654 TP\u0650 \u062F\u0648\u0631\u062A\u0631 (${tpM}\xD7ATR) \u0645\u06CC\u200C\u062F\u0647\u062F\u061B \u062D\u0631\u06A9\u062A\u200C\u0647\u0627 \u0627\u062F\u0627\u0645\u0647\u200C\u062F\u0627\u0631\u062A\u0631\u0646\u062F (L39).` : `TP \u0645\u062A\u0646\u0627\u0633\u0628 \u0628\u0627 \u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0633\u0637\u0644 \xAB${reg.bucket}\xBB \u062A\u0646\u0638\u06CC\u0645 \u0634\u062F (${tpM}\xD7ATR) \u062A\u0627 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0628\u06CC\u0634\u06CC\u0646\u0647 \u0634\u0648\u062F (L39).`
-      },
-      // S66 (L40) — SLِ رژیم-آگاه (اهرمِ چهارم؛ تنها اهرمی که سود را بالا و ریسک را پایین برد):
-      slPlan: {
-        multiplier: slM,
-        note: `\u0641\u0627\u0635\u0644\u0647\u0654 \u0627\u0633\u062A\u0627\u067E \u0645\u062A\u0646\u0627\u0633\u0628 \u0628\u0627 \u0631\u0698\u06CC\u0645\u0650 \u0633\u0637\u0644 \xAB${reg.bucket}\xBB \u062A\u0646\u0638\u06CC\u0645 \u0634\u062F (${slM}\xD7ATR). \u0637\u0628\u0642\u0650 \u06A9\u0634\u0641\u0650 L40\u060C SL\u0650 \u0631\u0698\u06CC\u0645-\u0622\u06AF\u0627\u0647 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635 \u0631\u0627 +\u06F2\u06F1\u066A \u0628\u0627\u0644\u0627 \u0628\u0631\u062F \u0648 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 DrawDown \u0631\u0627 ~\u06F3\u06F5\u066A \u06A9\u0645 \u06A9\u0631\u062F (\u0633\u0648\u062F/DD \u062A\u0642\u0631\u06CC\u0628\u0627\u064B \u062F\u0648 \u0628\u0631\u0627\u0628\u0631 \u0634\u062F) \u2014 \u0627\u06CC\u0646 \xAB\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0631\u06CC\u0633\u06A9\u0650 \u067E\u0648\u06CC\u0627\xBB \u0627\u0633\u062A.`
-      },
-      indicators
-    };
-  }
-  if (p >= P_APPROACH) {
-    const confirmations = [
-      {
-        label: `\u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0645\u062F\u0644 \u2265 ${P_MIN}%`,
-        met: false,
-        detail: `\u0627\u06A9\u0646\u0648\u0646 ${p.toFixed(1)}% \u0627\u0633\u062A\u061B \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F \u0628\u0627\u06CC\u062F \u0628\u0647 ${P_MIN}% \u0628\u0631\u0633\u062F (\u0641\u0627\u0635\u0644\u0647: ${(P_MIN - p).toFixed(1)}%).`
-      },
-      {
-        label: "\u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F ADX \u2265 \u06F2\u06F0",
-        met: a.adx >= 20,
-        detail: `ADX \u0641\u0639\u0644\u06CC ${a.adx.toFixed(1)} \u0627\u0633\u062A.`
-      },
-      {
-        label: "\u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0646\u062F \u062D\u0641\u0638 \u0634\u0648\u062F",
-        met: reg.trendy,
-        detail: `ER=${reg.efficiencyRatio.toFixed(3)} (\u0628\u0627\u06CC\u062F \u2265 ${ER_TREND_THR} \u0628\u0645\u0627\u0646\u062F).`
-      }
-    ];
-    return {
-      state: "APPROACHING",
-      regime: reg,
-      headline: `\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${isBull ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634"} \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u062A\u0623\u06CC\u06CC\u062F`,
-      reason: `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u06CC\u0650 ${isBull ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC"} \u06A9\u0627\u0631\u0627 \u0634\u06A9\u0644 \u06AF\u0631\u0641\u062A\u0647 \u0648 \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0645\u062F\u0644 (${p.toFixed(1)}%) \u0628\u0647 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0648\u0631\u0648\u062F \u0646\u0632\u062F\u06CC\u06A9 \u0627\u0633\u062A \u0648\u0644\u06CC \u0647\u0646\u0648\u0632 \u0628\u0647 ${P_MIN}% \u0646\u0631\u0633\u06CC\u062F\u0647. \u062A\u0627 \u062A\u0623\u06CC\u06CC\u062F\u0647\u0627\u06CC\u0650 \u0632\u06CC\u0631 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645.`,
-      sourceLayer: { code: "S67", name: `VWAP-Regime Selective ML (\u0633\u0637\u0644\u0650 \xAB${reg.bucket}\xBB)`, kind: "regime-ml" },
-      confirmations,
-      indicators
-    };
-  }
-  return {
-    state: "NEUTRAL",
-    regime: reg,
-    headline: "\u062E\u0646\u062B\u06CC \u2014 \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0648\u0631\u0648\u062F \u067E\u0627\u06CC\u06CC\u0646 \u0627\u0633\u062A",
-    reason: `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u06CC\u0650 ${isBull ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC"} \u06A9\u0627\u0631\u0627 \u0647\u0633\u062A\u060C \u0627\u0645\u0627 \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0645\u062F\u0644 (${p.toFixed(1)}%) \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 (${P_APPROACH}%) \u0627\u0633\u062A. \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0628\u0627\u06A9\u06CC\u0641\u06CC\u062A \u0646\u062F\u0627\u0631\u06CC\u0645\u061B \u0635\u0628\u0631 \u0645\u06CC\u200C\u06A9\u0646\u0645.`,
-    indicators
-  };
-}
-
-// ../web_tool/src/eurusd_router.ts
-var S164_ENTRY_HOUR_UTC = 13;
-var S164_APPROACH_HOUR_UTC = 12;
-var S164_SL_PIP = 15;
-var S164_TP_PIP = 20;
-var S164_MAX_HOLD_BARS = 12;
-var ENTRY_HOUR_UTC = 0;
-var PULLBACK_LOOKBACK = 4;
-var SL_PIP = 12;
-var TP_PIP = 12;
-var PIP5 = 1e-4;
-var S213_EMA_FAST = 10;
-var S213_EMA_SLOW = 30;
-var S213_SPK = 3;
-var S213_GAP = 10;
-var S213_SL_PIP = 150;
-var S213_TP_PIP = 225;
-var S213_TREND_BODY_FRAC = 0.5;
-var S213_MAX_HOLD_BARS = 48;
-var APPROACH_HOUR_UTC = 23;
-function toIranHM2(utcHour) {
-  const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
-  const hh = Math.floor(total / 60), mm = total % 60;
-  return `${String(hh).padStart(2, "0")}:${String(mm).padStart(2, "0")}`;
-}
-function businessDaysThroughMonthEnd(timestampSec) {
-  const now = new Date(timestampSec * 1e3);
-  const y = now.getUTCFullYear(), m = now.getUTCMonth(), d = now.getUTCDate();
-  const last = new Date(Date.UTC(y, m + 1, 0)).getUTCDate();
-  let count = 0;
-  for (let day = d; day <= last; day++) {
-    const dow = new Date(Date.UTC(y, m, day)).getUTCDay();
-    if (dow !== 0 && dow !== 6) count++;
-  }
-  return count;
-}
-function isPullback(close, lookback = PULLBACK_LOOKBACK) {
-  const n = close.length;
-  if (n < lookback + 1) return { met: false, delta: 0 };
-  const delta = close[n - 1] - close[n - 1 - lookback];
-  return { met: delta < 0, delta };
-}
-function detectS213Short(open, high, low, close) {
-  const n = close.length;
-  const none = {
-    phase: "none",
-    spikeBars: 0,
-    firstIdx: -1,
-    secondLow: NaN,
-    firstLow: NaN,
-    goodFillOk: false,
-    emaFast: NaN,
-    emaSlow: NaN
-  };
-  const need = S213_EMA_SLOW + S213_SPK + 2 * S213_GAP + 4;
-  if (n < need) return none;
-  const ef = ema(close, S213_EMA_FAST);
-  const es = ema(close, S213_EMA_SLOW);
-  const isBull = (i) => {
-    const rng = Math.max(high[i] - low[i], 1e-9);
-    const body = close[i] - open[i];
-    return body > 0 && Math.abs(body) >= S213_TREND_BODY_FRAC * rng;
-  };
-  const last = n - 1;
-  const isBearAttempt = (i) => i >= 1 && close[i] < open[i] && low[i] < low[i - 1];
-  if (isBearAttempt(last)) {
-    for (let first = last - 1; first >= last - S213_GAP && first >= 1; first--) {
-      if (!isBearAttempt(first)) continue;
-      let rallied = false;
-      for (let k = first + 1; k <= last; k++) {
-        if (high[k] > high[first]) {
-          rallied = true;
-          break;
-        }
-      }
-      if (!rallied) continue;
-      const spikeEnd = first - 1;
-      let spikeBars = 0;
-      for (let k = spikeEnd; k > spikeEnd - S213_SPK && k >= 0; k--) {
-        if (isBull(k)) spikeBars++;
-      }
-      if (spikeBars < S213_SPK) continue;
-      if (!(ef[spikeEnd] > es[spikeEnd])) continue;
-      const goodFillOk = low[last] <= low[first];
-      if (!goodFillOk) continue;
-      return {
-        phase: "entry",
-        spikeBars,
-        firstIdx: first - last,
-        secondLow: low[last],
-        firstLow: low[first],
-        goodFillOk: true,
-        emaFast: ef[last],
-        emaSlow: es[last]
-      };
-    }
-  }
-  if (isBearAttempt(last)) {
-    const spikeEnd = last - 1;
-    let spikeBars = 0;
-    for (let k = spikeEnd; k > spikeEnd - S213_SPK && k >= 0; k--) {
-      if (isBull(k)) spikeBars++;
-    }
-    if (spikeBars >= S213_SPK && ef[spikeEnd] > es[spikeEnd]) {
-      return {
-        phase: "approaching",
-        spikeBars,
-        firstIdx: 0,
-        secondLow: NaN,
-        firstLow: low[last],
-        goodFillOk: false,
-        emaFast: ef[last],
-        emaSlow: es[last]
-      };
-    }
-  }
-  return none;
-}
-function decideEurusd(a, close, nowUtcHour, capital = DEFAULT_CAPITAL, riskPct = DEFAULT_RISK_PCT, nowUtcTimestamp) {
-  const spec = assetSpec("EURUSD");
-  const price = a.price;
-  const pb = isPullback(close);
-  const deltaPip = pb.delta / PIP5;
-  const reg = {
-    regime: "range",
-    efficiencyRatio: 0,
-    trendy: false,
-    adx: a.adx,
-    activeStream: "none",
-    bucket: "session"
-  };
-  const indicators = [
-    {
-      name: "\u0633\u0627\u0639\u062A\u0650 \u062C\u0627\u0631\u06CC (\u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646)",
-      value: `${toIranHM2(nowUtcHour)}`,
-      status: nowUtcHour === ENTRY_HOUR_UTC ? "ok" : nowUtcHour === APPROACH_HOUR_UTC ? "warn" : "neutral"
-    },
-    {
-      name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u0633\u0634\u0646 (${toIranHM2(ENTRY_HOUR_UTC)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646)`,
-      value: nowUtcHour === ENTRY_HOUR_UTC ? "\u0628\u0627\u0632 (\u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0627\u0631\u0648\u067E\u0627)" : "\u0628\u0633\u062A\u0647",
-      status: nowUtcHour === ENTRY_HOUR_UTC ? "ok" : "neutral"
-    },
-    {
-      name: `pullback (${PULLBACK_LOOKBACK} \u06A9\u0646\u062F\u0644)`,
-      value: `${deltaPip >= 0 ? "+" : ""}${deltaPip.toFixed(1)} pip ${pb.met ? "(\u0646\u0632\u0648\u0644\u06CC \u2713)" : "(\u0635\u0639\u0648\u062F\u06CC)"}`,
-      status: pb.met ? "ok" : "warn"
-    },
-    { name: "RSI(14)", value: a.rsi14.toFixed(1), status: "neutral" },
-    { name: "ATR", value: (a.atr / PIP5).toFixed(1) + " pip", status: "neutral" }
-  ];
-  const slDist = SL_PIP * PIP5;
-  const tpDist = TP_PIP * PIP5;
-  const ts = nowUtcTimestamp ?? Math.floor(Date.now() / 1e3);
-  const businessDaysLeft = businessDaysThroughMonthEnd(ts);
-  const s164Day = businessDaysLeft === 3;
-  const s164Approaching = s164Day && nowUtcHour === S164_APPROACH_HOUR_UTC;
-  const s164Indicators = [
-    { name: "\u0631\u0648\u0632 \u06A9\u0627\u0631\u06CC \u062A\u0627 \u067E\u0627\u06CC\u0627\u0646 \u0645\u0627\u0647", value: `${businessDaysLeft} \u0631\u0648\u0632 (\u0628\u0627 \u0627\u062D\u062A\u0633\u0627\u0628 \u0627\u0645\u0631\u0648\u0632)`, status: s164Day ? "ok" : "neutral" },
-    { name: "\u067E\u0646\u062C\u0631\u0647\u0654 S164", value: `${toIranHM2(S164_ENTRY_HOUR_UTC)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646`, status: nowUtcHour === S164_ENTRY_HOUR_UTC ? "ok" : s164Approaching ? "warn" : "neutral" },
-    { name: "\u0627\u062B\u0631 \u067E\u06CC\u0634 \u0627\u0632 London Fix", value: s164Day ? "\u0631\u0648\u0632 \u0647\u062F\u0641 \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F" : "\u062E\u0627\u0631\u062C \u0627\u0632 \u0631\u0648\u0632 \u0647\u062F\u0641", status: s164Day ? "ok" : "neutral" },
-    { name: "ATR", value: (a.atr / PIP5).toFixed(1) + " pip", status: "neutral" },
-    { name: "RSI(14)", value: a.rsi14.toFixed(1), status: "neutral" }
-  ];
-  if (s164Day && nowUtcHour === S164_ENTRY_HOUR_UTC) {
-    const entry = price;
-    const sl164 = entry + S164_SL_PIP * PIP5;
-    const tp164 = entry - S164_TP_PIP * PIP5;
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, S164_SL_PIP * PIP5, 1, spec);
-    const rd = Math.round(riskDollars * 100) / 100;
-    return {
-      state: "ENTRY",
-      regime: { ...reg, bucket: "pre-month-end-fix" },
-      headline: "\u0648\u0631\u0648\u062F \u0641\u0631\u0648\u0634 (SHORT) \u2014 \u0628\u0631\u06AF\u0634\u062A\u0650 \u067E\u06CC\u0634 \u0627\u0632 London Fix \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F",
-      sourceLayer: {
-        code: "S164",
-        name: "\u0628\u0631\u06AF\u0634\u062A\u0650 \u067E\u06CC\u0634 \u0627\u0632 London Fix (\u0645\u0627\u0647\u200C\u067E\u0627\u06CC\u0627\u0646)",
-        kind: "time",
-        filters: ["\u0633\u0648\u0645\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC\u0650 \u0645\u0627\u0646\u062F\u0647\u0654 \u0645\u0627\u0647", `\u06A9\u0646\u062F\u0644\u0650 ${S164_ENTRY_HOUR_UTC}:00 UTC`],
-        manage: {
-          style: "fixed-tp-sl",
-          maxHoldBars: S164_MAX_HOLD_BARS,
-          note: `\u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647\u0654 \u0631\u0648\u06CC\u062F\u0627\u062F-\u0645\u062D\u0648\u0631 TP/SL \u062B\u0627\u0628\u062A \u062F\u0627\u0631\u062F (TP ${S164_TP_PIP}pip / SL ${S164_SL_PIP}pip\u060C \u0646\u0627\u062D\u06CC\u0647\u0654 \u067E\u0627\u06CC\u062F\u0627\u0631 \u06F1\u06F8/\u06F1\u06F8). \u062C\u0627\u0628\u0647\u200C\u062C\u0627\u06CC\u06CC\u0650 TP/SL \u062A\u0648\u0635\u06CC\u0647 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F\u061B \u0641\u0642\u0637 \u0627\u06AF\u0631 \u062A\u0627 ${S164_MAX_HOLD_BARS} \u06A9\u0646\u062F\u0644 (\u06F3 \u0633\u0627\u0639\u062A) \u0628\u0647 \u0647\u062F\u0641 \u0646\u0631\u0633\u06CC\u062F\u060C \u0637\u0628\u0642\u0650 \u067E\u0644\u0646 \u0628\u0628\u0646\u062F.`
-        }
-      },
-      reason: `\u0627\u0645\u0631\u0648\u0632 \u0633\u0648\u0645\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u0645\u0627\u0646\u062F\u0647 \u0628\u0647 \u067E\u0627\u06CC\u0627\u0646 \u0645\u0627\u0647 \u0627\u0633\u062A \u0648 \u067E\u0646\u062C\u0631\u0647\u0654 ${S164_ENTRY_HOUR_UTC}:00 UTC \u0641\u0639\u0627\u0644 \u0634\u062F. S164 \u0631\u0648\u06CC \u06F2\u06F0\u06F0\u066C\u06F0\u06F0\u06F0 \u06A9\u0646\u062F\u0644 EURUSD \u0627\u06CC\u0646 drift \u0646\u0632\u0648\u0644\u06CC \u06A9\u0648\u062A\u0627\u0647 \u0631\u0627 \u0628\u0627 \u0633\u0648\u062F \u062E\u0627\u0644\u0635 +$3,473\u060C WR=60.7\u066A\u060C PF=1.71 \u0648 \u0686\u0647\u0627\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 walk-forward \u0645\u062B\u0628\u062A \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0628\u0627 S73/S143 \u062A\u0642\u0631\u06CC\u0628\u0627\u064B \u0647\u0645\u0628\u0633\u062A\u06AF\u06CC \u0635\u0641\u0631 \u062F\u0627\u0631\u062F.`,
-      direction: "SHORT",
-      entry,
-      tp: tp164,
-      sl: sl164,
-      rr: `TP ${S164_TP_PIP} pip / SL ${S164_SL_PIP} pip (\u2248 1:${(S164_TP_PIP / S164_SL_PIP).toFixed(2)})`,
-      probability: 60.7,
-      sizing: {
-        lotMultiplier: 1,
-        label: "\u062D\u062C\u0645 \u067E\u0627\u06CC\u0647\u0654 S164 (\u06F1\xD7)",
-        note: `\u0631\u06CC\u0633\u06A9 \u062B\u0627\u0628\u062A \u06F1\u066A\u061B \u062E\u0631\u0648\u062C \u062D\u062F\u0627\u06A9\u062B\u0631 \u067E\u0633 \u0627\u0632 ${S164_MAX_HOLD_BARS} \u06A9\u0646\u062F\u0644 M15 (\u06F3 \u0633\u0627\u0639\u062A).`,
-        lots: lots ?? void 0,
-        riskDollars: rd,
-        capital,
-        riskPct,
-        capitalNote: `\u0633\u0631\u0645\u0627\u06CC\u0647 ${capital.toLocaleString("en-US")}$\u060C \u0631\u06CC\u0633\u06A9 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}\u066A\u060C \u062D\u062C\u0645 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots != null ? lots.toFixed(2) : "\u2014"} lot\u061B \u0632\u06CC\u0627\u0646 \u0647\u062F\u0641 \u062F\u0631 SL \u062D\u062F\u0648\u062F ${rd.toLocaleString("en-US")}$.`
-      },
-      tpPlan: { multiplier: S164_TP_PIP, note: `TP \u062B\u0627\u0628\u062A ${S164_TP_PIP} pip\u061B \u0646\u0642\u0637\u0647\u0654 \u0645\u06CC\u0627\u0646\u06CC \u0646\u0627\u062D\u06CC\u0647\u0654 \u067E\u0627\u06CC\u062F\u0627\u0631 \u06F1\u06F8/\u06F1\u06F8 \u062A\u0631\u06A9\u06CC\u0628.` },
-      slPlan: { multiplier: S164_SL_PIP, note: `SL \u062B\u0627\u0628\u062A ${S164_SL_PIP} pip\u061B \u0628\u062F\u0648\u0646 \u062C\u0627\u0628\u0647\u200C\u062C\u0627\u06CC\u06CC \u0642\u0628\u0644 \u0627\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0645\u062F\u06CC\u0631\u06CC\u062A \u0645\u0639\u0627\u0645\u0644\u0647.` },
-      indicators: s164Indicators,
-      timeGate: {
-        layerCode: "S164",
-        label: "\u0628\u0631\u06AF\u0634\u062A\u0650 \u067E\u06CC\u0634 \u0627\u0632 London Fix (EURUSD \u0645\u0627\u0647\u200C\u067E\u0627\u06CC\u0627\u0646)",
-        entryHoursUtc: [S164_ENTRY_HOUR_UTC],
-        dayOfMonthNote: "\u0641\u0642\u0637 \u062F\u0631 \u0633\u0648\u0645\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC\u0650 \u0645\u0627\u0646\u062F\u0647\u0654 \u0647\u0631 \u0645\u0627\u0647 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A",
-        windowOpen: true
-      }
-    };
-  }
-  if (s164Approaching) {
-    return {
-      state: "APPROACHING",
-      regime: { ...reg, bucket: "pre-month-end-fix" },
-      headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0641\u0631\u0648\u0634\u0650 \u0645\u0627\u0647\u200C\u067E\u0627\u06CC\u0627\u0646 EURUSD",
-      sourceLayer: { code: "S164", name: "\u0628\u0631\u06AF\u0634\u062A\u0650 \u067E\u06CC\u0634 \u0627\u0632 London Fix (\u0645\u0627\u0647\u200C\u067E\u0627\u06CC\u0627\u0646)", kind: "time" },
-      reason: `\u0631\u0648\u0632 \u0647\u062F\u0641 S164 \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F\u0647 \u0648 \u06CC\u06A9 \u0633\u0627\u0639\u062A \u062A\u0627 \u067E\u0646\u062C\u0631\u0647\u0654 ${toIranHM2(S164_ENTRY_HOUR_UTC)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0645\u0627\u0646\u062F\u0647 \u0627\u0633\u062A. \u0647\u0646\u0648\u0632 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645 \u062A\u0627 \u0632\u0645\u0627\u0646 \u062F\u0642\u06CC\u0642 \u0631\u0648\u06CC\u062F\u0627\u062F \u0628\u0631\u0633\u062F.`,
-      confirmations: [
-        { label: `\u0627\u0645\u0631\u0648\u0632 \u062F\u0642\u06CC\u0642\u0627\u064B \u0633\u0648\u0645\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u0645\u0627\u0646\u062F\u0647 \u0628\u0647 \u067E\u0627\u06CC\u0627\u0646 \u0645\u0627\u0647 \u0628\u0627\u0634\u062F`, met: s164Day, detail: `${businessDaysLeft} \u0631\u0648\u0632 \u06A9\u0627\u0631\u06CC \u0628\u0627 \u0627\u062D\u062A\u0633\u0627\u0628 \u0627\u0645\u0631\u0648\u0632 \u0628\u0627\u0642\u06CC \u0645\u0627\u0646\u062F\u0647 \u0627\u0633\u062A.` },
-        { label: `\u06A9\u0646\u062F\u0644\u0650 ${toIranHM2(S164_ENTRY_HOUR_UTC)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0622\u063A\u0627\u0632 \u0634\u0648\u062F`, met: false, detail: `\u0627\u06A9\u0646\u0648\u0646 ${toIranHM2(nowUtcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A\u061B \u0648\u0631\u0648\u062F \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0645\u062C\u0627\u0632 \u0646\u06CC\u0633\u062A.` }
-      ],
-      indicators: s164Indicators,
-      timeGate: {
-        layerCode: "S164",
-        label: "\u0628\u0631\u06AF\u0634\u062A\u0650 \u067E\u06CC\u0634 \u0627\u0632 London Fix (EURUSD \u0645\u0627\u0647\u200C\u067E\u0627\u06CC\u0627\u0646)",
-        entryHoursUtc: [S164_ENTRY_HOUR_UTC],
-        dayOfMonthNote: "\u0641\u0642\u0637 \u062F\u0631 \u0633\u0648\u0645\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC\u0650 \u0645\u0627\u0646\u062F\u0647\u0654 \u0647\u0631 \u0645\u0627\u0647 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A",
-        windowOpen: false
-      }
-    };
-  }
-  if (nowUtcHour === ENTRY_HOUR_UTC && pb.met) {
-    const entry = price;
-    const tp = entry + tpDist;
-    const sl = entry - slDist;
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1, spec);
-    const rd = Math.round(riskDollars * 100) / 100;
-    const capitalNote = `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots != null ? lots.toFixed(2) : "\u2014"} ${spec.lotUnitFa} \u0627\u0633\u062A. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${SL_PIP} pip) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F \u2014 \u062F\u0642\u06CC\u0642\u0627\u064B \u0647\u0645\u0627\u0646 \u0631\u06CC\u0633\u06A9\u06CC \u06A9\u0647 \u062A\u0639\u06CC\u06CC\u0646 \u06A9\u0631\u062F\u06CC\u062F.`;
-    return {
-      state: "ENTRY",
-      regime: reg,
-      headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0633\u0634\u0646\u0650 \u0627\u0631\u0648\u067E\u0627 \u0628\u0627 pullback \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F",
-      sourceLayer: {
-        code: "S73",
-        name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0633\u0634\u0646\u0650 \u0627\u0631\u0648\u067E\u0627 (Session-Open Drift)",
-        kind: "session",
-        filters: [`\u06A9\u0646\u062F\u0644\u0650 ${ENTRY_HOUR_UTC}:00 UTC`, "\u0634\u0631\u0637\u0650 pullback (\u06F4 \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 \u0646\u0632\u0648\u0644\u06CC \u2014 buy-the-dip)"],
-        manage: {
-          style: "fixed-tp-sl",
-          maxHoldBars: 4,
-          note: `\u0644\u0628\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u06A9\u0648\u0686\u06A9 \u0648 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC (drift): TP ${TP_PIP}pip / SL ${SL_PIP}pip \u062B\u0627\u0628\u062A. \u0628\u06A9\u200C\u062A\u0633\u062A \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F TP\u0650 \u0628\u0632\u0631\u06AF\u0650 ATR-\u0645\u062D\u0648\u0631 \u0648 \u062C\u0627\u0628\u0647\u200C\u062C\u0627\u06CC\u06CC\u0650 SL \u0627\u06CC\u0646 \u0644\u0628\u0647 \u0631\u0627 \u062E\u0631\u0627\u0628 \u0645\u06CC\u200C\u06A9\u0646\u062F\u061B \u067E\u0633 TP/SL \u0631\u0627 \u062C\u0627\u0628\u0647\u200C\u062C\u0627 \u0646\u06A9\u0646 \u0648 \u0628\u0647 \u0647\u0645\u0627\u0646 \u067E\u0644\u0646\u0650 \u0627\u0648\u0644\u06CC\u0647 \u067E\u0627\u06CC\u0628\u0646\u062F \u0628\u0645\u0627\u0646.`
-        }
-      },
-      reason: `\u06A9\u0646\u062F\u0644\u0650 \u0633\u0627\u0639\u062A\u0650 ${ENTRY_HOUR_UTC}:00 UTC (\u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC\u0650 \u0627\u0631\u0648\u067E\u0627) \u0628\u0627 \u0634\u0631\u0637\u0650 pullback \u0641\u0639\u0627\u0644 \u0634\u062F: \u06F4 \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 ${deltaPip.toFixed(1)} pip \u0646\u0632\u0648\u0644\u06CC \u0628\u0648\u062F\u0647\u200C\u0627\u0646\u062F (buy-the-dip). \u06A9\u0634\u0641\u0650 S73 (L43): \u062F\u0631 \u0627\u06CC\u0646 \u067E\u0646\u062C\u0631\u0647 EURUSD \u06CC\u06A9 drift \u0635\u0639\u0648\u062F\u06CC\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC \u0648 \u067E\u0627\u06CC\u062F\u0627\u0631 \u062F\u0627\u0631\u062F (t-stat \u2248 +\u06F1\u06F0..+\u06F1\u06F5 \u062F\u0631 \u0647\u0631 \u06F4 \u062F\u0648\u0631\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u0645\u0633\u062A\u0642\u0644). \u0627\u06CC\u0646 \xAB\u0645\u062D\u0644\u0650 \u062F\u0631\u0633\u062A\u0650 \u0627\u0633\u062A\u0641\u0627\u062F\u0647\xBB \u0627\u0633\u062A.`,
-      direction: "LONG",
-      entry,
-      tp,
-      sl,
-      rr: `TP ${TP_PIP} pip / SL ${SL_PIP} pip (\u2248 1:${(TP_PIP / SL_PIP).toFixed(2)})`,
-      probability: 67.5,
-      // WR تجربیِ بک‌تست
-      sizing: {
-        lotMultiplier: 1,
-        label: "\u062D\u062C\u0645\u0650 \u067E\u0627\u06CC\u0647 (\u06F1\xD7)",
-        note: `\u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u0650 \u0633\u0634\u0646-\u0645\u062D\u0648\u0631 \u0627\u0632 \u062D\u062C\u0645\u0650 \u067E\u0627\u06CC\u0647 \u0627\u0633\u062A\u0641\u0627\u062F\u0647 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0628\u062F\u0648\u0646\u0650 Kelly \u0631\u0698\u06CC\u0645\u06CC\u061B \u0644\u0628\u0647 \u0632\u0645\u0627\u0646\u06CC \u0627\u0633\u062A \u0646\u0647 \u0631\u0698\u06CC\u0645\u06CC).`,
-        lots: lots ?? void 0,
-        riskDollars: rd,
-        capital,
-        riskPct,
-        capitalNote
-      },
-      tpPlan: { multiplier: TP_PIP, note: `TP \u062B\u0627\u0628\u062A\u0650 ${TP_PIP} pip \u2014 \u0686\u0648\u0646 drift \u06A9\u0648\u0686\u06A9 \u0627\u0633\u062A\u060C TP\u0650 \u0628\u0632\u0631\u06AF\u0650 ATR-\u0645\u062D\u0648\u0631 \u0646\u0627\u0645\u0646\u0627\u0633\u0628 \u0628\u0648\u062F (\u0628\u06A9\u200C\u062A\u0633\u062A \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F).` },
-      slPlan: { multiplier: SL_PIP, note: `SL \u062B\u0627\u0628\u062A\u0650 ${SL_PIP} pip \u2014 \u0645\u0631\u06A9\u0632\u0650 \u0646\u0627\u062D\u06CC\u0647\u0654 \u067E\u0627\u06CC\u062F\u0627\u0631\u061B \u06A9\u0644\u0650 \u0647\u0645\u0633\u0627\u06CC\u06AF\u06CC\u0650 \u06F1\u06F0..\u06F1\u06F4 pip \u0633\u0648\u062F\u062F\u0647 \u0648 \u0647\u0631 \u062F\u0648 \u0646\u06CC\u0645\u0647 \u0645\u062B\u0628\u062A \u0628\u0648\u062F.` },
-      indicators,
-      timeGate: {
-        layerCode: "S73",
-        label: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0633\u0634\u0646\u0650 \u0627\u0631\u0648\u067E\u0627 (EURUSD Session-Open)",
-        entryHoursUtc: [ENTRY_HOUR_UTC],
-        windowOpen: true
-      }
-    };
-  }
-  if (nowUtcHour === APPROACH_HOUR_UTC || nowUtcHour === ENTRY_HOUR_UTC && !pb.met) {
-    const confirmations = [
-      {
-        label: `\u06A9\u0646\u062F\u0644\u0650 \u0633\u0627\u0639\u062A\u0650 ${toIranHM2(ENTRY_HOUR_UTC)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0622\u063A\u0627\u0632 \u0634\u0648\u062F`,
-        met: nowUtcHour === ENTRY_HOUR_UTC,
-        detail: `\u0627\u06A9\u0646\u0648\u0646 \u0633\u0627\u0639\u062A\u0650 ${toIranHM2(nowUtcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0627\u0633\u062A\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644 \u062F\u0642\u06CC\u0642\u0627\u064B \u062F\u0631 \u06A9\u0646\u062F\u0644\u0650 ${toIranHM2(ENTRY_HOUR_UTC)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u0641\u0639\u0627\u0644 \u0645\u06CC\u200C\u0634\u0648\u062F.`
-      },
-      {
-        label: `pullback: \u06F4 \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 \u0646\u0632\u0648\u0644\u06CC \u0628\u0627\u0634\u062F`,
-        met: pb.met,
-        detail: `\u0627\u06A9\u0646\u0648\u0646 ${deltaPip.toFixed(1)} pip \u0627\u0633\u062A\u061B \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F \u0628\u0627\u06CC\u062F \u0646\u0632\u0648\u0644\u06CC (< \u06F0) \u0628\u0627\u0634\u062F (buy-the-dip).`
-      }
-    ];
-    return {
-      state: "APPROACHING",
-      regime: reg,
-      headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0633\u0634\u0646\u0650 \u0627\u0631\u0648\u067E\u0627",
-      sourceLayer: { code: "S73", name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0633\u0634\u0646\u0650 \u0627\u0631\u0648\u067E\u0627 (Session-Open Drift)", kind: "session" },
-      reason: `\u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0633\u0627\u0639\u062A\u0650 ${ENTRY_HOUR_UTC}:00 UTC \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F\u0647\u200C\u0627\u06CC\u0645. ${nowUtcHour === ENTRY_HOUR_UTC ? "\u06A9\u0646\u062F\u0644\u0650 \u0633\u0634\u0646 \u0628\u0627\u0632 \u0627\u0633\u062A \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 pullback (\u0646\u0632\u0648\u0644\u06CC\u200C\u0628\u0648\u062F\u0646\u0650 \u06F4 \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631) \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647." : "\u06A9\u0646\u062F\u0644\u0650 \u0633\u0634\u0646 \u0647\u0646\u0648\u0632 \u0622\u063A\u0627\u0632 \u0646\u0634\u062F\u0647."} \u062A\u0627 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0647\u0631 \u062F\u0648 \u0634\u0631\u0637\u0650 \u0632\u06CC\u0631 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645.`,
-      confirmations,
-      indicators,
-      timeGate: {
-        layerCode: "S73",
-        label: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0633\u0634\u0646\u0650 \u0627\u0631\u0648\u067E\u0627 (EURUSD Session-Open)",
-        entryHoursUtc: [ENTRY_HOUR_UTC],
-        windowOpen: nowUtcHour === ENTRY_HOUR_UTC
-      }
-    };
-  }
-  return {
-    state: "NEUTRAL",
-    regime: reg,
-    headline: "\u062E\u0646\u062B\u06CC \u2014 \u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0633\u0634\u0646",
-    reason: `\u0633\u0627\u0639\u062A\u0650 \u062C\u0627\u0631\u06CC ${nowUtcHour}:00 UTC \u0627\u0633\u062A \u0648 \u0646\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 S73 (\u06A9\u0646\u062F\u0644\u0650 ${ENTRY_HOUR_UTC}:00 UTC) \u0648 \u0646\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 S164 (\u0633\u0648\u0645\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u0645\u0627\u0646\u062F\u0647 \u0628\u0647 \u067E\u0627\u06CC\u0627\u0646 \u0645\u0627\u0647\u060C ${S164_ENTRY_HOUR_UTC}:00 UTC) \u0641\u0639\u0627\u0644 \u0646\u06CC\u0633\u062A. \u062E\u0627\u0631\u062C \u0627\u0632 \u0627\u06CC\u0646 \u0645\u062D\u0644\u200C\u0647\u0627\u06CC \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647 EURUSD \u0639\u0645\u062F\u062A\u0627\u064B random-walk \u0627\u0633\u062A\u061B \u067E\u0633 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645. (\u0627\u06CC\u0646 \u062F\u0642\u06CC\u0642\u0627\u064B \u0645\u0646\u0637\u0642\u0650 \xAB\u0633\u0648\u062F \u06F0 \u0628\u0647\u062A\u0631 \u0627\u0632 \u0645\u0646\u0641\u06CC\xBB \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 #\u06F1 \u0627\u0633\u062A \u2014 \u0647\u0645\u0627\u0646 \u062F\u0631\u0633\u06CC \u06A9\u0647 S71/S72 \u062F\u0627\u062F.)`,
-    indicators,
-    timeGate: {
-      layerCode: "S73",
-      label: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646\u0650 \u0633\u0634\u0646\u0650 \u0627\u0631\u0648\u067E\u0627 (EURUSD Session-Open)",
-      entryHoursUtc: [ENTRY_HOUR_UTC],
-      windowOpen: false
-    }
-  };
-}
-function decideEurusdM15(a, open, high, low, close, capital = DEFAULT_CAPITAL, riskPct = DEFAULT_RISK_PCT) {
-  const spec = assetSpec("EURUSD");
-  const price = a.price;
-  const reg = {
-    regime: "range",
-    efficiencyRatio: 0,
-    trendy: false,
-    adx: a.adx,
-    activeStream: "none",
-    bucket: "brooks-second-entry"
-  };
-  const s213 = detectS213Short(open, high, low, close);
-  const emaGapPip = (s213.emaFast - s213.emaSlow) / PIP5;
-  const s213Indicators = [
-    {
-      name: "\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0627\u062E\u06CC\u0631",
-      value: `${s213.spikeBars}/${S213_SPK} \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0646\u062F`,
-      status: s213.spikeBars >= S213_SPK ? "ok" : "warn"
-    },
-    {
-      name: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA10>EMA30)",
-      value: Number.isFinite(emaGapPip) ? `${emaGapPip >= 0 ? "+" : ""}${emaGapPip.toFixed(1)} pip` : "\u2014",
-      status: emaGapPip > 0 ? "ok" : "warn"
-    },
-    {
-      name: "\u062A\u0644\u0627\u0634\u0650 \u0628\u0631\u06AF\u0634\u062A",
-      value: s213.phase === "entry" ? "\u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645 \u2713" : s213.phase === "approaching" ? "\u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644 (\u0631\u062F \u0645\u06CC\u200C\u0634\u0648\u062F)" : "\u0628\u062F\u0648\u0646 \u0633\u0627\u062E\u062A\u0627\u0631",
-      status: s213.phase === "entry" ? "ok" : s213.phase === "approaching" ? "warn" : "neutral"
-    },
-    {
-      name: "\u0641\u06CC\u0644\u062A\u0631\u0650 good-fill",
-      value: s213.phase === "entry" ? s213.goodFillOk ? "\u0642\u06CC\u0645\u062A \u0645\u0633\u0627\u0648\u06CC/\u0628\u062F\u062A\u0631 \u2713" : "\u0642\u06CC\u0645\u062A\u0650 \u0628\u0647\u062A\u0631 \u2192 \u062A\u0644\u0647" : "\u2014",
-      status: s213.phase === "entry" ? s213.goodFillOk ? "ok" : "bad" : "neutral"
-    },
-    { name: "RSI(14)", value: a.rsi14.toFixed(1), status: "neutral" },
-    { name: "ATR", value: (a.atr / PIP5).toFixed(1) + " pip", status: "neutral" }
-  ];
-  if (s213.phase === "entry") {
-    const entry = price;
-    const sl213 = entry + S213_SL_PIP * PIP5;
-    const tp213 = entry - S213_TP_PIP * PIP5;
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, S213_SL_PIP * PIP5, 1, spec);
-    const rd = Math.round(riskDollars * 100) / 100;
-    return {
-      state: "ENTRY",
-      regime: reg,
-      headline: "\u0648\u0631\u0648\u062F \u0641\u0631\u0648\u0634 (SHORT) \u2014 \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A \u067E\u0633 \u0627\u0632 \u0627\u0633\u067E\u0627\u06CC\u06A9 \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F",
-      sourceLayer: {
-        code: "S213",
-        name: "\u0648\u0631\u0648\u062F\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A (Al Brooks \u0641\u0635\u0644\u0650 \u06F1\u06F0)",
-        kind: "price-action",
-        filters: [
-          `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 ${S213_SPK}+ \u06A9\u0646\u062F\u0644\u06CC (momentum-guard)`,
-          "\u0631\u062F\u0650 \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644\u0650 \u0628\u0631\u06AF\u0634\u062A\u060C \u0648\u0631\u0648\u062F \u0631\u0648\u06CC \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645",
-          "\u0641\u06CC\u0644\u062A\u0631\u0650 good-fill (\u0642\u06CC\u0645\u062A\u0650 \u0645\u0633\u0627\u0648\u06CC/\u0628\u062F\u062A\u0631)"
-        ],
-        manage: {
-          style: "fixed-tp-sl",
-          maxHoldBars: S213_MAX_HOLD_BARS,
-          note: `\u0644\u0628\u0647\u0654 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u0628\u0631\u06AF\u0634\u062A: TP ${S213_TP_PIP}pip / SL ${S213_SL_PIP}pip \u062B\u0627\u0628\u062A (\u0646\u0633\u0628\u062A \u2248 1:1.5). \u0628\u06A9\u200C\u062A\u0633\u062A \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F \u0641\u06CC\u0644\u062A\u0631\u0650 good-fill \u062D\u06CC\u0627\u062A\u06CC \u0627\u0633\u062A\u061B \u0627\u06AF\u0631 \u062A\u0627 ${S213_MAX_HOLD_BARS} \u06A9\u0646\u062F\u0644 (M15) \u0628\u0647 \u0647\u062F\u0641 \u0646\u0631\u0633\u06CC\u062F \u0637\u0628\u0642\u0650 \u067E\u0644\u0646 \u0628\u0628\u0646\u062F.`
-        }
-      },
-      reason: `\u06CC\u06A9 \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC (${s213.spikeBars} \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0646\u062F\u0650 \u067E\u06CC\u0627\u067E\u06CC) \u0631\u062E \u062F\u0627\u062F\u061B \u062A\u0644\u0627\u0634\u0650 *\u0627\u0648\u0644\u0650* \u0628\u0631\u06AF\u0634\u062A \u0631\u0627 \u0637\u0628\u0642\u0650 \u0642\u0627\u0639\u062F\u0647\u0654 momentum-guard\u0650 \u0628\u0631\u0648\u06A9\u0633 \u0631\u062F \u06A9\u0631\u062F\u06CC\u0645 \u0648 \u0627\u06A9\u0646\u0648\u0646 *\u062F\u0648\u0645\u06CC\u0646* \u062A\u0644\u0627\u0634\u0650 \u0628\u0631\u06AF\u0634\u062A \u0634\u06A9\u0644 \u06AF\u0631\u0641\u062A. \u0641\u06CC\u0644\u062A\u0631\u0650 \xABgood fill = bad trade\xBB \u0647\u0645 \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A (\u062A\u0631\u06CC\u06AF\u0631 \u0645\u0633\u0627\u0648\u06CC/\u0628\u062F\u062A\u0631 \u0627\u0632 \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644). S213 \u0631\u0648\u06CC EURUSD M15 \u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 +$418 \u0628\u0627 WR=59.6\u066A\u060C PF=2.13 \u0648 \u0647\u0631 \u06F4 walk-forward \u0645\u062B\u0628\u062A \u062F\u0627\u062F (\u0647\u0645\u067E\u0648\u0634\u0627\u0646\u06CC\u0650 \u062A\u0646\u0647\u0627 \u06F6.\u06F3\u066A \u0628\u0627 \u067E\u0631\u062A\u0641\u0648\u06CC \u21D2 \u0644\u0628\u0647\u0654 \u0646\u0648\u060C \u0646\u0647 \u0635\u0631\u0641\u0627\u064B \u0641\u06CC\u0644\u062A\u0631).`,
-      direction: "SHORT",
-      entry,
-      tp: tp213,
-      sl: sl213,
-      rr: `TP ${S213_TP_PIP} pip / SL ${S213_SL_PIP} pip (\u2248 1:${(S213_TP_PIP / S213_SL_PIP).toFixed(2)})`,
-      probability: 59.6,
-      sizing: {
-        lotMultiplier: 1,
-        label: "\u062D\u062C\u0645 \u067E\u0627\u06CC\u0647\u0654 S213 (\u06F1\xD7)",
-        note: `\u0631\u06CC\u0633\u06A9 \u062B\u0627\u0628\u062A\u061B \u062E\u0631\u0648\u062C \u062D\u062F\u0627\u06A9\u062B\u0631 \u067E\u0633 \u0627\u0632 ${S213_MAX_HOLD_BARS} \u06A9\u0646\u062F\u0644 M15.`,
-        lots: lots ?? void 0,
-        riskDollars: rd,
-        capital,
-        riskPct,
-        capitalNote: `\u0633\u0631\u0645\u0627\u06CC\u0647 ${capital.toLocaleString("en-US")}$\u060C \u0631\u06CC\u0633\u06A9 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}\u066A\u060C \u062D\u062C\u0645 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots != null ? lots.toFixed(2) : "\u2014"} lot\u061B \u0632\u06CC\u0627\u0646 \u0647\u062F\u0641 \u062F\u0631 SL \u062D\u062F\u0648\u062F ${rd.toLocaleString("en-US")}$.`
-      },
-      tpPlan: { multiplier: S213_TP_PIP, note: `TP \u062B\u0627\u0628\u062A ${S213_TP_PIP} pip\u061B \u0646\u0633\u0628\u062A\u0650 \u067E\u0627\u06CC\u062F\u0627\u0631\u0650 \u06F1:\u06F1.\u06F5 (grid \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F).` },
-      slPlan: { multiplier: S213_SL_PIP, note: `SL \u062B\u0627\u0628\u062A ${S213_SL_PIP} pip \u0622\u0646\u200C\u0633\u0648\u06CC \u0627\u06A9\u0633\u062A\u0631\u0645\u0650 \u0627\u0644\u06AF\u0648\u061B \u0628\u062F\u0648\u0646 \u062C\u0627\u0628\u0647\u200C\u062C\u0627\u06CC\u06CC \u0642\u0628\u0644 \u0627\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0645\u062F\u06CC\u0631\u06CC\u062A.` },
-      indicators: s213Indicators
-    };
-  }
-  if (s213.phase === "approaching") {
-    return {
-      state: "APPROACHING",
-      regime: reg,
-      headline: "\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0641\u0631\u0648\u0634 \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A",
-      sourceLayer: { code: "S213", name: "\u0648\u0631\u0648\u062F\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A (Al Brooks \u0641\u0635\u0644\u0650 \u06F1\u06F0)", kind: "price-action" },
-      reason: `\u06CC\u06A9 \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC (${s213.spikeBars} \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0646\u062F) \u062F\u06CC\u062F\u0647 \u0634\u062F \u0648 \u0627\u06A9\u0646\u0648\u0646 *\u0627\u0648\u0644\u06CC\u0646* \u062A\u0644\u0627\u0634\u0650 \u0628\u0631\u06AF\u0634\u062A \u062F\u0631 \u062D\u0627\u0644\u0650 \u0634\u06A9\u0644\u200C\u06AF\u06CC\u0631\u06CC \u0627\u0633\u062A. \u0637\u0628\u0642\u0650 \u0642\u0627\u0639\u062F\u0647\u0654 momentum-guard\u0650 \u0628\u0631\u0648\u06A9\u0633\u060C \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644 \u0631\u0627 \u0646\u0645\u06CC\u200C\u06AF\u06CC\u0631\u06CC\u0645\u061B \u0645\u0646\u062A\u0638\u0631 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645 \u062A\u0627 \u0631\u0648\u0646\u062F \u06CC\u06A9\u06CC-\u062F\u0648 \u06A9\u0646\u062F\u0644 \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F \u0648 *\u062F\u0648\u0645\u06CC\u0646* \u062A\u0644\u0627\u0634\u0650 \u0628\u0631\u06AF\u0634\u062A (\u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 good-fill) \u062A\u0623\u06CC\u06CC\u062F \u0634\u0648\u062F.`,
-      confirmations: [
-        {
-          label: "\u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A \u0634\u06A9\u0644 \u0628\u06AF\u06CC\u0631\u062F (bear-close \u06A9\u0647 low \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0631\u0627 \u0628\u0634\u06A9\u0646\u062F)",
-          met: false,
-          detail: "\u0627\u06A9\u0646\u0648\u0646 \u0641\u0642\u0637 \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644 \u062F\u06CC\u062F\u0647 \u0634\u062F\u0647\u061B \u0648\u0631\u0648\u062F \u062A\u0646\u0647\u0627 \u0631\u0648\u06CC \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645 \u0645\u062C\u0627\u0632 \u0627\u0633\u062A."
-        },
-        {
-          label: "\u0641\u06CC\u0644\u062A\u0631\u0650 good-fill: \u062A\u0631\u06CC\u06AF\u0631\u0650 \u062F\u0648\u0645 \u0645\u0633\u0627\u0648\u06CC/\u0628\u062F\u062A\u0631 \u0627\u0632 \u0627\u0648\u0644 \u0628\u0627\u0634\u062F",
-          met: false,
-          detail: "\u0627\u06AF\u0631 \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645 \u0642\u06CC\u0645\u062A\u0650 \u0628\u0647\u062A\u0631\u06CC \u0628\u062F\u0647\u062F\u060C \u062A\u0644\u0647 \u0627\u0633\u062A \u0648 \u0631\u062F \u0645\u06CC\u200C\u0634\u0648\u062F."
-        }
-      ],
-      indicators: s213Indicators
-    };
-  }
-  return {
-    state: "NEUTRAL",
-    regime: reg,
-    headline: "\u062E\u0646\u062B\u06CC \u2014 \u0628\u062F\u0648\u0646\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0648\u0631\u0648\u062F\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A",
-    reason: `\u0647\u06CC\u0686 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 S213 (\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC \u2192 \u0631\u062F\u0650 \u062A\u0644\u0627\u0634\u0650 \u0627\u0648\u0644 \u2192 \u062A\u0644\u0627\u0634\u0650 \u062F\u0648\u0645\u0650 \u0628\u0631\u06AF\u0634\u062A) \u0631\u0648\u06CC EURUSD M15 \u0641\u0639\u0627\u0644 \u0646\u06CC\u0633\u062A. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC \u0648 \u0627\u0646\u062A\u062E\u0627\u0628\u06CC \u0627\u0633\u062A (\u0628\u0647\u200C\u0637\u0648\u0631\u0650 \u0645\u062A\u0648\u0633\u0637 ~\u06F1\u06F5 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u062F\u0631 \u0633\u0627\u0644)\u061B \u062E\u0627\u0631\u062C \u0627\u0632 \u0622\u0646 \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645 \u062A\u0627 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0636\u0639\u06CC\u0641 \u062A\u0648\u0644\u06CC\u062F \u0646\u0634\u0648\u062F (\u0645\u0646\u0637\u0642\u0650 \xAB\u0633\u0648\u062F \u06F0 \u0628\u0647\u062A\u0631 \u0627\u0632 \u0645\u0646\u0641\u06CC\xBB \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 #\u06F1).`,
-    indicators: s213Indicators
-  };
-}
-
-// ../web_tool/src/gold_m5_late_entry.ts
-var EMA_FAST = 20;
-var EMA_SLOW = 50;
-var N_RUN = 4;
-var BR = 0.5;
-var CLX = 1.5;
-var LOOK = 12;
-var ATR_LEN = 14;
-var NIGHT = /* @__PURE__ */ new Set([19, 20, 21, 22, 23]);
-var PRE_EOM_MIN = -8;
-var PRE_EOM_MAX = -6;
-var S214_HIDDEN_TP_PIP = 300;
-var S214_HIDDEN_SL_PIP = 150;
-function isWeekday(y, m0, d) {
-  const wd = new Date(Date.UTC(y, m0, d)).getUTCDay();
-  return wd >= 1 && wd <= 5;
-}
-function fromEndForDate(y, m0, d) {
-  const lastDay = new Date(Date.UTC(y, m0 + 1, 0)).getUTCDate();
-  let workdaysAfter = 0;
-  for (let dd = d + 1; dd <= lastDay; dd++) {
-    if (isWeekday(y, m0, dd)) workdaysAfter++;
-  }
-  return -(1 + workdaysAfter);
-}
-function computeFromEnd(times) {
-  const n = times.length;
-  const out = new Array(n);
-  const cache = /* @__PURE__ */ new Map();
-  for (let i = 0; i < n; i++) {
-    const dayKey = Math.floor(times[i] / 86400);
-    let fe = cache.get(dayKey);
-    if (fe === void 0) {
-      const dt = new Date(times[i] * 1e3);
-      fe = fromEndForDate(dt.getUTCFullYear(), dt.getUTCMonth(), dt.getUTCDate());
-      cache.set(dayKey, fe);
-    }
-    out[i] = fe;
-  }
-  return out;
-}
-function lateEntryMomentum(open, high, low, close) {
-  const n = close.length;
-  const emaF = ema(close, EMA_FAST);
-  const emaS = ema(close, EMA_SLOW);
-  const atr2 = atr(
-    close.map((c, i2) => ({ time: 0, open: open[i2], high: high[i2], low: low[i2], close: c, volume: 0 })),
-    ATR_LEN
-  );
-  const regimeUp = emaF[n - 1] > emaS[n - 1];
-  const trendBar = new Array(n);
-  const rng = new Array(n);
-  for (let i2 = 0; i2 < n; i2++) {
-    rng[i2] = Math.max(high[i2] - low[i2], 1e-9);
-    const body = close[i2] - open[i2];
-    trendBar[i2] = body > 0 && Math.abs(body) >= BR * rng[i2];
-  }
-  const runEvt = new Array(n).fill(false);
-  const climaxEvt = new Array(n).fill(false);
+// ../web_tool/src/streak_reversal_s326.ts
+var STREAK_REV_CFG = {
+  "XAUUSD-M5": { streakN: 5, rsiMax: 30, emaTrend: 200, runMinAtr: 0, atrP: 14, slMult: 3.1, tpMult: 1.15, maxHold: 24 },
+  "XAUUSD-M30": { streakN: 5, rsiMax: 30, emaTrend: 200, runMinAtr: 2.5, atrP: 14, slMult: 3.5, tpMult: 1.3, maxHold: 48 },
+  "EURUSD-M15": { streakN: 4, rsiMax: 30, emaTrend: 200, runMinAtr: 0, atrP: 14, slMult: 3.5, tpMult: 1.3, maxHold: 48 }
+};
+function downStreak(open, close) {
   let run = 0;
-  for (let i2 = 0; i2 < n; i2++) {
-    run = trendBar[i2] ? run + 1 : 0;
-    if (run === N_RUN && !isNaN(atr2[i2]) && atr2[i2] > 0) {
-      let sum = 0;
-      for (let j = i2 - N_RUN + 1; j <= i2; j++) sum += rng[j];
-      const avgRunRng = sum / N_RUN;
-      if (avgRunRng <= CLX * atr2[i2]) runEvt[i2] = true;
-      else climaxEvt[i2] = true;
-    }
+  for (let i = 0; i < close.length; i++) {
+    if (close[i] < open[i]) run++;
+    else run = 0;
   }
+  return run;
+}
+function computeStreakReversal(candles, cfg) {
+  const n = candles.length;
+  const need = Math.max(cfg.emaTrend, cfg.atrP) + cfg.streakN + 2;
+  const empty = {
+    active: false,
+    approaching: false,
+    streak: 0,
+    rsiVal: NaN,
+    emaVal: NaN,
+    atrVal: NaN,
+    aboveTrend: false,
+    runAmpAtr: 0,
+    reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC RSI/EMA200/ATR \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A."
+  };
+  if (n < need) return empty;
+  const open = candles.map((c) => c.open);
+  const close = candles.map((c) => c.close);
+  const rsiArr = rsi(close, 14);
+  const emaArr = ema(close, cfg.emaTrend);
+  const atrArr = atr(candles, cfg.atrP);
   const i = n - 1;
-  const lo = Math.max(0, i - LOOK);
-  let hadRecentRun = false;
-  let hadRecentClimax = false;
-  for (let k = lo; k <= i - 1; k++) {
-    if (runEvt[k]) hadRecentRun = true;
-    if (climaxEvt[k]) hadRecentClimax = true;
+  if ([rsiArr[i], emaArr[i], atrArr[i]].some((v) => Number.isNaN(v)) || !(atrArr[i] > 0)) return empty;
+  const pNow = close[i];
+  const streak = downStreak(open, close);
+  const aboveTrend = pNow > emaArr[i];
+  const rsiVal = rsiArr[i];
+  const atrVal = atrArr[i];
+  let runAmpAtr = 0;
+  if (streak >= 1 && i - streak >= 0) {
+    runAmpAtr = (close[i - streak] - pNow) / atrVal;
   }
-  let curRun = 0;
-  for (let k = i; k >= 0; k--) {
-    if (trendBar[k]) curRun++;
-    else break;
-  }
-  let maxRun = 0, cur = 0;
-  for (let k = lo; k <= i; k++) {
-    if (trendBar[k]) {
-      cur++;
-      if (cur > maxRun) maxRun = cur;
-    } else cur = 0;
+  const streakOk = streak >= cfg.streakN;
+  const oversold = rsiVal <= cfg.rsiMax;
+  const runOk = cfg.runMinAtr <= 0 || runAmpAtr >= cfg.runMinAtr;
+  const active = streakOk && oversold && aboveTrend && runOk;
+  const approaching = !active && streakOk && aboveTrend && runOk && (rsiVal > cfg.rsiMax && rsiVal <= cfg.rsiMax + 8);
+  let entry, sl, tp;
+  let reason;
+  const trendTxt = aboveTrend ? `\u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC EMA${cfg.emaTrend} (\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC)` : `\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 EMA${cfg.emaTrend}`;
+  if (active) {
+    entry = pNow;
+    sl = pNow - cfg.slMult * atrVal;
+    tp = pNow + cfg.tpMult * atrVal;
+    reason = `\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 (mean-reversion): ${streak} \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0645\u062A\u0648\u0627\u0644\u06CC + RSI14 ${rsiVal.toFixed(1)} \u2264 ${cfg.rsiMax} (\u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC/\u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634)\u060C \u0648 ${trendTxt}. \u0627\u06CC\u0646 \xAB\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 \u0628\u0647 \u0633\u0645\u062A\u0650 \u067E\u0627\u06CC\u06CC\u0646\xBB \u0627\u0633\u062A \u06A9\u0647 \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0647\u200C\u0633\u0631\u0639\u062A \u0628\u0631\u0645\u06CC\u200C\u06AF\u0631\u062F\u062F. \u0648\u0631\u0648\u062F LONG \u0628\u0627 \u0647\u062F\u0641\u0650 \u06A9\u0648\u0686\u06A9\u0650 \u0633\u0631\u06CC\u0639 (TP=${cfg.tpMult}\xD7ATR) \u0648 \u062D\u062F\u0650 \u0636\u0631\u0631\u0650 \u0628\u0627\u0632\u062A\u0631\u0650 ${cfg.slMult}\xD7ATR \u21D2 WR \u0628\u0627\u0644\u0627. SL=${sl.toFixed(2)} \u060C TP=${tp.toFixed(2)}. \u0628\u0631\u06AF\u0631\u0641\u062A\u0647 \u0627\u0632 \u0644\u0627\u06CC\u0647\u0654 Streak-Reversal (S326\u060C \u0627\u062D\u06CC\u0627\u06CC S22).`;
+  } else if (approaching) {
+    reason = `${streak} \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0645\u062A\u0648\u0627\u0644\u06CC \u0648 ${trendTxt}\u061B \u0627\u0645\u0627 RSI14 \u0647\u0646\u0648\u0632 ${rsiVal.toFixed(1)} \u0627\u0633\u062A (\u0647\u062F\u0641: \u2264 ${cfg.rsiMax}). \u0627\u06AF\u0631 \u0641\u0631\u0648\u0634 \u06A9\u0645\u06CC \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F \u0648 RSI \u0628\u0647 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 \u0628\u0631\u0633\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC\u0650 LONG \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0645\u0646\u062A\u0638\u0631\u0650 \u062A\u0623\u06CC\u06CC\u062F \u0628\u0645\u0627\u0646. \u0628\u0631\u06AF\u0631\u0641\u062A\u0647 \u0627\u0632 \u0644\u0627\u06CC\u0647\u0654 Streak-Reversal (S326).`;
+  } else if (!aboveTrend) {
+    reason = `${trendTxt} \u21D2 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0644\u0627\u0646 \xAB\u0686\u0627\u0642\u0648\u06CC \u062F\u0631 \u062D\u0627\u0644\u0650 \u0633\u0642\u0648\u0637\xBB \u0646\u0645\u06CC\u200C\u06AF\u06CC\u0631\u06CC\u0645\u061B \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u0631\u0627 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646 \u0634\u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`;
+  } else if (!streakOk) {
+    reason = `\u0631\u06AF\u0647\u0654 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0627\u0641\u06CC \u0646\u062F\u0627\u0631\u06CC\u0645 (${streak} \u0627\u0632 ${cfg.streakN} \u06A9\u0646\u062F\u0644\u0650 \u0644\u0627\u0632\u0645). \u0645\u0646\u062A\u0638\u0631\u0650 \u0641\u0631\u0648\u0634\u0650 \u0645\u062A\u0648\u0627\u0644\u06CC\u0650 \u0639\u0645\u06CC\u0642\u200C\u062A\u0631\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
+  } else {
+    reason = `\u0631\u06AF\u0647 \u0648 \u0631\u0698\u06CC\u0645 \u0628\u0631\u0642\u0631\u0627\u0631\u0646\u062F \u0627\u0645\u0627 RSI14=${rsiVal.toFixed(1)} \u0647\u0646\u0648\u0632 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 \u0646\u06CC\u0633\u062A (\u0647\u062F\u0641 \u2264 ${cfg.rsiMax})${cfg.runMinAtr > 0 ? ` \u06CC\u0627 \u0634\u062A\u0627\u0628\u0650 \u0631\u06AF\u0647 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A (${runAmpAtr.toFixed(2)}\xD7ATR \u0627\u0632 ${cfg.runMinAtr})` : ""}. \u0645\u0646\u062A\u0638\u0631\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062A\u0627\u0632\u0647 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
   }
   return {
-    active: hadRecentRun && regimeUp,
-    regimeUp,
-    hadRecentRun,
-    curRun,
-    // رالیِ قویِ climactic: رشتهٔ کافیِ صعودی هست ولی چون کندل‌ها بزرگ‌اند رد شده،
-    // یا رشتهٔ صعودیِ بلند (≥N_RUN) در جریان است ولی run رسمی ثبت نشده.
-    climaxBlocked: regimeUp && (hadRecentClimax || maxRun >= N_RUN && !hadRecentRun),
-    maxRun
-  };
-}
-function evalGoldM5LateEntry(open, high, low, close, times, price) {
-  const n = close.length;
-  const fromEndArr = computeFromEnd(times);
-  const fromEnd = fromEndArr[n - 1];
-  const utcHour = new Date(times[n - 1] * 1e3).getUTCHours();
-  const inPreEom = fromEnd >= PRE_EOM_MIN && fromEnd <= PRE_EOM_MAX;
-  const isDay = !NIGHT.has(utcHour);
-  const inWindow = inPreEom && isDay;
-  const mom = lateEntryMomentum(open, high, low, close);
-  const entry = inWindow && mom.active;
-  return {
+    active,
+    approaching,
+    streak,
+    rsiVal,
+    emaVal: emaArr[i],
+    atrVal,
+    aboveTrend,
+    runAmpAtr,
+    reason,
     entry,
-    inWindow,
-    regimeUp: mom.regimeUp,
-    hadRecentRun: mom.hadRecentRun,
-    curRun: mom.curRun,
-    climaxBlocked: mom.climaxBlocked,
-    maxRun: mom.maxRun,
-    fromEnd,
-    utcHour,
-    price
-  };
-}
-
-// ../web_tool/src/gold_trend_line.ts
-var TREND_LINE_CFG = {
-  "XAUUSD-M5": { id: "XAUUSD-M5", tfFa: "M5 (\u067E\u0646\u062C\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 10, emaSlow: 30, k: 5, pen: 0.6, maxGap: 40, slPip: 250, tpPip: 500, maxHoldBars: 96, indepNet: 3361, indepWr: 52.4 },
-  "XAUUSD-M15": { id: "XAUUSD-M15", tfFa: "M15 (\u067E\u0627\u0646\u0632\u062F\u0647\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 20, emaSlow: 50, k: 5, pen: 1, maxGap: 80, slPip: 300, tpPip: 450, maxHoldBars: 48, indepNet: 2714, indepWr: 57.1 },
-  "XAUUSD-M30": { id: "XAUUSD-M30", tfFa: "M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 10, emaSlow: 30, k: 5, pen: 1, maxGap: 40, slPip: 150, tpPip: 300, maxHoldBars: 32, indepNet: 5599, indepWr: 52.4 },
-  "XAUUSD-H1": { id: "XAUUSD-H1", tfFa: "H1 (\u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647)", emaFast: 20, emaSlow: 50, k: 3, pen: 1, maxGap: 40, slPip: 150, tpPip: 300, maxHoldBars: 24, indepNet: 3217, indepWr: 47.6 },
-  "XAUUSD-H4": { id: "XAUUSD-H4", tfFa: "H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)", emaFast: 20, emaSlow: 50, k: 5, pen: 1, maxGap: 80, slPip: 250, tpPip: 500, maxHoldBars: 16, indepNet: 1415, indepWr: 48.9 }
-};
-var PIP6 = 0.1;
-function swingPivots(high, low, k) {
-  const n = high.length;
-  const sh = new Array(n).fill(false);
-  const sl = new Array(n).fill(false);
-  for (let i = k; i < n - k; i++) {
-    let isHigh = true, isLow = true;
-    for (let j = 1; j <= k; j++) {
-      if (!(high[i] > high[i - j] && high[i] > high[i + j])) isHigh = false;
-      if (!(low[i] < low[i - j] && low[i] < low[i + j])) isLow = false;
-      if (!isHigh && !isLow) break;
-    }
-    sh[i] = isHigh;
-    sl[i] = isLow;
-  }
-  return { sh, sl };
-}
-function isRange(high, low, t, lb = 3) {
-  if (t < lb) return false;
-  let hiMax = -Infinity, loMin = Infinity, indiv = 0;
-  for (let i = t - lb + 1; i <= t; i++) {
-    hiMax = Math.max(hiMax, high[i]);
-    loMin = Math.min(loMin, low[i]);
-    indiv += high[i] - low[i];
-  }
-  const span = hiMax - loMin;
-  if (span <= 0) return true;
-  return indiv / span >= 2.3;
-}
-function computeTrendLine(open, high, low, close, cfg) {
-  const n = close.length;
-  const empty = {
-    state: "NEUTRAL",
-    hasLine: false,
-    lineValue: NaN,
-    slope: NaN,
-    pivot1Idx: -1,
-    pivot2Idx: -1,
-    gapBars: 0,
-    regimeUp: false,
-    atr: NaN,
-    tol: NaN,
-    distToLinePct: NaN,
-    penetrated: false,
-    closedBack: false,
-    bullBar: false,
-    isRange: false,
-    slDist: cfg.slPip * PIP6,
-    tpDist: cfg.tpPip * PIP6,
-    reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0633\u0627\u062E\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0646\u06CC\u0633\u062A."
-  };
-  if (n < cfg.emaSlow + cfg.k + 5) return empty;
-  const candles = close.map((cl, i) => ({
-    time: i,
-    open: open[i],
-    high: high[i],
-    low: low[i],
-    close: cl,
-    volume: 0
-  }));
-  const atrArr = atr(candles, 14);
-  const ef = ema(close, cfg.emaFast);
-  const es = ema(close, cfg.emaSlow);
-  const { sl: slPiv } = swingPivots(high, low, cfg.k);
-  const piv = [];
-  for (let i = 0; i < n; i++) if (slPiv[i]) piv.push(i);
-  const t = n - 1;
-  const confirmed = piv.filter((p) => p + cfg.k <= t);
-  if (confirmed.length < 2) return { ...empty, reason: "\u0647\u0646\u0648\u0632 \u062F\u0648 \u06A9\u0641\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0634\u062F\u0647 \u0628\u0631\u0627\u06CC \u0631\u0633\u0645\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0646\u062F\u0627\u0631\u06CC\u0645." };
-  const i1 = confirmed[confirmed.length - 2];
-  const i2 = confirmed[confirmed.length - 1];
-  const gap = i2 - i1;
-  const atr2 = atrArr[t];
-  const regimeUp = ef[t] > es[t];
-  if (gap <= 0 || gap > cfg.maxGap || !isFinite(atr2) || atr2 <= 0) {
-    return {
-      ...empty,
-      hasLine: false,
-      gapBars: gap,
-      regimeUp,
-      atr: atr2,
-      reason: gap > cfg.maxGap ? `\u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631 \u062E\u06CC\u0644\u06CC \u062F\u0648\u0631 \u0627\u0632 \u0647\u0645\u200C\u0627\u0646\u062F (${gap} \u06A9\u0646\u062F\u0644 > \u0633\u0642\u0641\u0650 ${cfg.maxGap})\u061B \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u062F\u06CC\u06AF\u0631 \xAB\u062A\u0627\u0632\u0647\xBB \u0646\u06CC\u0633\u062A.` : "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0633\u0627\u062E\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0645\u0639\u062A\u0628\u0631 \u0641\u0631\u0627\u0647\u0645 \u0646\u06CC\u0633\u062A."
-    };
-  }
-  const m = (low[i2] - low[i1]) / (i2 - i1);
-  const lineT = low[i2] + m * (t - i2);
-  const tol = cfg.pen * atr2;
-  const distPct = (close[t] - lineT) / lineT * 100;
-  const validUpLine = low[i2] > low[i1] && m > 0 && regimeUp;
-  const penetrated = low[t] < lineT;
-  const closedBack = close[t] > lineT - tol;
-  const bullBar = close[t] >= open[t];
-  const rng = isRange(high, low, t);
-  const base = {
-    ...empty,
-    hasLine: validUpLine,
-    lineValue: lineT,
-    slope: m,
-    pivot1Idx: i1,
-    pivot2Idx: i2,
-    gapBars: gap,
-    regimeUp,
-    atr: atr2,
-    tol,
-    distToLinePct: distPct,
-    penetrated,
-    closedBack,
-    bullBar,
-    isRange: rng
-  };
-  if (!validUpLine) {
-    return {
-      ...base,
-      state: "NEUTRAL",
-      reason: !regimeUp ? "\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A (EMA\u0650 \u062A\u0646\u062F \u0632\u06CC\u0631\u0650 EMA\u0650 \u06A9\u0646\u062F)\u061B \u0633\u062A\u0627\u067E\u0650 \xAB\u062A\u0633\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\xBB \u063A\u06CC\u0631\u0641\u0639\u0627\u0644 \u0627\u0633\u062A." : "\u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631 \u06CC\u06A9 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0645\u0639\u062A\u0628\u0631 (\u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631 + \u0634\u06CC\u0628\u0650 \u0645\u062B\u0628\u062A) \u0646\u0645\u06CC\u200C\u0633\u0627\u0632\u0646\u062F."
-    };
-  }
-  if (penetrated && closedBack && bullBar && !rng) {
-    return {
-      ...base,
-      state: "ENTRY",
-      reason: `\u0642\u06CC\u0645\u062A \u062F\u0631 \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (${lineT.toFixed(2)}$) \u0631\u0641\u062A \u0627\u0645\u0627 \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u0622\u0646 \u0628\u0633\u062A\u0647 \u0634\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F). \u0637\u0628\u0642\u0650 \u0641\u0635\u0644\u0650 \u06F1\u06F3 \u06A9\u062A\u0627\u0628\u0650 Al Brooks\u060C \u0627\u06CC\u0646 \u0633\u062A\u0627\u067E\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A: \u062A\u0627\u0632\u0647\u200C\u06A9\u0627\u0631\u0647\u0627 \u0627\u06CC\u0646\u062C\u0627 \u0645\u06CC\u200C\u0641\u0631\u0648\u0634\u0646\u062F \u0648\u0644\u06CC \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06AF\u0631\u0627\u0646\u0650 \u0628\u0627\u062A\u062C\u0631\u0628\u0647 \u0645\u06CC\u200C\u062E\u0631\u0646\u062F. \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u062F\u0631 \u0628\u0627\u0632\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F.`
-    };
-  }
-  const near = Math.abs(close[t] - lineT) < 0.5 * tol || penetrated && !closedBack;
-  if (near) {
-    let why;
-    if (penetrated && !closedBack) {
-      why = `\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (${lineT.toFixed(2)}$) \u0646\u0641\u0648\u0630 \u06A9\u0631\u062F\u0647 \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC \u0622\u0646 \u0646\u0628\u0633\u062A\u0647 \u0627\u0633\u062A. \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642)\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0645\u0627\u0646\u06CC\u062F.`;
-    } else if (rng) {
-      why = `\u0642\u06CC\u0645\u062A \u0646\u0632\u062F\u06CC\u06A9\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0627\u0633\u062A \u0627\u0645\u0627 \u0633\u0647 \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 \u06A9\u0627\u0645\u0644\u0627\u064B \u0647\u0645\u200C\u067E\u0648\u0634\u200C\u0627\u0646\u062F (\u0628\u0627\u0632\u0627\u0631\u0650 \u0631\u0646\u062C). \u0637\u0628\u0642\u0650 Brooks \u062F\u0631 \u0631\u0646\u062C\u060C \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637 \u0628\u06CC\u200C\u062B\u0645\u0631 \u0627\u0633\u062A\u061B \u062A\u0627 \u062E\u0631\u0648\u062C \u0627\u0632 \u062D\u0627\u0644\u062A\u0650 \u0631\u0646\u062C \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u06CC\u0645.`;
-    } else {
-      why = `\u0642\u06CC\u0645\u062A \u0628\u0647 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (${lineT.toFixed(2)}$) \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F\u0647 \u0627\u0633\u062A (\u0641\u0627\u0635\u0644\u0647 ${distPct.toFixed(2)}%). \u0627\u06AF\u0631 \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u0642\u06CC\u0645\u062A \u0631\u0627 \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637 \u0628\u0628\u0631\u062F \u0648 \u0633\u067E\u0633 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F\u060C \u0633\u062A\u0627\u067E\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u06A9\u0627\u0645\u0644 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
-    }
-    return { ...base, state: "APPROACHING", reason: why };
-  }
-  return {
-    ...base,
-    state: "NEUTRAL",
-    reason: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0641\u0639\u0627\u0644 \u0627\u0633\u062A (${lineT.toFixed(2)}$) \u0627\u0645\u0627 \u0642\u06CC\u0645\u062A (${close[t].toFixed(2)}$) \u0641\u0627\u0635\u0644\u0647\u0654 \u0645\u0639\u0646\u0627\u062F\u0627\u0631\u06CC \u0628\u0627 \u0622\u0646 \u062F\u0627\u0631\u062F (${distPct.toFixed(2)}%). \u062A\u0627 \u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646\u0650 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062E\u0637 \u0648 \u0634\u06A9\u0644\u200C\u06AF\u06CC\u0631\u06CC\u0650 \xAB\u062A\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\xBB\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u06CC \u0646\u062F\u0627\u0631\u06CC\u0645.`
-  };
-}
-function trendLineRegime(tl) {
-  return {
-    regime: tl.regimeUp ? "trend_up" : "range",
-    efficiencyRatio: 0,
-    trendy: tl.regimeUp,
-    adx: 0,
-    activeStream: tl.regimeUp ? "bull" : "none",
-    bucket: tl.regimeUp ? "trend_line" : "none"
-  };
-}
-function trendLineDecision(cfg, a, open, high, low, close, capital = 1e4, riskPct = 1, fallback) {
-  const tl = computeTrendLine(open, high, low, close, cfg);
-  const reg = trendLineRegime(tl);
-  const spec = assetSpec("XAUUSD");
-  const tlInd = [
-    { name: "\u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645", value: cfg.tfFa, status: "neutral" },
-    {
-      name: "\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0627\u0632 \u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631)",
-      value: tl.hasLine && isFinite(tl.lineValue) ? tl.lineValue.toFixed(2) + "$" : "\u2014",
-      status: tl.hasLine ? "ok" : "neutral"
-    },
-    {
-      name: "\u0631\u0627\u0628\u0637\u0647\u0654 \u0642\u06CC\u0645\u062A \u0628\u0627 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F",
-      value: isFinite(tl.distToLinePct) ? tl.penetrated ? "\u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637 (\u062A\u0633\u062A)" : `${tl.distToLinePct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u062E\u0637` : "\u2014",
-      status: tl.state === "ENTRY" ? "ok" : tl.penetrated ? "warn" : "neutral"
-    },
-    {
-      name: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA${cfg.emaFast}/${cfg.emaSlow})`,
-      value: tl.regimeUp ? "\u0635\u0639\u0648\u062F\u06CC \u2713" : "\u0646\u0647\u200C\u0635\u0639\u0648\u062F\u06CC",
-      status: tl.regimeUp ? "ok" : "neutral"
-    },
-    {
-      name: "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637 (\u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637)",
-      value: tl.penetrated ? tl.closedBack ? "\u0628\u0644\u0647 \u2713" : "\u0647\u0646\u0648\u0632 \u0646\u0647" : "\u062E\u06CC\u0631",
-      status: tl.state === "ENTRY" ? "ok" : "neutral"
-    },
-    { name: "ATR", value: isFinite(tl.atr) ? tl.atr.toFixed(2) + "$" : "\u2014", status: "neutral" },
-    { name: "\u0642\u06CC\u0645\u062A\u0650 \u0641\u0639\u0644\u06CC", value: a.price ? a.price.toFixed(2) : "\u2014", status: "neutral" }
-  ];
-  if (tl.state === "ENTRY") {
-    const entry = a.price;
-    const sl = entry - tl.slDist;
-    const tp = entry + tl.tpDist;
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, tl.slDist, 1, spec);
-    const rd = Math.round(riskDollars * 100) / 100;
-    return {
-      state: "ENTRY",
-      regime: reg,
-      headline: `\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062A\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0637\u0644\u0627 ${cfg.tfFa})`,
-      reason: tl.reason,
-      sourceLayer: {
-        code: "S215",
-        name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line Failed-Breakout) \u2014 ${cfg.tfFa}`,
-        kind: "price-action",
-        filters: [
-          `\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA${cfg.emaFast}>EMA${cfg.emaSlow}`,
-          "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u060C \u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637)",
-          "\u0642\u06CC\u062F\u0650 \u0636\u062F\u0650 \u0631\u0646\u062C (\u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u063A\u06CC\u0631\u0650 \u0647\u0645\u200C\u067E\u0648\u0634)"
-        ],
-        manage: {
-          style: "structural-trail",
-          beTriggerR: 1,
-          trailDistPrice: tl.slDist,
-          maxHoldBars: cfg.maxHoldBars,
-          note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC (\u062E\u0637\u0650 \u0631\u0648\u0646\u062F): SL \u0627\u0648\u0644\u06CC\u0647 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0646\u0641\u0648\u0630 (${tl.slDist.toFixed(2)}$). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u06CC\u0627 \u06A9\u0641\u0650 \u0647\u0631 \u067E\u0648\u0644\u0628\u06A9\u0650 \u062C\u062F\u06CC\u062F \u0628\u0627\u0644\u0627 \u0628\u06CC\u0627\u0648\u0631 \u2014 \u062A\u0627 \u0633\u0642\u0641\u0650 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa}. \u0627\u06AF\u0631 \u0642\u06CC\u0645\u062A \u0642\u0627\u0637\u0639\u0627\u0646\u0647 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0628\u0633\u062A\u0647 \u0634\u062F \u0648 \u0628\u0627\u0644\u0627 \u0646\u06CC\u0627\u0645\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0631\u0648\u0646\u062F)\u060C \u0641\u0648\u0631\u0627\u064B \u062E\u0627\u0631\u062C \u0634\u0648 \u062D\u062A\u06CC \u0642\u0628\u0644 \u0627\u0632 TP.`
-        }
-      },
-      direction: "LONG",
-      entry,
-      tp,
-      sl,
-      rr: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) / TP ${cfg.tpPip}pip (${tl.tpDist.toFixed(2)}$) \u2014 R:R \u2248 \u06F1:${(cfg.tpPip / cfg.slPip).toFixed(1)} (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F)`,
-      probability: Math.round(cfg.indepWr),
-      sizing: {
-        lotMultiplier: 1,
-        label: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (${cfg.tfFa})`,
-        note: `\u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B \u0627\u0633\u067E\u0631\u062F\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0637\u0644\u0627 \u0644\u062D\u0627\u0638 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0644\u0628\u0647 \u0641\u0642\u0637 \u0631\u0648\u06CC \u0637\u0644\u0627 \u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0631\u0648\u06CC EURUSD \u0628\u06CC\u200C\u0627\u062B\u0631 \u0628\u0648\u062F) \u0648 \u0645\u0633\u062A\u0642\u0644 \u0627\u0632 \u0633\u0627\u06CC\u0631\u0650 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627\u06CC \u0633\u0627\u06CC\u062A \u0627\u0633\u062A \u21D2 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0628\u0631\u062F.`,
-        lots: lots ?? void 0,
-        riskDollars: rd,
-        capital,
-        riskPct,
-        capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${tl.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-      },
-      tpPlan: {
-        multiplier: cfg.tpPip,
-        note: `TP \u062F\u0648\u0631\u0650 ${cfg.tpPip}pip. \u067E\u0633 \u0627\u0632 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u060C \u062D\u0631\u06A9\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0632\u0631\u06AF \u0627\u0633\u062A\u061B TP \u062F\u0648\u0631 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u062F \u062D\u0631\u06A9\u062A \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F. \u062A\u0627 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
-      },
-      slPlan: {
-        multiplier: cfg.slPip,
-        note: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) \u0632\u06CC\u0631\u0650 \u0646\u0642\u0637\u0647\u0654 \u0646\u0641\u0648\u0630\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F. \u0627\u06AF\u0631 \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637 \u0648\u0627\u0642\u0639\u06CC \u0628\u0648\u062F (\u0646\u0647 \u0646\u0627\u0645\u0648\u0641\u0642)\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
-      },
-      indicators: tlInd
-    };
-  }
-  if (tl.state === "APPROACHING") {
-    return {
-      state: "APPROACHING",
-      regime: reg,
-      headline: `\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F (\u0637\u0644\u0627 ${cfg.tfFa})`,
-      reason: tl.reason,
-      sourceLayer: { code: "S215", name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${cfg.tfFa}`, kind: "price-action" },
-      confirmations: [
-        {
-          label: "\u0642\u06CC\u0645\u062A \u062F\u0631 \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0648\u062F",
-          met: tl.penetrated,
-          detail: tl.penetrated ? "\u0631\u062E \u062F\u0627\u062F \u2713 (\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u062E\u0637 \u0646\u0641\u0648\u0630 \u06A9\u0631\u062F)" : `\u0627\u06A9\u0646\u0648\u0646 ${tl.distToLinePct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0627\u0633\u062A.`
-        },
-        {
-          label: "\u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0628\u0628\u0646\u062F\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642)",
-          met: tl.closedBack && tl.penetrated,
-          detail: tl.penetrated && !tl.closedBack ? "\u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0646\u0628\u0633\u062A\u0647 \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646 \u0628\u0645\u0627\u0646\u06CC\u062F." : tl.closedBack ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u0647\u0646\u0648\u0632 \u0646\u0647"
-        },
-        { label: "\u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (close \u2265 open)", met: tl.bullBar, detail: tl.bullBar ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u06A9\u0646\u062F\u0644\u0650 \u0641\u0639\u0644\u06CC \u0646\u0632\u0648\u0644\u06CC \u0627\u0633\u062A." }
-      ],
-      indicators: tlInd
-    };
-  }
-  if (fallback) {
-    const base = fallback();
-    base.reason = `\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0644\u0627\u06CC\u0647\u0654 \xAB\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks\xBB (S215) \u0631\u0627 \u0631\u0648\u06CC \u0627\u0641\u0642\u0650 ${cfg.tfFa} \u067E\u0627\u06CC\u0634 \u0645\u06CC\u200C\u06A9\u0646\u062F. ` + tl.reason + ` \u0648\u0642\u062A\u06CC \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u0642\u06CC\u0645\u062A \u0631\u0627 \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0628\u0631\u062F \u0648 \u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
-    base.sourceLayer = { code: "S215", name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${cfg.tfFa}`, kind: "price-action" };
-    base.indicators = tlInd;
-    base.headline = `\u0637\u0644\u0627 ${cfg.tfFa} \u2014 \u067E\u0627\u06CC\u0634\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u0641\u0639\u0644\u0627\u064B \u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644)`;
-    return base;
-  }
-  return {
-    state: "NEUTRAL",
-    regime: reg,
-    headline: `\u0637\u0644\u0627 ${cfg.tfFa} \u2014 \u067E\u0627\u06CC\u0634\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u0641\u0639\u0644\u0627\u064B \u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644)`,
-    reason: tl.reason + ` \u0648\u0642\u062A\u06CC \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u0642\u06CC\u0645\u062A \u0631\u0627 \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0628\u0631\u062F \u0648 \u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0648 \u0641\u0642\u0637 \u0631\u0648\u06CC \u0637\u0644\u0627 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A.`,
-    sourceLayer: { code: "S215", name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${cfg.tfFa}`, kind: "price-action" },
-    indicators: tlInd
-  };
-}
-
-// ../web_tool/src/gold_channel.ts
-var CHANNEL_CFG = {
-  "XAUUSD-M5": { id: "XAUUSD-M5", tfFa: "M5 (\u067E\u0646\u062C\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 10, emaSlow: 30, k: 5, posMax: 0.6, maxGap: 40, slPip: 150, tpPip: 300, maxHoldBars: 96, indepNet: 3015, indepWr: 45.8 },
-  "XAUUSD-M15": { id: "XAUUSD-M15", tfFa: "M15 (\u067E\u0627\u0646\u0632\u062F\u0647\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 20, emaSlow: 50, k: 3, posMax: 0.4, maxGap: 80, slPip: 200, tpPip: 400, maxHoldBars: 48, indepNet: 4028, indepWr: 50.1 },
-  "XAUUSD-M30": { id: "XAUUSD-M30", tfFa: "M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", emaFast: 10, emaSlow: 30, k: 3, posMax: 0.4, maxGap: 80, slPip: 150, tpPip: 300, maxHoldBars: 32, indepNet: 4457, indepWr: 47.6 },
-  "XAUUSD-H4": { id: "XAUUSD-H4", tfFa: "H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)", emaFast: 10, emaSlow: 30, k: 5, posMax: 0.6, maxGap: 40, slPip: 200, tpPip: 400, maxHoldBars: 16, indepNet: 2911, indepWr: 58.3 }
-};
-var PIP7 = 0.1;
-function swingPivots2(high, low, k) {
-  const n = high.length;
-  const sh = new Array(n).fill(false);
-  const sl = new Array(n).fill(false);
-  for (let i = k; i < n - k; i++) {
-    let isHigh = true, isLow = true;
-    for (let j = 1; j <= k; j++) {
-      if (!(high[i] > high[i - j] && high[i] > high[i + j])) isHigh = false;
-      if (!(low[i] < low[i - j] && low[i] < low[i + j])) isLow = false;
-      if (!isHigh && !isLow) break;
-    }
-    sh[i] = isHigh;
-    sl[i] = isLow;
-  }
-  return { sh, sl };
-}
-function isRange2(high, low, t, lb = 3) {
-  if (t < lb) return false;
-  let hiMax = -Infinity, loMin = Infinity, indiv = 0;
-  for (let i = t - lb + 1; i <= t; i++) {
-    hiMax = Math.max(hiMax, high[i]);
-    loMin = Math.min(loMin, low[i]);
-    indiv += high[i] - low[i];
-  }
-  const span = hiMax - loMin;
-  if (span <= 0) return true;
-  return indiv / span >= 2.3;
-}
-function computeChannel(open, high, low, close, cfg) {
-  const n = close.length;
-  const empty = {
-    state: "NEUTRAL",
-    hasChannel: false,
-    lowerLine: NaN,
-    upperLine: NaN,
-    posInChannel: NaN,
-    slope: NaN,
-    pivot1Idx: -1,
-    pivot2Idx: -1,
-    gapBars: 0,
-    regimeUp: false,
-    atr: NaN,
-    bullBar: false,
-    pullback: false,
-    isRange: false,
-    slDist: cfg.slPip * PIP7,
-    tpDist: cfg.tpPip * PIP7,
-    reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0633\u0627\u062E\u062A\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0646\u06CC\u0633\u062A."
-  };
-  if (n < cfg.emaSlow + cfg.k + 5) return empty;
-  const candles = close.map((cl, i) => ({
-    time: i,
-    open: open[i],
-    high: high[i],
-    low: low[i],
-    close: cl,
-    volume: 0
-  }));
-  const atrArr = atr(candles, 14);
-  const ef = ema(close, cfg.emaFast);
-  const es = ema(close, cfg.emaSlow);
-  const { sl: slPiv } = swingPivots2(high, low, cfg.k);
-  const piv = [];
-  for (let i = 0; i < n; i++) if (slPiv[i]) piv.push(i);
-  const t = n - 1;
-  const confirmed = piv.filter((p) => p + cfg.k <= t);
-  if (confirmed.length < 2) return { ...empty, reason: "\u0647\u0646\u0648\u0632 \u062F\u0648 \u06A9\u0641\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0634\u062F\u0647 \u0628\u0631\u0627\u06CC \u0631\u0633\u0645\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0646\u062F\u0627\u0631\u06CC\u0645." };
-  const i1 = confirmed[confirmed.length - 2];
-  const i2 = confirmed[confirmed.length - 1];
-  const gap = i2 - i1;
-  const atr2 = atrArr[t];
-  const regimeUp = ef[t] > es[t];
-  if (gap <= 0 || gap > cfg.maxGap || !isFinite(atr2) || atr2 <= 0) {
-    return {
-      ...empty,
-      gapBars: gap,
-      regimeUp,
-      atr: atr2,
-      reason: gap > cfg.maxGap ? `\u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631 \u062E\u06CC\u0644\u06CC \u062F\u0648\u0631 \u0627\u0632 \u0647\u0645\u200C\u0627\u0646\u062F (${gap} \u06A9\u0646\u062F\u0644 > \u0633\u0642\u0641\u0650 ${cfg.maxGap})\u061B \u06A9\u0627\u0646\u0627\u0644 \u062F\u06CC\u06AF\u0631 \xAB\u062A\u0627\u0632\u0647\xBB \u0646\u06CC\u0633\u062A.` : "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0633\u0627\u062E\u062A\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0645\u0639\u062A\u0628\u0631 \u0641\u0631\u0627\u0647\u0645 \u0646\u06CC\u0633\u062A."
-    };
-  }
-  const m = (low[i2] - low[i1]) / (i2 - i1);
-  const lowerT = low[i2] + m * (t - i2);
-  let hiMax = -Infinity;
-  for (let i = i1; i <= i2; i++) hiMax = Math.max(hiMax, high[i]);
-  let chWidth = 0;
-  for (let i = i1; i <= i2; i++) {
-    const lineI = low[i2] + m * (i - i2);
-    chWidth = Math.max(chWidth, high[i] - lineI);
-  }
-  const upperT = lowerT + chWidth;
-  const pos = chWidth > 0 ? (close[t] - lowerT) / chWidth : NaN;
-  const validUpChannel = low[i2] > low[i1] && m > 0 && regimeUp && chWidth > 0;
-  const bullBar = close[t] >= open[t];
-  const pullback = t >= 1 && low[t] < low[t - 1];
-  const rng = isRange2(high, low, t);
-  const base = {
-    ...empty,
-    hasChannel: validUpChannel,
-    lowerLine: lowerT,
-    upperLine: upperT,
-    posInChannel: pos,
-    slope: m,
-    pivot1Idx: i1,
-    pivot2Idx: i2,
-    gapBars: gap,
-    regimeUp,
-    atr: atr2,
-    bullBar,
-    pullback,
-    isRange: rng
-  };
-  if (!validUpChannel) {
-    return {
-      ...base,
-      state: "NEUTRAL",
-      reason: !regimeUp ? "\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A (EMA\u0650 \u062A\u0646\u062F \u0632\u06CC\u0631\u0650 EMA\u0650 \u06A9\u0646\u062F)\u061B \u0633\u062A\u0627\u067E\u0650 \xAB\u062E\u0631\u06CC\u062F \u062F\u0631 \u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC\xBB \u063A\u06CC\u0631\u0641\u0639\u0627\u0644 \u0627\u0633\u062A." : "\u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631 \u06CC\u06A9 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0645\u0639\u062A\u0628\u0631 (\u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631 + \u0634\u06CC\u0628\u0650 \u0645\u062B\u0628\u062A + \u0639\u0631\u0636\u0650 \u0645\u062B\u0628\u062A) \u0646\u0645\u06CC\u200C\u0633\u0627\u0632\u0646\u062F."
-    };
-  }
-  const posPct = pos * 100;
-  if (pos <= cfg.posMax && pullback && bullBar && !rng) {
-    return {
-      ...base,
-      state: "ENTRY",
-      reason: `\u0642\u06CC\u0645\u062A \u062F\u0631 \u0646\u06CC\u0645\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A (\u0645\u0648\u0642\u0639\u06CC\u062A ${posPct.toFixed(0)}\u066A \u0627\u0632 \u06A9\u0641\u061B \u06A9\u0641=${lowerT.toFixed(2)}$\u060C \u0633\u0642\u0641=${upperT.toFixed(2)}$) \u0648 \u06CC\u06A9 pullback \u0631\u062E \u062F\u0627\u062F \u0648 \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0633\u062A. \u0637\u0628\u0642\u0650 \u0641\u0635\u0644\u0650 \u06F1\u06F5 \u06A9\u062A\u0627\u0628\u0650 Al Brooks\u060C \u0628\u0647\u062A\u0631\u06CC\u0646 \u062E\u0631\u06CC\u062F \xABnear the bottom of the channel\xBB \u0627\u0633\u062A (\u0646\u0647 \u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u0642\u0641). \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u062F\u0631 \u0628\u0627\u0632\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F.`
-    };
-  }
-  const inLowerHalf = pos <= cfg.posMax;
-  if (inLowerHalf && !rng) {
-    return {
-      ...base,
-      state: "APPROACHING",
-      reason: `\u0642\u06CC\u0645\u062A \u0628\u0647 \u0646\u06CC\u0645\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0631\u0633\u06CC\u062F\u0647 \u0627\u0633\u062A (\u0645\u0648\u0642\u0639\u06CC\u062A ${posPct.toFixed(0)}\u066A \u0627\u0632 \u06A9\u0641). \u0628\u0631\u0627\u06CC \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u060C \u0645\u0646\u062A\u0638\u0631\u0650 \u06CC\u06A9 pullback (\u0634\u06A9\u0633\u062A\u0650 \u06A9\u0641\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644) \u0648 \u0633\u067E\u0633 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0645\u0627\u0646\u06CC\u062F. \u0637\u0628\u0642\u0650 Brooks \u0646\u0632\u062F\u06CC\u06A9\u0650 \u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 \u062E\u0631\u06CC\u062F \u0645\u0639\u062A\u0628\u0631 \u0627\u0633\u062A\u060C \u0646\u0647 \u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u0642\u0641.`
-    };
-  }
-  return {
-    ...base,
-    state: "NEUTRAL",
-    reason: `\u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0641\u0639\u0627\u0644 \u0627\u0633\u062A (\u06A9\u0641=${lowerT.toFixed(2)}$\u060C \u0633\u0642\u0641=${upperT.toFixed(2)}$) \u0627\u0645\u0627 \u0642\u06CC\u0645\u062A \u062F\u0631 \u0646\u06CC\u0645\u0647\u0654 \u0628\u0627\u0644\u0627\u06CC \u06A9\u0627\u0646\u0627\u0644 \u0627\u0633\u062A (\u0645\u0648\u0642\u0639\u06CC\u062A ${posPct.toFixed(0)}\u066A). \u0637\u0628\u0642\u0650 \u0641\u0635\u0644\u0650 \u06F1\u06F5 \u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u0642\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 \u062E\u0631\u06CC\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645 (micro sell vacuum)\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u0642\u06CC\u0645\u062A \u0628\u0647 \u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`
-  };
-}
-function channelRegime(ch) {
-  return {
-    regime: ch.regimeUp ? "trend_up" : "range",
-    efficiencyRatio: 0,
-    trendy: ch.regimeUp,
-    adx: 0,
-    activeStream: ch.regimeUp ? "bull" : "none",
-    bucket: ch.regimeUp ? "channel" : "none"
-  };
-}
-function channelDecision(cfg, a, open, high, low, close, capital = 1e4, riskPct = 1, fallback) {
-  const ch = computeChannel(open, high, low, close, cfg);
-  const reg = channelRegime(ch);
-  const spec = assetSpec("XAUUSD");
-  const posPct = isFinite(ch.posInChannel) ? ch.posInChannel * 100 : NaN;
-  const chInd = [
-    { name: "\u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645", value: cfg.tfFa, status: "neutral" },
-    {
-      name: "\u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (\u062E\u0637\u0650 \u0631\u0648\u0646\u062F)",
-      value: ch.hasChannel && isFinite(ch.lowerLine) ? ch.lowerLine.toFixed(2) + "$" : "\u2014",
-      status: ch.hasChannel ? "ok" : "neutral"
-    },
-    {
-      name: "\u0633\u0642\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0645\u0648\u0627\u0632\u06CC",
-      value: ch.hasChannel && isFinite(ch.upperLine) ? ch.upperLine.toFixed(2) + "$" : "\u2014",
-      status: ch.hasChannel ? "ok" : "neutral"
-    },
-    {
-      name: "\u0645\u0648\u0642\u0639\u06CC\u062A\u0650 \u0642\u06CC\u0645\u062A \u062F\u0627\u062E\u0644\u0650 \u06A9\u0627\u0646\u0627\u0644",
-      value: isFinite(posPct) ? `${posPct.toFixed(0)}\u066A \u0627\u0632 \u06A9\u0641` : "\u2014",
-      status: ch.state === "ENTRY" ? "ok" : isFinite(posPct) && posPct <= cfg.posMax * 100 ? "warn" : "neutral"
-    },
-    {
-      name: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA${cfg.emaFast}/${cfg.emaSlow})`,
-      value: ch.regimeUp ? "\u0635\u0639\u0648\u062F\u06CC \u2713" : "\u0646\u0647\u200C\u0635\u0639\u0648\u062F\u06CC",
-      status: ch.regimeUp ? "ok" : "neutral"
-    },
-    {
-      name: "\u067E\u0648\u0644\u0628\u06A9 (\u0634\u06A9\u0633\u062A\u0650 \u06A9\u0641\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644)",
-      value: ch.pullback ? "\u0628\u0644\u0647 \u2713" : "\u062E\u06CC\u0631",
-      status: ch.state === "ENTRY" ? "ok" : "neutral"
-    },
-    { name: "ATR", value: isFinite(ch.atr) ? ch.atr.toFixed(2) + "$" : "\u2014", status: "neutral" },
-    { name: "\u0642\u06CC\u0645\u062A\u0650 \u0641\u0639\u0644\u06CC", value: a.price ? a.price.toFixed(2) : "\u2014", status: "neutral" }
-  ];
-  if (ch.state === "ENTRY") {
-    const entry = a.price;
-    const sl = entry - ch.slDist;
-    const tp = entry + ch.tpDist;
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, ch.slDist, 1, spec);
-    const rd = Math.round(riskDollars * 100) / 100;
-    return {
-      state: "ENTRY",
-      regime: reg,
-      headline: `\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062E\u0631\u06CC\u062F \u062F\u0631 \u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0637\u0644\u0627 ${cfg.tfFa})`,
-      reason: ch.reason,
-      sourceLayer: {
-        code: "S219",
-        name: `\u06A9\u0627\u0646\u0627\u0644\u0650 Al Brooks (Position-in-Channel) \u2014 ${cfg.tfFa}`,
-        kind: "price-action",
-        filters: [
-          `\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA${cfg.emaFast}>EMA${cfg.emaSlow}`,
-          `\u062E\u0631\u06CC\u062F \u0641\u0642\u0637 \u062F\u0631 \u0646\u06CC\u0645\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644 (\u0645\u0648\u0642\u0639\u06CC\u062A \u2264 ${(cfg.posMax * 100).toFixed(0)}\u066A \u0627\u0632 \u06A9\u0641)`,
-          "\u067E\u0648\u0644\u0628\u06A9 + \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC",
-          "\u0642\u06CC\u062F\u0650 \u0636\u062F\u0650 \u0631\u0646\u062C (\u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u063A\u06CC\u0631\u0650 \u0647\u0645\u200C\u067E\u0648\u0634)"
-        ],
-        manage: {
-          style: "structural-trail",
-          beTriggerR: 1,
-          trailDistPrice: ch.slDist,
-          maxHoldBars: cfg.maxHoldBars,
-          note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC (\u06A9\u0627\u0646\u0627\u0644): SL \u0627\u0648\u0644\u06CC\u0647 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 (${ch.slDist.toFixed(2)}$). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0647\u0631 \u067E\u0648\u0644\u0628\u06A9\u0650 \u062C\u062F\u06CC\u062F \u06CC\u0627 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0628\u0627\u0644\u0627 \u0628\u06CC\u0627\u0648\u0631 \u2014 \u062A\u0627 \u0633\u0642\u0641\u0650 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa}. \u0647\u062F\u0641\u0650 \u0645\u0646\u0637\u0642\u06CC \u0633\u0642\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0627\u0633\u062A\u061B \u0627\u06AF\u0631 \u0642\u06CC\u0645\u062A \u0642\u0627\u0637\u0639\u0627\u0646\u0647 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0628\u0633\u062A (\u0634\u06A9\u0633\u062A\u0650 \u06A9\u0627\u0646\u0627\u0644)\u060C \u0641\u0648\u0631\u0627\u064B \u062E\u0627\u0631\u062C \u0634\u0648 \u062D\u062A\u06CC \u0642\u0628\u0644 \u0627\u0632 TP.`
-        }
-      },
-      direction: "LONG",
-      entry,
-      tp,
-      sl,
-      rr: `SL ${cfg.slPip}pip (${ch.slDist.toFixed(2)}$) / TP ${cfg.tpPip}pip (${ch.tpDist.toFixed(2)}$) \u2014 R:R \u2248 \u06F1:${(cfg.tpPip / cfg.slPip).toFixed(1)} (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F \u062A\u0627 \u0633\u0642\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644)`,
-      probability: Math.round(cfg.indepWr),
-      sizing: {
-        lotMultiplier: 1,
-        label: `\u06A9\u0627\u0646\u0627\u0644\u0650 Al Brooks (${cfg.tfFa})`,
-        note: `\u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B \u0627\u0633\u067E\u0631\u062F\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0637\u0644\u0627 \u0644\u062D\u0627\u0638 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0644\u0628\u0647 \u0641\u0642\u0637 \u0631\u0648\u06CC \u0637\u0644\u0627 \u0648 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0631\u0648\u06CC EURUSD \u0628\u06CC\u200C\u0627\u062B\u0631 \u0628\u0648\u062F\u060C SHORT \u06AF\u06CC\u062A\u200C\u067E\u0627\u0633 \u0646\u062F\u0627\u062F) \u0648 \u0633\u0647\u0645\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u0627\u062B\u0628\u0627\u062A\u200C\u0634\u062F\u0647 \u0646\u0633\u0628\u062A \u0628\u0647 \u0633\u0627\u06CC\u0631\u0650 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627 \u062F\u0627\u0631\u062F \u21D2 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0628\u0631\u062F.`,
-        lots: lots ?? void 0,
-        riskDollars: rd,
-        capital,
-        riskPct,
-        capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${ch.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-      },
-      tpPlan: {
-        multiplier: cfg.tpPip,
-        note: `TP \u062F\u0648\u0631\u0650 ${cfg.tpPip}pip (\u0647\u062F\u0641\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC = \u0633\u0642\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0645\u0648\u0627\u0632\u06CC). \u0637\u0628\u0642\u0650 \u0641\u0635\u0644\u0650 \u06F1\u06F5\u060C \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 \u0633\u0647 push \u0628\u0627\u0644\u0627 \u062F\u0627\u0631\u062F\u061B TP \u062F\u0648\u0631 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u062F \u062D\u0631\u06A9\u062A \u0628\u0647 \u0633\u0645\u062A\u0650 \u0633\u0642\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F. \u062A\u0627 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
-      },
-      slPlan: {
-        multiplier: cfg.slPip,
-        note: `SL ${cfg.slPip}pip (${ch.slDist.toFixed(2)}$) \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644. \u0627\u06AF\u0631 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0648\u0627\u0642\u0639\u0627\u064B \u0634\u06A9\u0633\u062A\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
-      },
-      indicators: chInd
-    };
-  }
-  if (ch.state === "APPROACHING") {
-    return {
-      state: "APPROACHING",
-      regime: reg,
-      headline: `\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0642\u06CC\u0645\u062A \u0628\u0647 \u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0631\u0633\u06CC\u062F (\u0637\u0644\u0627 ${cfg.tfFa})`,
-      reason: ch.reason,
-      sourceLayer: { code: "S219", name: `\u06A9\u0627\u0646\u0627\u0644\u0650 Al Brooks (Position-in-Channel) \u2014 ${cfg.tfFa}`, kind: "price-action" },
-      confirmations: [
-        {
-          label: `\u0642\u06CC\u0645\u062A \u062F\u0631 \u0646\u06CC\u0645\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0628\u0627\u0634\u062F (\u0645\u0648\u0642\u0639\u06CC\u062A \u2264 ${(cfg.posMax * 100).toFixed(0)}\u066A \u0627\u0632 \u06A9\u0641)`,
-          met: isFinite(posPct) && posPct <= cfg.posMax * 100,
-          detail: isFinite(posPct) ? `\u0627\u06A9\u0646\u0648\u0646 ${posPct.toFixed(0)}\u066A \u0627\u0632 \u06A9\u0641 \u0627\u0633\u062A.` : "\u2014"
-        },
-        {
-          label: "\u067E\u0648\u0644\u0628\u06A9: \u0634\u06A9\u0633\u062A\u0650 \u06A9\u0641\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644",
-          met: ch.pullback,
-          detail: ch.pullback ? "\u0631\u062E \u062F\u0627\u062F \u2713" : "\u0647\u0646\u0648\u0632 \u067E\u0648\u0644\u0628\u06A9\u0650 \u062A\u0627\u0632\u0647\u200C\u0627\u06CC \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u0647."
-        },
-        {
-          label: "\u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (close \u2265 open)",
-          met: ch.bullBar,
-          detail: ch.bullBar ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u06A9\u0646\u062F\u0644\u0650 \u0641\u0639\u0644\u06CC \u0646\u0632\u0648\u0644\u06CC \u0627\u0633\u062A."
-        }
-      ],
-      indicators: chInd
-    };
-  }
-  if (fallback) {
-    const base = fallback();
-    base.reason = `\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0644\u0627\u06CC\u0647\u0654 \xAB\u06A9\u0627\u0646\u0627\u0644\u0650 Al Brooks \u2014 position-in-channel\xBB (S219) \u0631\u0627 \u0631\u0648\u06CC \u0627\u0641\u0642\u0650 ${cfg.tfFa} \u067E\u0627\u06CC\u0634 \u0645\u06CC\u200C\u06A9\u0646\u062F. ` + ch.reason + ` \u0648\u0642\u062A\u06CC \u0642\u06CC\u0645\u062A \u0628\u0647 \u0646\u06CC\u0645\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u06AF\u0631\u062F\u062F \u0648 \u06CC\u06A9 pullback \u0628\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0634\u06A9\u0644 \u0628\u06AF\u06CC\u0631\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
-    base.sourceLayer = { code: "S219", name: `\u06A9\u0627\u0646\u0627\u0644\u0650 Al Brooks (Position-in-Channel) \u2014 ${cfg.tfFa}`, kind: "price-action" };
-    base.indicators = chInd;
-    base.headline = `\u0637\u0644\u0627 ${cfg.tfFa} \u2014 \u067E\u0627\u06CC\u0634\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0641\u0639\u0644\u0627\u064B \u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644)`;
-    return base;
-  }
-  return {
-    state: "NEUTRAL",
-    regime: reg,
-    headline: `\u0637\u0644\u0627 ${cfg.tfFa} \u2014 \u067E\u0627\u06CC\u0634\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0641\u0639\u0644\u0627\u064B \u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644)`,
-    reason: ch.reason + ` \u0648\u0642\u062A\u06CC \u0642\u06CC\u0645\u062A \u0628\u0647 \u0646\u06CC\u0645\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u06AF\u0631\u062F\u062F \u0648 \u06CC\u06A9 pullback \u0628\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC \u0634\u06A9\u0644 \u0628\u06AF\u06CC\u0631\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0648 \u0641\u0642\u0637 \u0631\u0648\u06CC \u0637\u0644\u0627 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A.`,
-    sourceLayer: { code: "S219", name: `\u06A9\u0627\u0646\u0627\u0644\u0650 Al Brooks (Position-in-Channel) \u2014 ${cfg.tfFa}`, kind: "price-action" },
-    indicators: chInd
+    sl,
+    tp
   };
 }
 
 // ../web_tool/src/gold_m5_router.ts
-var EMA_FAST2 = 20;
-var EMA_SLOW2 = 100;
-var RSI_PERIOD = 21;
-var RSI_ENTRY = 35;
-var RSI_APPROACH = 42;
+var EMA_FAST = 20;
+var EMA_SLOW = 100;
 var HIDDEN_TP_PIP = 120;
 var HIDDEN_SL_PIP = 80;
-var PIP8 = 0.01;
-function m5Regime(emaFast, emaSlow) {
-  const up = emaFast > emaSlow;
-  return {
-    regime: up ? "trend_up" : "range",
-    efficiencyRatio: 0,
-    trendy: up,
-    adx: 0,
-    activeStream: up ? "bull" : "none",
-    bucket: up ? "m5_trend" : "none"
-  };
-}
-function decideGoldM5(a, close, _capital = 1e4, _riskPct = 1, open, high, low, times) {
-  const price = a.price;
-  if (open && high && low && times && times.length === close.length) {
-    const le = evalGoldM5LateEntry(open, high, low, close, times, price);
-    if (le.inWindow) {
-      const leReg = m5Regime(le.regimeUp ? 1 : 0, 0);
-      const leIndicators = [
-        { name: "\u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647", value: `${-le.fromEnd} \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u0645\u0627\u0646\u062F\u0647 \u2714`, status: "ok" },
-        {
-          name: "\u0631\u0648\u0646\u062F\u0650 M5 (EMA20/50)",
-          value: le.regimeUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A \u2718",
-          status: le.regimeUp ? "ok" : "bad"
-        },
-        {
-          name: "\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F (\u06F4 \u06A9\u0646\u062F\u0644\u0650 \u067E\u06CC\u0627\u067E\u06CC)",
-          value: le.hadRecentRun ? "\u062A\u0623\u06CC\u06CC\u062F \u0634\u062F \u2714" : `\u0646\u0627\u0642\u0635 (${le.curRun}/4)`,
-          status: le.hadRecentRun ? "ok" : "warn"
-        },
-        { name: "\u0642\u06CC\u0645\u062A\u0650 \u0632\u0646\u062F\u0647", value: price.toFixed(2) + "$", status: "neutral" }
-      ];
-      if (le.entry) {
-        return {
-          state: "ENTRY",
-          regime: leReg,
-          headline: "BUY \u2014 \u0647\u0645\u06CC\u0646 \u062D\u0627\u0644\u0627 \u062E\u0631\u06CC\u062F \u06A9\u0646",
-          sourceLayer: {
-            code: "M5-LateEntry",
-            name: "\u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 Late-Entry)",
-            kind: "price-action",
-            filters: ["\u067E\u0646\u062C\u0631\u0647\u0654 \u06F6\u2013\u06F8 \u0631\u0648\u0632\u0650 \u0645\u0627\u0646\u062F\u0647 \u0628\u0647 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647", "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA20>EMA50", "\u0645\u0648\u0645\u0646\u062A\u0648\u0645: \u06F4+ \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u067E\u06CC\u0627\u067E\u06CC\u0650 \u0627\u062E\u06CC\u0631"]
-          },
-          reason: `\u0628\u0647 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F\u0647\u200C\u0627\u06CC\u0645 \u0648 \u0637\u0644\u0627 \u06CC\u06A9 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0648\u0627\u0642\u0639\u06CC (\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627) \u0633\u0627\u062E\u062A\u0647. \u0637\u0628\u0642\u0650 \u0627\u06CC\u0646 \u0627\u0644\u06AF\u0648\u060C \u0648\u0642\u062A\u06CC \u0631\u0648\u0646\u062F \u0627\u06CC\u0646\u200C\u0642\u062F\u0631 \u0642\u0648\u06CC \u0627\u0633\u062A \u0646\u0628\u0627\u06CC\u062F \u0645\u0646\u062A\u0638\u0631\u0650 \u067E\u0648\u0644\u0628\u06A9 \u0645\u0627\u0646\u062F \u2014 \u0647\u0645\u06CC\u0646 \u062D\u0627\u0644\u0627 \u062E\u0631\u06CC\u062F (BUY). \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062E\u0631\u06CC\u062F \u0631\u0627 \u062F\u0631 \u062D\u0633\u0627\u0628\u0650 \u062F\u0645\u0648 \u0628\u0627\u0632 \u06A9\u0646 \u0648 \u062F\u06A9\u0645\u0647\u0654 \u062A\u0623\u06CC\u06CC\u062F \u0631\u0627 \u0628\u0632\u0646 \u062A\u0627 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0644\u062D\u0638\u0647\u200C\u0627\u06CC \u0634\u0631\u0648\u0639 \u0634\u0648\u062F. \u0646\u06CC\u0627\u0632\u06CC \u0628\u0647 \u062A\u0639\u06CC\u06CC\u0646\u0650 \u062D\u062F \u0633\u0648\u062F/\u0636\u0631\u0631 \u06CC\u0627 \u062D\u062C\u0645 \u0646\u06CC\u0633\u062A \u2014 \u0645\u0646 \u0644\u062D\u0638\u0647\u200C\u0628\u0647\u200C\u0644\u062D\u0638\u0647 \u0628\u0647\u062A \u0645\u06CC\u200C\u06AF\u0648\u06CC\u0645 \u06A9\u0650\u06CC \u0628\u0628\u0646\u062F\u06CC.`,
-          scalp: {
-            isScalp: true,
-            action: "BUY",
-            hiddenTpPip: S214_HIDDEN_TP_PIP,
-            hiddenSlPip: S214_HIDDEN_SL_PIP,
-            refPrice: price
-          },
-          indicators: leIndicators
-        };
-      }
-      if (le.climaxBlocked) {
-        const climaxConf = [
-          { label: "\u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647", met: true, detail: `${-le.fromEnd} \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u062A\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0645\u0627\u0646\u062F\u0647 (\u067E\u0646\u062C\u0631\u0647\u0654 \u0645\u0633\u0627\u0639\u062F).` },
-          { label: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC", met: true, detail: `\u06CC\u06A9 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0648\u0627\u0642\u0639\u06CC \u062F\u0631 \u062C\u0631\u06CC\u0627\u0646 \u0627\u0633\u062A (\u062D\u062F\u0648\u062F\u0650 ${le.maxRun} \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u067E\u06CC\u0627\u067E\u06CC).` },
-          {
-            label: "\u0648\u0631\u0648\u062F\u0650 \u06A9\u0645\u200C\u0631\u06CC\u0633\u06A9 \u062F\u0631 \u0627\u06CC\u0646 \u0644\u062D\u0638\u0647",
-            met: false,
-            detail: `\u062D\u0631\u06A9\u062A \u062E\u06CC\u0644\u06CC \u0633\u0631\u06CC\u0639 \u0648 \u0627\u0646\u0641\u062C\u0627\u0631\u06CC \u0627\u0633\u062A\u061B \u0648\u0631\u0648\u062F \u062F\u0631 \u0627\u06CC\u0646 \u0646\u0642\u0637\u0647 \u0631\u06CC\u0633\u06A9\u0650 \u0628\u0631\u06AF\u0634\u062A\u0650 \u0646\u0627\u06AF\u0647\u0627\u0646\u06CC \u062F\u0627\u0631\u062F. \u0635\u0628\u0631 \u0628\u0631\u0627\u06CC \u0622\u0631\u0627\u0645\u200C\u0634\u062F\u0646\u0650 \u062D\u0631\u06A9\u062A \u0627\u0645\u0646\u200C\u062A\u0631 \u0627\u0633\u062A.`
-          }
-        ];
-        return {
-          state: "APPROACHING",
-          regime: leReg,
-          headline: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC \u062F\u06CC\u062F\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u2014 \u0648\u0644\u06CC \u0648\u0631\u0648\u062F\u0650 \u0627\u0645\u0646 \u0646\u06CC\u0633\u062A",
-          sourceLayer: { code: "M5-LateEntry", name: "\u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 Late-Entry)", kind: "price-action" },
-          reason: `\u0631\u0648\u0646\u062F \u0631\u0627 \u0645\u06CC\u200C\u0628\u06CC\u0646\u0645: \u0637\u0644\u0627 \u06CC\u06A9 \u0635\u0639\u0648\u062F\u0650 \u0642\u0648\u06CC\u0650 \u067E\u06CC\u0648\u0633\u062A\u0647 \u062F\u0627\u0631\u062F \u0648 \u0628\u0647 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0647\u0645 \u0646\u0632\u062F\u06CC\u06A9\u06CC\u0645. \u062F\u0644\u06CC\u0644\u0650 \u0627\u06CC\u0646\u06A9\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0646\u0645\u06CC\u200C\u062F\u0647\u0645 \u0627\u06CC\u0646 \u0646\u06CC\u0633\u062A \u06A9\u0647 \u0631\u0648\u0646\u062F \u0631\u0627 \u0646\u062F\u06CC\u062F\u0647\u200C\u0627\u0645 \u2014 \u0628\u0644\u06A9\u0647 \u0627\u06CC\u0646 \u062D\u0631\u06A9\u062A \u0628\u06CC\u0634\u200C\u0627\u0632\u062D\u062F \u0633\u0631\u06CC\u0639 \u0648 \u0627\u0646\u0641\u062C\u0627\u0631\u06CC (climactic) \u0627\u0633\u062A. \u0648\u0631\u0648\u062F \u0648\u0633\u0637\u0650 \u0686\u0646\u06CC\u0646 \u062C\u0647\u0634\u0650 \u062A\u0646\u062F\u06CC \u0631\u06CC\u0633\u06A9\u0650 \u0628\u0627\u0644\u0627\u06CC \u0628\u0631\u06AF\u0634\u062A\u0650 \u0646\u0627\u06AF\u0647\u0627\u0646\u06CC \u062F\u0627\u0631\u062F \u0648 \u062F\u0631 \u0622\u0632\u0645\u0648\u0646\u200C\u0647\u0627 \u0648\u0631\u0648\u062F\u0650 \u0627\u0645\u0646\u06CC \u0646\u0628\u0648\u062F\u0647. \u0645\u0646\u0637\u0642\u0650 \u062F\u0631\u0633\u062A: \u0635\u0628\u0631 \u062A\u0627 \u062D\u0631\u06A9\u062A \u06A9\u0645\u06CC \u0622\u0631\u0627\u0645 \u0634\u0648\u062F \u06CC\u0627 \u06CC\u06A9 \u067E\u0648\u0644\u0628\u06A9 \u0628\u062F\u0647\u062F\u061B \u0622\u0646\u200C\u0648\u0642\u062A \u0648\u0631\u0648\u062F \u0628\u0633\u06CC\u0627\u0631 \u06A9\u0645\u200C\u0631\u06CC\u0633\u06A9\u200C\u062A\u0631 \u0627\u0633\u062A. \u067E\u0633 \u0641\u0639\u0644\u0627\u064B \u0648\u0627\u0631\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u0645.`,
-          confirmations: climaxConf,
-          indicators: leIndicators
-        };
-      }
-      const conf = [
-        { label: "\u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647", met: true, detail: `${-le.fromEnd} \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u062A\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0645\u0627\u0646\u062F\u0647 (\u067E\u0646\u062C\u0631\u0647\u0654 \u06F6\u2013\u06F8).` },
-        { label: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 M5", met: le.regimeUp, detail: le.regimeUp ? "EMA20 \u0628\u0627\u0644\u0627\u06CC EMA50 \u0627\u0633\u062A." : "\u0647\u0646\u0648\u0632 EMA20 \u0628\u0627\u0644\u0627\u06CC EMA50 \u0646\u06CC\u0633\u062A." },
-        { label: "\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u06F4+ \u06A9\u0646\u062F\u0644\u0650 \u067E\u06CC\u0627\u067E\u06CC", met: le.hadRecentRun, detail: le.hadRecentRun ? "\u0631\u0634\u062A\u0647\u0654 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u0635\u0639\u0648\u062F\u06CC \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F." : `\u0641\u0639\u0644\u0627\u064B ${le.curRun} \u06A9\u0646\u062F\u0644\u0650 \u067E\u06CC\u0627\u067E\u06CC\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0631\u0633\u06CC\u062F\u0646 \u0628\u0647 \u06F4 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.` }
-      ];
-      return {
-        state: "APPROACHING",
-        regime: leReg,
-        headline: "\u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0641\u0639\u0627\u0644 \u0627\u0633\u062A",
-        sourceLayer: { code: "M5-LateEntry", name: "\u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 Late-Entry)", kind: "price-action" },
-        reason: `\u0628\u0647 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F\u0647\u200C\u0627\u06CC\u0645 (\u067E\u0646\u062C\u0631\u0647\u0654 \u0645\u0633\u0627\u0639\u062F\u0650 \u062E\u0631\u06CC\u062F). \u0627\u0645\u0627 \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F \u0628\u0627\u06CC\u062F \u0645\u0637\u0645\u0626\u0646 \u0634\u0648\u0645 \u0631\u0648\u0646\u062F \u0648\u0627\u0642\u0639\u0627\u064B \u0642\u0648\u06CC \u0627\u0633\u062A: EMA20 \u0628\u0627\u0644\u0627\u06CC EMA50 \u0648 \u06CC\u06A9 \u0631\u0634\u062A\u0647\u0654 \u062D\u062F\u0627\u0642\u0644 \u06F4 \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u067E\u06CC\u0627\u067E\u06CC\u0650 \u0627\u062E\u06CC\u0631. \u062A\u0627 \u0627\u06CC\u0646 \u062A\u0623\u06CC\u06CC\u062F\u0647\u0627 \u06A9\u0627\u0645\u0644 \u0646\u0634\u0648\u062F \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0627\u0632 \u0646\u0645\u06CC\u200C\u06A9\u0646\u0645 \u2014 \u0645\u0646\u062A\u0638\u0631 \u0628\u0645\u0627\u0646.`,
-        confirmations: conf,
-        indicators: leIndicators
-      };
-    }
-  }
-  const emaF = ema(close, EMA_FAST2);
-  const emaS = ema(close, EMA_SLOW2);
-  const rsiArr = rsi(close, RSI_PERIOD);
-  const ef = emaF[emaF.length - 1];
-  const es = emaS[emaS.length - 1];
-  const rsi2 = rsiArr[rsiArr.length - 1];
-  const reg = m5Regime(ef, es);
-  const trendUp = ef > es;
-  const distPct = (ef - es) / es * 100;
-  const indicators = [
-    {
-      name: "\u0631\u0648\u0646\u062F\u0650 M5 (EMA20/100)",
-      value: trendUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A \u2718",
-      status: trendUp ? "ok" : "bad"
-    },
-    {
-      name: "RSI(21) \u2014 \u0639\u0645\u0642\u0650 \u067E\u0648\u0644\u0628\u06A9",
-      value: rsi2.toFixed(1) + (rsi2 < RSI_ENTRY ? ` (\u0632\u06CC\u0631\u0650 ${RSI_ENTRY} \u2714)` : ` (\u0647\u062F\u0641: \u0632\u06CC\u0631\u0650 ${RSI_ENTRY})`),
-      status: rsi2 < RSI_ENTRY ? "ok" : rsi2 < RSI_APPROACH ? "warn" : "neutral"
-    },
-    { name: "\u0642\u06CC\u0645\u062A\u0650 \u0632\u0646\u062F\u0647", value: price.toFixed(2) + "$", status: "neutral" }
-  ];
-  if (!trendUp) {
-    const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low);
-    if (tl) return tl;
-    const chn = maybeChannelM5(a, close, _capital, _riskPct, open, high, low);
-    if (chn) return chn;
-    return {
-      state: "NEUTRAL",
-      regime: reg,
-      headline: "\u062E\u0646\u062B\u06CC \u2014 \u0634\u0631\u0627\u06CC\u0637\u0650 \u0627\u0633\u06A9\u0627\u0644\u067E\u0650 M5 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A",
-      reason: `\u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A (EMA20 \u0628\u0627\u0644\u0627\u06CC EMA100 \u0631\u0648\u06CC M5) \u0648 \u0647\u0646\u06AF\u0627\u0645\u0650 \u067E\u0648\u0644\u0628\u06A9 \u062E\u0631\u06CC\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0627\u0644\u0627\u0646 EMA20 \u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC EMA100 \u0646\u06CC\u0633\u062A\u060C \u067E\u0633 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0628\u0627\u0632 \u0646\u0645\u06CC\u200C\u06A9\u0646\u0645.`,
-      indicators
-    };
-  }
-  if (rsi2 < RSI_ENTRY) {
-    return {
-      state: "ENTRY",
-      regime: reg,
-      headline: "BUY \u2014 \u0647\u0645\u06CC\u0646 \u062D\u0627\u0644\u0627 \u062E\u0631\u06CC\u062F \u06A9\u0646",
-      sourceLayer: {
-        code: "M5-Scalp",
-        name: "\u0627\u0633\u06A9\u0627\u0644\u067E\u0650 \u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F\u0650 M5 (EMA20/100 + RSI)",
-        kind: "ma-confluence",
-        filters: [`\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA20>EMA100`, `\u067E\u0648\u0644\u0628\u06A9: RSI(21) < ${RSI_ENTRY}`]
-      },
-      reason: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A\u0650 \u0637\u0644\u0627 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u0648 \u0642\u06CC\u0645\u062A \u06CC\u06A9 \u067E\u0648\u0644\u0628\u06A9 \u0632\u062F\u0647. \u062A\u0634\u062E\u06CC\u0635\u0650 \u0645\u0646: \u062E\u0631\u06CC\u062F (BUY). \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062E\u0631\u06CC\u062F \u0631\u0627 \u062F\u0631 \u062D\u0633\u0627\u0628\u0650 \u062F\u0645\u0648 \u0628\u0627\u0632 \u06A9\u0646 \u0648 \u0628\u0639\u062F \u062F\u06A9\u0645\u0647\u0654 \u062A\u0623\u06CC\u06CC\u062F \u0631\u0627 \u0628\u0632\u0646 \u062A\u0627 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0644\u062D\u0638\u0647\u200C\u0627\u06CC \u0634\u0631\u0648\u0639 \u0634\u0648\u062F. \u0646\u06CC\u0627\u0632\u06CC \u0628\u0647 \u062A\u0639\u06CC\u06CC\u0646\u0650 \u062D\u062F \u0633\u0648\u062F/\u0636\u0631\u0631 \u06CC\u0627 \u062D\u062C\u0645 \u0646\u06CC\u0633\u062A \u2014 \u0645\u0646 \u0644\u062D\u0638\u0647\u200C\u0628\u0647\u200C\u0644\u062D\u0638\u0647 \u0628\u0647\u062A \u0645\u06CC\u200C\u06AF\u0648\u06CC\u0645 \u06A9\u0650\u06CC \u0628\u0628\u0646\u062F\u06CC.`,
-      scalp: {
-        isScalp: true,
-        action: "BUY",
-        hiddenTpPip: HIDDEN_TP_PIP,
-        hiddenSlPip: HIDDEN_SL_PIP,
-        refPrice: price
-      },
-      indicators
-    };
-  }
-  if (rsi2 < RSI_APPROACH) {
-    const confirmations = [
-      { label: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 M5", met: true, detail: `EMA20 \u0628\u0627\u0644\u0627\u06CC EMA100 (\u0641\u0627\u0635\u0644\u0647 ${distPct.toFixed(2)}%).` },
-      {
-        label: `\u067E\u0648\u0644\u0628\u06A9\u0650 \u06A9\u0627\u0641\u06CC (RSI \u0632\u06CC\u0631\u0650 ${RSI_ENTRY})`,
-        met: false,
-        detail: `RSI(21) \u0627\u0644\u0627\u0646 ${rsi2.toFixed(1)} \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0627\u0641\u062A\u0650 \u0628\u06CC\u0634\u062A\u0631 \u062A\u0627 \u0632\u06CC\u0631\u0650 ${RSI_ENTRY} \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`
-      }
-    ];
-    return {
-      state: "APPROACHING",
-      regime: reg,
-      headline: "\u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u067E\u0648\u0644\u0628\u06A9\u0650 \u0639\u0645\u06CC\u0642\u200C\u062A\u0631",
-      sourceLayer: { code: "M5-Scalp", name: "\u0627\u0633\u06A9\u0627\u0644\u067E\u0650 \u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F\u0650 M5 (EMA20/100 + RSI)", kind: "ma-confluence" },
-      reason: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A\u060C \u0627\u0645\u0627 \u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \u067E\u0648\u0644\u0628\u06A9 \u0646\u0632\u062F\u0647 (RSI(21)=${rsi2.toFixed(1)}). \u0627\u06AF\u0631 RSI \u0628\u0647 \u0632\u06CC\u0631\u0650 ${RSI_ENTRY} \u0628\u0631\u0633\u062F\u060C BUY \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0641\u0639\u0644\u0627\u064B \u0645\u0646\u062A\u0638\u0631 \u0628\u0645\u0627\u0646 \u0648 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0627\u0632 \u0646\u06A9\u0646.`,
-      confirmations,
-      indicators
-    };
-  }
-  {
-    const tl = maybeTrendLineM5(a, close, _capital, _riskPct, open, high, low);
-    if (tl) return tl;
-    const chn = maybeChannelM5(a, close, _capital, _riskPct, open, high, low);
-    if (chn) return chn;
-  }
-  return {
-    state: "NEUTRAL",
-    regime: reg,
-    headline: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u062F\u06CC\u062F\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u2014 \u0648\u0644\u06CC \u0627\u0644\u0627\u0646 \u062C\u0627\u06CC \u062E\u0631\u06CC\u062F \u0646\u06CC\u0633\u062A",
-    reason: `\u0631\u0648\u0646\u062F \u0631\u0627 \u0645\u06CC\u200C\u0628\u06CC\u0646\u0645 \u0648 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u2014 \u0627\u06CC\u0646 \u0631\u0627 \u062F\u0631\u0633\u062A \u062A\u0634\u062E\u06CC\u0635 \u062F\u0627\u062F\u0647\u200C\u0627\u0645. \u0627\u0645\u0627 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06CC\u06A9 \u0627\u0633\u06A9\u0627\u0644\u067E\u0650 \xAB\u067E\u0648\u0644\u0628\u06A9\u200C\u062E\u0631\u06CC\xBB \u0627\u0633\u062A: \u0641\u0642\u0637 \u0648\u0642\u062A\u06CC \u0642\u06CC\u0645\u062A \u0648\u0633\u0637\u0650 \u0631\u0648\u0646\u062F \u06A9\u0645\u06CC \u0628\u0631\u0645\u06CC\u200C\u06AF\u0631\u062F\u062F \u067E\u0627\u06CC\u06CC\u0646 (RSI \u0632\u06CC\u0631\u0650 ${RSI_ENTRY}) \u062E\u0631\u06CC\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0627\u0644\u0627\u0646 \u0642\u06CC\u0645\u062A \u06AF\u0631\u0627\u0646 \u0627\u0633\u062A (RSI(21)=${rsi2.toFixed(1)}\u060C \u0628\u0627\u0644\u0627\u06CC ${RSI_APPROACH})\u061B \u062E\u0631\u06CC\u062F\u0646 \u062F\u0631 \u0627\u0648\u062C\u0650 \u062D\u0631\u06A9\u062A \u0631\u06CC\u0633\u06A9\u0650 \u0628\u0631\u06AF\u0634\u062A \u062F\u0627\u0631\u062F. \u067E\u0633 \u0646\u0647 \u0628\u0647\u200C\u062E\u0627\u0637\u0631\u0650 \u0646\u062F\u06CC\u062F\u0646\u0650 \u0631\u0648\u0646\u062F\u060C \u0628\u0644\u06A9\u0647 \u0628\u0647\u200C\u062E\u0627\u0637\u0631\u0650 \u0646\u0628\u0648\u062F\u0646\u0650 \u0646\u0642\u0637\u0647\u0654 \u0648\u0631\u0648\u062F\u0650 \u06A9\u0645\u200C\u0631\u06CC\u0633\u06A9 \u0635\u0628\u0631 \u0645\u06CC\u200C\u06A9\u0646\u0645 \u062A\u0627 \u06CC\u06A9 \u067E\u0648\u0644\u0628\u06A9 \u0628\u062F\u0647\u062F.`,
-    indicators
-  };
-}
-function maybeTrendLineM5(a, close, capital, riskPct, open, high, low) {
-  if (!(open && high && low && high.length === close.length && low.length === close.length)) return null;
-  const dec = trendLineDecision(TREND_LINE_CFG["XAUUSD-M5"], a, open, high, low, close, capital, riskPct);
-  return dec.state === "ENTRY" || dec.state === "APPROACHING" ? dec : null;
-}
-function maybeChannelM5(a, close, capital, riskPct, open, high, low) {
-  if (!(open && high && low && high.length === close.length && low.length === close.length)) return null;
-  const dec = channelDecision(CHANNEL_CFG["XAUUSD-M5"], a, open, high, low, close, capital, riskPct);
-  return dec.state === "ENTRY" || dec.state === "APPROACHING" ? dec : null;
-}
+var PIP2 = 0.01;
 function manageGoldM5Scalp(inp) {
   const dir = inp.action === "BUY" ? 1 : -1;
-  const favorPip = dir * (inp.livePrice - inp.refPrice) / PIP8;
+  const favorPip = dir * (inp.livePrice - inp.refPrice) / PIP2;
   const tp = inp.tpPip != null && inp.tpPip > 0 ? inp.tpPip : HIDDEN_TP_PIP;
   const sl = inp.slPip != null && inp.slPip > 0 ? inp.slPip : HIDDEN_SL_PIP;
-  const emaF = ema(inp.close, EMA_FAST2);
-  const emaS = ema(inp.close, EMA_SLOW2);
+  const emaF = ema(inp.close, EMA_FAST);
+  const emaS = ema(inp.close, EMA_SLOW);
   const ef = emaF[emaF.length - 1];
   const es = emaS[emaS.length - 1];
   const trendBroke = inp.action === "BUY" ? ef < es : ef > es;
@@ -7031,518 +3863,1262 @@ function manageGoldM5Scalp(inp) {
   return { state: "hold", message: "", favorPip };
 }
 
-// ../web_tool/src/gold_m30_router.ts
-var EMA_FAST3 = 20;
-var EMA_SLOW3 = 100;
-var RSI_PERIOD2 = 14;
-var RSI_ENTRY2 = 35;
-var RSI_APPROACH2 = 45;
-var SL_DOLLARS = 12;
-var TP_DOLLARS = 120;
-var MIN_SAFE_CAPITAL = 1200;
-function m30Regime(emaFast, emaSlow) {
-  const up = emaFast > emaSlow;
+// ../web_tool/src/squeeze_revival_s313.ts
+var S313_H1 = {
+  id: "XAUUSD-H1",
+  tfFa: "H1 (\u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647)",
+  bbPeriod: 20,
+  bbMult: 2,
+  sqzLookback: 100,
+  sqzPct: 0.25,
+  breakoutLookback: 10,
+  emaFast: 50,
+  emaSlow: 200,
+  atrPeriod: 14,
+  slAtr: 3.2,
+  tpAtr: 2.15,
+  maxHold: 48,
+  closePosMin: 0.55,
+  adxMin: 0,
+  beTriggerAtr: 1.1,
+  beOffsetAtr: 0.4
+};
+var S313_M30 = {
+  ...S313_H1,
+  id: "XAUUSD-M30",
+  tfFa: "M30 (\u0646\u06CC\u0645\u200C\u0633\u0627\u0639\u062A\u0647)",
+  adxMin: 30
+};
+function computeS313(open, high, low, close, cfg) {
+  const n = close.length;
+  const need = cfg.bbPeriod + cfg.sqzLookback + 2;
+  const empty = (reason2) => ({
+    active: false,
+    approaching: false,
+    squeezed: false,
+    bwPct: 1,
+    priorHigh: NaN,
+    trendUp: false,
+    closePos: NaN,
+    strongClose: false,
+    adxVal: NaN,
+    adxOk: false,
+    atrVal: NaN,
+    reason: reason2
+  });
+  if (n < need) return empty("\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 / \u067E\u0646\u062C\u0631\u0647\u0654 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.");
+  const bb = bollinger(close, cfg.bbPeriod, cfg.bbMult);
+  const bw = new Array(n).fill(NaN);
+  for (let i2 = 0; i2 < n; i2++) {
+    const mid = bb.mid[i2];
+    if (isFinite(mid) && mid !== 0 && isFinite(bb.upper[i2]) && isFinite(bb.lower[i2])) {
+      bw[i2] = (bb.upper[i2] - bb.lower[i2]) / mid;
+    }
+  }
+  const ef = ema(close, cfg.emaFast);
+  const es = ema(close, cfg.emaSlow);
+  const candles = new Array(n);
+  for (let k = 0; k < n; k++) {
+    candles[k] = { time: 0, open: open[k], high: high[k], low: low[k], close: close[k], volume: 0 };
+  }
+  const atrArr = atr(candles, cfg.atrPeriod);
+  const adxRes = adx(candles, 14);
+  const i = n - 1;
+  const prev = i - 1;
+  const lo = Math.max(0, prev - cfg.sqzLookback + 1);
+  const window = bw.slice(lo, prev + 1).filter((v) => isFinite(v));
+  const bwPrev = bw[prev];
+  let bwPct = 1;
+  if (window.length > 5 && isFinite(bwPrev)) {
+    bwPct = window.filter((v) => v <= bwPrev).length / window.length;
+  }
+  const squeezed = isFinite(bwPrev) && bwPct <= cfg.sqzPct;
+  const bLo = Math.max(0, i - cfg.breakoutLookback);
+  let priorHigh = -Infinity;
+  for (let k = bLo; k < i; k++) if (isFinite(high[k])) priorHigh = Math.max(priorHigh, high[k]);
+  const breakout = isFinite(close[i]) && close[i] > priorHigh;
+  const trendUp = isFinite(ef[i]) && isFinite(es[i]) && ef[i] > es[i];
+  const rng = Math.max(high[i] - low[i], 1e-9);
+  const closePos = (close[i] - low[i]) / rng;
+  const strongClose = closePos >= cfg.closePosMin;
+  const adxVal = adxRes.adx[i];
+  const adxOk = cfg.adxMin <= 0 || isFinite(adxVal) && adxVal >= cfg.adxMin;
+  const atrVal = atrArr[i];
+  const active = squeezed && breakout && trendUp && strongClose && adxOk && isFinite(atrVal) && atrVal > 0;
+  const approaching = squeezed && trendUp && !breakout && adxOk;
+  let reason;
+  if (active) {
+    reason = `\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 \u0631\u0647\u0627 \u0634\u062F: \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u062F\u0631 \u06A9\u0641\u0650 \u0645\u062D\u0644\u06CC \u0628\u0648\u062F (\u0635\u062F\u06A9 ${(bwPct * 100).toFixed(0)}\u066A \u2264 ${(cfg.sqzPct * 100).toFixed(0)}\u066A) \u0648 \u0642\u06CC\u0645\u062A \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 (${priorHigh.toFixed(2)}$) \u0631\u0627 \u0628\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0627\u0637\u0639 (\u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646 \u062F\u0631 ${(closePos * 100).toFixed(0)}\u066A \u0628\u0627\u0644\u0627\u06CC \u062F\u0627\u0645\u0646\u0647) \u0634\u06A9\u0633\u062A \u2014 \u0647\u0645\u200C\u0633\u0648 \u0628\u0627 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA50>EMA200)` + (cfg.adxMin > 0 ? ` \u0648 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F \u06A9\u0627\u0641\u06CC (ADX=${adxVal.toFixed(0)}\u2265${cfg.adxMin})` : "") + ".";
+  } else if (squeezed && breakout && trendUp && !strongClose) {
+    reason = `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0631\u062E \u062F\u0627\u062F \u0627\u0645\u0627 \u06A9\u0646\u062F\u0644 \u0642\u0627\u0637\u0639 \u0646\u0628\u0648\u062F (\u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646 \u0641\u0642\u0637 \u062F\u0631 ${(closePos * 100).toFixed(0)}\u066A \u062F\u0627\u0645\u0646\u0647\u060C \u06A9\u0645\u062A\u0631 \u0627\u0632 ${(cfg.closePosMin * 100).toFixed(0)}\u066A). \u0634\u06A9\u0633\u062A\u200C\u0647\u0627\u06CC \u06A9\u0645\u200C\u06A9\u06CC\u0641\u06CC\u062A \u0627\u063A\u0644\u0628 \u06A9\u0627\u0630\u0628\u200C\u0627\u0646\u062F \u21D2 \u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u06A9\u0633\u062A\u0650 \u0642\u0627\u0637\u0639\u200C\u062A\u0631 \u0628\u0645\u0627\u0646\u06CC\u062F.`;
+  } else if (squeezed && breakout && trendUp && strongClose && !adxOk) {
+    reason = `\u0634\u06A9\u0633\u062A\u0650 \u0642\u0627\u0637\u0639 \u0631\u062E \u062F\u0627\u062F \u0627\u0645\u0627 \u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A (ADX=${isFinite(adxVal) ? adxVal.toFixed(0) : "\u2014"} < ${cfg.adxMin}). \u062F\u0631 \u0627\u06CC\u0646 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645 \u0641\u0642\u0637 \u0627\u0646\u0641\u062C\u0627\u0631\u0647\u0627\u06CC\u06CC \u06A9\u0647 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC \u0631\u062E \u062F\u0647\u0646\u062F \u0644\u0628\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u067E\u0648\u0634\u0634\u0650 \u0647\u0632\u06CC\u0646\u0647 \u062F\u0627\u0631\u0646\u062F \u21D2 \u0648\u0631\u0648\u062F \u0627\u0646\u062C\u0627\u0645 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F.`;
+  } else if (approaching) {
+    reason = `\u0628\u0627\u0632\u0627\u0631 \u0641\u0634\u0631\u062F\u0647 \u0627\u0633\u062A (\u0635\u062F\u06A9\u0650 \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F ${(bwPct * 100).toFixed(0)}\u066A) \u0648 \u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \xAB\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0634\u06A9\u0633\u062A\xBB: \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u0642\u0627\u0637\u0639\u0650 \u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 (${priorHigh.toFixed(2)}$).`;
+  } else if (!trendUp) {
+    reason = `\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA50>EMA200) \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A \u2014 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0628\u0627\u06CC\u0627\u0633\u0650 \u0635\u0639\u0648\u062F\u06CC LONG \u0645\u06CC\u200C\u06AF\u06CC\u0631\u062F.`;
+  } else {
+    reason = `\u0628\u0627\u0632\u0627\u0631 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0641\u0634\u0631\u062F\u0647 \u0646\u06CC\u0633\u062A (\u0635\u062F\u06A9\u0650 \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F ${(bwPct * 100).toFixed(0)}\u066A > ${(cfg.sqzPct * 100).toFixed(0)}\u066A).`;
+  }
   return {
-    regime: up ? "trend_up" : "range",
-    efficiencyRatio: 0,
-    trendy: up,
-    adx: 0,
-    activeStream: up ? "bull" : "none",
-    bucket: up ? "m30_swing" : "none"
+    active,
+    approaching,
+    squeezed,
+    bwPct,
+    priorHigh: isFinite(priorHigh) ? priorHigh : NaN,
+    trendUp,
+    closePos,
+    strongClose,
+    adxVal,
+    adxOk,
+    atrVal,
+    reason
   };
 }
-function capitalWarning(capital) {
-  if (capital >= MIN_SAFE_CAPITAL) return "";
-  if (capital < 200) {
-    return `\u26D4 \u0647\u0634\u062F\u0627\u0631\u0650 \u0633\u0631\u0645\u0627\u06CC\u0647: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647\u0654 \u0646\u0648\u0633\u0627\u0646\u06CC SL \u0628\u0632\u0631\u06AF (~\u06F1\u06F2$ \u062F\u0631 \u0647\u0631 \u0645\u0639\u0627\u0645\u0644\u0647) \u062F\u0627\u0631\u062F. \u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u062D\u062A\u06CC \u06A9\u0648\u0686\u06A9\u200C\u062A\u0631\u06CC\u0646 \u062D\u062C\u0645\u0650 \u0645\u062C\u0627\u0632\u0650 \u0628\u0631\u0648\u06A9\u0631 (\u06F0.\u06F0\u06F1 \u0644\u0627\u062A) \u06CC\u0639\u0646\u06CC \u0631\u06CC\u0633\u06A9\u0650 ~\u06F1\u06F2$ = \u0628\u06CC\u0634 \u0627\u0632 \u06F2\u06F0\u066A \u062D\u0633\u0627\u0628 \u062F\u0631 \u06CC\u06A9 \u0645\u0639\u0627\u0645\u0644\u0647\u061B \u0686\u0646\u062F \u0636\u0631\u0631\u0650 \u067E\u06CC\u0627\u067E\u06CC \u062D\u0633\u0627\u0628 \u0631\u0627 \u0646\u0627\u0628\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0628\u0631\u0627\u06CC \u0627\u06CC\u0646 \u062D\u062C\u0645\u0650 \u0633\u0631\u0645\u0627\u06CC\u0647 \u0645\u0646\u0627\u0633\u0628 \u0646\u06CC\u0633\u062A \u2014 \u062D\u062F\u0627\u0642\u0644\u0650 \u0627\u0645\u0646 \u2248 \u06F1\u066C\u06F2\u06F0\u06F0$. \u0628\u0631\u0627\u06CC \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 \u06A9\u0645 \u0644\u0627\u06CC\u0647\u0654 \u0627\u0633\u06A9\u0627\u0644\u067E\u0650 M5 \u0645\u0646\u0627\u0633\u0628\u200C\u062A\u0631 \u0627\u0633\u062A.`;
-  }
-  return `\u26A0\uFE0F \u0647\u0634\u062F\u0627\u0631\u0650 \u0633\u0631\u0645\u0627\u06CC\u0647: \u0628\u0627 ${capital.toLocaleString("en-US")}$\u060C \u062D\u062C\u0645\u0650 \u062D\u062F\u0627\u0642\u0644\u06CC\u0650 \u0628\u0631\u0648\u06A9\u0631 (\u06F0.\u06F0\u06F1 \u0644\u0627\u062A) \u0631\u06CC\u0633\u06A9\u0650 ~\u06F1\u06F2$ = ${(1200 / capital).toFixed(0)}\u066A \u062D\u0633\u0627\u0628 \u062F\u0631 \u0647\u0631 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0627\u0631\u062F (\u0628\u0627\u0644\u0627\u06CC \u06F1\u066A \u062A\u0648\u0635\u06CC\u0647\u200C\u0634\u062F\u0647). \u062D\u062F\u0627\u0642\u0644\u0650 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 \u0627\u0645\u0646 \u0628\u0631\u0627\u06CC \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647\u0654 \u0646\u0648\u0633\u0627\u0646\u06CC \u2248 \u06F1\u066C\u06F2\u06F0\u06F0$ \u0627\u0633\u062A.`;
-}
-function decideGoldM30(a, close, capital = 1e4, riskPct = 1) {
+function decideS313(cfg, a, open, high, low, close, capital = 1e4, riskPct = 1) {
   const spec = assetSpec("XAUUSD");
   const price = a.price;
-  const emaF = ema(close, EMA_FAST3);
-  const emaS = ema(close, EMA_SLOW3);
-  const rsiArr = rsi(close, RSI_PERIOD2);
-  const ef = emaF[emaF.length - 1];
-  const es = emaS[emaS.length - 1];
-  const rsi2 = rsiArr[rsiArr.length - 1];
-  const reg = m30Regime(ef, es);
-  const trendUp = ef > es;
-  const distPct = (ef - es) / es * 100;
-  const capWarn = capitalWarning(capital);
+  const sig = computeS313(open, high, low, close, cfg);
+  const reg = {
+    regime: sig.trendUp ? "trend_up" : "range",
+    efficiencyRatio: 0,
+    trendy: sig.trendUp,
+    adx: isFinite(sig.adxVal) ? sig.adxVal : 0,
+    activeStream: sig.trendUp ? "bull" : "none",
+    bucket: cfg.id === "XAUUSD-M30" ? "s313_m30" : "s313_h1"
+  };
   const indicators = [
     {
-      name: "\u0631\u0648\u0646\u062F\u0650 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A (EMA20/100 \u0631\u0648\u06CC M30)",
-      value: trendUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A \u2718",
-      status: trendUp ? "ok" : "bad"
+      name: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (\u0635\u062F\u06A9\u0650 \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F)",
+      value: `${(sig.bwPct * 100).toFixed(0)}\u066A` + (sig.squeezed ? ` (\u0641\u0634\u0631\u062F\u0647 \u2714)` : ` (\u0647\u062F\u0641: \u2264${(cfg.sqzPct * 100).toFixed(0)}\u066A)`),
+      status: sig.squeezed ? "ok" : "neutral"
     },
     {
-      name: "RSI(14) \u2014 \u0639\u0645\u0642\u0650 \u067E\u0648\u0644\u0628\u06A9",
-      value: rsi2.toFixed(1) + (rsi2 < RSI_ENTRY2 ? ` (\u0632\u06CC\u0631\u0650 ${RSI_ENTRY2} \u2714)` : ` (\u0647\u062F\u0641: \u0632\u06CC\u0631\u0650 ${RSI_ENTRY2})`),
-      status: rsi2 < RSI_ENTRY2 ? "ok" : rsi2 < RSI_APPROACH2 ? "warn" : "neutral"
+      name: "\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA50/200)",
+      value: sig.trendUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A \u2718",
+      status: sig.trendUp ? "ok" : "bad"
     },
+    ...cfg.adxMin > 0 ? [{
+      name: `\u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F (ADX\u2265${cfg.adxMin})`,
+      value: (isFinite(sig.adxVal) ? sig.adxVal.toFixed(0) : "\u2014") + (sig.adxOk ? " \u2714" : " \u2718"),
+      status: sig.adxOk ? "ok" : "warn"
+    }] : [],
     { name: "\u0642\u06CC\u0645\u062A\u0650 \u0632\u0646\u062F\u0647", value: price.toFixed(2) + "$", status: "neutral" }
   ];
-  if (!trendUp) {
-    return {
-      state: "NEUTRAL",
-      regime: reg,
-      headline: "\u062E\u0646\u062B\u06CC \u2014 \u0634\u0631\u0627\u06CC\u0637\u0650 \u0646\u0648\u0633\u0627\u0646\u200C\u06AF\u06CC\u0631\u06CC\u0650 M30 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A",
-      reason: `\u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A (EMA20 \u0628\u0627\u0644\u0627\u06CC EMA100 \u0631\u0648\u06CC M30) \u0648 \u0647\u0646\u06AF\u0627\u0645\u0650 \u067E\u0648\u0644\u0628\u06A9 \u062E\u0631\u06CC\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0627\u0644\u0627\u0646 EMA20 \u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC EMA100 \u0646\u06CC\u0633\u062A\u060C \u067E\u0633 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0628\u0627\u0632 \u0646\u0645\u06CC\u200C\u06A9\u0646\u0645.` + (capWarn ? `
-${capWarn}` : ""),
-      indicators
-    };
-  }
-  if (rsi2 < RSI_ENTRY2) {
+  if (sig.active) {
+    const slDist = cfg.slAtr * sig.atrVal;
+    const tpDist = cfg.tpAtr * sig.atrVal;
     const entry = price;
-    const tp = entry + TP_DOLLARS;
-    const sl = entry - SL_DOLLARS;
-    const slDist = SL_DOLLARS;
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, slDist, 1, spec);
+    const sl = entry - slDist;
+    const tp = entry + tpDist;
+    const { lots, riskDollars } = computeLots(capital, riskPct, slDist, 1, spec);
     const rd = Math.round(riskDollars * 100) / 100;
     const lotsTxt = lots != null ? lots.toFixed(2) : "\u2014";
+    const beTriggerPrice = cfg.beTriggerAtr * sig.atrVal;
+    const beOffsetPrice = cfg.beOffsetAtr * sig.atrVal;
     return {
       state: "ENTRY",
       regime: reg,
-      headline: "\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u067E\u0648\u0644\u0628\u06A9 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A (M30)",
+      headline: `\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u067E\u0633 \u0627\u0632 \u0641\u0634\u0631\u062F\u06AF\u06CC (${cfg.tfFa})`,
       sourceLayer: {
-        code: "M30-Swing",
-        name: "\u0646\u0648\u0633\u0627\u0646\u200C\u06AF\u06CC\u0631\u06CC\u0650 \u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F\u0650 M30 (EMA20/100 + RSI)",
-        kind: "ma-confluence",
-        filters: [`\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA20>EMA100`, `\u067E\u0648\u0644\u0628\u06A9: RSI(14) < ${RSI_ENTRY2}`],
+        code: "S313",
+        name: `\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (Squeeze\u2192Breakout\u060C ${cfg.tfFa})`,
+        kind: "squeeze",
+        filters: [
+          `\u0641\u0634\u0631\u062F\u06AF\u06CC: \u0635\u062F\u06A9\u0650 \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F \u2264 ${(cfg.sqzPct * 100).toFixed(0)}\u066A`,
+          `\u0634\u06A9\u0633\u062A\u0650 \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644`,
+          `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA50>EMA200`,
+          `\u06A9\u06CC\u0641\u06CC\u062A\u0650 \u06A9\u0646\u062F\u0644: close-pos \u2265 ${(cfg.closePosMin * 100).toFixed(0)}\u066A`,
+          ...cfg.adxMin > 0 ? [`\u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F: ADX \u2265 ${cfg.adxMin}`] : []
+        ],
         manage: {
           style: "let-run-trail",
-          beTriggerR: 1,
-          trailDistPrice: SL_DOLLARS,
-          maxHoldBars: 144,
-          note: `\u0647\u062F\u0641\u0650 \u0628\u0632\u0631\u06AF\u0650 \u0631\u0648\u0646\u062F\u06CC (R:R\u2248\u06F1:\u06F1\u06F0). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F (${SL_DOLLARS}$) SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0628\u0627 \u0641\u0627\u0635\u0644\u0647\u0654 ${SL_DOLLARS}$ trail \u06A9\u0646 \u0648 \u062A\u0627 \u0646\u06AF\u0647\u062F\u0627\u0631\u06CC\u0650 \u06F3 \u0631\u0648\u0632\u0647 \u0628\u06AF\u0630\u0627\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F \u2014 \u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F \u0628\u062F\u0648\u062F.`
+          beTriggerR: cfg.beTriggerAtr / cfg.slAtr,
+          trailDistPrice: beOffsetPrice,
+          maxHoldBars: cfg.maxHold,
+          note: `\u0627\u06CC\u0646 \u06CC\u06A9 \xABdrift \u06A9\u0646\u062F\u0650 \u0627\u0645\u062A\u062F\u0627\u062F\u06CC\xBB \u0627\u0633\u062A\u060C \u0646\u0647 \u0627\u0633\u06A9\u0627\u0644\u067E\u0650 \u0633\u0631\u06CC\u0639. \u0648\u0642\u062A\u06CC \u0633\u0648\u062F \u0628\u0647 ~${beTriggerPrice.toFixed(2)}$ \u0631\u0633\u06CC\u062F (\u06F1.\u06F1\xD7ATR)\u060C SL \u0631\u0627 \u0628\u0647 \u06A9\u0645\u06CC \u0628\u0627\u0644\u0627\u06CC \u0646\u0642\u0637\u0647\u0654 \u0648\u0631\u0648\u062F (\u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 + ${beOffsetPrice.toFixed(2)}$) \u0628\u0628\u0631 \u062A\u0627 \u0627\u06AF\u0631 \u062D\u0631\u06A9\u062A \u0628\u0631\u06AF\u0634\u062A\u060C \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0647\u200C\u062C\u0627\u06CC \u0636\u0631\u0631\u0650 \u0628\u0632\u0631\u06AF \u0633\u0631\u0628\u0647\u200C\u0633\u0631 \u0628\u0633\u062A\u0647 \u0634\u0648\u062F. \u062A\u0627 \u0646\u06AF\u0647\u062F\u0627\u0631\u06CC\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0628\u06AF\u0630\u0627\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F.`
         }
       },
-      reason: `\u0631\u0648\u0646\u062F\u0650 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A\u0650 \u0637\u0644\u0627 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u0648 \u0642\u06CC\u0645\u062A \u0627\u0644\u0627\u0646 \u06CC\u06A9 \u067E\u0648\u0644\u0628\u06A9 \u0632\u062F\u0647 (RSI(14)=${rsi2.toFixed(1)} \u0632\u06CC\u0631\u0650 ${RSI_ENTRY2}). \u0627\u06CC\u0646 \xAB\u062E\u0631\u06CC\u062F\u0650 \u0627\u0631\u0632\u0627\u0646 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\xBB \u0628\u0627 \u0647\u062F\u0641\u0650 \u0628\u0632\u0631\u06AF (R:R\u2248\u06F1:\u06F1\u06F0) \u0627\u0633\u062A. \u0633\u0641\u0627\u0631\u0634\u0650 \u062E\u0631\u06CC\u062F \u0631\u0627 \u0628\u0627\u0632 \u06A9\u0646\u06CC\u062F.` + (capWarn ? `
-${capWarn}` : ""),
+      reason: `${sig.reason} \u0627\u06CC\u0646 \u0633\u062A\u0627\u067E \u0631\u0648\u06CC ${cfg.tfFa} \u0628\u0627 \u0645\u0639\u06CC\u0627\u0631\u0650 \u0645\u0642\u0627\u0648\u0645\u0650 RQS+ \u0627\u062B\u0628\u0627\u062A \u0634\u062F\u0647 (WR ~\u06F6\u06F8\u066A). \u0633\u0641\u0627\u0631\u0634\u0650 \u062E\u0631\u06CC\u062F \u0631\u0627 \u0628\u0627\u0632 \u06A9\u0646\u06CC\u062F \u0648 \u0637\u0628\u0642\u0650 \u067E\u0644\u0646\u0650 \u0645\u062F\u06CC\u0631\u06CC\u062A\u060C \u067E\u0633 \u0627\u0632 \u0633\u0648\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647 SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u06CC\u062F.`,
       direction: "LONG",
       entry,
       tp,
       sl,
-      rr: `SL \u06F1\u06F2$ / TP \u06F1\u06F2\u06F0$ (R:R \u2248 \u06F1:\u06F1\u06F0) \u2014 \u0646\u06AF\u0647\u062F\u0627\u0631\u06CC\u0650 \u062A\u0627 \u06F3 \u0631\u0648\u0632`,
-      probability: void 0,
+      rr: `SL ${slDist.toFixed(2)}$ (${cfg.slAtr}\xD7ATR) / TP ${tpDist.toFixed(2)}$ (${cfg.tpAtr}\xD7ATR) \u2014 \u0646\u06AF\u0647\u062F\u0627\u0631\u06CC\u0650 \u062A\u0627 ${cfg.maxHold} \u06A9\u0646\u062F\u0644`,
       sizing: {
         lotMultiplier: 1,
-        label: "\u062D\u062C\u0645\u0650 \u067E\u0627\u06CC\u0647 (\u0646\u0648\u0633\u0627\u0646\u06CC)",
-        note: `\u0646\u0648\u0633\u0627\u0646\u200C\u06AF\u06CC\u0631\u06CC\u0650 M30 \u0628\u0627 SL \u0628\u0632\u0631\u06AF\u061B \u062D\u062C\u0645 \u0631\u0627 \u06A9\u0648\u0686\u06A9 \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F.`,
+        label: "\u062D\u062C\u0645\u0650 \u067E\u0627\u06CC\u0647",
+        note: `SL \u0628\u0631 \u062D\u0633\u0628\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u0644\u062D\u0638\u0647\u200C\u0627\u06CC (ATR) \u062A\u0646\u0638\u06CC\u0645 \u0634\u062F\u0647\u061B \u062D\u062C\u0645 \u0631\u0627 \u0645\u062A\u0646\u0627\u0633\u0628 \u0628\u0627 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F.`,
         lots: lots ?? void 0,
         riskDollars: rd,
         capital,
         riskPct,
-        capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (${rd.toLocaleString("en-US")}$)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lotsTxt} \u0644\u0627\u062A (\u06F1\u06F0\u06F0 \u0627\u0648\u0646\u0633) \u0627\u0633\u062A. \u0627\u06AF\u0631 SL \u0628\u062E\u0648\u0631\u062F \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F \u2014 \u0647\u0645\u0627\u0646 \u0631\u06CC\u0633\u06A9\u06CC \u06A9\u0647 \u062A\u0639\u06CC\u06CC\u0646 \u06A9\u0631\u062F\u06CC\u062F.`
+        capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (${rd.toLocaleString("en-US")}$)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lotsTxt} \u0644\u0627\u062A (\u06F1\u06F0\u06F0 \u0627\u0648\u0646\u0633). \u0627\u06AF\u0631 SL \u0628\u062E\u0648\u0631\u062F ~${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
       },
-      tpPlan: { multiplier: 0, note: `TP \u062B\u0627\u0628\u062A\u0650 \u06F1\u06F2\u06F0$ \u0628\u0627\u0644\u0627\u062A\u0631 \u0627\u0632 \u0648\u0631\u0648\u062F (\u06F1\u06F2\u06F0\u06F0 pip). \u0647\u062F\u0641\u0650 \u0628\u0632\u0631\u06AF\u0650 \u0631\u0648\u0646\u062F\u06CC.` },
-      slPlan: { multiplier: 0, note: `SL \u062B\u0627\u0628\u062A\u0650 \u06F1\u06F2$ \u067E\u0627\u06CC\u06CC\u0646\u200C\u062A\u0631 \u0627\u0632 \u0648\u0631\u0648\u062F (\u06F1\u06F2\u06F0 pip).` },
+      tpPlan: { multiplier: cfg.tpAtr, note: `TP = ${cfg.tpAtr}\xD7ATR \u0628\u0627\u0644\u0627\u062A\u0631 \u0627\u0632 \u0648\u0631\u0648\u062F (\u0645\u062A\u063A\u06CC\u0631 \u0628\u0627 \u0646\u0648\u0633\u0627\u0646\u0650 \u0644\u062D\u0638\u0647\u200C\u0627\u06CC \u2014 \u0646\u0647 \u0639\u062F\u062F\u0650 \u062B\u0627\u0628\u062A).` },
+      slPlan: { multiplier: cfg.slAtr, note: `SL = ${cfg.slAtr}\xD7ATR \u067E\u0627\u06CC\u06CC\u0646\u200C\u062A\u0631 \u0627\u0632 \u0648\u0631\u0648\u062F (\u0645\u062A\u063A\u06CC\u0631 \u0628\u0627 \u0646\u0648\u0633\u0627\u0646\u0650 \u0644\u062D\u0638\u0647\u200C\u0627\u06CC).` },
       indicators
     };
   }
-  if (rsi2 < RSI_APPROACH2) {
-    const confirmations = [
-      { label: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A (M30)", met: true, detail: `EMA20 \u0628\u0627\u0644\u0627\u06CC EMA100 (\u0641\u0627\u0635\u0644\u0647 ${distPct.toFixed(2)}%).` },
-      {
-        label: `\u067E\u0648\u0644\u0628\u06A9\u0650 \u06A9\u0627\u0641\u06CC (RSI \u0632\u06CC\u0631\u0650 ${RSI_ENTRY2})`,
-        met: false,
-        detail: `RSI(14) \u0627\u0644\u0627\u0646 ${rsi2.toFixed(1)} \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0627\u0641\u062A\u0650 \u0628\u06CC\u0634\u062A\u0631 \u062A\u0627 \u0632\u06CC\u0631\u0650 ${RSI_ENTRY2} \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`
-      }
-    ];
+  if (sig.approaching) {
     return {
       state: "APPROACHING",
       regime: reg,
-      headline: "\u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u067E\u0648\u0644\u0628\u06A9\u0650 \u0639\u0645\u06CC\u0642\u200C\u062A\u0631 (M30)",
-      sourceLayer: { code: "M30-Swing", name: "\u0646\u0648\u0633\u0627\u0646\u200C\u06AF\u06CC\u0631\u06CC\u0650 \u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F\u0650 M30 (EMA20/100 + RSI)", kind: "ma-confluence" },
-      reason: `\u0631\u0648\u0646\u062F\u0650 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A\u060C \u0627\u0645\u0627 \u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \u067E\u0648\u0644\u0628\u06A9 \u0646\u0632\u062F\u0647 (RSI(14)=${rsi2.toFixed(1)}). \u0627\u06AF\u0631 RSI \u0628\u0647 \u0632\u06CC\u0631\u0650 ${RSI_ENTRY2} \u0628\u0631\u0633\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0641\u0639\u0644\u0627\u064B \u0645\u0646\u062A\u0638\u0631 \u0628\u0645\u0627\u0646\u06CC\u062F \u0648 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0627\u0632 \u0646\u06A9\u0646\u06CC\u062F.` + (capWarn ? `
-${capWarn}` : ""),
-      confirmations,
+      headline: `\u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u2014 \u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647\u060C \u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u06A9\u0633\u062A (${cfg.tfFa})`,
+      sourceLayer: { code: "S313", name: `\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (${cfg.tfFa})`, kind: "squeeze" },
+      reason: sig.reason,
+      confirmations: [
+        {
+          label: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (\u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F \u062F\u0631 \u06A9\u0641)",
+          met: true,
+          detail: `\u0635\u062F\u06A9\u0650 \u067E\u0647\u0646\u0627\u06CC \u0628\u0627\u0646\u062F ${(sig.bwPct * 100).toFixed(0)}\u066A \u2264 ${(cfg.sqzPct * 100).toFixed(0)}\u066A.`
+        },
+        { label: "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA50>EMA200", met: true, detail: "\u0628\u0627\u06CC\u0627\u0633\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A." },
+        {
+          label: `\u0634\u06A9\u0633\u062A\u0650 \u0642\u0627\u0637\u0639\u0650 \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644`,
+          met: false,
+          detail: `\u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC ${isFinite(sig.priorHigh) ? sig.priorHigh.toFixed(2) : "\u2014"}$ \u0628\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0648\u06CC.`
+        }
+      ],
       indicators
     };
   }
   return {
     state: "NEUTRAL",
     regime: reg,
-    headline: "\u062E\u0646\u062B\u06CC \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u0641\u0631\u0635\u062A\u0650 \u062E\u0631\u06CC\u062F (M30)",
-    reason: `\u0631\u0648\u0646\u062F\u0650 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u0627\u0645\u0627 \u0642\u06CC\u0645\u062A \u06AF\u0631\u0627\u0646 \u0627\u0633\u062A (RSI(14)=${rsi2.toFixed(1)}\u060C \u0628\u0627\u0644\u0627\u06CC ${RSI_APPROACH2}). \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u0647\u0646\u06AF\u0627\u0645\u0650 \u067E\u0648\u0644\u0628\u06A9 \u0648\u0627\u0631\u062F \u0645\u06CC\u200C\u0634\u0648\u062F\u061B \u0627\u0644\u0627\u0646 \u062F\u0646\u0628\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u062F\u0631 \u0627\u06CC\u0646 \u0642\u06CC\u0645\u062A \u0646\u0645\u06CC\u200C\u0631\u0648\u06CC\u0645 \u0648 \u0635\u0628\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.` + (capWarn ? `
-${capWarn}` : ""),
+    headline: `\u062E\u0646\u062B\u06CC \u2014 \u0634\u0631\u0627\u06CC\u0637\u0650 \u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A (${cfg.tfFa})`,
+    reason: sig.reason,
     indicators
   };
 }
-function decideGoldM30TrendLine(a, close, capital = 1e4, riskPct = 1, open, high, low) {
-  if (open && high && low && high.length === close.length && low.length === close.length) {
-    const tl = trendLineDecision(TREND_LINE_CFG["XAUUSD-M30"], a, open, high, low, close, capital, riskPct);
-    if (tl.state === "ENTRY" || tl.state === "APPROACHING") return tl;
-    return channelDecision(CHANNEL_CFG["XAUUSD-M30"], a, open, high, low, close, capital, riskPct, () => tl);
+
+// ../web_tool/src/sell_climax_s327.ts
+var SELL_CLIMAX_CFG = {
+  "XAUUSD-M5": { kBody: 1.6, brMin: 0.6, streakN: 2, rsiMax: 30, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 3.5, tpMult: 1.3, maxHold: 24 },
+  "XAUUSD-M15": { kBody: 2.5, brMin: 0.45, streakN: 3, rsiMax: 35, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 2.8, tpMult: 1, maxHold: 16 },
+  "XAUUSD-M30": { kBody: 2.5, brMin: 0.45, streakN: 2, rsiMax: 35, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 2.4, tpMult: 1, maxHold: 16 },
+  "XAUUSD-H1": { kBody: 1.6, brMin: 0.6, streakN: 3, rsiMax: 42, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 2.8, tpMult: 1, maxHold: 48 },
+  "XAUUSD-H4": { kBody: 2.5, brMin: 0.6, streakN: 0, rsiMax: 35, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 3.5, tpMult: 1.3, maxHold: 24 },
+  "EURUSD-M30": { kBody: 1.6, brMin: 0.6, streakN: 2, rsiMax: 30, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 2, tpMult: 0.7, maxHold: 16 }
+};
+function downStreak2(open, close) {
+  let run = 0;
+  for (let i = 0; i < close.length; i++) {
+    if (close[i] < open[i]) run++;
+    else run = 0;
   }
-  return decideGoldM30(a, close, capital, riskPct);
+  return run;
+}
+function computeSellClimax(candles, cfg) {
+  const n = candles.length;
+  const need = Math.max(cfg.emaTrend, cfg.atrP, cfg.bodyMaLen) + cfg.streakN + 2;
+  const empty = {
+    active: false,
+    approaching: false,
+    streak: 0,
+    rsiVal: NaN,
+    atrVal: NaN,
+    aboveTrend: false,
+    bodyVal: NaN,
+    bodyMa: NaN,
+    bodyRatio: NaN,
+    isClimax: false,
+    reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC RSI/EMA200/ATR/\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0628\u062F\u0646\u0647 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A."
+  };
+  if (n < need) return empty;
+  const open = candles.map((c) => c.open);
+  const close = candles.map((c) => c.close);
+  const high = candles.map((c) => c.high);
+  const low = candles.map((c) => c.low);
+  const rsiArr = rsi(close, 14);
+  const emaArr = ema(close, cfg.emaTrend);
+  const atrArr = atr(candles, cfg.atrP);
+  const i = n - 1;
+  if ([rsiArr[i], emaArr[i], atrArr[i]].some((v) => Number.isNaN(v)) || !(atrArr[i] > 0)) return empty;
+  const pNow = close[i];
+  const bodyVal = Math.abs(close[i] - open[i]);
+  const rng = Math.max(high[i] - low[i], 1e-12);
+  const bodyRatio = bodyVal / rng;
+  const isBear = close[i] < open[i];
+  let bodyMa = NaN;
+  if (i - 1 >= cfg.bodyMaLen) {
+    let s = 0;
+    for (let k = i - cfg.bodyMaLen; k <= i - 1; k++) s += Math.abs(close[k] - open[k]);
+    bodyMa = s / cfg.bodyMaLen;
+  }
+  const streak = downStreak2(open, close);
+  const aboveTrend = pNow > emaArr[i];
+  const rsiVal = rsiArr[i];
+  const atrVal = atrArr[i];
+  const bodyOk = Number.isFinite(bodyMa) && bodyMa > 0 && bodyVal >= cfg.kBody * bodyMa;
+  const brOk = cfg.brMin <= 0 || bodyRatio >= cfg.brMin;
+  const streakOk = cfg.streakN <= 0 || streak >= cfg.streakN;
+  const isClimax = isBear && bodyOk && brOk && streakOk;
+  const oversold = rsiVal <= cfg.rsiMax;
+  const active = isClimax && oversold && aboveTrend;
+  const approaching = !active && isClimax && aboveTrend && (rsiVal > cfg.rsiMax && rsiVal <= cfg.rsiMax + 8);
+  let entry, sl, tp;
+  let reason;
+  const trendTxt = aboveTrend ? `\u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC EMA${cfg.emaTrend} (\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC)` : `\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 EMA${cfg.emaTrend}`;
+  const bodyTimes = Number.isFinite(bodyMa) && bodyMa > 0 ? (bodyVal / bodyMa).toFixed(1) : "\u2014";
+  if (active) {
+    entry = pNow;
+    sl = pNow - cfg.slMult * atrVal;
+    tp = pNow + cfg.tpMult * atrVal;
+    reason = `\u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633\u0650 \u0641\u0631\u0648\u0634 (\u062E\u0633\u062A\u06AF\u06CC\u0650 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC): \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0627\u0633\u062A\u062B\u0646\u0627\u06CC\u06CC-\u0628\u0632\u0631\u06AF \u0628\u0627 \u0628\u062F\u0646\u0647\u0654 ${bodyTimes}\xD7 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0627\u062E\u06CC\u0631 (\u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC/\u062E\u0627\u0644\u06CC\u200C\u0634\u062F\u0646\u0650 \u0641\u0631\u0648\u0634)\u060C RSI14 ${rsiVal.toFixed(1)} \u2264 ${cfg.rsiMax} (\u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634)\u060C \u0648 ${trendTxt}. \u0637\u0628\u0642\u0650 Al Brooks \u0627\u06CC\u0646 \xABsell vacuum\xBB \u0627\u0633\u062A: \u0641\u0631\u0648\u0634\u0646\u062F\u06AF\u0627\u0646 \u062E\u0633\u062A\u0647 \u0634\u062F\u0647\u200C\u0627\u0646\u062F \u0648 \u06A9\u0648\u0686\u06A9\u200C\u062A\u0631\u06CC\u0646 \u062E\u0631\u06CC\u062F\u0650 \u0642\u0648\u06CC\u060C \u0642\u06CC\u0645\u062A \u0631\u0627 \u0633\u0631\u06CC\u0639 \u0628\u0647 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0628\u0631\u0645\u06CC\u200C\u06AF\u0631\u062F\u0627\u0646\u062F. \u0648\u0631\u0648\u062F LONG \u0628\u0627 \u0647\u062F\u0641\u0650 \u06A9\u0648\u0686\u06A9\u0650 \u0633\u0631\u06CC\u0639 (TP=${cfg.tpMult}\xD7ATR) \u0648 \u062D\u062F\u0650 \u0636\u0631\u0631\u0650 \u0628\u0627\u0632\u062A\u0631\u0650 ${cfg.slMult}\xD7ATR \u21D2 WR \u0628\u0627\u0644\u0627. SL=${sl.toFixed(2)} \u060C TP=${tp.toFixed(2)}. \u0628\u0631\u06AF\u0631\u0641\u062A\u0647 \u0627\u0632 \u0644\u0627\u06CC\u0647\u0654 Sell-Climax Reversal (S327\u060C \u0627\u062D\u06CC\u0627\u06CC S174).`;
+  } else if (approaching) {
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633\u0650 \u0646\u0632\u0648\u0644\u06CC (\u0628\u062F\u0646\u0647\u0654 ${bodyTimes}\xD7 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646) \u0634\u06A9\u0644 \u06AF\u0631\u0641\u062A \u0648 ${trendTxt}\u061B \u0627\u0645\u0627 RSI14 \u0647\u0646\u0648\u0632 ${rsiVal.toFixed(1)} \u0627\u0633\u062A (\u0647\u062F\u0641: \u2264 ${cfg.rsiMax}). \u0627\u06AF\u0631 \u0641\u0631\u0648\u0634 \u06A9\u0645\u06CC \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F \u0648 RSI \u0628\u0647 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 \u0628\u0631\u0633\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC\u0650 LONG \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0645\u0646\u062A\u0638\u0631\u0650 \u062A\u0623\u06CC\u06CC\u062F \u0628\u0645\u0627\u0646. \u0628\u0631\u06AF\u0631\u0641\u062A\u0647 \u0627\u0632 \u0644\u0627\u06CC\u0647\u0654 Sell-Climax Reversal (S327).`;
+  } else if (!aboveTrend) {
+    reason = `${trendTxt} \u21D2 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0644\u0627\u0646 \xAB\u0686\u0627\u0642\u0648\u06CC \u062F\u0631 \u062D\u0627\u0644\u0650 \u0633\u0642\u0648\u0637\xBB \u0646\u0645\u06CC\u200C\u06AF\u06CC\u0631\u06CC\u0645\u061B \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u067E\u0633 \u0627\u0632 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0631\u0627 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646 \u0634\u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`;
+  } else if (!isClimax) {
+    if (!isBear) {
+      reason = `\u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A\u061B \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633\u0650 \u0641\u0631\u0648\u0634 \u0646\u06CC\u0627\u0632 \u0628\u0647 \u06CC\u06A9 \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0627\u0633\u062A\u062B\u0646\u0627\u06CC\u06CC-\u0628\u0632\u0631\u06AF \u062F\u0627\u0631\u062F. \u0645\u0646\u062A\u0638\u0631\u0650 \u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
+    } else if (!bodyOk) {
+      reason = `\u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC \u0647\u0633\u062A \u0627\u0645\u0627 \u0628\u062F\u0646\u0647\u200C\u0627\u0634 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0632\u0631\u06AF \u0646\u06CC\u0633\u062A (${bodyTimes}\xD7 \u0627\u0632 ${cfg.kBody}\xD7 \u0644\u0627\u0632\u0645). \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0646\u06CC\u0627\u0632 \u0628\u0647 \u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC\u0650 \u0627\u0633\u062A\u062B\u0646\u0627\u06CC\u06CC \u062F\u0627\u0631\u062F\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
+    } else if (!streakOk) {
+      reason = `\u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0634\u06A9\u0644 \u06AF\u0631\u0641\u062A \u0627\u0645\u0627 \u0631\u06AF\u0647\u0654 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0645\u0646\u062A\u0647\u06CC \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A (${streak} \u0627\u0632 ${cfg.streakN} \u06A9\u0646\u062F\u0644\u0650 \u0644\u0627\u0632\u0645). \u0645\u0646\u062A\u0638\u0631\u0650 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0634\u06CC\u062F\u0647\u200C\u062A\u0631\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
+    } else {
+      reason = `\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \xAB\u067E\u0631\u0642\u062F\u0631\u062A\xBB \u0646\u06CC\u0633\u062A (body/range=${bodyRatio.toFixed(2)} \u0627\u0632 ${cfg.brMin} \u0644\u0627\u0632\u0645). \u0645\u0646\u062A\u0638\u0631\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u062A\u0648\u067E\u064F\u0631\u062A\u0631 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
+    }
+  } else {
+    reason = `\u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0648 \u0631\u0698\u06CC\u0645 \u0628\u0631\u0642\u0631\u0627\u0631\u0646\u062F \u0627\u0645\u0627 RSI14=${rsiVal.toFixed(1)} \u0647\u0646\u0648\u0632 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 \u0646\u06CC\u0633\u062A (\u0647\u062F\u0641 \u2264 ${cfg.rsiMax}). \u0645\u0646\u062A\u0638\u0631\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062A\u0627\u0632\u0647 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
+  }
+  return {
+    active,
+    approaching,
+    streak,
+    rsiVal,
+    atrVal,
+    aboveTrend,
+    bodyVal,
+    bodyMa,
+    bodyRatio,
+    isClimax,
+    reason,
+    entry,
+    sl,
+    tp
+  };
 }
 
-// ../web_tool/src/gold_htf_router.ts
-var H1_CFG = { id: "XAUUSD-H1", tfFa: "H1 (\u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647)", emaFast: 20, emaSlow: 50, rsiPeriod: 14, adxTrendMin: 22, bucket: "h1_research" };
-var H4_CFG = { id: "XAUUSD-H4", tfFa: "H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)", emaFast: 20, emaSlow: 50, rsiPeriod: 14, adxTrendMin: 20, bucket: "h4_research" };
-var D1_CFG = { id: "XAUUSD-D1", tfFa: "D1 (\u0631\u0648\u0632\u0627\u0646\u0647)", emaFast: 20, emaSlow: 50, rsiPeriod: 14, adxTrendMin: 18, bucket: "d1_research" };
-function htfRegime(cfg, emaFast, emaSlow, adx2) {
-  const up = emaFast > emaSlow;
-  const trendy = adx2 >= cfg.adxTrendMin;
-  return {
-    regime: trendy ? up ? "trend_up" : "trend_down" : "range",
-    efficiencyRatio: 0,
-    trendy,
-    adx: adx2,
-    activeStream: trendy ? up ? "bull" : "bear" : "none",
-    bucket: cfg.bucket
-  };
+// ../web_tool/src/mid_month_drift.ts
+var MID_DOM_SET = [10, 13, 20];
+var MID_ENTRY_HOURS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+var MID_APPROACH_HOUR = 0;
+var MID_SL_PIP = 295;
+var MID_TP_PIP = 295;
+var PIP3 = 0.1;
+function toIran5(utcHour) {
+  const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 }
-function analyzeHtf(cfg, a, close) {
-  const n = close.length;
-  const emaFast = ema(close, cfg.emaFast)[n - 1];
-  const emaSlow = ema(close, cfg.emaSlow)[n - 1];
-  const rsi2 = a.rsi14 ?? 50;
-  const adx2 = a.adx ?? 0;
-  const price = a.price;
-  const regime = htfRegime(cfg, emaFast, emaSlow, adx2);
-  const up = emaFast > emaSlow;
-  const trendFa = regime.trendy ? up ? "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC" : "\u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC" : "\u0631\u0646\u062C/\u0628\u06CC\u200C\u0631\u0648\u0646\u062F";
-  const trendColor = regime.trendy ? up ? "ok" : "bad" : "neutral";
-  return {
-    state: "NEUTRAL",
-    regime,
-    headline: `\u0637\u0644\u0627 ${cfg.tfFa} \u2014 \u062D\u0627\u0644\u062A\u0650 \u062A\u062D\u0642\u06CC\u0642\u0650 \u0641\u0639\u0627\u0644 (${trendFa})`,
-    reason: `\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0627\u0641\u0642\u0650 ${cfg.tfFa} \u0631\u0627 \u0628\u0627 \u0645\u0646\u0637\u0642\u0650 \u062A\u062D\u0644\u06CC\u0644\u06CC\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u062E\u0648\u062F\u0634 \u067E\u0627\u06CC\u0634 \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0647\u0645\u200C\u0627\u06A9\u0646\u0648\u0646 \u0631\u0627\u0628\u0637\u0647\u0654 EMA(${cfg.emaFast})/EMA(${cfg.emaSlow}) \u0648\u0636\u0639\u06CC\u062A\u0650 \xAB${trendFa}\xBB \u0631\u0627 \u0646\u0634\u0627\u0646 \u0645\u06CC\u200C\u062F\u0647\u062F \u0648 ADX \u0631\u0648\u06CC ${adx2.toFixed(1)} \u0627\u0633\u062A. \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 \u0627\u0635\u0644\u06CC\u0650 \u067E\u0631\u0648\u0698\u0647\u060C \u062A\u0627 \u0648\u0642\u062A\u06CC \u0644\u0627\u06CC\u0647\u200C\u0627\u06CC \u0628\u0627 WR\u2265\u06F4\u06F0\u066A \u0648 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u0645\u062B\u0628\u062A \u06A9\u0647 \u06AF\u06CC\u062A\u0650 \u0633\u062E\u062A\u0650 \u0636\u062F\u0650 overfit \u0631\u0627 \u0631\u0648\u06CC \u0647\u0645\u06CC\u0646 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645 \u067E\u0627\u0633 \u06A9\u0646\u062F \u06A9\u0634\u0641 \u0646\u0634\u0648\u062F\u060C \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0627\u0645 \u0646\u0645\u06CC\u200C\u062F\u0647\u062F. \u0627\u06CC\u0646 \u0627\u0641\u0642 \u0628\u0631\u0627\u06CC \xAB\u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0646\u062F\u0650 \u0628\u0627\u0644\u0627\u062F\u0633\u062A\u06CC\xBB \u0648 \u0628\u0647\u200C\u0639\u0646\u0648\u0627\u0646 \u0628\u0633\u062A\u0631\u0650 \u0627\u0641\u0632\u0648\u062F\u0646\u0650 \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u0650 \u0627\u062E\u062A\u0635\u0627\u0635\u06CC\u0650 \u0622\u06CC\u0646\u062F\u0647 \u0622\u0645\u0627\u062F\u0647 \u0627\u0633\u062A.`,
-    sourceLayer: {
-      code: "\u2014",
-      name: `\u0637\u0644\u0627 ${cfg.tfFa} \u2014 \u0628\u062F\u0648\u0646\u0650 \u0644\u0627\u06CC\u0647\u0654 \u0641\u0639\u0627\u0644 (\u062F\u0631 \u062F\u0633\u062A\u0650 \u062A\u062D\u0642\u06CC\u0642)`,
-      kind: "regime-ml"
-    },
-    indicators: [
-      { name: "\u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645", value: cfg.tfFa, status: "neutral" },
-      { name: "\u0648\u0636\u0639\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F", value: trendFa, status: trendColor },
-      { name: `EMA(${cfg.emaFast})`, value: emaFast ? emaFast.toFixed(2) : "\u2014", status: "neutral" },
-      { name: `EMA(${cfg.emaSlow})`, value: emaSlow ? emaSlow.toFixed(2) : "\u2014", status: "neutral" },
-      { name: "RSI(14)", value: rsi2.toFixed(1), status: rsi2 >= 70 ? "warn" : rsi2 <= 30 ? "warn" : "neutral" },
-      { name: "ADX", value: adx2.toFixed(1), status: regime.trendy ? "ok" : "neutral" },
-      { name: "\u0642\u06CC\u0645\u062A\u0650 \u0641\u0639\u0644\u06CC", value: price ? price.toFixed(2) : "\u2014", status: "neutral" },
-      { name: "\u0648\u0636\u0639\u06CC\u062A\u0650 \u062A\u062D\u0642\u06CC\u0642", value: "\u062D\u0627\u0644\u062A\u0650 \u062A\u062D\u0642\u06CC\u0642\u0650 \u0641\u0639\u0627\u0644 (\u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0627\u0645)", status: "neutral" }
-    ]
-  };
+var MID_IRAN_RANGE = `${toIran5(1)}\u2013${toIran5(12)}`;
+function isMidMonthWindow(times) {
+  if (times.length < 1) return false;
+  const now = new Date(times[times.length - 1] * 1e3);
+  const dom = now.getUTCDate();
+  return MID_DOM_SET.includes(dom);
 }
-function trendLineEntry(cfg, htfCfg, a, open, high, low, close, capital, riskPct) {
-  const tl = computeTrendLine(open, high, low, close, cfg);
-  const n = close.length;
-  const emaFast = ema(close, htfCfg.emaFast)[n - 1];
-  const emaSlow = ema(close, htfCfg.emaSlow)[n - 1];
-  const adx2 = a.adx ?? 0;
-  const regime = htfRegime(htfCfg, emaFast, emaSlow, adx2);
-  const spec = assetSpec("XAUUSD");
-  const tlInd = [
-    { name: "\u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645", value: htfCfg.tfFa, status: "neutral" },
-    {
-      name: "\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0627\u0632 \u062F\u0648 \u06A9\u0641\u0650 \u0627\u062E\u06CC\u0631)",
-      value: tl.hasLine && isFinite(tl.lineValue) ? tl.lineValue.toFixed(2) + "$" : "\u2014",
-      status: tl.hasLine ? "ok" : "neutral"
-    },
-    {
-      name: "\u0631\u0627\u0628\u0637\u0647\u0654 \u0642\u06CC\u0645\u062A \u0628\u0627 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F",
-      value: isFinite(tl.distToLinePct) ? tl.penetrated ? "\u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637 (\u062A\u0633\u062A)" : `${tl.distToLinePct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u062E\u0637` : "\u2014",
-      status: tl.state === "ENTRY" ? "ok" : tl.penetrated ? "warn" : "neutral"
-    },
-    {
-      name: "\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA" + htfCfg.emaFast + "/" + htfCfg.emaSlow + ")",
-      value: tl.regimeUp ? "\u0635\u0639\u0648\u062F\u06CC \u2713" : "\u0646\u0647\u200C\u0635\u0639\u0648\u062F\u06CC",
-      status: tl.regimeUp ? "ok" : "neutral"
-    },
-    {
-      name: "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637 (\u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637)",
-      value: tl.penetrated ? tl.closedBack ? "\u0628\u0644\u0647 \u2713" : "\u0647\u0646\u0648\u0632 \u0646\u0647" : "\u062E\u06CC\u0631",
-      status: tl.state === "ENTRY" ? "ok" : "neutral"
-    },
-    { name: "ATR", value: isFinite(tl.atr) ? tl.atr.toFixed(2) + "$" : "\u2014", status: "neutral" },
-    { name: "\u0642\u06CC\u0645\u062A\u0650 \u0641\u0639\u0644\u06CC", value: a.price ? a.price.toFixed(2) : "\u2014", status: "neutral" }
-  ];
-  if (tl.state === "ENTRY") {
-    const entry = a.price;
-    const sl = entry - tl.slDist;
-    const tp = entry + tl.tpDist;
-    const { lots, riskDollars, effRiskPct } = computeLots(capital, riskPct, tl.slDist, 1, spec);
-    const rd = Math.round(riskDollars * 100) / 100;
+function midFiltersPass(f) {
+  if (!f) return true;
+  return f.aboveEma;
+}
+function computeMidMonth(times, utcHour, filt) {
+  const slDist = MID_SL_PIP * PIP3;
+  const tpDist = MID_TP_PIP * PIP3;
+  const inWindow = isMidMonthWindow(times);
+  if (inWindow && MID_ENTRY_HOURS.includes(utcHour)) {
+    if (!midFiltersPass(filt)) {
+      return {
+        state: "APPROACHING",
+        isMidWindow: true,
+        utcHour,
+        slDist,
+        tpDist,
+        reason: `\u0627\u06A9\u0646\u0648\u0646 \u062F\u0631 \u06CC\u06A9\u06CC \u0627\u0632 \xAB\u0631\u0648\u0632\u0647\u0627\u06CC \u062F\u0631\u0627\u06CC\u0648\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647\xBB (\u0631\u0648\u0632\u0647\u0627\u06CC \u06F1\u06F0\u060C \u06F1\u06F3 \u06CC\u0627 \u06F2\u06F0 \u062A\u0642\u0648\u06CC\u0645\u06CC) \u0648 \u0633\u0627\u0639\u062A\u0650 ${toIran5(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 (\u0633\u0634\u0646\u0650 \u0622\u0633\u06CC\u0627\u2192\u0644\u0646\u062F\u0646\u060C ${MID_IRAN_RANGE}) \u0647\u0633\u062A\u06CC\u0645 \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627\xBB. \u0627\u0645\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647. \u0628\u0631\u0627\u06CC \u0635\u062F\u0648\u0631\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0628\u0627\u06CC\u062F: \u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC \u0634\u0648\u062F (\u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC EMA200). (\u0644\u0627\u06CC\u0647\u0654 \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631\u0650 S312 \u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 \u21D2 RQS+ \u06F8\u06F9.\u06F3\u060C WR \u06F6\u06F1\u066A\u060C PF \u06F2.\u06F5\u06F0 \u2014 \u0642\u0648\u06CC\u200C\u062A\u0631\u06CC\u0646 t-stat\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u067E\u0631\u0648\u0698\u0647.)`
+      };
+    }
     return {
       state: "ENTRY",
-      regime,
-      headline: `\u0648\u0631\u0648\u062F \u062E\u0631\u06CC\u062F (LONG) \u2014 \u062A\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0637\u0644\u0627 ${htfCfg.tfFa})`,
-      reason: tl.reason,
-      sourceLayer: {
-        code: "S215",
-        name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line Failed-Breakout) \u2014 ${htfCfg.tfFa}`,
-        kind: "price-action",
-        filters: [
-          "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC EMA" + htfCfg.emaFast + ">EMA" + htfCfg.emaSlow,
-          "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u060C \u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637)",
-          "\u0642\u06CC\u062F\u0650 \u0636\u062F\u0650 \u0631\u0646\u062C (\u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u063A\u06CC\u0631\u0650 \u0647\u0645\u200C\u067E\u0648\u0634)"
-        ],
-        manage: {
-          style: "structural-trail",
-          beTriggerR: 1,
-          trailDistPrice: tl.slDist,
-          maxHoldBars: cfg.maxHoldBars,
-          note: `\u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC (\u062E\u0637\u0650 \u0631\u0648\u0646\u062F): SL \u0627\u0648\u0644\u06CC\u0647 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0646\u0641\u0648\u0630 (${tl.slDist.toFixed(2)}$). \u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u06CC\u0627 \u06A9\u0641\u0650 \u0647\u0631 \u067E\u0648\u0644\u0628\u06A9\u0650 \u062C\u062F\u06CC\u062F \u0628\u0627\u0644\u0627 \u0628\u06CC\u0627\u0648\u0631 \u2014 \u062A\u0627 \u0633\u0642\u0641\u0650 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${htfCfg.tfFa}. \u0627\u06AF\u0631 \u0642\u06CC\u0645\u062A \u0642\u0627\u0637\u0639\u0627\u0646\u0647 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0628\u0633\u062A\u0647 \u0634\u062F \u0648 \u0628\u0627\u0644\u0627 \u0646\u06CC\u0627\u0645\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0631\u0648\u0646\u062F)\u060C \u0641\u0648\u0631\u0627\u064B \u062E\u0627\u0631\u062C \u0634\u0648 \u062D\u062A\u06CC \u0642\u0628\u0644 \u0627\u0632 TP.`
-        }
-      },
-      direction: "LONG",
+      isMidWindow: true,
+      utcHour,
+      slDist,
+      tpDist,
+      reason: `\u0627\u06A9\u0646\u0648\u0646 \u062F\u0631 \u06CC\u06A9\u06CC \u0627\u0632 \xAB\u0631\u0648\u0632\u0647\u0627\u06CC \u062F\u0631\u0627\u06CC\u0648\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647\xBB (\u0631\u0648\u0632\u0647\u0627\u06CC \u06F1\u06F0\u060C \u06F1\u06F3 \u06CC\u0627 \u06F2\u06F0 \u062A\u0642\u0648\u06CC\u0645\u06CC) \u0648 \u0633\u0627\u0639\u062A\u0650 ${toIran5(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 (\u0633\u0634\u0646\u0650 \u0622\u0633\u06CC\u0627\u2192\u0644\u0646\u062F\u0646) \u0647\u0633\u062A\u06CC\u0645 \u0648 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A (\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0627\u0644\u0627\u06CC EMA200) \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F. \u0627\u06CC\u0646 \u067E\u0646\u062C\u0631\u0647 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \xAB\u0628\u0627\u0632\u062A\u0648\u0627\u0632\u0646\u0650 \u0646\u0647\u0627\u062F\u06CC/ETF \u0648 \u062A\u0633\u0648\u06CC\u0647\u0654 \u0645\u06CC\u0627\u0646\u200C\u0645\u0627\u0647\xBB \u0631\u0627 \u0634\u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0628\u0627 RR \u0645\u062A\u0642\u0627\u0631\u0646: TP ${MID_TP_PIP}pip \u0648 SL ${MID_SL_PIP}pip. \u0627\u06CC\u0646 \u067E\u06CC\u06A9\u0631\u0628\u0646\u062F\u06CC \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A\u0650 \u0631\u0648\u06CC\u062F\u0627\u062F-\u0645\u062D\u0648\u0631 RQS+ = \u06F8\u06F9.\u06F3 \u062F\u0627\u062F (\u0647\u0631 \u06F6 \u06AF\u06CC\u062A\u060C \u062F\u0631 \u0647\u0631 \u062F\u0648 \u0646\u06CC\u0645\u0647\u0654 IS/OOS \u0645\u062B\u0628\u062A \u2014 \u0633\u0646\u062F S312). \u0645\u0633\u062A\u0642\u0644 \u0627\u0632 \u0644\u0627\u06CC\u0647\u0654 \u0627\u0648\u0644\u0650 \u0645\u0627\u0647 (S306) \u0648 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (S310): \u0647\u0645\u067E\u0648\u0634\u0627\u0646\u06CC\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC \u0635\u0641\u0631.`
+    };
+  }
+  if (inWindow && utcHour === MID_APPROACH_HOUR) {
+    return {
+      state: "APPROACHING",
+      isMidWindow: true,
+      utcHour,
+      slDist,
+      tpDist,
+      reason: `\u0627\u06A9\u0646\u0648\u0646 \u06CC\u06A9\u06CC \u0627\u0632 \xAB\u0631\u0648\u0632\u0647\u0627\u06CC \u062F\u0631\u0627\u06CC\u0648\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647\xBB (\u06F1\u06F0/\u06F1\u06F3/\u06F2\u06F0 \u062A\u0642\u0648\u06CC\u0645\u06CC) \u0627\u0633\u062A \u0648 \u0633\u0627\u0639\u062A\u0650 ${toIran5(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u2014 \u067E\u0646\u062C\u0631\u0647\u0654 \xAB\u062F\u0631\u0627\u06CC\u0648\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647\u0650 \u0637\u0644\u0627\xBB (${MID_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646\u060C \u0633\u0634\u0646\u0650 \u0622\u0633\u06CC\u0627\u2192\u0644\u0646\u062F\u0646) \u062F\u0631 \u062D\u0627\u0644\u0650 \u0628\u0627\u0632 \u0634\u062F\u0646 \u0627\u0633\u062A. \u0628\u0627 \u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u062A\u0650 ${toIran5(1)} \u0648 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A (\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646)\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`
+    };
+  }
+  return {
+    state: "NEUTRAL",
+    isMidWindow: inWindow,
+    utcHour,
+    slDist,
+    tpDist,
+    reason: inWindow ? `\u0627\u06A9\u0646\u0648\u0646 \u06CC\u06A9\u06CC \u0627\u0632 \xAB\u0631\u0648\u0632\u0647\u0627\u06CC \u062F\u0631\u0627\u06CC\u0648\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647\xBB (\u06F1\u06F0/\u06F1\u06F3/\u06F2\u06F0) \u0627\u0633\u062A \u0627\u0645\u0627 \u0633\u0627\u0639\u062A\u0650 ${toIran5(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 \u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0642\u0648\u06CC\u0650 ${MID_IRAN_RANGE} (\u0633\u0634\u0646\u0650 \u0622\u0633\u06CC\u0627\u2192\u0644\u0646\u062F\u0646) \u0627\u0633\u062A. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0622\u0646 \u067E\u0646\u062C\u0631\u0647\u0654 \u0631\u0648\u0632 \u0648\u0631\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.` : `\u0627\u06A9\u0646\u0648\u0646 \u0627\u0632 \xAB\u0631\u0648\u0632\u0647\u0627\u06CC \u062F\u0631\u0627\u06CC\u0648\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647\xBB (\u06F1\u06F0/\u06F1\u06F3/\u06F2\u06F0 \u062A\u0642\u0648\u06CC\u0645\u06CC) \u0646\u06CC\u0633\u062A\u06CC\u0645 (\u0633\u0627\u0639\u062A\u0650 ${toIran5(utcHour)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646). \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0635\u0631\u0641\u0627\u064B \u0632\u0645\u0627\u0646-\u0645\u062D\u0648\u0631 \xD7 \u06A9\u06CC\u0641\u06CC\u062A \u0627\u0633\u062A \u0648 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0632\u0647\u0627\u06CC \u06F1\u06F0\u060C \u06F1\u06F3 \u0648 \u06F2\u06F0 \u0647\u0631 \u0645\u0627\u0647\u060C \u0633\u0627\u0639\u0627\u062A\u0650 ${MID_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646\u060C \u0628\u0627 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A (\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646) \u0648\u0631\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
+  };
+}
+
+// ../web_tool/src/revived_strategies.ts
+var GOLD_PIP = 0.1;
+function rawToDecision(raw2, meta, assetId, price, reg, capital, riskPct) {
+  const spec = assetSpec(assetId.startsWith("EUR") ? "EURUSD" : "XAUUSD");
+  const sourceLayer = {
+    code: meta.code,
+    name: meta.name,
+    kind: meta.kind,
+    filters: meta.filters,
+    manage: {
+      style: meta.manageStyle,
+      beTriggerR: meta.beTriggerR,
+      maxHoldBars: raw2.maxHoldBars,
+      note: meta.manageNote
+    }
+  };
+  const decisive = raw2.indicators.filter((i) => i.status === "ok" || i.status === "warn" || i.status === "bad");
+  const okCount = raw2.indicators.filter((i) => i.status === "ok").length;
+  const confPct = decisive.length > 0 ? Math.round(okCount / decisive.length * 100) : void 0;
+  if (raw2.active) {
+    const entry = price;
+    const sl = raw2.direction === "LONG" ? entry - raw2.slDist : entry + raw2.slDist;
+    const tp = raw2.direction === "LONG" ? entry + raw2.tpDist : entry - raw2.tpDist;
+    const { lots, riskDollars } = computeLots(capital, riskPct, raw2.slDist, 1, spec);
+    const rd = lots != null ? Math.round(riskDollars * 100) / 100 : void 0;
+    const rrNum = raw2.slDist > 0 ? raw2.tpDist / raw2.slDist : 0;
+    return {
+      state: "ENTRY",
+      regime: reg,
+      headline: raw2.direction === "LONG" ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062E\u0631\u06CC\u062F (LONG) \u2014 ${meta.name}` : `\u0648\u0631\u0648\u062F \u0628\u0647 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u0641\u0631\u0648\u0634 (SHORT) \u2014 ${meta.name}`,
+      reason: raw2.reason,
+      sourceLayer,
+      direction: raw2.direction,
       entry,
       tp,
       sl,
-      rr: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) / TP ${cfg.tpPip}pip (${tl.tpDist.toFixed(2)}$) \u2014 R:R \u2248 \u06F1:${(cfg.tpPip / cfg.slPip).toFixed(1)} (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F)`,
-      probability: Math.round(cfg.indepWr),
-      sizing: {
+      rr: `1:${rrNum.toFixed(2)}`,
+      probability: confPct,
+      sizing: lots != null ? {
         lotMultiplier: 1,
-        label: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (${htfCfg.tfFa})`,
-        note: `\u0648\u0631\u0648\u062F\u0650 open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B \u0627\u0633\u067E\u0631\u062F\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0637\u0644\u0627 \u0644\u062D\u0627\u0638 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0644\u0628\u0647 \u0641\u0642\u0637 \u0631\u0648\u06CC \u0637\u0644\u0627 \u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0631\u0648\u06CC EURUSD \u0628\u06CC\u200C\u0627\u062B\u0631 \u0628\u0648\u062F) \u0648 \u0645\u0633\u062A\u0642\u0644 \u0627\u0632 \u0633\u0627\u06CC\u0631\u0650 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627\u06CC \u0633\u0627\u06CC\u062A \u0627\u0633\u062A \u21D2 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u06A9\u0644 \u0631\u0627 \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0628\u0631\u062F.`,
-        lots: lots ?? void 0,
+        label: "\u0648\u0627\u062D\u062F\u0650 \u067E\u0627\u06CC\u0647",
+        note: `\u062D\u062C\u0645\u0650 \u0633\u0631\u0645\u0627\u06CC\u0647\u200C\u0645\u062D\u0648\u0631 \u0628\u0631 \u067E\u0627\u06CC\u0647\u0654 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% \u0648 \u0641\u0627\u0635\u0644\u0647\u0654 SL`,
+        lots,
         riskDollars: rd,
         capital,
         riskPct,
-        capitalNote: `\u0628\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647\u0654 ${capital.toLocaleString("en-US")}$ \u0648 \u0631\u06CC\u0633\u06A9\u0650 ${riskPct}% (\u0631\u06CC\u0633\u06A9\u0650 \u0645\u0624\u062B\u0631 ${effRiskPct.toFixed(2)}%)\u060C \u062D\u062C\u0645\u0650 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u06CC ${lots?.toFixed(2) ?? "\u2014"} ${spec.lotUnitFa}. \u0627\u06AF\u0631 SL (\u0641\u0627\u0635\u0644\u0647\u0654 ${tl.slDist.toFixed(2)}$) \u0628\u062E\u0648\u0631\u062F\u060C \u062D\u062F\u0648\u062F\u0650 ${rd.toLocaleString("en-US")}$ \u0636\u0631\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u062F.`
-      },
-      tpPlan: {
-        multiplier: cfg.tpPip,
-        note: `TP \u062F\u0648\u0631\u0650 ${cfg.tpPip}pip. \u067E\u0633 \u0627\u0632 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F\u060C \u062D\u0631\u06A9\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0632\u0631\u06AF \u0627\u0633\u062A\u061B TP \u062F\u0648\u0631 \u0627\u062C\u0627\u0632\u0647 \u0645\u06CC\u200C\u062F\u0647\u062F \u062D\u0631\u06A9\u062A \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A\u062E\u0631\u0627\u062C \u0634\u0648\u062F. \u062A\u0627 ${cfg.maxHoldBars} \u06A9\u0646\u062F\u0644\u0650 ${htfCfg.tfFa} \u0646\u06AF\u0647 \u062F\u0627\u0631\u06CC\u062F \u06CC\u0627 \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL.`
-      },
-      slPlan: {
-        multiplier: cfg.slPip,
-        note: `SL ${cfg.slPip}pip (${tl.slDist.toFixed(2)}$) \u0632\u06CC\u0631\u0650 \u0646\u0642\u0637\u0647\u0654 \u0646\u0641\u0648\u0630\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F. \u0627\u06AF\u0631 \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637 \u0648\u0627\u0642\u0639\u06CC \u0628\u0648\u062F (\u0646\u0647 \u0646\u0627\u0645\u0648\u0641\u0642)\u060C \u0627\u06CC\u0646 SL \u0636\u0631\u0631 \u0631\u0627 \u0645\u062D\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.`
-      },
-      indicators: tlInd
+        capitalNote: `SL\u2248${raw2.slDist.toFixed(2)}$ \u21D2 \u0631\u06CC\u0633\u06A9 ${rd}$`
+      } : void 0,
+      indicators: raw2.indicators
     };
   }
-  if (tl.state === "APPROACHING") {
+  if (raw2.approaching) {
     return {
       state: "APPROACHING",
-      regime,
-      headline: `\u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F (LONG) \u2014 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F (\u0637\u0644\u0627 ${htfCfg.tfFa})`,
-      reason: tl.reason,
-      sourceLayer: {
-        code: "S215",
-        name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${htfCfg.tfFa}`,
-        kind: "price-action"
-      },
-      confirmations: [
-        {
-          label: "\u0642\u06CC\u0645\u062A \u062F\u0631 \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0648\u062F",
-          met: tl.penetrated,
-          detail: tl.penetrated ? "\u0631\u062E \u062F\u0627\u062F \u2713 (\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u062E\u0637 \u0646\u0641\u0648\u0630 \u06A9\u0631\u062F)" : `\u0627\u06A9\u0646\u0648\u0646 ${tl.distToLinePct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0627\u0633\u062A.`
-        },
-        {
-          label: "\u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637\u0650 \u0631\u0648\u0646\u062F \u0628\u0628\u0646\u062F\u062F (\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642)",
-          met: tl.closedBack && tl.penetrated,
-          detail: tl.penetrated && !tl.closedBack ? "\u0647\u0646\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0646\u0628\u0633\u062A\u0647 \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646 \u0628\u0645\u0627\u0646\u06CC\u062F." : tl.closedBack ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u0647\u0646\u0648\u0632 \u0646\u0647"
-        },
-        { label: "\u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC (close \u2265 open)", met: tl.bullBar, detail: tl.bullBar ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u2713" : "\u06A9\u0646\u062F\u0644\u0650 \u0641\u0639\u0644\u06CC \u0646\u0632\u0648\u0644\u06CC \u0627\u0633\u062A." }
-      ],
-      indicators: tlInd
+      regime: reg,
+      headline: `\u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u2014 ${meta.name}`,
+      reason: raw2.reason,
+      sourceLayer,
+      direction: raw2.direction,
+      probability: confPct,
+      confirmations: raw2.approachReason ? [{ label: raw2.approachReason, met: false, detail: raw2.approachReason }] : void 0,
+      indicators: raw2.indicators
     };
   }
-  const base = analyzeHtf(htfCfg, a, close);
-  base.reason = `\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0644\u0627\u06CC\u0647\u0654 \xAB\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks\xBB (S215) \u0631\u0627 \u0631\u0648\u06CC \u0627\u0641\u0642\u0650 ${htfCfg.tfFa} \u067E\u0627\u06CC\u0634 \u0645\u06CC\u200C\u06A9\u0646\u062F. ` + tl.reason + ` \u0648\u0642\u062A\u06CC \u06CC\u06A9 sell-off\u0650 \u062A\u0646\u062F \u0642\u06CC\u0645\u062A \u0631\u0627 \u06A9\u0645\u06CC \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0628\u0631\u062F \u0648 \u0642\u06CC\u0645\u062A \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0628\u0646\u062F\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
-  base.sourceLayer = { code: "S215", name: `\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line) \u2014 ${htfCfg.tfFa}`, kind: "price-action" };
-  base.indicators = tlInd;
-  base.headline = `\u0637\u0644\u0627 ${htfCfg.tfFa} \u2014 \u067E\u0627\u06CC\u0634\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F (\u0641\u0639\u0644\u0627\u064B \u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644)`;
-  return base;
+  return {
+    state: "NEUTRAL",
+    regime: reg,
+    headline: `\u062E\u0646\u062B\u06CC \u2014 ${meta.name}`,
+    reason: raw2.reason,
+    sourceLayer,
+    indicators: raw2.indicators
+  };
 }
-function decideGoldH1(a, close, capital = 1e4, riskPct = 1, open, high, low) {
-  if (open && high && low && high.length === close.length && low.length === close.length) {
-    return trendLineEntry(TREND_LINE_CFG["XAUUSD-H1"], H1_CFG, a, open, high, low, close, capital, riskPct);
+function lightRegime(close, adxVal, trendy, bucket) {
+  return {
+    regime: trendy ? "trend_up" : "range",
+    efficiencyRatio: 0,
+    trendy,
+    adx: isFinite(adxVal) ? adxVal : 0,
+    activeStream: trendy ? "bull" : "none",
+    bucket
+  };
+}
+var nz = (v) => Number.isFinite(v) ? v : 0;
+var last = (a) => a[a.length - 1];
+var S328_CFG = {
+  "XAUUSD-M5": { id: "XAUUSD-M5", rsiPeriod: 21, hi: 75, adxMax: 30, slPip: 62, tpPip: 43, maxHold: 24 },
+  "XAUUSD-H1": { id: "XAUUSD-H1", rsiPeriod: 21, hi: 82, adxMax: Infinity, slPip: 195, tpPip: 210, maxHold: 24 }
+};
+function computeS328(candles, cfg) {
+  const close = candles.map((c) => c.close);
+  const r = rsi(close, cfg.rsiPeriod);
+  const { adx: adxArr } = adx(candles, 14);
+  const i = close.length - 1;
+  const slDist = cfg.slPip * GOLD_PIP;
+  const tpDist = cfg.tpPip * GOLD_PIP;
+  const rsiNow = r[i], rsiPrev = r[i - 1];
+  const adxPrev = adxArr[i - 1];
+  const adxOk = !isFinite(cfg.adxMax) || Number.isFinite(adxPrev) && adxPrev <= cfg.adxMax;
+  const crossBack = Number.isFinite(rsiNow) && Number.isFinite(rsiPrev) && rsiPrev > cfg.hi && rsiNow <= cfg.hi;
+  const indicators = [
+    {
+      name: `RSI-${cfg.rsiPeriod} (\u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F > ${cfg.hi})`,
+      value: Number.isFinite(rsiNow) ? rsiNow.toFixed(1) + (rsiNow > cfg.hi ? " (\u0627\u0634\u0628\u0627\u0639)" : "") : "\u2014",
+      status: crossBack ? "ok" : Number.isFinite(rsiNow) && rsiNow > cfg.hi ? "warn" : "neutral"
+    },
+    ...isFinite(cfg.adxMax) ? [{
+      name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (ADX\u2264${cfg.adxMax})`,
+      value: Number.isFinite(adxPrev) ? adxPrev.toFixed(0) + (adxOk ? " \u2714" : " \u2718 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC") : "\u2014",
+      status: adxOk ? "ok" : "bad"
+    }] : []
+  ];
+  const active = crossBack && adxOk;
+  const approaching = !active && Number.isFinite(rsiNow) && rsiNow > cfg.hi && adxOk;
+  return {
+    active,
+    approaching,
+    direction: "SHORT",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason: active ? `RSI-${cfg.rsiPeriod} \u0627\u0632 \u0628\u0627\u0644\u0627\u06CC ${cfg.hi} \u0628\u0647 ${rsiNow.toFixed(1)} \u0628\u0631\u06AF\u0634\u062A (\u062A\u062E\u0644\u06CC\u0647\u0654 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F) \u0648 \u0631\u0698\u06CC\u0645 \u0631\u0646\u062C \u0627\u0633\u062A \u21D2 \u0641\u0631\u0648\u0634.` : approaching ? `RSI-${cfg.rsiPeriod}=${rsiNow.toFixed(1)} \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0627\u0634\u0628\u0627\u0639 (${cfg.hi}) \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647 \u0628\u0631\u0627\u06CC \u0645\u0627\u0634\u0647\u0654 \u0641\u0631\u0648\u0634.` : `\u0634\u0631\u0637\u0650 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F/\u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 S328 \u0646\u062F\u0627\u0631\u06CC\u0645.`,
+    approachReason: approaching ? `\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 RSI-${cfg.rsiPeriod} \u0628\u0647 \u0632\u06CC\u0631\u0650 ${cfg.hi}` : void 0,
+    indicators
+  };
+}
+function decideS328(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS328(candles, cfg);
+  const { adx: adxArr } = adx(candles, 14);
+  const reg = lightRegime(candles.map((c) => c.close), nz(last(adxArr)), false, "s328_fade");
+  return rawToDecision(raw2, {
+    code: "S328",
+    name: "RSI-21 Fade \u0641\u0631\u0648\u0634",
+    kind: "mean-reversion",
+    manageStyle: "fixed-tp-sl",
+    manageNote: "\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A (spike-fade). SL/TP \u062C\u0627\u0628\u0647\u200C\u062C\u0627 \u0646\u0634\u0648\u062F\u061B \u062A\u0627 max_hold \u06CC\u0627 \u0628\u0631\u062E\u0648\u0631\u062F\u0650 \u0633\u0637\u062D \u0646\u06AF\u0647\u200C\u062F\u0627\u0631.",
+    filters: [isFinite(cfg.adxMax) ? `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 ADX\u2264${cfg.adxMax}` : "\u0628\u062F\u0648\u0646\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 ADX (H1)", `RSI-${cfg.rsiPeriod} cross-back \u0627\u0632 ${cfg.hi}`]
+  }, cfg.id, a.price, reg, capital, riskPct);
+}
+var S330_CFG = {
+  "XAUUSD-M5": {
+    id: "XAUUSD-M5",
+    sessionStartHourUtc: 0,
+    orBars: 12,
+    tradeWindowBars: 48,
+    kSl: 1,
+    kTp: 1,
+    maxHold: 48,
+    regimeAtrRatioMax: 1.1,
+    regimeAtrMa: 500
   }
-  return analyzeHtf(H1_CFG, a, close);
-}
-function decideGoldH4(a, close, capital = 1e4, riskPct = 1, open, high, low) {
-  if (open && high && low && high.length === close.length && low.length === close.length) {
-    const tl = trendLineEntry(TREND_LINE_CFG["XAUUSD-H4"], H4_CFG, a, open, high, low, close, capital, riskPct);
-    if (tl.state === "ENTRY" || tl.state === "APPROACHING") return tl;
-    return channelDecision(CHANNEL_CFG["XAUUSD-H4"], a, open, high, low, close, capital, riskPct, () => tl);
+};
+function findSessionOpen(times, startHourUtc) {
+  for (let i = times.length - 1; i >= 1; i--) {
+    const h = new Date(times[i] * 1e3).getUTCHours();
+    const hPrev = new Date(times[i - 1] * 1e3).getUTCHours();
+    if (h === startHourUtc && hPrev !== startHourUtc) return i;
   }
-  return analyzeHtf(H4_CFG, a, close);
+  return -1;
 }
-function decideGoldD1(a, close, _capital = 1e4, _riskPct = 1) {
-  return analyzeHtf(D1_CFG, a, close);
+function computeS330(candles, cfg) {
+  const n = candles.length;
+  const close = candles.map((c) => c.close);
+  const times = candles.map((c) => c.time);
+  const atr14 = atr(candles, 14);
+  const atrMa = sma(atr14, cfg.regimeAtrMa);
+  const i = n - 1;
+  const empty = (reason, ind) => ({
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist: 0,
+    tpDist: 0,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    indicators: ind
+  });
+  const atrRatio = atrMa[i] > 0 ? atr14[i] / atrMa[i] : NaN;
+  const regimeOk = Number.isFinite(atrRatio) && atrRatio <= cfg.regimeAtrRatioMax;
+  const indBase = [
+    {
+      name: `\u0631\u0698\u06CC\u0645\u0650 \u0646\u0648\u0633\u0627\u0646 (ATR14/ATR_MA${cfg.regimeAtrMa} \u2264 ${cfg.regimeAtrRatioMax})`,
+      value: Number.isFinite(atrRatio) ? atrRatio.toFixed(2) + (regimeOk ? " \u2714" : " \u2718 \u0646\u0648\u0633\u0627\u0646\u0650 \u0627\u0641\u0631\u0627\u0637\u06CC") : "\u2014",
+      status: regimeOk ? "ok" : "bad"
+    }
+  ];
+  const openIdx = findSessionOpen(times, cfg.sessionStartHourUtc);
+  if (openIdx < 0 || openIdx + cfg.orBars >= n) {
+    return empty("\u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647\u0654 \u0633\u0634\u0646\u0650 \u0622\u0633\u06CC\u0627 \u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644 \u0646\u0634\u062F\u0647 \u06CC\u0627 \u06CC\u0627\u0641\u062A \u0646\u0634\u062F\u061B \u0635\u0628\u0631 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.", indBase);
+  }
+  let orHi = -Infinity, orLo = Infinity;
+  for (let k = openIdx; k < openIdx + cfg.orBars; k++) {
+    orHi = Math.max(orHi, candles[k].high);
+    orLo = Math.min(orLo, candles[k].low);
+  }
+  const orRange = orHi - orLo;
+  const winStart = openIdx + cfg.orBars;
+  const inWindow = i >= winStart && i <= winStart + cfg.tradeWindowBars;
+  indBase.push({ name: "\u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647\u0654 \u0622\u0633\u06CC\u0627 (OR)", value: `${orLo.toFixed(2)}\u2013${orHi.toFixed(2)} (${(orRange / GOLD_PIP).toFixed(0)} pip)`, status: "neutral" });
+  if (!(orRange > 0) || !inWindow) {
+    return empty(inWindow ? "\u0639\u0631\u0636\u0650 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647 \u0646\u0627\u0645\u0639\u062A\u0628\u0631 \u0627\u0633\u062A." : "\u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u067E\u0633 \u0627\u0632 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u06CC \u0646\u06CC\u0633\u062A.", indBase);
+  }
+  if (!regimeOk) return empty("\u0646\u0648\u0633\u0627\u0646\u0650 \u0628\u0627\u0632\u0627\u0631 \u0627\u0641\u0631\u0627\u0637\u06CC \u0627\u0633\u062A (\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 \u0631\u062F \u0634\u062F)\u061B fade \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.", indBase);
+  const slDist = cfg.kSl * orRange;
+  const tpDist = cfg.kTp * orRange;
+  const prevBreakUp = close[i - 1] > orHi;
+  const prevBreakDn = close[i - 1] < orLo;
+  const backInside = close[i] <= orHi && close[i] >= orLo;
+  const fadeShort = prevBreakUp && backInside;
+  const fadeLong = prevBreakDn && backInside;
+  if (fadeShort || fadeLong) {
+    const dir = fadeLong ? "LONG" : "SHORT";
+    return {
+      active: true,
+      approaching: false,
+      direction: dir,
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u0634\u06A9\u0633\u062A\u0650 \u06A9\u0627\u0630\u0628\u0650 ${fadeLong ? "\u067E\u0627\u06CC\u06CC\u0646\u0650" : "\u0628\u0627\u0644\u0627\u06CC"} \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647\u0654 \u0622\u0633\u06CC\u0627 \u067E\u0633 \u06AF\u0631\u0641\u062A\u0647 \u0634\u062F (close \u062F\u0627\u062E\u0644\u0650 \u0628\u0627\u0632\u0647) \u0648 \u0631\u0698\u06CC\u0645\u0650 \u0646\u0648\u0633\u0627\u0646 \u0633\u0627\u0644\u0645 \u0627\u0633\u062A \u21D2 ${fadeLong ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634"} (fade).`,
+      indicators: indBase
+    };
+  }
+  const outsideNow = close[i] > orHi || close[i] < orLo;
+  return {
+    active: false,
+    approaching: outsideNow,
+    direction: close[i] > orHi ? "SHORT" : "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason: outsideNow ? `\u0642\u06CC\u0645\u062A \u0628\u06CC\u0631\u0648\u0646\u0650 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647\u0654 \u0622\u0633\u06CC\u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 close \u0628\u0647 \u062F\u0627\u062E\u0644\u0650 \u0628\u0627\u0632\u0647 \u0628\u0631\u0627\u06CC \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0634\u06A9\u0633\u062A\u0650 \u06A9\u0627\u0630\u0628 (fade).` : `\u0642\u06CC\u0645\u062A \u062F\u0627\u062E\u0644\u0650 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647 \u0627\u0633\u062A\u061B \u0647\u0646\u0648\u0632 \u0634\u06A9\u0633\u062A\u0650 \u06A9\u0627\u0630\u0628\u06CC \u0628\u0631\u0627\u06CC fade \u0631\u062E \u0646\u062F\u0627\u062F\u0647.`,
+    approachReason: outsideNow ? "\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 close \u0628\u0647 \u062F\u0627\u062E\u0644\u0650 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647" : void 0,
+    indicators: indBase
+  };
+}
+function decideS330(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS330(candles, cfg);
+  const reg = lightRegime(candles.map((c) => c.close), 0, false, "s330_orb_fade");
+  return rawToDecision(raw2, {
+    code: "S330",
+    name: "Session-ORB Fade (\u0622\u0633\u06CC\u0627)",
+    kind: "session",
+    manageStyle: "fixed-tp-sl",
+    manageNote: "TP/SL \u0634\u0646\u0627\u0648\u0631 \u0628\u0631 \u0639\u0631\u0636\u0650 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647 (RR \u0645\u062A\u0642\u0627\u0631\u0646). \u062A\u0627 max_hold \u06CC\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0646\u06AF\u0647\u200C\u062F\u0627\u0631.",
+    filters: ["\u0633\u0634\u0646\u0650 \u0622\u0633\u06CC\u0627 (\u06F0 UTC)", "\u0634\u06A9\u0633\u062A\u0650 \u06A9\u0627\u0630\u0628\u0650 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647", `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 ATR14/ATR_MA${cfg.regimeAtrMa}\u2264${cfg.regimeAtrRatioMax}`]
+  }, cfg.id, a.price, reg, capital, riskPct);
+}
+var S322_CFG = {
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tenkan: 9,
+    kijun: 26,
+    senkouB: 52,
+    kijunAtrMax: 0.62,
+    thickMin: 0.32,
+    gapMin: 0.22,
+    daMin: 0.25,
+    rsiMin: 45,
+    rsiMax: 90,
+    slMult: 2.5,
+    tpMult: 3.3,
+    maxHold: 56
+  }
+};
+function donchianMid(high, low, i, len) {
+  if (i < len - 1) return NaN;
+  let hi = -Infinity, lo = Infinity;
+  for (let k = i - len + 1; k <= i; k++) {
+    hi = Math.max(hi, high[k]);
+    lo = Math.min(lo, low[k]);
+  }
+  return (hi + lo) / 2;
+}
+function computeS322(candles, cfg) {
+  const high = candles.map((c) => c.high), low = candles.map((c) => c.low), close = candles.map((c) => c.close);
+  const atr14 = atr(candles, 14);
+  const r = rsi(close, 14);
+  const i = close.length - 1;
+  const atrVal = atr14[i];
+  const empty = (reason, ind2) => ({
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist: 0,
+    tpDist: 0,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    indicators: ind2
+  });
+  const tenkanNow = donchianMid(high, low, i, cfg.tenkan);
+  const kijunNow = donchianMid(high, low, i, cfg.kijun);
+  const shift = cfg.kijun;
+  const spanAAt = (j) => (donchianMid(high, low, j, cfg.tenkan) + donchianMid(high, low, j, cfg.kijun)) / 2;
+  const spanBAt = (j) => donchianMid(high, low, j, cfg.senkouB);
+  const jSrc = i - shift;
+  const senkouA = jSrc >= 0 ? spanAAt(jSrc) : NaN;
+  const senkouB = jSrc >= 0 ? spanBAt(jSrc) : NaN;
+  if ([atrVal, kijunNow, senkouA, senkouB, r[i]].some((v) => !Number.isFinite(v)) || !(atrVal > 0)) {
+    return empty("\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u0654 Ichimoku/ATR \u0646\u06CC\u0633\u062A.", []);
+  }
+  const cloudTop = Math.max(senkouA, senkouB);
+  const cloudBot = Math.min(senkouA, senkouB);
+  const thickness = (cloudTop - cloudBot) / atrVal;
+  const gap = Math.abs(senkouA - senkouB) / atrVal;
+  const price = close[i];
+  const da = (price - cloudTop) / atrVal;
+  const kijunDist = Math.abs(price - kijunNow) / atrVal;
+  const rsiNow = r[i];
+  const aboveCloud = price > cloudTop;
+  const daOk = da >= cfg.daMin;
+  const thickOk = thickness >= cfg.thickMin;
+  const gapOk = gap >= cfg.gapMin;
+  const pullbackOk = kijunDist <= cfg.kijunAtrMax;
+  const rsiOk = rsiNow >= cfg.rsiMin && rsiNow <= cfg.rsiMax;
+  const ind = [
+    { name: "\u0642\u06CC\u0645\u062A \u0646\u0633\u0628\u062A \u0628\u0647 \u0627\u0628\u0631\u0650 Kumo", value: aboveCloud ? `\u0628\u0627\u0644\u0627\u06CC \u0627\u0628\u0631 (\u062C\u062F\u0627\u06CC\u06CC ${da.toFixed(2)}\xD7ATR)` : "\u062F\u0627\u062E\u0644/\u0632\u06CC\u0631\u0650 \u0627\u0628\u0631", status: aboveCloud && daOk ? "ok" : "warn" },
+    { name: `\u0636\u062E\u0627\u0645\u062A\u0650 \u0627\u0628\u0631 (\u2265${cfg.thickMin}\xD7ATR)`, value: thickness.toFixed(2) + (thickOk ? " \u2714" : " \u2718"), status: thickOk ? "ok" : "warn" },
+    { name: `pullback \u0628\u0647 Kijun (\u2264${cfg.kijunAtrMax}\xD7ATR)`, value: kijunDist.toFixed(2) + (pullbackOk ? " \u2714" : " \u2718"), status: pullbackOk ? "ok" : "neutral" },
+    { name: `RSI-14 \u2208 [${cfg.rsiMin},${cfg.rsiMax}]`, value: rsiNow.toFixed(0) + (rsiOk ? " \u2714" : " \u2718"), status: rsiOk ? "ok" : "warn" }
+  ];
+  const slDist = cfg.slMult * atrVal;
+  const tpDist = cfg.tpMult * atrVal;
+  const active = aboveCloud && daOk && thickOk && gapOk && pullbackOk && rsiOk;
+  const approaching = !active && aboveCloud && daOk && thickOk && gapOk && rsiOk && !pullbackOk;
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason: active ? `\u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC \u0627\u0628\u0631\u0650 \u0636\u062E\u06CC\u0645\u0650 Kumo (\u062C\u062F\u0627\u06CC\u06CC ${da.toFixed(2)}\xD7ATR) \u0648 \u062F\u0631 pullback \u0628\u0647 Kijun \u0627\u0633\u062A\u060C RSI \u0633\u0627\u0644\u0645 \u21D2 \u062E\u0631\u06CC\u062F.` : approaching ? `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 Ichimoku \u062A\u0623\u06CC\u06CC\u062F \u0627\u0633\u062A \u0627\u0645\u0627 \u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 \u0628\u0647 Kijun \u0628\u0631\u0646\u06AF\u0634\u062A\u0647\u061B \u0645\u0646\u062A\u0638\u0631\u0650 pullback \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F.` : `\u0634\u0631\u0627\u06CC\u0637\u0650 \u06A9\u0627\u0645\u0644\u0650 Ichimoku (\u0628\u0627\u0644\u0627\u06CC \u0627\u0628\u0631\u0650 \u0636\u062E\u06CC\u0645 + pullback + RSI) \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A.`,
+    approachReason: approaching ? `pullback \u0642\u06CC\u0645\u062A \u0628\u0647 \u0646\u0632\u062F\u06CC\u06A9\u06CC\u0650 Kijun (\u2264${cfg.kijunAtrMax}\xD7ATR)` : void 0,
+    indicators: ind
+  };
+}
+function decideS322(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS322(candles, cfg);
+  const { adx: adxArr } = adx(candles, 14);
+  const reg = lightRegime(candles.map((c) => c.close), nz(last(adxArr)), raw2.active || raw2.approaching, "s322_ichimoku");
+  return rawToDecision(raw2, {
+    code: "S322",
+    name: "Ichimoku Kumo \u062E\u0631\u06CC\u062F",
+    kind: "ma-confluence",
+    manageStyle: "structural-trail",
+    beTriggerR: 1,
+    manageNote: "\u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 Kijun \u062A\u0631\u06CC\u0644 \u06A9\u0646. \u0628\u0627 \u0634\u06A9\u0633\u062A\u0650 Kijun \u062E\u0627\u0631\u062C \u0634\u0648.",
+    filters: [`\u0627\u0628\u0631\u0650 Kumo \u0636\u062E\u06CC\u0645 (\u2265${cfg.thickMin}\xD7ATR)`, `pullback \u0628\u0647 Kijun`, `RSI-14 \u2208 [${cfg.rsiMin},${cfg.rsiMax}]`]
+  }, cfg.id, a.price, reg, capital, riskPct);
+}
+var S324_CFG = {
+  "XAUUSD-M15": { id: "XAUUSD-M15", side: "LONG", swingLen: 16, depthMin: 0.7, dispMin: 0.9, regimeOn: false, rsiOn: true, rsiLo: 40, slMult: 2.4, tpMult: 0.8, maxHold: 48 },
+  "XAUUSD-M30": { id: "XAUUSD-M30", side: "SHORT", swingLen: 8, depthMin: 0.25, dispMin: 0.5, regimeOn: true, rsiOn: true, rsiHi: 60, slMult: 3.1, tpMult: 1.2, maxHold: 48 }
+};
+function computeS324(candles, cfg) {
+  const high = candles.map((c) => c.high), low = candles.map((c) => c.low), close = candles.map((c) => c.close), open = candles.map((c) => c.open);
+  const atr14 = atr(candles, 14);
+  const e200 = ema(close, 200);
+  const r = rsi(close, 14);
+  const i = close.length - 1;
+  const atrVal = atr14[i];
+  const empty = (reason) => ({
+    active: false,
+    approaching: false,
+    direction: cfg.side,
+    slDist: 0,
+    tpDist: 0,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    indicators: []
+  });
+  if (!(atrVal > 0) || i < cfg.swingLen + 2 || !Number.isFinite(r[i])) return empty("\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC S324 \u0646\u06CC\u0633\u062A.");
+  const slDist = cfg.slMult * atrVal;
+  const tpDist = cfg.tpMult * atrVal;
+  let priorHi = -Infinity, priorLo = Infinity;
+  for (let k = i - cfg.swingLen; k < i; k++) {
+    priorHi = Math.max(priorHi, high[k]);
+    priorLo = Math.min(priorLo, low[k]);
+  }
+  const body = Math.abs(close[i] - open[i]) / atrVal;
+  const rsiNow = r[i];
+  const ind = [];
+  if (cfg.side === "LONG") {
+    const sweptDepth = (priorLo - low[i]) / atrVal;
+    const reclaimed = close[i] > priorLo;
+    const dispOk = body >= cfg.dispMin;
+    const depthOk = sweptDepth >= cfg.depthMin;
+    const rsiOk = !cfg.rsiOn || rsiNow <= (cfg.rsiLo ?? 100);
+    const regimeOk = !cfg.regimeOn || close[i] > e200[i];
+    ind.push(
+      { name: `\u062C\u0627\u0631\u0648\u0628\u0650 \u06A9\u0641\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC (\u0639\u0645\u0642 \u2265${cfg.depthMin}\xD7ATR)`, value: sweptDepth > 0 ? sweptDepth.toFixed(2) + (depthOk ? " \u2714" : " \u2718") : "\u0628\u062F\u0648\u0646\u0650 \u062C\u0627\u0631\u0648", status: depthOk ? "ok" : "neutral" },
+      { name: `\u0628\u0627\u0632\u06AF\u0634\u062A/reclaim (\u0628\u062F\u0646\u0647 \u2265${cfg.dispMin}\xD7ATR)`, value: body.toFixed(2) + (reclaimed && dispOk ? " \u2714" : " \u2718"), status: reclaimed && dispOk ? "ok" : "warn" },
+      { name: `RSI-14 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 (\u2264${cfg.rsiLo})`, value: rsiNow.toFixed(0) + (rsiOk ? " \u2714" : " \u2718"), status: rsiOk ? "ok" : "warn" }
+    );
+    const active = depthOk && reclaimed && dispOk && rsiOk && regimeOk;
+    const approaching = !active && depthOk && !reclaimed;
+    return {
+      active,
+      approaching,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: active ? "\u06A9\u0641\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC \u062C\u0627\u0631\u0648 \u0648 \u0628\u0644\u0627\u0641\u0627\u0635\u0644\u0647 \u067E\u0633 \u06AF\u0631\u0641\u062A\u0647 \u0634\u062F (\u06A9\u0646\u062F\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u0642\u0648\u06CC\u060C RSI \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634) \u21D2 \u062E\u0631\u06CC\u062F (fade)." : approaching ? "\u06A9\u0641\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC \u062C\u0627\u0631\u0648 \u0634\u062F \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 reclaim/\u0628\u0627\u0632\u06AF\u0634\u062A \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0646\u0650 \u0642\u0648\u06CC \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D." : "\u0627\u0644\u06AF\u0648\u06CC \u062C\u0627\u0631\u0648\u0628-\u0648-\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u06A9\u0641 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A.",
+      approachReason: approaching ? "\u0628\u0633\u062A\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0648\u06CC \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D\u0650 \u062C\u0627\u0631\u0648\u0634\u062F\u0647" : void 0,
+      indicators: ind
+    };
+  } else {
+    const sweptDepth = (high[i] - priorHi) / atrVal;
+    const reclaimed = close[i] < priorHi;
+    const dispOk = body >= cfg.dispMin;
+    const depthOk = sweptDepth >= cfg.depthMin;
+    const rsiOk = !cfg.rsiOn || rsiNow >= (cfg.rsiHi ?? 0);
+    const regimeOk = !cfg.regimeOn || close[i] < e200[i];
+    ind.push(
+      { name: `\u062C\u0627\u0631\u0648\u0628\u0650 \u0633\u0642\u0641\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC (\u0639\u0645\u0642 \u2265${cfg.depthMin}\xD7ATR)`, value: sweptDepth > 0 ? sweptDepth.toFixed(2) + (depthOk ? " \u2714" : " \u2718") : "\u0628\u062F\u0648\u0646\u0650 \u062C\u0627\u0631\u0648", status: depthOk ? "ok" : "neutral" },
+      { name: `\u0628\u0627\u0632\u06AF\u0634\u062A/reclaim (\u0628\u062F\u0646\u0647 \u2265${cfg.dispMin}\xD7ATR)`, value: body.toFixed(2) + (reclaimed && dispOk ? " \u2714" : " \u2718"), status: reclaimed && dispOk ? "ok" : "warn" },
+      { name: `RSI-14 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F (\u2265${cfg.rsiHi})`, value: rsiNow.toFixed(0) + (rsiOk ? " \u2714" : " \u2718"), status: rsiOk ? "ok" : "warn" },
+      { name: "\u0631\u0698\u06CC\u0645 (close<EMA200)", value: close[i] < e200[i] ? "\u0646\u0632\u0648\u0644\u06CC \u2714" : "\u0635\u0639\u0648\u062F\u06CC \u2718", status: regimeOk ? "ok" : "bad" }
+    );
+    const active = depthOk && reclaimed && dispOk && rsiOk && regimeOk;
+    const approaching = !active && depthOk && !reclaimed && regimeOk;
+    return {
+      active,
+      approaching,
+      direction: "SHORT",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: active ? "\u0633\u0642\u0641\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC \u062C\u0627\u0631\u0648 \u0648 \u0628\u0644\u0627\u0641\u0627\u0635\u0644\u0647 \u067E\u0633 \u06AF\u0631\u0641\u062A\u0647 \u0634\u062F (\u06A9\u0646\u062F\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u0642\u0648\u06CC \u0632\u06CC\u0631\u0650 EMA200\u060C RSI \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F) \u21D2 \u0641\u0631\u0648\u0634 (fade)." : approaching ? "\u0633\u0642\u0641\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC \u062C\u0627\u0631\u0648 \u0634\u062F \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 reclaim \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0646\u0650 \u0642\u0648\u06CC \u0632\u06CC\u0631\u0650 \u0633\u0637\u062D." : "\u0627\u0644\u06AF\u0648\u06CC \u062C\u0627\u0631\u0648\u0628-\u0648-\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u0633\u0642\u0641 (\u0632\u06CC\u0631\u0650 EMA200) \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A.",
+      approachReason: approaching ? "\u0628\u0633\u062A\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0648\u06CC \u0632\u06CC\u0631\u0650 \u0633\u0637\u062D\u0650 \u062C\u0627\u0631\u0648\u0634\u062F\u0647" : void 0,
+      indicators: ind
+    };
+  }
+}
+function decideS324(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS324(candles, cfg);
+  const reg = lightRegime(candles.map((c) => c.close), 0, false, "s324_sweep");
+  return rawToDecision(raw2, {
+    code: "S324",
+    name: "Liquidity-Sweep \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC",
+    kind: "mean-reversion",
+    manageStyle: "fixed-tp-sl",
+    manageNote: "\u0627\u0644\u06AF\u0648\u06CC fade \u0628\u0627 TP<SL\u061B \u0647\u062F\u0641\u0650 \u0646\u0632\u062F\u06CC\u06A9 \u0631\u0627 \u0632\u0648\u062F \u0628\u06AF\u06CC\u0631\u060C SL \u0631\u0627 \u062C\u0627\u0628\u0647\u200C\u062C\u0627 \u0646\u06A9\u0646. \u062A\u0627 max_hold \u0646\u06AF\u0647\u200C\u062F\u0627\u0631.",
+    filters: [`swing_len=${cfg.swingLen}`, `\u0639\u0645\u0642\u0650 \u062C\u0627\u0631\u0648\u2265${cfg.depthMin}\xD7ATR`, `\u0628\u0627\u0632\u06AF\u0634\u062A\u2265${cfg.dispMin}\xD7ATR`, cfg.regimeOn ? "\u0631\u0698\u06CC\u0645\u0650 EMA200" : "\u0628\u062F\u0648\u0646\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645", cfg.side === "LONG" ? `RSI\u2264${cfg.rsiLo}` : `RSI\u2265${cfg.rsiHi}`]
+  }, cfg.id, a.price, reg, capital, riskPct);
+}
+var S321_CFG = {
+  "XAUUSD-M30": {
+    id: "XAUUSD-M30",
+    ribbon: [8, 13, 21, 34, 55, 89, 144],
+    ordThr: 0.4,
+    wzGate: 0.15,
+    pullMin: 0.05,
+    pullMax: 0.82,
+    rsiMin: 45,
+    rsiMax: 85,
+    slopeMin: 0.055,
+    slMult: 2.7,
+    tpMult: 2.7,
+    maxHold: 36
+  }
+};
+function computeS321(candles, cfg) {
+  const close = candles.map((c) => c.close);
+  const atr14 = atr(candles, 14);
+  const r = rsi(close, 14);
+  const i = close.length - 1;
+  const atrVal = atr14[i];
+  const empty = (reason) => ({
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist: 0,
+    tpDist: 0,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    indicators: []
+  });
+  if (!(atrVal > 0) || i < 150 || !Number.isFinite(r[i])) return empty("\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC ribbon \u0646\u06CC\u0633\u062A.");
+  const emas = cfg.ribbon.map((p) => ema(close, p));
+  const vals = emas.map((e) => e[i]);
+  if (vals.some((v) => !Number.isFinite(v))) return empty("ribbon \u0647\u0646\u0648\u0632 \u0645\u062D\u0627\u0633\u0628\u0647 \u0646\u0634\u062F\u0647.");
+  let ascPairs = 0, descPairs = 0;
+  for (let k = 0; k < vals.length - 1; k++) {
+    if (vals[k] > vals[k + 1]) ascPairs++;
+    else if (vals[k] < vals[k + 1]) descPairs++;
+  }
+  const nPairs = vals.length - 1;
+  const ascRatio = ascPairs / nPairs;
+  const descRatio = descPairs / nPairs;
+  const widthSeries = [];
+  for (let j = Math.max(0, i - 120); j <= i; j++) {
+    const vv = emas.map((e) => e[j]);
+    if (vv.some((v) => !Number.isFinite(v))) {
+      widthSeries.push(NaN);
+      continue;
+    }
+    widthSeries.push((Math.max(...vv) - Math.min(...vv)) / (atr14[j] || atrVal));
+  }
+  const valid = widthSeries.filter((v) => Number.isFinite(v));
+  const mean = valid.reduce((s, v) => s + v, 0) / (valid.length || 1);
+  const sd = Math.sqrt(valid.reduce((s, v) => s + (v - mean) ** 2, 0) / (valid.length || 1)) || 1;
+  const widthZ = (last(widthSeries) - mean) / sd;
+  const e34 = emas[3];
+  const slope = Number.isFinite(e34[i - 5]) ? (e34[i] - e34[i - 5]) / (5 * atrVal) : NaN;
+  const rHi = Math.max(...vals), rLo = Math.min(...vals);
+  const price = close[i];
+  const band = rHi - rLo || atrVal;
+  const rsiNow = r[i];
+  const slDist = cfg.slMult * atrVal;
+  const tpDist = cfg.tpMult * atrVal;
+  const wzOk = Number.isFinite(widthZ) && widthZ >= cfg.wzGate;
+  const slopeMag = Number.isFinite(slope) ? Math.abs(slope) : 0;
+  const slopeOk = slopeMag >= cfg.slopeMin;
+  const rsiOk = rsiNow >= cfg.rsiMin && rsiNow <= cfg.rsiMax;
+  const ind = [
+    { name: `\u062A\u0631\u062A\u06CC\u0628\u0650 ribbon (\u2265${cfg.ordThr})`, value: `\u0635\u0639\u0648\u062F\u06CC ${ascRatio.toFixed(2)} / \u0646\u0632\u0648\u0644\u06CC ${descRatio.toFixed(2)}`, status: ascRatio >= cfg.ordThr || descRatio >= cfg.ordThr ? "ok" : "warn" },
+    { name: `\u0639\u0631\u0636\u0650 ribbon (z\u2265${cfg.wzGate})`, value: (Number.isFinite(widthZ) ? widthZ.toFixed(2) : "\u2014") + (wzOk ? " \u2714" : " \u2718"), status: wzOk ? "ok" : "neutral" },
+    { name: `\u0634\u06CC\u0628\u0650 EMA34 (\u2265${cfg.slopeMin})`, value: slopeMag.toFixed(3) + (slopeOk ? " \u2714" : " \u2718"), status: slopeOk ? "ok" : "warn" },
+    { name: `RSI-14 \u2208 [${cfg.rsiMin},${cfg.rsiMax}]`, value: rsiNow.toFixed(0) + (rsiOk ? " \u2714" : " \u2718"), status: rsiOk ? "ok" : "warn" }
+  ];
+  if (ascRatio >= cfg.ordThr && slope > 0 && wzOk && slopeOk && rsiOk) {
+    const depth = (rHi - price) / band;
+    const pullOk = depth >= cfg.pullMin && depth <= cfg.pullMax;
+    ind.push({ name: `\u0639\u0645\u0642\u0650 pullback \u2208 [${cfg.pullMin},${cfg.pullMax}]`, value: depth.toFixed(2) + (pullOk ? " \u2714" : ""), status: pullOk ? "ok" : "neutral" });
+    if (pullOk) return { active: true, approaching: false, direction: "LONG", slDist, tpDist, maxHoldBars: cfg.maxHold, reason: "ribbon\u0650 GMMA \u0635\u0639\u0648\u062F\u06CC\u0650 \u0645\u0631\u062A\u0628 \u0648 \u0645\u0646\u0628\u0633\u0637 + pullback \u0642\u06CC\u0645\u062A \u0628\u0647 \u0628\u062F\u0646\u0647\u0654 ribbon + \u0634\u06CC\u0628 \u0648 RSI \u0633\u0627\u0644\u0645 \u21D2 \u062E\u0631\u06CC\u062F.", indicators: ind };
+    return { active: false, approaching: true, direction: "LONG", slDist, tpDist, maxHoldBars: cfg.maxHold, reason: "ribbon\u0650 \u0635\u0639\u0648\u062F\u06CC \u0645\u0631\u062A\u0628 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 pullback \u0642\u06CC\u0645\u062A \u0628\u0647 \u0628\u062F\u0646\u0647\u0654 ribbon \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F.", approachReason: "pullback \u0642\u06CC\u0645\u062A \u0628\u0647 \u0628\u062F\u0646\u0647\u0654 ribbon", indicators: ind };
+  }
+  if (descRatio >= cfg.ordThr && slope < 0 && wzOk && slopeOk && rsiOk) {
+    const depth = (price - rLo) / band;
+    const pullOk = depth >= cfg.pullMin && depth <= cfg.pullMax;
+    ind.push({ name: `\u0639\u0645\u0642\u0650 pullback \u2208 [${cfg.pullMin},${cfg.pullMax}]`, value: depth.toFixed(2) + (pullOk ? " \u2714" : ""), status: pullOk ? "ok" : "neutral" });
+    if (pullOk) return { active: true, approaching: false, direction: "SHORT", slDist, tpDist, maxHoldBars: cfg.maxHold, reason: "ribbon\u0650 GMMA \u0646\u0632\u0648\u0644\u06CC\u0650 \u0645\u0631\u062A\u0628 \u0648 \u0645\u0646\u0628\u0633\u0637 + pullback \u0642\u06CC\u0645\u062A \u0628\u0647 \u0628\u062F\u0646\u0647\u0654 ribbon + \u0634\u06CC\u0628 \u0648 RSI \u0633\u0627\u0644\u0645 \u21D2 \u0641\u0631\u0648\u0634.", indicators: ind };
+    return { active: false, approaching: true, direction: "SHORT", slDist, tpDist, maxHoldBars: cfg.maxHold, reason: "ribbon\u0650 \u0646\u0632\u0648\u0644\u06CC \u0645\u0631\u062A\u0628 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 pullback \u0642\u06CC\u0645\u062A \u0628\u0647 \u0628\u062F\u0646\u0647\u0654 ribbon \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F\u0650 \u0641\u0631\u0648\u0634.", approachReason: "pullback \u0642\u06CC\u0645\u062A \u0628\u0647 \u0628\u062F\u0646\u0647\u0654 ribbon", indicators: ind };
+  }
+  return empty("ribbon \u0645\u0631\u062A\u0628/\u0645\u0646\u0628\u0633\u0637 \u0628\u0627 \u0634\u06CC\u0628 \u0648 RS\u06CC\u0650 \u0644\u0627\u0632\u0645 \u0646\u06CC\u0633\u062A\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 S321 \u0646\u062F\u0627\u0631\u06CC\u0645.");
+}
+function decideS321(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS321(candles, cfg);
+  const reg = lightRegime(candles.map((c) => c.close), 0, raw2.active || raw2.approaching, "s321_ribbon");
+  return rawToDecision(raw2, {
+    code: "S321",
+    name: "MA-Ribbon (GMMA) pullback",
+    kind: "ma-confluence",
+    manageStyle: "structural-trail",
+    beTriggerR: 1,
+    manageNote: "\u067E\u0633 \u0627\u0632 \u06F1R\u060C SL \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646\u061B \u0633\u067E\u0633 \u067E\u0634\u062A\u0650 EMA34/55\u0650 ribbon \u062A\u0631\u06CC\u0644 \u06A9\u0646. \u0628\u0627 \u0634\u06A9\u0633\u062A\u0650 ribbon \u062E\u0627\u0631\u062C \u0634\u0648.",
+    filters: [`\u062A\u0631\u062A\u06CC\u0628\u0650 ribbon\u2265${cfg.ordThr}`, `\u0639\u0631\u0636 z\u2265${cfg.wzGate}`, `\u0634\u06CC\u0628\u2265${cfg.slopeMin}`, `pullback [${cfg.pullMin},${cfg.pullMax}]`]
+  }, cfg.id, a.price, reg, capital, riskPct);
+}
+var S323_CFG = {
+  "XAUUSD-M15": { id: "XAUUSD-M15", nearMax: 0.85, roomMin: 1.3, rsiMax: 55, slopeMin: 0, adxMin: 22, golden: true, hLo: 19, hHi: 23, slMult: 1.8, tpMult: 1.5, maxHold: 96, pivotLen: 20 },
+  "XAUUSD-M30": { id: "XAUUSD-M30", nearMax: 0.85, roomMin: 1.3, rsiMax: 55, slopeMin: 0, adxMin: 22, golden: true, hLo: 19, hHi: 23, slMult: 2.1, tpMult: 1.3, maxHold: 48, pivotLen: 20 },
+  "XAUUSD-H1": { id: "XAUUSD-H1", nearMax: 0.55, roomMin: 1.3, rsiMax: 55, slopeMin: 0, adxMin: 30, golden: true, hLo: 19, hHi: 23, slMult: 1.8, tpMult: 1.7, maxHold: 36, pivotLen: 20 }
+};
+function computeS323(candles, cfg, utcHour) {
+  const high = candles.map((c) => c.high), low = candles.map((c) => c.low), close = candles.map((c) => c.close);
+  const atr14 = atr(candles, 14);
+  const e200 = ema(close, 200);
+  const { adx: adxArr } = adx(candles, 14);
+  const r = rsi(close, 14);
+  const i = close.length - 1;
+  const atrVal = atr14[i];
+  const empty = (reason, ind2) => ({
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist: 0,
+    tpDist: 0,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    indicators: ind2
+  });
+  if (!(atrVal > 0) || i < 200 || !Number.isFinite(r[i])) return empty("\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC S323 \u0646\u06CC\u0633\u062A.", []);
+  const price = close[i];
+  const trendUp = price > e200[i];
+  const adxVal = adxArr[i];
+  const adxOk = Number.isFinite(adxVal) && adxVal >= cfg.adxMin;
+  let support = -Infinity, resistance = Infinity;
+  const L = cfg.pivotLen;
+  for (let k = i - 1; k >= Math.max(0, i - 120); k--) {
+    if (k - L < 0 || k + L > i) continue;
+    const isLow = low.slice(k - L, k + L + 1).every((v) => v >= low[k]);
+    const isHigh = high.slice(k - L, k + L + 1).every((v) => v <= high[k]);
+    if (isLow && low[k] < price && low[k] > support) support = low[k];
+    if (isHigh && high[k] > price && high[k] < resistance) resistance = high[k];
+  }
+  const goldenOk = !cfg.golden || utcHour >= cfg.hLo && utcHour <= cfg.hHi;
+  const rsiNow = r[i];
+  const rsiOk = rsiNow <= cfg.rsiMax;
+  const nearSupport = isFinite(support) ? (price - support) / atrVal : Infinity;
+  const room = isFinite(resistance) ? (resistance - price) / atrVal : Infinity;
+  const nearOk = nearSupport <= cfg.nearMax;
+  const roomOk = room >= cfg.roomMin;
+  const ind = [
+    { name: `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (close>EMA200\u060C ADX\u2265${cfg.adxMin})`, value: (trendUp ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC") + ` / ADX ${Number.isFinite(adxVal) ? adxVal.toFixed(0) : "\u2014"}`, status: trendUp && adxOk ? "ok" : "bad" },
+    { name: `pullback \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A (\u2264${cfg.nearMax}\xD7ATR)`, value: isFinite(nearSupport) ? nearSupport.toFixed(2) + (nearOk ? " \u2714" : " \u2718") : "\u2014", status: nearOk ? "ok" : "neutral" },
+    { name: `\u0641\u0636\u0627 \u062A\u0627 \u0645\u0642\u0627\u0648\u0645\u062A (\u2265${cfg.roomMin}\xD7ATR)`, value: isFinite(room) ? room.toFixed(2) + (roomOk ? " \u2714" : " \u2718") : "\u2014", status: roomOk ? "ok" : "warn" },
+    { name: `RSI-14 \u2264 ${cfg.rsiMax}`, value: rsiNow.toFixed(0) + (rsiOk ? " \u2714" : " \u2718"), status: rsiOk ? "ok" : "warn" },
+    ...cfg.golden ? [{ name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC (${cfg.hLo}:00\u2013${cfg.hHi}:00 UTC)`, value: `${utcHour}:00 UTC` + (goldenOk ? " \u2714" : " \u2718 \u062E\u0627\u0631\u062C"), status: goldenOk ? "ok" : "neutral" }] : []
+  ];
+  const slDist = cfg.slMult * atrVal;
+  const tpDist = cfg.tpMult * atrVal;
+  const trendCtx = trendUp && adxOk;
+  const active = trendCtx && nearOk && roomOk && rsiOk && goldenOk;
+  const approaching = !active && trendCtx && roomOk && rsiOk && (goldenOk || nearOk);
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason: active ? "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0634\u062F\u0647 + pullback \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A \u0628\u0627 \u0641\u0636\u0627\u06CC \u06A9\u0627\u0641\u06CC \u062A\u0627 \u0645\u0642\u0627\u0648\u0645\u062A + RSI \u063A\u06CC\u0631\u0650 \u0627\u0634\u0628\u0627\u0639 \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC \u21D2 \u062E\u0631\u06CC\u062F." : approaching ? "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 pullback \u06A9\u0627\u0645\u0644\u0650 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A (\u06CC\u0627 \u0648\u0631\u0648\u062F \u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC) \u0628\u0631\u0627\u06CC \u0645\u0627\u0634\u0647\u0654 \u062E\u0631\u06CC\u062F." : trendCtx ? "\u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u0627\u0645\u0627 \u0633\u062A\u0627\u067E\u0650 pullback/\u0637\u0644\u0627\u06CC\u06CC \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A." : "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0644\u0627\u0632\u0645 (EMA200/ADX) \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 S323 \u0646\u062F\u0627\u0631\u06CC\u0645.",
+    approachReason: approaching ? "\u06A9\u0627\u0645\u0644\u200C\u0634\u062F\u0646\u0650 pullback \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC" : void 0,
+    indicators: ind
+  };
+}
+function decideS323(cfg, a, candles, utcHour, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS323(candles, cfg, utcHour);
+  const { adx: adxArr } = adx(candles, 14);
+  const reg = lightRegime(candles.map((c) => c.close), nz(last(adxArr)), raw2.active || raw2.approaching, "s323_sr_pullback");
+  return rawToDecision(raw2, {
+    code: "S323",
+    name: "S/R Pullback \u0637\u0644\u0627\u06CC\u06CC",
+    kind: "price-action",
+    manageStyle: "structural-trail",
+    beTriggerR: 1,
+    manageNote: "\u067E\u0633 \u0627\u0632 \u06F1R\u060C SL \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 \u0622\u062E\u0631\u06CC\u0646 swing-low \u062A\u0631\u06CC\u0644 \u06A9\u0646. \u0628\u0627 \u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0645\u0642\u0627\u0648\u0645\u062A\u060C TP \u0631\u0627 \u067E\u06CC\u0634\u200C\u062F\u0633\u062A\u0627\u0646\u0647 \u0628\u06AF\u06CC\u0631.",
+    filters: [`\u0631\u0648\u0646\u062F EMA200 + ADX\u2265${cfg.adxMin}`, `pullback \u062D\u0645\u0627\u06CC\u062A \u2264${cfg.nearMax}\xD7ATR`, `\u0641\u0636\u0627 \u2265${cfg.roomMin}\xD7ATR`, `RSI\u2264${cfg.rsiMax}`, cfg.golden ? `\u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC ${cfg.hLo}-${cfg.hHi} UTC` : "\u0628\u062F\u0648\u0646\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0632\u0645\u0627\u0646"]
+  }, cfg.id, a.price, reg, capital, riskPct);
 }
 
-// ../web_tool/src/secondary_layers.ts
-var TL_KEY = {
-  "XAUUSD": "XAUUSD-M15",
-  "XAUUSD-M5": "XAUUSD-M5",
-  "XAUUSD-M30": "XAUUSD-M30",
-  "XAUUSD-H4": "XAUUSD-H4"
-};
-function probeSecondaryLayers(ctx) {
-  const out = [];
-  const { assetId, result, open, high, low, close, capital, riskPct } = ctx;
-  const isGoldM15 = assetId === "XAUUSD";
-  const push = (l) => {
-    if (ctx.primaryCode && l.code === ctx.primaryCode) return;
-    out.push(l);
+// ../web_tool/src/strategy_registry.ts
+var GOLD_PIP2 = 0.1;
+function lightRegime2(adxVal, trendy, bucket) {
+  return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
+}
+function s326Layer(cfg) {
+  return (ctx) => {
+    const sig = computeStreakReversal(ctx.candles, cfg);
+    const price = ctx.a.price;
+    const raw2 = {
+      active: sig.active,
+      approaching: sig.approaching,
+      direction: "LONG",
+      slDist: cfg.slMult * sig.atrVal,
+      tpDist: cfg.tpMult * sig.atrVal,
+      maxHoldBars: cfg.maxHold,
+      reason: sig.reason,
+      approachReason: sig.approaching ? `\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 RSI \u0628\u0647 \u0632\u06CC\u0631\u0650 ${cfg.rsiMax}` : void 0,
+      indicators: [
+        { name: `\u0631\u06AF\u0647\u0654 \u0646\u0632\u0648\u0644\u06CC (\u2265${cfg.streakN} \u06A9\u0646\u062F\u0644)`, value: `${sig.streak}` + (sig.streak >= cfg.streakN ? " \u2714" : ""), status: sig.streak >= cfg.streakN ? "ok" : "neutral" },
+        { name: `RSI-14 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 (\u2264${cfg.rsiMax})`, value: isFinite(sig.rsiVal) ? sig.rsiVal.toFixed(0) : "\u2014", status: sig.rsiVal <= cfg.rsiMax ? "ok" : "warn" },
+        { name: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA${cfg.emaTrend})`, value: sig.aboveTrend ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u0646\u0632\u0648\u0644\u06CC \u2718", status: sig.aboveTrend ? "ok" : "bad" }
+      ]
+    };
+    const reg = lightRegime2(0, sig.aboveTrend, "s326_streak");
+    return rawToDecision(raw2, {
+      code: "S326",
+      name: "Streak-Reversal \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC",
+      kind: "mean-reversion",
+      manageStyle: "fixed-tp-sl",
+      manageNote: "\u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0628\u0627 TP<SL\u061B \u0647\u062F\u0641\u0650 \u0646\u0632\u062F\u06CC\u06A9 \u0631\u0627 \u0632\u0648\u062F \u0628\u06AF\u06CC\u0631\u060C SL \u062C\u0627\u0628\u0647\u200C\u062C\u0627 \u0646\u0634\u0648\u062F.",
+      filters: [`\u0631\u06AF\u0647\u0654 \u2265${cfg.streakN}`, `RSI\u2264${cfg.rsiMax}`, `EMA${cfg.emaTrend} \u0635\u0639\u0648\u062F\u06CC`, cfg.runMinAtr > 0 ? `\u0634\u062A\u0627\u0628\u0650 \u0631\u06AF\u0647\u2265${cfg.runMinAtr}\xD7ATR` : "\u0628\u062F\u0648\u0646\u0650 \u0642\u06CC\u062F\u0650 \u0634\u062A\u0627\u0628"]
+    }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
   };
-  if (isGoldM15 && typeof ctx.utcHour === "number") {
-    const ov = computeOvernight(ctx.utcHour);
-    if (ov.state === "ENTRY" || ov.state === "APPROACHING") {
-      push({
-        code: "S139",
-        name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0634\u0628\u0627\u0646\u0647 (Overnight Drift)",
-        kind: "time",
-        state: ov.state,
-        direction: "LONG",
-        reason: ov.reason,
-        confirmations: ov.state === "APPROACHING" ? [
-          {
-            label: `\u0631\u0633\u06CC\u062F\u0646\u0650 \u0633\u0627\u0639\u062A \u0628\u0647 ${toIranHM(22)} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646`,
-            met: false,
-            detail: "\u0628\u0627 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0633\u0627\u0639\u062A\u0650 \u0648\u0631\u0648\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F."
-          }
-        ] : void 0
-      });
-    }
-  }
-  if (isGoldM15 && typeof ctx.utcHour === "number" && typeof ctx.utcDay === "number") {
-    const mo = computeMonday(ctx.utcDay, ctx.utcHour);
-    if (mo.state === "ENTRY" || mo.state === "APPROACHING") {
-      push({
-        code: "S140",
-        name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647 (Monday Drift)",
-        kind: "time",
-        state: mo.state,
-        direction: "LONG",
-        reason: mo.reason,
-        confirmations: mo.state === "APPROACHING" ? [
-          {
-            label: `\u0631\u0633\u06CC\u062F\u0646\u0650 \u0633\u0627\u0639\u062A \u0628\u0647 ${toIranHM(MONDAY_ENTRY_HOURS[0])} \u062F\u0631 \u062F\u0648\u0634\u0646\u0628\u0647`,
-            met: false,
-            detail: "\u0628\u0627 \u0648\u0631\u0648\u062F \u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0647\u0641\u062A\u0647\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F."
-          }
-        ] : void 0
-      });
-    }
-  }
-  if (isGoldM15 && Array.isArray(ctx.times) && typeof ctx.utcHour === "number") {
-    const tom = computeTurnOfMonth(ctx.times, ctx.utcHour);
-    if (tom.state === "ENTRY" || tom.state === "APPROACHING") {
-      push({
-        code: "S141",
-        name: "\u062F\u0631\u0627\u06CC\u0648\u0650 \u0686\u0631\u062E\u0634\u0650 \u0645\u0627\u0647 (Turn-of-Month)",
-        kind: "time",
-        state: tom.state,
-        direction: "LONG",
-        reason: tom.reason,
-        confirmations: tom.state === "APPROACHING" ? [
-          {
-            label: "\u0631\u0633\u06CC\u062F\u0646\u0650 \u0627\u0648\u0644\u06CC\u0646 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0645\u0627\u0647 \u062F\u0631 \u0633\u0627\u0639\u062A\u0650 \u0648\u0631\u0648\u062F",
-            met: false,
-            detail: "\u0628\u0627 \u0648\u0631\u0648\u062F \u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0631\u0627\u06CC\u0648\u0650 \u0627\u0648\u0644\u0650 \u0645\u0627\u0647\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F."
-          }
-        ] : void 0
-      });
-    }
-  }
-  if (isGoldM15) {
-    const sm = computeShortMA(close, DEFAULT_SHORT_MA);
-    if (sm.active) {
-      push({
-        code: "SHORT-MA",
-        name: "\u0647\u0645\u200C\u06AF\u0631\u0627\u06CC\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (SHORT)",
-        kind: "ma-confluence",
-        state: "ENTRY",
-        direction: "SHORT",
-        reason: sm.reason
-      });
-    } else if (sm.approaching) {
-      push({
-        code: "SHORT-MA",
-        name: "\u0647\u0645\u200C\u06AF\u0631\u0627\u06CC\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (SHORT)",
-        kind: "ma-confluence",
-        state: "APPROACHING",
-        direction: "SHORT",
-        reason: sm.reason,
-        confirmations: [
-          {
-            label: "\u0642\u06CC\u0645\u062A \u0627\u0632 \u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 MA \u0631\u0648 \u0628\u0647 \u067E\u0627\u06CC\u06CC\u0646 \u0639\u0628\u0648\u0631 \u06A9\u0646\u062F",
-            met: false,
-            detail: `\u0627\u06A9\u0646\u0648\u0646 ${sm.distPct.toFixed(2)}% \u0628\u0627\u0644\u0627\u06CC \u0645\u06CC\u0627\u0646\u0647 \u0648 \u0631\u0648 \u0628\u0647 \u06A9\u0627\u0647\u0634 \u0627\u0633\u062A.`
-          },
-          {
-            label: "\u0686\u06CC\u062F\u0645\u0627\u0646\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (EMA50<EMA100<SMA200)",
-            met: sm.dnStack,
-            detail: sm.dnStack ? "\u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A \u2713" : "\u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A."
-          }
-        ]
-      });
-    }
-  }
-  if (isGoldM15) {
-    const sq = computeSqueeze(close, high, DEFAULT_SQUEEZE, low);
-    if (sq.active) {
-      push({
-        code: "S132",
-        name: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u2192\u0634\u06A9\u0633\u062A (Squeeze Breakout)",
-        kind: "squeeze",
-        state: "ENTRY",
-        direction: "LONG",
-        reason: sq.reason
-      });
-    } else if (sq.approaching) {
-      push({
-        code: "S132",
-        name: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u2192\u0634\u06A9\u0633\u062A (Squeeze Breakout)",
-        kind: "squeeze",
-        state: "APPROACHING",
-        direction: "LONG",
-        reason: sq.reason,
-        confirmations: [
-          {
-            label: "\u0634\u06A9\u0633\u062A\u0650 \u0633\u0642\u0641\u0650 \u0627\u062E\u06CC\u0631 \u0628\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0648\u06CC",
-            met: false,
-            detail: "\u067E\u0633 \u0627\u0632 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0646\u0648\u0633\u0627\u0646\u060C \u0634\u06A9\u0633\u062A\u0650 \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627 \u0645\u0627\u0634\u0647 \u0631\u0627 \u0634\u0644\u06CC\u06A9 \u0645\u06CC\u200C\u06A9\u0646\u062F."
-          }
-        ]
-      });
-    }
-  }
-  const tlKey = TL_KEY[assetId];
-  if (tlKey && TREND_LINE_CFG[tlKey]) {
+}
+function s327Layer(cfg) {
+  return (ctx) => {
+    const sig = computeSellClimax(ctx.candles, cfg);
+    const price = ctx.a.price;
+    const raw2 = {
+      active: sig.active,
+      approaching: sig.approaching,
+      direction: "LONG",
+      slDist: cfg.slMult * sig.atrVal,
+      tpDist: cfg.tpMult * sig.atrVal,
+      maxHoldBars: cfg.maxHold,
+      reason: sig.reason,
+      approachReason: sig.approaching ? `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A (RSI\u2264${cfg.rsiMax} + \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC)` : void 0,
+      indicators: [
+        { name: `\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 (\u0628\u062F\u0646\u0647\u2265${cfg.kBody}\xD7MA)`, value: sig.isClimax ? "\u0628\u0644\u0647 \u2714" : "\u062E\u06CC\u0631", status: sig.isClimax ? "ok" : "neutral" },
+        { name: `RSI-14 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 (\u2264${cfg.rsiMax})`, value: isFinite(sig.rsiVal) ? sig.rsiVal.toFixed(0) : "\u2014", status: sig.rsiVal <= cfg.rsiMax ? "ok" : "warn" },
+        { name: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA${cfg.emaTrend})`, value: sig.aboveTrend ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u0646\u0632\u0648\u0644\u06CC \u2718", status: sig.aboveTrend ? "ok" : "bad" }
+      ]
+    };
+    const reg = lightRegime2(0, sig.aboveTrend, "s327_climax");
+    return rawToDecision(raw2, {
+      code: "S327",
+      name: "Sell-Climax \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC (Brooks)",
+      kind: "price-action",
+      manageStyle: "fixed-tp-sl",
+      manageNote: "\u062A\u062E\u0644\u06CC\u0647\u0654 \u0641\u0631\u0648\u0634 (Brooks exhaustion) \u0628\u0627 TP<SL\u061B \u0647\u062F\u0641\u0650 \u0646\u0632\u062F\u06CC\u06A9 \u0631\u0627 \u0628\u06AF\u06CC\u0631\u060C SL \u062C\u0627\u0628\u0647\u200C\u062C\u0627 \u0646\u0634\u0648\u062F.",
+      filters: [`\u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 kBody=${cfg.kBody}`, `body/range\u2265${cfg.brMin}`, `RSI\u2264${cfg.rsiMax}`, `EMA${cfg.emaTrend} \u0635\u0639\u0648\u062F\u06CC`]
+    }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
+  };
+}
+var s310Layer = (ctx) => {
+  const sig = computeEndOfMonth(ctx.times, ctx.utcHour);
+  const price = ctx.a.price;
+  const active = sig.state === "ENTRY";
+  const approaching = sig.state === "APPROACHING";
+  const raw2 = {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist: EOM_SL_PIP * GOLD_PIP2,
+    tpDist: EOM_TP_PIP * GOLD_PIP2,
+    maxHoldBars: EOM_MAX_HOLD,
+    reason: sig.reason,
+    approachReason: approaching ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647` : void 0,
+    indicators: [
+      { name: "\u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647 (\u06F7 \u0631\u0648\u0632\u0650 \u0645\u0627\u0646\u062F\u0647)", value: sig.isEomWindow ? "\u0628\u0627\u0632 \u2714" : "\u0628\u0633\u062A\u0647", status: sig.isEomWindow ? "ok" : "neutral" },
+      { name: "\u0633\u0627\u0639\u062A\u0650 UTC", value: `${sig.utcHour}:00` + (EOM_ENTRY_HOURS.includes(sig.utcHour) ? " (\u0648\u0631\u0648\u062F)" : ""), status: EOM_ENTRY_HOURS.includes(sig.utcHour) ? "ok" : "neutral" }
+    ]
+  };
+  const reg = lightRegime2(0, true, "s310_eom");
+  return rawToDecision(raw2, {
+    code: "S310",
+    name: "End-of-Month Drift",
+    kind: "time",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A (${EOM_TP_PIP}/${EOM_SL_PIP} pip)\u061B \u062A\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 \u067E\u0646\u062C\u0631\u0647 \u06CC\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0646\u06AF\u0647\u200C\u062F\u0627\u0631.`,
+    filters: ["\u06F7 \u0631\u0648\u0632\u0650 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647", `\u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC`, "\u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A (ATR/close-pos/EMA200)"]
+  }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
+};
+function s312Layer(slPip, tpPip, maxHold) {
+  return (ctx) => {
+    const sig = computeMidMonth(ctx.times, ctx.utcHour);
+    const price = ctx.a.price;
+    const active = sig.state === "ENTRY";
+    const approaching = sig.state === "APPROACHING";
+    const raw2 = {
+      active,
+      approaching,
+      direction: "LONG",
+      slDist: slPip * GOLD_PIP2,
+      tpDist: tpPip * GOLD_PIP2,
+      maxHoldBars: maxHold,
+      reason: sig.reason,
+      approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
+      indicators: [
+        { name: "\u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647 (dom \u2208 {\u06F1\u06F0,\u06F1\u06F3,\u06F2\u06F0})", value: sig.isMidWindow ? "\u0628\u0644\u0647 \u2714" : "\u062E\u06CC\u0631", status: sig.isMidWindow ? "ok" : "neutral" },
+        { name: "\u0633\u0627\u0639\u062A\u0650 UTC", value: `${sig.utcHour}:00`, status: MID_ENTRY_HOURS.includes(sig.utcHour) ? "ok" : "neutral" }
+      ]
+    };
+    const reg = lightRegime2(0, true, "s312_mid");
+    return rawToDecision(raw2, {
+      code: "S312",
+      name: "Mid-Month Drift",
+      kind: "time",
+      manageStyle: "fixed-tp-sl",
+      manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u0645\u062A\u0642\u0627\u0631\u0646\u0650 \u062B\u0627\u0628\u062A (${tpPip}/${slPip} pip)\u061B \u062A\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 \u067E\u0646\u062C\u0631\u0647 \u06CC\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0646\u06AF\u0647\u200C\u062F\u0627\u0631.`,
+      filters: ["\u0631\u0648\u0632\u0647\u0627\u06CC \u06F1\u06F0/\u06F1\u06F3/\u06F2\u06F0 \u0645\u0627\u0647", "\u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC", "\u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A (\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646)"]
+    }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
+  };
+}
+var s313Layer = (cfg) => (ctx) => {
+  const o = ctx.candles.map((c) => c.open), h = ctx.candles.map((c) => c.high);
+  const l = ctx.candles.map((c) => c.low), c2 = ctx.candles.map((c) => c.close);
+  return decideS313(cfg, ctx.a, o, h, l, c2, ctx.capital, ctx.riskPct);
+};
+var s321Layer = (cfg) => (ctx) => decideS321(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s322Layer = (cfg) => (ctx) => decideS322(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s323Layer = (cfg) => (ctx) => decideS323(cfg, ctx.a, ctx.candles, ctx.utcHour, ctx.capital, ctx.riskPct);
+var s324Layer = (cfg) => (ctx) => decideS324(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s328Layer = (cfg) => (ctx) => decideS328(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s330Layer = (cfg) => (ctx) => decideS330(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var CARD_LAYERS = {
+  "XAUUSD-M5": [
+    s330Layer(S330_CFG["XAUUSD-M5"]),
+    s328Layer(S328_CFG["XAUUSD-M5"]),
+    s327Layer(SELL_CLIMAX_CFG["XAUUSD-M5"]),
+    s326Layer(STREAK_REV_CFG["XAUUSD-M5"])
+  ],
+  "XAUUSD-M15": [
+    s324Layer(S324_CFG["XAUUSD-M15"]),
+    s322Layer(S322_CFG["XAUUSD-M15"]),
+    s323Layer(S323_CFG["XAUUSD-M15"]),
+    s310Layer,
+    s312Layer(295, 295, 48)
+  ],
+  "XAUUSD-M30": [
+    s313Layer(S313_M30),
+    s324Layer(S324_CFG["XAUUSD-M30"]),
+    s321Layer(S321_CFG["XAUUSD-M30"]),
+    s327Layer(SELL_CLIMAX_CFG["XAUUSD-M30"]),
+    s326Layer(STREAK_REV_CFG["XAUUSD-M30"]),
+    s323Layer(S323_CFG["XAUUSD-M30"]),
+    s312Layer(295, 295, 36)
+  ],
+  "XAUUSD-H1": [
+    s313Layer(S313_H1),
+    s328Layer(S328_CFG["XAUUSD-H1"]),
+    s327Layer(SELL_CLIMAX_CFG["XAUUSD-H1"]),
+    s323Layer(S323_CFG["XAUUSD-H1"]),
+    s312Layer(395, 395, 24)
+  ],
+  "XAUUSD-H4": [
+    s327Layer(SELL_CLIMAX_CFG["XAUUSD-H4"])
+  ],
+  "EURUSD-M15": [
+    s326Layer(STREAK_REV_CFG["EURUSD-M15"])
+  ],
+  "EURUSD-M30": [
+    s327Layer(SELL_CLIMAX_CFG["EURUSD-M30"])
+  ]
+};
+var REGISTERED_CARDS = Object.keys(CARD_LAYERS);
+var STATE_RANK = { ENTRY: 3, APPROACHING: 2, NEUTRAL: 1 };
+function runCard(ctx) {
+  const layers = CARD_LAYERS[ctx.cardId] || [];
+  const decisions = [];
+  for (const fn of layers) {
     try {
-      const tl = trendLineDecision(TREND_LINE_CFG[tlKey], result, open, high, low, close, capital, riskPct);
-      if (tl.state === "ENTRY" || tl.state === "APPROACHING") {
-        push({
-          code: "S215",
-          name: "\u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 Al Brooks (Trend-Line)",
-          kind: "price-action",
-          state: tl.state,
-          direction: tl.direction,
-          reason: tl.reason,
-          confirmations: tl.confirmations
-        });
-      }
-    } catch {
+      const d = fn(ctx);
+      if (d) decisions.push(d);
+    } catch (e) {
+      console.error(`[registry] layer error on ${ctx.cardId}:`, e?.message);
     }
   }
-  if (tlKey && CHANNEL_CFG[tlKey]) {
-    try {
-      const chn = channelDecision(CHANNEL_CFG[tlKey], result, open, high, low, close, capital, riskPct);
-      if (chn.state === "ENTRY" || chn.state === "APPROACHING") {
-        push({
-          code: "S219",
-          name: "\u06A9\u0627\u0646\u0627\u0644\u0650 Al Brooks (Channel)",
-          kind: "price-action",
-          state: chn.state,
-          direction: chn.direction,
-          reason: chn.reason,
-          confirmations: chn.confirmations
-        });
-      }
-    } catch {
-    }
+  if (decisions.length === 0) {
+    return {
+      state: "NEUTRAL",
+      regime: lightRegime2(0, false, "no_layer"),
+      headline: "\u062E\u0646\u062B\u06CC \u2014 \u0644\u0627\u06CC\u0647\u0654 \u0641\u0639\u0627\u0644\u06CC \u0628\u0631\u0627\u06CC \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0646\u06CC\u0633\u062A",
+      reason: "\u0628\u0631\u0627\u06CC \u0627\u06CC\u0646 \u062A\u0631\u06A9\u06CC\u0628\u0650 \u062C\u0641\u062A\u200C\u0627\u0631\u0632/\u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645 \u0644\u0627\u06CC\u0647\u0654 \u0627\u062D\u06CC\u0627\u0634\u062F\u0647\u200C\u0627\u06CC \u062B\u0628\u062A \u0646\u0634\u062F\u0647 \u0627\u0633\u062A.",
+      indicators: []
+    };
   }
-  return out;
+  decisions.sort((x, y) => {
+    const r = (STATE_RANK[y.state] || 0) - (STATE_RANK[x.state] || 0);
+    if (r !== 0) return r;
+    return (y.probability || 0) - (x.probability || 0);
+  });
+  const primary = decisions[0];
+  const others = decisions.slice(1).filter((d) => d.state === "ENTRY" || d.state === "APPROACHING");
+  if (others.length > 0) {
+    primary.otherLayers = others.map((d) => ({
+      code: d.sourceLayer?.code || "\u2014",
+      name: d.sourceLayer?.name || d.headline,
+      kind: d.sourceLayer?.kind || "unknown",
+      state: d.state,
+      direction: d.direction,
+      reason: d.reason,
+      confirmations: d.confirmations
+    }));
+  }
+  return primary;
 }
 
 // ../web_tool/src/index.tsx
@@ -7641,21 +5217,21 @@ function rebaseFuturesToSpot(candles, spot, intervalSec = 900) {
   }));
   const nowSec = Math.floor(Date.now() / 1e3);
   const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
-  const last = rebased[rebased.length - 1];
-  if (last.time >= curBucketStart) {
+  const last2 = rebased[rebased.length - 1];
+  if (last2.time >= curBucketStart) {
     rebased[rebased.length - 1] = {
-      ...last,
+      ...last2,
       close: spot.price,
-      high: Math.max(last.high, spot.price),
-      low: Math.min(last.low, spot.price)
+      high: Math.max(last2.high, spot.price),
+      low: Math.min(last2.low, spot.price)
     };
   } else {
     rebased.push({
       time: curBucketStart,
-      open: last.close,
+      open: last2.close,
       close: spot.price,
-      high: Math.max(last.close, spot.price),
-      low: Math.min(last.close, spot.price),
+      high: Math.max(last2.close, spot.price),
+      low: Math.min(last2.close, spot.price),
       volume: 0
     });
   }
@@ -7668,21 +5244,21 @@ function mergeLiveQuote(candles, livePrice, intervalSec = 900) {
   const nowSec = Math.floor(Date.now() / 1e3);
   const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
   const out = candles.slice();
-  const last = out[out.length - 1];
-  if (last.time >= curBucketStart) {
+  const last2 = out[out.length - 1];
+  if (last2.time >= curBucketStart) {
     out[out.length - 1] = {
-      ...last,
+      ...last2,
       close: livePrice,
-      high: Math.max(last.high, livePrice),
-      low: Math.min(last.low, livePrice)
+      high: Math.max(last2.high, livePrice),
+      low: Math.min(last2.low, livePrice)
     };
   } else {
     out.push({
       time: curBucketStart,
-      open: last.close,
+      open: last2.close,
       close: livePrice,
-      high: Math.max(last.close, livePrice),
-      low: Math.min(last.close, livePrice),
+      high: Math.max(last2.close, livePrice),
+      low: Math.min(last2.close, livePrice),
       volume: 0
     });
   }
@@ -7692,8 +5268,8 @@ function closedBars(candles, intervalSec) {
   if (candles.length < 2) return candles;
   const nowSec = Math.floor(Date.now() / 1e3);
   const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
-  const last = candles[candles.length - 1];
-  if (last.time >= curBucketStart) return candles.slice(0, -1);
+  const last2 = candles[candles.length - 1];
+  if (last2.time >= curBucketStart) return candles.slice(0, -1);
   return candles;
 }
 app.get("/api/spot", async (c) => {
@@ -7909,41 +5485,14 @@ app.get("/api/context", async (c) => {
   });
 });
 var ASSETS = [
-  { id: "XAUUSD", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u0646\u0648\u0633\u0627\u0646\u06CC (M15)", symbol: "GC=F", isGold: true, decimals: 2, layer: "swing" },
-  { id: "XAUUSD-M5", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u0627\u0633\u06A9\u0627\u0644\u067E (M5)", symbol: "GC=F", isGold: true, decimals: 2, layer: "scalp" },
-  // XAUUSD-M30: در نشستِ S215 با لایهٔ «خطِ روندِ Al Brooks» (فصلِ ۱۳) دوباره فعال شد.
-  //   قبلاً S81 داشت که در S163 حذف شد؛ حالا لبهٔ trend-lineِ اثبات‌شده (+$5,599، مستقل).
-  { id: "XAUUSD-M30", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A (M30)", symbol: "GC=F", isGold: true, decimals: 2, layer: "swing-m30" },
-  // --- تایم‌فریم‌های بالای طلا (درخواستِ User Note) — هر کارت منطقِ مستقلِ خودش را دارد ---
-  //   H1/H4/D1 فعلاً در «حالتِ تحقیقِ فعال» هستند (بدونِ سیگنالِ ورودِ خام تا کشفِ لایهٔ
-  //   اثبات‌شده) اما تحلیلِ روند/رژیمِ مخصوصِ همان تایم‌فریم را نمایش می‌دهند. منطق در
-  //   gold_htf_router.ts (decideGoldH1/H4/D1) — کاملاً مستقل و ماژولار.
-  { id: "XAUUSD-H1", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647 (H1)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
-  { id: "XAUUSD-H4", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647 (H4)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
-  { id: "XAUUSD-D1", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 \u0631\u0648\u0632\u0627\u0646\u0647 (D1)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
-  // ⛔ S81 (XAUUSD-M30 / Swing Trend-Pullback) در نشستِ S163 طبقِ تصمیمِ صریحِ کاربر
-  //    کاملاً حذف شد: WR=۲۸٪ داشت و رساندنِ آن به WR≥۴۰٪ سود را −۹٬۵۳۱$ نابود می‌کرد.
-  //    کاربر خواست هر لایه‌ای که برای WR≥۴۰ ضررده می‌شود حذف شود. (روتر decideGoldM30 باقی
-  //    مانده اما دیگر فراخوانی نمی‌شود.) رجوع: results/EnforceWR40_RemoveS81_NetProfit_218739.md
-  // EURUSD: در S187–S189 لایهٔ S73 به تایم‌فریمِ M5 ارتقا یافت (net +$8,911/WR ۵۹.۶٪ روی M5
-  //   در برابرِ +$4,224/۵۵.۳٪ روی M15؛ گیتِ سختِ کامل + قانونِ همپوشانی ⇒ ارتقا نه افزودن).
-  //   منبعِ کندل حالا 5m است؛ منطقِ decideEurusd (ساعتِ ۰ UTC + pullback ۴-کندلی) دست‌نخورده.
-  { id: "EURUSD", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 \u0627\u0633\u06A9\u0627\u0644\u067E (M5)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "scalp", tf: "5m" },
-  // --- تفکیکِ تایم‌فریمِ EURUSD (درخواستِ کاربر) — هم‌ساختار با طلا ---
-  //   این کارت‌ها فعلاً استراتژیِ اثبات‌شدهٔ اختصاصیِ خود را ندارند ⇒ قالبِ خام (placeholder).
-  //   داده/قیمتِ زنده را نشان می‌دهند و آماده‌ی افزودنِ منطق در تحقیقِ آینده‌اند (هر کارت مستقل).
-  { id: "EURUSD-M15", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 \u0646\u0648\u0633\u0627\u0646\u06CC (M15)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "scalp", tf: "15m" },
-  { id: "EURUSD-M30", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 \u0645\u06CC\u0627\u0646\u200C\u0645\u062F\u062A (M30)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "placeholder", tf: "30m" },
-  { id: "EURUSD-M1", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 \u0631\u06CC\u0632-\u0627\u0633\u06A9\u0627\u0644\u067E (M1)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "placeholder", tf: "1m" }
+  { id: "XAUUSD-M5", card: "XAUUSD-M5", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 M5 (\u067E\u0646\u062C\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "GC=F", isGold: true, decimals: 2, layer: "scalp" },
+  { id: "XAUUSD", card: "XAUUSD-M15", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 M15 (\u067E\u0627\u0646\u0632\u062F\u0647\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "GC=F", isGold: true, decimals: 2, layer: "swing" },
+  { id: "XAUUSD-M30", card: "XAUUSD-M30", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "GC=F", isGold: true, decimals: 2, layer: "swing-m30" },
+  { id: "XAUUSD-H1", card: "XAUUSD-H1", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H1 (\u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
+  { id: "XAUUSD-H4", card: "XAUUSD-H4", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
+  { id: "EURUSD-M15", card: "EURUSD-M15", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 M15 (\u067E\u0627\u0646\u0632\u062F\u0647\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "scalp", tf: "15m" },
+  { id: "EURUSD-M30", card: "EURUSD-M30", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "scalp", tf: "30m" }
 ];
-function attachSecondary(dec, ctx) {
-  try {
-    const others = probeSecondaryLayers(ctx);
-    if (others.length) dec.otherLayers = others;
-  } catch {
-  }
-  return dec;
-}
 async function decideAsset(a, capital = 1e4, riskPct = 1) {
   if (a.isGold) {
     const GOLD_TF = {
@@ -7951,14 +5500,13 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
       "XAUUSD-M5": { interval: "5m", range: "5d", gap: 300 },
       "XAUUSD-M30": { interval: "30m", range: "1mo", gap: 1800 },
       "XAUUSD-H1": { interval: "1h", range: "3mo", gap: 3600 },
-      "XAUUSD-H4": { interval: "1h", range: "1y", gap: 3600 },
+      "XAUUSD-H4": { interval: "1h", range: "1y", gap: 3600 }
       // H4 از تجمیعِ H1 ساخته می‌شود
-      "XAUUSD-D1": { interval: "1d", range: "2y", gap: 86400 }
     };
     const tfc = GOLD_TF[a.id] || GOLD_TF["XAUUSD"];
     const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range);
     const candles2 = a.id === "XAUUSD-H4" ? aggregateCandles(rawCandles, 4) : rawCandles;
-    const minBars2 = a.id === "XAUUSD-D1" ? 60 : a.id === "XAUUSD-H4" ? 60 : 220;
+    const minBars2 = a.id === "XAUUSD-H4" ? 60 : 220;
     if (candles2.length < minBars2) throw new Error("\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A");
     let spot = null;
     try {
@@ -7969,95 +5517,18 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     const useCandles2 = merged2.candles;
     const result2 = analyze(useCandles2);
     const sig2 = closedBars(useCandles2, tfc.gap);
-    const sigOpen = sig2.map((k) => k.open), sigHigh = sig2.map((k) => k.high);
-    const sigLow = sig2.map((k) => k.low), sigClose = sig2.map((k) => k.close);
-    const sigTimes = sig2.map((k) => k.time);
-    const goldUtcHour = new Date(sig2[sig2.length - 1].time * 1e3).getUTCHours();
-    const goldUtcDay = new Date(sig2[sig2.length - 1].time * 1e3).getUTCDay();
-    const goldTimes = sigTimes;
-    const closes = sigClose;
-    let dec2;
-    if (a.id === "XAUUSD-M5") dec2 = decideGoldM5(
-      result2,
-      closes,
-      capital,
-      riskPct,
-      sigOpen,
-      sigHigh,
-      sigLow,
-      goldTimes
-    );
-    else if (a.id === "XAUUSD-M30") dec2 = decideGoldM30TrendLine(
-      result2,
-      closes,
-      capital,
-      riskPct,
-      sigOpen,
-      sigHigh,
-      sigLow
-    );
-    else if (a.id === "XAUUSD-H1") dec2 = decideGoldH1(
-      result2,
-      closes,
-      capital,
-      riskPct,
-      sigOpen,
-      sigHigh,
-      sigLow
-    );
-    else if (a.id === "XAUUSD-H4") dec2 = decideGoldH4(
-      result2,
-      closes,
-      capital,
-      riskPct,
-      sigOpen,
-      sigHigh,
-      sigLow
-    );
-    else if (a.id === "XAUUSD-D1") dec2 = decideGoldD1(result2, closes, capital, riskPct);
-    else {
-      dec2 = decide(result2, closes, capital, riskPct, assetSpec("XAUUSD"), sigHigh, sigLow, goldUtcHour, goldUtcDay, goldTimes, sigOpen);
-      if (dec2.state === "NEUTRAL") {
-        const tl = trendLineDecision(
-          TREND_LINE_CFG["XAUUSD-M15"],
-          result2,
-          sigOpen,
-          sigHigh,
-          sigLow,
-          closes,
-          capital,
-          riskPct
-        );
-        if (tl.state === "ENTRY" || tl.state === "APPROACHING") dec2 = tl;
-      }
-      if (dec2.state === "NEUTRAL") {
-        const chn = channelDecision(
-          CHANNEL_CFG["XAUUSD-M15"],
-          result2,
-          sigOpen,
-          sigHigh,
-          sigLow,
-          closes,
-          capital,
-          riskPct
-        );
-        if (chn.state === "ENTRY" || chn.state === "APPROACHING") dec2 = chn;
-      }
-    }
-    dec2 = attachSecondary(dec2, {
-      assetId: a.id,
-      result: result2,
-      open: sigOpen,
-      high: sigHigh,
-      low: sigLow,
-      close: closes,
-      capital,
-      riskPct,
+    const lastClosed2 = sig2[sig2.length - 1];
+    const goldUtcHour = new Date(lastClosed2.time * 1e3).getUTCHours();
+    const ctx2 = {
+      cardId: a.card,
+      a: result2,
+      candles: sig2,
       utcHour: goldUtcHour,
-      utcDay: goldUtcDay,
-      times: goldTimes,
-      primaryCode: dec2.sourceLayer?.code
-    });
+      times: sig2.map((k) => k.time),
+      capital,
+      riskPct
+    };
+    const dec2 = runCard(ctx2);
     return {
       asset: a.id,
       name: a.name,
@@ -8071,10 +5542,9 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     };
   }
   const tf = a.tf || "15m";
-  const rangeFor = (t) => t === "1m" || t === "5m" ? "5d" : "1mo";
-  const gapForTf = (t) => t === "1m" ? 60 : t === "5m" ? 300 : t === "30m" ? 1800 : 900;
-  const { candles } = await yahooCandles(a.symbol, tf, rangeFor(tf));
-  const minBars = a.layer === "placeholder" ? 30 : 220;
+  const gapForTf = (t) => t === "5m" ? 300 : t === "30m" ? 1800 : 900;
+  const { candles } = await yahooCandles(a.symbol, tf, "1mo");
+  const minBars = 220;
   if (candles.length < minBars) throw new Error("\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A");
   let live = null, liveAge = 0, liveSrc = "";
   try {
@@ -8088,26 +5558,18 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
   const useCandles = merged.candles;
   const result = analyze(useCandles);
   const sig = closedBars(useCandles, gapForTf(tf));
-  let dec;
-  if (a.layer === "placeholder") {
-    dec = placeholderDecision(a, result, tf);
-  } else if (a.id === "EURUSD") {
-    const lastT = sig[sig.length - 1].time;
-    const nowUtcHour = new Date(lastT * 1e3).getUTCHours();
-    dec = decideEurusd(result, sig.map((k) => k.close), nowUtcHour, capital, riskPct, lastT);
-  } else if (a.id === "EURUSD-M15") {
-    dec = decideEurusdM15(
-      result,
-      sig.map((k) => k.open),
-      sig.map((k) => k.high),
-      sig.map((k) => k.low),
-      sig.map((k) => k.close),
-      capital,
-      riskPct
-    );
-  } else {
-    dec = decide(result, sig.map((k) => k.close), capital, riskPct, assetSpec(a.id));
-  }
+  const lastClosed = sig[sig.length - 1];
+  const eurUtcHour = new Date(lastClosed.time * 1e3).getUTCHours();
+  const ctx = {
+    cardId: a.card,
+    a: result,
+    candles: sig,
+    utcHour: eurUtcHour,
+    times: sig.map((k) => k.time),
+    capital,
+    riskPct
+  };
+  const dec = runCard(ctx);
   return {
     asset: a.id,
     name: a.name,
@@ -8118,23 +5580,6 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     lastCandleTime: useCandles[useCandles.length - 1].time,
     decision: dec,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null
-  };
-}
-var TF_FA = { "1m": "M1 (\u06CC\u06A9\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", "5m": "M5 (\u067E\u0646\u062C\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", "15m": "M15 (\u067E\u0627\u0646\u0632\u062F\u0647\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", "30m": "M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)" };
-function placeholderDecision(a, result, tf) {
-  const tfFa = TF_FA[tf] || tf;
-  return {
-    state: "NEUTRAL",
-    regime: { regime: "range", efficiencyRatio: 0, trendy: false, adx: result.adx ?? 0, activeStream: "none", bucket: "research" },
-    headline: `${a.name} \u2014 \u0642\u0627\u0644\u0628\u0650 \u062E\u0627\u0645 (\u062F\u0631 \u062F\u0633\u062A\u0650 \u062A\u062D\u0642\u06CC\u0642)`,
-    reason: `\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0628\u0631\u0627\u06CC \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645\u0650 ${tfFa} \u0633\u0627\u062E\u062A\u0647 \u0634\u062F\u0647 \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 \u0627\u0633\u062A\u0631\u0627\u062A\u0698\u06CC\u0650 \u0627\u062B\u0628\u0627\u062A\u200C\u0634\u062F\u0647 \u0648 \u0628\u06A9\u200C\u062A\u0633\u062A\u200C\u0634\u062F\u0647\u200C\u0627\u06CC \u0631\u0648\u06CC \u0627\u06CC\u0646 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645 \u0628\u0631\u0627\u06CC\u0634 \u062A\u0639\u0631\u06CC\u0641 \u0646\u0634\u062F\u0647 \u0627\u0633\u062A. \u0637\u0628\u0642\u0650 \u0642\u0627\u0646\u0648\u0646\u0650 \u0627\u0635\u0644\u06CC\u0650 \u067E\u0631\u0648\u0698\u0647 (\u0641\u0642\u0637 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u0627\u062B\u0628\u0627\u062A\u200C\u0634\u062F\u0647)\u060C \u062A\u0627 \u0648\u0642\u062A\u06CC \u0644\u0628\u0647\u200C\u0627\u06CC \u0628\u0627 WR\u2265\u06F4\u06F0\u066A \u0648 \u0633\u0648\u062F\u0650 \u062E\u0627\u0644\u0635\u0650 \u0645\u062B\u0628\u062A \u0631\u0648\u06CC \u0627\u06CC\u0646 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645 \u06A9\u0634\u0641 \u0646\u0634\u0648\u062F\u060C \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u062F\u0647\u062F \u0648 \u0635\u0631\u0641\u0627\u064B \xAB\u0642\u0627\u0644\u0628\u0650 \u062E\u0627\u0645\u0650 \u0622\u0645\u0627\u062F\u0647\u0654 \u06AF\u0633\u062A\u0631\u0634\xBB \u0627\u0633\u062A. \u062F\u0627\u062F\u0647 \u0648 \u0642\u06CC\u0645\u062A\u0650 \u0632\u0646\u062F\u0647 \u062F\u0631 \u062D\u0627\u0644\u0650 \u067E\u0627\u06CC\u0634 \u0627\u0633\u062A.`,
-    sourceLayer: { code: "\u2014", name: `EURUSD ${tfFa} \u2014 \u0628\u062F\u0648\u0646\u0650 \u0644\u0627\u06CC\u0647\u0654 \u0641\u0639\u0627\u0644`, kind: "time" },
-    indicators: [
-      { name: "\u0648\u0636\u0639\u06CC\u062A\u0650 \u062A\u062D\u0642\u06CC\u0642", value: "\u0642\u0627\u0644\u0628\u0650 \u062E\u0627\u0645 (placeholder)", status: "neutral" },
-      { name: "\u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645", value: tfFa, status: "neutral" },
-      { name: "RSI(14)", value: (result.rsi14 ?? 0).toFixed(1), status: "neutral" },
-      { name: "ATR", value: (result.atr ?? 0).toFixed(5), status: "neutral" }
-    ]
   };
 }
 function readCapitalParams(c) {
