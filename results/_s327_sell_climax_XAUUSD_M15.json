@@ -1,0 +1,48 @@
+{
+  "key": "XAUUSD_M15",
+  "cfg": {
+    "k_body": 2.5,
+    "br_min": 0.45,
+    "streak_n": 3,
+    "rsi_lo": 35,
+    "regime": "trend",
+    "sl_m": 2.8,
+    "tp_m": 1.0,
+    "hold": 16
+  },
+  "rqs": 87.8,
+  "passed": true,
+  "gates": {
+    "G0": true,
+    "G1": true,
+    "G2": true,
+    "G3": true,
+    "G4": true,
+    "G5": true
+  },
+  "metrics": {
+    "n_trades": 136,
+    "win_rate": 81.62,
+    "net_profit": 1293.4,
+    "profit_factor": 1.539,
+    "max_dd_pct": 2.7,
+    "max_consec_losses": 3,
+    "expectancy_pip": 7.7134,
+    "spread_cost_pip": 3.3,
+    "wr_breakeven": 50.0,
+    "wr_excess": 31.62,
+    "p_value": 0.0,
+    "sl_pip": 73.94215068237935,
+    "tp_pip": 73.94215068237935,
+    "wf_nets": [
+      634.0,
+      112.6,
+      13.4,
+      365.8
+    ],
+    "half_nets": [
+      768.2,
+      379.2
+    ]
+  }
+}
