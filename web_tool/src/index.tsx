@@ -16,6 +16,8 @@ import { channelDecision, CHANNEL_CFG } from './gold_channel'
 import { probeSecondaryLayers } from './secondary_layers'
 import { cachedFetch } from './cache'
 import { fetchWithTimeout } from './fast_fetch'
+// --- رجیستریِ ماژولارِ لایه‌های احیاشده (تنها مغزِ تصمیمِ سایت پس از حذفِ استراتژی‌های قدیمی) ---
+import { runCard, CARD_LAYERS, REGISTERED_CARDS, type LayerContext } from './strategy_registry'
 
 const app = new Hono()
 
