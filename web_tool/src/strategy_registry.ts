@@ -163,3 +163,125 @@ function s312Layer(slPip: number, tpPip: number, maxHold: number): LayerFn {
     }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct)
   }
 }
+
+// ---------------------------------------------------------------------------
+// آداپترهای نازک برای ماژول‌های دارای decide* (فقط cfg را می‌بندند)
+// ---------------------------------------------------------------------------
+const s313Layer = (cfg: typeof S313_M30): LayerFn => (ctx) => {
+  const o = ctx.candles.map(c => c.open), h = ctx.candles.map(c => c.high)
+  const l = ctx.candles.map(c => c.low), c2 = ctx.candles.map(c => c.close)
+  return decideS313(cfg, ctx.a, o, h, l, c2, ctx.capital, ctx.riskPct)
+}
+const s321Layer = (cfg: typeof S321_CFG[string]): LayerFn => (ctx) => decideS321(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+const s322Layer = (cfg: typeof S322_CFG[string]): LayerFn => (ctx) => decideS322(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+const s323Layer = (cfg: typeof S323_CFG[string]): LayerFn => (ctx) => decideS323(cfg, ctx.a, ctx.candles, ctx.utcHour, ctx.capital, ctx.riskPct)
+const s324Layer = (cfg: typeof S324_CFG[string]): LayerFn => (ctx) => decideS324(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+const s328Layer = (cfg: typeof S328_CFG[string]): LayerFn => (ctx) => decideS328(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+const s330Layer = (cfg: typeof S330_CFG[string]): LayerFn => (ctx) => decideS330(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+
+// ---------------------------------------------------------------------------
+// نگاشتِ کارت → لایه‌های فعال (به‌ترتیبِ اولویت). فقط لایه‌هایی که روی همان
+// (جفت‌ارز × TF) با RQS+ ≥ 80 ACCEPTED شده‌اند. منبع: نامِ فایل‌های results/.
+// افزودنِ کارت/لایهٔ جدید فقط این جدول را تغییر می‌دهد (ماژولار/توسعه‌پذیر).
+//
+//   کارت         لایه‌های ACCEPTED (منبعِ نامِ فایل results/)
+//   XAUUSD-M5    S330(FADE) · S328(SHORT) · S327(LONG) · S326(LONG)
+//   XAUUSD-M15   S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
+//   XAUUSD-M30   S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
+//   XAUUSD-H1    S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
+//   XAUUSD-H4    S327(LONG)
+//   EURUSD-M15   S326(LONG)
+//   EURUSD-M30   S327(LONG)
+// ---------------------------------------------------------------------------
+export const CARD_LAYERS: Record<string, LayerFn[]> = {
+  'XAUUSD-M5': [
+    s330Layer(S330_CFG['XAUUSD-M5']),
+    s328Layer(S328_CFG['XAUUSD-M5']),
+    s327Layer(SELL_CLIMAX_CFG['XAUUSD-M5']),
+    s326Layer(STREAK_REV_CFG['XAUUSD-M5']),
+  ],
+  'XAUUSD-M15': [
+    s324Layer(S324_CFG['XAUUSD-M15']),
+    s322Layer(S322_CFG['XAUUSD-M15']),
+    s323Layer(S323_CFG['XAUUSD-M15']),
+    s310Layer,
+    s312Layer(295, 295, 48),
+  ],
+  'XAUUSD-M30': [
+    s313Layer(S313_M30),
+    s324Layer(S324_CFG['XAUUSD-M30']),
+    s321Layer(S321_CFG['XAUUSD-M30']),
+    s327Layer(SELL_CLIMAX_CFG['XAUUSD-M30']),
+    s326Layer(STREAK_REV_CFG['XAUUSD-M30']),
+    s323Layer(S323_CFG['XAUUSD-M30']),
+    s312Layer(295, 295, 36),
+  ],
+  'XAUUSD-H1': [
+    s313Layer(S313_H1),
+    s328Layer(S328_CFG['XAUUSD-H1']),
+    s327Layer(SELL_CLIMAX_CFG['XAUUSD-H1']),
+    s323Layer(S323_CFG['XAUUSD-H1']),
+    s312Layer(395, 395, 24),
+  ],
+  'XAUUSD-H4': [
+    s327Layer(SELL_CLIMAX_CFG['XAUUSD-H4']),
+  ],
+  'EURUSD-M15': [
+    s326Layer(STREAK_REV_CFG['EURUSD-M15']),
+  ],
+  'EURUSD-M30': [
+    s327Layer(SELL_CLIMAX_CFG['EURUSD-M30']),
+  ],
+}
+
+export const REGISTERED_CARDS = Object.keys(CARD_LAYERS)
+
+// ---------------------------------------------------------------------------
+// اجرای یک کارت: همهٔ لایه‌های فعالِ آن را صدا می‌زند و طبقِ اولویتِ حالت
+// (ENTRY > APPROACHING > NEUTRAL) تصمیمِ اصلی را انتخاب می‌کند. سایرِ لایه‌های
+// فعال در otherLayers جمع می‌شوند (نمایشِ collapsed زیرِ سیگنالِ اصلی).
+// ---------------------------------------------------------------------------
+const STATE_RANK: Record<string, number> = { ENTRY: 3, APPROACHING: 2, NEUTRAL: 1 }
+
+export function runCard(ctx: LayerContext): RouterDecision {
+  const layers = CARD_LAYERS[ctx.cardId] || []
+  const decisions: RouterDecision[] = []
+  for (const fn of layers) {
+    try {
+      const d = fn(ctx)
+      if (d) decisions.push(d)
+    } catch (e) {
+      // لایهٔ مشکل‌دار نباید کلِ کارت را بشکند (پایداری)
+      console.error(`[registry] layer error on ${ctx.cardId}:`, (e as Error)?.message)
+    }
+  }
+  if (decisions.length === 0) {
+    return {
+      state: 'NEUTRAL',
+      regime: lightRegime(0, false, 'no_layer'),
+      headline: 'خنثی — لایهٔ فعالی برای این کارت نیست',
+      reason: 'برای این ترکیبِ جفت‌ارز/تایم‌فریم لایهٔ احیاشده‌ای ثبت نشده است.',
+      indicators: [],
+    }
+  }
+  // مرتب‌سازی: بالاترین رتبهٔ حالت، سپس بالاترین probability (اگر بود)
+  decisions.sort((x, y) => {
+    const r = (STATE_RANK[y.state] || 0) - (STATE_RANK[x.state] || 0)
+    if (r !== 0) return r
+    return (y.probability || 0) - (x.probability || 0)
+  })
+  const primary = decisions[0]
+  const others = decisions.slice(1).filter(d => d.state === 'ENTRY' || d.state === 'APPROACHING')
+  if (others.length > 0) {
+    primary.otherLayers = others.map(d => ({
+      code: d.sourceLayer?.code || '—',
+      name: d.sourceLayer?.name || d.headline,
+      kind: (d.sourceLayer?.kind as string) || 'unknown',
+      state: d.state as 'ENTRY' | 'APPROACHING',
+      direction: d.direction,
+      reason: d.reason,
+      confirmations: d.confirmations,
+    }))
+  }
+  return primary
+}
