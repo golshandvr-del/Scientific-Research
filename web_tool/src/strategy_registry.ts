@@ -162,6 +162,14 @@ function s312Layer(slPip: number, tpPip: number, maxHold: number): LayerFn {
         { name: 'روزِ میانِ‌ماه (dom ∈ {۱۰,۱۳,۲۰})', value: sig.isMidWindow ? 'بله ✔' : 'خیر', status: sig.isMidWindow ? 'ok' : 'neutral' },
         { name: 'ساعتِ UTC', value: `${sig.utcHour}:00`, status: MID_ENTRY_HOURS.includes(sig.utcHour) ? 'ok' : 'neutral' },
       ],
+      // 🕒 باگِ User Note #۳: دروازهٔ زمانی برای نوارِ شمارشِ معکوس زیرِ کارت.
+      timeGate: {
+        layerCode: 'S312', label: 'درایوِ میانهٔ ماه',
+        entryHoursUtc: MID_ENTRY_HOURS,
+        dayOfMonthNote: 'روزهای ۱۰، ۱۳ و ۲۰ هر ماه',
+        windowOpen: sig.isMidWindow && MID_ENTRY_HOURS.includes(sig.utcHour),
+        endHourUtc: Math.max(...MID_ENTRY_HOURS) + 1,
+      },
     }
     const reg = lightRegime(0, true, 's312_mid')
     return rawToDecision(raw, {
