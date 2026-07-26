@@ -686,3 +686,104 @@ export function decideS321(cfg: S321Config, a: AnalysisResult, candles: Candle[]
     filters: [`ترتیبِ ribbon≥${cfg.ordThr}`, `عرض z≥${cfg.wzGate}`, `شیب≥${cfg.slopeMin}`, `pullback [${cfg.pullMin},${cfg.pullMax}]`],
   }, cfg.id, a.price, reg, capital, riskPct)
 }
+
+// ===========================================================================
+// S323 — S/R Pullback + پنجرهٔ طلایی (LONG)   XAUUSD M15/M30/H1
+// ---------------------------------------------------------------------------
+// در روندِ صعودیِ تأییدشده (close>EMA200 و ADX≥adx_min)، قیمت به یک pivotِ حمایت
+//   pullback می‌کند (فاصله تا حمایت ≤ near_max×ATR) با فضای کافی تا مقاومتِ بعدی
+//   (room ≥ room_min×ATR)، RSI ≤ rsi_max (نه اشباعِ خرید)، و در پنجرهٔ زمانیِ
+//   «طلایی» (ساعتِ h_lo..h_hi به UTC — سشنِ فعالِ نیویورک/لندن). SL/TP per-TF.
+// ===========================================================================
+export interface S323Config {
+  id: string
+  nearMax: number; roomMin: number; rsiMax: number
+  slopeMin: number; adxMin: number
+  golden: boolean; hLo: number; hHi: number
+  slMult: number; tpMult: number; maxHold: number
+  pivotLen: number
+}
+
+export const S323_CFG: Record<string, S323Config> = {
+  'XAUUSD-M15': { id: 'XAUUSD-M15', nearMax: 0.85, roomMin: 1.3, rsiMax: 55, slopeMin: 0.0, adxMin: 22, golden: true, hLo: 19, hHi: 23, slMult: 1.8, tpMult: 1.5, maxHold: 96, pivotLen: 20 },
+  'XAUUSD-M30': { id: 'XAUUSD-M30', nearMax: 0.85, roomMin: 1.3, rsiMax: 55, slopeMin: 0.0, adxMin: 22, golden: true, hLo: 19, hHi: 23, slMult: 2.1, tpMult: 1.3, maxHold: 48, pivotLen: 20 },
+  'XAUUSD-H1':  { id: 'XAUUSD-H1',  nearMax: 0.55, roomMin: 1.3, rsiMax: 55, slopeMin: 0.0, adxMin: 30, golden: true, hLo: 19, hHi: 23, slMult: 1.8, tpMult: 1.7, maxHold: 36, pivotLen: 20 },
+}
+
+export function computeS323(candles: Candle[], cfg: S323Config, utcHour: number): RawSignal {
+  const high = candles.map(c => c.high), low = candles.map(c => c.low), close = candles.map(c => c.close)
+  const atr14 = atr(candles, 14)
+  const e200 = ema(close, 200)
+  const { adx: adxArr } = adx(candles, 14)
+  const r = rsi(close, 14)
+  const i = close.length - 1
+  const atrVal = atr14[i]
+
+  const empty = (reason: string, ind: RouterDecision['indicators']): RawSignal => ({
+    active: false, approaching: false, direction: 'LONG', slDist: 0, tpDist: 0,
+    maxHoldBars: cfg.maxHold, reason, indicators: ind,
+  })
+  if (!(atrVal > 0) || i < 200 || !Number.isFinite(r[i])) return empty('دادهٔ کافی برای S323 نیست.', [])
+
+  const price = close[i]
+  const trendUp = price > e200[i]
+  const adxVal = adxArr[i]
+  const adxOk = Number.isFinite(adxVal) && adxVal >= cfg.adxMin
+
+  // نزدیک‌ترین pivotِ حمایت (پایین‌ترینِ محلی) زیرِ قیمت، و مقاومت (بالاترینِ محلی) بالای قیمت
+  let support = -Infinity, resistance = Infinity
+  const L = cfg.pivotLen
+  for (let k = i - 1; k >= Math.max(0, i - 120); k--) {
+    if (k - L < 0 || k + L > i) continue
+    const isLow = low.slice(k - L, k + L + 1).every(v => v >= low[k])
+    const isHigh = high.slice(k - L, k + L + 1).every(v => v <= high[k])
+    if (isLow && low[k] < price && low[k] > support) support = low[k]
+    if (isHigh && high[k] > price && high[k] < resistance) resistance = high[k]
+  }
+
+  const goldenOk = !cfg.golden || (utcHour >= cfg.hLo && utcHour <= cfg.hHi)
+  const rsiNow = r[i]
+  const rsiOk = rsiNow <= cfg.rsiMax
+
+  const nearSupport = isFinite(support) ? (price - support) / atrVal : Infinity
+  const room = isFinite(resistance) ? (resistance - price) / atrVal : Infinity
+  const nearOk = nearSupport <= cfg.nearMax
+  const roomOk = room >= cfg.roomMin
+
+  const ind: RouterDecision['indicators'] = [
+    { name: `روندِ صعودی (close>EMA200، ADX≥${cfg.adxMin})`, value: (trendUp ? 'صعودی' : 'نزولی') + ` / ADX ${Number.isFinite(adxVal) ? adxVal.toFixed(0) : '—'}`, status: (trendUp && adxOk) ? 'ok' : 'bad' },
+    { name: `pullback به حمایت (≤${cfg.nearMax}×ATR)`, value: isFinite(nearSupport) ? nearSupport.toFixed(2) + (nearOk ? ' ✔' : ' ✘') : '—', status: nearOk ? 'ok' : 'neutral' },
+    { name: `فضا تا مقاومت (≥${cfg.roomMin}×ATR)`, value: isFinite(room) ? room.toFixed(2) + (roomOk ? ' ✔' : ' ✘') : '—', status: roomOk ? 'ok' : 'warn' },
+    { name: `RSI-14 ≤ ${cfg.rsiMax}`, value: rsiNow.toFixed(0) + (rsiOk ? ' ✔' : ' ✘'), status: rsiOk ? 'ok' : 'warn' },
+    ...(cfg.golden ? [{ name: `پنجرهٔ طلایی (${cfg.hLo}:00–${cfg.hHi}:00 UTC)`, value: `${utcHour}:00 UTC` + (goldenOk ? ' ✔' : ' ✘ خارج'), status: (goldenOk ? 'ok' : 'neutral') as 'ok' | 'neutral' }] : []),
+  ]
+
+  const slDist = cfg.slMult * atrVal
+  const tpDist = cfg.tpMult * atrVal
+  const trendCtx = trendUp && adxOk
+  const active = trendCtx && nearOk && roomOk && rsiOk && goldenOk
+  const approaching = !active && trendCtx && roomOk && rsiOk && (goldenOk || nearOk)
+
+  return {
+    active, approaching, direction: 'LONG', slDist, tpDist, maxHoldBars: cfg.maxHold,
+    reason: active
+      ? 'روندِ صعودیِ تأییدشده + pullback به حمایت با فضای کافی تا مقاومت + RSI غیرِ اشباع در پنجرهٔ طلایی ⇒ خرید.'
+      : approaching
+        ? 'روندِ صعودی برقرار است؛ منتظرِ pullback کاملِ قیمت به حمایت (یا ورود به پنجرهٔ طلایی) برای ماشهٔ خرید.'
+        : (trendCtx ? 'روند صعودی است اما ستاپِ pullback/طلایی کامل نیست.' : 'روندِ صعودیِ لازم (EMA200/ADX) برقرار نیست؛ سیگنالِ S323 نداریم.'),
+    approachReason: approaching ? 'کامل‌شدنِ pullback به حمایت در پنجرهٔ طلایی' : undefined,
+    indicators: ind,
+  }
+}
+
+export function decideS323(cfg: S323Config, a: AnalysisResult, candles: Candle[], utcHour: number, capital = 10000, riskPct = 1.0): RouterDecision {
+  const raw = computeS323(candles, cfg, utcHour)
+  const { adx: adxArr } = adx(candles, 14)
+  const reg = lightRegime(candles.map(c => c.close), nz(last(adxArr)), raw.active || raw.approaching, 's323_sr_pullback')
+  return rawToDecision(raw, {
+    code: 'S323', name: 'S/R Pullback طلایی', kind: 'price-action' as any,
+    manageStyle: 'structural-trail', beTriggerR: 1.0,
+    manageNote: 'پس از ۱R، SL به بریک‌ایون؛ سپس زیرِ آخرین swing-low تریل کن. با نزدیک‌شدن به مقاومت، TP را پیش‌دستانه بگیر.',
+    filters: [`روند EMA200 + ADX≥${cfg.adxMin}`, `pullback حمایت ≤${cfg.nearMax}×ATR`, `فضا ≥${cfg.roomMin}×ATR`, `RSI≤${cfg.rsiMax}`, cfg.golden ? `پنجرهٔ طلایی ${cfg.hLo}-${cfg.hHi} UTC` : 'بدونِ فیلترِ زمان'],
+  }, cfg.id, a.price, reg, capital, riskPct)
+}
