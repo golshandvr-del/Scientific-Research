@@ -794,6 +794,15 @@ export function computeS323(candles: Candle[], cfg: S323Config, utcHour: number)
         : (trendCtx ? 'روند صعودی است اما ستاپِ pullback/طلایی کامل نیست.' : 'روندِ صعودیِ لازم (EMA200/ADX) برقرار نیست؛ سیگنالِ S323 نداریم.'),
     approachReason: approaching ? 'کامل‌شدنِ pullback به حمایت در پنجرهٔ طلایی' : undefined,
     indicators: ind,
+    // 🕒 باگِ User Note #۳: اگر پنجرهٔ طلایی فعال است، دروازهٔ زمانی برای countdown.
+    ...(cfg.golden ? {
+      timeGate: {
+        layerCode: 'S323', label: 'پنجرهٔ طلایی (S/R Pullback)',
+        entryHoursUtc: Array.from({ length: cfg.hHi - cfg.hLo + 1 }, (_, k) => cfg.hLo + k),
+        windowOpen: goldenOk,
+        endHourUtc: cfg.hHi + 1,
+      },
+    } : {}),
   }
 }
 
