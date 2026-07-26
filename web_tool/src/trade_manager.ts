@@ -34,6 +34,8 @@ export interface OpenTrade {
   openedAt?: number      // زمان باز کردن (ثانیه) — اختیاری
   barsHeld?: number      // تعداد کندلِ M15 که معامله باز بوده (برای سقفِ نگه‌داریِ SHORT s118)
   managePlan?: ManagePlan // پلنِ مدیریتِ لایه‌محور (اگر معامله از یک سیگنالِ سایت باز شده باشد)
+  valuePerPrice?: number // BUG-003: ارزشِ دلاریِ هر ۱ واحدِ حرکتِ قیمت به‌ازای ۱ لات
+                         //   (طلا=۱۰۰ ⇒ CONTRACT_SIZE؛ فارکس=۱۰۰٬۰۰۰). پیش‌فرض ۱۰۰ (طلا).
 }
 
 export interface Advice {
