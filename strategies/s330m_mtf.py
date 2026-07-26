@@ -33,8 +33,17 @@ TF_PLANS = {
 REGIMES = (1.0, 1.1, 1.2)
 
 
+_CACHE = {}
+
+
+def get_df(tf):
+    if tf not in _CACHE:
+        _CACHE[tf] = TS.load_data(tf)
+    return _CACHE[tf]
+
+
 def run(tf, ob, plan, thr):
-    df = TS.load_data(tf)
+    df = get_df(tf)
     strat = SessionORB(session_start_hour=0, or_bars=ob, trade_window_bars=plan['window'],
                        side='FADE', atr_max=99, trend_ema=0,
                        k_sl=plan['k_sl'], k_tp=plan['k_tp'], max_hold=plan['hold'],
