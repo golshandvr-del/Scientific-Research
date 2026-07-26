@@ -5,19 +5,13 @@ import type { Candle } from './indicators'
 import { analyze } from './signal'
 import { evaluateTrade, type OpenTrade, type Side } from './trade_manager'
 import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuote, type SpotPrice } from './external'
-import { decide, assetSpec } from './router'
-import type { RouterDecision } from './router'
-import { decideEurusd, decideEurusdM15 } from './eurusd_router'
-import { decideGoldM5, manageGoldM5Scalp } from './gold_m5_router'
-import { decideGoldM30, decideGoldM30TrendLine } from './gold_m30_router'
-import { decideGoldH1, decideGoldH4, decideGoldD1 } from './gold_htf_router'
-import { trendLineDecision, TREND_LINE_CFG } from './gold_trend_line'
-import { channelDecision, CHANNEL_CFG } from './gold_channel'
-import { probeSecondaryLayers } from './secondary_layers'
+// مدیریتِ معاملهٔ اسکالپِ M5 طلا (تنها بازماندهٔ روترهای قدیمی که هنوز فعال است —
+//   endpointِ /api/manage-scalp از آن استفاده می‌کند؛ بقیهٔ decide*های قدیمی حذف شدند).
+import { manageGoldM5Scalp } from './gold_m5_router'
 import { cachedFetch } from './cache'
 import { fetchWithTimeout } from './fast_fetch'
 // --- رجیستریِ ماژولارِ لایه‌های احیاشده (تنها مغزِ تصمیمِ سایت پس از حذفِ استراتژی‌های قدیمی) ---
-import { runCard, CARD_LAYERS, REGISTERED_CARDS, type LayerContext } from './strategy_registry'
+import { runCard, type LayerContext } from './strategy_registry'
 
 const app = new Hono()
 
