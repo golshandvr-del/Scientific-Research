@@ -129,6 +129,14 @@ const s310Layer: LayerFn = (ctx) => {
       { name: 'پنجرهٔ پایانِ ماه (۷ روزِ مانده)', value: sig.isEomWindow ? 'باز ✔' : 'بسته', status: sig.isEomWindow ? 'ok' : 'neutral' },
       { name: 'ساعتِ UTC', value: `${sig.utcHour}:00` + (EOM_ENTRY_HOURS.includes(sig.utcHour) ? ' (ورود)' : ''), status: EOM_ENTRY_HOURS.includes(sig.utcHour) ? 'ok' : 'neutral' },
     ],
+    // 🕒 باگِ User Note #۳: دروازهٔ زمانی برای نوارِ شمارشِ معکوس زیرِ کارت.
+    timeGate: {
+      layerCode: 'S310', label: 'درایوِ پایانِ ماه',
+      entryHoursUtc: EOM_ENTRY_HOURS,
+      dayOfMonthNote: '۷ روزِ پایانیِ هر ماه',
+      windowOpen: sig.isEomWindow && EOM_ENTRY_HOURS.includes(sig.utcHour),
+      endHourUtc: Math.max(...EOM_ENTRY_HOURS) + 1,
+    },
   }
   const reg = lightRegime(0, true, 's310_eom')
   return rawToDecision(raw, {
