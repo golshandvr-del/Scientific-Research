@@ -614,11 +614,11 @@ var HonoRequest = class {
     }
     const anyCachedKey = Object.keys(bodyCache)[0];
     if (anyCachedKey) {
-      return bodyCache[anyCachedKey].then((body) => {
+      return bodyCache[anyCachedKey].then((body2) => {
         if (anyCachedKey === "json") {
-          body = JSON.stringify(body);
+          body2 = JSON.stringify(body2);
         }
-        return new Response(body)[key]();
+        return new Response(body2)[key]();
       });
     }
     return bodyCache[key] = raw2[key]();
@@ -856,7 +856,7 @@ var setDefaultContentType = (contentType, headers) => {
     ...headers
   };
 };
-var createResponseInstance = (body, init) => new Response(body, init);
+var createResponseInstance = (body2, init) => new Response(body2, init);
 var Context = class {
   #rawRequest;
   #req;
@@ -3623,8 +3623,8 @@ async function getSpotGold() {
   }
   throw new Error("Spot gold unavailable from all sources");
 }
-async function _yahooCandlesRaw(symbol, interval, range) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range}`;
+async function _yahooCandlesRaw(symbol, interval, range2) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=${interval}&range=${range2}`;
   const res = await fetchWithTimeout(url, {
     headers: { "User-Agent": UA, "Accept": "application/json" },
     cf: { cacheTtl: 30, cacheEverything: true }
@@ -3654,19 +3654,19 @@ async function _yahooCandlesRaw(symbol, interval, range) {
     }
   };
 }
-async function yahooCandles(symbol, interval, range) {
-  const key = `candles:${symbol}:${interval}:${range}`;
+async function yahooCandles(symbol, interval, range2) {
+  const key = `candles:${symbol}:${interval}:${range2}`;
   return cachedFetch(key, async () => {
     if (stooqSupports(symbol, interval)) {
       return fallbackChain([
-        () => _yahooCandlesRaw(symbol, interval, range),
+        () => _yahooCandlesRaw(symbol, interval, range2),
         async () => {
           const rows = await stooqDaily(symbol);
           return { candles: rows, meta: { symbol, name: symbol, price: rows[rows.length - 1]?.close, previousClose: rows[rows.length - 2]?.close } };
         }
       ]);
     }
-    return _yahooCandlesRaw(symbol, interval, range);
+    return _yahooCandlesRaw(symbol, interval, range2);
   }, { freshMs: 3e4, staleMs: 6e5 });
 }
 var _quoteMem = {};
@@ -4109,13 +4109,13 @@ function computeStreakReversal(candles, cfg) {
   const open = candles.map((c) => c.open);
   const close = candles.map((c) => c.close);
   const rsiArr = rsi(close, 14);
-  const emaArr = ema(close, cfg.emaTrend);
+  const emaArr2 = ema(close, cfg.emaTrend);
   const atrArr = atr(candles, cfg.atrP);
   const i = n - 1;
-  if ([rsiArr[i], emaArr[i], atrArr[i]].some((v) => Number.isNaN(v)) || !(atrArr[i] > 0)) return empty;
+  if ([rsiArr[i], emaArr2[i], atrArr[i]].some((v) => Number.isNaN(v)) || !(atrArr[i] > 0)) return empty;
   const pNow = close[i];
   const streak = downStreak(open, close);
-  const aboveTrend = pNow > emaArr[i];
+  const aboveTrend = pNow > emaArr2[i];
   const rsiVal = rsiArr[i];
   const atrVal = atrArr[i];
   let runAmpAtr = 0;
@@ -4149,7 +4149,7 @@ function computeStreakReversal(candles, cfg) {
     approaching,
     streak,
     rsiVal,
-    emaVal: emaArr[i],
+    emaVal: emaArr2[i],
     atrVal,
     aboveTrend,
     runAmpAtr,
@@ -4189,8 +4189,8 @@ function manageGoldM5Scalp(inp) {
 }
 
 // ../web_tool/src/price/gold_source.ts
-async function _fetchGoldRaw(interval, range) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=${interval}&range=${range}`;
+async function _fetchGoldRaw(interval, range2) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=${interval}&range=${range2}`;
   const res = await fetchWithTimeout(url, {
     headers: {
       "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -4231,10 +4231,10 @@ async function _fetchGoldRaw(interval, range) {
     }
   };
 }
-async function fetchGold(interval, range) {
+async function fetchGold(interval, range2) {
   return cachedFetch(
-    `gold:${interval}:${range}`,
-    () => _fetchGoldRaw(interval, range),
+    `gold:${interval}:${range2}`,
+    () => _fetchGoldRaw(interval, range2),
     { freshMs: 3e4, staleMs: 6e5 }
   );
 }
@@ -4605,15 +4605,15 @@ function computeSellClimax(candles, cfg) {
   const high = candles.map((c) => c.high);
   const low = candles.map((c) => c.low);
   const rsiArr = rsi(close, 14);
-  const emaArr = ema(close, cfg.emaTrend);
+  const emaArr2 = ema(close, cfg.emaTrend);
   const atrArr = atr(candles, cfg.atrP);
   const i = n - 1;
-  if ([rsiArr[i], emaArr[i], atrArr[i]].some((v) => Number.isNaN(v)) || !(atrArr[i] > 0)) return empty;
+  if ([rsiArr[i], emaArr2[i], atrArr[i]].some((v) => Number.isNaN(v)) || !(atrArr[i] > 0)) return empty;
   const pNow = close[i];
   const bodyVal = Math.abs(close[i] - open[i]);
   const rng = Math.max(high[i] - low[i], 1e-12);
   const bodyRatio = bodyVal / rng;
-  const isBear = close[i] < open[i];
+  const isBear2 = close[i] < open[i];
   let bodyMa = NaN;
   if (i - 1 >= cfg.bodyMaLen) {
     let s = 0;
@@ -4621,13 +4621,13 @@ function computeSellClimax(candles, cfg) {
     bodyMa = s / cfg.bodyMaLen;
   }
   const streak = downStreak2(open, close);
-  const aboveTrend = pNow > emaArr[i];
+  const aboveTrend = pNow > emaArr2[i];
   const rsiVal = rsiArr[i];
   const atrVal = atrArr[i];
   const bodyOk = Number.isFinite(bodyMa) && bodyMa > 0 && bodyVal >= cfg.kBody * bodyMa;
   const brOk = cfg.brMin <= 0 || bodyRatio >= cfg.brMin;
   const streakOk = cfg.streakN <= 0 || streak >= cfg.streakN;
-  const isClimax = isBear && bodyOk && brOk && streakOk;
+  const isClimax = isBear2 && bodyOk && brOk && streakOk;
   const oversold = rsiVal <= cfg.rsiMax;
   const active = isClimax && oversold && aboveTrend;
   const approaching = !active && isClimax && aboveTrend && (rsiVal > cfg.rsiMax && rsiVal <= cfg.rsiMax + 8);
@@ -4645,7 +4645,7 @@ function computeSellClimax(candles, cfg) {
   } else if (!aboveTrend) {
     reason = `${trendTxt} \u21D2 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0644\u0627\u0646 \xAB\u0686\u0627\u0642\u0648\u06CC \u062F\u0631 \u062D\u0627\u0644\u0650 \u0633\u0642\u0648\u0637\xBB \u0646\u0645\u06CC\u200C\u06AF\u06CC\u0631\u06CC\u0645\u061B \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u067E\u0633 \u0627\u0632 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0631\u0627 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646 \u0634\u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`;
   } else if (!isClimax) {
-    if (!isBear) {
+    if (!isBear2) {
       reason = `\u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A\u061B \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633\u0650 \u0641\u0631\u0648\u0634 \u0646\u06CC\u0627\u0632 \u0628\u0647 \u06CC\u06A9 \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0627\u0633\u062A\u062B\u0646\u0627\u06CC\u06CC-\u0628\u0632\u0631\u06AF \u062F\u0627\u0631\u062F. \u0645\u0646\u062A\u0638\u0631\u0650 \u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
     } else if (!bodyOk) {
       reason = `\u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC \u0647\u0633\u062A \u0627\u0645\u0627 \u0628\u062F\u0646\u0647\u200C\u0627\u0634 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0632\u0631\u06AF \u0646\u06CC\u0633\u062A (${bodyTimes}\xD7 \u0627\u0632 ${cfg.kBody}\xD7 \u0644\u0627\u0632\u0645). \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0646\u06CC\u0627\u0632 \u0628\u0647 \u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC\u0650 \u0627\u0633\u062A\u062B\u0646\u0627\u06CC\u06CC \u062F\u0627\u0631\u062F\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
@@ -5126,19 +5126,19 @@ function computeS324(candles, cfg) {
     priorHi = Math.max(priorHi, high[k]);
     priorLo = Math.min(priorLo, low[k]);
   }
-  const body = Math.abs(close[i] - open[i]) / atrVal;
+  const body2 = Math.abs(close[i] - open[i]) / atrVal;
   const rsiNow = r[i];
   const ind = [];
   if (cfg.side === "LONG") {
     const sweptDepth = (priorLo - low[i]) / atrVal;
     const reclaimed = close[i] > priorLo;
-    const dispOk = body >= cfg.dispMin;
+    const dispOk = body2 >= cfg.dispMin;
     const depthOk = sweptDepth >= cfg.depthMin;
     const rsiOk = !cfg.rsiOn || rsiNow <= (cfg.rsiLo ?? 100);
     const regimeOk = !cfg.regimeOn || close[i] > e200[i];
     ind.push(
       { name: `\u062C\u0627\u0631\u0648\u0628\u0650 \u06A9\u0641\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC (\u0639\u0645\u0642 \u2265${cfg.depthMin}\xD7ATR)`, value: sweptDepth > 0 ? sweptDepth.toFixed(2) + (depthOk ? " \u2714" : " \u2718") : "\u0628\u062F\u0648\u0646\u0650 \u062C\u0627\u0631\u0648", status: depthOk ? "ok" : "neutral" },
-      { name: `\u0628\u0627\u0632\u06AF\u0634\u062A/reclaim (\u0628\u062F\u0646\u0647 \u2265${cfg.dispMin}\xD7ATR)`, value: body.toFixed(2) + (reclaimed && dispOk ? " \u2714" : " \u2718"), status: reclaimed && dispOk ? "ok" : "warn" },
+      { name: `\u0628\u0627\u0632\u06AF\u0634\u062A/reclaim (\u0628\u062F\u0646\u0647 \u2265${cfg.dispMin}\xD7ATR)`, value: body2.toFixed(2) + (reclaimed && dispOk ? " \u2714" : " \u2718"), status: reclaimed && dispOk ? "ok" : "warn" },
       { name: `RSI-14 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 (\u2264${cfg.rsiLo})`, value: rsiNow.toFixed(0) + (rsiOk ? " \u2714" : " \u2718"), status: rsiOk ? "ok" : "warn" }
     );
     const active = depthOk && reclaimed && dispOk && rsiOk && regimeOk;
@@ -5157,13 +5157,13 @@ function computeS324(candles, cfg) {
   } else {
     const sweptDepth = (high[i] - priorHi) / atrVal;
     const reclaimed = close[i] < priorHi;
-    const dispOk = body >= cfg.dispMin;
+    const dispOk = body2 >= cfg.dispMin;
     const depthOk = sweptDepth >= cfg.depthMin;
     const rsiOk = !cfg.rsiOn || rsiNow >= (cfg.rsiHi ?? 0);
     const regimeOk = !cfg.regimeOn || close[i] < e200[i];
     ind.push(
       { name: `\u062C\u0627\u0631\u0648\u0628\u0650 \u0633\u0642\u0641\u0650 \u0646\u0642\u062F\u06CC\u0646\u06AF\u06CC (\u0639\u0645\u0642 \u2265${cfg.depthMin}\xD7ATR)`, value: sweptDepth > 0 ? sweptDepth.toFixed(2) + (depthOk ? " \u2714" : " \u2718") : "\u0628\u062F\u0648\u0646\u0650 \u062C\u0627\u0631\u0648", status: depthOk ? "ok" : "neutral" },
-      { name: `\u0628\u0627\u0632\u06AF\u0634\u062A/reclaim (\u0628\u062F\u0646\u0647 \u2265${cfg.dispMin}\xD7ATR)`, value: body.toFixed(2) + (reclaimed && dispOk ? " \u2714" : " \u2718"), status: reclaimed && dispOk ? "ok" : "warn" },
+      { name: `\u0628\u0627\u0632\u06AF\u0634\u062A/reclaim (\u0628\u062F\u0646\u0647 \u2265${cfg.dispMin}\xD7ATR)`, value: body2.toFixed(2) + (reclaimed && dispOk ? " \u2714" : " \u2718"), status: reclaimed && dispOk ? "ok" : "warn" },
       { name: `RSI-14 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F (\u2265${cfg.rsiHi})`, value: rsiNow.toFixed(0) + (rsiOk ? " \u2714" : " \u2718"), status: rsiOk ? "ok" : "warn" },
       { name: "\u0631\u0698\u06CC\u0645 (close<EMA200)", value: close[i] < e200[i] ? "\u0646\u0632\u0648\u0644\u06CC \u2714" : "\u0635\u0639\u0648\u062F\u06CC \u2718", status: regimeOk ? "ok" : "bad" }
     );
@@ -5391,8 +5391,257 @@ function decideS323(cfg, a, candles, utcHour, capital = 1e4, riskPct = 1) {
   }, cfg.id, a.price, reg, capital, riskPct);
 }
 
-// ../web_tool/src/strategy_registry.ts
+// ../web_tool/src/squeeze_s332.ts
 var GOLD_PIP2 = 0.1;
+function r2Series(close, period = 20) {
+  const n = close.length;
+  const out = new Array(n).fill(NaN);
+  for (let i = period - 1; i < n; i++) {
+    let sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
+    for (let k = 0; k < period; k++) {
+      const t = k, y = close[i - (period - 1 - k)];
+      sx += t;
+      sy += y;
+      sxy += t * y;
+      sxx += t * t;
+      syy += y * y;
+    }
+    const num = period * sxy - sx * sy;
+    const den = (period * sxx - sx * sx) * (period * syy - sy * sy);
+    const r = den ? num / Math.sqrt(den) : 0;
+    out[i] = r * r;
+  }
+  return out;
+}
+function hurstSeries(close, period = 64) {
+  const n = close.length;
+  const out = new Array(n).fill(0.5);
+  const ret = new Array(n).fill(NaN);
+  for (let i = 1; i < n; i++) ret[i] = close[i - 1] ? Math.log(close[i] / close[i - 1]) : 0;
+  const logP = Math.log(period);
+  for (let i = period; i < n; i++) {
+    const w = [];
+    for (let k = 0; k < period; k++) w.push(ret[i - k] || 0);
+    const m = w.reduce((a, b) => a + b, 0) / period;
+    let cum = 0, mn = Infinity, mx = -Infinity, s2 = 0;
+    for (let k = 0; k < period; k++) {
+      cum += w[k] - m;
+      if (cum < mn) mn = cum;
+      if (cum > mx) mx = cum;
+      s2 += (w[k] - m) * (w[k] - m);
+    }
+    const sd = Math.sqrt(s2 / period), R = mx - mn;
+    out[i] = sd && R > 0 ? Math.log(R / sd) / logP : 0.5;
+  }
+  return out;
+}
+var S332_CFG = {
+  // H4 — فیلترِ رژیمِ مومنتوم (ADX/DI)
+  "XAUUSD-H4": {
+    id: "XAUUSD-H4",
+    tfFa: "H4",
+    bbPeriod: 20,
+    bbMult: 2,
+    sqzLookback: 100,
+    sqzPct: 0.25,
+    breakoutLookback: 6,
+    emaFast: 50,
+    emaSlow: 200,
+    filterKind: "adx_di",
+    adxMin: 22,
+    slPip: 350,
+    tpPip: 500,
+    maxHold: 24,
+    rqs: 92.1
+  },
+  // M15 — فیلترِ آماری/فراکتالیِ بانک (r2 + hurst)
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tfFa: "M15",
+    bbPeriod: 20,
+    bbMult: 2,
+    sqzLookback: 100,
+    sqzPct: 0.25,
+    breakoutLookback: 6,
+    emaFast: 50,
+    emaSlow: 200,
+    filterKind: "r2_hurst",
+    r2Min: 0.58,
+    r2Period: 20,
+    hurstMin: 0.55,
+    hurstPeriod: 64,
+    slPip: 190,
+    tpPip: 285,
+    maxHold: 64,
+    rqs: 91.2
+  }
+};
+function computeS332(candles, cfg) {
+  const n = candles.length;
+  const close = candles.map((c) => c.close);
+  const high = candles.map((c) => c.high);
+  const slDist = cfg.slPip * GOLD_PIP2;
+  const tpDist = cfg.tpPip * GOLD_PIP2;
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  const need = Math.max(cfg.bbPeriod + cfg.sqzLookback, cfg.emaSlow, cfg.breakoutLookback) + 2;
+  if (n < need) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 / \u067E\u0646\u062C\u0631\u0647\u0654 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
+      indicators: emptyInd
+    };
+  }
+  const bb = bollinger(close, cfg.bbPeriod, cfg.bbMult);
+  const bw = new Array(n).fill(NaN);
+  for (let i2 = 0; i2 < n; i2++) {
+    const mid = bb.mid[i2];
+    if (isFinite(mid) && mid !== 0 && isFinite(bb.upper[i2]) && isFinite(bb.lower[i2])) {
+      bw[i2] = (bb.upper[i2] - bb.lower[i2]) / mid;
+    }
+  }
+  const ef = ema(close, cfg.emaFast);
+  const es = ema(close, cfg.emaSlow);
+  const i = n - 1;
+  const prev = i - 1;
+  const lo = Math.max(0, prev - cfg.sqzLookback + 1);
+  const window = bw.slice(lo, prev + 1).filter((v) => isFinite(v));
+  const bwPrev = bw[prev];
+  let bwPct = 1;
+  if (window.length > 5 && isFinite(bwPrev)) {
+    bwPct = window.filter((v) => v <= bwPrev).length / window.length;
+  }
+  const squeezed = isFinite(bwPrev) && bwPct <= cfg.sqzPct;
+  const bLo = Math.max(0, i - cfg.breakoutLookback);
+  let priorHigh = -Infinity;
+  for (let k = bLo; k < i; k++) if (isFinite(high[k])) priorHigh = Math.max(priorHigh, high[k]);
+  const breakout = isFinite(close[i]) && close[i] > priorHigh;
+  const trendUp = isFinite(ef[i]) && isFinite(es[i]) && ef[i] > es[i];
+  let filterOk = false;
+  const regimeInd = [];
+  let adxVal = NaN;
+  if (cfg.filterKind === "adx_di") {
+    const res = adx(candles, 14);
+    adxVal = res.adx[i];
+    const pdi = res.pdi[i], mdi = res.mdi[i];
+    const adxOk = isFinite(adxVal) && adxVal > (cfg.adxMin ?? 22);
+    const diOk = isFinite(pdi) && isFinite(mdi) && pdi > mdi;
+    filterOk = adxOk && diOk;
+    regimeInd.push(
+      {
+        name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645: ADX(14) > ${cfg.adxMin}`,
+        value: isFinite(adxVal) ? adxVal.toFixed(1) + (adxOk ? " \u2714" : " \u2718") : "\u2014",
+        status: adxOk ? "ok" : "bad"
+      },
+      {
+        name: "+DI > \u2212DI (\u062C\u0647\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC)",
+        value: isFinite(pdi) && isFinite(mdi) ? `${pdi.toFixed(0)} / ${mdi.toFixed(0)}` + (diOk ? " \u2714" : " \u2718") : "\u2014",
+        status: diOk ? "ok" : "bad"
+      }
+    );
+  } else {
+    const r2 = r2Series(close, cfg.r2Period ?? 20);
+    const hu = hurstSeries(close, cfg.hurstPeriod ?? 64);
+    const r2v = r2[i], huv = hu[i];
+    const r2Ok = isFinite(r2v) && r2v > (cfg.r2Min ?? 0.58);
+    const huOk = isFinite(huv) && huv > (cfg.hurstMin ?? 0.55);
+    filterOk = r2Ok && huOk;
+    regimeInd.push(
+      {
+        name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0622\u0645\u0627\u0631\u06CC: R\xB2(${cfg.r2Period}) > ${cfg.r2Min} (\u0631\u0648\u0646\u062F\u0650 \u062A\u0645\u06CC\u0632)`,
+        value: isFinite(r2v) ? r2v.toFixed(2) + (r2Ok ? " \u2714" : " \u2718") : "\u2014",
+        status: r2Ok ? "ok" : "bad"
+      },
+      {
+        name: `\u0646\u0645\u0627\u06CC \u0647\u0631\u0633\u062A(${cfg.hurstPeriod}) > ${cfg.hurstMin} (\u062D\u0627\u0641\u0638\u0647\u0654 \u0631\u0648\u0646\u062F\u06CC)`,
+        value: isFinite(huv) ? huv.toFixed(2) + (huOk ? " \u2714" : " \u2718") : "\u2014",
+        status: huOk ? "ok" : "bad"
+      }
+    );
+  }
+  const indicators = [
+    {
+      name: `\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 (BandWidth \u062F\u0631 \u06A9\u0641\u0650 ${Math.round(cfg.sqzPct * 100)}\u066A)`,
+      value: isFinite(bwPrev) ? `\u0635\u062F\u06A9 ${Math.round(bwPct * 100)}` + (squeezed ? " \u2714" : " \u2718") : "\u2014",
+      status: squeezed ? "ok" : "neutral"
+    },
+    {
+      name: `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC (close > \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644)`,
+      value: breakout ? "\u0628\u0644\u0647 \u2714" : "\u062E\u06CC\u0631",
+      status: breakout ? "ok" : "neutral"
+    },
+    {
+      name: "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F (EMA50 > EMA200)",
+      value: trendUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u063A\u06CC\u0631\u0635\u0639\u0648\u062F\u06CC \u2718",
+      status: trendUp ? "ok" : "bad"
+    },
+    ...regimeInd
+  ];
+  const active = squeezed && breakout && trendUp && filterOk;
+  const approaching = !active && squeezed && trendUp && filterOk && !breakout;
+  const filterFa = cfg.filterKind === "adx_di" ? `ADX>${cfg.adxMin} \u0648 +DI>\u2212DI` : `R\xB2>${cfg.r2Min} \u0648 \u0647\u0631\u0633\u062A>${cfg.hurstMin}`;
+  let reason;
+  if (active) {
+    reason = `\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647\u0654 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u0628\u0627 \u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0631\u0647\u0627 \u0634\u062F \u0648 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (${filterFa}) \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F \u21D2 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F.`;
+  } else if (approaching) {
+    reason = `\u0641\u0646\u0631 \u0641\u0634\u0631\u062F\u0647 \u0648 \u0631\u0698\u06CC\u0645 \u0645\u0633\u0627\u0639\u062F \u0627\u0633\u062A (${filterFa})\u060C \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 \u06A9\u0646\u062F\u0644\u0650 \u0634\u06A9\u0633\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback}\u200C\u06A9\u0646\u062F\u0644\u06CC \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647.`;
+  } else if (!squeezed) {
+    reason = "\u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u0641\u0634\u0631\u062F\u0647 \u0646\u06CC\u0633\u062A (\u0641\u0646\u0631 \u0622\u0645\u0627\u062F\u0647\u0654 \u0627\u0646\u0641\u062C\u0627\u0631 \u0646\u06CC\u0633\u062A).";
+  } else if (!trendUp) {
+    reason = "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A (EMA50 \u2264 EMA200) \u2014 \u0627\u0646\u0641\u062C\u0627\u0631 \u0647\u0645\u200C\u0633\u0648 \u0628\u0627 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A.";
+  } else if (!filterOk) {
+    reason = `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (${filterFa}) \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u062F \u2014 \u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else {
+    reason = "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0648\u0631\u0648\u062F \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A.";
+  }
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0634\u06A9\u0633\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback}\u200C\u06A9\u0646\u062F\u0644\u06CC` : void 0,
+    indicators
+  };
+}
+function decideS332(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS332(candles, cfg);
+  const price = a.price;
+  const filterFa = cfg.filterKind === "adx_di" ? "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F (ADX/DI)" : "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0622\u0645\u0627\u0631\u06CC/\u0641\u0631\u0627\u06A9\u062A\u0627\u0644\u06CC (R\xB2 + \u0647\u0631\u0633\u062A)";
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s332_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S332",
+    name: `\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (${cfg.tfFa})`,
+    kind: "squeeze",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 ${cfg.tfFa} (${cfg.tpPip}/${cfg.slPip} pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u061B \u0627\u06AF\u0631 ${filterFa} \u0645\u0639\u06A9\u0648\u0633 \u0634\u062F\u060C \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0627 \u0628\u0633\u0646\u062C.`,
+    filters: [
+      "\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 (BandWidth \u06A9\u0641 \u0635\u062F\u06A9 \u06F2\u06F5\u066A)",
+      `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644)`,
+      "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F EMA50>EMA200",
+      filterFa
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/strategy_registry.ts
+var GOLD_PIP3 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
   return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
 }
@@ -5465,8 +5714,8 @@ var s310Layer = (ctx) => {
     active,
     approaching,
     direction: "LONG",
-    slDist: EOM_SL_PIP * GOLD_PIP2,
-    tpDist: EOM_TP_PIP * GOLD_PIP2,
+    slDist: EOM_SL_PIP * GOLD_PIP3,
+    tpDist: EOM_TP_PIP * GOLD_PIP3,
     maxHoldBars: EOM_MAX_HOLD,
     reason: sig.reason,
     approachReason: approaching ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647` : void 0,
@@ -5504,8 +5753,8 @@ function s312Layer(slPip, tpPip, maxHold) {
       active,
       approaching,
       direction: "LONG",
-      slDist: slPip * GOLD_PIP2,
-      tpDist: tpPip * GOLD_PIP2,
+      slDist: slPip * GOLD_PIP3,
+      tpDist: tpPip * GOLD_PIP3,
       maxHoldBars: maxHold,
       reason: sig.reason,
       approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
@@ -5546,6 +5795,7 @@ var s323Layer = (cfg) => (ctx) => decideS323(cfg, ctx.a, ctx.candles, ctx.utcHou
 var s324Layer = (cfg) => (ctx) => decideS324(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s328Layer = (cfg) => (ctx) => decideS328(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s330Layer = (cfg) => (ctx) => decideS330(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s332Layer = (cfg) => (ctx) => decideS332(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
     s330Layer(S330_CFG["XAUUSD-M5"]),
@@ -5554,6 +5804,8 @@ var CARD_LAYERS = {
     s326Layer(STREAK_REV_CFG["XAUUSD-M5"])
   ],
   "XAUUSD-M15": [
+    s332Layer(S332_CFG["XAUUSD-M15"]),
+    // احیای squeeze با فیلترِ آماری r2+hurst — RQS+=91.2
     s324Layer(S324_CFG["XAUUSD-M15"]),
     s322Layer(S322_CFG["XAUUSD-M15"]),
     s323Layer(S323_CFG["XAUUSD-M15"]),
@@ -5577,6 +5829,8 @@ var CARD_LAYERS = {
     s312Layer(395, 395, 24)
   ],
   "XAUUSD-H4": [
+    s332Layer(S332_CFG["XAUUSD-H4"]),
+    // احیای squeeze با فیلترِ ADX/DI — RQS+=92.1
     s327Layer(SELL_CLIMAX_CFG["XAUUSD-H4"])
   ],
   "EURUSD-M15": [
@@ -5851,6 +6105,1503 @@ function ichimoku(c, tenkanP = 9, kijunP = 26, senkouBP = 52, shift = 26) {
   return { tenkan: tk, kijun: kj, spanA, spanB, spanARaw, spanBRaw, cloudTop, cloudBot };
 }
 
+// ../web_tool/src/indicators/bank/kit.ts
+var NaNArr3 = (n) => new Array(n).fill(NaN);
+var closes = (c) => c.map((k) => k.close);
+var highs = (c) => c.map((k) => k.high);
+var lows = (c) => c.map((k) => k.low);
+var vols = (c) => c.map((k) => k.volume);
+function smaArr(x, p) {
+  const out = NaNArr3(x.length);
+  let sum = 0, cnt = 0;
+  for (let i = 0; i < x.length; i++) {
+    const v = x[i];
+    if (Number.isFinite(v)) {
+      sum += v;
+      cnt++;
+    }
+    if (i >= p) {
+      const old = x[i - p];
+      if (Number.isFinite(old)) {
+        sum -= old;
+        cnt--;
+      }
+    }
+    if (i >= p - 1 && cnt === p) out[i] = sum / p;
+  }
+  return out;
+}
+function emaArr(x, p) {
+  const out = NaNArr3(x.length);
+  const a = 2 / (p + 1);
+  let prev = NaN;
+  for (let i = 0; i < x.length; i++) {
+    const v = x[i];
+    if (!Number.isFinite(v)) {
+      out[i] = prev;
+      continue;
+    }
+    prev = Number.isFinite(prev) ? a * v + (1 - a) * prev : v;
+    out[i] = prev;
+  }
+  return out;
+}
+function rmaArr(x, p) {
+  const out = NaNArr3(x.length);
+  const a = 1 / p;
+  let prev = NaN;
+  for (let i = 0; i < x.length; i++) {
+    const v = x[i];
+    if (!Number.isFinite(v)) {
+      out[i] = prev;
+      continue;
+    }
+    prev = Number.isFinite(prev) ? a * v + (1 - a) * prev : v;
+    out[i] = prev;
+  }
+  return out;
+}
+function wmaArr(x, p) {
+  const out = NaNArr3(x.length);
+  const denom = p * (p + 1) / 2;
+  for (let i = p - 1; i < x.length; i++) {
+    let s = 0, ok = true;
+    for (let k = 0; k < p; k++) {
+      const v = x[i - k];
+      if (!Number.isFinite(v)) {
+        ok = false;
+        break;
+      }
+      s += v * (p - k);
+    }
+    if (ok) out[i] = s / denom;
+  }
+  return out;
+}
+function stdArr(x, p) {
+  const out = NaNArr3(x.length);
+  for (let i = p - 1; i < x.length; i++) {
+    let m = 0, ok = true;
+    for (let k = 0; k < p; k++) {
+      const v = x[i - k];
+      if (!Number.isFinite(v)) {
+        ok = false;
+        break;
+      }
+      m += v;
+    }
+    if (!ok) continue;
+    m /= p;
+    let s = 0;
+    for (let k = 0; k < p; k++) {
+      const d = x[i - k] - m;
+      s += d * d;
+    }
+    out[i] = Math.sqrt(s / p);
+  }
+  return out;
+}
+var highest = (x, i, p) => {
+  let m = -Infinity;
+  for (let k = 0; k < p && i - k >= 0; k++) if (x[i - k] > m) m = x[i - k];
+  return m;
+};
+var lowest = (x, i, p) => {
+  let m = Infinity;
+  for (let k = 0; k < p && i - k >= 0; k++) if (x[i - k] < m) m = x[i - k];
+  return m;
+};
+var asSeries = (x) => x;
+function trArr(c) {
+  const n = c.length, tr = NaNArr3(n);
+  for (let i = 1; i < n; i++) tr[i] = Math.max(c[i].high - c[i].low, Math.abs(c[i].high - c[i - 1].close), Math.abs(c[i].low - c[i - 1].close));
+  return tr;
+}
+var body = (k) => Math.abs(k.close - k.open);
+var range = (k) => k.high - k.low;
+var upSh = (k) => k.high - Math.max(k.open, k.close);
+var dnSh = (k) => Math.min(k.open, k.close) - k.low;
+var isBull = (k) => k.close > k.open;
+var isBear = (k) => k.close < k.open;
+var FIB_PERIODS = [3, 5, 8, 13, 21, 34, 55, 89, 144, 233];
+var LUCAS_PERIODS = [4, 7, 11, 18, 29, 47, 76, 123, 199];
+function makeKit() {
+  const items = [];
+  return {
+    items,
+    def(name, category, source, defaults, paramKeys, desc, compute) {
+      items.push({ name, category, source, active: false, defaults, paramKeys, desc, compute });
+    },
+    pat(name, desc, fn) {
+      items.push({
+        name,
+        category: "pattern",
+        source: "deep-web",
+        active: false,
+        defaults: {},
+        paramKeys: [],
+        desc,
+        compute: (c) => {
+          const n = c.length, out = NaNArr3(n);
+          for (let i = 0; i < n; i++) out[i] = i >= 3 ? fn(c, i) : 0;
+          return asSeries(out);
+        }
+      });
+    },
+    expandPeriodFamily(baseName, category, source, desc, build, periods) {
+      for (const per of periods) {
+        items.push({
+          name: `${baseName}_${per}`,
+          category,
+          source,
+          active: false,
+          defaults: { period: per },
+          paramKeys: ["period"],
+          desc: `${desc} \u2014 \u062F\u0648\u0631\u0647\u0654 \u063A\u06CC\u0631\u0631\u0646\u062F\u0650 ${per}`,
+          compute: (c) => build(per)(c)
+        });
+      }
+    }
+  };
+}
+
+// ../web_tool/src/indicators/bank/trend.ts
+var K = makeKit();
+var { def } = K;
+def("dema", "trend", "EN", { period: 20 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0645\u062A\u062D\u0631\u06A9\u0650 \u0646\u0645\u0627\u06CC\u06CC\u0650 \u062F\u0648\u06AF\u0627\u0646\u0647", (c, p) => {
+  const e1 = emaArr(closes(c), p.period), e2 = emaArr(e1, p.period);
+  return asSeries(e1.map((v, i) => 2 * v - e2[i]));
+});
+def("tema", "trend", "EN", { period: 20 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0645\u062A\u062D\u0631\u06A9\u0650 \u0646\u0645\u0627\u06CC\u06CC\u0650 \u0633\u0647\u200C\u06AF\u0627\u0646\u0647", (c, p) => {
+  const e1 = emaArr(closes(c), p.period), e2 = emaArr(e1, p.period), e3 = emaArr(e2, p.period);
+  return asSeries(e1.map((v, i) => 3 * v - 3 * e2[i] + e3[i]));
+});
+def("zlema", "trend", "EN", { period: 20 }, ["period"], "EMA \u0628\u062F\u0648\u0646\u0650 \u062A\u0623\u062E\u06CC\u0631 (Zero-Lag)", (c, p) => {
+  const x = closes(c), lag = Math.floor((p.period - 1) / 2);
+  const dl = x.map((v, i) => i - lag >= 0 ? 2 * v - x[i - lag] : NaN);
+  return asSeries(emaArr(dl, p.period));
+});
+def("hma", "trend", "EN", { period: 21 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0645\u062A\u062D\u0631\u06A9\u0650 \u0647\u0627\u0644", (c, p) => {
+  const x = closes(c);
+  const half = wmaArr(x, Math.max(1, Math.floor(p.period / 2)));
+  const full = wmaArr(x, p.period);
+  const diff2 = half.map((v, i) => 2 * v - full[i]);
+  return asSeries(wmaArr(diff2, Math.max(1, Math.floor(Math.sqrt(p.period)))));
+});
+def("rma", "trend", "EN", { period: 14 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0645\u062A\u062D\u0631\u06A9\u0650 \u0648\u0627\u06CC\u0644\u062F\u0631 (RMA)", (c, p) => asSeries(rmaArr(closes(c), p.period)));
+def("wma", "trend", "EN", { period: 20 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0645\u062A\u062D\u0631\u06A9\u0650 \u0648\u0632\u0646\u06CC", (c, p) => asSeries(wmaArr(closes(c), p.period)));
+def("trima", "trend", "EN", { period: 20 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0645\u062A\u062D\u0631\u06A9\u0650 \u0645\u062B\u0644\u062B\u06CC", (c, p) => {
+  const h = Math.ceil((p.period + 1) / 2);
+  return asSeries(smaArr(smaArr(closes(c), h), Math.floor(p.period / 2) + 1));
+});
+def("t3", "trend", "EN", { period: 20, vfactor: 0.7 }, ["period", "vfactor"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 T3 \u062A\u06CC\u0644\u0633\u0648\u0646", (c, p) => {
+  const b = p.vfactor, c1 = -b * b * b, c2 = 3 * b * b + 3 * b * b * b, c3 = -6 * b * b - 3 * b - 3 * b * b * b, c4 = 1 + 3 * b + b * b * b + 3 * b * b;
+  const e1 = emaArr(closes(c), p.period), e2 = emaArr(e1, p.period), e3 = emaArr(e2, p.period);
+  const e4 = emaArr(e3, p.period), e5 = emaArr(e4, p.period), e6 = emaArr(e5, p.period);
+  return asSeries(e6.map((v, i) => c1 * v + c2 * e5[i] + c3 * e4[i] + c4 * e3[i]));
+});
+def("kama", "trend", "EN", { period: 10, fast: 2, slow: 30 }, ["period", "fast", "slow"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u062A\u0637\u0628\u06CC\u0642\u06CC\u0650 \u06A9\u0627\u0641\u0645\u0646", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const fastSC = 2 / (p.fast + 1), slowSC = 2 / (p.slow + 1);
+  let prev = NaN;
+  for (let i = 0; i < n; i++) {
+    if (i < p.period) {
+      out[i] = NaN;
+      continue;
+    }
+    const change = Math.abs(x[i] - x[i - p.period]);
+    let vol = 0;
+    for (let k = 0; k < p.period; k++) vol += Math.abs(x[i - k] - x[i - k - 1]);
+    const er = vol === 0 ? 0 : change / vol;
+    const sc = Math.pow(er * (fastSC - slowSC) + slowSC, 2);
+    prev = Number.isFinite(prev) ? prev + sc * (x[i] - prev) : x[i];
+    out[i] = prev;
+  }
+  return asSeries(out);
+});
+def("vidya", "trend", "CN", { period: 14, cmoPeriod: 9 }, ["period", "cmoPeriod"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u067E\u0648\u06CC\u0627 \u0628\u0627 \u0634\u0627\u062E\u0635\u0650 \u0645\u062A\u063A\u06CC\u0631 (\u0686\u0627\u0646\u062F)", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const a = 2 / (p.period + 1);
+  let prev = NaN;
+  for (let i = 0; i < n; i++) {
+    if (i < p.cmoPeriod) continue;
+    let up = 0, dn = 0;
+    for (let k = 0; k < p.cmoPeriod; k++) {
+      const d = x[i - k] - x[i - k - 1];
+      if (d > 0) up += d;
+      else dn -= d;
+    }
+    const cmo = up + dn === 0 ? 0 : Math.abs((up - dn) / (up + dn));
+    prev = Number.isFinite(prev) ? a * cmo * x[i] + (1 - a * cmo) * prev : x[i];
+    out[i] = prev;
+  }
+  return asSeries(out);
+});
+def("mcgd", "trend", "EN", { period: 14 }, ["period"], "\u0645\u06A9\u200C\u06AF\u06CC\u0646\u0644\u06CC \u062F\u0627\u06CC\u0646\u0627\u0645\u06CC\u06A9", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  let prev = NaN;
+  for (let i = 0; i < n; i++) {
+    if (!Number.isFinite(prev)) {
+      prev = x[i];
+      out[i] = prev;
+      continue;
+    }
+    const r = x[i] / prev;
+    prev = prev + (x[i] - prev) / (p.period * Math.pow(r, 4));
+    out[i] = prev;
+  }
+  return asSeries(out);
+});
+def("alma", "trend", "EN", { period: 21, offset: 0.85, sigma: 6 }, ["period", "offset", "sigma"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0622\u0631\u0646\u0648 \u0644\u06AF\u0648", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const m = p.offset * (p.period - 1), s = p.period / p.sigma;
+  const w = [];
+  let wsum = 0;
+  for (let k = 0; k < p.period; k++) {
+    const ww = Math.exp(-((k - m) * (k - m)) / (2 * s * s));
+    w.push(ww);
+    wsum += ww;
+  }
+  for (let i = p.period - 1; i < n; i++) {
+    let acc = 0;
+    for (let k = 0; k < p.period; k++) acc += x[i - (p.period - 1 - k)] * w[k];
+    out[i] = acc / wsum;
+  }
+  return asSeries(out);
+});
+def("fwma", "trend", "EN", { period: 10 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0648\u0632\u0646\u06CC\u0650 \u0641\u06CC\u0628\u0648\u0646\u0627\u0686\u06CC", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const fib = [1, 1];
+  for (let k = 2; k < p.period; k++) fib.push(fib[k - 1] + fib[k - 2]);
+  const wsum = fib.reduce((a, b) => a + b, 0);
+  for (let i = p.period - 1; i < n; i++) {
+    let acc = 0;
+    for (let k = 0; k < p.period; k++) acc += x[i - (p.period - 1 - k)] * fib[k];
+    out[i] = acc / wsum;
+  }
+  return asSeries(out);
+});
+def("sinwma", "trend", "EN", { period: 14 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0648\u0632\u0646\u06CC\u0650 \u0633\u06CC\u0646\u0648\u0633\u06CC", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const w = [];
+  let wsum = 0;
+  for (let k = 1; k <= p.period; k++) {
+    const ww = Math.sin(k * Math.PI / (p.period + 1));
+    w.push(ww);
+    wsum += ww;
+  }
+  for (let i = p.period - 1; i < n; i++) {
+    let acc = 0;
+    for (let k = 0; k < p.period; k++) acc += x[i - (p.period - 1 - k)] * w[k];
+    out[i] = acc / wsum;
+  }
+  return asSeries(out);
+});
+def("dma", "trend", "CN", { fast: 10, slow: 50 }, ["fast", "slow"], "\u062A\u0641\u0627\u0636\u0644\u0650 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u200C\u0647\u0627 (\u5E73\u5747\u5DEE)", (c, p) => {
+  const x = closes(c), f = smaArr(x, p.fast), s = smaArr(x, p.slow);
+  return asSeries(f.map((v, i) => v - s[i]));
+});
+def("bbi", "trend", "CN", { p1: 3, p2: 6, p3: 12, p4: 24 }, ["p1", "p2", "p3", "p4"], "\u062E\u0637\u0650 \u0686\u0646\u062F\u0646\u0631\u062E\u06CC\u0650 \u06AF\u0627\u0648-\u062E\u0631\u0633 (\u591A\u7A7A\u5747\u7EBF)", (c, p) => {
+  const x = closes(c);
+  const a = smaArr(x, p.p1), b = smaArr(x, p.p2), d = smaArr(x, p.p3), e = smaArr(x, p.p4);
+  return asSeries(x.map((_, i) => (a[i] + b[i] + d[i] + e[i]) / 4));
+});
+var TREND_ITEMS = K.items;
+
+// ../web_tool/src/indicators/bank/momentum.ts
+var K2 = makeKit();
+var { def: def2 } = K2;
+def2("ao", "momentum", "EN", { fast: 5, slow: 34 }, ["fast", "slow"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u0639\u0627\u0644\u06CC (\u0628\u06CC\u0644 \u0648\u06CC\u0644\u06CC\u0627\u0645\u0632)", (c, p) => {
+  const med = c.map((k) => (k.high + k.low) / 2);
+  const f = smaArr(med, p.fast), s = smaArr(med, p.slow);
+  return asSeries(f.map((v, i) => v - s[i]));
+});
+def2("ac", "momentum", "EN", { fast: 5, slow: 34, smooth: 5 }, ["fast", "slow", "smooth"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u0634\u062A\u0627\u0628\u200C\u062F\u0647\u0646\u062F\u0647", (c, p) => {
+  const med = c.map((k) => (k.high + k.low) / 2);
+  const ao = smaArr(med, p.fast).map((v, i) => v - smaArr(med, p.slow)[i]);
+  const sm = smaArr(ao, p.smooth);
+  return asSeries(ao.map((v, i) => v - sm[i]));
+});
+def2("apo", "momentum", "EN", { fast: 12, slow: 26 }, ["fast", "slow"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u0645\u0637\u0644\u0642\u0650 \u0642\u06CC\u0645\u062A", (c, p) => {
+  const x = closes(c), f = emaArr(x, p.fast), s = emaArr(x, p.slow);
+  return asSeries(f.map((v, i) => v - s[i]));
+});
+def2("ppo", "momentum", "EN", { fast: 12, slow: 26 }, ["fast", "slow"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u062F\u0631\u0635\u062F\u06CC\u0650 \u0642\u06CC\u0645\u062A", (c, p) => {
+  const x = closes(c), f = emaArr(x, p.fast), s = emaArr(x, p.slow);
+  return asSeries(f.map((v, i) => s[i] ? 100 * (v - s[i]) / s[i] : NaN));
+});
+def2("cmo", "momentum", "EN", { period: 14 }, ["period"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0686\u0627\u0646\u062F", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let up = 0, dn = 0;
+    for (let k = 0; k < p.period; k++) {
+      const d = x[i - k] - x[i - k - 1];
+      if (d > 0) up += d;
+      else dn -= d;
+    }
+    out[i] = up + dn === 0 ? 0 : 100 * (up - dn) / (up + dn);
+  }
+  return asSeries(out);
+});
+def2("tsi", "momentum", "EN", { long: 25, short: 13 }, ["long", "short"], "\u0634\u0627\u062E\u0635\u0650 \u0642\u062F\u0631\u062A\u0650 \u062D\u0642\u06CC\u0642\u06CC", (c, p) => {
+  const x = closes(c), n = x.length;
+  const mom = NaNArr3(n);
+  for (let i = 1; i < n; i++) mom[i] = x[i] - x[i - 1];
+  const abs = mom.map((v) => Math.abs(v));
+  const d1 = emaArr(mom, p.long), d2 = emaArr(d1, p.short);
+  const a1 = emaArr(abs, p.long), a2 = emaArr(a1, p.short);
+  return asSeries(d2.map((v, i) => a2[i] ? 100 * v / a2[i] : NaN));
+});
+def2("roc", "momentum", "EN", { period: 10 }, ["period"], "\u0646\u0631\u062E\u0650 \u062A\u063A\u06CC\u06CC\u0631 (\u062F\u0631\u0635\u062F)", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) out[i] = x[i - p.period] ? 100 * (x[i] - x[i - p.period]) / x[i - p.period] : NaN;
+  return asSeries(out);
+});
+def2("mom", "momentum", "EN", { period: 10 }, ["period"], "\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u062E\u0627\u0645", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) out[i] = x[i] - x[i - p.period];
+  return asSeries(out);
+});
+def2("bop", "momentum", "EN", { smooth: 14 }, ["smooth"], "\u062A\u0648\u0627\u0632\u0646\u0650 \u0642\u062F\u0631\u062A", (c, p) => {
+  const raw2 = c.map((k) => k.high - k.low ? (k.close - k.open) / (k.high - k.low) : 0);
+  return asSeries(smaArr(raw2, p.smooth));
+});
+def2("cfo", "momentum", "EN", { period: 14 }, ["period"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u067E\u06CC\u0634\u200C\u0628\u06CC\u0646\u06CC\u0650 \u0686\u0627\u0646\u062F", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    let sx = 0, sy = 0, sxy = 0, sxx = 0;
+    for (let k = 0; k < p.period; k++) {
+      const xi = k, yi = x[i - (p.period - 1 - k)];
+      sx += xi;
+      sy += yi;
+      sxy += xi * yi;
+      sxx += xi * xi;
+    }
+    const m = (p.period * sxy - sx * sy) / (p.period * sxx - sx * sx);
+    const b = (sy - m * sx) / p.period;
+    const fc = m * (p.period - 1) + b;
+    out[i] = x[i] ? 100 * (x[i] - fc) / x[i] : NaN;
+  }
+  return asSeries(out);
+});
+def2("pgo", "momentum", "deep-web", { period: 14 }, ["period"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u0646\u0633\u0628\u062A\u0627\u064B \u062E\u0648\u0628", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const sma2 = smaArr(x, p.period);
+  const tr = NaNArr3(n);
+  for (let i = 1; i < n; i++) tr[i] = Math.max(c[i].high - c[i].low, Math.abs(c[i].high - c[i - 1].close), Math.abs(c[i].low - c[i - 1].close));
+  const eatr = emaArr(tr, p.period);
+  for (let i = 0; i < n; i++) out[i] = eatr[i] ? (x[i] - sma2[i]) / eatr[i] : NaN;
+  return asSeries(out);
+});
+def2("fisher", "momentum", "EN", { period: 9 }, ["period"], "\u062A\u0628\u062F\u06CC\u0644\u0650 \u0641\u06CC\u0634\u0631\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (c, p) => {
+  const med = c.map((k) => (k.high + k.low) / 2), n = med.length, out = NaNArr3(n);
+  let v = 0, prevF = 0;
+  for (let i = p.period - 1; i < n; i++) {
+    const hh = highest(med, i, p.period), ll = lowest(med, i, p.period);
+    const rng = hh - ll || 1e-10;
+    v = 0.66 * (2 * (med[i] - ll) / rng - 1) + 0.67 * v;
+    const vv = Math.max(-0.999, Math.min(0.999, v));
+    const f = 0.5 * Math.log((1 + vv) / (1 - vv)) + 0.5 * prevF;
+    out[i] = f;
+    prevF = f;
+  }
+  return asSeries(out);
+});
+def2("ifish_rsi", "momentum", "EN", { period: 14 }, ["period"], "\u0641\u06CC\u0634\u0631\u0650 \u0645\u0639\u06A9\u0648\u0633\u0650 RSI", (c, p) => {
+  const rsi2 = rsi(closes(c), p.period);
+  return asSeries(rsi2.map((r) => {
+    if (!Number.isFinite(r)) return NaN;
+    const v = 0.1 * (r - 50);
+    return (Math.exp(2 * v) - 1) / (Math.exp(2 * v) + 1);
+  }));
+});
+def2("rvgi", "momentum", "EN", { period: 10 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u0633\u0631\u0632\u0646\u062F\u06AF\u06CC\u0650 \u0646\u0633\u0628\u06CC", (c, p) => {
+  const n = c.length, num = NaNArr3(n), den = NaNArr3(n);
+  const co = c.map((k) => k.close - k.open), hl = c.map((k) => k.high - k.low);
+  for (let i = 3; i < n; i++) {
+    num[i] = (co[i] + 2 * co[i - 1] + 2 * co[i - 2] + co[i - 3]) / 6;
+    den[i] = (hl[i] + 2 * hl[i - 1] + 2 * hl[i - 2] + hl[i - 3]) / 6;
+  }
+  const sn = smaArr(num, p.period), sd = smaArr(den, p.period);
+  return asSeries(sn.map((v, i) => sd[i] ? v / sd[i] : NaN));
+});
+def2("kdj_j", "momentum", "CN", { period: 9, k: 3, d: 3 }, ["period", "k", "d"], "\u062E\u0637\u0650 J \u0627\u0632 KDJ \u0686\u06CC\u0646\u06CC (3K\u22122D)", (c, p) => {
+  const h = highs(c), l = lows(c), x = closes(c), n = x.length;
+  const rsv = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    const hh = highest(h, i, p.period), ll = lowest(l, i, p.period);
+    rsv[i] = hh - ll ? 100 * (x[i] - ll) / (hh - ll) : 50;
+  }
+  const kSer = NaNArr3(n);
+  let kPrev = 50;
+  for (let i = 0; i < n; i++) {
+    if (!Number.isFinite(rsv[i])) continue;
+    kPrev = (rsv[i] + (p.k - 1) * kPrev) / p.k;
+    kSer[i] = kPrev;
+  }
+  const dSer = NaNArr3(n);
+  let dPrev = 50;
+  for (let i = 0; i < n; i++) {
+    if (!Number.isFinite(kSer[i])) continue;
+    dPrev = (kSer[i] + (p.d - 1) * dPrev) / p.d;
+    dSer[i] = dPrev;
+  }
+  return asSeries(kSer.map((k, i) => Number.isFinite(dSer[i]) ? 3 * k - 2 * dSer[i] : NaN));
+});
+def2("bias", "momentum", "CN", { period: 6 }, ["period"], "\u0646\u0631\u062E\u0650 \u0627\u0646\u062D\u0631\u0627\u0641 (\u4E56\u79BB\u7387)", (c, p) => {
+  const x = closes(c), s = smaArr(x, p.period);
+  return asSeries(x.map((v, i) => s[i] ? 100 * (v - s[i]) / s[i] : NaN));
+});
+def2("wr_cn", "momentum", "CN", { period: 14 }, ["period"], "\u0648\u06CC\u0644\u06CC\u0627\u0645\u0632 %R \u0686\u06CC\u0646\u06CC (\u5A01\u5EC9)", (c, p) => {
+  const h = highs(c), l = lows(c), x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    const hh = highest(h, i, p.period), ll = lowest(l, i, p.period);
+    out[i] = hh - ll ? 100 * (hh - x[i]) / (hh - ll) : 50;
+  }
+  return asSeries(out);
+});
+def2("psy", "momentum", "CN", { period: 12 }, ["period"], "\u062E\u0637\u0650 \u0631\u0648\u0627\u0646\u06CC (\u5FC3\u7406\u7EBF)", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let up = 0;
+    for (let k = 0; k < p.period; k++) if (x[i - k] > x[i - k - 1]) up++;
+    out[i] = 100 * up / p.period;
+  }
+  return asSeries(out);
+});
+def2("br", "momentum", "CN", { period: 26 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u0627\u0631\u0627\u062F\u0647 BR (\u60C5\u7EEA)", (c, p) => {
+  const n = c.length, out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let num = 0, den = 0;
+    for (let k = 0; k < p.period; k++) {
+      const pc = c[i - k - 1].close;
+      num += Math.max(0, c[i - k].high - pc);
+      den += Math.max(0, pc - c[i - k].low);
+    }
+    out[i] = den ? 100 * num / den : 100;
+  }
+  return asSeries(out);
+});
+def2("ar", "momentum", "CN", { period: 26 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u0645\u062D\u0628\u0648\u0628\u06CC\u062A AR (\u4EBA\u6C14)", (c, p) => {
+  const n = c.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    let num = 0, den = 0;
+    for (let k = 0; k < p.period; k++) {
+      num += c[i - k].high - c[i - k].open;
+      den += c[i - k].open - c[i - k].low;
+    }
+    out[i] = den ? 100 * num / den : 100;
+  }
+  return asSeries(out);
+});
+def2("cr", "momentum", "CN", { period: 26 }, ["period"], "\u062E\u0637\u0650 \u0627\u0646\u0631\u0698\u06CC\u0650 \u0646\u0648\u0627\u0631\u06CC CR (\u5E26\u72B6\u80FD\u91CF)", (c, p) => {
+  const n = c.length, out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let num = 0, den = 0;
+    for (let k = 0; k < p.period; k++) {
+      const m = (c[i - k - 1].high + c[i - k - 1].low + c[i - k - 1].close) / 3;
+      num += Math.max(0, c[i - k].high - m);
+      den += Math.max(0, m - c[i - k].low);
+    }
+    out[i] = den ? 100 * num / den : 100;
+  }
+  return asSeries(out);
+});
+def2("trix", "momentum", "CN", { period: 12 }, ["period"], "\u062A\u0631\u06CC\u06A9\u0633 (\u4E09\u91CD\u6307\u6570\u5E73\u6ED1)", (c, p) => {
+  const e1 = emaArr(closes(c), p.period), e2 = emaArr(e1, p.period), e3 = emaArr(e2, p.period), n = e3.length;
+  const out = NaNArr3(n);
+  for (let i = 1; i < n; i++) out[i] = e3[i - 1] ? 100 * (e3[i] - e3[i - 1]) / e3[i - 1] : NaN;
+  return asSeries(out);
+});
+def2("dpo", "momentum", "CN", { period: 20 }, ["period"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u0628\u062F\u0648\u0646\u0650\u200C\u0631\u0648\u0646\u062F (\u533A\u95F4\u9707\u8361)", (c, p) => {
+  const x = closes(c), s = smaArr(x, p.period), n = x.length, out = NaNArr3(n);
+  const shift = Math.floor(p.period / 2) + 1;
+  for (let i = 0; i < n; i++) if (i - shift >= 0 && Number.isFinite(s[i - shift])) out[i] = x[i] - s[i - shift];
+  return asSeries(out);
+});
+def2("mtm", "momentum", "CN", { period: 12, smooth: 6 }, ["period", "smooth"], "\u062E\u0637\u0650 \u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0686\u06CC\u0646\u06CC (\u52A8\u91CF)", (c, p) => {
+  const x = closes(c), n = x.length, raw2 = NaNArr3(n);
+  for (let i = p.period; i < n; i++) raw2[i] = x[i] - x[i - p.period];
+  return asSeries(smaArr(raw2, p.smooth));
+});
+def2("adtm", "momentum", "CN", { period: 23, smooth: 8 }, ["period", "smooth"], "\u0627\u0646\u0631\u0698\u06CC\u0650 \u067E\u0648\u06CC\u0627\u06CC \u062E\u0631\u06CC\u062F/\u0641\u0631\u0648\u0634 (\u52A8\u6001\u4E70\u5356\u6C14)", (c, p) => {
+  const n = c.length, dtm = NaNArr3(n), dbm = NaNArr3(n);
+  for (let i = 1; i < n; i++) {
+    if (c[i].open <= c[i - 1].open) dtm[i] = 0;
+    else dtm[i] = Math.max(c[i].high - c[i].open, c[i].open - c[i - 1].open);
+    if (c[i].open >= c[i - 1].open) dbm[i] = 0;
+    else dbm[i] = Math.max(c[i].open - c[i].low, c[i].open - c[i - 1].open);
+  }
+  const out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let sd = 0, sb = 0;
+    for (let k = 0; k < p.period; k++) {
+      sd += dtm[i - k] || 0;
+      sb += dbm[i - k] || 0;
+    }
+    const stm = Math.max(sd, sb);
+    out[i] = stm ? (sd - sb) / stm : 0;
+  }
+  return asSeries(smaArr(out, p.smooth));
+});
+var MOMENTUM_ITEMS = K2.items;
+
+// ../web_tool/src/indicators/bank/volatility.ts
+var K3 = makeKit();
+var { def: def3 } = K3;
+def3("natr", "volatility", "EN", { period: 14 }, ["period"], "ATR \u0646\u0631\u0645\u0627\u0644\u200C\u0634\u062F\u0647 (\u062F\u0631\u0635\u062F)", (c, p) => {
+  const x = closes(c), a = rmaArr(trArr(c), p.period);
+  return asSeries(a.map((v, i) => x[i] ? 100 * v / x[i] : NaN));
+});
+def3("rvi_vol", "volatility", "deep-web", { period: 14 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u0646\u0633\u0628\u06CC", (c, p) => {
+  const x = closes(c), n = x.length, sd = stdArr(x, p.period);
+  const up = NaNArr3(n), dn = NaNArr3(n);
+  for (let i = 1; i < n; i++) {
+    if (x[i] > x[i - 1]) {
+      up[i] = sd[i];
+      dn[i] = 0;
+    } else {
+      up[i] = 0;
+      dn[i] = sd[i];
+    }
+  }
+  const eu = emaArr(up, p.period), ed = emaArr(dn, p.period);
+  return asSeries(eu.map((v, i) => v + ed[i] ? 100 * v / (v + ed[i]) : NaN));
+});
+def3("ulcer", "volatility", "EN", { period: 14 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u0632\u062E\u0645 (\u0639\u0645\u0642\u0650 \u0627\u0641\u062A)", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    let s = 0;
+    for (let k = 0; k < p.period; k++) {
+      const hh = highest(x, i, p.period);
+      const dd = hh ? 100 * (x[i - k] - hh) / hh : 0;
+      s += dd * dd;
+    }
+    out[i] = Math.sqrt(s / p.period);
+  }
+  return asSeries(out);
+});
+def3("chop", "volatility", "EN", { period: 14 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u0686\u0627\u067E\u06CC\u0646\u0633 (\u0631\u0648\u0646\u062F/\u0631\u0646\u062C)", (c, p) => {
+  const n = c.length, tr = trArr(c), h = highs(c), l = lows(c), out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let sumTr = 0;
+    for (let k = 0; k < p.period; k++) sumTr += tr[i - k] || 0;
+    const hh = highest(h, i, p.period), ll = lowest(l, i, p.period);
+    const rng = hh - ll;
+    out[i] = rng > 0 ? 100 * Math.log10(sumTr / rng) / Math.log10(p.period) : NaN;
+  }
+  return asSeries(out);
+});
+def3("mass", "volatility", "CN", { ema: 9, sum: 25 }, ["ema", "sum"], "\u0634\u0627\u062E\u0635\u0650 \u0645\u0650\u06CC\u0633 (\u6885\u65AF\u7EBF)", (c, p) => {
+  const n = c.length, rng = c.map((k) => k.high - k.low);
+  const e1 = emaArr(rng, p.ema), e2 = emaArr(e1, p.ema);
+  const ratio = e1.map((v, i) => e2[i] ? v / e2[i] : NaN), out = NaNArr3(n);
+  for (let i = p.sum - 1; i < n; i++) {
+    let s = 0, ok = true;
+    for (let k = 0; k < p.sum; k++) {
+      if (!Number.isFinite(ratio[i - k])) {
+        ok = false;
+        break;
+      }
+      s += ratio[i - k];
+    }
+    if (ok) out[i] = s;
+  }
+  return asSeries(out);
+});
+def3("atr_pct", "volatility", "composite", { period: 14, lookback: 100 }, ["period", "lookback"], "\u0635\u062F\u06A9\u0650 ATR (\u0631\u0698\u06CC\u0645\u0650 \u0646\u0648\u0633\u0627\u0646)", (c, p) => {
+  const a = rmaArr(trArr(c), p.period), n = a.length, out = NaNArr3(n);
+  for (let i = p.lookback; i < n; i++) {
+    if (!Number.isFinite(a[i])) continue;
+    let below = 0, cnt = 0;
+    for (let k = 0; k < p.lookback; k++) {
+      const v = a[i - k];
+      if (Number.isFinite(v)) {
+        cnt++;
+        if (v <= a[i]) below++;
+      }
+    }
+    out[i] = cnt ? 100 * below / cnt : NaN;
+  }
+  return asSeries(out);
+});
+def3("obv", "volume", "EN", {}, [], "\u062D\u062C\u0645\u0650 \u062A\u0639\u0627\u062F\u0644\u06CC (proxy \u062A\u06CC\u06A9 \u0628\u0631\u0627\u06CC XAU)", (c) => {
+  const x = closes(c), v = vols(c), n = x.length, out = NaNArr3(n);
+  let acc = 0;
+  out[0] = 0;
+  for (let i = 1; i < n; i++) {
+    acc += x[i] > x[i - 1] ? v[i] : x[i] < x[i - 1] ? -v[i] : 0;
+    out[i] = acc;
+  }
+  return asSeries(out);
+});
+def3("ad", "volume", "EN", {}, [], "\u062E\u0637\u0650 \u0627\u0646\u0628\u0627\u0634\u062A/\u062A\u0648\u0632\u06CC\u0639 (proxy \u062A\u06CC\u06A9)", (c) => {
+  const n = c.length, out = NaNArr3(n);
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    const rng = c[i].high - c[i].low;
+    const mfm = rng ? (c[i].close - c[i].low - (c[i].high - c[i].close)) / rng : 0;
+    acc += mfm * c[i].volume;
+    out[i] = acc;
+  }
+  return asSeries(out);
+});
+def3("adosc", "volume", "EN", { fast: 3, slow: 10 }, ["fast", "slow"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 A/D \u0686\u0627\u06CC\u06A9\u06CC\u0646", (c, p) => {
+  const n = c.length, adl = NaNArr3(n);
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    const rng = c[i].high - c[i].low;
+    const mfm = rng ? (c[i].close - c[i].low - (c[i].high - c[i].close)) / rng : 0;
+    acc += mfm * c[i].volume;
+    adl[i] = acc;
+  }
+  const f = emaArr(adl, p.fast), s = emaArr(adl, p.slow);
+  return asSeries(f.map((v, i) => v - s[i]));
+});
+def3("efi", "volume", "EN", { period: 13 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u0646\u06CC\u0631\u0648\u06CC \u0627\u0644\u062F\u0631", (c, p) => {
+  const x = closes(c), v = vols(c), n = x.length, raw2 = NaNArr3(n);
+  for (let i = 1; i < n; i++) raw2[i] = (x[i] - x[i - 1]) * v[i];
+  return asSeries(emaArr(raw2, p.period));
+});
+def3("mfi", "volume", "EN", { period: 14 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u062C\u0631\u06CC\u0627\u0646\u0650 \u067E\u0648\u0644 (proxy \u062A\u06CC\u06A9)", (c, p) => {
+  const n = c.length, tp = c.map((k) => (k.high + k.low + k.close) / 3), out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let pos = 0, neg = 0;
+    for (let k = 0; k < p.period; k++) {
+      const mf = tp[i - k] * c[i - k].volume;
+      if (tp[i - k] > tp[i - k - 1]) pos += mf;
+      else if (tp[i - k] < tp[i - k - 1]) neg += mf;
+    }
+    out[i] = neg === 0 ? 100 : 100 - 100 / (1 + pos / neg);
+  }
+  return asSeries(out);
+});
+def3("wvad", "volume", "CN", { period: 24 }, ["period"], "\u0648\u0627\u0631\u06CC\u0627\u0646\u0633\u0650 \u067E\u062E\u0634\u0650 \u0648\u06CC\u0644\u06CC\u0627\u0645\u0632 (\u5A01\u5EC9\u53D8\u5F02\u79BB\u6563\u91CF)", (c, p) => {
+  const n = c.length, raw2 = NaNArr3(n);
+  for (let i = 0; i < n; i++) {
+    const rng = c[i].high - c[i].low;
+    raw2[i] = rng ? (c[i].close - c[i].open) / rng * c[i].volume : 0;
+  }
+  return asSeries(smaArr(raw2, p.period));
+});
+def3("vpt", "volume", "CN", {}, [], "\u0631\u0648\u0646\u062F\u0650 \u062D\u062C\u0645-\u0642\u06CC\u0645\u062A (\u91CF\u4EF7\u66F2\u7EBF)", (c) => {
+  const x = closes(c), v = vols(c), n = x.length, out = NaNArr3(n);
+  let acc = 0;
+  out[0] = 0;
+  for (let i = 1; i < n; i++) {
+    acc += x[i - 1] ? v[i] * ((x[i] - x[i - 1]) / x[i - 1]) : 0;
+    out[i] = acc;
+  }
+  return asSeries(out);
+});
+def3("emv", "volume", "EN", { period: 14 }, ["period"], "\u0633\u0647\u0648\u0644\u062A\u0650 \u062D\u0631\u06A9\u062A (\u0622\u0631\u0645\u0632)", (c, p) => {
+  const n = c.length, raw2 = NaNArr3(n);
+  for (let i = 1; i < n; i++) {
+    const mid = (c[i].high + c[i].low) / 2 - (c[i - 1].high + c[i - 1].low) / 2;
+    const rng = c[i].high - c[i].low;
+    const boxRatio = c[i].volume && rng ? c[i].volume / 1e6 / rng : 0;
+    raw2[i] = boxRatio ? mid / boxRatio : 0;
+  }
+  return asSeries(smaArr(raw2, p.period));
+});
+var VOLATILITY_ITEMS = K3.items;
+
+// ../web_tool/src/indicators/bank/statistical.ts
+var K4 = makeKit();
+var { def: def4 } = K4;
+def4("skew", "statistical", "EN", { period: 20 }, ["period"], "\u0686\u0648\u0644\u06AF\u06CC\u0650 \u063A\u0644\u062A\u0627\u0646", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    let m = 0;
+    for (let k = 0; k < p.period; k++) m += x[i - k];
+    m /= p.period;
+    let s2 = 0, s3 = 0;
+    for (let k = 0; k < p.period; k++) {
+      const d = x[i - k] - m;
+      s2 += d * d;
+      s3 += d * d * d;
+    }
+    const sd = Math.sqrt(s2 / p.period);
+    out[i] = sd ? s3 / p.period / (sd * sd * sd) : 0;
+  }
+  return asSeries(out);
+});
+def4("kurt", "statistical", "EN", { period: 20 }, ["period"], "\u06A9\u0634\u06CC\u062F\u06AF\u06CC\u0650 \u063A\u0644\u062A\u0627\u0646 (excess)", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    let m = 0;
+    for (let k = 0; k < p.period; k++) m += x[i - k];
+    m /= p.period;
+    let s2 = 0, s4 = 0;
+    for (let k = 0; k < p.period; k++) {
+      const d = x[i - k] - m;
+      s2 += d * d;
+      s4 += d * d * d * d;
+    }
+    const v = s2 / p.period;
+    out[i] = v ? s4 / p.period / (v * v) - 3 : 0;
+  }
+  return asSeries(out);
+});
+def4("corr_t", "statistical", "EN", { period: 20 }, ["period"], "\u0647\u0645\u0628\u0633\u062A\u06AF\u06CC\u0650 \u0642\u06CC\u0645\u062A \u0628\u0627 \u0632\u0645\u0627\u0646", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    let sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
+    for (let k = 0; k < p.period; k++) {
+      const t = k, y = x[i - (p.period - 1 - k)];
+      sx += t;
+      sy += y;
+      sxy += t * y;
+      sxx += t * t;
+      syy += y * y;
+    }
+    const num = p.period * sxy - sx * sy;
+    const den = Math.sqrt((p.period * sxx - sx * sx) * (p.period * syy - sy * sy));
+    out[i] = den ? num / den : 0;
+  }
+  return asSeries(out);
+});
+def4("r2", "statistical", "EN", { period: 20 }, ["period"], "\u0636\u0631\u06CC\u0628\u0650 \u062A\u0639\u06CC\u06CC\u0646\u0650 \u0631\u06AF\u0631\u0633\u06CC\u0648\u0646 (R\xB2)", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    let sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
+    for (let k = 0; k < p.period; k++) {
+      const t = k, y = x[i - (p.period - 1 - k)];
+      sx += t;
+      sy += y;
+      sxy += t * y;
+      sxx += t * t;
+      syy += y * y;
+    }
+    const num = p.period * sxy - sx * sy;
+    const den = (p.period * sxx - sx * sx) * (p.period * syy - sy * sy);
+    const r = den ? num / Math.sqrt(den) : 0;
+    out[i] = r * r;
+  }
+  return asSeries(out);
+});
+def4("hurst", "statistical", "deep-web", { period: 64 }, ["period"], "\u0646\u0645\u0627\u06CC \u0647\u0631\u0633\u062A (R/S)", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const ret = NaNArr3(n);
+  for (let i = 1; i < n; i++) ret[i] = x[i - 1] ? Math.log(x[i] / x[i - 1]) : 0;
+  for (let i = p.period; i < n; i++) {
+    const w = [];
+    for (let k = 0; k < p.period; k++) w.push(ret[i - k] || 0);
+    const m = w.reduce((a, b) => a + b, 0) / p.period;
+    let cum = 0, mn = Infinity, mx = -Infinity, s2 = 0;
+    for (let k = 0; k < p.period; k++) {
+      cum += w[k] - m;
+      if (cum < mn) mn = cum;
+      if (cum > mx) mx = cum;
+      s2 += (w[k] - m) * (w[k] - m);
+    }
+    const sd = Math.sqrt(s2 / p.period), R = mx - mn;
+    out[i] = sd && R > 0 ? Math.log(R / sd) / Math.log(p.period) : 0.5;
+  }
+  return asSeries(out);
+});
+def4("entropy", "statistical", "deep-web", { period: 20, bins: 8 }, ["period", "bins"], "\u0622\u0646\u062A\u0631\u0648\u067E\u06CC\u0650 \u0634\u0627\u0646\u0648\u0646\u0650 \u0628\u0627\u0632\u062F\u0647", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const ret = NaNArr3(n);
+  for (let i = 1; i < n; i++) ret[i] = x[i - 1] ? (x[i] - x[i - 1]) / x[i - 1] : 0;
+  for (let i = p.period; i < n; i++) {
+    const w = [];
+    for (let k = 0; k < p.period; k++) w.push(ret[i - k] || 0);
+    const mn = Math.min(...w), mx = Math.max(...w), rng = mx - mn || 1e-10;
+    const hist = new Array(p.bins).fill(0);
+    for (const v of w) {
+      const b = Math.min(p.bins - 1, Math.floor((v - mn) / rng * p.bins));
+      hist[b]++;
+    }
+    let h = 0;
+    for (const cnt of hist) {
+      if (cnt) {
+        const pr = cnt / p.period;
+        h -= pr * Math.log2(pr);
+      }
+    }
+    out[i] = h;
+  }
+  return asSeries(out);
+});
+def4("frama", "trend", "deep-web", { period: 16 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u062A\u0637\u0628\u06CC\u0642\u06CC\u0650 \u0641\u0631\u0627\u06A9\u062A\u0627\u0644\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (c, p) => {
+  const h = highs(c), l = lows(c), x = closes(c), n = x.length, out = NaNArr3(n);
+  const per = p.period % 2 === 0 ? p.period : p.period + 1, half = per / 2;
+  let prev = NaN;
+  for (let i = 0; i < n; i++) {
+    if (i < per) {
+      out[i] = x[i];
+      prev = x[i];
+      continue;
+    }
+    const n1 = (highest(h, i - half, half) - lowest(l, i - half, half)) / half;
+    const n2 = (highest(h, i, half) - lowest(l, i, half)) / half;
+    const n3 = (highest(h, i, per) - lowest(l, i, per)) / per;
+    let D = 1;
+    if (n1 > 0 && n2 > 0 && n3 > 0) D = (Math.log(n1 + n2) - Math.log(n3)) / Math.log(2);
+    const a = Math.exp(-4.6 * (D - 1));
+    const alpha = Math.max(0.01, Math.min(1, a));
+    prev = Number.isFinite(prev) ? alpha * x[i] + (1 - alpha) * prev : x[i];
+    out[i] = prev;
+  }
+  return asSeries(out);
+});
+def4("fdi", "statistical", "deep-web", { period: 30 }, ["period"], "\u0634\u0627\u062E\u0635\u0650 \u0628\u064F\u0639\u062F\u0650 \u0641\u0631\u0627\u06A9\u062A\u0627\u0644", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    const hh = highest(x, i, p.period), ll = lowest(x, i, p.period), rng = hh - ll || 1e-10;
+    let L = 0;
+    for (let k = 1; k < p.period; k++) {
+      const d1 = (x[i - k + 1] - x[i - k]) / rng;
+      L += Math.sqrt(d1 * d1 + 1 / (p.period * p.period));
+    }
+    out[i] = 1 + (Math.log(L) + Math.log(2)) / Math.log(2 * p.period);
+  }
+  return asSeries(out);
+});
+var STATISTICAL_ITEMS = K4.items;
+
+// ../web_tool/src/indicators/bank/cycle.ts
+var K5 = makeKit();
+var { def: def5 } = K5;
+def5("ssf", "cycle", "deep-web", { period: 10 }, ["period"], "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0633\u0648\u067E\u0631-\u0627\u0633\u0645\u0648\u062A\u0631\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const a = Math.exp(-1.414 * Math.PI / p.period);
+  const b = 2 * a * Math.cos(1.414 * Math.PI / p.period);
+  const c2 = b, c3 = -a * a, c1 = 1 - c2 - c3;
+  for (let i = 0; i < n; i++) {
+    if (i < 2) {
+      out[i] = x[i];
+      continue;
+    }
+    out[i] = c1 * (x[i] + x[i - 1]) / 2 + c2 * out[i - 1] + c3 * out[i - 2];
+  }
+  return asSeries(out);
+});
+def5("ehp", "cycle", "deep-web", { period: 48 }, ["period"], "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0628\u0627\u0644\u0627\u06AF\u0630\u0631\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const a = (Math.cos(2 * Math.PI / p.period) + Math.sin(2 * Math.PI / p.period) - 1) / Math.cos(2 * Math.PI / p.period);
+  for (let i = 0; i < n; i++) {
+    if (i < 1) {
+      out[i] = 0;
+      continue;
+    }
+    out[i] = (1 - a / 2) * (x[i] - x[i - 1]) + (1 - a) * out[i - 1];
+  }
+  return asSeries(out);
+});
+def5("roof", "cycle", "deep-web", { hp: 48, ss: 10 }, ["hp", "ss"], "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0633\u0642\u0641\u06CC\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (c, p) => {
+  const x = closes(c), n = x.length, hp = NaNArr3(n);
+  const a = (Math.cos(2 * Math.PI / p.hp) + Math.sin(2 * Math.PI / p.hp) - 1) / Math.cos(2 * Math.PI / p.hp);
+  for (let i = 0; i < n; i++) {
+    if (i < 2) {
+      hp[i] = 0;
+      continue;
+    }
+    hp[i] = (1 - a / 2) * (1 - a / 2) * (x[i] - 2 * x[i - 1] + x[i - 2]) + 2 * (1 - a) * hp[i - 1] - (1 - a) * (1 - a) * hp[i - 2];
+  }
+  const out = NaNArr3(n);
+  const aa = Math.exp(-1.414 * Math.PI / p.ss), bb = 2 * aa * Math.cos(1.414 * Math.PI / p.ss);
+  const c2 = bb, c3 = -aa * aa, c1 = 1 - c2 - c3;
+  for (let i = 0; i < n; i++) {
+    if (i < 2) {
+      out[i] = hp[i];
+      continue;
+    }
+    out[i] = c1 * (hp[i] + hp[i - 1]) / 2 + c2 * out[i - 1] + c3 * out[i - 2];
+  }
+  return asSeries(out);
+});
+def5("laguerre", "cycle", "deep-web", { gamma: 0.8 }, ["gamma"], "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0644\u0627\u06AF\u0631\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  let L0 = 0, L1 = 0, L2 = 0, L3 = 0;
+  const g = p.gamma;
+  for (let i = 0; i < n; i++) {
+    const pL0 = L0, pL1 = L1, pL2 = L2;
+    L0 = (1 - g) * x[i] + g * L0;
+    L1 = -g * L0 + pL0 + g * L1;
+    L2 = -g * L1 + pL1 + g * L2;
+    L3 = -g * L2 + pL2 + g * L3;
+    out[i] = (L0 + 2 * L1 + 2 * L2 + L3) / 6;
+  }
+  return asSeries(out);
+});
+def5("laguerre_rsi", "cycle", "deep-web", { gamma: 0.5 }, ["gamma"], "RSI \u0644\u0627\u06AF\u0631\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  let L0 = 0, L1 = 0, L2 = 0, L3 = 0;
+  const g = p.gamma;
+  for (let i = 0; i < n; i++) {
+    const pL0 = L0, pL1 = L1, pL2 = L2;
+    L0 = (1 - g) * x[i] + g * L0;
+    L1 = -g * L0 + pL0 + g * L1;
+    L2 = -g * L1 + pL1 + g * L2;
+    L3 = -g * L2 + pL2 + g * L3;
+    let cu = 0, cd = 0;
+    if (L0 >= L1) cu += L0 - L1;
+    else cd += L1 - L0;
+    if (L1 >= L2) cu += L1 - L2;
+    else cd += L2 - L1;
+    if (L2 >= L3) cu += L2 - L3;
+    else cd += L3 - L2;
+    out[i] = cu + cd ? 100 * cu / (cu + cd) : 50;
+  }
+  return asSeries(out);
+});
+def5("reflex", "cycle", "deep-web", { period: 20 }, ["period"], "\u0631\u06CC\u0641\u0644\u06A9\u0633\u0650 \u0627\u0650\u0647\u0644\u0631\u0632 (\u06F2\u06F0\u06F2\u06F0)", (c, p) => {
+  const x = closes(c), n = x.length, ssf = NaNArr3(n);
+  const a = Math.exp(-1.414 * Math.PI / (p.period / 2)), b = 2 * a * Math.cos(1.414 * Math.PI / (p.period / 2));
+  const c2 = b, c3 = -a * a, c1 = 1 - c2 - c3;
+  for (let i = 0; i < n; i++) {
+    if (i < 2) {
+      ssf[i] = x[i];
+      continue;
+    }
+    ssf[i] = c1 * (x[i] + x[i - 1]) / 2 + c2 * ssf[i - 1] + c3 * ssf[i - 2];
+  }
+  const out = NaNArr3(n);
+  let ms = 0;
+  for (let i = p.period; i < n; i++) {
+    const slope = (ssf[i - p.period] - ssf[i]) / p.period;
+    let sum = 0;
+    for (let k = 1; k <= p.period; k++) sum += ssf[i] + k * slope - ssf[i - k];
+    sum /= p.period;
+    ms = 0.04 * sum * sum + 0.96 * ms;
+    out[i] = ms ? sum / Math.sqrt(ms) : 0;
+  }
+  return asSeries(out);
+});
+def5("trendflex", "cycle", "deep-web", { period: 20 }, ["period"], "\u062A\u0631\u0646\u062F\u0641\u0644\u06A9\u0633\u0650 \u0627\u0650\u0647\u0644\u0631\u0632 (\u06F2\u06F0\u06F2\u06F0)", (c, p) => {
+  const x = closes(c), n = x.length, ssf = NaNArr3(n);
+  const a = Math.exp(-1.414 * Math.PI / (p.period / 2)), b = 2 * a * Math.cos(1.414 * Math.PI / (p.period / 2));
+  const c2 = b, c3 = -a * a, c1 = 1 - c2 - c3;
+  for (let i = 0; i < n; i++) {
+    if (i < 2) {
+      ssf[i] = x[i];
+      continue;
+    }
+    ssf[i] = c1 * (x[i] + x[i - 1]) / 2 + c2 * ssf[i - 1] + c3 * ssf[i - 2];
+  }
+  const out = NaNArr3(n);
+  let ms = 0;
+  for (let i = p.period; i < n; i++) {
+    let sum = 0;
+    for (let k = 1; k <= p.period; k++) sum += ssf[i] - ssf[i - k];
+    sum /= p.period;
+    ms = 0.04 * sum * sum + 0.96 * ms;
+    out[i] = ms ? sum / Math.sqrt(ms) : 0;
+  }
+  return asSeries(out);
+});
+def5("cg", "cycle", "deep-web", { period: 10 }, ["period"], "\u0645\u0631\u06A9\u0632\u0650 \u062B\u0642\u0644\u0650 \u0627\u0650\u0647\u0644\u0631\u0632 (CG)", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) {
+    let num = 0, den = 0;
+    for (let k = 0; k < p.period; k++) {
+      num += (1 + k) * x[i - k];
+      den += x[i - k];
+    }
+    out[i] = den ? -num / den + (p.period + 1) / 2 : 0;
+  }
+  return asSeries(out);
+});
+def5("dsma", "cycle", "deep-web", { period: 20 }, ["period"], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0645\u0642\u06CC\u0627\u0633\u0650\u200C\u0627\u0646\u062D\u0631\u0627\u0641\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n), zeros = NaNArr3(n), filt = NaNArr3(n);
+  const a = Math.exp(-1.414 * Math.PI / (p.period / 2)), b = 2 * a * Math.cos(1.414 * Math.PI / (p.period / 2));
+  const c2 = b, c3 = -a * a, c1 = 1 - c2 - c3;
+  let prev = NaN;
+  for (let i = 0; i < n; i++) {
+    zeros[i] = i >= 2 ? x[i] - x[i - 2] : 0;
+    if (i < 2) {
+      filt[i] = 0;
+      out[i] = x[i];
+      prev = x[i];
+      continue;
+    }
+    filt[i] = c1 * (zeros[i] + zeros[i - 1]) / 2 + c2 * filt[i - 1] + c3 * filt[i - 2];
+    let rms = 0;
+    const w = Math.min(p.period, i + 1);
+    for (let k = 0; k < w; k++) rms += filt[i - k] * filt[i - k];
+    rms = Math.sqrt(rms / w);
+    const sc = rms ? Math.abs(filt[i] / rms) : 0;
+    const alpha = Math.max(0.01, Math.min(1, 5 * sc / p.period));
+    prev = alpha * x[i] + (1 - alpha) * prev;
+    out[i] = prev;
+  }
+  return asSeries(out);
+});
+var CYCLE_ITEMS = K5.items;
+
+// ../web_tool/src/indicators/bank/structure.ts
+var K6 = makeKit();
+var { def: def6 } = K6;
+def6("supertrend", "trend", "deep-web", { period: 10, mult: 3 }, ["period", "mult"], "\u0633\u0648\u067E\u0631\u062A\u0631\u0646\u062F (ATR-\u0645\u062D\u0648\u0631)", (c, p) => {
+  const n = c.length, atr2 = rmaArr(trArr(c), p.period), out = NaNArr3(n);
+  let finalUp = NaN, finalDn = NaN, dir = 1, started = false;
+  for (let i = 0; i < n; i++) {
+    if (!Number.isFinite(atr2[i])) continue;
+    const mid = (c[i].high + c[i].low) / 2;
+    const basicUp = mid - p.mult * atr2[i];
+    const basicDn = mid + p.mult * atr2[i];
+    if (!started) {
+      finalUp = basicUp;
+      finalDn = basicDn;
+      dir = 1;
+      out[i] = finalUp;
+      started = true;
+      continue;
+    }
+    finalUp = basicUp > finalUp || c[i - 1].close < finalUp ? basicUp : finalUp;
+    finalDn = basicDn < finalDn || c[i - 1].close > finalDn ? basicDn : finalDn;
+    if (dir === 1 && c[i].close < finalUp) dir = -1;
+    else if (dir === -1 && c[i].close > finalDn) dir = 1;
+    out[i] = dir === 1 ? finalUp : finalDn;
+  }
+  return asSeries(out);
+});
+def6("psar", "trend", "EN", { step: 0.02, max: 0.2 }, ["step", "max"], "\u0633\u0627\u0631\u0650 \u0633\u0647\u0645\u0648\u06CC", (c, p) => {
+  const n = c.length, out = NaNArr3(n);
+  if (n < 2) return asSeries(out);
+  let bull = c[1].close >= c[0].close;
+  let af = p.step, ep = bull ? c[0].high : c[0].low, sar = bull ? c[0].low : c[0].high;
+  for (let i = 1; i < n; i++) {
+    sar = sar + af * (ep - sar);
+    if (bull) {
+      if (c[i].low < sar) {
+        bull = false;
+        sar = ep;
+        ep = c[i].low;
+        af = p.step;
+      } else {
+        if (c[i].high > ep) {
+          ep = c[i].high;
+          af = Math.min(p.max, af + p.step);
+        }
+      }
+    } else {
+      if (c[i].high > sar) {
+        bull = true;
+        sar = ep;
+        ep = c[i].high;
+        af = p.step;
+      } else {
+        if (c[i].low < ep) {
+          ep = c[i].low;
+          af = Math.min(p.max, af + p.step);
+        }
+      }
+    }
+    out[i] = sar;
+  }
+  return asSeries(out);
+});
+def6("aroon", "trend", "EN", { period: 25 }, ["period"], "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u0622\u0631\u0648\u0646", (c, p) => {
+  const h = highs(c), l = lows(c), n = c.length, out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let hi = 0, li = 0, hv = -Infinity, lv = Infinity;
+    for (let k = 0; k <= p.period; k++) {
+      if (h[i - k] > hv) {
+        hv = h[i - k];
+        hi = k;
+      }
+      if (l[i - k] < lv) {
+        lv = l[i - k];
+        li = k;
+      }
+    }
+    const up = 100 * (p.period - hi) / p.period, dn = 100 * (p.period - li) / p.period;
+    out[i] = up - dn;
+  }
+  return asSeries(out);
+});
+def6("vortex", "trend", "EN", { period: 14 }, ["period"], "\u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631\u0650 \u06AF\u0631\u062F\u0627\u0628\u06CC (\u0648\u0631\u062A\u06A9\u0633)", (c, p) => {
+  const n = c.length, vmP = NaNArr3(n), vmN = NaNArr3(n), tr = trArr(c);
+  for (let i = 1; i < n; i++) {
+    vmP[i] = Math.abs(c[i].high - c[i - 1].low);
+    vmN[i] = Math.abs(c[i].low - c[i - 1].high);
+  }
+  const out = NaNArr3(n);
+  for (let i = p.period; i < n; i++) {
+    let sp = 0, sn = 0, st = 0;
+    for (let k = 0; k < p.period; k++) {
+      sp += vmP[i - k] || 0;
+      sn += vmN[i - k] || 0;
+      st += tr[i - k] || 0;
+    }
+    out[i] = st ? (sp - sn) / st : 0;
+  }
+  return asSeries(out);
+});
+def6("donchian_mid", "trend", "EN", { period: 20 }, ["period"], "\u062E\u0637\u0650 \u0645\u06CC\u0627\u0646\u06CC\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u062F\u0648\u0646\u0686\u06CC\u0627\u0646", (c, p) => {
+  const h = highs(c), l = lows(c), n = c.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) out[i] = (highest(h, i, p.period) + lowest(l, i, p.period)) / 2;
+  return asSeries(out);
+});
+def6("qqe", "momentum", "RU", { rsiP: 14, sf: 5 }, ["rsiP", "sf"], "\u0628\u0631\u0622\u0648\u0631\u062F\u0650 \u06A9\u0645\u06CC-\u06A9\u06CC\u0641\u06CC (QQE)", (c, p) => {
+  const rsi2 = rsi(closes(c), p.rsiP);
+  return asSeries(emaArr(rsi2, p.sf));
+});
+def6("stc", "momentum", "EN", { fast: 23, slow: 50, cycle: 10 }, ["fast", "slow", "cycle"], "\u0686\u0631\u062E\u0647\u0654 \u0631\u0648\u0646\u062F\u0650 \u0634\u0627\u0641 (STC)", (c, p) => {
+  const x = closes(c), n = x.length;
+  const macd2 = emaArr(x, p.fast).map((v, i) => v - emaArr(x, p.slow)[i]);
+  const stoch1 = NaNArr3(n);
+  for (let i = p.cycle - 1; i < n; i++) {
+    const hh = highest(macd2, i, p.cycle), ll = lowest(macd2, i, p.cycle);
+    stoch1[i] = hh - ll ? 100 * (macd2[i] - ll) / (hh - ll) : 50;
+  }
+  const d1 = emaArr(stoch1, Math.max(2, Math.floor(p.cycle / 2)));
+  const stoch2 = NaNArr3(n);
+  for (let i = p.cycle - 1; i < n; i++) {
+    const hh = highest(d1, i, p.cycle), ll = lowest(d1, i, p.cycle);
+    stoch2[i] = hh - ll ? 100 * (d1[i] - ll) / (hh - ll) : 50;
+  }
+  return asSeries(emaArr(stoch2, Math.max(2, Math.floor(p.cycle / 2))));
+});
+def6("crsi", "momentum", "deep-web", { rsiP: 3, streakP: 2, rankP: 100 }, ["rsiP", "streakP", "rankP"], "\u06A9\u0627\u0646\u0631\u0632\u0650 RSI", (c, p) => {
+  const x = closes(c), n = x.length;
+  const rsi2 = rsi(x, p.rsiP);
+  const streak = NaNArr3(n);
+  let s = 0;
+  for (let i = 1; i < n; i++) {
+    if (x[i] > x[i - 1]) s = s >= 0 ? s + 1 : 1;
+    else if (x[i] < x[i - 1]) s = s <= 0 ? s - 1 : -1;
+    else s = 0;
+    streak[i] = s;
+  }
+  const streakRsi = rsi(streak.map((v) => Number.isFinite(v) ? v : 0), p.streakP);
+  const ret = NaNArr3(n);
+  for (let i = 1; i < n; i++) ret[i] = x[i - 1] ? (x[i] - x[i - 1]) / x[i - 1] : 0;
+  const rank = NaNArr3(n);
+  for (let i = p.rankP; i < n; i++) {
+    let below = 0;
+    for (let k = 1; k <= p.rankP; k++) if (ret[i - k] < ret[i]) below++;
+    rank[i] = 100 * below / p.rankP;
+  }
+  const out = NaNArr3(n);
+  for (let i = 0; i < n; i++) if (Number.isFinite(rsi2[i]) && Number.isFinite(streakRsi[i]) && Number.isFinite(rank[i])) out[i] = (rsi2[i] + streakRsi[i] + rank[i]) / 3;
+  return asSeries(out);
+});
+def6("waddah", "momentum", "RU", { fast: 20, slow: 40, bbP: 20, bbM: 2 }, ["fast", "slow", "bbP", "bbM"], "\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0648\u062F\u0627\u062D\u200C\u0639\u0637\u0627\u0631", (c, p) => {
+  const x = closes(c), n = x.length;
+  const macd2 = emaArr(x, p.fast).map((v, i) => v - emaArr(x, p.slow)[i]);
+  const sd = stdArr(x, p.bbP), sma2 = smaArr(x, p.bbP);
+  const out = NaNArr3(n);
+  for (let i = 1; i < n; i++) {
+    const t = (macd2[i] - macd2[i - 1]) * 150;
+    const bbw = 2 * p.bbM * sd[i];
+    out[i] = Number.isFinite(t) && Number.isFinite(bbw) ? t : NaN;
+    void sma2;
+  }
+  return asSeries(out);
+});
+def6("elder_impulse", "composite", "EN", { emaP: 13, macdF: 12, macdS: 26, macdSig: 9 }, ["emaP", "macdF", "macdS", "macdSig"], "\u0633\u06CC\u0633\u062A\u0645\u0650 \u0636\u0631\u0628\u0647\u0654 \u0627\u0644\u062F\u0631", (c, p) => {
+  const x = closes(c), n = x.length;
+  const e = emaArr(x, p.emaP);
+  const macd2 = emaArr(x, p.macdF).map((v, i) => v - emaArr(x, p.macdS)[i]);
+  const sig = emaArr(macd2, p.macdSig);
+  const hist = macd2.map((v, i) => v - sig[i]);
+  const out = NaNArr3(n);
+  for (let i = 1; i < n; i++) {
+    const es = Math.sign(e[i] - e[i - 1]), hs = Math.sign(hist[i] - hist[i - 1]);
+    out[i] = es > 0 && hs > 0 ? 1 : es < 0 && hs < 0 ? -1 : 0;
+  }
+  return asSeries(out);
+});
+def6("chandelier", "trend", "EN", { period: 22, mult: 3 }, ["period", "mult"], "\u062E\u0631\u0648\u062C\u0650 \u0634\u0645\u0639\u062F\u0627\u0646\u06CC (\u062A\u0631\u0650\u06CC\u0644\u06CC\u0646\u06AF)", (c, p) => {
+  const h = highs(c), atr2 = rmaArr(trArr(c), p.period), n = c.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) out[i] = highest(h, i, p.period) - p.mult * atr2[i];
+  return asSeries(out);
+});
+def6("gann_hilo", "trend", "RU", { period: 10 }, ["period"], "\u0641\u0639\u0627\u0644\u200C\u0633\u0627\u0632\u0650 \u06AF\u0627\u0646\u0650 \u0647\u0627\u06CC\u200C\u0644\u0648", (c, p) => {
+  const h = highs(c), l = lows(c), n = c.length, out = NaNArr3(n);
+  const sh = smaArr(h, p.period), sl = smaArr(l, p.period);
+  let dir = 1;
+  for (let i = p.period; i < n; i++) {
+    if (c[i].close > sh[i - 1]) dir = 1;
+    else if (c[i].close < sl[i - 1]) dir = -1;
+    out[i] = dir === 1 ? sl[i] : sh[i];
+  }
+  return asSeries(out);
+});
+def6("tdi", "momentum", "RU", { rsiP: 13, sig: 7 }, ["rsiP", "sig"], "\u0634\u0627\u062E\u0635\u0650 \u067E\u0648\u06CC\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u06AF\u0631\u0627\u0646", (c, p) => {
+  const rsi2 = rsi(closes(c), p.rsiP);
+  return asSeries(smaArr(rsi2, p.sig));
+});
+var STRUCTURE_ITEMS = K6.items;
+
+// ../web_tool/src/indicators/bank/composite.ts
+var K7 = makeKit();
+var { def: def7 } = K7;
+def7("hl2", "overlap", "EN", {}, [], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0633\u0642\u0641-\u06A9\u0641", (c) => asSeries(c.map((k) => (k.high + k.low) / 2)));
+def7("hlc3", "overlap", "EN", {}, [], "\u0642\u06CC\u0645\u062A\u0650 \u0646\u0648\u0639\u06CC (typical)", (c) => asSeries(c.map((k) => (k.high + k.low + k.close) / 3)));
+def7("ohlc4", "overlap", "EN", {}, [], "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0686\u0647\u0627\u0631\u0642\u06CC\u0645\u062A\u06CC", (c) => asSeries(c.map((k) => (k.open + k.high + k.low + k.close) / 4)));
+def7("wcp", "overlap", "EN", {}, [], "\u0642\u06CC\u0645\u062A\u0650 \u0628\u0633\u062A\u0647\u0654 \u0648\u0632\u0646\u06CC", (c) => asSeries(c.map((k) => (k.high + k.low + 2 * k.close) / 4)));
+def7("midpoint", "overlap", "EN", { period: 14 }, ["period"], "\u0646\u0642\u0637\u0647\u0654 \u0645\u06CC\u0627\u0646\u06CC\u0650 \u06A9\u0644\u0648\u0632", (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = p.period - 1; i < n; i++) out[i] = (highest(x, i, p.period) + lowest(x, i, p.period)) / 2;
+  return asSeries(out);
+});
+def7("ema_dist_atr", "composite", "composite", { emaP: 50, atrP: 14 }, ["emaP", "atrP"], "\u0641\u0627\u0635\u0644\u0647\u0654 \u0646\u0631\u0645\u0627\u0644\u200C\u0634\u062F\u0647\u0654 \u0642\u06CC\u0645\u062A \u0627\u0632 EMA (\u0628\u0631 \u062D\u0633\u0628\u0650 ATR)", (c, p) => {
+  const x = closes(c), e = emaArr(x, p.emaP), a = rmaArr(trArr(c), p.atrP), n = x.length, out = NaNArr3(n);
+  for (let i = 0; i < n; i++) out[i] = a[i] ? (x[i] - e[i]) / a[i] : NaN;
+  return asSeries(out);
+});
+def7("rsi_of_er", "composite", "composite", { erP: 10, rsiP: 14 }, ["erP", "rsiP"], "RSI \u0631\u0648\u06CC \u0646\u0633\u0628\u062A\u0650 \u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u06A9\u0627\u0641\u0645\u0646", (c, p) => {
+  const x = closes(c), n = x.length, er = NaNArr3(n);
+  for (let i = p.erP; i < n; i++) {
+    const change = Math.abs(x[i] - x[i - p.erP]);
+    let vol = 0;
+    for (let k = 0; k < p.erP; k++) vol += Math.abs(x[i - k] - x[i - k - 1]);
+    er[i] = vol ? change / vol : 0;
+  }
+  return asSeries(rsi(er.map((v) => Number.isFinite(v) ? v * 100 : 0), p.rsiP));
+});
+def7("trend_gate", "composite", "composite", { chopP: 14, emaP: 50, thr: 38.2 }, ["chopP", "emaP", "thr"], "\u062F\u0631\u0648\u0627\u0632\u0647\u0654 \u0631\u0648\u0646\u062F \u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0686\u0627\u067E\u06CC\u0646\u0633", (c, p) => {
+  const x = closes(c), n = x.length, tr = trArr(c), h = highs(c), l = lows(c), e = emaArr(x, p.emaP);
+  const out = NaNArr3(n);
+  for (let i = p.chopP; i < n; i++) {
+    let sumTr = 0;
+    for (let k = 0; k < p.chopP; k++) sumTr += tr[i - k] || 0;
+    const rng = highest(h, i, p.chopP) - lowest(l, i, p.chopP);
+    const chop = rng > 0 ? 100 * Math.log10(sumTr / rng) / Math.log10(p.chopP) : 100;
+    if (chop < p.thr) out[i] = Math.sign(e[i] - e[i - 1]);
+    else out[i] = 0;
+  }
+  return asSeries(out);
+});
+var COMPOSITE_ITEMS = K7.items;
+
+// ../web_tool/src/indicators/bank/pattern.ts
+var K8 = makeKit();
+var { pat } = K8;
+pat("cdl_doji", "\u062F\u0648\u062C\u06CC (\u0628\u062F\u0646\u0647\u0654 \u0628\u0633\u06CC\u0627\u0631 \u06A9\u0648\u0686\u06A9)", (c, i) => range(c[i]) && body(c[i]) <= 0.1 * range(c[i]) ? 100 : 0);
+pat("cdl_dragonfly", "\u062F\u0648\u062C\u06CC\u0650 \u0633\u0646\u062C\u0627\u0642\u06A9 (\u0633\u0627\u06CC\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u0628\u0644\u0646\u062F)", (c, i) => range(c[i]) && body(c[i]) <= 0.1 * range(c[i]) && dnSh(c[i]) >= 0.6 * range(c[i]) ? 100 : 0);
+pat("cdl_gravestone", "\u062F\u0648\u062C\u06CC\u0650 \u0633\u0646\u06AF\u0650\u200C\u0642\u0628\u0631 (\u0633\u0627\u06CC\u0647\u0654 \u0628\u0627\u0644\u0627\u06CC \u0628\u0644\u0646\u062F)", (c, i) => range(c[i]) && body(c[i]) <= 0.1 * range(c[i]) && upSh(c[i]) >= 0.6 * range(c[i]) ? -100 : 0);
+pat("cdl_hammer", "\u0686\u06A9\u0634 (\u0633\u0627\u06CC\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u0628\u0644\u0646\u062F\u060C \u0628\u062F\u0646\u0647\u0654 \u06A9\u0648\u0686\u06A9\u0650 \u0628\u0627\u0644\u0627)", (c, i) => range(c[i]) && dnSh(c[i]) >= 2 * body(c[i]) && upSh(c[i]) <= 0.15 * range(c[i]) && c[i - 1].close < c[i - 2].close ? 100 : 0);
+pat("cdl_invhammer", "\u0686\u06A9\u0634\u0650 \u0645\u0639\u06A9\u0648\u0633", (c, i) => range(c[i]) && upSh(c[i]) >= 2 * body(c[i]) && dnSh(c[i]) <= 0.15 * range(c[i]) && c[i - 1].close < c[i - 2].close ? 100 : 0);
+pat("cdl_hangingman", "\u0645\u0631\u062F\u0650 \u0622\u0648\u06CC\u0632\u0627\u0646", (c, i) => range(c[i]) && dnSh(c[i]) >= 2 * body(c[i]) && upSh(c[i]) <= 0.15 * range(c[i]) && c[i - 1].close > c[i - 2].close ? -100 : 0);
+pat("cdl_shootingstar", "\u0633\u062A\u0627\u0631\u0647\u0654 \u062B\u0627\u0642\u0628", (c, i) => range(c[i]) && upSh(c[i]) >= 2 * body(c[i]) && dnSh(c[i]) <= 0.15 * range(c[i]) && c[i - 1].close > c[i - 2].close ? -100 : 0);
+pat("cdl_marubozu", "\u0645\u0627\u0631\u0648\u0628\u0648\u0632\u0648 (\u0628\u062F\u0648\u0646\u0650 \u0633\u0627\u06CC\u0647)", (c, i) => range(c[i]) && body(c[i]) >= 0.95 * range(c[i]) ? isBull(c[i]) ? 100 : -100 : 0);
+pat("cdl_spinningtop", "\u0641\u0631\u0641\u0631\u0647 (\u0628\u062F\u0646\u0647\u0654 \u06A9\u0648\u0686\u06A9\u060C \u062F\u0648 \u0633\u0627\u06CC\u0647)", (c, i) => range(c[i]) && body(c[i]) <= 0.3 * range(c[i]) && upSh(c[i]) >= 0.3 * range(c[i]) && dnSh(c[i]) >= 0.3 * range(c[i]) ? 100 : 0);
+pat("cdl_engulf_bull", "\u067E\u0648\u0634\u0634\u0650 \u0635\u0639\u0648\u062F\u06CC", (c, i) => isBear(c[i - 1]) && isBull(c[i]) && c[i].close >= c[i - 1].open && c[i].open <= c[i - 1].close ? 100 : 0);
+pat("cdl_engulf_bear", "\u067E\u0648\u0634\u0634\u0650 \u0646\u0632\u0648\u0644\u06CC", (c, i) => isBull(c[i - 1]) && isBear(c[i]) && c[i].open >= c[i - 1].close && c[i].close <= c[i - 1].open ? -100 : 0);
+pat("cdl_harami_bull", "\u0647\u0627\u0631\u0627\u0645\u06CC\u0650 \u0635\u0639\u0648\u062F\u06CC", (c, i) => isBear(c[i - 1]) && body(c[i - 1]) > 0 && Math.max(c[i].open, c[i].close) < c[i - 1].open && Math.min(c[i].open, c[i].close) > c[i - 1].close ? 100 : 0);
+pat("cdl_harami_bear", "\u0647\u0627\u0631\u0627\u0645\u06CC\u0650 \u0646\u0632\u0648\u0644\u06CC", (c, i) => isBull(c[i - 1]) && body(c[i - 1]) > 0 && Math.max(c[i].open, c[i].close) < c[i - 1].close && Math.min(c[i].open, c[i].close) > c[i - 1].open ? -100 : 0);
+pat("cdl_piercing", "\u062E\u0637\u0650 \u0646\u0641\u0648\u0630\u06CC (\u0635\u0639\u0648\u062F\u06CC)", (c, i) => isBear(c[i - 1]) && isBull(c[i]) && c[i].open < c[i - 1].low && c[i].close > (c[i - 1].open + c[i - 1].close) / 2 && c[i].close < c[i - 1].open ? 100 : 0);
+pat("cdl_darkcloud", "\u067E\u0648\u0634\u0634\u0650 \u0627\u0628\u0631\u0650 \u0633\u06CC\u0627\u0647 (\u0646\u0632\u0648\u0644\u06CC)", (c, i) => isBull(c[i - 1]) && isBear(c[i]) && c[i].open > c[i - 1].high && c[i].close < (c[i - 1].open + c[i - 1].close) / 2 && c[i].close > c[i - 1].open ? -100 : 0);
+pat("cdl_morningstar", "\u0633\u062A\u0627\u0631\u0647\u0654 \u0635\u0628\u062D\u06AF\u0627\u0647\u06CC", (c, i) => isBear(c[i - 2]) && body(c[i - 1]) <= 0.3 * range(c[i - 1] || c[i - 2]) && isBull(c[i]) && c[i].close > (c[i - 2].open + c[i - 2].close) / 2 ? 100 : 0);
+pat("cdl_eveningstar", "\u0633\u062A\u0627\u0631\u0647\u0654 \u0634\u0627\u0645\u06AF\u0627\u0647\u06CC", (c, i) => isBull(c[i - 2]) && body(c[i - 1]) <= 0.3 * range(c[i - 1] || c[i - 2]) && isBear(c[i]) && c[i].close < (c[i - 2].open + c[i - 2].close) / 2 ? -100 : 0);
+pat("cdl_3whitesoldiers", "\u0633\u0647 \u0633\u0631\u0628\u0627\u0632\u0650 \u0633\u0641\u06CC\u062F", (c, i) => isBull(c[i]) && isBull(c[i - 1]) && isBull(c[i - 2]) && c[i].close > c[i - 1].close && c[i - 1].close > c[i - 2].close && c[i].open > c[i - 1].open && c[i - 1].open > c[i - 2].open ? 100 : 0);
+pat("cdl_3blackcrows", "\u0633\u0647 \u06A9\u0644\u0627\u063A\u0650 \u0633\u06CC\u0627\u0647", (c, i) => isBear(c[i]) && isBear(c[i - 1]) && isBear(c[i - 2]) && c[i].close < c[i - 1].close && c[i - 1].close < c[i - 2].close && c[i].open < c[i - 1].open && c[i - 1].open < c[i - 2].open ? -100 : 0);
+pat("cdl_beltuphold_bull", "\u06A9\u0645\u0631\u0628\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC", (c, i) => isBull(c[i]) && c[i].open === c[i].low && body(c[i]) >= 0.7 * range(c[i]) ? 100 : 0);
+pat("cdl_beltuphold_bear", "\u06A9\u0645\u0631\u0628\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC", (c, i) => isBear(c[i]) && c[i].open === c[i].high && body(c[i]) >= 0.7 * range(c[i]) ? -100 : 0);
+pat("cdl_longleg_doji", "\u062F\u0648\u062C\u06CC\u0650 \u067E\u0627\u0628\u0644\u0646\u062F", (c, i) => range(c[i]) && body(c[i]) <= 0.1 * range(c[i]) && upSh(c[i]) >= 0.35 * range(c[i]) && dnSh(c[i]) >= 0.35 * range(c[i]) ? 100 : 0);
+pat("cdl_highwave", "\u0645\u0648\u062C\u0650 \u0628\u0644\u0646\u062F", (c, i) => range(c[i]) && body(c[i]) <= 0.2 * range(c[i]) && (upSh(c[i]) >= 0.4 * range(c[i]) || dnSh(c[i]) >= 0.4 * range(c[i])) ? 100 : 0);
+pat("cdl_3inside_up", "\u0633\u0647 \u062F\u0627\u062E\u0644\u06CC\u0650 \u0635\u0639\u0648\u062F\u06CC", (c, i) => isBear(c[i - 2]) && Math.max(c[i - 1].open, c[i - 1].close) < c[i - 2].open && Math.min(c[i - 1].open, c[i - 1].close) > c[i - 2].close && isBull(c[i]) && c[i].close > c[i - 2].open ? 100 : 0);
+pat("cdl_3inside_dn", "\u0633\u0647 \u062F\u0627\u062E\u0644\u06CC\u0650 \u0646\u0632\u0648\u0644\u06CC", (c, i) => isBull(c[i - 2]) && Math.max(c[i - 1].open, c[i - 1].close) < c[i - 2].close && Math.min(c[i - 1].open, c[i - 1].close) > c[i - 2].open && isBear(c[i]) && c[i].close < c[i - 2].open ? -100 : 0);
+pat("cdl_tweezerbottom", "\u0627\u0646\u0628\u0631\u06A9\u0650 \u06A9\u0641", (c, i) => Math.abs(c[i].low - c[i - 1].low) <= 0.05 * (range(c[i]) || 1) && isBear(c[i - 1]) && isBull(c[i]) ? 100 : 0);
+pat("cdl_tweezertop", "\u0627\u0646\u0628\u0631\u06A9\u0650 \u0633\u0642\u0641", (c, i) => Math.abs(c[i].high - c[i - 1].high) <= 0.05 * (range(c[i]) || 1) && isBull(c[i - 1]) && isBear(c[i]) ? -100 : 0);
+pat("cdl_kicking_bull", "\u0636\u0631\u0628\u0647\u0654 \u0635\u0639\u0648\u062F\u06CC", (c, i) => isBear(c[i - 1]) && body(c[i - 1]) >= 0.9 * range(c[i - 1]) && isBull(c[i]) && body(c[i]) >= 0.9 * range(c[i]) && c[i].open > c[i - 1].open ? 100 : 0);
+pat("cdl_kicking_bear", "\u0636\u0631\u0628\u0647\u0654 \u0646\u0632\u0648\u0644\u06CC", (c, i) => isBull(c[i - 1]) && body(c[i - 1]) >= 0.9 * range(c[i - 1]) && isBear(c[i]) && body(c[i]) >= 0.9 * range(c[i]) && c[i].open < c[i - 1].open ? -100 : 0);
+pat("cdl_gap_up", "\u06AF\u064E\u067E\u0650 \u0635\u0639\u0648\u062F\u06CC", (c, i) => c[i].low > c[i - 1].high ? 100 : 0);
+pat("cdl_gap_dn", "\u06AF\u064E\u067E\u0650 \u0646\u0632\u0648\u0644\u06CC", (c, i) => c[i].high < c[i - 1].low ? -100 : 0);
+var PATTERN_ITEMS = K8.items;
+
+// ../web_tool/src/indicators/bank/variants.ts
+var K9 = makeKit();
+var { expandPeriodFamily } = K9;
+expandPeriodFamily("sma_fib", "trend", "composite", "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0633\u0627\u062F\u0647", (per) => (c) => asSeries(smaArr(closes(c), per)), FIB_PERIODS);
+expandPeriodFamily("ema_fib", "trend", "composite", "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0646\u0645\u0627\u06CC\u06CC", (per) => (c) => asSeries(emaArr(closes(c), per)), FIB_PERIODS);
+expandPeriodFamily("wma_fib", "trend", "composite", "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0648\u0632\u0646\u06CC", (per) => (c) => asSeries(wmaArr(closes(c), per)), FIB_PERIODS);
+expandPeriodFamily("rma_fib", "trend", "composite", "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0648\u0627\u06CC\u0644\u062F\u0631", (per) => (c) => asSeries(rmaArr(closes(c), per)), FIB_PERIODS);
+expandPeriodFamily("hma_fib", "trend", "composite", "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0647\u0627\u0644", (per) => (c) => {
+  const x = closes(c), half = wmaArr(x, Math.max(1, Math.floor(per / 2))), full = wmaArr(x, per);
+  return asSeries(wmaArr(half.map((v, i) => 2 * v - full[i]), Math.max(1, Math.floor(Math.sqrt(per)))));
+}, FIB_PERIODS);
+expandPeriodFamily("rsi_lucas", "momentum", "composite", "RSI", (per) => (c) => asSeries(rsi(closes(c), per)), LUCAS_PERIODS);
+expandPeriodFamily("cmo_fib", "momentum", "composite", "\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0686\u0627\u0646\u062F", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per; i < n; i++) {
+    let up = 0, dn = 0;
+    for (let k = 0; k < per; k++) {
+      const d = x[i - k] - x[i - k - 1];
+      if (d > 0) up += d;
+      else dn -= d;
+    }
+    out[i] = up + dn ? 100 * (up - dn) / (up + dn) : 0;
+  }
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("roc_fib", "momentum", "composite", "\u0646\u0631\u062E\u0650 \u062A\u063A\u06CC\u06CC\u0631", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per; i < n; i++) out[i] = x[i - per] ? 100 * (x[i] - x[i - per]) / x[i - per] : NaN;
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("std_fib", "volatility", "composite", "\u0627\u0646\u062D\u0631\u0627\u0641\u0650 \u0645\u0639\u06CC\u0627\u0631", (per) => (c) => asSeries(stdArr(closes(c), per)), FIB_PERIODS);
+expandPeriodFamily("bias_fib", "momentum", "composite", "\u0646\u0631\u062E\u0650 \u0627\u0646\u062D\u0631\u0627\u0641 (\u4E56\u79BB)", (per) => (c) => {
+  const x = closes(c), s = smaArr(x, per);
+  return asSeries(x.map((v, i) => s[i] ? 100 * (v - s[i]) / s[i] : NaN));
+}, FIB_PERIODS);
+expandPeriodFamily("er_lucas", "composite", "composite", "\u0646\u0633\u0628\u062A\u0650 \u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u06A9\u0627\u0641\u0645\u0646", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per; i < n; i++) {
+    const ch = Math.abs(x[i] - x[i - per]);
+    let v = 0;
+    for (let k = 0; k < per; k++) v += Math.abs(x[i - k] - x[i - k - 1]);
+    out[i] = v ? ch / v : 0;
+  }
+  return asSeries(out);
+}, LUCAS_PERIODS);
+expandPeriodFamily("zscore_fib", "statistical", "composite", "\u0627\u0645\u062A\u06CC\u0627\u0632\u0650 Z \u0642\u06CC\u0645\u062A", (per) => (c) => {
+  const x = closes(c), s = smaArr(x, per), sd = stdArr(x, per);
+  return asSeries(x.map((v, i) => sd[i] ? (v - s[i]) / sd[i] : NaN));
+}, FIB_PERIODS);
+expandPeriodFamily("wr_fib", "momentum", "composite", "\u0648\u06CC\u0644\u06CC\u0627\u0645\u0632 %R", (per) => (c) => {
+  const h = highs(c), l = lows(c), x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per - 1; i < n; i++) {
+    const hh = highest(h, i, per), ll = lowest(l, i, per);
+    out[i] = hh - ll ? 100 * (hh - x[i]) / (hh - ll) : 50;
+  }
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("dema_fib", "trend", "composite", "EMA \u062F\u0648\u06AF\u0627\u0646\u0647", (per) => (c) => {
+  const e1 = emaArr(closes(c), per), e2 = emaArr(e1, per);
+  return asSeries(e1.map((v, i) => 2 * v - e2[i]));
+}, FIB_PERIODS);
+expandPeriodFamily("tema_fib", "trend", "composite", "EMA \u0633\u0647\u200C\u06AF\u0627\u0646\u0647", (per) => (c) => {
+  const e1 = emaArr(closes(c), per), e2 = emaArr(e1, per), e3 = emaArr(e2, per);
+  return asSeries(e1.map((v, i) => 3 * v - 3 * e2[i] + e3[i]));
+}, FIB_PERIODS);
+expandPeriodFamily("mom_fib", "momentum", "composite", "\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u062E\u0627\u0645", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per; i < n; i++) out[i] = x[i] - x[i - per];
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("dpo_fib", "momentum", "composite", "\u0627\u0633\u06CC\u0644\u0627\u062A\u0648\u0631\u0650 \u0628\u062F\u0648\u0646\u0650\u200C\u0631\u0648\u0646\u062F", (per) => (c) => {
+  const x = closes(c), s = smaArr(x, per), n = x.length, out = NaNArr3(n), sh = Math.floor(per / 2) + 1;
+  for (let i = 0; i < n; i++) if (i - sh >= 0 && Number.isFinite(s[i - sh])) out[i] = x[i] - s[i - sh];
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("trix_fib", "momentum", "composite", "\u062A\u0631\u06CC\u06A9\u0633", (per) => (c) => {
+  const e1 = emaArr(closes(c), per), e2 = emaArr(e1, per), e3 = emaArr(e2, per), n = e3.length, out = NaNArr3(n);
+  for (let i = 1; i < n; i++) out[i] = e3[i - 1] ? 100 * (e3[i] - e3[i - 1]) / e3[i - 1] : NaN;
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("psy_fib", "momentum", "composite", "\u062E\u0637\u0650 \u0631\u0648\u0627\u0646\u06CC", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per; i < n; i++) {
+    let up = 0;
+    for (let k = 0; k < per; k++) if (x[i - k] > x[i - k - 1]) up++;
+    out[i] = 100 * up / per;
+  }
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("natr_fib", "volatility", "composite", "ATR \u0646\u0631\u0645\u0627\u0644\u200C\u0634\u062F\u0647", (per) => (c) => {
+  const x = closes(c), a = rmaArr(trArr(c), per);
+  return asSeries(a.map((v, i) => x[i] ? 100 * v / x[i] : NaN));
+}, FIB_PERIODS);
+expandPeriodFamily("atr_fib", "volatility", "composite", "ATR \u0648\u0627\u06CC\u0644\u062F\u0631", (per) => (c) => asSeries(rmaArr(trArr(c), per)), FIB_PERIODS);
+expandPeriodFamily("chop_fib", "volatility", "composite", "\u0686\u0627\u067E\u06CC\u0646\u0633", (per) => (c) => {
+  const n = c.length, tr = trArr(c), h = highs(c), l = lows(c), out = NaNArr3(n);
+  for (let i = per; i < n; i++) {
+    let s = 0;
+    for (let k = 0; k < per; k++) s += tr[i - k] || 0;
+    const rng = highest(h, i, per) - lowest(l, i, per);
+    out[i] = rng > 0 ? 100 * Math.log10(s / rng) / Math.log10(per) : NaN;
+  }
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("cg_fib", "cycle", "composite", "\u0645\u0631\u06A9\u0632\u0650 \u062B\u0642\u0644\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per - 1; i < n; i++) {
+    let num = 0, den = 0;
+    for (let k = 0; k < per; k++) {
+      num += (1 + k) * x[i - k];
+      den += x[i - k];
+    }
+    out[i] = den ? -num / den + (per + 1) / 2 : 0;
+  }
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("ssf_fib", "cycle", "composite", "\u0633\u0648\u067E\u0631-\u0627\u0633\u0645\u0648\u062A\u0631\u0650 \u0627\u0650\u0647\u0644\u0631\u0632", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const a = Math.exp(-1.414 * Math.PI / per), b = 2 * a * Math.cos(1.414 * Math.PI / per), c2 = b, c3 = -a * a, c1 = 1 - c2 - c3;
+  for (let i = 0; i < n; i++) {
+    if (i < 2) {
+      out[i] = x[i];
+      continue;
+    }
+    out[i] = c1 * (x[i] + x[i - 1]) / 2 + c2 * out[i - 1] + c3 * out[i - 2];
+  }
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("corr_t_fib", "statistical", "composite", "\u0647\u0645\u0628\u0633\u062A\u06AF\u06CC\u0650 \u0642\u06CC\u0645\u062A-\u0632\u0645\u0627\u0646", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per - 1; i < n; i++) {
+    let sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
+    for (let k = 0; k < per; k++) {
+      const t = k, y = x[i - (per - 1 - k)];
+      sx += t;
+      sy += y;
+      sxy += t * y;
+      sxx += t * t;
+      syy += y * y;
+    }
+    const num = per * sxy - sx * sy, den = Math.sqrt((per * sxx - sx * sx) * (per * syy - sy * sy));
+    out[i] = den ? num / den : 0;
+  }
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("r2_fib", "statistical", "composite", "\u0636\u0631\u06CC\u0628\u0650 \u062A\u0639\u06CC\u06CC\u0646 R\xB2", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  for (let i = per - 1; i < n; i++) {
+    let sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
+    for (let k = 0; k < per; k++) {
+      const t = k, y = x[i - (per - 1 - k)];
+      sx += t;
+      sy += y;
+      sxy += t * y;
+      sxx += t * t;
+      syy += y * y;
+    }
+    const num = per * sxy - sx * sy, den = (per * sxx - sx * sx) * (per * syy - sy * sy), r = den ? num / Math.sqrt(den) : 0;
+    out[i] = r * r;
+  }
+  return asSeries(out);
+}, FIB_PERIODS);
+expandPeriodFamily("laguerre_g", "cycle", "composite", "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0644\u0627\u06AF\u0631 (\u06AF\u0627\u0645\u0627 \u0645\u062A\u063A\u06CC\u0631)", (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr3(n);
+  const g = Math.min(0.95, 1 - 2 / (per + 1));
+  let L0 = 0, L1 = 0, L2 = 0, L3 = 0;
+  for (let i = 0; i < n; i++) {
+    const p0 = L0, p1 = L1, p2 = L2;
+    L0 = (1 - g) * x[i] + g * L0;
+    L1 = -g * L0 + p0 + g * L1;
+    L2 = -g * L1 + p1 + g * L2;
+    L3 = -g * L2 + p2 + g * L3;
+    out[i] = (L0 + 2 * L1 + 2 * L2 + L3) / 6;
+  }
+  return asSeries(out);
+}, LUCAS_PERIODS);
+expandPeriodFamily("donchmid_fib", "trend", "composite", "\u0645\u06CC\u0627\u0646\u06CC\u0650 \u062F\u0648\u0646\u0686\u06CC\u0627\u0646", (per) => (c) => {
+  const h = highs(c), l = lows(c), n = c.length, out = NaNArr3(n);
+  for (let i = per - 1; i < n; i++) out[i] = (highest(h, i, per) + lowest(l, i, per)) / 2;
+  return asSeries(out);
+}, FIB_PERIODS);
+var VARIANTS_ITEMS = K9.items;
+
+// ../web_tool/src/indicators/bank/_aggregate.ts
+var BANK_ALL = [
+  ...TREND_ITEMS,
+  ...MOMENTUM_ITEMS,
+  ...VOLATILITY_ITEMS,
+  ...STATISTICAL_ITEMS,
+  ...CYCLE_ITEMS,
+  ...STRUCTURE_ITEMS,
+  ...COMPOSITE_ITEMS,
+  ...PATTERN_ITEMS,
+  ...VARIANTS_ITEMS
+];
+
 // ../web_tool/src/indicators/contracts.ts
 var INDICATOR_SNAPSHOT_VERSION = 1;
 
@@ -5859,8 +7610,8 @@ function closesOf(c) {
   return c.map((k) => k.close);
 }
 var REGISTRY = /* @__PURE__ */ new Map();
-function register(def) {
-  REGISTRY.set(def.name, def);
+function register(def8) {
+  REGISTRY.set(def8.name, def8);
 }
 register({
   name: "sma",
@@ -5981,9 +7732,15 @@ register({
     return { tenkan: k.tenkan, kijun: k.kijun, cloudTop: k.cloudTop, cloudBot: k.cloudBot };
   }
 });
-function paramKeyOf(def, params) {
-  const merged = { ...def.defaults, ...params };
-  return def.paramKeys.map((k) => `${String(k)}=${merged[k]}`).join(",");
+var bankRegistered = 0;
+for (const d of BANK_ALL) {
+  if (REGISTRY.has(d.name)) continue;
+  REGISTRY.set(d.name, d);
+  bankRegistered++;
+}
+function paramKeyOf(def8, params) {
+  const merged = { ...def8.defaults, ...params };
+  return def8.paramKeys.map((k) => `${String(k)}=${merged[k]}`).join(",");
 }
 function lastFinite(arr) {
   for (let i = arr.length - 1; i >= 0; i--) {
@@ -5996,13 +7753,13 @@ function buildSnapshot(asset, tf, candles) {
   const lastBarTime = n > 0 ? candles[n - 1].time : 0;
   const cache = /* @__PURE__ */ new Map();
   function seriesRaw(name, params = {}) {
-    const def = REGISTRY.get(name);
-    if (!def) return null;
-    const key = `${name}|${paramKeyOf(def, params)}`;
+    const def8 = REGISTRY.get(name);
+    if (!def8) return null;
+    const key = `${name}|${paramKeyOf(def8, params)}`;
     const hit = cache.get(key);
     if (hit !== void 0) return hit;
-    const merged = { ...def.defaults, ...params };
-    const val = def.compute(candles, merged);
+    const merged = { ...def8.defaults, ...params };
+    const val = def8.compute(candles, merged);
     cache.set(key, val);
     return val;
   }
@@ -6057,7 +7814,15 @@ function buildSnapshot(asset, tf, candles) {
   return snap;
 }
 function listIndicators() {
-  return Array.from(REGISTRY.values()).map((d) => ({ name: d.name, defaults: d.defaults, desc: d.desc }));
+  return Array.from(REGISTRY.values()).map((d) => ({
+    name: d.name,
+    defaults: d.defaults,
+    desc: d.desc,
+    // اندیکاتورهای هستهٔ قدیمی فیلدِ active ندارند ⇒ فعال تلقی می‌شوند (لایه‌ها مصرفشان می‌کنند).
+    active: d.active === void 0 ? true : d.active,
+    category: d.category,
+    source: d.source
+  }));
 }
 
 // ../web_tool/src/regime/contracts.ts
@@ -6086,13 +7851,13 @@ function sortedFinite(arr) {
 function classifyRegime(snap, candles) {
   const n = candles.length;
   const price = snap.price;
-  const closes = candles.map((k) => k.close);
+  const closes2 = candles.map((k) => k.close);
   const atrArr = atr(candles, 14);
-  const atrPctArr = atrArr.map((a, i) => closes[i] > 0 ? a / closes[i] : NaN);
+  const atrPctArr = atrArr.map((a, i) => closes2[i] > 0 ? a / closes2[i] : NaN);
   const atrPctSorted = sortedFinite(atrPctArr);
   const atrPctNow = atrPctArr[n - 1];
   const atrPctRank = percentileRank(atrPctSorted, atrPctNow);
-  const ema50 = ema(closes, 50);
+  const ema50 = ema(closes2, 50);
   const LB = 8;
   const slopeArr = new Array(ema50.length).fill(NaN);
   for (let i = LB; i < ema50.length; i++) {
@@ -6102,7 +7867,7 @@ function classifyRegime(snap, candles) {
   const absSlopeSorted = sortedFinite(slopeArr.map(Math.abs));
   const slopeNow = slopeArr[n - 1];
   const slopeRank = percentileRank(absSlopeSorted, Math.abs(slopeNow));
-  const bb = bollinger(closes, 20, 2);
+  const bb = bollinger(closes2, 20, 2);
   const bbWidthArr = bb.upper.map((u, i) => bb.mid[i] > 0 ? (u - bb.lower[i]) / bb.mid[i] : NaN);
   const bbWidthSorted = sortedFinite(bbWidthArr);
   const bbWidthNow = bbWidthArr[n - 1];
@@ -6621,19 +8386,19 @@ function scanIndicators(asset, tf, candles, horizon = 5) {
     }
   }
   const edges = [];
-  for (const def of listIndicators()) {
-    const subs = MULTI_SUBS[def.name];
+  for (const def8 of listIndicators()) {
+    const subs = MULTI_SUBS[def8.name];
     if (subs) {
       for (const sub of subs) {
-        const series = extractSeries(snap, def.name, def.defaults, sub);
+        const series = extractSeries(snap, def8.name, def8.defaults, sub);
         if (!series) continue;
-        const e = scanOne(def.name, def.defaults, series, fwdRet, sub);
+        const e = scanOne(def8.name, def8.defaults, series, fwdRet, sub);
         if (e) edges.push(e);
       }
     } else {
-      const series = extractSeries(snap, def.name, def.defaults, void 0);
+      const series = extractSeries(snap, def8.name, def8.defaults, void 0);
       if (!series) continue;
-      const e = scanOne(def.name, def.defaults, series, fwdRet, void 0);
+      const e = scanOne(def8.name, def8.defaults, series, fwdRet, void 0);
       if (e) edges.push(e);
     }
   }
@@ -6672,10 +8437,10 @@ app.get("/api/spot", async (c) => {
 });
 app.get("/api/candles", async (c) => {
   const interval = c.req.query("interval") || "15m";
-  const range = c.req.query("range") || "1mo";
+  const range2 = c.req.query("range") || "1mo";
   const intervalSec = interval === "15m" ? 900 : interval === "1h" ? 3600 : interval === "5m" ? 300 : 900;
   try {
-    const { candles, meta } = await fetchGold(interval, range);
+    const { candles, meta } = await fetchGold(interval, range2);
     let spot = null;
     try {
       spot = await getSpotGold();
@@ -6701,9 +8466,9 @@ app.get("/api/candles", async (c) => {
 });
 app.get("/api/analysis", async (c) => {
   const interval = c.req.query("interval") || "15m";
-  const range = c.req.query("range") || "1mo";
+  const range2 = c.req.query("range") || "1mo";
   try {
-    const { candles, meta } = await fetchGold(interval, range);
+    const { candles, meta } = await fetchGold(interval, range2);
     if (candles.length < 220) {
       return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A (\u0646\u06CC\u0627\u0632 \u0628\u0647 \u062D\u062F\u0627\u0642\u0644 \u06F2\u06F2\u06F0 \u06A9\u0646\u062F\u0644)" }, 400);
     }
@@ -6738,9 +8503,9 @@ app.get("/api/analysis", async (c) => {
 });
 app.post("/api/trade/advice", async (c) => {
   try {
-    const body = await c.req.json().catch(() => null);
-    if (!body || !body.trade) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647\u200C\u06CC \u0645\u0639\u0627\u0645\u0644\u0647 \u0627\u0631\u0633\u0627\u0644 \u0646\u0634\u062F\u0647" }, 400);
-    const tr = body.trade;
+    const body2 = await c.req.json().catch(() => null);
+    if (!body2 || !body2.trade) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647\u200C\u06CC \u0645\u0639\u0627\u0645\u0644\u0647 \u0627\u0631\u0633\u0627\u0644 \u0646\u0634\u062F\u0647" }, 400);
+    const tr = body2.trade;
     const side = tr.side === "short" ? "short" : "long";
     const entry = Number(tr.entry), tp = Number(tr.tp), sl = Number(tr.sl);
     if (![entry, tp, sl].every((x) => isFinite(x) && x > 0)) {
@@ -6752,7 +8517,7 @@ app.post("/api/trade/advice", async (c) => {
     if (side === "short" && !(tp < entry && sl > entry)) {
       return c.json({ ok: false, error: "\u0628\u0631\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u0641\u0631\u0648\u0634 \u0628\u0627\u06CC\u062F TP \u067E\u0627\u06CC\u06CC\u0646\u200C\u062A\u0631 \u0627\u0632 \u0648\u0631\u0648\u062F \u0648 SL \u0628\u0627\u0644\u0627\u062A\u0631 \u0627\u0632 \u0648\u0631\u0648\u062F \u0628\u0627\u0634\u062F." }, 400);
     }
-    const assetId = body.asset ? String(body.asset).toUpperCase() : "XAUUSD";
+    const assetId = body2.asset ? String(body2.asset).toUpperCase() : "XAUUSD";
     const meta_asset = ASSETS.find((x) => x.id === assetId) || ASSETS[0];
     let a;
     if (meta_asset.isGold) {
@@ -6774,7 +8539,7 @@ app.post("/api/trade/advice", async (c) => {
     const barsHeld = typeof tr.barsHeld === "number" && tr.barsHeld >= 0 ? tr.barsHeld : void 0;
     const valuePerPrice = meta_asset.isGold ? 100 : 1e5;
     const trade = { side, entry, tp, sl, openedAt: tr.openedAt, barsHeld, managePlan, valuePerPrice };
-    const modelProbPct = typeof body.modelProbPct === "number" ? body.modelProbPct : void 0;
+    const modelProbPct = typeof body2.modelProbPct === "number" ? body2.modelProbPct : void 0;
     let oppSignal;
     try {
       const live = await decideAsset(meta_asset);
@@ -6809,9 +8574,9 @@ app.post("/api/trade/advice", async (c) => {
 });
 app.post("/api/ledger/outcome", async (c) => {
   try {
-    const body = await c.req.json().catch(() => null);
-    if (!body) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u0627\u0631\u0633\u0627\u0644 \u0646\u0634\u062F\u0647" }, 400);
-    const rec = recordOutcome(body);
+    const body2 = await c.req.json().catch(() => null);
+    if (!body2) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u0627\u0631\u0633\u0627\u0644 \u0646\u0634\u062F\u0647" }, 400);
+    const rec = recordOutcome(body2);
     const live = computeLiveRqs(rec.cardId, rec.layerCode);
     return c.json({ ok: true, recorded: rec, live });
   } catch (e) {
@@ -6847,15 +8612,15 @@ async function candlesForScan(asset, tf, want) {
   if (asset === "XAUUSD") {
     const intervalMap = { M5: "5m", M15: "15m", M30: "30m", H1: "1h", H4: "1h" };
     const interval = intervalMap[tf] || "15m";
-    const range = tf === "M5" ? "5d" : tf === "M15" ? "1mo" : "3mo";
-    const { candles } = await fetchGold(interval, range);
+    const range2 = tf === "M5" ? "5d" : tf === "M15" ? "1mo" : "3mo";
+    const { candles } = await fetchGold(interval, range2);
     return candles;
   } else {
     const intervalMap = { M5: "5m", M15: "15m", M30: "30m", H1: "1h" };
     const interval = intervalMap[tf] || "15m";
-    const range = tf === "M5" ? "5d" : "1mo";
+    const range2 = tf === "M5" ? "5d" : "1mo";
     const symbol = asset === "EURUSD" ? "EURUSD=X" : `${asset}=X`;
-    const { candles } = await yahooCandles(symbol, interval, range);
+    const { candles } = await yahooCandles(symbol, interval, range2);
     return candles;
   }
 }
@@ -6880,15 +8645,15 @@ app.get("/api/scanner", (c) => {
 });
 app.post("/api/scalp/manage", async (c) => {
   try {
-    const body = await c.req.json().catch(() => null);
-    if (!body) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u0627\u0631\u0633\u0627\u0644 \u0646\u0634\u062F\u0647" }, 400);
-    const action = body.action === "SELL" ? "SELL" : "BUY";
-    const refPrice = Number(body.refPrice);
+    const body2 = await c.req.json().catch(() => null);
+    if (!body2) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u0627\u0631\u0633\u0627\u0644 \u0646\u0634\u062F\u0647" }, 400);
+    const action = body2.action === "SELL" ? "SELL" : "BUY";
+    const refPrice = Number(body2.refPrice);
     if (!isFinite(refPrice) || refPrice <= 0) {
       return c.json({ ok: false, error: "\u0642\u06CC\u0645\u062A\u0650 \u0648\u0631\u0648\u062F (refPrice) \u0646\u0627\u0645\u0639\u062A\u0628\u0631 \u0627\u0633\u062A" }, 400);
     }
-    const tpPip = Number(body.tpPip);
-    const slPip = Number(body.slPip);
+    const tpPip = Number(body2.tpPip);
+    const slPip = Number(body2.slPip);
     const { candles } = await fetchGold("5m", "5d");
     if (candles.length < 120) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0645\u062F\u06CC\u0631\u06CC\u062A \u0646\u06CC\u0633\u062A" }, 400);
     let spot = null;
@@ -7261,10 +9026,10 @@ app.get("/api/proxy", async (c) => {
     const u = hosts[attempt % hosts.length];
     try {
       const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
-      const body = await r.text();
+      const body2 = await r.text();
       if (r.status === 200) {
-        _proxyCache.set(target, { at: now, status: 200, body });
-        return new Response(body, {
+        _proxyCache.set(target, { at: now, status: 200, body: body2 });
+        return new Response(body2, {
           status: 200,
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "X-Proxy-Cache": "miss" }
         });
