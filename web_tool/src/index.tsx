@@ -424,8 +424,10 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     logSignal(a.card, dec, result.price, lastClosed.time)   // 🔎 لاگِ سیگنال (User Note)
     // 🛰️ P3.5 سایه‌ای: تشخیصِ رژیم (فقط گزارش؛ بی‌اثر بر dec/تصمیم).
     const regime = safeRegime('XAUUSD', tfLabelForGold(a.id), sig)
+    // 🏛️ P4.5 سایه‌ای: حکمِ شورای لایه‌ها (فقط گزارش؛ تصمیمِ کارت هنوز از dec می‌آید).
+    const council = safeCouncil(a.card, dec)
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
-      price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec, regime,
+      price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec, regime, council,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
   }
   // EURUSD: کندلِ Yahoo + به‌روزرسانیِ کندلِ جاری با قیمتِ زنده (رفعِ اختلافِ لحظه‌ای).
@@ -454,9 +456,17 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   logSignal(a.card, dec, result.price, lastClosed.time)   // 🔎 لاگِ سیگنال (User Note)
   // 🛰️ P3.5 سایه‌ای: تشخیصِ رژیم (فقط گزارش؛ بی‌اثر بر dec/تصمیم).
   const regime = safeRegime('EURUSD', tfLabelFromYahoo(tf), sig)
+  // 🏛️ P4.5 سایه‌ای: حکمِ شورای لایه‌ها (فقط گزارش؛ تصمیمِ کارت هنوز از dec می‌آید).
+  const council = safeCouncil(a.card, dec)
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
-    price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec, regime,
+    price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec, regime, council,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
+}
+
+// 🏛️ P4.5: پوششِ ایمنِ شورای لایه‌ها — اگر شورا به هر دلیلی خطا داد، null برمی‌گرداند
+//   تا تصمیم هرگز مختل نشود. حالتِ کاملاً سایه‌ای (فقط گزارش).
+function safeCouncil(cardId: string, dec: any) {
+  try { return convene(cardId, dec) } catch { return null }
 }
 
 // 🛰️ P3.5: پوششِ ایمنِ رادارِ رژیم — اگر رادار به هر دلیلی خطا داد (دادهٔ ناکافی و…)،
