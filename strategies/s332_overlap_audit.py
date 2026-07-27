@@ -28,23 +28,23 @@ from engine import trade_simulator as TS
 from strategies.sim_strategies import S313_SqueezeBreakout_Long
 
 
-def s332_h4_entry_days():
-    """روزهای تقویمیِ ورودِ لایهٔ نهاییِ S332 روی XAUUSD H4."""
+def s332_h4_trades():
+    """معاملاتِ لایهٔ نهاییِ S332 روی XAUUSD H4 + روزهای تقویمیِ ورود/بازه."""
     df = S.load_tf('XAUUSD', 'H4')
     sig = S.build_squeeze_signal(df, sqz_pct=0.25, breakout_lookback=6)
     adx_, pdi, mdi = S.adx(df, 14)
     fm = np.nan_to_num(((adx_ > 22) & (pdi > mdi)).astype(float), nan=0.0).astype(bool)
     r, trades = S.evaluate(df, 'XAUUSD', sig, sl_pip=350, tp_pip=500, max_hold=24, filt=fm)
-    # trades: ساختارِ scalp_engine — ستونِ entry_idx یا مشابه
-    dt = df['dt'].values
-    days = []
-    ebars = []
-    # کشفِ نامِ ستونِ ایندکسِ ورود
-    if isinstance(trades, dict):
-        keys = list(trades.keys())
-    else:
-        keys = list(getattr(trades, 'columns', []))
-    return df, trades, keys
+    dt = df['dt']
+    entry_days = []          # روزِ ورودِ هر معامله
+    span_days = []           # مجموعهٔ روزهای پوشش‌دادهٔ هر معامله (entry..exit)
+    for _, tr in trades.iterrows():
+        eb, xb = int(tr['entry_bar']), int(tr['exit_bar'])
+        ed = pd.Timestamp(dt.iloc[eb]).date()
+        xd = pd.Timestamp(dt.iloc[min(xb, len(df) - 1)]).date()
+        entry_days.append(ed)
+        span_days.append(set(pd.date_range(ed, xd, freq='D').date))
+    return df, trades, entry_days, span_days, r
 
 
 def s313_entry_days(tf):
@@ -62,14 +62,39 @@ def s313_entry_days(tf):
 
 
 def main():
-    df, trades, keys = s332_h4_entry_days()
-    print("scalp_engine trade keys/cols:", keys)
-    print("type(trades):", type(trades))
-    # نمونهٔ اولین رکورد
-    if isinstance(trades, list) and trades:
-        print("sample trade[0]:", trades[0])
-    elif hasattr(trades, 'iloc'):
-        print(trades.head(3))
+    df, trades, entry_days, span_days, r = s332_h4_trades()
+    n = len(trades)
+    print("=" * 74)
+    print(f"ممیزیِ همپوشانیِ S332 (Squeeze+ADX/DI، XAUUSD H4) — {n} معامله | RQS+={r['rqs_score']:.1f}")
+    print("=" * 74)
+
+    # لایه‌های squeeze-پایهٔ فعال: S313 روی H1 و M30
+    for tf in ['H1', 'M30']:
+        try:
+            s313_days, n313 = s313_entry_days(tf)
+        except Exception as e:
+            print(f"[S313 {tf}] خطا: {e}")
+            continue
+        # همپوشانیِ هم‌روز: چند معاملهٔ H4ِ من روزی وارد شده که S313-{tf} هم آن روز وارد شده؟
+        same_day = sum(1 for ed in entry_days if ed in s313_days)
+        # همپوشانیِ هم‌بازه: چند معاملهٔ H4 حداقل یک روزِ مشترک با روزهای ورودِ S313 دارد؟
+        span_hit = sum(1 for sp in span_days if sp & s313_days)
+        print(f"\n— در برابر S313-{tf} (n={n313} معامله، {len(s313_days)} روزِ ورودِ یکتا):")
+        print(f"    همپوشانیِ هم‌روزِ ورود : {same_day}/{n} = {100*same_day/n:.1f}%")
+        print(f"    همپوشانیِ هم‌بازه(entry..exit): {span_hit}/{n} = {100*span_hit/n:.1f}%")
+
+    # لایه‌های زمان‌محورِ فعالِ طلا (day-of-month)
+    S312_DOM = {10, 13, 20}
+    S306_DOM = {28, 29, 30, 31, 1, 2, 3}
+    S310_DOM = {25, 26, 27, 28, 29, 30, 31}
+    doms = np.array([d.day for d in entry_days])
+    print("\n— در برابر لایه‌های زمان‌محورِ فعالِ طلا (day-of-month):")
+    for name, dom in [('S312 Mid-Month', S312_DOM), ('S306 Turn-of-Month', S306_DOM),
+                      ('S310 End-of-Month', S310_DOM)]:
+        hit = sum(1 for d in doms if d in dom)
+        print(f"    {name:22s}: {hit}/{n} = {100*hit/n:.1f}%")
+
+    print("\nنتیجه‌گیریِ همپوشانی در فایلِ نتیجه ثبت می‌شود.")
 
 
 if __name__ == '__main__':
