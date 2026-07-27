@@ -249,6 +249,65 @@ app.get('/api/ledger/summary', (c) => {
   }
 })
 
+// ============================================================================
+// 🔬 کاوشگرِ اندیکاتور (P8 · ایدهٔ #۶) — endpointِ پژوهشیِ افزودنی/سایه‌ای.
+//    همبستگیِ هر اندیکاتورِ رجیستری با «حرکتِ بعدیِ قیمت» را روی تاریخچهٔ ذخیره‌شده
+//    (یا در نبودِ آن، کندلِ زندهٔ کافی) می‌سنجد و کاندیدهای فیلترِ احیا را به AI گزارش
+//    می‌کند. خروجی «فقط برای تحقیق» است و هیچ تصمیمی را تغییر نمی‌دهد (مسیرِ تصمیم دست‌نخورده).
+// ============================================================================
+
+// کندل‌های موردِ کاوش را از تاریخچهٔ ذخیره‌شده می‌گیرد؛ اگر ناکافی بود، از منبعِ زندهٔ
+// همان دارایی (طلا: fetchGold؛ یورو: yahooCandles) پُر می‌کند تا کفِ نمونه تأمین شود.
+async function candlesForScan(asset: string, tf: string, want: number): Promise<Candle[]> {
+  // ۱) تاریخچهٔ ذخیره‌شده (ترجیح: داده‌ی درازِ روی دیسک).
+  try {
+    const store = await getHistoryStore()
+    const stored = await store.load(asset, tf, want)
+    if (stored.length >= want) return stored
+  } catch { /* بی‌اثر — سراغِ منبعِ زنده */ }
+
+  // ۲) fallbackِ زنده.
+  if (asset === 'XAUUSD') {
+    const intervalMap: Record<string, string> = { M5: '5m', M15: '15m', M30: '30m', H1: '1h', H4: '1h' }
+    const interval = intervalMap[tf] || '15m'
+    const range = tf === 'M5' ? '5d' : tf === 'M15' ? '1mo' : '3mo'
+    const { candles } = await fetchGold(interval, range)
+    return candles
+  } else {
+    // یورو و بقیه از یاهو.
+    const intervalMap: Record<string, string> = { M5: '5m', M15: '15m', M30: '30m', H1: '1h' }
+    const interval = intervalMap[tf] || '15m'
+    const range = tf === 'M5' ? '5d' : '1mo'
+    const symbol = asset === 'EURUSD' ? 'EURUSD=X' : `${asset}=X`
+    const { candles } = await yahooCandles(symbol, interval, range)
+    return candles
+  }
+}
+
+// کاوشِ یک (asset,tf) با افقِ اختیاری. خروجی ScanReport@v1.
+//   /api/scanner/:asset?tf=M5&horizon=5&limit=1500
+app.get('/api/scanner/:asset', async (c) => {
+  const asset = (c.req.param('asset') || '').toUpperCase()
+  const tf = (c.req.query('tf') || 'M15').toUpperCase()
+  const horizon = Math.max(1, Math.min(50, parseInt(c.req.query('horizon') || '5', 10)))
+  const limit = Math.max(200, Math.min(5000, parseInt(c.req.query('limit') || '1500', 10)))
+  try {
+    const candles = await candlesForScan(asset, tf, limit)
+    if (!candles || candles.length < 30) {
+      return c.json({ ok: false, error: `کندلِ کافی برای کاوش نیست (${candles?.length || 0})` }, 422)
+    }
+    const report = scanIndicators(asset, tf, candles, horizon)
+    return c.json({ ok: true, report })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e?.message || 'خطا در کاوش' }, 502)
+  }
+})
+
+// فهرستِ اندیکاتورهای قابلِ کاوش (برای مستندات/AI).
+app.get('/api/scanner', (c) => {
+  return c.json({ ok: true, note: 'کاوشگرِ اندیکاتور P8 — از /api/scanner/:asset?tf=&horizon= استفاده کنید', example: '/api/scanner/XAUUSD?tf=M5&horizon=5' })
+})
+
 // --- مدیریتِ لحظه‌ایِ اسکالپِ M5 طلا (User Note) ---
 // بدونِ TP/SL/حجم. خروجی فقط: take_profit / wrong / hold + پیامِ فارسی.
 // ورودی: { action: 'BUY'|'SELL', refPrice: number }  (قیمتِ ورودِ کاربر)
