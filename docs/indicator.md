@@ -289,3 +289,80 @@ fxssi.net (sentiment)، smart-lab.ru، admiralmarkets.com/ru، forexxx4all.ru.
 210. Bulls/Bears Power اصلاح‌شده (Elder روسی)
 
 *(مرحله ۲ کامل — تا اینجا ~۲۱۰ اندیکاتورِ خام.)*
+
+---
+
+## مرحله ۳ — جستجوی چینی (中文技术指标)
+
+منبعِ اصلی: joinquant.com دیکشنریِ کاملِ اندیکاتورهای بومیِ چینی (فرمول‌های
+通达信/东方财富/同花顺). بعلاوه zhihu، baidu baike، futunn. جامعهٔ چینی ده‌ها
+اندیکاتورِ بومیِ کمیاب دارد که در منابعِ غربی نیستند — دقیقاً هدفِ اشتباهِ رایج #۳.
+نکته: XAU حجمِ واقعی ندارد ⇒ حجم‌محورها با **tick-volume proxy** یا صرفِ‌نظر.
+
+### 超买超卖型 (Overbought/Oversold — بومیِ چینی)
+211. ACCER — 幅度涨速 (شتابِ دامنه؛ شیبِ نرمال‌شده)
+212. ADTM — 动态买卖气 (Dynamic Buy/Sell Power، بازهٔ −1..+1)
+213. BIAS — 乖离率 (نرخِ انحراف از MA؛ N1/N2/N3)
+214. BIAS_QL — 乖离率 سنتی
+215. BIAS36 — 三六乖离
+216. CYF — 市场能量 (Market Energy 0..100)
+217. DKX — 多空线 (Bull-Bear Line + سیگنالِ MA)
+218. KD — تصادفیِ KD (بدونِ J)
+219. KDJ — تصادفیِ KDJ (K/D/J)
+220. SKDJ — 慢速KDJ (تصادفیِ آهسته)
+221. OSC — 变动速率线 (Oscillator = close − MA)
+222. UDL — 引力线 (Gravity Line میانگینِ چند BIAS)
+223. WR — 威廉指标 (Williams %R چینی)
+224. LWR — LWR威廉 (نسخهٔ هموارشدهٔ WR)
+225. TAPI — 加权指数成交值
+226. FSL — 分水岭 (Watershed؛ ترکیبِ EXPMA)
+227. MARSI — 相对强弱平均线 (RSI هموارشده)
+
+### 趋势型 (Trend — بومیِ چینی)
+228. CYE — 市场趋势 (Market Trend، دو خطِ سریع/کند)
+229. DBQR — 对比强弱 (قدرتِ نسبیِ مقایسه‌ای)
+230. DMA — 平均差 (تفاضلِ دو MA + سیگنال)
+231. DPO — 区间震荡线 (Detrended Price Oscillator چینی)
+232. GDX — 鬼道线 (Ghost-Path؛ کانالِ تطبیقی)
+233. JLHB — 绝路航标 (No-Way-Out؛ سیگنالِ نوسانی)
+234. JS — 加速线 (Acceleration Line)
+235. QACD — 快速异同平均 (MACD سریع)
+236. QR — 强弱指标 (Power/Weakness)
+237. VMACD — 量平滑异同 (MACD حجمی، tick-proxy)
+238. VPT — 量价曲线 (Volume-Price Trend)
+239. WVAD — 威廉变异离散量 (Williams VAD)
+
+### 能量型 (Energy — بومیِ چینی)
+240. BRAR — 情绪指标 (BR + AR؛ احساساتِ بازار)
+241. CR — 带状能量线 (Band Energy + چند MA)
+242. CYR — 市场强弱 (نرخِ رشدِ price×vol)
+243. MASS — 梅斯线 (Mass Index)
+244. PCNT — 幅度比 ((close−ref)/close×100)
+245. PSY — 心理线 (Psychological Line، نسبتِ روزهای up)
+
+### 均线/路径型 (MA & Channel — بومیِ چینی)
+246. AMV — 成本价均线 (میانگینِ قیمتِ تمام‌شده، وزنِ حجم)
+247. BBI — 多空均线 (میانگینِ MA3/6/12/24)
+248. EXPMA — 指数平均线 (جفتِ EMA سریع/کند)
+249. BBIBOLL — 多空布林线 (BBI + باندِ std)
+250. VMA — 变异平均线 (MA روی (H+L+C+O)/4)
+251. ENE — 轨道线 (Envelope بالا/پایین درصدی)
+252. MIKE — 麦克支撑压力 (سطوحِ MIKE؛ WeakS/MidS/StrongS/…)
+253. PBX — 瀑布线 (Waterfall؛ چند MA/EMA ترکیبی)
+254. XS / XS2 — 薛斯通道 (کانالِ Xue تطبیقی)
+255. VIDYA — واریانتِ 变异平均 (Chande VIDYA — پیوند با ۱۳۴)
+
+### 特色/复合型 (Special/Composite — بومیِ چینی)
+256. AROON — 阿隆 (چینی؛ Up/Down/Osc)
+257. TBP — 趋势平衡点 (Trend Balance Point، DeMark-مانند)
+258. CDP — 逆势操作 (CDP + AH/NH/NL/AL سطوحِ روزانه)
+259. ZLMM — 主力买卖 (Main-Force Buy/Sell، دو خطِ MTM هموار)
+260. CYW — 主力控盘 (Main-Force Control؛ سنجشِ فشار)
+261. CYS — 市场盈亏 (Market Profit/Loss = close − 13-EMA-قیمتِ میانگین)
+262. ZBCD — 准备抄底 (Bottom-Prep؛ اکسترمم-محور)
+263. BDZX — 波段之星 (Band-Star؛ CCI-محورِ نوسانی)
+264. CJDX — 超级短线 (Super-Short؛ ترکیبِ MACD/EMA)
+265. JAX — 济安线 (JAX؛ MA غیرخطیِ تطبیقی)
+266. ZX / PUCU — 重心线/逆时钟 (Gravity/Counter-clockwise curve)
+
+*(مرحله ۳ کامل — تا اینجا ~۲۶۶ اندیکاتورِ خام.)*
