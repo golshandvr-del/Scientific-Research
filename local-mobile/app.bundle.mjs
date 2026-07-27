@@ -2631,11 +2631,11 @@ function atr(c, period = 14) {
 function rollingStd(x, period) {
   const out = NaNArr(x.length);
   for (let i = period - 1; i < x.length; i++) {
-    let mean = 0;
-    for (let k = i - period + 1; k <= i; k++) mean += x[k];
-    mean /= period;
+    let mean2 = 0;
+    for (let k = i - period + 1; k <= i; k++) mean2 += x[k];
+    mean2 /= period;
     let s = 0;
-    for (let k = i - period + 1; k <= i; k++) s += (x[k] - mean) ** 2;
+    for (let k = i - period + 1; k <= i; k++) s += (x[k] - mean2) ** 2;
     out[i] = Math.sqrt(s / (period - 1));
   }
   return out;
@@ -2698,9 +2698,9 @@ function adx(c, period = 14) {
   return { adx: adx_, pdi, mdi };
 }
 function zscore(x, period) {
-  const mean = sma(x, period);
+  const mean2 = sma(x, period);
   const std = rollingStd(x, period);
-  return x.map((_, i) => std[i] ? (x[i] - mean[i]) / std[i] : NaN);
+  return x.map((_, i) => std[i] ? (x[i] - mean2[i]) / std[i] : NaN);
 }
 function rollingSlope(x, period) {
   const out = NaNArr(x.length);
@@ -5248,9 +5248,9 @@ function computeS321(candles, cfg) {
     widthSeries.push((Math.max(...vv) - Math.min(...vv)) / (atr14[j] || atrVal));
   }
   const valid = widthSeries.filter((v) => Number.isFinite(v));
-  const mean = valid.reduce((s, v) => s + v, 0) / (valid.length || 1);
-  const sd = Math.sqrt(valid.reduce((s, v) => s + (v - mean) ** 2, 0) / (valid.length || 1)) || 1;
-  const widthZ = (last(widthSeries) - mean) / sd;
+  const mean2 = valid.reduce((s, v) => s + v, 0) / (valid.length || 1);
+  const sd = Math.sqrt(valid.reduce((s, v) => s + (v - mean2) ** 2, 0) / (valid.length || 1)) || 1;
+  const widthZ = (last(widthSeries) - mean2) / sd;
   const e34 = emas[3];
   const slope = Number.isFinite(e34[i - 5]) ? (e34[i] - e34[i - 5]) / (5 * atrVal) : NaN;
   const rHi = Math.max(...vals), rLo = Math.min(...vals);
@@ -6056,6 +6056,9 @@ function buildSnapshot(asset, tf, candles) {
   };
   return snap;
 }
+function listIndicators() {
+  return Array.from(REGISTRY.values()).map((d) => ({ name: d.name, defaults: d.defaults, desc: d.desc }));
+}
 
 // ../web_tool/src/regime/contracts.ts
 var REGIME_INFO_VERSION = 1;
@@ -6264,6 +6267,396 @@ function convene(cardId, dec) {
   };
 }
 
+// ../web_tool/src/ledger/contracts.ts
+var LEDGER_CONTRACT_VERSION = 1;
+var RQS_LIVE_THRESHOLD = 80;
+var RQS_LIVE_MIN_SAMPLES = 30;
+
+// ../web_tool/src/ledger/rqs_live.ts
+var STORE = /* @__PURE__ */ new Map();
+function keyOf(cardId, layerCode) {
+  return `${cardId}::${layerCode}`;
+}
+function recordOutcome(raw2) {
+  const cardId = String(raw2.cardId || "").trim();
+  const layerCode = String(raw2.layerCode || "").trim();
+  if (!cardId || !layerCode) throw new Error("cardId \u0648 layerCode \u0644\u0627\u0632\u0645\u200C\u0627\u0646\u062F");
+  const dir = raw2.dir === "SHORT" ? "SHORT" : "LONG";
+  const entry = Number(raw2.entry);
+  const exit = Number(raw2.exit);
+  if (!Number.isFinite(entry) || !Number.isFinite(exit)) throw new Error("entry/exit \u0646\u0627\u0645\u0639\u062A\u0628\u0631");
+  const tpDist = Math.abs(Number(raw2.tpDist)) || 0;
+  const slDist = Math.abs(Number(raw2.slDist)) || 0;
+  const move = dir === "LONG" ? exit - entry : entry - exit;
+  const pnl = Number.isFinite(Number(raw2.pnl)) ? Number(raw2.pnl) : move * 100;
+  const rec = {
+    v: LEDGER_CONTRACT_VERSION,
+    cardId,
+    layerCode,
+    dir,
+    entry,
+    exit,
+    tpDist,
+    slDist,
+    pnl,
+    win: pnl > 0,
+    closedAt: Number(raw2.closedAt) || Date.now()
+  };
+  const k = keyOf(cardId, layerCode);
+  const arr = STORE.get(k) || [];
+  arr.push(rec);
+  STORE.set(k, arr);
+  return rec;
+}
+function outcomesOf(cardId, layerCode) {
+  return (STORE.get(keyOf(cardId, layerCode)) || []).slice();
+}
+function ledgerKeys() {
+  return Array.from(STORE.entries()).map(([k, arr]) => {
+    const [cardId, layerCode] = k.split("::");
+    return { cardId, layerCode, n: arr.length };
+  });
+}
+function normalCdf(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989422804014337 * Math.exp(-z * z / 2);
+  let p = d * t * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+  p = 1 - p;
+  return z >= 0 ? p : 1 - p;
+}
+function binomialPGreater(wins, n, p0) {
+  if (n <= 0) return 1;
+  const mean2 = n * p0;
+  const sd = Math.sqrt(n * p0 * (1 - p0));
+  if (sd < 1e-9) return wins > mean2 ? 0 : 1;
+  const z = (wins - 0.5 - mean2) / sd;
+  return 1 - normalCdf(z);
+}
+function clip(x, lo, hi) {
+  return x < lo ? lo : x > hi ? hi : x;
+}
+function computeLiveRqs(cardId, layerCode) {
+  const trades = outcomesOf(cardId, layerCode);
+  const n = trades.length;
+  const wins = trades.filter((t) => t.win).length;
+  const wr = n > 0 ? wins / n : 0;
+  const grossWin = trades.filter((t) => t.pnl > 0).reduce((s, t) => s + t.pnl, 0);
+  const grossLoss = Math.abs(trades.filter((t) => t.pnl < 0).reduce((s, t) => s + t.pnl, 0));
+  const pf = grossLoss > 1e-9 ? grossWin / grossLoss : grossWin > 0 ? Infinity : 0;
+  const expectancy = n > 0 ? trades.reduce((s, t) => s + t.pnl, 0) / n : 0;
+  let mcl = 0, cur = 0;
+  for (const t of trades) {
+    if (!t.win) {
+      cur++;
+      mcl = Math.max(mcl, cur);
+    } else cur = 0;
+  }
+  const avgRisk = (() => {
+    const rs = trades.map((t) => Math.max(t.slDist, 1) * 100).filter((x) => x > 0);
+    return rs.length ? rs.reduce((s, x) => s + x, 0) / rs.length : 100;
+  })();
+  const baseCapital = Math.max(avgRisk * 25, 1);
+  let equity = 0, peak = 0, maxDDabs = 0;
+  for (const t of trades) {
+    equity += t.pnl;
+    peak = Math.max(peak, equity);
+    maxDDabs = Math.max(maxDDabs, peak - equity);
+  }
+  const maxDDPct = baseCapital > 1e-9 ? maxDDabs / baseCapital * 100 : 0;
+  const rr = trades.filter((t) => t.slDist + t.tpDist > 0);
+  const wrBreakeven = rr.length > 0 ? rr.reduce((s, t) => s + t.slDist / (t.slDist + t.tpDist), 0) / rr.length : 0.5;
+  const wrExcess = wr - wrBreakeven;
+  const pValue = binomialPGreater(wins, n, clip(wrBreakeven, 1e-6, 1 - 1e-6));
+  const spreadCost = 0.33 * 100;
+  const gates = [
+    {
+      id: "G0",
+      name: "WR Floor",
+      pass: wr >= 0.6 && n >= 30,
+      detail: `WR=${(wr * 100).toFixed(1)}% (\u0644\u0627\u0632\u0645 \u2265\u06F6\u06F0\u066A)\u060C n=${n} (\u0644\u0627\u0632\u0645 \u2265\u06F3\u06F0)`
+    },
+    {
+      id: "G1",
+      name: "Edge over Random",
+      pass: expectancy > 0 && wrExcess >= 0.03 && pValue < 0.05,
+      detail: `WR_excess=${(wrExcess * 100).toFixed(1)}% (\u2265\u06F3\u066A)\u060C p=${pValue.toFixed(4)} (<0.05)`
+    },
+    {
+      id: "G2",
+      name: "Profit Factor",
+      pass: pf >= 1.3,
+      detail: `PF=${Number.isFinite(pf) ? pf.toFixed(2) : "\u221E"} (\u0644\u0627\u0632\u0645 \u2265\u06F1.\u06F3)`
+    },
+    {
+      id: "G3",
+      name: "Tail Risk",
+      pass: maxDDPct <= 8 && mcl <= 8,
+      detail: `maxDD=${maxDDPct.toFixed(1)}% (\u2264\u06F8\u066A)\u060C MCL=${mcl} (\u2264\u06F8)`
+    },
+    {
+      // walk-forward زنده: داده را به ۴ پنجرهٔ برابر می‌بریم؛ هر پنجره باید مثبت باشد.
+      id: "G4",
+      name: "Stability (WF)",
+      pass: walkForwardPass(trades),
+      detail: `\u06F4 \u067E\u0646\u062C\u0631\u0647\u0654 \u0632\u0646\u062F\u0647 + \u0647\u0631 \u062F\u0648 \u0646\u06CC\u0645\u0647 \u0645\u062B\u0628\u062A`
+    },
+    {
+      id: "G5",
+      name: "Expectancy",
+      pass: expectancy > 0.5 * spreadCost,
+      detail: `exp=${expectancy.toFixed(1)}$ (\u0644\u0627\u0632\u0645 >\u06F0.\u06F5\xD7\u0647\u0632\u06CC\u0646\u0647=${(0.5 * spreadCost).toFixed(0)}$)`
+    }
+  ];
+  const passedAllGates = n >= RQS_LIVE_MIN_SAMPLES && gates.every((g) => g.pass);
+  const wScore = 0.25 * clip((pf === Infinity ? 2 : pf - 1) / (2 - 1), 0, 1) + 0.2 * clip(expectancy / (2 * spreadCost), 0, 1) + 0.2 * walkForwardRatio(trades) + 0.15 * clip((0.05 - pValue) / 0.05, 0, 1) + 0.15 * (clip(1 - maxDDPct / 8, 0, 1) * clip(1 - mcl / 8, 0, 1)) + 0.05 * clip((wr * 100 - 60) / 20, 0, 1);
+  const rqs = passedAllGates ? 40 + 60 * wScore : Math.min(40, 40 * wScore);
+  const shouldArchive = n >= RQS_LIVE_MIN_SAMPLES && rqs < RQS_LIVE_THRESHOLD;
+  let note;
+  if (n < RQS_LIVE_MIN_SAMPLES) {
+    note = `\u062F\u0627\u062F\u0647\u0654 \u0632\u0646\u062F\u0647\u0654 \u0646\u0627\u06A9\u0627\u0641\u06CC (n=${n}<${RQS_LIVE_MIN_SAMPLES}) \u2014 \u0642\u0636\u0627\u0648\u062A \u0628\u0647 \u062A\u0639\u0648\u06CC\u0642 \u0627\u0641\u062A\u0627\u062F.`;
+  } else if (shouldArchive) {
+    note = `RQS \u0632\u0646\u062F\u0647=${rqs.toFixed(1)} < \u06F8\u06F0 \u21D2 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u0650 \u0628\u0627\u06CC\u06AF\u0627\u0646\u06CC\u0650 \u0645\u0648\u0642\u062A (\u0644\u0627\u06CC\u0647 \u062F\u0631 \u0639\u0645\u0644 \u0627\u0641\u062A \u06A9\u0631\u062F\u0647).`;
+  } else {
+    note = `RQS \u0632\u0646\u062F\u0647=${rqs.toFixed(1)} \u2265 \u06F8\u06F0 \u21D2 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0639\u0645\u0644 \u0633\u0627\u0644\u0645 \u0627\u0633\u062A.`;
+  }
+  return {
+    v: LEDGER_CONTRACT_VERSION,
+    layerCode,
+    cardId,
+    n,
+    wr,
+    pf: Number.isFinite(pf) ? pf : 999,
+    expectancy,
+    maxConsecLoss: mcl,
+    maxDDPct,
+    pValue,
+    rqs: Math.round(rqs * 10) / 10,
+    passedAllGates,
+    gates,
+    shouldArchive,
+    note
+  };
+}
+function walkForwardPass(trades) {
+  if (trades.length < 8) return false;
+  return windowsPositive(trades, 4) === 4 && halvesPositive(trades);
+}
+function walkForwardRatio(trades) {
+  if (trades.length < 8) return 0;
+  const w = windowsPositive(trades, 4) / 4;
+  return w * (halvesPositive(trades) ? 1 : 0.5);
+}
+function windowsPositive(trades, k) {
+  const size = Math.floor(trades.length / k);
+  if (size < 1) return 0;
+  let pos = 0;
+  for (let i = 0; i < k; i++) {
+    const seg = trades.slice(i * size, i === k - 1 ? trades.length : (i + 1) * size);
+    if (seg.reduce((s, t) => s + t.pnl, 0) > 0) pos++;
+  }
+  return pos;
+}
+function halvesPositive(trades) {
+  const mid = Math.floor(trades.length / 2);
+  const a = trades.slice(0, mid).reduce((s, t) => s + t.pnl, 0);
+  const b = trades.slice(mid).reduce((s, t) => s + t.pnl, 0);
+  return a > 0 && b > 0;
+}
+function liveRqsSummary() {
+  return ledgerKeys().map((k) => computeLiveRqs(k.cardId, k.layerCode));
+}
+
+// ../web_tool/src/scanner/contracts.ts
+var SCAN_REPORT_VERSION = 1;
+var SCAN_P_THRESHOLD = 0.05;
+var SCAN_MIN_SAMPLES = 200;
+var SCAN_MIN_SPREAD_PCT = 0.03;
+var SCAN_TOP_PCT = 0.8;
+var SCAN_BOT_PCT = 0.2;
+
+// ../web_tool/src/scanner/scanner.ts
+function ranks(x) {
+  const idx = x.map((v, i2) => [v, i2]);
+  idx.sort((a, b) => a[0] - b[0]);
+  const r = new Array(x.length);
+  let i = 0;
+  while (i < idx.length) {
+    let j = i;
+    while (j + 1 < idx.length && idx[j + 1][0] === idx[i][0]) j++;
+    const avgRank = (i + j) / 2 + 1;
+    for (let k = i; k <= j; k++) r[idx[k][1]] = avgRank;
+    i = j + 1;
+  }
+  return r;
+}
+function pearson(a, b) {
+  const n = a.length;
+  if (n < 3) return 0;
+  let ma = 0, mb = 0;
+  for (let i = 0; i < n; i++) {
+    ma += a[i];
+    mb += b[i];
+  }
+  ma /= n;
+  mb /= n;
+  let num = 0, da = 0, db = 0;
+  for (let i = 0; i < n; i++) {
+    const xa = a[i] - ma, xb = b[i] - mb;
+    num += xa * xb;
+    da += xa * xa;
+    db += xb * xb;
+  }
+  const den = Math.sqrt(da * db);
+  return den > 0 ? num / den : 0;
+}
+function spearman(x, y) {
+  return pearson(ranks(x), ranks(y));
+}
+function corrPValue(r, n) {
+  if (n < 4 || !Number.isFinite(r)) return 1;
+  const rr = Math.min(0.999999, Math.max(-0.999999, r));
+  const t = Math.abs(rr) * Math.sqrt((n - 2) / (1 - rr * rr));
+  const z = t;
+  const p1 = normalTail(z);
+  return Math.min(1, 2 * p1);
+}
+function normalTail(z) {
+  if (z < 0) return 1 - normalTail(-z);
+  const t = 1 / (1 + 0.2316419 * z);
+  const d = 0.3989422804014327 * Math.exp(-z * z / 2);
+  const p = d * t * (0.31938153 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+  return p;
+}
+function mean(a) {
+  if (a.length === 0) return 0;
+  let s = 0;
+  for (const v of a) s += v;
+  return s / a.length;
+}
+function quantile(a, q) {
+  if (a.length === 0) return NaN;
+  const s = a.slice().sort((x, y) => x - y);
+  const pos = (s.length - 1) * q;
+  const lo = Math.floor(pos), hi = Math.ceil(pos);
+  if (lo === hi) return s[lo];
+  return s[lo] + (s[hi] - s[lo]) * (pos - lo);
+}
+function extractSeries(snap, name, params, sub) {
+  const v = snap.series(name, params);
+  if (v == null) return null;
+  if (Array.isArray(v)) return v;
+  if (typeof v === "object") {
+    const rec = v;
+    if (sub && Array.isArray(rec[sub])) return rec[sub];
+    return null;
+  }
+  return null;
+}
+var MULTI_SUBS = {
+  bollinger: ["mid", "upper", "lower"],
+  macd: ["macd", "signal", "hist"],
+  stoch: ["k", "d"],
+  adx: ["adx", "plusDI", "minusDI"],
+  vortex: ["viPlus", "viMinus"],
+  alligator: ["jaw", "teeth", "lips"],
+  ichimoku: ["tenkan", "kijun", "cloudTop", "cloudBot"]
+};
+function scanOne(indicator, params, values, fwdRet, sub) {
+  const xs = [], ys = [];
+  for (let i = 0; i < values.length; i++) {
+    const xv = values[i], yv = fwdRet[i];
+    if (Number.isFinite(xv) && Number.isFinite(yv)) {
+      xs.push(xv);
+      ys.push(yv);
+    }
+  }
+  const n = xs.length;
+  if (n < SCAN_MIN_SAMPLES) return null;
+  const rho = spearman(xs, ys);
+  const p = corrPValue(rho, n);
+  const topThr = quantile(xs, SCAN_TOP_PCT);
+  const botThr = quantile(xs, SCAN_BOT_PCT);
+  const topRets = [], botRets = [];
+  for (let i = 0; i < n; i++) {
+    if (xs[i] >= topThr) topRets.push(ys[i]);
+    if (xs[i] <= botThr) botRets.push(ys[i]);
+  }
+  const topBucketRet = mean(topRets);
+  const botBucketRet = mean(botRets);
+  const spread = topBucketRet - botBucketRet;
+  let direction = "NEUTRAL";
+  if (p < SCAN_P_THRESHOLD && Math.abs(spread) >= SCAN_MIN_SPREAD_PCT) {
+    direction = spread > 0 ? "BULLISH" : "BEARISH";
+  }
+  const isCandidate = direction !== "NEUTRAL";
+  return {
+    indicator,
+    sub,
+    params,
+    spearman: round(rho, 4),
+    pValue: round(p, 5),
+    n,
+    topBucketRet: round(topBucketRet, 4),
+    botBucketRet: round(botBucketRet, 4),
+    spread: round(spread, 4),
+    direction,
+    isCandidate
+  };
+}
+function round(x, d) {
+  if (!Number.isFinite(x)) return x;
+  const m = Math.pow(10, d);
+  return Math.round(x * m) / m;
+}
+function scanIndicators(asset, tf, candles, horizon = 5) {
+  const n = candles.length;
+  const snap = buildSnapshot(asset, tf, candles);
+  const fwdRet = new Array(n);
+  for (let i = 0; i < n; i++) {
+    const fut = i + horizon;
+    if (fut < n && candles[i].close > 0) {
+      fwdRet[i] = (candles[fut].close - candles[i].close) / candles[i].close * 100;
+    } else {
+      fwdRet[i] = NaN;
+    }
+  }
+  const edges = [];
+  for (const def of listIndicators()) {
+    const subs = MULTI_SUBS[def.name];
+    if (subs) {
+      for (const sub of subs) {
+        const series = extractSeries(snap, def.name, def.defaults, sub);
+        if (!series) continue;
+        const e = scanOne(def.name, def.defaults, series, fwdRet, sub);
+        if (e) edges.push(e);
+      }
+    } else {
+      const series = extractSeries(snap, def.name, def.defaults, void 0);
+      if (!series) continue;
+      const e = scanOne(def.name, def.defaults, series, fwdRet, void 0);
+      if (e) edges.push(e);
+    }
+  }
+  edges.sort((a, b) => {
+    const sa = Math.abs(a.spread) * (a.isCandidate ? 1 : 1e-3);
+    const sb = Math.abs(b.spread) * (b.isCandidate ? 1 : 1e-3);
+    return sb - sa;
+  });
+  const candidates = edges.filter((e) => e.isCandidate);
+  const note = candidates.length > 0 ? `${candidates.length} \u06A9\u0627\u0646\u062F\u06CC\u062F\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0627\u062D\u06CC\u0627 \u06CC\u0627\u0641\u062A \u0634\u062F\u061B \u0642\u0648\u06CC\u200C\u062A\u0631\u06CC\u0646: ${candidates[0].indicator}${candidates[0].sub ? "." + candidates[0].sub : ""} (spread=${candidates[0].spread}\u066A, p=${candidates[0].pValue}).` : `\u0647\u06CC\u0686 \u06A9\u0627\u0646\u062F\u06CC\u062F\u0650 \u0645\u0639\u0646\u0627\u062F\u0627\u0631\u06CC \u062F\u0631 \u0627\u0641\u0642\u0650 ${horizon} \u06A9\u0646\u062F\u0644 \u06CC\u0627\u0641\u062A \u0646\u0634\u062F (n=${n}). \u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0627\u0633\u062A \u0627\u0645\u0627 \u0644\u0628\u0647\u200C\u0627\u06CC \u062F\u06CC\u062F\u0647 \u0646\u0634\u062F.`;
+  return {
+    v: SCAN_REPORT_VERSION,
+    asset,
+    tf,
+    horizon,
+    barCount: n,
+    generatedAt: Date.now(),
+    edges,
+    candidates,
+    note
+  };
+}
+
 // ../web_tool/src/index.tsx
 var app = new Hono2();
 app.use("/api/*", cors());
@@ -6413,6 +6806,77 @@ app.post("/api/trade/advice", async (c) => {
   } catch (e) {
     return c.json({ ok: false, error: e.message }, 502);
   }
+});
+app.post("/api/ledger/outcome", async (c) => {
+  try {
+    const body = await c.req.json().catch(() => null);
+    if (!body) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u0627\u0631\u0633\u0627\u0644 \u0646\u0634\u062F\u0647" }, 400);
+    const rec = recordOutcome(body);
+    const live = computeLiveRqs(rec.cardId, rec.layerCode);
+    return c.json({ ok: true, recorded: rec, live });
+  } catch (e) {
+    return c.json({ ok: false, error: e?.message || "\u062E\u0637\u0627 \u062F\u0631 \u062B\u0628\u062A" }, 400);
+  }
+});
+app.get("/api/ledger/rqs/:cardId/:layer", (c) => {
+  try {
+    const cardId = c.req.param("cardId");
+    const layer = c.req.param("layer");
+    const live = computeLiveRqs(cardId, layer);
+    return c.json({ ok: true, live, outcomes: outcomesOf(cardId, layer).length });
+  } catch (e) {
+    return c.json({ ok: false, error: e?.message || "\u062E\u0637\u0627" }, 400);
+  }
+});
+app.get("/api/ledger/summary", (c) => {
+  try {
+    const rows = liveRqsSummary();
+    const archived = rows.filter((r) => r.shouldArchive).map((r) => `${r.cardId}::${r.layerCode}`);
+    return c.json({ ok: true, count: rows.length, archived, rows });
+  } catch (e) {
+    return c.json({ ok: false, error: e?.message || "\u062E\u0637\u0627" }, 400);
+  }
+});
+async function candlesForScan(asset, tf, want) {
+  try {
+    const store = await getHistoryStore();
+    const stored = await store.load(asset, tf, want);
+    if (stored.length >= want) return stored;
+  } catch {
+  }
+  if (asset === "XAUUSD") {
+    const intervalMap = { M5: "5m", M15: "15m", M30: "30m", H1: "1h", H4: "1h" };
+    const interval = intervalMap[tf] || "15m";
+    const range = tf === "M5" ? "5d" : tf === "M15" ? "1mo" : "3mo";
+    const { candles } = await fetchGold(interval, range);
+    return candles;
+  } else {
+    const intervalMap = { M5: "5m", M15: "15m", M30: "30m", H1: "1h" };
+    const interval = intervalMap[tf] || "15m";
+    const range = tf === "M5" ? "5d" : "1mo";
+    const symbol = asset === "EURUSD" ? "EURUSD=X" : `${asset}=X`;
+    const { candles } = await yahooCandles(symbol, interval, range);
+    return candles;
+  }
+}
+app.get("/api/scanner/:asset", async (c) => {
+  const asset = (c.req.param("asset") || "").toUpperCase();
+  const tf = (c.req.query("tf") || "M15").toUpperCase();
+  const horizon = Math.max(1, Math.min(50, parseInt(c.req.query("horizon") || "5", 10)));
+  const limit = Math.max(200, Math.min(5e3, parseInt(c.req.query("limit") || "1500", 10)));
+  try {
+    const candles = await candlesForScan(asset, tf, limit);
+    if (!candles || candles.length < 30) {
+      return c.json({ ok: false, error: `\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u06A9\u0627\u0648\u0634 \u0646\u06CC\u0633\u062A (${candles?.length || 0})` }, 422);
+    }
+    const report = scanIndicators(asset, tf, candles, horizon);
+    return c.json({ ok: true, report });
+  } catch (e) {
+    return c.json({ ok: false, error: e?.message || "\u062E\u0637\u0627 \u062F\u0631 \u06A9\u0627\u0648\u0634" }, 502);
+  }
+});
+app.get("/api/scanner", (c) => {
+  return c.json({ ok: true, note: "\u06A9\u0627\u0648\u0634\u06AF\u0631\u0650 \u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631 P8 \u2014 \u0627\u0632 /api/scanner/:asset?tf=&horizon= \u0627\u0633\u062A\u0641\u0627\u062F\u0647 \u06A9\u0646\u06CC\u062F", example: "/api/scanner/XAUUSD?tf=M5&horizon=5" });
 });
 app.post("/api/scalp/manage", async (c) => {
   try {
