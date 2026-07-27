@@ -328,6 +328,49 @@ const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: 
 // می‌شود — otherLayers مستقیماً از خودِ لایه‌های احیاشدهٔ همان کارت ساخته می‌شود.
 // تابعِ قدیمیِ attachSecondary/probeSecondaryLayers حذف شد (منطق به رجیستری منتقل شد).
 
+// ---------------------------------------------------------------------------
+// 🟦 P2 (webplan): ذخیره‌سازیِ سایه‌ایِ تاریخچه.
+// ----------------------------------------------------------------------------
+// «سایه‌ای (shadow)» طبقِ درسِ ایمنیِ webplan §۶: محاسبه/ذخیره می‌کند اما تصمیمِ
+// نهایی را عوض نمی‌کند. به‌صورتِ fire-and-forget صدا زده می‌شود؛ هر خطایی بی‌صدا
+// بلعیده می‌شود تا مسیرِ بحرانیِ قیمت هرگز نشکند (برابریِ /api/decision حفظ می‌شود).
+//   نکته: فقط «کندل‌های بسته‌شده» ذخیره می‌شوند (نه کندلِ در حالِ شکل‌گیری) تا
+//   تاریخچهٔ ذخیره‌شده repaint نشود — هم‌راستا با closedBars.
+// نگاشتِ id کارتِ طلا → برچسبِ استانداردِ تایم‌فریم (کلیدِ افرازِ ذخیره‌سازی).
+function tfLabelForGold(id: string): string {
+  switch (id) {
+    case 'XAUUSD-M5': return 'M5'
+    case 'XAUUSD': return 'M15'
+    case 'XAUUSD-M30': return 'M30'
+    case 'XAUUSD-H1': return 'H1'
+    case 'XAUUSD-H4': return 'H4'
+    default: return 'M15'
+  }
+}
+// نگاشتِ interval یاهو (5m/15m/30m/1h) → برچسبِ استانداردِ تایم‌فریم.
+function tfLabelFromYahoo(interval: string): string {
+  switch (interval) {
+    case '5m': return 'M5'
+    case '15m': return 'M15'
+    case '30m': return 'M30'
+    case '1h': return 'H1'
+    default: return interval.toUpperCase()
+  }
+}
+
+function persistHistoryShadow(asset: string, tf: string, closed: Candle[]): void {
+  if (!closed || closed.length < 2) return
+  // آخرین عضو ممکن است هنوز مرزِ کامل نداشته باشد؛ closedBars قبلاً آن را پاک کرده،
+  // پس اینجا کلِ آرایه «بسته‌شده» است. ذخیرهٔ ۳۰۰ کندلِ اخیر کافی است (بقیه از قبل هست).
+  const slice = closed.length > 300 ? closed.slice(closed.length - 300) : closed
+  void (async () => {
+    try {
+      const store = await getHistoryStore()
+      await store.append(asset, tf, slice)
+    } catch { /* سایه‌ای: خطا بی‌اثر است */ }
+  })()
+}
+
 // تصمیمِ یک دارایی: کندلِ زنده → analyze → runCard (۴-حالته، رجیستریِ ماژولار).
 async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 1.0) {
   if (a.isGold) {
@@ -360,6 +403,8 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     const sig = closedBars(useCandles, tfc.gap)
     const lastClosed = sig[sig.length - 1]
     const goldUtcHour = new Date(lastClosed.time * 1000).getUTCHours()
+    // 🟦 P2 سایه‌ای: ذخیرهٔ تاریخچهٔ کندل‌های بسته‌شده (بی‌اثر بر تصمیم).
+    persistHistoryShadow('XAUUSD', tfLabelForGold(a.id), sig)
     // --- مغزِ تصمیم: رجیستریِ ماژولار (لایه‌های احیاشدهٔ همین کارت) ---
     const ctx: LayerContext = {
       cardId: a.card, a: result, candles: sig,
@@ -387,6 +432,8 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   const sig = closedBars(useCandles, gapForTf(tf))
   const lastClosed = sig[sig.length - 1]
   const eurUtcHour = new Date(lastClosed.time * 1000).getUTCHours()
+  // 🟦 P2 سایه‌ای: ذخیرهٔ تاریخچهٔ کندل‌های بسته‌شده (بی‌اثر بر تصمیم).
+  persistHistoryShadow('EURUSD', tfLabelFromYahoo(tf), sig)
   const ctx: LayerContext = {
     cardId: a.card, a: result, candles: sig,
     utcHour: eurUtcHour, times: sig.map(k => k.time), capital, riskPct,
