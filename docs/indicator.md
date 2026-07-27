@@ -135,4 +135,96 @@ tradingtechnologies TT library، mql5.com blogs، StockCharts ChartSchool.
 86. Fibonacci Retracement/Extension
 87. Coppock (bull-market bottom finder)
 
-*(ادامهٔ فهرست در مراحلِ ۲–۴ و نیز ژرف‌سازیِ خانوادگی — variants — در بخشِ پیاده‌سازی.)*
+### دستهٔ Cycle / DSP / Ehlers (پیشرفته و کمیاب — قلبِ اشتباهِ رایج #۳)
+منابع: mesasoftware.com (John Ehlers technical papers)، davenewberg EhlersCodes،
+thinkorswim studies library، Ehlers کتاب‌های "Cybernetic Analysis"، "Rocket Science
+for Traders"، "Cycle Analytics for Traders".
+88. Super Smoother Filter (Ehlers 2-pole Butterworth)
+89. Roofing Filter (HP + Super Smoother)
+90. MAMA — MESA Adaptive Moving Average
+91. FAMA — Following Adaptive MA
+92. Cyber Cycle (Ehlers)
+93. Center of Gravity Oscillator (Ehlers CG)
+94. Ehlers Fisher Transform
+95. Inverse Fisher Transform (of RSI/CCI)
+96. Sine Wave Indicator (Ehlers)
+97. Even Better Sine Wave (Cycle Analytics)
+98. Instantaneous Trendline (Ehlers)
+99. Hilbert Transform — Dominant Cycle Period
+100. Homodyne Discriminator (dominant cycle)
+101. Dual Differentiator (cycle period)
+102. Phase Accumulation (cycle period)
+103. Adaptive RSI (Ehlers, cycle-tuned)
+104. Adaptive Stochastic (Ehlers)
+105. Adaptive CCI (Ehlers)
+106. Laguerre Filter (Ehlers)
+107. Laguerre RSI (Ehlers)
+108. Decycler (Ehlers high-pass removal)
+109. Decycler Oscillator
+110. Correlation Trend Indicator (CTI, Ehlers)
+111. Reverse EMA (Ehlers)
+112. Predictive Moving Average (Ehlers 7-bar WMA pair)
+113. Stochastic MAMA
+114. Empirical Mode Decomposition (Ehlers EMD)
+115. Bandpass Filter (Ehlers)
+116. High-Pass Filter (Ehlers 1-pole/2-pole)
+117. Two-Pole / Three-Pole Super Smoother
+118. Ehlers Distance Coefficient Filter (median/nonlinear)
+119. Autocorrelation Periodogram (Ehlers)
+120. MESA Momentum / MESA Cycle
+
+### دستهٔ Statistical / Regression / Fractal (کمیاب و ریاضی‌محور)
+121. Rolling Z-Score (موجود — پایه)
+122. Rolling Linear-Regression Slope (موجود — پایه)
+123. Rolling Pearson Correlation (price vs time)
+124. R² of Linear Regression (goodness-of-fit)
+125. Rolling Skewness
+126. Rolling Kurtosis
+127. Rolling Variance / Std
+128. Rolling Median (robust)
+129. Rolling MAD (Median Absolute Deviation)
+130. Hurst Exponent (rescaled range R/S)
+131. Fractal Dimension Index (FDI)
+132. Fractal Adaptive MA (FRAMA, Ehlers)
+133. Kaufman Adaptive MA (KAMA)
+134. Variable Index Dynamic Average (VIDYA, Chande)
+135. Jurik Moving Average (JMA — نزدیک‌سازی)
+136. T3 Moving Average (Tillson)
+137. Zero-Lag EMA (ZLEMA)
+138. Zero-Lag MACD
+139. Double EMA (DEMA)
+140. Triple EMA (TEMA)
+141. Arnaud Legoux MA (ALMA)
+142. McGinley Dynamic
+143. Ehlers Modified RSI (smoothed)
+144. Regression Channel Slope Normalized
+145. Entropy (Shannon, rolling of returns)
+
+### دستهٔ Structure / Price-Action / Williams (نادرِ ساختاری)
+146. Williams Fractals (up/down fractal points)
+147. Fractal Chaos Bands
+148. Bill Williams Market Facilitation Index (MFI-BW)
+149. Zig Zag (swing structure)
+150. Swing High/Low detector
+151. Donchian Midline (channel center)
+152. Supertrend (ATR-based)
+153. Half-Trend
+154. QQE — Quantitative Qualitative Estimation
+155. Waddah Attar Explosion (MACD+BB volatility)
+156. Range Filter
+157. Chandelier Exit (long/short)
+158. Camarilla Pivots
+159. Woodie Pivots
+160. Fibonacci Pivots
+161. Central Pivot Range (CPR)
+162. VWAP (session, tick-volume proxy for XAU)
+163. Anchored VWAP
+164. Rolling VWAP
+165. Elder Impulse System (EMA slope + MACD-hist)
+166. Schaff Trend Cycle (STC)
+167. Connors RSI (RSI + streak + PctRank)
+168. Balance of Power (BOP)
+169. Gopalakrishnan Range Index (GAPO)
+170. Ergodic Oscillator (TSI-based)
+
+*(مرحله ۱ کامل شد — ~۱۷۰ اندیکاتورِ خام. مراحلِ ۲–۴ و variants در ادامه.)*
