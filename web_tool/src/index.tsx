@@ -416,8 +416,10 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     }
     const dec = runCard(ctx)
     logSignal(a.card, dec, result.price, lastClosed.time)   // 🔎 لاگِ سیگنال (User Note)
+    // 🛰️ P3.5 سایه‌ای: تشخیصِ رژیم (فقط گزارش؛ بی‌اثر بر dec/تصمیم).
+    const regime = safeRegime('XAUUSD', tfLabelForGold(a.id), sig)
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
-      price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
+      price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec, regime,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
   }
   // EURUSD: کندلِ Yahoo + به‌روزرسانیِ کندلِ جاری با قیمتِ زنده (رفعِ اختلافِ لحظه‌ای).
@@ -444,9 +446,20 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   }
   const dec = runCard(ctx)
   logSignal(a.card, dec, result.price, lastClosed.time)   // 🔎 لاگِ سیگنال (User Note)
+  // 🛰️ P3.5 سایه‌ای: تشخیصِ رژیم (فقط گزارش؛ بی‌اثر بر dec/تصمیم).
+  const regime = safeRegime('EURUSD', tfLabelFromYahoo(tf), sig)
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
-    price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
+    price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec, regime,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
+}
+
+// 🛰️ P3.5: پوششِ ایمنِ رادارِ رژیم — اگر رادار به هر دلیلی خطا داد (دادهٔ ناکافی و…)،
+//   null برمی‌گرداند تا تصمیم هرگز مختل نشود. حالتِ کاملاً سایه‌ای.
+function safeRegime(asset: string, tf: string, candles: any[]) {
+  try {
+    if (!Array.isArray(candles) || candles.length < 60) return null
+    return detectRegime(asset, tf, candles)
+  } catch { return null }
 }
 
 // یادداشت: تابعِ قدیمیِ placeholderDecision حذف شد — پس از حذفِ کارت‌های بدونِ
