@@ -220,10 +220,14 @@ Cloudflare کار می‌کند نه روی Node/Termux). با اسکلتِ فو
 
 | گره | فایل | کار | حالت |
 |---|---|---|---|
+| 🚌 **EventBus** | `bus/` | pub/sub رویدادها (`bar.closed@…`) — پلِ بینِ replay و live | فعال |
+| 💹 **Price Feed** | `price/` | `PriceFeed@v1` + `HistoryStore` (Disk/Memory) + Heartbeatِ کهنگیِ داده | فعال |
 | 📊 **Indicators** | `indicators/` | `IndicatorSnapshot@v1` + رجیستریِ کش‌دار (۱۴ اندیکاتور، شاملِ Alligator/GMMA/Ichimoku) | فعال |
 | 🛰️ **Regime Radar** | `regime/` | تشخیصِ رژیمِ بازار (روند/رنج/نوسان) با آستانه‌های **خودکالیبرِ صدکیِ per-TF** | **سایه‌ای** |
 | ⚙️ **Runtime** | `runtime/` | مرزِ رسمیِ اجرای لایه‌ها (`CardDecision@v1`) | فعال |
 | 🏛️ **Layer Council** | `council/` | رأی‌گیریِ اجماعیِ لایه‌ها (اجماع/اکثریت/تضاد) | **سایه‌ای** |
+| 📒 **Live RQS Ledger** | `ledger/` | ثبتِ نتیجهٔ واقعیِ معاملهٔ کاربر ⇒ RQS+ **زنده** + بایگانیِ خودکارِ لایهٔ افت‌کرده (`/api/ledger/*`) | فعال |
+| 🔬 **Indicator Scanner** | `scanner/` | همبستگیِ Spearman هر اندیکاتور با حرکتِ بعدیِ قیمت + p-value ⇒ کاندیدِ فیلترِ احیا (`/api/scanner/*`) | **پژوهشی** |
 | 🟧 **UI Badges** | `public/static/ui/` | نوارِ heartbeat (دادهٔ کهنه) + نشانِ شورا | فعال |
 
 > **«حالتِ سایه‌ای» یعنی چه؟** گره‌های رژیم و شورا هم‌اکنون فقط **گزارش** می‌دهند و در پاسخِ
