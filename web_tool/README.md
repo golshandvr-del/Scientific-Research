@@ -48,14 +48,20 @@
 >
 > | گره | مسیر | قرارداد | کار | حالت |
 > |---|---|---|---|---|
+> | 🚌 EventBus | `src/bus/` | — | pub/sub رویدادها (`bar.closed@…`) — پلِ replay↔live | فعال |
+> | 💹 Price Feed | `src/price/` | `PriceFeed@v1` | تغذیهٔ قیمت + `HistoryStore` (Disk/Memory) + Heartbeatِ کهنگی | فعال |
 > | 📊 Indicators | `src/indicators/` | `IndicatorSnapshot@v1` | رجیستریِ کش‌دارِ ۱۴ اندیکاتور (شاملِ Alligator/GMMA/Ichimoku) | فعال |
 > | 🛰️ Regime Radar | `src/regime/` | `RegimeInfo@v1` | تشخیصِ رژیم با آستانه‌های خودکالیبرِ صدکیِ per-TF | **سایه‌ای** |
 > | ⚙️ Runtime | `src/runtime/` | `CardDecision@v1` | مرزِ رسمیِ اجرای لایه‌ها (`runCardTyped`) | فعال |
 > | 🏛️ Layer Council | `src/council/` | `CouncilVerdict@v1` | رأی‌گیریِ اجماعی (اجماع/اکثریت/تضاد) | **سایه‌ای** |
+> | 📒 Live RQS Ledger | `src/ledger/` | `LiveRqs@v1` | RQS+ زنده از نتیجهٔ واقعیِ کاربر + بایگانیِ خودکار (`/api/ledger/*`) | فعال |
+> | 🔬 Indicator Scanner | `src/scanner/` | `ScanReport@v1` | همبستگیِ Spearman اندیکاتور↔حرکتِ بعدی + p-value ⇒ کاندیدِ احیا (`/api/scanner/*`) | **پژوهشی** |
 > | 🟧 UI Badges | `public/static/ui/` | — | نوارِ heartbeat + نشانِ شورا | فعال |
 >
 > **حالتِ سایه‌ای:** گره‌های رژیم/شورا در پاسخِ `/api/decision` به‌صورتِ فیلدهای `regime`/`council`
 > گزارش می‌شوند اما **تصمیم را تغییر نمی‌دهند** (تصمیمِ نهایی هنوز `runCard` است).
+> **حالتِ پژوهشی:** کاوشگرِ اندیکاتور فقط از `/api/scanner/:asset?tf=&horizon=` فراخوانده می‌شود و
+> گزارشِ آماری برای AI/تحقیق برمی‌گرداند؛ روی صفحه یا تصمیمِ کاربر اثری ندارد (علیهِ اشتباهِ رایجِ #۳).
 
 ## قابلیت‌ها
 - 🧭 **چهار حالتِ تصمیم برای هر کارت** (رجیستریِ ماژولار، `runCard`):
