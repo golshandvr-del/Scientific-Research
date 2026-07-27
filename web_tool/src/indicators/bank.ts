@@ -1122,3 +1122,102 @@ def('tdi', 'momentum', 'RU', { rsiP: 13, sig: 7 }, ['rsiP', 'sig'], 'شاخصِ 
   const rsi = I.rsi(closes(c), p.rsiP) as unknown as number[]
   return asSeries(smaArr(rsi, p.sig))
 })
+
+// ===========================================================================
+// دستهٔ ۸ — Price transforms + Composite  [EN/composite]
+// ===========================================================================
+
+def('hl2', 'overlap', 'EN', {}, [], 'میانگینِ سقف-کف', (c) => asSeries(c.map(k => (k.high + k.low) / 2)))
+def('hlc3', 'overlap', 'EN', {}, [], 'قیمتِ نوعی (typical)', (c) => asSeries(c.map(k => (k.high + k.low + k.close) / 3)))
+def('ohlc4', 'overlap', 'EN', {}, [], 'میانگینِ چهارقیمتی', (c) => asSeries(c.map(k => (k.open + k.high + k.low + k.close) / 4)))
+def('wcp', 'overlap', 'EN', {}, [], 'قیمتِ بستهٔ وزنی', (c) => asSeries(c.map(k => (k.high + k.low + 2 * k.close) / 4)))
+def('midpoint', 'overlap', 'EN', { period: 14 }, ['period'], 'نقطهٔ میانیِ کلوز', (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr(n)
+  for (let i = p.period - 1; i < n; i++) out[i] = (highest(x, i, p.period) + lowest(x, i, p.period)) / 2
+  return asSeries(out)
+})
+
+// ATR-normalized distance from EMA (رژیمِ کشش)
+def('ema_dist_atr', 'composite', 'composite', { emaP: 50, atrP: 14 }, ['emaP', 'atrP'], 'فاصلهٔ نرمال‌شدهٔ قیمت از EMA (بر حسبِ ATR)', (c, p) => {
+  const x = closes(c), e = emaArr(x, p.emaP), a = rmaArr(trArr(c), p.atrP), n = x.length, out = NaNArr(n)
+  for (let i = 0; i < n; i++) out[i] = a[i] ? (x[i] - e[i]) / a[i] : NaN
+  return asSeries(out)
+})
+
+// RSI of Kaufman ER (کارایی-محور)
+def('rsi_of_er', 'composite', 'composite', { erP: 10, rsiP: 14 }, ['erP', 'rsiP'], 'RSI روی نسبتِ کاراییِ کافمن', (c, p) => {
+  const x = closes(c), n = x.length, er = NaNArr(n)
+  for (let i = p.erP; i < n; i++) {
+    const change = Math.abs(x[i] - x[i - p.erP])
+    let vol = 0; for (let k = 0; k < p.erP; k++) vol += Math.abs(x[i - k] - x[i - k - 1])
+    er[i] = vol ? change / vol : 0
+  }
+  return asSeries(I.rsi(er.map(v => (Number.isFinite(v) ? v * 100 : 0)), p.rsiP) as unknown as number[])
+})
+
+// Choppiness-gated trend flag (chop<38.2 و شیبِ EMA) → {−1,0,+1}
+def('trend_gate', 'composite', 'composite', { chopP: 14, emaP: 50, thr: 38.2 }, ['chopP', 'emaP', 'thr'], 'دروازهٔ روند با فیلترِ چاپینس', (c, p) => {
+  const x = closes(c), n = x.length, tr = trArr(c), h = highs(c), l = lows(c), e = emaArr(x, p.emaP)
+  const out = NaNArr(n)
+  for (let i = p.chopP; i < n; i++) {
+    let sumTr = 0; for (let k = 0; k < p.chopP; k++) sumTr += tr[i - k] || 0
+    const rng = highest(h, i, p.chopP) - lowest(l, i, p.chopP)
+    const chop = rng > 0 ? (100 * Math.log10(sumTr / rng)) / Math.log10(p.chopP) : 100
+    if (chop < p.thr) out[i] = Math.sign(e[i] - e[i - 1]); else out[i] = 0
+  }
+  return asSeries(out)
+})
+
+// ===========================================================================
+// دستهٔ ۹ — Candlestick Pattern Detectors  [deep-web/TA-Lib]
+// خروجی هر تشخیص‌دهنده: +100 (صعودی)، −100 (نزولی)، 0 (بدونِ الگو). بدونِ look-ahead.
+// ===========================================================================
+
+// کمک‌توابعِ ساختارِ کندل
+const body = (k: Candle) => Math.abs(k.close - k.open)
+const range = (k: Candle) => k.high - k.low
+const upSh = (k: Candle) => k.high - Math.max(k.open, k.close)
+const dnSh = (k: Candle) => Math.min(k.open, k.close) - k.low
+const isBull = (k: Candle) => k.close > k.open
+const isBear = (k: Candle) => k.close < k.open
+
+/** ثبتِ الگوی کندلی (بدونِ پارامتر؛ خروجی ±100/0). */
+function pat(name: string, desc: string, fn: (c: Candle[], i: number) => number): void {
+  def(name, 'pattern', 'deep-web', {}, [], desc, (c) => {
+    const n = c.length, out = NaNArr(n)
+    for (let i = 0; i < n; i++) out[i] = i >= 3 ? fn(c, i) : 0
+    return asSeries(out)
+  })
+}
+
+pat('cdl_doji', 'دوجی (بدنهٔ بسیار کوچک)', (c, i) => (range(c[i]) && body(c[i]) <= 0.1 * range(c[i]) ? 100 : 0))
+pat('cdl_dragonfly', 'دوجیِ سنجاقک (سایهٔ پایینِ بلند)', (c, i) => (range(c[i]) && body(c[i]) <= 0.1 * range(c[i]) && dnSh(c[i]) >= 0.6 * range(c[i]) ? 100 : 0))
+pat('cdl_gravestone', 'دوجیِ سنگِ‌قبر (سایهٔ بالای بلند)', (c, i) => (range(c[i]) && body(c[i]) <= 0.1 * range(c[i]) && upSh(c[i]) >= 0.6 * range(c[i]) ? -100 : 0))
+pat('cdl_hammer', 'چکش (سایهٔ پایینِ بلند، بدنهٔ کوچکِ بالا)', (c, i) => (range(c[i]) && dnSh(c[i]) >= 2 * body(c[i]) && upSh(c[i]) <= 0.15 * range(c[i]) && c[i - 1].close < c[i - 2].close ? 100 : 0))
+pat('cdl_invhammer', 'چکشِ معکوس', (c, i) => (range(c[i]) && upSh(c[i]) >= 2 * body(c[i]) && dnSh(c[i]) <= 0.15 * range(c[i]) && c[i - 1].close < c[i - 2].close ? 100 : 0))
+pat('cdl_hangingman', 'مردِ آویزان', (c, i) => (range(c[i]) && dnSh(c[i]) >= 2 * body(c[i]) && upSh(c[i]) <= 0.15 * range(c[i]) && c[i - 1].close > c[i - 2].close ? -100 : 0))
+pat('cdl_shootingstar', 'ستارهٔ ثاقب', (c, i) => (range(c[i]) && upSh(c[i]) >= 2 * body(c[i]) && dnSh(c[i]) <= 0.15 * range(c[i]) && c[i - 1].close > c[i - 2].close ? -100 : 0))
+pat('cdl_marubozu', 'ماروبوزو (بدونِ سایه)', (c, i) => (range(c[i]) && body(c[i]) >= 0.95 * range(c[i]) ? (isBull(c[i]) ? 100 : -100) : 0))
+pat('cdl_spinningtop', 'فرفره (بدنهٔ کوچک، دو سایه)', (c, i) => (range(c[i]) && body(c[i]) <= 0.3 * range(c[i]) && upSh(c[i]) >= 0.3 * range(c[i]) && dnSh(c[i]) >= 0.3 * range(c[i]) ? 100 : 0))
+pat('cdl_engulf_bull', 'پوششِ صعودی', (c, i) => (isBear(c[i - 1]) && isBull(c[i]) && c[i].close >= c[i - 1].open && c[i].open <= c[i - 1].close ? 100 : 0))
+pat('cdl_engulf_bear', 'پوششِ نزولی', (c, i) => (isBull(c[i - 1]) && isBear(c[i]) && c[i].open >= c[i - 1].close && c[i].close <= c[i - 1].open ? -100 : 0))
+pat('cdl_harami_bull', 'هارامیِ صعودی', (c, i) => (isBear(c[i - 1]) && body(c[i - 1]) > 0 && Math.max(c[i].open, c[i].close) < c[i - 1].open && Math.min(c[i].open, c[i].close) > c[i - 1].close ? 100 : 0))
+pat('cdl_harami_bear', 'هارامیِ نزولی', (c, i) => (isBull(c[i - 1]) && body(c[i - 1]) > 0 && Math.max(c[i].open, c[i].close) < c[i - 1].close && Math.min(c[i].open, c[i].close) > c[i - 1].open ? -100 : 0))
+pat('cdl_piercing', 'خطِ نفوذی (صعودی)', (c, i) => (isBear(c[i - 1]) && isBull(c[i]) && c[i].open < c[i - 1].low && c[i].close > (c[i - 1].open + c[i - 1].close) / 2 && c[i].close < c[i - 1].open ? 100 : 0))
+pat('cdl_darkcloud', 'پوششِ ابرِ سیاه (نزولی)', (c, i) => (isBull(c[i - 1]) && isBear(c[i]) && c[i].open > c[i - 1].high && c[i].close < (c[i - 1].open + c[i - 1].close) / 2 && c[i].close > c[i - 1].open ? -100 : 0))
+pat('cdl_morningstar', 'ستارهٔ صبحگاهی', (c, i) => (isBear(c[i - 2]) && body(c[i - 1]) <= 0.3 * range(c[i - 1] || c[i - 2]) && isBull(c[i]) && c[i].close > (c[i - 2].open + c[i - 2].close) / 2 ? 100 : 0))
+pat('cdl_eveningstar', 'ستارهٔ شامگاهی', (c, i) => (isBull(c[i - 2]) && body(c[i - 1]) <= 0.3 * range(c[i - 1] || c[i - 2]) && isBear(c[i]) && c[i].close < (c[i - 2].open + c[i - 2].close) / 2 ? -100 : 0))
+pat('cdl_3whitesoldiers', 'سه سربازِ سفید', (c, i) => (isBull(c[i]) && isBull(c[i - 1]) && isBull(c[i - 2]) && c[i].close > c[i - 1].close && c[i - 1].close > c[i - 2].close && c[i].open > c[i - 1].open && c[i - 1].open > c[i - 2].open ? 100 : 0))
+pat('cdl_3blackcrows', 'سه کلاغِ سیاه', (c, i) => (isBear(c[i]) && isBear(c[i - 1]) && isBear(c[i - 2]) && c[i].close < c[i - 1].close && c[i - 1].close < c[i - 2].close && c[i].open < c[i - 1].open && c[i - 1].open < c[i - 2].open ? -100 : 0))
+pat('cdl_beltuphold_bull', 'کمربندِ صعودی', (c, i) => (isBull(c[i]) && c[i].open === c[i].low && body(c[i]) >= 0.7 * range(c[i]) ? 100 : 0))
+pat('cdl_beltuphold_bear', 'کمربندِ نزولی', (c, i) => (isBear(c[i]) && c[i].open === c[i].high && body(c[i]) >= 0.7 * range(c[i]) ? -100 : 0))
+pat('cdl_longleg_doji', 'دوجیِ پابلند', (c, i) => (range(c[i]) && body(c[i]) <= 0.1 * range(c[i]) && upSh(c[i]) >= 0.35 * range(c[i]) && dnSh(c[i]) >= 0.35 * range(c[i]) ? 100 : 0))
+pat('cdl_highwave', 'موجِ بلند', (c, i) => (range(c[i]) && body(c[i]) <= 0.2 * range(c[i]) && (upSh(c[i]) >= 0.4 * range(c[i]) || dnSh(c[i]) >= 0.4 * range(c[i])) ? 100 : 0))
+pat('cdl_3inside_up', 'سه داخلیِ صعودی', (c, i) => (isBear(c[i - 2]) && Math.max(c[i - 1].open, c[i - 1].close) < c[i - 2].open && Math.min(c[i - 1].open, c[i - 1].close) > c[i - 2].close && isBull(c[i]) && c[i].close > c[i - 2].open ? 100 : 0))
+pat('cdl_3inside_dn', 'سه داخلیِ نزولی', (c, i) => (isBull(c[i - 2]) && Math.max(c[i - 1].open, c[i - 1].close) < c[i - 2].close && Math.min(c[i - 1].open, c[i - 1].close) > c[i - 2].open && isBear(c[i]) && c[i].close < c[i - 2].open ? -100 : 0))
+pat('cdl_tweezerbottom', 'انبرکِ کف', (c, i) => (Math.abs(c[i].low - c[i - 1].low) <= 0.05 * (range(c[i]) || 1) && isBear(c[i - 1]) && isBull(c[i]) ? 100 : 0))
+pat('cdl_tweezertop', 'انبرکِ سقف', (c, i) => (Math.abs(c[i].high - c[i - 1].high) <= 0.05 * (range(c[i]) || 1) && isBull(c[i - 1]) && isBear(c[i]) ? -100 : 0))
+pat('cdl_kicking_bull', 'ضربهٔ صعودی', (c, i) => (isBear(c[i - 1]) && body(c[i - 1]) >= 0.9 * range(c[i - 1]) && isBull(c[i]) && body(c[i]) >= 0.9 * range(c[i]) && c[i].open > c[i - 1].open ? 100 : 0))
+pat('cdl_kicking_bear', 'ضربهٔ نزولی', (c, i) => (isBull(c[i - 1]) && body(c[i - 1]) >= 0.9 * range(c[i - 1]) && isBear(c[i]) && body(c[i]) >= 0.9 * range(c[i]) && c[i].open < c[i - 1].open ? -100 : 0))
+pat('cdl_gap_up', 'گَپِ صعودی', (c, i) => (c[i].low > c[i - 1].high ? 100 : 0))
+pat('cdl_gap_dn', 'گَپِ نزولی', (c, i) => (c[i].high < c[i - 1].low ? -100 : 0))
