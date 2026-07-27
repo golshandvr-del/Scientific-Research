@@ -228,3 +228,64 @@ for Traders"، "Cycle Analytics for Traders".
 170. Ergodic Oscillator (TSI-based)
 
 *(مرحله ۱ کامل شد — ~۱۷۰ اندیکاتورِ خام. مراحلِ ۲–۴ و variants در ادامه.)*
+
+---
+
+## مرحله ۲ — جستجوی روسی (Русскоязычные источники)
+
+منابع: mql5.com/ru/code، litefinance.org/ru/blog، clusterdelta.com/ru/indicators،
+fxssi.net (sentiment)، smart-lab.ru، admiralmarkets.com/ru، forexxx4all.ru.
+تمرکزِ جامعهٔ روسی: کلاستر/دلتا/حجمِ افقی، Gann، VSA، سطوح.
+(فقط مواردی که در مرحله ۱ نبودند — برای پرهیز از تکرار.)
+
+### Volume-Delta / Order-Flow (سبکِ کلاستریِ روسی — بسیار پرطرفدار برای XAU)
+171. CVD — Cumulative Volume Delta (дельта кумулятивного объёма)
+172. Delta (bid/ask volume delta — پروکسی با up/down tick)
+173. Volume Profile (профиль объёма — توزیعِ حجم روی قیمت)
+174. VPOC — Volume Point of Control
+175. Value Area High / Low (VAH/VAL)
+176. Market Profile TPO (Time Price Opportunity)
+177. Cluster Imbalance (دیس‌بالانسِ کلاستر)
+178. Cumulative Delta Divergence (واگراییِ دلتا با قیمت)
+179. Footprint Imbalance ratio
+180. Better Volume (کاربردیِ حجمِ روسی)
+
+### Gann / هندسی (مکتبِ گان — پرطرفدارِ روسی)
+181. Gann HiLo Activator
+182. Gann Fan (زوایای گان: 1x1, 2x1, …)
+183. Gann Grid / Square of 9 levels
+184. Gann Swing Oscillator
+185. Gann Trend Detector
+
+### VSA / Wyckoff (تحلیلِ حجم-اسپرد)
+186. VSA No-Demand / No-Supply bar detector
+187. VSA Effort vs Result (spread×volume)
+188. Wyckoff Wave (accumulation/distribution phase)
+189. Weis Wave Volume (موجِ ویس)
+190. Effort Index (spread-normalized volume)
+
+### سطوح و کانالِ روسی (نادر)
+191. Fractal Levels (سطوحِ فراکتالِ ویلیامز به‌عنوان S/R)
+192. Round-Number / Big-Figure levels (سطوحِ رُند — مهم برای XAU: 2000, 2050…)
+193. Murray Math Levels (سطوحِ ماری)
+194. Fibo Levels auto (اتوفیبو روی سوئینگِ آخر)
+195. Session High/Low (Asia/London/NY — مهم برای طلا)
+196. Previous Day/Week High-Low (PDH/PDL/PWH/PWL)
+197. Opening Range (بازهٔ بازگشاییِ سشن)
+198. ZigZag Fibo Projection
+199. Support/Resistance by pivots density (خوشه‌بندیِ اکسترمم‌ها)
+200. ATR-based Dynamic S/R
+
+### اسیلاتورهای روسیِ کمیاب
+201. RSI Divergence detector (تشخیصِ خودکارِ واگرایی)
+202. MACD Divergence detector
+203. Stochastic Divergence detector
+204. TDI — Traders Dynamic Index (RSI + BB + سیگنال)
+205. RSX (Jurik-smoothed RSI — بسیار محبوب روسی)
+206. WPR smoothed (Williams %R هموارشده)
+207. Stochastic of RSI of ROC (ترکیبی)
+208. Composite Momentum (میانگینِ چند اسیلاتورِ نرمال‌شده)
+209. Sentiment Ratio (نسبتِ خریدار/فروشندهٔ FXSSI — پروکسیِ داخلی)
+210. Bulls/Bears Power اصلاح‌شده (Elder روسی)
+
+*(مرحله ۲ کامل — تا اینجا ~۲۱۰ اندیکاتورِ خام.)*
