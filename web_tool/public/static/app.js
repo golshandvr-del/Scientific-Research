@@ -665,8 +665,18 @@ function renderApproaching(a, d) {
       <span><span class="${c.met ? 'text-emerald-300' : 'text-amber-200'} font-medium">${c.label}</span>
       — <span class="text-slate-400">${c.detail}</span></span>
     </li>`).join('')
+  // 🔒 بنرِ «صفِ تثبیت» (User Note: ایدهٔ سیگنالِ تثبیت‌شده) — فقط وقتی سیگنالِ ورودی
+  // شکل گرفته اما هنوز باید چند ثانیه پایدار بماند تا نوسانِ لحظه‌ای کاربر را گمراه نکند.
+  const confirmBanner = d._confirming ? `
+    <div class="mb-2 flex items-center gap-2 rounded-md bg-sky-500/15 border border-sky-500/40 px-2.5 py-1.5 text-[11px]">
+      <i class="fas fa-stopwatch text-sky-300 animate-pulse"></i>
+      <span class="text-sky-100">سیگنال شکل گرفت — در حالِ <b>تثبیتِ پایداری</b>
+        ${(d._confirmRemainSec > 0) ? `(~${d._confirmRemainSec} ثانیهٔ دیگر)` : '(تثبیتِ نهایی…)'}.
+        تا نوسانِ لحظه‌ای شما را گمراه نکند، فقط سیگنالِ پایدار «ورود» می‌شود.</span>
+    </div>` : ''
   return `
     <div class="rounded-lg bg-amber-500/10 border border-amber-500/30 p-3 mb-3">
+      ${confirmBanner}
       <p class="font-bold text-amber-300 mb-1"><i class="fas fa-hourglass-half ml-1"></i>${d.headline}</p>
       ${renderSourceLayer(d)}
       ${renderOtherLayers(d, a)}
