@@ -1301,6 +1301,35 @@ async function refreshScalpManage(asset) {
   }
 }
 
+// ============================================================================
+// 🛡 تثبیتِ زمانیِ «برگشت» (User Note trade-mgmt) — ایدهٔ کاربر: هشدارِ برگشت نباید
+// با یک نوسانِ زودگذر فعال شود. سطوحِ دفاعی (defend-*) فقط وقتی «قطعی» می‌شوند که
+// برای حداقل REVERSAL_CONFIRM_MS و چند نمونهٔ متوالی پایدار مانده باشند؛ وگرنه به
+// «soft» (فقط مراقب باش) تنزل می‌یابند تا کاربر با یک کندلِ کاذب معامله را در ضرر نبندد.
+// ============================================================================
+const REVERSAL_CONFIRM_MS = 25_000   // ~۲۵ ثانیه پایداری برای قطعی‌شدنِ برگشت
+const REVERSAL_MIN_SAMPLES = 2
+const _revState = {}   // { [asset]: { level, since, samples } }
+
+function stabilizeReversal(asset, status) {
+  const rv = status && status.reversal
+  const now = Date.now()
+  if (!rv || rv.level === 'none') { delete _revState[asset]; return status }
+  const prev = _revState[asset]
+  // سطحِ soft همیشه بلافاصله نمایش داده می‌شود (فقط «مراقب باش»، بی‌خطر است).
+  if (rv.level === 'soft') { _revState[asset] = { level: 'soft', since: now, samples: 1 }; return status }
+  // سطوحِ دفاعی: نیاز به تثبیت دارند.
+  if (!prev || (prev.level !== rv.level)) {
+    _revState[asset] = { level: rv.level, since: now, samples: 1 }
+  } else {
+    prev.samples = (prev.samples || 1) + 1
+  }
+  const s = _revState[asset]
+  const stable = (now - s.since) >= REVERSAL_CONFIRM_MS && s.samples >= REVERSAL_MIN_SAMPLES
+  status.reversal = { ...rv, confirmed: stable, pendingSec: stable ? 0 : Math.ceil((REVERSAL_CONFIRM_MS - (now - s.since)) / 1000) }
+  return status
+}
+
 async function refreshAdvice(asset) {
   const trade = getTrade(asset)
   if (!trade) return
@@ -1317,7 +1346,7 @@ async function refreshAdvice(asset) {
     const data = await res.json()
     store[asset] = store[asset] || {}
     if (data.ok) {
-      store[asset].adviceStatus = data.status
+      store[asset].adviceStatus = stabilizeReversal(asset, data.status)
       store[asset].price = data.price
       store[asset].adviceError = null
     } else {
