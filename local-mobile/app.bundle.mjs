@@ -3948,6 +3948,154 @@ function manageGoldM5Scalp(inp) {
   return { state: "hold", message: "", favorPip };
 }
 
+// ../web_tool/src/price/gold_source.ts
+async function _fetchGoldRaw(interval, range) {
+  const url = `https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=${interval}&range=${range}`;
+  const res = await fetchWithTimeout(url, {
+    headers: {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+      "Accept": "application/json"
+    },
+    cf: { cacheTtl: 30, cacheEverything: true }
+  }, 6e3);
+  if (!res.ok) throw new Error(`Yahoo API error: ${res.status}`);
+  const data = await res.json();
+  const r = data?.chart?.result?.[0];
+  if (!r) throw new Error("No data from Yahoo");
+  const ts = r.timestamp || [];
+  const q = r.indicators?.quote?.[0] || {};
+  const candles = [];
+  for (let i = 0; i < ts.length; i++) {
+    const o = q.open?.[i], h = q.high?.[i], l = q.low?.[i], c = q.close?.[i];
+    if (o == null || h == null || l == null || c == null) continue;
+    candles.push({
+      time: ts[i],
+      open: o,
+      high: h,
+      low: l,
+      close: c,
+      volume: q.volume?.[i] ?? 0
+    });
+  }
+  return {
+    candles,
+    meta: {
+      symbol: r.meta?.symbol,
+      name: r.meta?.shortName,
+      currency: r.meta?.currency,
+      marketPrice: r.meta?.regularMarketPrice,
+      marketTime: r.meta?.regularMarketTime,
+      dayHigh: r.meta?.regularMarketDayHigh,
+      dayLow: r.meta?.regularMarketDayLow,
+      previousClose: r.meta?.previousClose
+    }
+  };
+}
+async function fetchGold(interval, range) {
+  return cachedFetch(
+    `gold:${interval}:${range}`,
+    () => _fetchGoldRaw(interval, range),
+    { freshMs: 3e4, staleMs: 6e5 }
+  );
+}
+function aggregateCandles(candles, factorHours) {
+  if (!candles.length) return [];
+  const bucketSec = factorHours * 3600;
+  const out = [];
+  let cur = null;
+  let curBucket = -1;
+  for (const k of candles) {
+    const b = Math.floor(k.time / bucketSec);
+    if (b !== curBucket) {
+      if (cur) out.push(cur);
+      cur = { time: b * bucketSec, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume || 0 };
+      curBucket = b;
+    } else if (cur) {
+      cur.high = Math.max(cur.high, k.high);
+      cur.low = Math.min(cur.low, k.low);
+      cur.close = k.close;
+      cur.volume = (cur.volume || 0) + (k.volume || 0);
+    }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+function rebaseFuturesToSpot(candles, spot, intervalSec = 900) {
+  const lastT0 = candles.length ? candles[candles.length - 1].time : 0;
+  if (!spot || !candles.length || !isFinite(spot.price)) {
+    return { candles, spotUsed: false, effectiveDelaySec: lastT0 ? Math.round(Date.now() / 1e3 - lastT0) : 0, offset: 0 };
+  }
+  const N = Math.min(4, candles.length);
+  let sum = 0;
+  for (let i = candles.length - N; i < candles.length; i++) sum += candles[i].close;
+  let offset = sum / N - spot.price;
+  if (!isFinite(offset) || Math.abs(offset) > 80) offset = 0;
+  const rebased = candles.map((k) => ({
+    time: k.time,
+    open: k.open - offset,
+    high: k.high - offset,
+    low: k.low - offset,
+    close: k.close - offset,
+    volume: k.volume
+  }));
+  const nowSec = Math.floor(Date.now() / 1e3);
+  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
+  const last2 = rebased[rebased.length - 1];
+  if (last2.time >= curBucketStart) {
+    rebased[rebased.length - 1] = {
+      ...last2,
+      close: spot.price,
+      high: Math.max(last2.high, spot.price),
+      low: Math.min(last2.low, spot.price)
+    };
+  } else {
+    rebased.push({
+      time: curBucketStart,
+      open: last2.close,
+      close: spot.price,
+      high: Math.max(last2.close, spot.price),
+      low: Math.min(last2.close, spot.price),
+      volume: 0
+    });
+  }
+  return { candles: rebased, spotUsed: true, effectiveDelaySec: spot.ageSec, offset };
+}
+function mergeLiveQuote(candles, livePrice, intervalSec = 900) {
+  if (!candles.length || livePrice == null || !isFinite(livePrice)) {
+    return { candles, livePriceUsed: false };
+  }
+  const nowSec = Math.floor(Date.now() / 1e3);
+  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
+  const out = candles.slice();
+  const last2 = out[out.length - 1];
+  if (last2.time >= curBucketStart) {
+    out[out.length - 1] = {
+      ...last2,
+      close: livePrice,
+      high: Math.max(last2.high, livePrice),
+      low: Math.min(last2.low, livePrice)
+    };
+  } else {
+    out.push({
+      time: curBucketStart,
+      open: last2.close,
+      close: livePrice,
+      high: Math.max(last2.close, livePrice),
+      low: Math.min(last2.close, livePrice),
+      volume: 0
+    });
+  }
+  return { candles: out, livePriceUsed: true };
+}
+function closedBars(candles, intervalSec) {
+  if (candles.length < 2) return candles;
+  const nowSec = Math.floor(Date.now() / 1e3);
+  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
+  const last2 = candles[candles.length - 1];
+  if (last2.time >= curBucketStart) return candles.slice(0, -1);
+  return candles;
+}
+
 // ../web_tool/src/squeeze_revival_s313.ts
 var S313_H1 = {
   id: "XAUUSD-H1",
@@ -5314,152 +5462,6 @@ var app = new Hono2();
 app.use("/api/*", cors());
 app.use("/static/*", serveStatic2({ root: "./public" }));
 app.get("/app", (c) => c.redirect("/static/app/index.html"));
-async function _fetchGoldRaw(interval, range) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/GC=F?interval=${interval}&range=${range}`;
-  const res = await fetchWithTimeout(url, {
-    headers: {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
-      "Accept": "application/json"
-    },
-    cf: { cacheTtl: 30, cacheEverything: true }
-  }, 6e3);
-  if (!res.ok) throw new Error(`Yahoo API error: ${res.status}`);
-  const data = await res.json();
-  const r = data?.chart?.result?.[0];
-  if (!r) throw new Error("No data from Yahoo");
-  const ts = r.timestamp || [];
-  const q = r.indicators?.quote?.[0] || {};
-  const candles = [];
-  for (let i = 0; i < ts.length; i++) {
-    const o = q.open?.[i], h = q.high?.[i], l = q.low?.[i], c = q.close?.[i];
-    if (o == null || h == null || l == null || c == null) continue;
-    candles.push({
-      time: ts[i],
-      open: o,
-      high: h,
-      low: l,
-      close: c,
-      volume: q.volume?.[i] ?? 0
-    });
-  }
-  return {
-    candles,
-    meta: {
-      symbol: r.meta?.symbol,
-      name: r.meta?.shortName,
-      currency: r.meta?.currency,
-      marketPrice: r.meta?.regularMarketPrice,
-      marketTime: r.meta?.regularMarketTime,
-      dayHigh: r.meta?.regularMarketDayHigh,
-      dayLow: r.meta?.regularMarketDayLow,
-      previousClose: r.meta?.previousClose
-    }
-  };
-}
-async function fetchGold(interval, range) {
-  return cachedFetch(
-    `gold:${interval}:${range}`,
-    () => _fetchGoldRaw(interval, range),
-    { freshMs: 3e4, staleMs: 6e5 }
-  );
-}
-function aggregateCandles(candles, factorHours) {
-  if (!candles.length) return [];
-  const bucketSec = factorHours * 3600;
-  const out = [];
-  let cur = null;
-  let curBucket = -1;
-  for (const k of candles) {
-    const b = Math.floor(k.time / bucketSec);
-    if (b !== curBucket) {
-      if (cur) out.push(cur);
-      cur = { time: b * bucketSec, open: k.open, high: k.high, low: k.low, close: k.close, volume: k.volume || 0 };
-      curBucket = b;
-    } else if (cur) {
-      cur.high = Math.max(cur.high, k.high);
-      cur.low = Math.min(cur.low, k.low);
-      cur.close = k.close;
-      cur.volume = (cur.volume || 0) + (k.volume || 0);
-    }
-  }
-  if (cur) out.push(cur);
-  return out;
-}
-function rebaseFuturesToSpot(candles, spot, intervalSec = 900) {
-  const lastT0 = candles.length ? candles[candles.length - 1].time : 0;
-  if (!spot || !candles.length || !isFinite(spot.price)) {
-    return { candles, spotUsed: false, effectiveDelaySec: lastT0 ? Math.round(Date.now() / 1e3 - lastT0) : 0, offset: 0 };
-  }
-  const N = Math.min(4, candles.length);
-  let sum = 0;
-  for (let i = candles.length - N; i < candles.length; i++) sum += candles[i].close;
-  let offset = sum / N - spot.price;
-  if (!isFinite(offset) || Math.abs(offset) > 80) offset = 0;
-  const rebased = candles.map((k) => ({
-    time: k.time,
-    open: k.open - offset,
-    high: k.high - offset,
-    low: k.low - offset,
-    close: k.close - offset,
-    volume: k.volume
-  }));
-  const nowSec = Math.floor(Date.now() / 1e3);
-  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
-  const last2 = rebased[rebased.length - 1];
-  if (last2.time >= curBucketStart) {
-    rebased[rebased.length - 1] = {
-      ...last2,
-      close: spot.price,
-      high: Math.max(last2.high, spot.price),
-      low: Math.min(last2.low, spot.price)
-    };
-  } else {
-    rebased.push({
-      time: curBucketStart,
-      open: last2.close,
-      close: spot.price,
-      high: Math.max(last2.close, spot.price),
-      low: Math.min(last2.close, spot.price),
-      volume: 0
-    });
-  }
-  return { candles: rebased, spotUsed: true, effectiveDelaySec: spot.ageSec, offset };
-}
-function mergeLiveQuote(candles, livePrice, intervalSec = 900) {
-  if (!candles.length || livePrice == null || !isFinite(livePrice)) {
-    return { candles, livePriceUsed: false };
-  }
-  const nowSec = Math.floor(Date.now() / 1e3);
-  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
-  const out = candles.slice();
-  const last2 = out[out.length - 1];
-  if (last2.time >= curBucketStart) {
-    out[out.length - 1] = {
-      ...last2,
-      close: livePrice,
-      high: Math.max(last2.high, livePrice),
-      low: Math.min(last2.low, livePrice)
-    };
-  } else {
-    out.push({
-      time: curBucketStart,
-      open: last2.close,
-      close: livePrice,
-      high: Math.max(last2.close, livePrice),
-      low: Math.min(last2.close, livePrice),
-      volume: 0
-    });
-  }
-  return { candles: out, livePriceUsed: true };
-}
-function closedBars(candles, intervalSec) {
-  if (candles.length < 2) return candles;
-  const nowSec = Math.floor(Date.now() / 1e3);
-  const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
-  const last2 = candles[candles.length - 1];
-  if (last2.time >= curBucketStart) return candles.slice(0, -1);
-  return candles;
-}
 app.get("/api/spot", async (c) => {
   try {
     const s = await getSpotGold();
