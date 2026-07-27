@@ -41,6 +41,8 @@ import {
   rawToDecision, type RawSignal, type DecideMeta,
 } from './revived_strategies'
 import { assetSpec, computeLots, type RegimeInfo } from './router'
+// --- ماژولِ نوِ این نشست: احیای squeeze روی H4 (ADX/DI) و M15 (r2+hurst) ---
+import { decideS332, S332_CFG } from './squeeze_s332'
 
 const GOLD_PIP = 0.1
 
