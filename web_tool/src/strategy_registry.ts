@@ -222,6 +222,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s326Layer(STREAK_REV_CFG['XAUUSD-M5']),
   ],
   'XAUUSD-M15': [
+    s332Layer(S332_CFG['XAUUSD-M15']),   // احیای squeeze با فیلترِ آماری r2+hurst — RQS+=91.2
     s324Layer(S324_CFG['XAUUSD-M15']),
     s322Layer(S322_CFG['XAUUSD-M15']),
     s323Layer(S323_CFG['XAUUSD-M15']),
