@@ -2360,8 +2360,8 @@ function serveStatic2(options = {}) {
         const full = join(PUBLIC_ROOT, safe);
         const s = await stat(full);
         if (!s.isFile()) return null;
-        const buf = await readFile(full);
-        return new Uint8Array(buf);
+        const buf2 = await readFile(full);
+        return new Uint8Array(buf2);
       } catch {
         return null;
       }
@@ -2836,8 +2836,57 @@ function analyze(c) {
   };
 }
 
-// ../web_tool/src/trade_manager.ts
+// ../web_tool/src/reversal_guard.ts
 var round2 = (x) => Math.round(x * 100) / 100;
+function dirOf(opp) {
+  const d = (opp.direction || "").toUpperCase();
+  if (d === "LONG") return "long";
+  if (d === "SHORT") return "short";
+  return null;
+}
+function assessReversal(inp) {
+  const oppDir = dirOf(inp.opp);
+  const opposed = oppDir !== null && oppDir !== inp.side;
+  const oppLayer = inp.opp.sourceLayer?.code ? `${inp.opp.sourceLayer?.name || inp.opp.sourceLayer?.code}` : void 0;
+  if (!opposed) return { level: "none", opposed: false, oppLayer };
+  const oppFa = inp.side === "long" ? "\u0641\u0631\u0648\u0634 (SHORT)" : "\u062E\u0631\u06CC\u062F (LONG)";
+  const myFa = inp.side === "long" ? "\u062E\u0631\u06CC\u062F (LONG)" : "\u0641\u0631\u0648\u0634 (SHORT)";
+  const layerTag = oppLayer ? `\u0644\u0627\u06CC\u0647\u0654 \xAB${oppLayer}\xBB ` : "\u0645\u0648\u062A\u0648\u0631\u0650 \u0633\u0627\u06CC\u062A ";
+  if (inp.opp.state === "APPROACHING") {
+    return {
+      level: "soft",
+      opposed: true,
+      oppLayer,
+      title: "\u0646\u0634\u0627\u0646\u0647\u0654 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0628\u0631\u06AF\u0634\u062A\u0650 \u0631\u0648\u0646\u062F (\u0647\u0646\u0648\u0632 \u0642\u0637\u0639\u06CC \u0646\u06CC\u0633\u062A)",
+      detail: `${layerTag}\u062F\u0631 \u067E\u0633\u200C\u0632\u0645\u06CC\u0646\u0647 \u0634\u0631\u0648\u0639 \u0628\u0647 \u0634\u06A9\u0644\u200C\u062F\u0627\u062F\u0646\u0650 \u06CC\u06A9 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${oppFa} \u06A9\u0631\u062F\u0647 \u06A9\u0647 \u0645\u062E\u0627\u0644\u0641\u0650 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 ${myFa}\u0650 \u062A\u0648\u0633\u062A. \u0647\u0646\u0648\u0632 \u062A\u062B\u0628\u06CC\u062A \u0646\u0634\u062F\u0647\u061B \u0639\u062C\u0644\u0647 \u0646\u06A9\u0646 \u2014 \u0641\u0642\u0637 \u0622\u0645\u0627\u062F\u0647 \u0628\u0627\u0634 \u0648 \u062D\u0631\u06A9\u062A\u0650 \u0686\u0646\u062F \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u0631\u0627 \u062F\u0642\u06CC\u0642 \u0628\u0628\u06CC\u0646. \u0627\u06AF\u0631 \u0627\u06CC\u0646 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u062A\u062B\u0628\u06CC\u062A \u0634\u062F\u060C \u0622\u0646\u200C\u0648\u0642\u062A \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u0650 \u062F\u0641\u0627\u0639\u06CC \u0645\u06CC\u200C\u062F\u0647\u0645.`
+    };
+  }
+  if (inp.opp.state !== "ENTRY") return { level: "none", opposed: true, oppLayer };
+  if (inp.inProfit) {
+    const half = inp.side === "long" ? round2(inp.entry + Math.max(0, (inp.price - inp.entry) * 0.5)) : round2(inp.entry - Math.max(0, (inp.entry - inp.price) * 0.5));
+    return {
+      level: "defend-profit",
+      opposed: true,
+      oppLayer,
+      title: "\u{1F6E1} \u0628\u0631\u06AF\u0634\u062A\u0650 \u0641\u0639\u0627\u0644 \u0634\u0646\u0627\u0633\u0627\u06CC\u06CC \u0634\u062F \u2014 \u0633\u0648\u062F\u062A \u0631\u0627 \u0642\u0641\u0644 \u06A9\u0646",
+      detail: `${layerTag}\u0627\u06A9\u0646\u0648\u0646 \u06CC\u06A9 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${oppFa}\u0650 \u0641\u0639\u0627\u0644 \u0645\u06CC\u200C\u062F\u0647\u062F \u06A9\u0647 \u0645\u062E\u0627\u0644\u0641\u0650 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u0633\u0648\u062F\u0622\u0648\u0631\u0650 ${myFa}\u0650 \u062A\u0648\u0633\u062A (\u0633\u0648\u062F ${round2(inp.pnlR)}R). \u0686\u0648\u0646 \u062F\u0631 \u0633\u0648\u062F\u06CC\u060C \u0631\u06CC\u0633\u06A9\u0650 \u0627\u06CC\u0646 \u06A9\u0627\u0631 \u0635\u0641\u0631 \u0627\u0633\u062A: SL \u0631\u0627 \u0628\u0647 ${half} \u0628\u06A9\u0634 \u062A\u0627 \u0627\u06AF\u0631 \u0628\u0631\u06AF\u0634\u062A \u0648\u0627\u0642\u0639\u06CC \u0628\u0648\u062F \u0628\u062E\u0634\u0650 \u062E\u0648\u0628\u06CC \u0627\u0632 \u0633\u0648\u062F \u0642\u0641\u0644 \u0634\u0648\u062F\u060C \u0648 \u0627\u06AF\u0631 \u0628\u0631\u06AF\u0634\u062A \u06A9\u0627\u0630\u0628 \u0628\u0648\u062F \u0647\u0645\u0686\u0646\u0627\u0646 \u062F\u0631 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0645\u0627\u0646\u06CC. **\u0646\u0628\u0646\u062F** \u2014 \u0641\u0642\u0637 \u0633\u0648\u062F \u0631\u0627 \u0628\u06CC\u0645\u0647 \u06A9\u0646.`,
+      suggestSl: half
+    };
+  }
+  const tightSl = inp.side === "long" ? round2(inp.price - Math.max(0.6 * inp.atr, inp.price * 8e-4)) : round2(inp.price + Math.max(0.6 * inp.atr, inp.price * 8e-4));
+  const doubleConfirmed = inp.trendAgainst;
+  return {
+    level: "defend-close",
+    opposed: true,
+    oppLayer,
+    title: doubleConfirmed ? "\u26D4 \u0628\u0631\u06AF\u0634\u062A\u0650 \u062A\u0627\u06CC\u06CC\u062F\u0634\u062F\u0647 \u0648 \u062A\u0648 \u062F\u0631 \u0636\u0631\u0631\u06CC \u2014 \u062E\u0631\u0648\u062C\u0650 \u062F\u0641\u0627\u0639\u06CC \u0631\u0627 \u062C\u062F\u06CC \u0628\u06AF\u06CC\u0631" : "\u26A0\uFE0F \u0628\u0631\u06AF\u0634\u062A\u0650 \u0641\u0639\u0627\u0644 \u0648 \u062A\u0648 \u062F\u0631 \u0636\u0631\u0631\u06CC \u2014 \u062F\u0641\u0627\u0639 \u06A9\u0646 (\u0647\u0646\u0648\u0632 \u0639\u062C\u0644\u0647 \u0628\u0631\u0627\u06CC \u0628\u0633\u062A\u0646 \u0646\u06A9\u0646)",
+    detail: `${layerTag}\u06CC\u06A9 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${oppFa}\u0650 \u0641\u0639\u0627\u0644 \u0645\u06CC\u200C\u062F\u0647\u062F \u0648 \u062A\u0648 \u062F\u0631 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 ${myFa} \u062F\u0631 \u0636\u0631\u0631 (${round2(inp.pnlR)}R) \u0647\u0633\u062A\u06CC. ` + (doubleConfirmed ? `\u0631\u0648\u0646\u062F\u0650 \u062E\u0627\u0645\u0650 \u0628\u0627\u0632\u0627\u0631 \u0647\u0645 \u0645\u062E\u0627\u0644\u0641\u0650 \u062A\u0648\u0633\u062A (\u062A\u0627\u06CC\u06CC\u062F\u0650 \u0645\u0636\u0627\u0639\u0641). \u0627\u06CC\u0646 \u062C\u062F\u06CC\u200C\u062A\u0631\u06CC\u0646 \u062D\u0627\u0644\u062A \u0627\u0633\u062A. \u0628\u0647\u200C\u062C\u0627\u06CC \u0635\u0628\u0631\u0650 \u06A9\u0648\u0631\u06A9\u0648\u0631\u0627\u0646\u0647\u060C SL \u0631\u0627 \u0628\u0647 ${tightSl} \u0646\u0632\u062F\u06CC\u06A9 \u06A9\u0646: \u0627\u06AF\u0631 \u0628\u0631\u06AF\u0634\u062A \u0648\u0627\u0642\u0639\u06CC \u0628\u0648\u062F \u0628\u0627 \u0636\u0631\u0631\u0650 \u06A9\u0645\u062A\u0631 \u062E\u0627\u0631\u062C \u0645\u06CC\u200C\u0634\u0648\u06CC\u061B \u0627\u06AF\u0631 \u0642\u06CC\u0645\u062A \u0628\u0647\u200C\u0646\u0641\u0639\u062A \u0686\u0631\u062E\u06CC\u062F \u0647\u0646\u0648\u0632 \u062F\u0631 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC. \u0627\u06AF\u0631 \u0634\u0648\u0627\u0647\u062F\u0650 \u0628\u0631\u06AF\u0634\u062A \u0642\u0648\u06CC\u200C\u062A\u0631 \u0634\u062F\u060C \u0628\u0633\u062A\u0646\u0650 \u06A9\u0627\u0645\u0644 \u0645\u0646\u0637\u0642\u06CC \u0627\u0633\u062A.` : `\u0627\u0645\u0627 \u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631 \u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644\u0627\u064B \u0645\u062E\u0627\u0644\u0641 \u0646\u0634\u062F\u0647. \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u0650 \u0645\u062D\u0627\u0641\u0638\u0647\u200C\u06A9\u0627\u0631\u0627\u0646\u0647: SL \u0631\u0627 \u0628\u0647 ${tightSl} \u0646\u0632\u062F\u06CC\u06A9 \u06A9\u0646 \u062A\u0627 \u0627\u06AF\u0631 \u0628\u0631\u06AF\u0634\u062A \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0641\u062A \u0636\u0631\u0631\u062A \u0645\u062D\u062F\u0648\u062F \u0634\u0648\u062F\u060C \u0628\u062F\u0648\u0646\u0650 \u0627\u06CC\u0646\u06A9\u0647 \u0628\u0627 \u06CC\u06A9 \u0646\u0648\u0633\u0627\u0646\u0650 \u06A9\u0627\u0630\u0628 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0628\u06CC\u0631\u0648\u0646 \u0628\u06CC\u0641\u062A\u06CC.`),
+    suggestSl: tightSl
+  };
+}
+
+// ../web_tool/src/trade_manager.ts
+var round22 = (x) => Math.round(x * 100) / 100;
 function layerAwareAdvices(t, price, atr2, isLong, pnlR, rawMove, riskDist, reachedTp, reachedSl) {
   const out = [];
   const mp = t.managePlan;
@@ -2858,22 +2907,22 @@ function layerAwareAdvices(t, price, atr2, isLong, pnlR, rawMove, riskDist, reac
     out.push({
       type: "sl",
       severity: "good",
-      title: `${tag}\u0628\u06CC\u200C\u0631\u06CC\u0633\u06A9 \u06A9\u0646 (\u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646) \u2014 \u0628\u0647 ${round2(pnlR)}R \u0633\u0648\u062F \u0631\u0633\u06CC\u062F\u06CC`,
-      detail: `\u0637\u0628\u0642\u0650 \u067E\u0644\u0646\u0650 \u0647\u0645\u06CC\u0646 \u0644\u0627\u06CC\u0647\u060C \u062F\u0631 ${beTrig}R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0642\u06CC\u0645\u062A\u0650 \u0648\u0631\u0648\u062F (${round2(t.entry)}) \u0628\u0628\u0631 \u062A\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u062F\u0648\u0646\u200C\u0631\u06CC\u0633\u06A9 \u0634\u0648\u062F. ${mp.style === "structural-trail" ? "\u0633\u067E\u0633 \u062F\u0631 \u06AF\u0627\u0645 \u0628\u0639\u062F SL \u0631\u0627 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0622\u062E\u0631\u06CC\u0646 \u067E\u0648\u0644\u0628\u06A9 (higher-low) \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0622\u0648\u0631\u06CC\u0645." : "\u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0646\u0628\u0646\u062F\u061B \u0628\u06AF\u0630\u0627\u0631 \u0633\u0648\u062F \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F."}`,
-      suggest: { field: "sl", value: round2(t.entry) }
+      title: `${tag}\u0628\u06CC\u200C\u0631\u06CC\u0633\u06A9 \u06A9\u0646 (\u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646) \u2014 \u0628\u0647 ${round22(pnlR)}R \u0633\u0648\u062F \u0631\u0633\u06CC\u062F\u06CC`,
+      detail: `\u0637\u0628\u0642\u0650 \u067E\u0644\u0646\u0650 \u0647\u0645\u06CC\u0646 \u0644\u0627\u06CC\u0647\u060C \u062F\u0631 ${beTrig}R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0642\u06CC\u0645\u062A\u0650 \u0648\u0631\u0648\u062F (${round22(t.entry)}) \u0628\u0628\u0631 \u062A\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u062F\u0648\u0646\u200C\u0631\u06CC\u0633\u06A9 \u0634\u0648\u062F. ${mp.style === "structural-trail" ? "\u0633\u067E\u0633 \u062F\u0631 \u06AF\u0627\u0645 \u0628\u0639\u062F SL \u0631\u0627 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0622\u062E\u0631\u06CC\u0646 \u067E\u0648\u0644\u0628\u06A9 (higher-low) \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0622\u0648\u0631\u06CC\u0645." : "\u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0646\u0628\u0646\u062F\u061B \u0628\u06AF\u0630\u0627\u0631 \u0633\u0648\u062F \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F."}`,
+      suggest: { field: "sl", value: round22(t.entry) }
     });
   }
   if (pnlR >= beTrig) {
     const trailDist = typeof mp.trailAtrMult === "number" ? mp.trailAtrMult * atr2 : typeof mp.trailDistPrice === "number" ? mp.trailDistPrice : 1 * atr2;
-    const trail = isLong ? round2(price - trailDist) : round2(price + trailDist);
+    const trail = isLong ? round22(price - trailDist) : round22(price + trailDist);
     const better = isLong ? trail > t.sl : trail < t.sl;
     if (better && trailDist > 0) {
-      const distTxt = typeof mp.trailAtrMult === "number" ? `${mp.trailAtrMult}\xD7ATR (${round2(trailDist)} \u0648\u0627\u062D\u062F\u0650 \u0642\u06CC\u0645\u062A)` : `${round2(trailDist)} \u0648\u0627\u062D\u062F\u0650 \u0642\u06CC\u0645\u062A (~${Math.round(trailDist * 10)}pip)`;
+      const distTxt = typeof mp.trailAtrMult === "number" ? `${mp.trailAtrMult}\xD7ATR (${round22(trailDist)} \u0648\u0627\u062D\u062F\u0650 \u0642\u06CC\u0645\u062A)` : `${round22(trailDist)} \u0648\u0627\u062D\u062F\u0650 \u0642\u06CC\u0645\u062A (~${Math.round(trailDist * 10)}pip)`;
       out.push({
         type: "sl",
         severity: "good",
         title: `${tag}TP/SL \u0645\u062A\u062D\u0631\u06A9: \u062D\u062F \u0636\u0631\u0631 \u0631\u0627 \u062C\u0644\u0648 \u0628\u06A9\u0634 (Trailing)`,
-        detail: `\u0633\u0648\u062F ${round2(pnlR)}R \u0634\u062F\u0647. \u0637\u0628\u0642\u0650 \u0633\u0628\u06A9\u0650 \xAB${styleFa(mp.style)}\xBB \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647\u060C SL \u0631\u0627 \u0628\u0647 ${trail} (${distTxt} \u067E\u0634\u062A\u0650 \u0642\u06CC\u0645\u062A) \u0628\u06A9\u0634 \u062A\u0627 \u0633\u0648\u062F\u0650 \u0628\u06CC\u0634\u062A\u0631\u06CC \u0642\u0641\u0644 \u0634\u0648\u062F \u2014 \u0648 \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631 \u0631\u0627 \u0628\u0627 \u0647\u0631 \u062D\u0631\u06A9\u062A\u0650 \u0645\u0633\u0627\u0639\u062F \u062A\u06A9\u0631\u0627\u0631 \u06A9\u0646. \u0627\u06CC\u0646 \xABTP/SL \u0645\u062A\u062D\u0631\u06A9\u0650 \u0647\u0645\u200C\u062E\u0648\u0627\u0646 \u0628\u0627 \u0644\u0627\u06CC\u0647\xBB \u0627\u0633\u062A: \u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F \u0628\u062F\u0648\u062F\u060C \u0648\u0644\u06CC \u0633\u0648\u062F\u0650 \u06A9\u0633\u0628\u200C\u0634\u062F\u0647 \u0631\u0627 \u0627\u0632 \u062F\u0633\u062A \u0646\u062F\u0647.`,
+        detail: `\u0633\u0648\u062F ${round22(pnlR)}R \u0634\u062F\u0647. \u0637\u0628\u0642\u0650 \u0633\u0628\u06A9\u0650 \xAB${styleFa(mp.style)}\xBB \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647\u060C SL \u0631\u0627 \u0628\u0647 ${trail} (${distTxt} \u067E\u0634\u062A\u0650 \u0642\u06CC\u0645\u062A) \u0628\u06A9\u0634 \u062A\u0627 \u0633\u0648\u062F\u0650 \u0628\u06CC\u0634\u062A\u0631\u06CC \u0642\u0641\u0644 \u0634\u0648\u062F \u2014 \u0648 \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631 \u0631\u0627 \u0628\u0627 \u0647\u0631 \u062D\u0631\u06A9\u062A\u0650 \u0645\u0633\u0627\u0639\u062F \u062A\u06A9\u0631\u0627\u0631 \u06A9\u0646. \u0627\u06CC\u0646 \xABTP/SL \u0645\u062A\u062D\u0631\u06A9\u0650 \u0647\u0645\u200C\u062E\u0648\u0627\u0646 \u0628\u0627 \u0644\u0627\u06CC\u0647\xBB \u0627\u0633\u062A: \u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F \u0628\u062F\u0648\u062F\u060C \u0648\u0644\u06CC \u0633\u0648\u062F\u0650 \u06A9\u0633\u0628\u200C\u0634\u062F\u0647 \u0631\u0627 \u0627\u0632 \u062F\u0633\u062A \u0646\u062F\u0647.`,
         suggest: { field: "sl", value: trail }
       });
     }
@@ -2902,7 +2951,7 @@ function styleFa(s) {
       return "TP/SL \u062B\u0627\u0628\u062A";
   }
 }
-function evaluateTrade(t, a, modelProbPct) {
+function evaluateTrade(t, a, modelProbPct, oppSignal) {
   const price = a.price;
   const atr2 = a.atr || 1;
   const isLong = t.side === "long";
@@ -2910,8 +2959,8 @@ function evaluateTrade(t, a, modelProbPct) {
   const rewardDist = Math.abs(t.tp - t.entry) || atr2;
   const rawMove = isLong ? price - t.entry : t.entry - price;
   const valuePerPrice = t.valuePerPrice ?? 100;
-  const pnlUsd = round2(rawMove * valuePerPrice);
-  const pnlR = round2(rawMove / riskDist);
+  const pnlUsd = round22(rawMove * valuePerPrice);
+  const pnlR = round22(rawMove / riskDist);
   const spreadEst = price >= 100 ? 0.33 : price >= 5 ? 0.03 : 2e-4;
   const neutralBand = Math.max(spreadEst, 0.12 * riskDist, 0.15 * atr2);
   const ageSec = t.openedAt ? Math.max(0, Math.floor(Date.now() / 1e3) - t.openedAt) : Infinity;
@@ -2920,16 +2969,16 @@ function evaluateTrade(t, a, modelProbPct) {
   const isFresh = withinGraceTime && withinNeutralBand;
   const inProfit = rawMove > neutralBand;
   const inRealLoss = rawMove < -neutralBand;
-  const progressToTp = round2(rawMove / rewardDist * 100);
+  const progressToTp = round22(rawMove / rewardDist * 100);
   const distToSl = isLong ? price - t.sl : t.sl - price;
   const distToTp = isLong ? t.tp - price : price - t.tp;
-  const distToSlPct = round2(distToSl / price * 100);
-  const distToTpPct = round2(distToTp / price * 100);
+  const distToSlPct = round22(distToSl / price * 100);
+  const distToTpPct = round22(distToTp / price * 100);
   const reachedTp = isLong ? price >= t.tp : price <= t.tp;
   const reachedSl = isLong ? price <= t.sl : price >= t.sl;
   const advices = [];
   if (isFresh && !reachedTp && !reachedSl) {
-    const moveTxt = rawMove < 0 ? `\u0627\u0641\u062A\u0650 \u0641\u0639\u0644\u06CC (${round2(Math.abs(rawMove))} \u0648\u0627\u062D\u062F\u0650 \u0642\u06CC\u0645\u062A) \u062F\u0631 \u062D\u062F\u0650 \u0627\u0633\u067E\u0631\u062F/\u0646\u0648\u06CC\u0632\u0650 \u0637\u0628\u06CC\u0639\u06CC\u0650 \u0648\u0631\u0648\u062F \u0627\u0633\u062A` : `\u062D\u0631\u06A9\u062A\u0650 \u0641\u0639\u0644\u06CC \u0647\u0646\u0648\u0632 \u0646\u0627\u0686\u06CC\u0632 \u0627\u0633\u062A`;
+    const moveTxt = rawMove < 0 ? `\u0627\u0641\u062A\u0650 \u0641\u0639\u0644\u06CC (${round22(Math.abs(rawMove))} \u0648\u0627\u062D\u062F\u0650 \u0642\u06CC\u0645\u062A) \u062F\u0631 \u062D\u062F\u0650 \u0627\u0633\u067E\u0631\u062F/\u0646\u0648\u06CC\u0632\u0650 \u0637\u0628\u06CC\u0639\u06CC\u0650 \u0648\u0631\u0648\u062F \u0627\u0633\u062A` : `\u062D\u0631\u06A9\u062A\u0650 \u0641\u0639\u0644\u06CC \u0647\u0646\u0648\u0632 \u0646\u0627\u0686\u06CC\u0632 \u0627\u0633\u062A`;
     advices.push({
       type: "info",
       severity: "info",
@@ -2938,17 +2987,17 @@ function evaluateTrade(t, a, modelProbPct) {
     });
     return {
       side: t.side,
-      price: round2(price),
-      entry: round2(t.entry),
-      tp: round2(t.tp),
-      sl: round2(t.sl),
+      price: round22(price),
+      entry: round22(t.entry),
+      tp: round22(t.tp),
+      sl: round22(t.sl),
       inProfit,
       pnlUsd,
       pnlR,
       progressToTp,
-      distToSlPct: round2((isLong ? price - t.sl : t.sl - price) / price * 100),
-      distToTpPct: round2((isLong ? t.tp - price : price - t.tp) / price * 100),
-      riskReward: `R:R \u0627\u0648\u0644\u06CC\u0647 \u2248 1:${round2(rewardDist / riskDist)}`,
+      distToSlPct: round22((isLong ? price - t.sl : t.sl - price) / price * 100),
+      distToTpPct: round22((isLong ? t.tp - price : price - t.tp) / price * 100),
+      riskReward: `R:R \u0627\u0648\u0644\u06CC\u0647 \u2248 1:${round22(rewardDist / riskDist)}`,
       reachedTp: false,
       reachedSl: false,
       advices,
@@ -2961,7 +3010,7 @@ function evaluateTrade(t, a, modelProbPct) {
       type: "target-hit",
       severity: "good",
       title: "\u0628\u0647 \u062D\u062F \u0633\u0648\u062F (TP) \u0631\u0633\u06CC\u062F \u{1F3AF}",
-      detail: `\u0642\u06CC\u0645\u062A ${round2(price)} \u0628\u0647 TP \u0634\u0645\u0627 (${round2(t.tp)}) \u0631\u0633\u06CC\u062F\u0647 \u0627\u0633\u062A. \u0627\u06AF\u0631 \u0628\u0631\u0648\u06A9\u0631 \u0628\u0647\u200C\u0635\u0648\u0631\u062A \u062E\u0648\u062F\u06A9\u0627\u0631 \u0646\u0628\u0633\u062A\u0647\u060C \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0628\u0628\u0646\u062F\u06CC\u062F \u0648 \u0633\u0648\u062F \u0631\u0627 \u062B\u0628\u062A \u06A9\u0646\u06CC\u062F.`
+      detail: `\u0642\u06CC\u0645\u062A ${round22(price)} \u0628\u0647 TP \u0634\u0645\u0627 (${round22(t.tp)}) \u0631\u0633\u06CC\u062F\u0647 \u0627\u0633\u062A. \u0627\u06AF\u0631 \u0628\u0631\u0648\u06A9\u0631 \u0628\u0647\u200C\u0635\u0648\u0631\u062A \u062E\u0648\u062F\u06A9\u0627\u0631 \u0646\u0628\u0633\u062A\u0647\u060C \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0628\u0628\u0646\u062F\u06CC\u062F \u0648 \u0633\u0648\u062F \u0631\u0627 \u062B\u0628\u062A \u06A9\u0646\u06CC\u062F.`
     });
   }
   if (reachedSl) {
@@ -2969,7 +3018,7 @@ function evaluateTrade(t, a, modelProbPct) {
       type: "target-hit",
       severity: "critical",
       title: "\u0628\u0647 \u062D\u062F \u0636\u0631\u0631 (SL) \u0631\u0633\u06CC\u062F",
-      detail: `\u0642\u06CC\u0645\u062A ${round2(price)} \u0628\u0647 SL \u0634\u0645\u0627 (${round2(t.sl)}) \u0631\u0633\u06CC\u062F\u0647 \u0627\u0633\u062A. \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0631\u0648\u06A9\u0631 \u062E\u0648\u062F\u06A9\u0627\u0631 \u0645\u06CC\u200C\u0628\u0646\u062F\u062F\u061B \u062F\u0631 \u063A\u06CC\u0631 \u0627\u06CC\u0646\u200C\u0635\u0648\u0631\u062A \u0628\u0631\u0627\u06CC \u06A9\u0646\u062A\u0631\u0644 \u0631\u06CC\u0633\u06A9 \u0628\u0628\u0646\u062F\u06CC\u062F.`
+      detail: `\u0642\u06CC\u0645\u062A ${round22(price)} \u0628\u0647 SL \u0634\u0645\u0627 (${round22(t.sl)}) \u0631\u0633\u06CC\u062F\u0647 \u0627\u0633\u062A. \u0645\u0639\u0645\u0648\u0644\u0627\u064B \u0628\u0631\u0648\u06A9\u0631 \u062E\u0648\u062F\u06A9\u0627\u0631 \u0645\u06CC\u200C\u0628\u0646\u062F\u062F\u061B \u062F\u0631 \u063A\u06CC\u0631 \u0627\u06CC\u0646\u200C\u0635\u0648\u0631\u062A \u0628\u0631\u0627\u06CC \u06A9\u0646\u062A\u0631\u0644 \u0631\u06CC\u0633\u06A9 \u0628\u0628\u0646\u062F\u06CC\u062F.`
     });
   }
   const layerMgmt = layerAwareAdvices(t, price, atr2, isLong, pnlR, rawMove, riskDist, reachedTp, reachedSl);
@@ -2981,12 +3030,12 @@ function evaluateTrade(t, a, modelProbPct) {
       type: "sl",
       severity: "good",
       title: "\u062D\u0627\u0644\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0628\u06CC\u200C\u0631\u06CC\u0633\u06A9 \u06A9\u0646 (\u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646)",
-      detail: `\u0628\u0647 ${pnlR}R \u0633\u0648\u062F \u0631\u0633\u06CC\u062F\u0647\u200C\u0627\u06CC. \u067E\u06CC\u0634\u0646\u0647\u0627\u062F: SL \u0631\u0627 \u0628\u0647 \u0642\u06CC\u0645\u062A \u0648\u0631\u0648\u062F (${round2(t.entry)}) \u0645\u0646\u062A\u0642\u0644 \u06A9\u0646 \u062A\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u062F\u0648\u0646\u200C\u0631\u06CC\u0633\u06A9 \u0634\u0648\u062F.`,
-      suggest: { field: "sl", value: round2(t.entry) }
+      detail: `\u0628\u0647 ${pnlR}R \u0633\u0648\u062F \u0631\u0633\u06CC\u062F\u0647\u200C\u0627\u06CC. \u067E\u06CC\u0634\u0646\u0647\u0627\u062F: SL \u0631\u0627 \u0628\u0647 \u0642\u06CC\u0645\u062A \u0648\u0631\u0648\u062F (${round22(t.entry)}) \u0645\u0646\u062A\u0642\u0644 \u06A9\u0646 \u062A\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u062F\u0648\u0646\u200C\u0631\u06CC\u0633\u06A9 \u0634\u0648\u062F.`,
+      suggest: { field: "sl", value: round22(t.entry) }
     });
   }
   if (!planHandled && !reachedTp && !reachedSl && pnlR >= 1.5) {
-    const trail = isLong ? round2(price - 1.5 * atr2) : round2(price + 1.5 * atr2);
+    const trail = isLong ? round22(price - 1.5 * atr2) : round22(price + 1.5 * atr2);
     const better = isLong ? trail > t.sl : trail < t.sl;
     if (better) {
       advices.push({
@@ -3010,12 +3059,12 @@ function evaluateTrade(t, a, modelProbPct) {
         type: "sl",
         severity: "good",
         title: "\u{1F7E2} SHORT (\u0628\u06AF\u0630\u0627\u0631 \u0628\u0631\u062F\u0647\u0627 \u0628\u062F\u0648\u0646\u062F): \u0628\u06CC\u200C\u0631\u06CC\u0633\u06A9 \u06A9\u0646 (\u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646)",
-        detail: `\u0628\u0647 ${round2(profitDollars)}$ (~${Math.round(profitDollars * 10)}pip) \u0633\u0648\u062F \u0631\u0633\u06CC\u062F\u06CC. SL \u0631\u0627 \u0628\u0647 \u0642\u06CC\u0645\u062A\u0650 \u0648\u0631\u0648\u062F (${round2(t.entry)}) \u0628\u0628\u0631 \u062A\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u062F\u0648\u0646\u200C\u0631\u06CC\u0633\u06A9 \u0634\u0648\u062F\u061B \u0648\u0644\u06CC **\u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0646\u0628\u0646\u062F** \u2014 \u0637\u0628\u0642\u0650 \u06A9\u0634\u0641\u0650 MFE (s117) \u0628\u0631\u062F\u0647\u0627\u06CC \u0628\u0632\u0631\u06AF\u0650 \u0646\u0632\u0648\u0644\u06CC \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0642\u0637\u0639 \u0645\u06CC\u200C\u0634\u062F\u0646\u062F. \u0628\u06AF\u0630\u0627\u0631 \u062D\u0631\u06A9\u062A \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F.`,
-        suggest: { field: "sl", value: round2(t.entry) }
+        detail: `\u0628\u0647 ${round22(profitDollars)}$ (~${Math.round(profitDollars * 10)}pip) \u0633\u0648\u062F \u0631\u0633\u06CC\u062F\u06CC. SL \u0631\u0627 \u0628\u0647 \u0642\u06CC\u0645\u062A\u0650 \u0648\u0631\u0648\u062F (${round22(t.entry)}) \u0628\u0628\u0631 \u062A\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u062F\u0648\u0646\u200C\u0631\u06CC\u0633\u06A9 \u0634\u0648\u062F\u061B \u0648\u0644\u06CC **\u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0646\u0628\u0646\u062F** \u2014 \u0637\u0628\u0642\u0650 \u06A9\u0634\u0641\u0650 MFE (s117) \u0628\u0631\u062F\u0647\u0627\u06CC \u0628\u0632\u0631\u06AF\u0650 \u0646\u0632\u0648\u0644\u06CC \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0642\u0637\u0639 \u0645\u06CC\u200C\u0634\u062F\u0646\u062F. \u0628\u06AF\u0630\u0627\u0631 \u062D\u0631\u06A9\u062A \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F.`,
+        suggest: { field: "sl", value: round22(t.entry) }
       });
     }
     if (profitDollars >= BE_TRIG + TRAIL) {
-      const trail = round2(price + TRAIL);
+      const trail = round22(price + TRAIL);
       if (trail < t.sl) {
         advices.push({
           type: "sl",
@@ -3031,13 +3080,37 @@ function evaluateTrade(t, a, modelProbPct) {
         type: "close",
         severity: "warning",
         title: "\u23F1 SHORT: \u0628\u0647 \u062D\u062F\u0627\u06A9\u062B\u0631\u0650 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC (\u06F4\u06F8 \u06A9\u0646\u062F\u0644) \u0631\u0633\u06CC\u062F \u2014 \u0628\u0628\u0646\u062F",
-        detail: `\u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 ${t.barsHeld} \u06A9\u0646\u062F\u0644 \u0628\u0627\u0632 \u0628\u0648\u062F\u0647 \u0648 \u0628\u0647 \u0633\u0642\u0641\u0650 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC\u0650 \u0645\u0646\u0637\u0642\u0650 \u0631\u06A9\u0648\u0631\u062F (\u06F4\u06F8 \u06A9\u0646\u062F\u0644) \u0631\u0633\u06CC\u062F\u0647 \u0627\u0633\u062A. \u0637\u0628\u0642\u0650 s118 \u0627\u06CC\u0646\u062C\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0645\u06CC\u200C\u0628\u0646\u062F\u06CC\u0645 \u062A\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647 \u0622\u0632\u0627\u062F \u0634\u0648\u062F\u061B \u0633\u0648\u062F\u0650 \u0641\u0639\u0644\u06CC ${round2(profitDollars)}$.`
+        detail: `\u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 ${t.barsHeld} \u06A9\u0646\u062F\u0644 \u0628\u0627\u0632 \u0628\u0648\u062F\u0647 \u0648 \u0628\u0647 \u0633\u0642\u0641\u0650 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC\u0650 \u0645\u0646\u0637\u0642\u0650 \u0631\u06A9\u0648\u0631\u062F (\u06F4\u06F8 \u06A9\u0646\u062F\u0644) \u0631\u0633\u06CC\u062F\u0647 \u0627\u0633\u062A. \u0637\u0628\u0642\u0650 s118 \u0627\u06CC\u0646\u062C\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u0645\u06CC\u200C\u0628\u0646\u062F\u06CC\u0645 \u062A\u0627 \u0633\u0631\u0645\u0627\u06CC\u0647 \u0622\u0632\u0627\u062F \u0634\u0648\u062F\u061B \u0633\u0648\u062F\u0650 \u0641\u0639\u0644\u06CC ${round22(profitDollars)}$.`
       });
     }
   }
   const trendAgainst = isLong && a.trend === "down" || !isLong && a.trend === "up";
   const macdAgainst = isLong && a.macdHist < 0 || !isLong && a.macdHist > 0;
-  if (trendAgainst) {
+  let reversal = null;
+  if (oppSignal && !reachedTp && !reachedSl && !isFresh) {
+    reversal = assessReversal({
+      side: t.side,
+      opp: oppSignal,
+      inProfit,
+      inRealLoss,
+      pnlR,
+      price,
+      entry: t.entry,
+      atr: atr2,
+      trendAgainst
+    });
+    if (reversal.level !== "none" && reversal.title) {
+      advices.push({
+        type: "reversal",
+        severity: reversal.level === "defend-close" ? "critical" : reversal.level === "defend-profit" ? "warning" : "info",
+        title: reversal.title,
+        detail: reversal.detail || "",
+        ...typeof reversal.suggestSl === "number" ? { suggest: { field: "sl", value: reversal.suggestSl } } : {}
+      });
+    }
+  }
+  const reversalActive = reversal != null && reversal.level !== "none";
+  if (!reversalActive && trendAgainst) {
     advices.push({
       type: "reversal",
       severity: inProfit ? "warning" : inRealLoss ? "critical" : "info",
@@ -3049,7 +3122,7 @@ function evaluateTrade(t, a, modelProbPct) {
       type: "momentum",
       severity: "info",
       title: "\u0645\u0648\u0645\u0646\u062A\u0648\u0645 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u0645\u062E\u0627\u0644\u0641 \u0627\u0633\u062A",
-      detail: `\u0647\u06CC\u0633\u062A\u0648\u06AF\u0631\u0627\u0645 MACD \u0628\u0631\u062E\u0644\u0627\u0641 \u062C\u0647\u062A \u0645\u0639\u0627\u0645\u0644\u0647 \u0627\u0633\u062A (${round2(a.macdHist)}). \u0644\u0632\u0648\u0645\u0627\u064B \u0628\u062F \u0646\u06CC\u0633\u062A \u0627\u0645\u0627 \u0646\u0634\u0627\u0646\u0647\u0654 \u0636\u0639\u0641 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A\u061B \u0635\u0628\u0648\u0631\u0627\u0646\u0647 \u0627\u0645\u0627 \u0628\u0627 SL \u0645\u0634\u062E\u0635 \u0645\u062F\u06CC\u0631\u06CC\u062A \u06A9\u0646.`
+      detail: `\u0647\u06CC\u0633\u062A\u0648\u06AF\u0631\u0627\u0645 MACD \u0628\u0631\u062E\u0644\u0627\u0641 \u062C\u0647\u062A \u0645\u0639\u0627\u0645\u0644\u0647 \u0627\u0633\u062A (${round22(a.macdHist)}). \u0644\u0632\u0648\u0645\u0627\u064B \u0628\u062F \u0646\u06CC\u0633\u062A \u0627\u0645\u0627 \u0646\u0634\u0627\u0646\u0647\u0654 \u0636\u0639\u0641 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A\u061B \u0635\u0628\u0648\u0631\u0627\u0646\u0647 \u0627\u0645\u0627 \u0628\u0627 SL \u0645\u0634\u062E\u0635 \u0645\u062F\u06CC\u0631\u06CC\u062A \u06A9\u0646.`
     });
   }
   const MODEL_THR = 68;
@@ -3059,14 +3132,14 @@ function evaluateTrade(t, a, modelProbPct) {
         type: "info",
         severity: "good",
         title: "\u0645\u062F\u0644 \u0647\u0645\u200C\u0633\u0648 \u0628\u0627 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062A\u0648\u0633\u062A",
-        detail: `\u0645\u062F\u0644 \u0631\u0628\u0627\u062A \u0627\u062D\u062A\u0645\u0627\u0644 ${round2(modelProbPct)}\u066A (\u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0648\u0631\u0648\u062F ${MODEL_THR}\u066A) \u0628\u0631\u0627\u06CC \u0627\u062F\u0627\u0645\u0647\u0654 \u062D\u0631\u06A9\u062A \u0635\u0639\u0648\u062F\u06CC \u0645\u06CC\u200C\u062F\u0647\u062F \u2014 \u0647\u0645\u200C\u0633\u0648 \u0628\u0627 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062E\u0631\u06CC\u062F \u062A\u0648. \u0627\u062C\u0627\u0632\u0647 \u0628\u062F\u0647 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0641\u0633 \u0628\u06A9\u0634\u062F (let it run) \u0648 SL \u0631\u0627 \u062A\u0631\u0650\u06CC\u0644 \u06A9\u0646.`
+        detail: `\u0645\u062F\u0644 \u0631\u0628\u0627\u062A \u0627\u062D\u062A\u0645\u0627\u0644 ${round22(modelProbPct)}\u066A (\u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0648\u0631\u0648\u062F ${MODEL_THR}\u066A) \u0628\u0631\u0627\u06CC \u0627\u062F\u0627\u0645\u0647\u0654 \u062D\u0631\u06A9\u062A \u0635\u0639\u0648\u062F\u06CC \u0645\u06CC\u200C\u062F\u0647\u062F \u2014 \u0647\u0645\u200C\u0633\u0648 \u0628\u0627 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062E\u0631\u06CC\u062F \u062A\u0648. \u0627\u062C\u0627\u0632\u0647 \u0628\u062F\u0647 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0641\u0633 \u0628\u06A9\u0634\u062F (let it run) \u0648 SL \u0631\u0627 \u062A\u0631\u0650\u06CC\u0644 \u06A9\u0646.`
       });
     } else if (modelProbPct < 50) {
       advices.push({
         type: "info",
         severity: "warning",
         title: "\u0645\u062F\u0644\u060C \u0636\u0639\u0641 \u062F\u0631 \u0627\u062F\u0627\u0645\u0647\u0654 \u0635\u0639\u0648\u062F \u0645\u06CC\u200C\u0628\u06CC\u0646\u062F",
-        detail: `\u0645\u062F\u0644 \u0627\u062D\u062A\u0645\u0627\u0644 ${round2(modelProbPct)}\u066A (\u0632\u06CC\u0631 \u06F5\u06F0\u066A) \u0628\u0631\u0627\u06CC \u0627\u062F\u0627\u0645\u0647\u0654 \u0635\u0639\u0648\u062F \u0645\u06CC\u200C\u062F\u0647\u062F\u061B \u06CC\u0639\u0646\u06CC \u062A\u0645\u0627\u06CC\u0644 \u0628\u06CC\u0634\u062A\u0631 \u0628\u0647 \u062A\u0648\u0642\u0641/\u0628\u0631\u06AF\u0634\u062A \u0627\u0633\u062A. \u0628\u0631\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062E\u0631\u06CC\u062F\u060C \u0645\u062D\u0627\u0641\u0638\u0647\u200C\u06A9\u0627\u0631\u0627\u0646\u0647\u200C\u062A\u0631 \u0645\u062F\u06CC\u0631\u06CC\u062A \u06A9\u0646.`
+        detail: `\u0645\u062F\u0644 \u0627\u062D\u062A\u0645\u0627\u0644 ${round22(modelProbPct)}\u066A (\u0632\u06CC\u0631 \u06F5\u06F0\u066A) \u0628\u0631\u0627\u06CC \u0627\u062F\u0627\u0645\u0647\u0654 \u0635\u0639\u0648\u062F \u0645\u06CC\u200C\u062F\u0647\u062F\u061B \u06CC\u0639\u0646\u06CC \u062A\u0645\u0627\u06CC\u0644 \u0628\u06CC\u0634\u062A\u0631 \u0628\u0647 \u062A\u0648\u0642\u0641/\u0628\u0631\u06AF\u0634\u062A \u0627\u0633\u062A. \u0628\u0631\u0627\u06CC \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062E\u0631\u06CC\u062F\u060C \u0645\u062D\u0627\u0641\u0638\u0647\u200C\u06A9\u0627\u0631\u0627\u0646\u0647\u200C\u062A\u0631 \u0645\u062F\u06CC\u0631\u06CC\u062A \u06A9\u0646.`
       });
     }
   }
@@ -3080,6 +3153,12 @@ function evaluateTrade(t, a, modelProbPct) {
   } else if (reachedSl) {
     overallAction = "close";
     overallNote = "\u0628\u0647 \u062D\u062F \u0636\u0631\u0631 \u0631\u0633\u06CC\u062F\u06CC \u2014 \u0637\u0628\u0642 \u067E\u0644\u0646 \u062E\u0627\u0631\u062C \u0634\u0648.";
+  } else if (reversal?.level === "defend-close") {
+    overallAction = "tighten";
+    overallNote = trendAgainst ? "\u0645\u0648\u062A\u0648\u0631 \u0628\u0631\u06AF\u0634\u062A\u0650 \u062A\u0627\u06CC\u06CC\u062F\u0634\u062F\u0647 \u0645\u06CC\u200C\u0628\u06CC\u0646\u062F \u0648 \u062F\u0631 \u0636\u0631\u0631\u06CC \u2014 SL \u0631\u0627 \u0646\u0632\u062F\u06CC\u06A9 \u06A9\u0646\u061B \u0627\u06AF\u0631 \u0628\u0631\u06AF\u0634\u062A \u0642\u0648\u06CC\u200C\u062A\u0631 \u0634\u062F\u060C \u062E\u0631\u0648\u062C\u0650 \u062F\u0641\u0627\u0639\u06CC \u0645\u0646\u0637\u0642\u06CC \u0627\u0633\u062A." : "\u0645\u0648\u062A\u0648\u0631 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0645\u062E\u0627\u0644\u0641\u0650 \u0641\u0639\u0627\u0644 \u0645\u06CC\u200C\u062F\u0647\u062F \u0648 \u062F\u0631 \u0636\u0631\u0631\u06CC \u2014 SL \u0631\u0627 \u0646\u0632\u062F\u06CC\u06A9 \u06A9\u0646 \u062A\u0627 \u0636\u0631\u0631 \u0645\u062D\u062F\u0648\u062F \u0634\u0648\u062F (\u0628\u062F\u0648\u0646\u0650 \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645\u0650 \u06A9\u0627\u0630\u0628).";
+  } else if (reversal?.level === "defend-profit") {
+    overallAction = "tighten";
+    overallNote = "\u0645\u0648\u062A\u0648\u0631 \u0628\u0631\u06AF\u0634\u062A\u0650 \u0641\u0639\u0627\u0644 \u0645\u06CC\u200C\u0628\u06CC\u0646\u062F \u0648\u0644\u06CC \u062F\u0631 \u0633\u0648\u062F\u06CC \u2014 \u0633\u0648\u062F \u0631\u0627 \u0628\u0627 \u06A9\u0634\u06CC\u062F\u0646\u0650 SL \u0642\u0641\u0644 \u06A9\u0646\u061B \u0646\u0628\u0646\u062F.";
   } else if (layerMgmt.closeForMaxHold) {
     overallAction = "close";
     overallNote = "\u0628\u0647 \u0633\u0642\u0641\u0650 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC\u0650 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0631\u0633\u06CC\u062F\u06CC \u2014 \u0637\u0628\u0642\u0650 \u067E\u0644\u0646\u0650 \u0644\u0627\u06CC\u0647 \u0628\u0628\u0646\u062F.";
@@ -3113,22 +3192,23 @@ function evaluateTrade(t, a, modelProbPct) {
   }
   return {
     side: t.side,
-    price: round2(price),
-    entry: round2(t.entry),
-    tp: round2(t.tp),
-    sl: round2(t.sl),
+    price: round22(price),
+    entry: round22(t.entry),
+    tp: round22(t.tp),
+    sl: round22(t.sl),
     inProfit,
     pnlUsd,
     pnlR,
     progressToTp,
     distToSlPct,
     distToTpPct,
-    riskReward: `R:R \u0627\u0648\u0644\u06CC\u0647 \u2248 1:${round2(rewardDist / riskDist)}`,
+    riskReward: `R:R \u0627\u0648\u0644\u06CC\u0647 \u2248 1:${round22(rewardDist / riskDist)}`,
     reachedTp,
     reachedSl,
     advices,
     overallAction,
-    overallNote
+    overallNote,
+    ...reversalActive && reversal ? { reversal: { level: reversal.level, opposed: reversal.opposed, oppLayer: reversal.oppLayer } } : {}
   };
 }
 function isSlBeyondEntry(t) {
@@ -5178,6 +5258,57 @@ function runCard(ctx) {
   return primary;
 }
 
+// ../web_tool/src/signal_log.ts
+var MAX_ENTRIES = 800;
+var buf = [];
+function logSignal(card, dec, price, candleTime) {
+  try {
+    const state = dec?.state || "NEUTRAL";
+    if (state !== "ENTRY" && state !== "APPROACHING") return;
+    const now = Date.now();
+    const e = {
+      ts: now,
+      iso: new Date(now).toISOString(),
+      card,
+      state,
+      direction: dec?.direction || "\u2014",
+      layerCode: dec?.sourceLayer?.code || "\u2014",
+      layerName: dec?.sourceLayer?.name || dec?.headline || "\u2014",
+      price: Number(price) || 0,
+      entry: dec?.entry,
+      tp: dec?.tp,
+      sl: dec?.sl,
+      candleTime
+    };
+    buf.push(e);
+    if (buf.length > MAX_ENTRIES) buf.splice(0, buf.length - MAX_ENTRIES);
+  } catch {
+  }
+}
+function getLog(limit = MAX_ENTRIES) {
+  return buf.slice(-limit);
+}
+function findConflicts(windowSec = 120) {
+  const entries = buf.filter((e) => e.state === "ENTRY");
+  const byCard = {};
+  for (const e of entries) (byCard[e.card] ||= []).push(e);
+  const out = [];
+  for (const card of Object.keys(byCard)) {
+    const list = byCard[card].sort((x, y) => x.ts - y.ts);
+    for (let i = 1; i < list.length; i++) {
+      const a = list[i - 1], b = list[i];
+      if (a.direction !== b.direction && a.direction !== "\u2014" && b.direction !== "\u2014") {
+        const gapSec = (b.ts - a.ts) / 1e3;
+        if (gapSec <= windowSec) out.push({ card, gapSec: Math.round(gapSec), a, b });
+      }
+    }
+  }
+  return out.sort((p, q) => q.a.ts - p.a.ts);
+}
+function clearLog() {
+  buf.length = 0;
+}
+
 // ../web_tool/src/index.tsx
 var app = new Hono2();
 app.use("/api/*", cors());
@@ -5442,7 +5573,15 @@ app.post("/api/trade/advice", async (c) => {
     const valuePerPrice = meta_asset.isGold ? 100 : 1e5;
     const trade = { side, entry, tp, sl, openedAt: tr.openedAt, barsHeld, managePlan, valuePerPrice };
     const modelProbPct = typeof body.modelProbPct === "number" ? body.modelProbPct : void 0;
-    const status = evaluateTrade(trade, a, modelProbPct);
+    let oppSignal;
+    try {
+      const live = await decideAsset(meta_asset);
+      const d = live.decision;
+      oppSignal = { state: d.state, direction: d.direction, sourceLayer: d.sourceLayer || null };
+    } catch {
+      oppSignal = void 0;
+    }
+    const status = evaluateTrade(trade, a, modelProbPct, oppSignal);
     return c.json({
       ok: true,
       lastUpdate: (/* @__PURE__ */ new Date()).toISOString(),
@@ -5587,6 +5726,7 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
       riskPct
     };
     const dec2 = runCard(ctx2);
+    logSignal(a.card, dec2, result2.price, lastClosed2.time);
     return {
       asset: a.id,
       name: a.name,
@@ -5628,6 +5768,7 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     riskPct
   };
   const dec = runCard(ctx);
+  logSignal(a.card, dec, result.price, lastClosed.time);
   return {
     asset: a.id,
     name: a.name,
@@ -5670,6 +5811,21 @@ app.get("/api/decision/:asset", async (c) => {
   } catch (e) {
     return c.json({ ok: false, asset: a.id, name: a.name, error: e.message }, 502);
   }
+});
+app.get("/api/signal-log", (c) => {
+  const limit = Math.max(1, Math.min(800, parseInt(c.req.query("limit") || "200", 10)));
+  const card = c.req.query("card");
+  let rows = getLog(800);
+  if (card) rows = rows.filter((r) => r.card === card.toUpperCase());
+  return c.json({ ok: true, count: rows.length, entries: rows.slice(-limit) });
+});
+app.get("/api/signal-log/conflicts", (c) => {
+  const win = Math.max(1, Math.min(3600, parseInt(c.req.query("window") || "180", 10)));
+  return c.json({ ok: true, windowSec: win, conflicts: findConflicts(win) });
+});
+app.get("/api/signal-log/clear", (c) => {
+  clearLog();
+  return c.json({ ok: true, cleared: true });
 });
 app.get("/api/spots", async (c) => {
   const jobs = ASSETS.map(async (a) => {
