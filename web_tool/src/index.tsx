@@ -12,6 +12,8 @@ import { cachedFetch } from './cache'
 import { fetchWithTimeout } from './fast_fetch'
 // --- رجیستریِ ماژولارِ لایه‌های احیاشده (تنها مغزِ تصمیمِ سایت پس از حذفِ استراتژی‌های قدیمی) ---
 import { runCard, type LayerContext } from './strategy_registry'
+// --- لاگِ سیگنال (User Note): ثبتِ هر ENTRY/APPROACHING برای کشفِ سیگنال‌های متناقض ---
+import { logSignal, getLog, findConflicts, clearLog } from './signal_log'
 
 const app = new Hono()
 
@@ -545,6 +547,7 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
       utcHour: goldUtcHour, times: sig.map(k => k.time), capital, riskPct,
     }
     const dec = runCard(ctx)
+    logSignal(a.card, dec, result.price, lastClosed.time)   // 🔎 لاگِ سیگنال (User Note)
     return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
       price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null }
@@ -570,6 +573,7 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     utcHour: eurUtcHour, times: sig.map(k => k.time), capital, riskPct,
   }
   const dec = runCard(ctx)
+  logSignal(a.card, dec, result.price, lastClosed.time)   // 🔎 لاگِ سیگنال (User Note)
   return { asset: a.id, name: a.name, symbol: a.symbol, decimals: a.decimals, layer: a.layer,
     price: result.price, lastCandleTime: useCandles[useCandles.length - 1].time, decision: dec,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null }
@@ -627,6 +631,25 @@ app.get('/api/decision/:asset', async (c) => {
     return c.json({ ok: false, asset: a.id, name: a.name, error: e.message }, 502)
   }
 })
+
+// ---------------------------------------------------------------------------
+// 🔎 لاگِ سیگنال (User Note) — مشاهدهٔ همهٔ ENTRY/APPROACHING با زمانِ دقیق و کشفِ تناقض.
+//   /api/signal-log            → آخرین رویدادها (پیش‌فرض ۲۰۰)
+//   /api/signal-log/conflicts  → جفت‌های خرید/فروشِ متناقضِ همان کارت در بازهٔ کوتاه
+//   /api/signal-log/clear      → پاک‌کردنِ بافر (برای شروعِ تازهٔ مانیتور)
+// ---------------------------------------------------------------------------
+app.get('/api/signal-log', (c) => {
+  const limit = Math.max(1, Math.min(800, parseInt(c.req.query('limit') || '200', 10)))
+  const card = c.req.query('card')
+  let rows = getLog(800)
+  if (card) rows = rows.filter(r => r.card === card.toUpperCase())
+  return c.json({ ok: true, count: rows.length, entries: rows.slice(-limit) })
+})
+app.get('/api/signal-log/conflicts', (c) => {
+  const win = Math.max(1, Math.min(3600, parseInt(c.req.query('window') || '180', 10)))
+  return c.json({ ok: true, windowSec: win, conflicts: findConflicts(win) })
+})
+app.get('/api/signal-log/clear', (c) => { clearLog(); return c.json({ ok: true, cleared: true }) })
 
 // ---------------------------------------------------------------------------
 // endpointِ سبکِ قیمتِ زندهٔ همهٔ دارایی‌ها — برای پُلینگِ سریع (هر ~۲ ثانیه).
