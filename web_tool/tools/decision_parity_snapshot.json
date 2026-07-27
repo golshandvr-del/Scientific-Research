@@ -1,0 +1,880 @@
+{
+  "XAUUSD-M5": [
+    {
+      "off": 0,
+      "endTime": 1784198400,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Session-ORB Fade (آسیا)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S330",
+        "layerKind": "session",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 1
+      }
+    },
+    {
+      "off": 500,
+      "endTime": 1784041200,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Session-ORB Fade (آسیا)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S330",
+        "layerKind": "session",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 1
+      }
+    },
+    {
+      "off": 1500,
+      "endTime": 1783553700,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Session-ORB Fade (آسیا)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S330",
+        "layerKind": "session",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 1
+      }
+    },
+    {
+      "off": 3000,
+      "endTime": 1782898500,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Session-ORB Fade (آسیا)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S330",
+        "layerKind": "session",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 1
+      }
+    },
+    {
+      "off": 7000,
+      "endTime": 1781111100,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Session-ORB Fade (آسیا)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S330",
+        "layerKind": "session",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 1
+      }
+    }
+  ],
+  "XAUUSD-M15": [
+    {
+      "off": 0,
+      "endTime": 1783441800,
+      "dec": {
+        "state": "APPROACHING",
+        "headline": "احتمالِ نزدیک‌شدن به سیگنال — Ichimoku Kumo خرید",
+        "direction": "LONG",
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": 100,
+        "layerCode": "S322",
+        "layerKind": "ma-confluence",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S310",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 4
+      }
+    },
+    {
+      "off": 500,
+      "endTime": 1782786600,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Liquidity-Sweep بازگشتی",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S324",
+        "layerKind": "mean-reversion",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S310",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 1500,
+      "endTime": 1781487000,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Liquidity-Sweep بازگشتی",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S324",
+        "layerKind": "mean-reversion",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S310",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 3000,
+      "endTime": 1779375600,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Liquidity-Sweep بازگشتی",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S324",
+        "layerKind": "mean-reversion",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S310",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 7000,
+      "endTime": 1773975600,
+      "dec": {
+        "state": "ENTRY",
+        "headline": "ورود به معاملهٔ خرید (LONG) — Mid-Month Drift",
+        "direction": "LONG",
+        "entry": 4651.76,
+        "tp": 4681.26,
+        "sl": 4622.26,
+        "rr": "1:1.00",
+        "probability": 100,
+        "layerCode": "S312",
+        "layerKind": "time",
+        "lots": 0.03,
+        "others": [],
+        "gates": [
+          {
+            "code": "S312",
+            "open": true
+          },
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S310",
+            "open": false
+          }
+        ],
+        "indCount": 2
+      }
+    }
+  ],
+  "XAUUSD-M30": [
+    {
+      "off": 0,
+      "endTime": 1784197800,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — شرایطِ انفجارِ فشردگی برقرار نیست (M30 (نیم‌ساعته))",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S313",
+        "layerKind": "squeeze",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 4
+      }
+    },
+    {
+      "off": 500,
+      "endTime": 1782898200,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — شرایطِ انفجارِ فشردگی برقرار نیست (M30 (نیم‌ساعته))",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S313",
+        "layerKind": "squeeze",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 4
+      }
+    },
+    {
+      "off": 1500,
+      "endTime": 1780313400,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — شرایطِ انفجارِ فشردگی برقرار نیست (M30 (نیم‌ساعته))",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S313",
+        "layerKind": "squeeze",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 4
+      }
+    },
+    {
+      "off": 3000,
+      "endTime": 1776276000,
+      "dec": {
+        "state": "APPROACHING",
+        "headline": "احتمالِ نزدیک‌شدن به سیگنال — Sell-Climax بازگشتی (Brooks)",
+        "direction": "LONG",
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": 67,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 7000,
+      "endTime": 1765357200,
+      "dec": {
+        "state": "ENTRY",
+        "headline": "ورود به معاملهٔ خرید (LONG) — Mid-Month Drift",
+        "direction": "LONG",
+        "entry": 4207.29,
+        "tp": 4236.79,
+        "sl": 4177.79,
+        "rr": "1:1.00",
+        "probability": 100,
+        "layerCode": "S312",
+        "layerKind": "time",
+        "lots": 0.03,
+        "others": [],
+        "gates": [
+          {
+            "code": "S312",
+            "open": true
+          },
+          {
+            "code": "S323",
+            "open": false
+          }
+        ],
+        "indCount": 2
+      }
+    }
+  ],
+  "XAUUSD-H1": [
+    {
+      "off": 0,
+      "endTime": 1784196000,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — شرایطِ انفجارِ فشردگی برقرار نیست (H1 (یک‌ساعته))",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S313",
+        "layerKind": "squeeze",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 500,
+      "endTime": 1781596800,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — شرایطِ انفجارِ فشردگی برقرار نیست (H1 (یک‌ساعته))",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S313",
+        "layerKind": "squeeze",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 1500,
+      "endTime": 1776276000,
+      "dec": {
+        "state": "APPROACHING",
+        "headline": "نزدیکِ سیگنالِ خرید — فنرِ فشرده، منتظرِ شکست (H1 (یک‌ساعته))",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S313",
+        "layerKind": "squeeze",
+        "lots": null,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 3000,
+      "endTime": 1768294800,
+      "dec": {
+        "state": "ENTRY",
+        "headline": "ورود به معاملهٔ خرید (LONG) — Mid-Month Drift",
+        "direction": "LONG",
+        "entry": 4580.54,
+        "tp": 4620.04,
+        "sl": 4541.04,
+        "rr": "1:1.00",
+        "probability": 100,
+        "layerCode": "S312",
+        "layerKind": "time",
+        "lots": 0.03,
+        "others": [
+          {
+            "code": "S313",
+            "state": "APPROACHING",
+            "direction": null,
+            "entry": null,
+            "tp": null,
+            "sl": null
+          }
+        ],
+        "gates": [
+          {
+            "code": "S312",
+            "open": true
+          },
+          {
+            "code": "S323",
+            "open": false
+          }
+        ],
+        "indCount": 2
+      }
+    },
+    {
+      "off": 7000,
+      "endTime": 1746799200,
+      "dec": {
+        "state": "ENTRY",
+        "headline": "ورود خرید (LONG) — انفجارِ پس از فشردگی (H1 (یک‌ساعته))",
+        "direction": "LONG",
+        "entry": 3332.8,
+        "tp": 3365.46651,
+        "sl": 3284.180078,
+        "rr": "SL 48.62$ (3.2×ATR) / TP 32.67$ (2.15×ATR) — نگهداریِ تا 48 کندل",
+        "probability": null,
+        "layerCode": "S313",
+        "layerKind": "squeeze",
+        "lots": 0.02,
+        "others": [],
+        "gates": [
+          {
+            "code": "S323",
+            "open": false
+          },
+          {
+            "code": "S312",
+            "open": false
+          }
+        ],
+        "indCount": 3
+      }
+    }
+  ],
+  "XAUUSD-H4": [
+    {
+      "off": 0,
+      "endTime": 1784188800,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 500,
+      "endTime": 1773936000,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 1500,
+      "endTime": 1753473600,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 3000,
+      "endTime": 1722945600,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 7000,
+      "endTime": 1641427200,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    }
+  ],
+  "EURUSD-M15": [
+    {
+      "off": 0,
+      "endTime": 1784217600,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Streak-Reversal بازگشتی",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S326",
+        "layerKind": "mean-reversion",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 500,
+      "endTime": 1783594800,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Streak-Reversal بازگشتی",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S326",
+        "layerKind": "mean-reversion",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 1500,
+      "endTime": 1782349200,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Streak-Reversal بازگشتی",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S326",
+        "layerKind": "mean-reversion",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 3000,
+      "endTime": 1780480800,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Streak-Reversal بازگشتی",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S326",
+        "layerKind": "mean-reversion",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 7000,
+      "endTime": 1775498400,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Streak-Reversal بازگشتی",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S326",
+        "layerKind": "mean-reversion",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    }
+  ],
+  "EURUSD-M30": [
+    {
+      "off": 0,
+      "endTime": 1784217600,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 500,
+      "endTime": 1782972000,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 1500,
+      "endTime": 1780480800,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 3000,
+      "endTime": 1776744000,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    },
+    {
+      "off": 7000,
+      "endTime": 1766404800,
+      "dec": {
+        "state": "NEUTRAL",
+        "headline": "خنثی — Sell-Climax بازگشتی (Brooks)",
+        "direction": null,
+        "entry": null,
+        "tp": null,
+        "sl": null,
+        "rr": null,
+        "probability": null,
+        "layerCode": "S327",
+        "layerKind": "price-action",
+        "lots": null,
+        "others": [],
+        "gates": [],
+        "indCount": 3
+      }
+    }
+  ]
+}
