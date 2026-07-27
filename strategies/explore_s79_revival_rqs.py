@@ -228,3 +228,36 @@ if __name__ == '__main__':
         print(f"\n🎯 انتخابِ نهاییِ مقاوم: slope>{pick[1]} SL{pick[2]}/TP{pick[3]} hold{pick[4]}")
         print(f"   n={pick[6]['n_trades']} WR={pick[6]['win_rate']} PF={pick[6]['profit_factor']} "
               f"DD={pick[6]['max_dd_pct']} MCL={pick[6]['max_consec_losses']} RQS={pick[0]}")
+
+    # ========================================================================
+    print("\n" + "=" * 110)
+    print("گام ۵ — تثبیتِ پیکربندیِ نهایی + تحلیلِ منطقهٔ پایدار (اثباتِ عدمِ overfit).")
+    print("=" * 110)
+    # پیکربندیِ نهاییِ منتخب (تعادلِ n بالا + RQS بالا + WR راحت بالای ۶۰):
+    FINAL = dict(slope_th=0.75, sl=75.0, tp=55.0, hold=60)
+    print(f"\nپیکربندیِ نهایی (S331): base S79 + فیلترِ slope100/ATR>{FINAL['slope_th']} ، "
+          f"SL={FINAL['sl']} TP={FINAL['tp']} hold={FINAL['hold']}")
+    mask = slope100 > FINAL['slope_th']
+    s, ss = apply_filter(mask)
+    rF, trF = evaluate("S331-FINAL (XAUUSD M5)", df5, s, ss,
+                       FINAL['sl'], FINAL['tp'], 'XAUUSD', max_hold=FINAL['hold'])
+    print(f"متریک‌ها: {rF['metrics']}")
+
+    print("\n— تحلیلِ منطقهٔ پایدار (همسایگیِ پارامترها؛ باید همگی پاس/نزدیکِ پاس بمانند): —")
+    print(f"{'perturbation':32s} | verdict RQS |  n    WR    PF   DD   p")
+    print("-" * 82)
+    neigh = [
+        ('slope_th', 0.65), ('slope_th', 0.85), ('slope_th', 0.95),
+        ('sl', 65.0), ('sl', 85.0), ('tp', 48.0), ('tp', 65.0),
+        ('hold', 48), ('hold', 72),
+    ]
+    for key, val in neigh:
+        cfg = dict(FINAL); cfg[key] = val
+        m2 = slope100 > cfg['slope_th']
+        s2, ss2 = apply_filter(m2)
+        r2, _ = evaluate("nbr", df5, s2, ss2, cfg['sl'], cfg['tp'],
+                         'XAUUSD', max_hold=cfg['hold'], verbose=False)
+        mm = r2['metrics']
+        print(f"{key}={val}{'':22s}"[:32] + f" | {r2['verdict']:6s} {r2['rqs_score']:4.0f} | "
+              f"{mm['n_trades']:4d} {mm['win_rate']:5.1f} {mm['profit_factor']:5.2f} "
+              f"{mm['max_dd_pct']:4.1f} {mm['p_value']:.3f}")
