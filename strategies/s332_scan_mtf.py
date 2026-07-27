@@ -19,7 +19,7 @@ sys.path.insert(0, ROOT)
 
 from engine import scalp_engine as se
 from engine import rqs
-import strategies.s331_squeeze_rqs_revival as S
+import strategies.s332_squeeze_rqs_revival as S
 
 
 def make_filter_pool(df):
