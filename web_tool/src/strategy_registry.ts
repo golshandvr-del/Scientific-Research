@@ -207,10 +207,10 @@ const s332Layer = (cfg: typeof S332_CFG[string]): LayerFn => (ctx) => decideS332
 //
 //   کارت         لایه‌های ACCEPTED (منبعِ نامِ فایل results/)
 //   XAUUSD-M5    S330(FADE) · S328(SHORT) · S327(LONG) · S326(LONG)
-//   XAUUSD-M15   S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
+//   XAUUSD-M15   S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
 //   XAUUSD-M30   S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
 //   XAUUSD-H1    S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
-//   XAUUSD-H4    S327(LONG)
+//   XAUUSD-H4    S332(LONG·squeeze ADX/DI) · S327(LONG)
 //   EURUSD-M15   S326(LONG)
 //   EURUSD-M30   S327(LONG)
 // ---------------------------------------------------------------------------
