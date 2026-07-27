@@ -152,3 +152,41 @@ if __name__ == '__main__':
         print(f"{fname:42s} | {r['verdict']:6s} {r['rqs_score']:4.0f} | "
               f"{m['n_trades']:4d} {m['win_rate']:5.1f} {m['profit_factor']:5.2f} "
               f"{m['max_dd_pct']:5.1f} {m['max_consec_losses']:3d}  {m['p_value']:.3f}")
+
+    print("\nدرسِ گام ۲: فیلترِ «قدرتِ روند» (slope100/ATR) قوی‌ترین اهرم است:")
+    print("   slope>1.0 ⇒ WR58 PF1.82 DD3.1 (نزدیکِ پاس)؛ slope>1.5 ⇒ WR87 اما n=8 (کم‌نمونه).")
+    print("   ⇒ نقطهٔ شیرین بینِ این دو + تنظیمِ دقیقِ R:R (اعدادِ غیررند). → گام ۳")
+
+    # ========================================================================
+    print("\n" + "=" * 110)
+    print("گام ۳ — تنظیمِ دقیق: آستانهٔ slope غیررند + R:R، برای پاسِ همزمانِ هر ۶ گیت.")
+    print("        قید: n≥30 (G0) ، WR≥60 ، PF≥1.3 ، DD≤8 ، MCL≤8 ، p<0.05.")
+    print("=" * 110)
+
+    print(f"\n{'slope>  SL/TP  hold':30s} | verdict RQS |  n    WR    PF    DD   MCL   p     G0123 45")
+    print("-" * 105)
+    results3 = []
+    for sl_th in [1.05, 1.15, 1.25, 1.35]:
+        mask = slope100 > sl_th
+        for sl in [45, 55, 65]:
+            for rr in [1.0, 1.2, 1.4]:
+                tp = round(sl * rr)
+                for hold in [36, 60]:
+                    s, ss = apply_filter(mask)
+                    r, _ = evaluate(f"s{sl_th}", df5, s, ss, float(sl), float(tp),
+                                    'XAUUSD', max_hold=hold, verbose=False)
+                    m = r['metrics']
+                    results3.append((r['rqs_score'], sl_th, sl, tp, hold, r, m))
+    results3.sort(key=lambda x: x[0], reverse=True)
+    for score, sl_th, sl, tp, hold, r, m in results3[:18]:
+        g = r['gates']
+        gstr = ''.join('1' if g[f'G{i}'] else '0' for i in range(6))
+        print(f"slope>{sl_th} SL{sl}/TP{tp} h{hold:2d}{'':6s} | {r['verdict']:6s} {score:4.0f} | "
+              f"{m['n_trades']:4d} {m['win_rate']:5.1f} {m['profit_factor']:5.2f} "
+              f"{m['max_dd_pct']:5.1f} {m['max_consec_losses']:3d}  {m['p_value']:.3f}  {gstr}")
+
+    passed3 = [x for x in results3 if x[5]['passed']]
+    print(f"\nتعدادِ ترکیب‌هایی که هر ۶ گیت را پاس کردند: {len(passed3)}")
+    if passed3:
+        b = max(passed3, key=lambda x: x[0])
+        print(f"بهترین پاس‌شده: slope>{b[1]} SL{b[2]}/TP{b[3]} hold{b[4]} → RQS={b[0]}")
