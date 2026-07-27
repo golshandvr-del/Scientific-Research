@@ -34,6 +34,9 @@ import { detectRegime } from './regime/radar'
 // --- گرهِ شورای لایه‌ها P4.5 (webplan): رأی‌گیریِ اجماعی در حالتِ *سایه‌ای* ---
 //     افزودنی و بی‌خطر: فقط حکمِ اجماع را گزارش می‌کند؛ تصمیمِ کارت هنوز از runCard می‌آید.
 import { convene } from './council/council'
+// --- گرهِ دفترِ RQS زنده P7 (webplan): ثبتِ نتیجهٔ واقعیِ کاربر + RQS+ زنده + بایگانیِ خودکار ---
+//     افزودنی و بی‌خطر: فقط از طریقِ endpointهای /api/ledger/* مصرف می‌شود؛ مسیرِ تصمیم دست‌نخورده.
+import { recordOutcome, computeLiveRqs, liveRqsSummary, outcomesOf } from './ledger/rqs_live'
 
 const app = new Hono()
 
