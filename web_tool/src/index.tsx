@@ -20,6 +20,10 @@ import {
 import { runCard, type LayerContext } from './strategy_registry'
 // --- لاگِ سیگنال (User Note): ثبتِ هر ENTRY/APPROACHING برای کشفِ سیگنال‌های متناقض ---
 import { logSignal, getLog, findConflicts, clearLog } from './signal_log'
+// --- گرهِ قیمت P2 (webplan): ذخیره‌سازیِ تاریخچه (سایه‌ای) + Heartbeat ---
+//     افزودنی و بی‌خطر: ذخیره fire-and-forget است و هیچ تصمیمی را تغییر نمی‌دهد.
+import { getHistoryStore } from './price/history_provider'
+import { computeHealth } from './price/heartbeat'
 
 const app = new Hono()
 
