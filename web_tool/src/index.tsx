@@ -352,7 +352,18 @@ app.post('/api/trade/advice', async (c) => {
     const valuePerPrice = meta_asset.isGold ? 100 : 100_000
     const trade: OpenTrade = { side, entry, tp, sl, openedAt: tr.openedAt, barsHeld, managePlan, valuePerPrice }
     const modelProbPct = typeof body.modelProbPct === 'number' ? body.modelProbPct : undefined
-    const status = evaluateTrade(trade, a, modelProbPct)
+
+    // 🛡 نگهبانِ برگشت (User Note trade-mgmt): جهتِ زندهٔ موتورِ همان کارت را می‌گیریم
+    // تا اگر موتور در پس‌زمینه سیگنالِ جهتِ مخالف می‌دهد، مدیریتِ معامله آن را ببیند.
+    // شکست در این مرحله نباید کلِ advice را خراب کند (fail-safe: بدونِ reversal ادامه بده).
+    let oppSignal: { state: any; direction?: string; sourceLayer?: any } | undefined
+    try {
+      const live = await decideAsset(meta_asset)
+      const d: any = live.decision
+      oppSignal = { state: d.state, direction: d.direction, sourceLayer: d.sourceLayer || null }
+    } catch { oppSignal = undefined }
+
+    const status = evaluateTrade(trade, a, modelProbPct, oppSignal)
 
     return c.json({
       ok: true,
