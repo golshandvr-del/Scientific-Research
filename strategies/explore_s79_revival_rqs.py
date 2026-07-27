@@ -76,3 +76,33 @@ if __name__ == '__main__':
         print(f"   {g}: {'✓ پاس' if ok else '✗ رد'}")
     print(f"\nحکم: {r0['verdict']}  |  RQS={r0['rqs_score']}")
     print(f"متریک‌ها: {r0['metrics']}")
+
+    # ========================================================================
+    print("\n" + "=" * 110)
+    print("گام ۱ — تشخیصِ ریشه‌ای: G1/G4/G5 پاس ⇒ لبهٔ واقعی هست؛ مشکل شکلِ توزیع است.")
+    print("        فرضیه: معکوس‌کردنِ R:R (TP کوچک، SL بزرگ‌تر) + max_holdِ کوتاه‌تر")
+    print("        WR را بالای ۶۰٪ می‌برد (mean-reversion: بازگشتِ کوچک محتمل‌تر است).")
+    print("=" * 110)
+
+    # اسکنِ محورِ R:R معکوس روی همان سیگنالِ خام S79 (بدون فیلترِ اضافه هنوز)
+    # هدف: ببینیم صرفِ تغییرِ TP/SL چقدر WR/PF را جابجا می‌کند.
+    print(f"\n{'SL/TP/hold':28s} | verdict  RQS  |  n    WR    PF    DD    MCL   p")
+    print("-" * 95)
+    grid = []
+    for sl in [40, 60, 80, 100]:
+        for tp in [12, 18, 24, 30, 40]:
+            for hold in [12, 24, 48]:
+                r, _ = evaluate(f"SL{sl}/TP{tp}/h{hold}", df5, lsig, ssig,
+                                float(sl), float(tp), 'XAUUSD', max_hold=hold, verbose=False)
+                m = r['metrics']
+                grid.append((r['rqs_score'], sl, tp, hold, r, m))
+    # مرتب‌سازی بر اساسِ WR سپس RQS
+    grid.sort(key=lambda x: (x[5].get('win_rate', 0), x[0]), reverse=True)
+    for score, sl, tp, hold, r, m in grid[:15]:
+        print(f"SL{sl:3d}/TP{tp:3d}/h{hold:2d}{'':13s} | {r['verdict']:6s} {score:5.1f} | "
+              f"{m['n_trades']:4d} {m['win_rate']:5.1f} {m['profit_factor']:5.2f} "
+              f"{m['max_dd_pct']:5.1f} {m['max_consec_losses']:3d}  {m['p_value']:.3f}")
+
+    best = max(grid, key=lambda x: x[0])
+    print(f"\nبهترین RQS در این اسکن: {best[0]}  (SL{best[1]}/TP{best[2]}/hold{best[3]})")
+    print("نتیجه‌گیریِ گام ۱: آیا صرفِ R:R کافی است یا فیلترِ کیفیت هم لازم است؟ → گام ۲")
