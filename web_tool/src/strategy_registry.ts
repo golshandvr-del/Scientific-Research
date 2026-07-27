@@ -245,6 +245,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s312Layer(395, 395, 24),
   ],
   'XAUUSD-H4': [
+    s332Layer(S332_CFG['XAUUSD-H4']),   // احیای squeeze با فیلترِ ADX/DI — RQS+=92.1
     s327Layer(SELL_CLIMAX_CFG['XAUUSD-H4']),
   ],
   'EURUSD-M15': [
