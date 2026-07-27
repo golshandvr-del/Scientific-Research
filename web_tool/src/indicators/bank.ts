@@ -406,3 +406,144 @@ def('rvgi', 'momentum', 'EN', { period: 10 }, ['period'], 'شاخصِ سرزند
   const sn = smaArr(num, p.period), sd = smaArr(den, p.period)
   return asSeries(sn.map((v, i) => (sd[i] ? v / sd[i] : NaN)))
 })
+
+// ===========================================================================
+// دستهٔ ۳ — اندیکاتورهای بومیِ چینی (通达信/同花顺)  [CN — قلبِ اشتباهِ رایج #۳]
+// ===========================================================================
+
+// KDJ — تصادفیِ چینی (K/D/J). خروجی J = 3K − 2D (حساس‌ترین خط).
+def('kdj_j', 'momentum', 'CN', { period: 9, k: 3, d: 3 }, ['period', 'k', 'd'], 'خطِ J از KDJ چینی (3K−2D)', (c, p) => {
+  const h = highs(c), l = lows(c), x = closes(c), n = x.length
+  const rsv = NaNArr(n)
+  for (let i = p.period - 1; i < n; i++) {
+    const hh = highest(h, i, p.period), ll = lowest(l, i, p.period)
+    rsv[i] = (hh - ll) ? (100 * (x[i] - ll)) / (hh - ll) : 50
+  }
+  // K = SMA وایلدرِ سادهٔ چینی (میانگینِ متحرکِ نمایی با alpha=1/k روی RSV)
+  const kSer = NaNArr(n); let kPrev = 50
+  for (let i = 0; i < n; i++) { if (!Number.isFinite(rsv[i])) continue; kPrev = (rsv[i] + (p.k - 1) * kPrev) / p.k; kSer[i] = kPrev }
+  const dSer = NaNArr(n); let dPrev = 50
+  for (let i = 0; i < n; i++) { if (!Number.isFinite(kSer[i])) continue; dPrev = (kSer[i] + (p.d - 1) * dPrev) / p.d; dSer[i] = dPrev }
+  return asSeries(kSer.map((k, i) => (Number.isFinite(dSer[i]) ? 3 * k - 2 * dSer[i] : NaN)))
+})
+
+// BIAS — 乖离率 = 100·(close − SMA)/SMA
+def('bias', 'momentum', 'CN', { period: 6 }, ['period'], 'نرخِ انحراف (乖离率)', (c, p) => {
+  const x = closes(c), s = smaArr(x, p.period)
+  return asSeries(x.map((v, i) => (s[i] ? (100 * (v - s[i])) / s[i] : NaN)))
+})
+
+// WR — Williams %R چینی (0..100 معکوس)
+def('wr_cn', 'momentum', 'CN', { period: 14 }, ['period'], 'ویلیامز %R چینی (威廉)', (c, p) => {
+  const h = highs(c), l = lows(c), x = closes(c), n = x.length, out = NaNArr(n)
+  for (let i = p.period - 1; i < n; i++) {
+    const hh = highest(h, i, p.period), ll = lowest(l, i, p.period)
+    out[i] = (hh - ll) ? (100 * (hh - x[i])) / (hh - ll) : 50
+  }
+  return asSeries(out)
+})
+
+// PSY — 心理线 = 100·(تعدادِ روزهای صعودی در N)/N
+def('psy', 'momentum', 'CN', { period: 12 }, ['period'], 'خطِ روانی (心理线)', (c, p) => {
+  const x = closes(c), n = x.length, out = NaNArr(n)
+  for (let i = p.period; i < n; i++) {
+    let up = 0
+    for (let k = 0; k < p.period; k++) if (x[i - k] > x[i - k - 1]) up++
+    out[i] = (100 * up) / p.period
+  }
+  return asSeries(out)
+})
+
+// BR — 意愿指标 (بخشی از BRAR): جمعِ (H−prevClose)/جمعِ (prevClose−L)
+def('br', 'momentum', 'CN', { period: 26 }, ['period'], 'شاخصِ اراده BR (情绪)', (c, p) => {
+  const n = c.length, out = NaNArr(n)
+  for (let i = p.period; i < n; i++) {
+    let num = 0, den = 0
+    for (let k = 0; k < p.period; k++) {
+      const pc = c[i - k - 1].close
+      num += Math.max(0, c[i - k].high - pc); den += Math.max(0, pc - c[i - k].low)
+    }
+    out[i] = den ? (100 * num) / den : 100
+  }
+  return asSeries(out)
+})
+
+// AR — 人气指标 (بخشی از BRAR): جمعِ (H−O)/جمعِ (O−L)
+def('ar', 'momentum', 'CN', { period: 26 }, ['period'], 'شاخصِ محبوبیت AR (人气)', (c, p) => {
+  const n = c.length, out = NaNArr(n)
+  for (let i = p.period - 1; i < n; i++) {
+    let num = 0, den = 0
+    for (let k = 0; k < p.period; k++) { num += c[i - k].high - c[i - k].open; den += c[i - k].open - c[i - k].low }
+    out[i] = den ? (100 * num) / den : 100
+  }
+  return asSeries(out)
+})
+
+// CR — 带状能量线 (Energy) = 100·ΣMax(0,H−M)/ΣMax(0,M−L)، M=median روزِ قبل
+def('cr', 'momentum', 'CN', { period: 26 }, ['period'], 'خطِ انرژیِ نواری CR (带状能量)', (c, p) => {
+  const n = c.length, out = NaNArr(n)
+  for (let i = p.period; i < n; i++) {
+    let num = 0, den = 0
+    for (let k = 0; k < p.period; k++) {
+      const m = (c[i - k - 1].high + c[i - k - 1].low + c[i - k - 1].close) / 3
+      num += Math.max(0, c[i - k].high - m); den += Math.max(0, m - c[i - k].low)
+    }
+    out[i] = den ? (100 * num) / den : 100
+  }
+  return asSeries(out)
+})
+
+// DMA — 平均差 = SMA(fast) − SMA(slow)
+def('dma', 'trend', 'CN', { fast: 10, slow: 50 }, ['fast', 'slow'], 'تفاضلِ میانگین‌ها (平均差)', (c, p) => {
+  const x = closes(c), f = smaArr(x, p.fast), s = smaArr(x, p.slow)
+  return asSeries(f.map((v, i) => v - s[i]))
+})
+
+// TRIX — 三重指数平滑 نرخِ تغییرِ سه‌بار EMA (درصد)
+def('trix', 'momentum', 'CN', { period: 12 }, ['period'], 'تریکس (三重指数平滑)', (c, p) => {
+  const e1 = emaArr(closes(c), p.period), e2 = emaArr(e1, p.period), e3 = emaArr(e2, p.period), n = e3.length
+  const out = NaNArr(n)
+  for (let i = 1; i < n; i++) out[i] = e3[i - 1] ? (100 * (e3[i] - e3[i - 1])) / e3[i - 1] : NaN
+  return asSeries(out)
+})
+
+// DPO — 区间震荡线 Detrended Price Oscillator
+def('dpo', 'momentum', 'CN', { period: 20 }, ['period'], 'اسیلاتورِ بدونِ‌روند (区间震荡)', (c, p) => {
+  const x = closes(c), s = smaArr(x, p.period), n = x.length, out = NaNArr(n)
+  const shift = Math.floor(p.period / 2) + 1
+  for (let i = 0; i < n; i++) if (i - shift >= 0 && Number.isFinite(s[i - shift])) out[i] = x[i] - s[i - shift]
+  return asSeries(out)
+})
+
+// MTM — 动量线 (Momentum خطِ چینی) + قابلیتِ صاف‌سازی
+def('mtm', 'momentum', 'CN', { period: 12, smooth: 6 }, ['period', 'smooth'], 'خطِ مومنتومِ چینی (动量)', (c, p) => {
+  const x = closes(c), n = x.length, raw = NaNArr(n)
+  for (let i = p.period; i < n; i++) raw[i] = x[i] - x[i - p.period]
+  return asSeries(smaArr(raw, p.smooth))
+})
+
+// ADTM — 动态买卖气 (بازهٔ −1..+1)
+def('adtm', 'momentum', 'CN', { period: 23, smooth: 8 }, ['period', 'smooth'], 'انرژیِ پویای خرید/فروش (动态买卖气)', (c, p) => {
+  const n = c.length, dtm = NaNArr(n), dbm = NaNArr(n)
+  for (let i = 1; i < n; i++) {
+    if (c[i].open <= c[i - 1].open) dtm[i] = 0
+    else dtm[i] = Math.max(c[i].high - c[i].open, c[i].open - c[i - 1].open)
+    if (c[i].open >= c[i - 1].open) dbm[i] = 0
+    else dbm[i] = Math.max(c[i].open - c[i].low, c[i].open - c[i - 1].open)
+  }
+  const out = NaNArr(n)
+  for (let i = p.period; i < n; i++) {
+    let sd = 0, sb = 0
+    for (let k = 0; k < p.period; k++) { sd += dtm[i - k] || 0; sb += dbm[i - k] || 0 }
+    const stm = Math.max(sd, sb)
+    out[i] = stm ? (sd - sb) / stm : 0
+  }
+  return asSeries(smaArr(out, p.smooth))
+})
+
+// BBI — 多空均线 = میانگینِ SMA(3,6,12,24)
+def('bbi', 'trend', 'CN', { p1: 3, p2: 6, p3: 12, p4: 24 }, ['p1', 'p2', 'p3', 'p4'], 'خطِ چندنرخیِ گاو-خرس (多空均线)', (c, p) => {
+  const x = closes(c)
+  const a = smaArr(x, p.p1), b = smaArr(x, p.p2), d = smaArr(x, p.p3), e = smaArr(x, p.p4)
+  return asSeries(x.map((_, i) => (a[i] + b[i] + d[i] + e[i]) / 4))
+})
