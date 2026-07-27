@@ -895,6 +895,40 @@ function renderScalpManage(a, trade, s) {
 }
 
 // -------------------------- حالت ۴: مدیریتِ معامله --------------------------
+// 🛡 بنرِ «نگهبانِ برگشت» — وضعیتِ برگشتِ روند را شفاف و درجه‌بندی‌شده نشان می‌دهد.
+// هدف: کاربر بداند سایت در پس‌زمینه چه می‌بیند، بدونِ اینکه با یک نوسانِ کاذب بترسد.
+function renderReversalBanner(st) {
+  const rv = st && st.reversal
+  if (!rv || rv.level === 'none') return ''
+  // در حالِ بررسی (هنوز تثبیت نشده) — لحنِ آرام، فقط «زیرِ نظر داریم».
+  if (rv.level === 'soft' || rv.confirmed === false) {
+    const layer = rv.oppLayer ? ` (لایهٔ ${rv.oppLayer})` : ''
+    const wait = (rv.pendingSec && rv.pendingSec > 0) ? ` — تثبیت تا ~${rv.pendingSec}s دیگر` : ''
+    return `
+      <div class="rounded-lg bg-amber-500/10 border border-amber-500/40 p-2.5 mb-2">
+        <p class="text-xs font-bold text-amber-300"><i class="fas fa-eye ml-1"></i>نشانهٔ اولیهٔ برگشتِ روند${layer}</p>
+        <p class="text-[11px] text-amber-200/90 leading-relaxed mt-0.5">
+          موتور در پس‌زمینه یک سیگنالِ جهتِ مخالف می‌بیند اما هنوز <b>قطعی نیست</b>${wait}.
+          عجله برای بستن نکن — فقط آماده باش؛ اگر تثبیت شد، پیشنهادِ دفاعیِ مشخص می‌دهم.</p>
+      </div>`
+  }
+  // تثبیت‌شده — دفاعِ سود یا دفاعِ ضرر.
+  const isProfit = rv.level === 'defend-profit'
+  const cls = isProfit ? 'bg-emerald-500/10 border-emerald-500/50' : 'bg-rose-500/10 border-rose-500/50'
+  const txtCls = isProfit ? 'text-emerald-300' : 'text-rose-300'
+  const layer = rv.oppLayer ? ` — منبع: لایهٔ ${rv.oppLayer}` : ''
+  return `
+    <div class="rounded-lg ${cls} border p-2.5 mb-2">
+      <p class="text-xs font-bold ${txtCls}">
+        <i class="fas ${isProfit ? 'fa-shield-halved' : 'fa-triangle-exclamation'} ml-1"></i>
+        برگشتِ روندِ تثبیت‌شده${layer}</p>
+      <p class="text-[11px] ${isProfit ? 'text-emerald-200/90' : 'text-rose-200/90'} leading-relaxed mt-0.5">
+        ${isProfit
+          ? 'موتور جهتِ مخالفِ فعال می‌دهد و تو در سودی — پیشنهادِ زیر سودت را قفل می‌کند (نبند).'
+          : 'موتور جهتِ مخالفِ فعال می‌دهد و تو در ضرری — پیشنهادِ زیر ضرر را محدود می‌کند (بدونِ خروجِ کاذب).'}</p>
+    </div>`
+}
+
 function renderManage(a, trade, s) {
   const st = s.adviceStatus
   const isLong = trade.side === 'long'
@@ -934,6 +968,7 @@ function renderManage(a, trade, s) {
         <p class="text-xs text-sky-300 font-bold mb-0.5">جمع‌بندیِ اقدام</p>
         <p class="text-sm text-slate-200">${st.overallNote}</p>
       </div>
+      ${renderReversalBanner(st)}
       <div class="space-y-2">${advList}</div>`
   }
 
