@@ -2655,6 +2655,20 @@ function macd(close, fast = 12, slow = 26, signal = 9) {
   const hist = line.map((_, i) => line[i] - sig[i]);
   return { line, sig, hist };
 }
+function stoch(c, kPeriod = 14, dPeriod = 3) {
+  const out = NaNArr(c.length);
+  for (let i = kPeriod - 1; i < c.length; i++) {
+    let lo = Infinity, hi = -Infinity;
+    for (let k = i - kPeriod + 1; k <= i; k++) {
+      if (c[k].low < lo) lo = c[k].low;
+      if (c[k].high > hi) hi = c[k].high;
+    }
+    const denom = hi - lo;
+    out[i] = denom !== 0 ? 100 * (c[i].close - lo) / denom : NaN;
+  }
+  const d = sma(out, dPeriod);
+  return { k: out, d };
+}
 function adx(c, period = 14) {
   const n = c.length;
   const plusDM = NaNArr(n), minusDM = NaNArr(n);
@@ -2702,6 +2716,51 @@ function rollingSlope(x, period) {
     let num = 0;
     for (let k = 0; k < period; k++) num += (xs[k] - xMean) * (x[i - period + 1 + k] - yMean);
     out[i] = num / denom;
+  }
+  return out;
+}
+function vortex(c, period = 14) {
+  const n = c.length;
+  const viPlus = NaNArr(n);
+  const viMinus = NaNArr(n);
+  if (n < period + 1) return { viPlus, viMinus };
+  const vmp = NaNArr(n);
+  const vmm = NaNArr(n);
+  const tr = NaNArr(n);
+  for (let i = 1; i < n; i++) {
+    vmp[i] = Math.abs(c[i].high - c[i - 1].low);
+    vmm[i] = Math.abs(c[i].low - c[i - 1].high);
+    tr[i] = Math.max(
+      c[i].high - c[i].low,
+      Math.abs(c[i].high - c[i - 1].close),
+      Math.abs(c[i].low - c[i - 1].close)
+    );
+  }
+  for (let i = period; i < n; i++) {
+    let sP = 0, sM = 0, sT = 0;
+    for (let k = i - period + 1; k <= i; k++) {
+      sP += vmp[k];
+      sM += vmm[k];
+      sT += tr[k];
+    }
+    if (sT > 0) {
+      viPlus[i] = sP / sT;
+      viMinus[i] = sM / sT;
+    }
+  }
+  return { viPlus, viMinus };
+}
+function kaufmanER(close, period = 10) {
+  const n = close.length;
+  const out = NaNArr(n);
+  if (n < period + 1) return out;
+  const absd = NaNArr(n);
+  for (let i = 1; i < n; i++) absd[i] = Math.abs(close[i] - close[i - 1]);
+  for (let i = period; i < n; i++) {
+    const change = Math.abs(close[i] - close[i - period]);
+    let vol = 0;
+    for (let k = i - period + 1; k <= i; k++) vol += absd[k];
+    out[i] = vol > 0 ? change / vol : NaN;
   }
   return out;
 }
@@ -5587,6 +5646,11 @@ function runCard(ctx) {
   return primary;
 }
 
+// ../web_tool/src/runtime/runtime.ts
+function runCardTyped(ctx) {
+  return runCard(ctx);
+}
+
 // ../web_tool/src/signal_log.ts
 var MAX_ENTRIES = 800;
 var buf = [];
@@ -5710,6 +5774,493 @@ function computeHealth(liveAgeSec, source, thresholdSec = STALE_THRESHOLD_SEC) {
     stale,
     source: source || "unknown",
     note: !isFinite(age) ? "\u0633\u0646\u0650 \u0642\u06CC\u0645\u062A \u0646\u0627\u0645\u0639\u0644\u0648\u0645 \u0627\u0633\u062A" : stale ? `\u062F\u0627\u062F\u0647\u0654 \u0632\u0646\u062F\u0647 \u06A9\u0647\u0646\u0647 \u0627\u0633\u062A (${age}s > ${thresholdSec}s) \u2014 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0645\u0646\u062C\u0645\u062F` : "\u062F\u0627\u062F\u0647\u0654 \u0632\u0646\u062F\u0647 \u062A\u0627\u0632\u0647 \u0627\u0633\u062A"
+  };
+}
+
+// ../web_tool/src/indicators/complex.ts
+var NaNArr2 = (n) => new Array(n).fill(NaN);
+function smma(x, period) {
+  const n = x.length;
+  const out = NaNArr2(n);
+  if (n < period) return out;
+  let sum = 0;
+  for (let i = 0; i < period; i++) sum += x[i];
+  let prev = sum / period;
+  out[period - 1] = prev;
+  for (let i = period; i < n; i++) {
+    prev = (prev * (period - 1) + x[i]) / period;
+    out[i] = prev;
+  }
+  return out;
+}
+function shiftFwd(x, shift) {
+  const n = x.length;
+  const out = NaNArr2(n);
+  for (let i = shift; i < n; i++) out[i] = x[i - shift];
+  return out;
+}
+function alligator(c, jawP = 13, jawS = 8, teethP = 8, teethS = 5, lipsP = 5, lipsS = 3) {
+  const median = c.map((k) => (k.high + k.low) / 2);
+  return {
+    jaw: shiftFwd(smma(median, jawP), jawS),
+    teeth: shiftFwd(smma(median, teethP), teethS),
+    lips: shiftFwd(smma(median, lipsP), lipsS)
+  };
+}
+function rollHH(high, p) {
+  const out = NaNArr2(high.length);
+  for (let i = p - 1; i < high.length; i++) {
+    let m = -Infinity;
+    for (let k = i - p + 1; k <= i; k++) if (high[k] > m) m = high[k];
+    out[i] = m;
+  }
+  return out;
+}
+function rollLL(low, p) {
+  const out = NaNArr2(low.length);
+  for (let i = p - 1; i < low.length; i++) {
+    let m = Infinity;
+    for (let k = i - p + 1; k <= i; k++) if (low[k] < m) m = low[k];
+    out[i] = m;
+  }
+  return out;
+}
+function ichimoku(c, tenkanP = 9, kijunP = 26, senkouBP = 52, shift = 26) {
+  const high = c.map((k) => k.high), low = c.map((k) => k.low);
+  const tenkan = rollHH(high, tenkanP).map((h, i) => (h + rollLL(low, tenkanP)[i]) / 2);
+  const hh9 = rollHH(high, tenkanP), ll9 = rollLL(low, tenkanP);
+  const hh26 = rollHH(high, kijunP), ll26 = rollLL(low, kijunP);
+  const hh52 = rollHH(high, senkouBP), ll52 = rollLL(low, senkouBP);
+  const n = c.length;
+  const tk = NaNArr2(n), kj = NaNArr2(n), spanARaw = NaNArr2(n), spanBRaw = NaNArr2(n);
+  for (let i = 0; i < n; i++) {
+    tk[i] = (hh9[i] + ll9[i]) / 2;
+    kj[i] = (hh26[i] + ll26[i]) / 2;
+    spanARaw[i] = (tk[i] + kj[i]) / 2;
+    spanBRaw[i] = (hh52[i] + ll52[i]) / 2;
+  }
+  const spanA = shiftFwd(spanARaw, shift);
+  const spanB = shiftFwd(spanBRaw, shift);
+  const cloudTop = NaNArr2(n), cloudBot = NaNArr2(n);
+  for (let i = 0; i < n; i++) {
+    if (Number.isFinite(spanA[i]) && Number.isFinite(spanB[i])) {
+      cloudTop[i] = Math.max(spanA[i], spanB[i]);
+      cloudBot[i] = Math.min(spanA[i], spanB[i]);
+    }
+  }
+  return { tenkan: tk, kijun: kj, spanA, spanB, spanARaw, spanBRaw, cloudTop, cloudBot };
+}
+
+// ../web_tool/src/indicators/contracts.ts
+var INDICATOR_SNAPSHOT_VERSION = 1;
+
+// ../web_tool/src/indicators/registry.ts
+function closesOf(c) {
+  return c.map((k) => k.close);
+}
+var REGISTRY = /* @__PURE__ */ new Map();
+function register(def) {
+  REGISTRY.set(def.name, def);
+}
+register({
+  name: "sma",
+  defaults: { period: 20 },
+  paramKeys: ["period"],
+  desc: "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0645\u062A\u062D\u0631\u06A9 \u0633\u0627\u062F\u0647",
+  compute: (c, p) => sma(closesOf(c), p.period)
+});
+register({
+  name: "ema",
+  defaults: { period: 20 },
+  paramKeys: ["period"],
+  desc: "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0645\u062A\u062D\u0631\u06A9 \u0646\u0645\u0627\u06CC\u06CC",
+  compute: (c, p) => ema(closesOf(c), p.period)
+});
+register({
+  name: "rsi",
+  defaults: { period: 14 },
+  paramKeys: ["period"],
+  desc: "\u0634\u0627\u062E\u0635 \u0642\u062F\u0631\u062A \u0646\u0633\u0628\u06CC",
+  compute: (c, p) => rsi(closesOf(c), p.period)
+});
+register({
+  name: "zscore",
+  defaults: { period: 20 },
+  paramKeys: ["period"],
+  desc: "Z-Score \u063A\u0644\u062A\u0627\u0646",
+  compute: (c, p) => zscore(closesOf(c), p.period)
+});
+register({
+  name: "slope",
+  defaults: { period: 20 },
+  paramKeys: ["period"],
+  desc: "\u0634\u06CC\u0628\u0650 \u0631\u06AF\u0631\u0633\u06CC\u0648\u0646\u0650 \u063A\u0644\u062A\u0627\u0646",
+  compute: (c, p) => rollingSlope(closesOf(c), p.period)
+});
+register({
+  name: "kaufmanER",
+  defaults: { period: 10 },
+  paramKeys: ["period"],
+  desc: "\u0646\u0633\u0628\u062A\u0650 \u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u06A9\u0627\u0641\u0645\u0646",
+  compute: (c, p) => kaufmanER(closesOf(c), p.period)
+});
+register({
+  name: "atr",
+  defaults: { period: 14 },
+  paramKeys: ["period"],
+  desc: "\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u062F\u0627\u0645\u0646\u0647\u0654 \u0648\u0627\u0642\u0639\u06CC",
+  compute: (c, p) => atr(c, p.period)
+});
+register({
+  name: "bollinger",
+  defaults: { period: 20, mult: 2 },
+  paramKeys: ["period", "mult"],
+  desc: "\u0628\u0627\u0646\u062F\u0647\u0627\u06CC \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631",
+  compute: (c, p) => {
+    const b = bollinger(closesOf(c), p.period, p.mult);
+    return { mid: b.mid, upper: b.upper, lower: b.lower };
+  }
+});
+register({
+  name: "macd",
+  defaults: { fast: 12, slow: 26, signal: 9 },
+  paramKeys: ["fast", "slow", "signal"],
+  desc: "MACD",
+  compute: (c, p) => {
+    const m = macd(closesOf(c), p.fast, p.slow, p.signal);
+    return { macd: m.macd, signal: m.signal, hist: m.hist };
+  }
+});
+register({
+  name: "stoch",
+  defaults: { kPeriod: 14, dPeriod: 3 },
+  paramKeys: ["kPeriod", "dPeriod"],
+  desc: "\u0627\u0633\u062A\u0648\u06A9\u0627\u0633\u062A\u06CC\u06A9",
+  compute: (c, p) => {
+    const s = stoch(c, p.kPeriod, p.dPeriod);
+    return { k: s.k, d: s.d };
+  }
+});
+register({
+  name: "adx",
+  defaults: { period: 14 },
+  paramKeys: ["period"],
+  desc: "\u0634\u0627\u062E\u0635\u0650 \u062C\u0647\u062A\u200C\u062F\u0627\u0631 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646",
+  compute: (c, p) => {
+    const a = adx(c, p.period);
+    return { adx: a.adx, plusDI: a.plusDI, minusDI: a.minusDI };
+  }
+});
+register({
+  name: "vortex",
+  defaults: { period: 14 },
+  paramKeys: ["period"],
+  desc: "\u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631\u0650 \u0648\u0631\u062A\u06A9\u0633",
+  compute: (c, p) => {
+    const vo = vortex(c, p.period);
+    return { viPlus: vo.viPlus, viMinus: vo.viMinus };
+  }
+});
+register({
+  name: "alligator",
+  defaults: {},
+  paramKeys: [],
+  desc: "\u0627\u0644\u06CC\u06AF\u06CC\u062A\u0648\u0631\u0650 \u0628\u06CC\u0644 \u0648\u06CC\u0644\u06CC\u0627\u0645\u0632 (SMMA \u0634\u06CC\u0641\u062A\u200C\u062F\u0627\u0631)",
+  compute: (c) => {
+    const a = alligator(c);
+    return { jaw: a.jaw, teeth: a.teeth, lips: a.lips };
+  }
+});
+register({
+  name: "ichimoku",
+  defaults: {},
+  paramKeys: [],
+  desc: "\u0627\u0628\u0631\u0650 \u0627\u06CC\u0686\u06CC\u0645\u0648\u06A9\u0648",
+  compute: (c) => {
+    const k = ichimoku(c);
+    return { tenkan: k.tenkan, kijun: k.kijun, cloudTop: k.cloudTop, cloudBot: k.cloudBot };
+  }
+});
+function paramKeyOf(def, params) {
+  const merged = { ...def.defaults, ...params };
+  return def.paramKeys.map((k) => `${String(k)}=${merged[k]}`).join(",");
+}
+function lastFinite(arr) {
+  for (let i = arr.length - 1; i >= 0; i--) {
+    if (Number.isFinite(arr[i])) return arr[i];
+  }
+  return NaN;
+}
+function buildSnapshot(asset, tf, candles) {
+  const n = candles.length;
+  const lastBarTime = n > 0 ? candles[n - 1].time : 0;
+  const cache = /* @__PURE__ */ new Map();
+  function seriesRaw(name, params = {}) {
+    const def = REGISTRY.get(name);
+    if (!def) return null;
+    const key = `${name}|${paramKeyOf(def, params)}`;
+    const hit = cache.get(key);
+    if (hit !== void 0) return hit;
+    const merged = { ...def.defaults, ...params };
+    const val = def.compute(candles, merged);
+    cache.set(key, val);
+    return val;
+  }
+  function lastRaw(name, params = {}) {
+    const v = seriesRaw(name, params);
+    if (v == null) return null;
+    if (typeof v === "number") return v;
+    if (Array.isArray(v)) return lastFinite(v);
+    return null;
+  }
+  function lastSub(name, sub, params = {}) {
+    const v = seriesRaw(name, params);
+    if (v == null || typeof v === "number" || Array.isArray(v)) return NaN;
+    const arr = v[sub];
+    return Array.isArray(arr) ? lastFinite(arr) : NaN;
+  }
+  const price = n > 0 ? candles[n - 1].close : NaN;
+  const snap = {
+    v: INDICATOR_SNAPSHOT_VERSION,
+    asset,
+    tf,
+    lastBarTime,
+    barCount: n,
+    series: (name, params) => seriesRaw(name, params),
+    last: (name, params) => lastRaw(name, params),
+    price,
+    get atr() {
+      return lastRaw("atr") ?? NaN;
+    },
+    get ema20() {
+      return lastRaw("ema", { period: 20 }) ?? NaN;
+    },
+    get ema50() {
+      return lastRaw("ema", { period: 50 }) ?? NaN;
+    },
+    get ema100() {
+      return lastRaw("ema", { period: 100 }) ?? NaN;
+    },
+    get ema200() {
+      return lastRaw("ema", { period: 200 }) ?? NaN;
+    },
+    get rsi14() {
+      return lastRaw("rsi", { period: 14 }) ?? NaN;
+    },
+    get adx() {
+      return lastSub("adx", "adx");
+    },
+    get macdHist() {
+      return lastSub("macd", "hist");
+    }
+  };
+  return snap;
+}
+
+// ../web_tool/src/regime/contracts.ts
+var REGIME_INFO_VERSION = 1;
+
+// ../web_tool/src/regime/radar.ts
+var ADX_TREND = 22.5;
+var ADX_RANGE = 18.5;
+var ATR_Q_QUIET = 0.35;
+var ATR_Q_VOLATILE = 0.85;
+var SLOPE_Q_FLAT = 0.45;
+var BB_Q_SQUEEZE = 0.25;
+function percentileRank(sortedAsc, value) {
+  if (sortedAsc.length === 0 || !Number.isFinite(value)) return NaN;
+  let lo = 0, hi = sortedAsc.length;
+  while (lo < hi) {
+    const mid = lo + hi >> 1;
+    if (sortedAsc[mid] <= value) lo = mid + 1;
+    else hi = mid;
+  }
+  return lo / sortedAsc.length;
+}
+function sortedFinite(arr) {
+  return arr.filter(Number.isFinite).sort((a, b) => a - b);
+}
+function classifyRegime(snap, candles) {
+  const n = candles.length;
+  const price = snap.price;
+  const closes = candles.map((k) => k.close);
+  const atrArr = atr(candles, 14);
+  const atrPctArr = atrArr.map((a, i) => closes[i] > 0 ? a / closes[i] : NaN);
+  const atrPctSorted = sortedFinite(atrPctArr);
+  const atrPctNow = atrPctArr[n - 1];
+  const atrPctRank = percentileRank(atrPctSorted, atrPctNow);
+  const ema50 = ema(closes, 50);
+  const LB = 8;
+  const slopeArr = new Array(ema50.length).fill(NaN);
+  for (let i = LB; i < ema50.length; i++) {
+    const a = ema50[i - LB], b = ema50[i];
+    if (Number.isFinite(a) && Number.isFinite(b) && a !== 0) slopeArr[i] = (b - a) / a / LB;
+  }
+  const absSlopeSorted = sortedFinite(slopeArr.map(Math.abs));
+  const slopeNow = slopeArr[n - 1];
+  const slopeRank = percentileRank(absSlopeSorted, Math.abs(slopeNow));
+  const bb = bollinger(closes, 20, 2);
+  const bbWidthArr = bb.upper.map((u, i) => bb.mid[i] > 0 ? (u - bb.lower[i]) / bb.mid[i] : NaN);
+  const bbWidthSorted = sortedFinite(bbWidthArr);
+  const bbWidthNow = bbWidthArr[n - 1];
+  const bbRank = percentileRank(bbWidthSorted, bbWidthNow);
+  const adx2 = snap.adx;
+  const ema200 = snap.ema200;
+  const aboveLong = Number.isFinite(ema200) ? price > ema200 : Number.isFinite(slopeNow) ? slopeNow > 0 : true;
+  const trending = Number.isFinite(adx2) && adx2 >= ADX_TREND;
+  const ranging = Number.isFinite(adx2) && adx2 <= ADX_RANGE;
+  const veryVolatile = Number.isFinite(atrPctRank) && atrPctRank >= ATR_Q_VOLATILE;
+  const veryQuiet = Number.isFinite(atrPctRank) && atrPctRank <= ATR_Q_QUIET;
+  const flat = Number.isFinite(slopeRank) && slopeRank < SLOPE_Q_FLAT;
+  const squeeze = Number.isFinite(bbRank) && bbRank < BB_Q_SQUEEZE;
+  let regime;
+  let note;
+  let strength;
+  if (trending && !flat) {
+    if (aboveLong && slopeNow > 0) {
+      regime = "TREND_UP";
+      note = `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC: ADX ${fmt(adx2)} \u2265 ${ADX_TREND}\u060C \u0634\u06CC\u0628\u0650 EMA50 \u062F\u0631 \u0635\u062F\u06A9\u0650 ${(slopeRank * 100).toFixed(0)}\u060C \u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC EMA200.`;
+    } else if (!aboveLong && slopeNow < 0) {
+      regime = "TREND_DOWN";
+      note = `\u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC: ADX ${fmt(adx2)} \u2265 ${ADX_TREND}\u060C \u0634\u06CC\u0628\u0650 EMA50 \u062F\u0631 \u0635\u062F\u06A9\u0650 ${(slopeRank * 100).toFixed(0)}\u060C \u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 EMA200.`;
+    } else {
+      regime = "VOLATILE";
+      note = `ADX \u0642\u0648\u06CC (${fmt(adx2)}) \u0627\u0645\u0627 \u062C\u0647\u062A\u0650 \u0634\u06CC\u0628 \u0648 EMA200 \u0646\u0627\u0633\u0627\u0632\u06AF\u0627\u0631\u061B \u0631\u0648\u0646\u062F\u0650 \u0645\u0628\u0647\u0645.`;
+    }
+    strength = regime === "VOLATILE" ? 0.4 : clamp01(0.45 + (adx2 - ADX_TREND) / 40 + (slopeRank - 0.5) * 0.3);
+  } else if (veryVolatile) {
+    regime = "VOLATILE";
+    strength = clamp01(0.4 + (atrPctRank - ATR_Q_VOLATILE) / (1 - ATR_Q_VOLATILE) * 0.5);
+    note = `\u0646\u0648\u0633\u0627\u0646\u0650 \u0628\u0627\u0644\u0627: ATR% \u062F\u0631 \u0635\u062F\u06A9\u0650 ${(atrPctRank * 100).toFixed(0)} \u067E\u0646\u062C\u0631\u0647 (${fmt2(atrPctNow * 100)}\u066A \u0642\u06CC\u0645\u062A). \u0628\u0627\u0632\u0627\u0631\u0650 \u067E\u0631\u0622\u0634\u0648\u0628.`;
+  } else if (veryQuiet || squeeze) {
+    regime = "QUIET";
+    const q = Number.isFinite(atrPctRank) ? atrPctRank : bbRank;
+    strength = clamp01(0.5 + (ATR_Q_QUIET - Math.min(q, ATR_Q_QUIET)) / ATR_Q_QUIET * 0.4);
+    note = `\u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0631\u0627\u0645: ATR% \u0635\u062F\u06A9\u0650 ${(atrPctRank * 100).toFixed(0)}\u060C \u067E\u0647\u0646\u0627\u06CC \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u0635\u062F\u06A9\u0650 ${(bbRank * 100).toFixed(0)}. \u062F\u0627\u0645\u0646\u0647\u0654 \u06A9\u0645${squeeze ? " (\u0641\u0634\u0631\u062F\u06AF\u06CC)" : ""}.`;
+  } else {
+    regime = "RANGE";
+    strength = clamp01(0.4 + (ranging ? 0.2 : 0) + (flat ? 0.15 : 0));
+    note = `\u0631\u0646\u062C/\u0628\u06CC\u200C\u0631\u0648\u0646\u062F: ADX ${fmt(adx2)}\u060C \u0634\u06CC\u0628\u0650 EMA50 ${flat ? "\u0627\u0641\u0642\u06CC (\u0632\u06CC\u0631\u0650 \u0635\u062F\u06A9\u0650 \u0645\u06CC\u0627\u0646\u0647)" : "\u0645\u0644\u0627\u06CC\u0645"}. \u0628\u0627\u0632\u06AF\u0634\u062A\u200C\u0628\u0647\u200C\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0645\u062D\u062A\u0645\u0644.`;
+  }
+  return {
+    v: REGIME_INFO_VERSION,
+    regime,
+    strength,
+    note,
+    enabledKinds: enabledKindsFor(regime),
+    adx: round23(adx2),
+    atrPct: round4(atrPctNow),
+    emaSlopePct: round4(Number.isFinite(slopeNow) ? slopeNow * 100 : NaN),
+    bbWidthPct: round4(Number.isFinite(bbWidthNow) ? bbWidthNow * 100 : NaN)
+  };
+}
+function enabledKindsFor(regime) {
+  switch (regime) {
+    case "TREND_UP":
+    case "TREND_DOWN":
+      return ["trend", "breakout", "neutral"];
+    case "RANGE":
+      return ["fade", "neutral"];
+    case "VOLATILE":
+      return ["breakout", "neutral"];
+    case "QUIET":
+      return ["fade", "neutral"];
+  }
+}
+function detectRegime(asset, tf, candles) {
+  const snap = buildSnapshot(asset, tf, candles);
+  return classifyRegime(snap, candles);
+}
+function clamp01(x) {
+  return Math.max(0, Math.min(1, Number.isFinite(x) ? x : 0));
+}
+function round23(x) {
+  return Number.isFinite(x) ? Math.round(x * 100) / 100 : NaN;
+}
+function round4(x) {
+  return Number.isFinite(x) ? Math.round(x * 1e4) / 1e4 : NaN;
+}
+function fmt(x) {
+  return Number.isFinite(x) ? x.toFixed(1) : "\u2014";
+}
+function fmt2(x) {
+  return Number.isFinite(x) ? x.toFixed(2) : "\u2014";
+}
+
+// ../web_tool/src/council/contracts.ts
+var COUNCIL_VERDICT_VERSION = 1;
+
+// ../web_tool/src/council/council.ts
+function collectVotes(cardId, dec) {
+  const votes = [];
+  if (dec.state === "ENTRY" || dec.state === "APPROACHING") {
+    votes.push({
+      code: dec.sourceLayer?.code || "\u2014",
+      name: dec.sourceLayer?.name || dec.headline,
+      state: dec.state,
+      direction: dec.direction,
+      probability: dec.probability
+    });
+  }
+  for (const o of dec.otherLayers || []) {
+    votes.push({
+      code: o.code,
+      name: o.name,
+      state: o.state,
+      direction: o.direction,
+      probability: o.probability
+    });
+  }
+  return votes;
+}
+function convene(cardId, dec) {
+  const votes = collectVotes(cardId, dec);
+  const entryVotes = votes.filter((v) => v.state === "ENTRY" && (v.direction === "LONG" || v.direction === "SHORT"));
+  const longVotes = entryVotes.filter((v) => v.direction === "LONG").length;
+  const shortVotes = entryVotes.filter((v) => v.direction === "SHORT").length;
+  let consensus;
+  let direction;
+  let lotMultiplier = 1;
+  let wouldAllowEntry = false;
+  let note;
+  const activeCount = entryVotes.length;
+  if (votes.length === 0) {
+    consensus = "NONE";
+    lotMultiplier = 0;
+    note = "\u0647\u06CC\u0686 \u0644\u0627\u06CC\u0647\u0654 \u0641\u0639\u0627\u0644\u06CC \u0631\u0623\u06CC \u0646\u062F\u0627\u062F\u0647 \u0627\u0633\u062A.";
+  } else if (activeCount === 0) {
+    consensus = votes.length === 1 ? "SINGLE" : "MAJORITY";
+    lotMultiplier = 0;
+    note = `${votes.length} \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0622\u0645\u0627\u062F\u0647\u200C\u0628\u0627\u0634 (APPROACHING)\u061B \u0647\u0646\u0648\u0632 \u0648\u0631\u0648\u062F\u0650 \u0642\u0637\u0639\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (longVotes > 0 && shortVotes > 0) {
+    consensus = "CONFLICT";
+    lotMultiplier = 0;
+    wouldAllowEntry = false;
+    note = `\u062A\u0636\u0627\u062F\u0650 \u062C\u0647\u062A: ${longVotes} \u0644\u0627\u06CC\u0647 LONG \u0648 ${shortVotes} \u0644\u0627\u06CC\u0647 SHORT \u21D2 \u0628\u0627\u0632\u0627\u0631\u0650 \u062F\u0648\u0642\u0637\u0628\u06CC. \u0634\u0648\u0631\u0627 \u0648\u0631\u0648\u062F \u0631\u0627 \u0648\u062A\u0648 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0641\u06CC\u0644\u062A\u0631\u0650 \u0645\u062D\u0627\u0641\u0638).`;
+  } else {
+    direction = longVotes > 0 ? "LONG" : "SHORT";
+    wouldAllowEntry = true;
+    if (activeCount === 1) {
+      consensus = "SINGLE";
+      lotMultiplier = 1;
+      note = `\u062A\u0646\u0647\u0627 \u06CC\u06A9 \u0644\u0627\u06CC\u0647\u0654 \u0641\u0639\u0627\u0644 (${direction}). \u0627\u062C\u0645\u0627\u0639 \u0628\u06CC\u200C\u0645\u0639\u0646\u0627\u0633\u062A\u061B \u0631\u0623\u06CC\u0650 \u0647\u0645\u0627\u0646 \u0644\u0627\u06CC\u0647 \u0645\u0644\u0627\u06A9 \u0627\u0633\u062A.`;
+    } else {
+      consensus = "UNANIMOUS";
+      lotMultiplier = 1.5;
+      note = `\u0627\u062C\u0645\u0627\u0639\u0650 \u06A9\u0627\u0645\u0644: ${activeCount} \u0644\u0627\u06CC\u0647 \u0647\u0645\u200C\u062C\u0647\u062A (${direction}). \u0627\u0637\u0645\u06CC\u0646\u0627\u0646\u0650 \u0628\u0627\u0644\u0627\u061B \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u0650 \u0644\u0627\u062A\u0650 \xD7\u06F1.\u06F5. \xAB\u0644\u0627\u06CC\u0647\u0654 \u062F\u0648\u0645 \u0647\u0645 \u0647\u0645\u06CC\u0646 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F.\xBB`;
+    }
+  }
+  return {
+    v: COUNCIL_VERDICT_VERSION,
+    cardId,
+    consensus,
+    direction,
+    lotMultiplier,
+    wouldAllowEntry,
+    longVotes,
+    shortVotes,
+    votes,
+    note
   };
 }
 
@@ -6025,8 +6576,10 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
       capital,
       riskPct
     };
-    const dec2 = runCard(ctx2);
+    const dec2 = runCardTyped(ctx2);
     logSignal(a.card, dec2, result2.price, lastClosed2.time);
+    const regime2 = safeRegime("XAUUSD", tfLabelForGold(a.id), sig2);
+    const council2 = safeCouncil(a.card, dec2);
     return {
       asset: a.id,
       name: a.name,
@@ -6036,6 +6589,8 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
       price: result2.price,
       lastCandleTime: useCandles2[useCandles2.length - 1].time,
       decision: dec2,
+      regime: regime2,
+      council: council2,
       spot: spot ? { price: spot.price, ageSec: spot.ageSec, source: spot.source } : null
     };
   }
@@ -6068,8 +6623,10 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     capital,
     riskPct
   };
-  const dec = runCard(ctx);
+  const dec = runCardTyped(ctx);
   logSignal(a.card, dec, result.price, lastClosed.time);
+  const regime = safeRegime("EURUSD", tfLabelFromYahoo(tf), sig);
+  const council = safeCouncil(a.card, dec);
   return {
     asset: a.id,
     name: a.name,
@@ -6079,8 +6636,25 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     price: result.price,
     lastCandleTime: useCandles[useCandles.length - 1].time,
     decision: dec,
+    regime,
+    council,
     spot: live != null ? { price: live, ageSec: liveAge, source: liveSrc } : null
   };
+}
+function safeCouncil(cardId, dec) {
+  try {
+    return convene(cardId, dec);
+  } catch {
+    return null;
+  }
+}
+function safeRegime(asset, tf, candles) {
+  try {
+    if (!Array.isArray(candles) || candles.length < 60) return null;
+    return detectRegime(asset, tf, candles);
+  } catch {
+    return null;
+  }
 }
 function readCapitalParams(c) {
   const cap = Math.max(50, Math.min(1e7, parseFloat(c.req.query("capital")) || 1e4));
@@ -6264,6 +6838,7 @@ var PAGE = `<!DOCTYPE html>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
   <div id="app" class="max-w-5xl mx-auto p-4"></div>
   <script type="module" src="/static/signal_latch.js"></script>
+  <script type="module" src="/static/ui/badges.js"></script>
   <script src="/static/app.js"></script>
 </body>
 </html>`;
