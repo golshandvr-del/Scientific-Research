@@ -366,3 +366,137 @@ fxssi.net (sentiment)، smart-lab.ru، admiralmarkets.com/ru، forexxx4all.ru.
 266. ZX / PUCU — 重心线/逆时钟 (Gravity/Counter-clockwise curve)
 
 *(مرحله ۳ کامل — تا اینجا ~۲۶۶ اندیکاتورِ خام.)*
+
+---
+
+## مرحله ۴ — Deep-web / وبلاگ‌ها / کتابخانه‌های اپن‌سورس / فروشگاه MT4-MT5
+
+منابع: github twopirllc/pandas-ta (لیستِ کاملِ ۲۰۲۴)، TA-Lib، mesasoftware، Dave
+Newberg Ehlers codes، mql5.com market، forexstore/forex-station (فروشگاه‌های اندیکاتور)،
+TradingView community scripts، gist master-lists. تمرکز: پرکردنِ شکاف تا ۴۰۰+ با
+اندیکاتورهای کمیاب و variants.
+
+### Momentum/Overlap تازه (pandas-ta که هنوز نداریم)
+267. AO — Awesome Oscillator (median 5/34)
+268. APO — Absolute Price Oscillator
+269. BOP — Balance of Power
+270. CFO — Chande Forecast Oscillator
+271. CG — Center of Gravity (Ehlers)
+272. Coppock Curve (اکنون فرمولی)
+273. CTI — Correlation Trend Indicator (Ehlers)
+274. DM — Directional Movement (خام +DM/−DM)
+275. Inertia (RVI روی RVI + linreg)
+276. PGO — Pretty Good Oscillator
+277. PSL — Psychological Line (pandas نسخه)
+278. PVO — Percentage Volume Oscillator (tick-proxy)
+279. QQE — Quantitative Qualitative Estimation
+280. RSX — Relative Strength Xtra (Jurik)
+281. RVGI — Relative Vigor Index
+282. SMI Ergodic (TSI-based)
+283. Squeeze (TTM، Carter)
+284. Squeeze Pro (سه‌سطحی)
+285. TD Sequential (td_seq)
+286. UO — Ultimate Oscillator (فرمولی)
+287. FWMA — Fibonacci Weighted MA
+288. HWMA — Holt-Winter MA
+289. HWC — Holt-Winter Channel
+290. PWMA — Pascal Weighted MA
+291. SINWMA — Sine Weighted MA
+292. SWMA — Symmetric Weighted MA
+293. Midpoint / Midprice
+294. WCP — Weighted Closing Price
+295. HL2 / HLC3 / OHLC4 (price transforms)
+296. VWMA — Volume Weighted MA (tick-proxy)
+297. AMAT — Archer Moving Averages Trend
+298. QStick
+299. TTM Trend
+300. PSAR (Parabolic SAR فرمولی)
+
+### Volatility/Volume تازه
+301. Aberration (کانالِ ۴-خطیِ ATR)
+302. Acceleration Bands (accbands)
+303. NATR — Normalized ATR
+304. RVI — Relative Volatility Index
+305. Ulcer Index (ui)
+306. Elder Thermometer (thermo)
+307. Price Distance (pdist)
+308. AD — Accumulation/Distribution (ad)
+309. ADOSC — A/D Oscillator (Chaikin)
+310. AOBV — Archer OBV
+311. EFI — Elder Force Index
+312. PVR — Price Volume Rank
+313. PVOL — Price × Volume
+314. Chande Kroll Stop (cksp)
+
+### Statistics/Performance-shape (کمیابِ ریاضی)
+315. Entropy (shannon rolling)
+316. Kurtosis (rolling)
+317. Skew (rolling)
+318. MAD — Mean Absolute Deviation (rolling)
+319. Median (rolling)
+320. Quantile (rolling)
+321. Variance (rolling)
+322. Stdev (rolling)
+323. Drawdown (rolling peak-to-trough)
+324. Log Return / Percent Return (rolling)
+325. TOS Stdev-All (چند-باندِ std)
+
+### Ehlers/DSP کاملِ Dave-Newberg codes (پیشرفتهٔ کمیاب)
+326. EBSW — Even Better Sine Wave (ebsw)
+327. SSF — Super Smoother Filter (ssf 2/3-pole)
+328. Reflex (Ehlers 2020)
+329. TrendFlex (Ehlers 2020)
+330. Ehlers Stochastic (adaptive)
+331. Ehlers CCI (adaptive)
+332. Ehlers RSI (adaptive/Laguerre)
+333. Adaptive Laguerre Filter
+334. MESA Sine/Lead
+335. Sinewave + LeadSine pair
+336. Dominant Cycle (Autocorrelation Periodogram)
+337. Ehlers Roofing RSI
+338. Ehlers Deviation-Scaled MA (DSMA)
+339. Hann Window FIR (Ehlers)
+340. Ehlers Elegant Oscillator
+
+### Candlestick Patterns (TA-Lib/pandas-ta — ۶۰ الگو؛ اندیکاتورِ ساختاری)
+از این پس هرکدام یک «تشخیص‌دهندهٔ الگو» (خروجی ۱−/۰/۱+) است — بسیار پرکاربرد برای فیلترِ ورود:
+341. Doji  342. Doji Star  343. Dragonfly Doji  344. Gravestone Doji
+345. Hammer  346. Inverted Hammer  347. Hanging Man  348. Shooting Star
+349. Engulfing (bull/bear)  350. Harami  351. Harami Cross
+352. Piercing  353. Dark Cloud Cover  354. Morning Star  355. Evening Star
+356. Morning Doji Star  357. Evening Doji Star  358. 3 White Soldiers
+359. 3 Black Crows  360. 3 Inside  361. 3 Outside  362. 3 Line Strike
+363. Marubozu  364. Closing Marubozu  365. Spinning Top  366. High Wave
+367. Belt Hold  368. Counterattack  369. Kicking  370. Tasuki Gap
+371. Rising/Falling 3 Methods  372. Separating Lines  373. Matching Low
+374. Tristar  375. Abandoned Baby  376. Advance Block  377. Stalled Pattern
+378. Long-Legged Doji  379. Rickshaw Man  380. Takuri
+381. Hikkake  382. Hikkake Modified  383. Homing Pigeon  384. Ladder Bottom
+385. In-Neck  386. On-Neck  387. Thrusting  388. Unique 3 River
+389. Upside Gap 2 Crows  390. X-Side Gap 3 Methods  391. 2 Crows
+392. 3 Stars in South  393. Concealing Baby Swallow  394. Stick Sandwich
+395. Breakaway  396. Gap Side-by-Side White  397. Identical 3 Crows
+398. Kicking-by-Length  399. Long Line  400. Short Line  401. Mat Hold
+
+### Composite / پروژه‌ای (ترکیب‌های نجات‌دهنده — قانونِ «همه‌چیز شناور»)
+402. Elder Impulse System (EMA-slope × MACD-hist)
+403. Connors RSI (RSI3 + streakRSI + PctRank)
+404. Waddah Attar Explosion (MACD-diff × BB-width)
+405. Vortex-ADX composite (فیلترِ روند)
+406. KAMA-slope regime filter
+407. Choppiness-gated trend (chop<38.2 ⇒ trend)
+408. ATR-percentile volatility regime
+409. RSI-of-Kaufman-ER (کارایی-محور)
+410. Session-VWAP deviation z-score (XAU London/NY)
+
+*(مرحله ۴ کامل — مجموعِ خامِ کاتالوگ‌شده: ~۴۱۰ اندیکاتور > هدفِ ۴۰۰. ✅)*
+
+---
+
+## جمع‌بندیِ جستجو (پیش از پیاده‌سازی)
+
+- ۴ مرحلهٔ جستجو (EN/RU/CN/Deep-web) کامل شد.
+- مجموعِ خام کاتالوگ‌شده: **~۴۱۰ اندیکاتور** (فراتر از هدفِ ۴۰۰).
+- گامِ بعد: **پیاده‌سازیِ TypeScript در `web_tool/src/indicators/`** بدونِ look-ahead،
+  ثبت در registry با پرچمِ **`active:false`** (پیش‌فرض غیرفعال؛ فقط با صداکردنِ یک لایه فعال).
+- پیاده‌سازی مرحله‌به‌مرحله + build + commit/push هر فایل (طبقِ HARD-RULE).
