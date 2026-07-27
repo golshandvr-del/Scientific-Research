@@ -24,6 +24,10 @@ import { logSignal, getLog, findConflicts, clearLog } from './signal_log'
 //     افزودنی و بی‌خطر: ذخیره fire-and-forget است و هیچ تصمیمی را تغییر نمی‌دهد.
 import { getHistoryStore } from './price/history_provider'
 import { computeHealth } from './price/heartbeat'
+// --- گرهِ رادارِ رژیم P3.5 (webplan): تشخیصِ رژیم در حالتِ *سایه‌ای* ---
+//     افزودنی و بی‌خطر: فقط رژیم را گزارش می‌کند؛ هیچ لایه‌ای را خاموش نمی‌کند و
+//     منطقِ runCard/تصمیم را تغییر نمی‌دهد (برابریِ بیت‌به‌بیت با snapshot طلایی).
+import { detectRegime } from './regime/radar'
 
 const app = new Hono()
 
