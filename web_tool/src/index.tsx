@@ -37,6 +37,10 @@ import { convene } from './council/council'
 // --- گرهِ دفترِ RQS زنده P7 (webplan): ثبتِ نتیجهٔ واقعیِ کاربر + RQS+ زنده + بایگانیِ خودکار ---
 //     افزودنی و بی‌خطر: فقط از طریقِ endpointهای /api/ledger/* مصرف می‌شود؛ مسیرِ تصمیم دست‌نخورده.
 import { recordOutcome, computeLiveRqs, liveRqsSummary, outcomesOf } from './ledger/rqs_live'
+// --- گرهِ کاوشگرِ اندیکاتور P8 (webplan · ایدهٔ #۶): حالتِ پژوهشیِ همبستگیِ اندیکاتور با ---
+//     حرکتِ آیندهٔ قیمت روی تاریخچهٔ ذخیره‌شده. خروجی «فقط برای AI/تحقیق»؛ افزودنی و بی‌خطر —
+//     فقط از راهِ endpointهای /api/scanner/* مصرف می‌شود و مسیرِ /api/decision دست‌نخورده می‌ماند.
+import { scanIndicators } from './scanner/scanner'
 
 const app = new Hono()
 
