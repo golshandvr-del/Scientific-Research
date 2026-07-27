@@ -14,6 +14,7 @@
 import type { Candle } from '../indicators'
 import * as I from '../indicators'
 import * as CX from './complex'
+import { BANK } from './bank'
 import {
   INDICATOR_SNAPSHOT_VERSION,
   type IndicatorDef,
@@ -92,6 +93,20 @@ register({ name: 'ichimoku', defaults: {}, paramKeys: [], desc: 'ابرِ ایچ
     return { tenkan: k.tenkan, kijun: k.kijun, cloudTop: k.cloudTop, cloudBot: k.cloudBot } as Record<string, number[]>
   } })
 
+// --- بانکِ گستردهٔ ۴۰۰+ اندیکاتور (bank.ts) — همه active:false (User Note) ---------
+// ⚠️ ثبتِ این‌ها هزینهٔ محاسباتی ندارد: کشِ رجیستری «تنبل» است (خطِ seriesRaw) — تا وقتی
+//    یک لایهٔ استراتژی صریحاً series(name)/last(name) را صدا نزند، compute اجرا نمی‌شود.
+//    بنابراین مسیرِ /api/decision و برابریِ بیت‌به‌بیتِ snapshotِ طلایی دست‌نخورده می‌ماند.
+//    این دقیقاً معنای «وجود دارند اما غیرفعال‌اند» را پیاده می‌کند.
+// اگر نامی از قبل در رجیستریِ هسته باشد (مثلِ vortex)، نسخهٔ هسته حفظ می‌شود (بدونِ بازنویسی).
+let bankRegistered = 0
+for (const d of BANK) {
+  if (REGISTRY.has(d.name)) continue // برخوردِ نام → نسخهٔ هستهٔ موجود اولویت دارد
+  REGISTRY.set(d.name, d as IndicatorDef<any>)
+  bankRegistered++
+}
+void bankRegistered
+
 // ----------------------------------------------------------------------------
 // ۲) سازندهٔ IndicatorSnapshot@v1 با کشِ تنبل (کلید = name+params+lastBarTime).
 // ----------------------------------------------------------------------------
@@ -169,6 +184,20 @@ export function buildSnapshot(asset: string, tf: string, candles: Candle[]): Ind
 }
 
 /** فهرستِ نام‌های رجیستری‌شده (برای کاوشگرِ اندیکاتور P8 و مستندات). */
-export function listIndicators(): { name: string; defaults: Record<string, number>; desc?: string }[] {
-  return Array.from(REGISTRY.values()).map(d => ({ name: d.name, defaults: d.defaults, desc: d.desc }))
+export function listIndicators(): {
+  name: string; defaults: Record<string, number>; desc?: string
+  active?: boolean; category?: string; source?: string
+}[] {
+  return Array.from(REGISTRY.values()).map(d => ({
+    name: d.name, defaults: d.defaults, desc: d.desc,
+    // اندیکاتورهای هستهٔ قدیمی فیلدِ active ندارند ⇒ فعال تلقی می‌شوند (لایه‌ها مصرفشان می‌کنند).
+    active: d.active === undefined ? true : d.active,
+    category: d.category, source: d.source,
+  }))
 }
+
+/** شمارشِ رجیستری برای گزارش/تستِ سلامت. */
+export function registrySize(): number { return REGISTRY.size }
+
+/** آیا اندیکاتوری با این نام در رجیستری وجود دارد؟ (برای فعال‌سازیِ لایه‌محور) */
+export function hasIndicator(name: string): boolean { return REGISTRY.has(name) }
