@@ -190,3 +190,41 @@ if __name__ == '__main__':
     if passed3:
         b = max(passed3, key=lambda x: x[0])
         print(f"بهترین پاس‌شده: slope>{b[1]} SL{b[2]}/TP{b[3]} hold{b[4]} → RQS={b[0]}")
+
+    # ========================================================================
+    print("\n" + "=" * 110)
+    print("گام ۴ — نگرانیِ علمی: n=37 نزدیکِ کفِ ۳۰ است. تلاش برای n بیشتر + تحلیلِ حساسیت.")
+    print("        هدف: پیکربندیِ مقاوم با n راحت بالای ۳۰ و RQS بالا، نه یک نقطهٔ شکننده.")
+    print("=" * 110)
+
+    print(f"\n{'slope>  SL/TP  hold':30s} | verdict RQS |  n    WR    PF    DD   MCL   p     gates")
+    print("-" * 105)
+    results4 = []
+    for sl_th in [0.75, 0.85, 0.95, 1.05]:
+        mask = slope100 > sl_th
+        for sl in [55, 65, 75]:
+            for tp in [55, 65, 78, 91]:
+                for hold in [48, 60, 72]:
+                    s, ss = apply_filter(mask)
+                    r, _ = evaluate(f"s{sl_th}", df5, s, ss, float(sl), float(tp),
+                                    'XAUUSD', max_hold=hold, verbose=False)
+                    m = r['metrics']
+                    results4.append((r['rqs_score'], sl_th, sl, tp, hold, r, m))
+    # مرتب‌سازی: اول پاس‌شده‌ها با n بالا، سپس RQS
+    passed4 = [x for x in results4 if x[5]['passed']]
+    passed4.sort(key=lambda x: (x[6]['n_trades'], x[0]), reverse=True)
+    print("— پاس‌شده‌ها با بیشترین n (مقاوم‌ترین): —")
+    for score, sl_th, sl, tp, hold, r, m in passed4[:12]:
+        g = r['gates']; gstr = ''.join('1' if g[f'G{i}'] else '0' for i in range(6))
+        print(f"slope>{sl_th} SL{sl}/TP{tp} h{hold:2d}{'':6s} | {r['verdict']:6s} {score:4.0f} | "
+              f"{m['n_trades']:4d} {m['win_rate']:5.1f} {m['profit_factor']:5.2f} "
+              f"{m['max_dd_pct']:5.1f} {m['max_consec_losses']:3d}  {m['p_value']:.3f}  {gstr}")
+
+    print(f"\nمجموعِ پاس‌شده در گام ۴: {len(passed4)}")
+    if passed4:
+        # انتخابِ نهایی: بیشترین n میانِ آن‌هایی که RQS≥85 (تعادلِ مقاومت و کیفیت)
+        robust = [x for x in passed4 if x[0] >= 85]
+        pick = max(robust, key=lambda x: x[6]['n_trades']) if robust else passed4[0]
+        print(f"\n🎯 انتخابِ نهاییِ مقاوم: slope>{pick[1]} SL{pick[2]}/TP{pick[3]} hold{pick[4]}")
+        print(f"   n={pick[6]['n_trades']} WR={pick[6]['win_rate']} PF={pick[6]['profit_factor']} "
+              f"DD={pick[6]['max_dd_pct']} MCL={pick[6]['max_consec_losses']} RQS={pick[0]}")
