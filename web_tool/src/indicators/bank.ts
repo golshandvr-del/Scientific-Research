@@ -1221,3 +1221,89 @@ pat('cdl_kicking_bull', 'ضربهٔ صعودی', (c, i) => (isBear(c[i - 1]) && 
 pat('cdl_kicking_bear', 'ضربهٔ نزولی', (c, i) => (isBull(c[i - 1]) && body(c[i - 1]) >= 0.9 * range(c[i - 1]) && isBear(c[i]) && body(c[i]) >= 0.9 * range(c[i]) && c[i].open < c[i - 1].open ? -100 : 0))
 pat('cdl_gap_up', 'گَپِ صعودی', (c, i) => (c[i].low > c[i - 1].high ? 100 : 0))
 pat('cdl_gap_dn', 'گَپِ نزولی', (c, i) => (c[i].high < c[i - 1].low ? -100 : 0))
+
+// ===========================================================================
+// دستهٔ ۱۰ — Variant Expansion (بسطِ پارامتریِ علمی)
+// ----------------------------------------------------------------------------
+// طبقِ قانونِ «همه‌چیز شناور است» و اصلِ variant-instancing در TA-Lib/pandas-ta،
+// هر خانوادهٔ اندیکاتورِ تک-پارامتری در چند دورهٔ **غیررند** (فیبوناچی و لوکاس، متناسب
+// با تایم‌فریم‌های XAUUSD: M5/M15/H1/H4/D1) به یک instanceِ مجزا تبدیل می‌شود.
+// این مستقیماً اشتباهِ رایج #۷ (اجتناب از اعدادِ رند مثل 50/100/200) را رفع می‌کند.
+// همهٔ variantها active:false ثبت می‌شوند و فقط با صداکردنِ یک لایه فعال می‌شوند.
+// ===========================================================================
+
+// دوره‌های غیررندِ فیبوناچی/لوکاس (نه 10/20/50/100/200) — نجات‌دهندهٔ واقعی طبقِ اشتباهِ #۷
+const FIB_PERIODS = [3, 5, 8, 13, 21, 34, 55, 89, 144, 233]
+const LUCAS_PERIODS = [4, 7, 11, 18, 29, 47, 76, 123, 199]
+
+/** بسطِ یک خانوادهٔ تک-پارامتری (period) به چند instance با دوره‌های غیررند. */
+function expandPeriodFamily(
+  baseName: string, category: string, source: string, desc: string,
+  build: (period: number) => (c: Candle[]) => IndicatorValue,
+  periods: number[],
+): void {
+  for (const per of periods) {
+    BANK.push({
+      name: `${baseName}_${per}`, category, source, active: false,
+      defaults: { period: per }, paramKeys: ['period'],
+      desc: `${desc} — دورهٔ غیررندِ ${per}`,
+      compute: (c: Candle[]) => build(per)(c),
+    })
+  }
+}
+
+// خانواده‌های میانگین (روی close) — دوره‌های فیبوناچی
+expandPeriodFamily('sma_fib', 'trend', 'composite', 'میانگینِ ساده', (per) => (c) => asSeries(smaArr(closes(c), per)), FIB_PERIODS)
+expandPeriodFamily('ema_fib', 'trend', 'composite', 'میانگینِ نمایی', (per) => (c) => asSeries(emaArr(closes(c), per)), FIB_PERIODS)
+expandPeriodFamily('wma_fib', 'trend', 'composite', 'میانگینِ وزنی', (per) => (c) => asSeries(wmaArr(closes(c), per)), FIB_PERIODS)
+expandPeriodFamily('rma_fib', 'trend', 'composite', 'میانگینِ وایلدر', (per) => (c) => asSeries(rmaArr(closes(c), per)), FIB_PERIODS)
+expandPeriodFamily('hma_fib', 'trend', 'composite', 'میانگینِ هال', (per) => (c) => {
+  const x = closes(c), half = wmaArr(x, Math.max(1, Math.floor(per / 2))), full = wmaArr(x, per)
+  return asSeries(wmaArr(half.map((v, i) => 2 * v - full[i]), Math.max(1, Math.floor(Math.sqrt(per)))))
+}, FIB_PERIODS)
+
+// خانوادهٔ RSI — دوره‌های لوکاس (غیررند)
+expandPeriodFamily('rsi_lucas', 'momentum', 'composite', 'RSI', (per) => (c) => asSeries(I.rsi(closes(c), per) as unknown as number[]), LUCAS_PERIODS)
+
+// خانوادهٔ CMO — فیبوناچی
+expandPeriodFamily('cmo_fib', 'momentum', 'composite', 'مومنتومِ چاند', (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr(n)
+  for (let i = per; i < n; i++) { let up = 0, dn = 0; for (let k = 0; k < per; k++) { const d = x[i - k] - x[i - k - 1]; if (d > 0) up += d; else dn -= d } out[i] = (up + dn) ? (100 * (up - dn)) / (up + dn) : 0 }
+  return asSeries(out)
+}, FIB_PERIODS)
+
+// خانوادهٔ ROC — فیبوناچی
+expandPeriodFamily('roc_fib', 'momentum', 'composite', 'نرخِ تغییر', (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr(n)
+  for (let i = per; i < n; i++) out[i] = x[i - per] ? (100 * (x[i] - x[i - per])) / x[i - per] : NaN
+  return asSeries(out)
+}, FIB_PERIODS)
+
+// خانوادهٔ std (نوسان) — فیبوناچی
+expandPeriodFamily('std_fib', 'volatility', 'composite', 'انحرافِ معیار', (per) => (c) => asSeries(stdArr(closes(c), per)), FIB_PERIODS)
+
+// خانوادهٔ BIAS — فیبوناچی
+expandPeriodFamily('bias_fib', 'momentum', 'composite', 'نرخِ انحراف (乖离)', (per) => (c) => {
+  const x = closes(c), s = smaArr(x, per)
+  return asSeries(x.map((v, i) => (s[i] ? (100 * (v - s[i])) / s[i] : NaN)))
+}, FIB_PERIODS)
+
+// خانوادهٔ Kaufman ER — لوکاس
+expandPeriodFamily('er_lucas', 'composite', 'composite', 'نسبتِ کاراییِ کافمن', (per) => (c) => {
+  const x = closes(c), n = x.length, out = NaNArr(n)
+  for (let i = per; i < n; i++) { const ch = Math.abs(x[i] - x[i - per]); let v = 0; for (let k = 0; k < per; k++) v += Math.abs(x[i - k] - x[i - k - 1]); out[i] = v ? ch / v : 0 }
+  return asSeries(out)
+}, LUCAS_PERIODS)
+
+// خانوادهٔ z-score — فیبوناچی
+expandPeriodFamily('zscore_fib', 'statistical', 'composite', 'امتیازِ Z قیمت', (per) => (c) => {
+  const x = closes(c), s = smaArr(x, per), sd = stdArr(x, per)
+  return asSeries(x.map((v, i) => (sd[i] ? (v - s[i]) / sd[i] : NaN)))
+}, FIB_PERIODS)
+
+// خانوادهٔ WR — فیبوناچی
+expandPeriodFamily('wr_fib', 'momentum', 'composite', 'ویلیامز %R', (per) => (c) => {
+  const h = highs(c), l = lows(c), x = closes(c), n = x.length, out = NaNArr(n)
+  for (let i = per - 1; i < n; i++) { const hh = highest(h, i, per), ll = lowest(l, i, per); out[i] = (hh - ll) ? (100 * (hh - x[i])) / (hh - ll) : 50 }
+  return asSeries(out)
+}, FIB_PERIODS)
