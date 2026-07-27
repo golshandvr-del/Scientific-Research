@@ -518,6 +518,67 @@ app.get('/api/signal-log/conflicts', (c) => {
 app.get('/api/signal-log/clear', (c) => { clearLog(); return c.json({ ok: true, cleared: true }) })
 
 // ---------------------------------------------------------------------------
+// 🟦 P2 (webplan) — endpointهای گرهِ قیمت: تاریخچهٔ ذخیره‌شده + Heartbeat.
+//   افزودنی‌اند و مسیرِ تصمیم را دست نمی‌زنند.
+// ---------------------------------------------------------------------------
+// خواندنِ تاریخچهٔ ذخیره‌شده (ring-buffer) برای یک (asset,tf).
+//   /api/history/:asset?tf=M5&limit=500
+//   asset: XAUUSD | EURUSD ؛ tf: M5|M15|M30|H1|H4
+app.get('/api/history/:asset', async (c) => {
+  const asset = (c.req.param('asset') || '').toUpperCase()
+  const tf = (c.req.query('tf') || 'M15').toUpperCase()
+  const limit = Math.max(1, Math.min(5000, parseInt(c.req.query('limit') || '500', 10)))
+  if (asset !== 'XAUUSD' && asset !== 'EURUSD') {
+    return c.json({ ok: false, error: `دارایی ناشناخته: ${asset}` }, 404)
+  }
+  try {
+    const store = await getHistoryStore()
+    const candles = await store.load(asset, tf, limit)
+    const total = await store.count(asset, tf)
+    const last = await store.lastTime(asset, tf)
+    return c.json({
+      ok: true, asset, tf,
+      total, returned: candles.length,
+      lastClosedTime: last,
+      candles: candles.map(k => ({ t: k.time, o: k.open, h: k.high, l: k.low, c: k.close, v: k.volume || 0 })),
+    })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e?.message || 'خطا' }, 502)
+  }
+})
+
+// Heartbeat: وضعیتِ سلامتِ قیمتِ زندهٔ یک دارایی (ایدهٔ #۷).
+//   /api/price-health/:asset  → { ok, stale, liveAgeSec, source, note, storedBars }
+app.get('/api/price-health/:asset', async (c) => {
+  const id = (c.req.param('asset') || '').toUpperCase()
+  const a = ASSETS.find(x => x.id === id)
+  if (!a) return c.json({ ok: false, error: `دارایی ناشناخته: ${id}` }, 404)
+  try {
+    // قیمتِ زندهٔ سبک (بدونِ محاسبهٔ سنگینِ سیگنال).
+    let ageSec = Infinity, source = 'unknown'
+    if (a.isGold) {
+      const s = await getSpotGold()
+      ageSec = s.ageSec; source = s.source
+    } else {
+      const q = await getLiveQuote(a.symbol)
+      ageSec = q.ageSec; source = q.source
+    }
+    const health = computeHealth(ageSec, source)
+    // چند کندل برای این کارت ذخیره شده (دیدِ پوششِ تاریخچه).
+    let storedBars = 0
+    try {
+      const store = await getHistoryStore()
+      const asset = a.isGold ? 'XAUUSD' : 'EURUSD'
+      const tf = a.isGold ? tfLabelForGold(a.id) : tfLabelFromYahoo(a.tf || '15m')
+      storedBars = await store.count(asset, tf)
+    } catch { /* بی‌اثر */ }
+    return c.json({ ok: true, asset: a.id, at: Date.now(), ...health, storedBars })
+  } catch (e: any) {
+    return c.json({ ok: false, asset: a.id, error: e?.message || 'خطا' }, 502)
+  }
+})
+
+// ---------------------------------------------------------------------------
 // endpointِ سبکِ قیمتِ زندهٔ همهٔ دارایی‌ها — برای پُلینگِ سریع (هر ~۲ ثانیه).
 // پاسخ به User Note (نکتهٔ اول): «سایت خودکار هر ۲ ثانیه قیمت‌ها را به‌روز کند».
 // این endpoint هیچ محاسبهٔ سنگینی (اندیکاتور/سیگنال) ندارد؛ فقط قیمتِ لحظه‌ای هر
