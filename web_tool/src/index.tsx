@@ -17,7 +17,10 @@ import {
   rebaseFuturesToSpot, mergeLiveQuote, closedBars,
 } from './price/gold_source'
 // --- رجیستریِ ماژولارِ لایه‌های احیاشده (تنها مغزِ تصمیمِ سایت پس از حذفِ استراتژی‌های قدیمی) ---
-import { runCard, type LayerContext } from './strategy_registry'
+import { type LayerContext } from './strategy_registry'
+// --- گرهِ Runtime P4 (webplan): مرزِ رسمیِ اجرای لایه‌ها (CardDecision@v1). ---
+//     runCardTyped صرفاً runCard را با تایپِ رسمی می‌پیچد؛ خروجی بیت‌به‌بیت یکسان.
+import { runCardTyped as runCard } from './runtime/runtime'
 // --- لاگِ سیگنال (User Note): ثبتِ هر ENTRY/APPROACHING برای کشفِ سیگنال‌های متناقض ---
 import { logSignal, getLog, findConflicts, clearLog } from './signal_log'
 // --- گرهِ قیمت P2 (webplan): ذخیره‌سازیِ تاریخچه (سایه‌ای) + Heartbeat ---
