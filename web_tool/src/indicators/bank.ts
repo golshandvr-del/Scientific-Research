@@ -966,16 +966,20 @@ def('dsma', 'cycle', 'deep-web', { period: 20 }, ['period'], 'میانگینِ �
 // دستهٔ ۷ — Trend-following / Structure  [EN/RU — ساختاری و پرکاربرد]
 // ===========================================================================
 
-// Supertrend (ATR-based) — خطِ روند؛ خروجی = مقدارِ خطِ سوپرترند
+// Supertrend (ATR-based) — خطِ روند؛ خروجی = مقدارِ خطِ سوپرترند (الگوریتمِ استاندارد)
 def('supertrend', 'trend', 'deep-web', { period: 10, mult: 3 }, ['period', 'mult'], 'سوپرترند (ATR-محور)', (c, p) => {
   const n = c.length, atr = rmaArr(trArr(c), p.period), out = NaNArr(n)
-  let dir = 1, finalUp = NaN, finalDn = NaN
+  let finalUp = NaN, finalDn = NaN, dir = 1, started = false
   for (let i = 0; i < n; i++) {
+    if (!Number.isFinite(atr[i])) continue
     const mid = (c[i].high + c[i].low) / 2
-    const bu = mid - p.mult * atr[i], bd = mid + p.mult * atr[i]
-    if (i === 0 || !Number.isFinite(atr[i])) { finalUp = bu; finalDn = bd; out[i] = bd; continue }
-    finalUp = (bu > finalUp || c[i - 1].close < finalUp) ? bu : finalUp
-    finalDn = (bd < finalDn || c[i - 1].close > finalDn) ? bd : finalDn
+    const basicUp = mid - p.mult * atr[i]   // باندِ پایین (خطِ حمایتِ روندِ صعودی)
+    const basicDn = mid + p.mult * atr[i]   // باندِ بالا (خطِ مقاومتِ روندِ نزولی)
+    if (!started) { finalUp = basicUp; finalDn = basicDn; dir = 1; out[i] = finalUp; started = true; continue }
+    // بازآراییِ باندهای نهایی (فرمولِ کلاسیکِ سوپرترند)
+    finalUp = (basicUp > finalUp || c[i - 1].close < finalUp) ? basicUp : finalUp
+    finalDn = (basicDn < finalDn || c[i - 1].close > finalDn) ? basicDn : finalDn
+    // تعیینِ جهت بر اساسِ شکستِ خطِ فعلی
     if (dir === 1 && c[i].close < finalUp) dir = -1
     else if (dir === -1 && c[i].close > finalDn) dir = 1
     out[i] = dir === 1 ? finalUp : finalDn
