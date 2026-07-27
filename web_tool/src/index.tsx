@@ -203,6 +203,48 @@ app.post('/api/trade/advice', async (c) => {
   }
 })
 
+// ============================================================================
+// 📒 دفترِ RQS زنده (P7 · ایدهٔ #۳) — endpointهای افزودنی/سایه‌ای.
+//    ثبتِ نتیجهٔ واقعیِ معاملهٔ کاربر و محاسبهٔ RQS+ زنده. مسیرِ /api/decision
+//    دست‌نخورده می‌ماند؛ این‌ها فقط یک دفترِ مشاهده‌گر/یادگیرنده‌اند.
+// ============================================================================
+
+// ثبتِ نتیجهٔ یک معاملهٔ بسته‌شده. بدنه: {cardId, layerCode, dir, entry, exit, tpDist, slDist, pnl?}
+app.post('/api/ledger/outcome', async (c) => {
+  try {
+    const body = await c.req.json().catch(() => null) as any
+    if (!body) return c.json({ ok: false, error: 'داده ارسال نشده' }, 400)
+    const rec = recordOutcome(body)
+    const live = computeLiveRqs(rec.cardId, rec.layerCode)
+    return c.json({ ok: true, recorded: rec, live })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e?.message || 'خطا در ثبت' }, 400)
+  }
+})
+
+// RQS+ زندهٔ یک لایهٔ مشخص.
+app.get('/api/ledger/rqs/:cardId/:layer', (c) => {
+  try {
+    const cardId = c.req.param('cardId')
+    const layer = c.req.param('layer')
+    const live = computeLiveRqs(cardId, layer)
+    return c.json({ ok: true, live, outcomes: outcomesOf(cardId, layer).length })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e?.message || 'خطا' }, 400)
+  }
+})
+
+// خلاصهٔ RQS+ زندهٔ همهٔ لایه‌های دارای داده (برای دفتر/گزارش).
+app.get('/api/ledger/summary', (c) => {
+  try {
+    const rows = liveRqsSummary()
+    const archived = rows.filter(r => r.shouldArchive).map(r => `${r.cardId}::${r.layerCode}`)
+    return c.json({ ok: true, count: rows.length, archived, rows })
+  } catch (e: any) {
+    return c.json({ ok: false, error: e?.message || 'خطا' }, 400)
+  }
+})
+
 // --- مدیریتِ لحظه‌ایِ اسکالپِ M5 طلا (User Note) ---
 // بدونِ TP/SL/حجم. خروجی فقط: take_profit / wrong / hold + پیامِ فارسی.
 // ورودی: { action: 'BUY'|'SELL', refPrice: number }  (قیمتِ ورودِ کاربر)
