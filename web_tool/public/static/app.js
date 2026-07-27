@@ -550,10 +550,28 @@ function renderCard(a) {
           <span class="text-slate-400 text-xs">قیمتِ فعلی <span id="price-age-${a.id}" class="text-slate-600"></span></span>
           <span id="price-${a.id}" class="text-lg font-bold text-slate-100 tabular-nums" dir="ltr">${d || trade ? fmt(s.price ?? (d && d.price) ?? (trade && trade.entry), a.decimals) : '—'}</span>
         </div>
+        ${uiBadges(a, s, state)}
         ${body}
         ${d ? renderCardTimeGates(d) : ''}
       </div>
     </section>`
+}
+
+// --- 🟧 P5: نشان‌های افزودنیِ گره‌ها (heartbeat + شورا) از ماژولِ ui/badges ---
+//     Strangler-Fig: اگر ماژول یا داده نبود، رشتهٔ خالی ⇒ رفتارِ فعلیِ کارت حفظ.
+//     heartbeat در همهٔ حالت‌ها؛ نشانِ شورا فقط در حالت‌های فعال (ENTRY/APPROACHING/MANAGE).
+function uiBadges(a, s, state) {
+  const B = (typeof window !== 'undefined' && window.UIBadges) ? window.UIBadges : null
+  if (!B) return ''
+  let out = ''
+  try {
+    const ageSec = s && s.spot && typeof s.spot.ageSec === 'number' ? s.spot.ageSec : null
+    out += B.heartbeatBar(ageSec)
+    if (state === 'ENTRY' || state === 'APPROACHING' || state === 'MANAGE') {
+      out += B.councilBadge(s && s.council ? s.council : null)
+    }
+  } catch { return '' }
+  return out
 }
 
 // --- برچسبِ منبعِ سیگنال (پاسخ به User Note #4: «بگو سیگنال طبقِ کدام لایه/فیلتر است») ---
