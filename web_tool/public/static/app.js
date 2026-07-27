@@ -1238,6 +1238,11 @@ async function refreshOneAsset(id) {
       store[id].decision = applyLatch(id, a.decision)   // 🔒 قفلِ سیگنال
       store[id].price = a.price
       store[id].error = null
+      // 🟧 P5: فیلدهای افزودنیِ گره‌ها (شورا/رژیم/spot) برای نشان‌های ظاهری.
+      //     بی‌اثر بر تصمیم — فقط برای heartbeatBar/councilBadge.
+      store[id].council = a.council || null
+      store[id].regime = a.regime || null
+      store[id].spot = a.spot || null
     } else {
       store[id].error = a.error || 'خطا'
     }
