@@ -150,4 +150,17 @@ def('sinwma', 'trend', 'EN', { period: 14 }, ['period'], 'میانگینِ وز�
   return asSeries(out)
 })
 
+// DMA — 平均差 = SMA(fast) − SMA(slow)  [CN، دستهٔ trend]
+def('dma', 'trend', 'CN', { fast: 10, slow: 50 }, ['fast', 'slow'], 'تفاضلِ میانگین‌ها (平均差)', (c, p) => {
+  const x = closes(c), f = smaArr(x, p.fast), s = smaArr(x, p.slow)
+  return asSeries(f.map((v, i) => v - s[i]))
+})
+
+// BBI — 多空均线 = میانگینِ SMA(3,6,12,24)  [CN، دستهٔ trend]
+def('bbi', 'trend', 'CN', { p1: 3, p2: 6, p3: 12, p4: 24 }, ['p1', 'p2', 'p3', 'p4'], 'خطِ چندنرخیِ گاو-خرس (多空均线)', (c, p) => {
+  const x = closes(c)
+  const a = smaArr(x, p.p1), b = smaArr(x, p.p2), d = smaArr(x, p.p3), e = smaArr(x, p.p4)
+  return asSeries(x.map((_, i) => (a[i] + b[i] + d[i] + e[i]) / 4))
+})
+
 export const TREND_ITEMS = K.items
