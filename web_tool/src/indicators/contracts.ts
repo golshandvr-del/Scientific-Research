@@ -34,6 +34,19 @@ export interface IndicatorDef<P extends Record<string, number> = Record<string, 
   paramKeys: (keyof P)[]
   /** توضیحِ کوتاهِ فارسی (برای کاوشگرِ اندیکاتور P8 و مستندات). */
   desc?: string
+  /**
+   * پرچمِ فعال‌بودن (User Note بانکِ اندیکاتور).
+   * پیش‌فرضِ منطقی = false برای اندیکاتورهای تازه‌افزوده: آن‌ها در بانک «وجود» دارند
+   * ولی تا وقتی یک لایهٔ استراتژی صریحاً صدایشان بزند فعال (محاسبه) نمی‌شوند.
+   * اندیکاتورهای هستهٔ قدیمی (که لایه‌های فعلی مصرف می‌کنند) active=true دارند.
+   * ⚠️ این پرچم فقط «برچسبِ رجیستری» است؛ کشِ تنبل به‌هرحال تا صداخورده‌نشدن حساب نمی‌کند،
+   *    پس مسیرِ /api/decision و برابریِ بیت‌به‌بیت دست‌نخورده می‌ماند.
+   */
+  active?: boolean
+  /** دستهٔ اندیکاتور (trend/momentum/volatility/volume/cycle/statistical/pattern/composite). */
+  category?: string
+  /** منبعِ کشف (EN/RU/CN/deep-web) — برای ردیابیِ علمیِ بانک. */
+  source?: string
   /** محاسبهٔ اندیکاتور روی کندل‌ها. باید بدونِ look-ahead باشد. */
   compute: (candles: Candle[], params: P) => IndicatorValue
 }
