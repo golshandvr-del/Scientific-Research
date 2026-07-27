@@ -78,3 +78,10 @@ function toFa(n) {
   const fa = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹']
   return String(n).replace(/[0-9]/g, d => fa[+d])
 }
+
+// --- پلِ global: app.js یک اسکریپتِ کلاسیک است (نه ماژول). برای مصرفِ بی‌ریسک،
+//     همین توابع را روی window.UIBadges هم می‌گذاریم تا نوعِ اسکریپتِ app.js را
+//     تغییر ندهیم (Strangler-Fig: صفر تغییر در بارگذاریِ فعلی).
+if (typeof window !== 'undefined') {
+  window.UIBadges = { heartbeatBar, councilBadge, HEARTBEAT_STALE_SEC }
+}
