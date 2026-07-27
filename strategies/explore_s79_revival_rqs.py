@@ -105,4 +105,50 @@ if __name__ == '__main__':
 
     best = max(grid, key=lambda x: x[0])
     print(f"\nبهترین RQS در این اسکن: {best[0]}  (SL{best[1]}/TP{best[2]}/hold{best[3]})")
-    print("نتیجه‌گیریِ گام ۱: آیا صرفِ R:R کافی است یا فیلترِ کیفیت هم لازم است؟ → گام ۲")
+    print("درسِ گام ۱: معکوسِ افراطیِ R:R ⇒ WR بالا ولی p≈۱ و PF<۱ (تلهٔ WR). RQS+ آن را می‌گیرد.")
+    print("⇒ باید R:R را نزدیکِ متعادل نگه داشت و WR را با «فیلترِ کیفیتِ ورود» بالا برد، نه با R:R.")
+
+    # ========================================================================
+    print("\n" + "=" * 110)
+    print("گام ۲ — فیلترهای کیفیتِ ورود (بانکِ اندیکاتور) + R:R متعادل.")
+    print("        منطقِ پایه S79 حفظ می‌شود؛ فقط بهترین pullbackها با فیلتر انتخاب می‌شوند.")
+    print("=" * 110)
+
+    close = df5['close']
+    ema20 = ind.ema(close, 20); ema100 = ind.ema(close, 100)
+    rsi21 = ind.rsi(close, 21)
+    atr14 = ind.atr(df5, 14)
+    adx14, pdi, mdi = ind.adx(df5, 14)
+    # فاصلهٔ نرمال‌شدهٔ قیمت تا EMA100 بر حسبِ ATR (عمقِ pullback)
+    dist_atr = (ema100 - close) / atr14
+    # شیبِ EMA100 بر حسبِ ATR (قدرتِ روند)
+    slope100 = (ema100 - ema100.shift(20)) / atr14
+    base = (ema20 > ema100) & (rsi21 < 35)
+
+    def apply_filter(mask):
+        s = (base & mask).fillna(False).values
+        return s, pd.Series(False, index=df5.index).values
+
+    print("\nفیلترها (هرکدام روی base S79، با SL60/TP72 ⇒ R:R=1:1.2 متعادل، hold48):")
+    print(f"{'filter':42s} | verdict RQS |  n    WR    PF    DD   MCL   p")
+    print("-" * 100)
+
+    SL, TP, HOLD = 60.0, 72.0, 48
+    filters = {
+        'بدون فیلتر (فقط R:R متعادل)': pd.Series(True, index=df5.index),
+        'ADX>25 (روندِ قوی)': adx14 > 25,
+        'ADX>30': adx14 > 30,
+        'slope100>1.0 (روندِ صعودیِ محکم)': slope100 > 1.0,
+        'slope100>1.5': slope100 > 1.5,
+        'dist_atr>0.5 (pullbackِ عمیق)': dist_atr > 0.5,
+        'dist_atr در [0.3,1.5] (متعادل)': (dist_atr > 0.3) & (dist_atr < 1.5),
+        'ADX>25 & slope100>1.0': (adx14 > 25) & (slope100 > 1.0),
+        'ADX>25 & dist_atr>0.3': (adx14 > 25) & (dist_atr > 0.3),
+    }
+    for fname, mask in filters.items():
+        s, ss = apply_filter(mask)
+        r, _ = evaluate(fname, df5, s, ss, SL, TP, 'XAUUSD', max_hold=HOLD, verbose=False)
+        m = r['metrics']
+        print(f"{fname:42s} | {r['verdict']:6s} {r['rqs_score']:4.0f} | "
+              f"{m['n_trades']:4d} {m['win_rate']:5.1f} {m['profit_factor']:5.2f} "
+              f"{m['max_dd_pct']:5.1f} {m['max_consec_losses']:3d}  {m['p_value']:.3f}")
