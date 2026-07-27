@@ -31,6 +31,9 @@ import { computeHealth } from './price/heartbeat'
 //     افزودنی و بی‌خطر: فقط رژیم را گزارش می‌کند؛ هیچ لایه‌ای را خاموش نمی‌کند و
 //     منطقِ runCard/تصمیم را تغییر نمی‌دهد (برابریِ بیت‌به‌بیت با snapshot طلایی).
 import { detectRegime } from './regime/radar'
+// --- گرهِ شورای لایه‌ها P4.5 (webplan): رأی‌گیریِ اجماعی در حالتِ *سایه‌ای* ---
+//     افزودنی و بی‌خطر: فقط حکمِ اجماع را گزارش می‌کند؛ تصمیمِ کارت هنوز از runCard می‌آید.
+import { convene } from './council/council'
 
 const app = new Hono()
 
