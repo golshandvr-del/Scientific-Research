@@ -9,6 +9,7 @@
 // (localStorage) نگه‌داری می‌شود و فقط برای دریافت advice به سرور فرستاده می‌شود.
 // ============================================================================
 import type { AnalysisResult } from './signal'
+import { assessReversal, type ReversalResult, type OppSignalView } from './reversal_guard'
 
 export type Side = 'long' | 'short'
 
@@ -66,6 +67,8 @@ export interface TradeStatus {
   advices: Advice[]
   overallAction: 'hold' | 'move-sl' | 'take-partial' | 'close' | 'tighten' | 'let-run'
   overallNote: string
+  // 🛡 وضعیتِ نگهبانِ برگشت (برای نمایشِ نشانگرِ ویژه و تثبیتِ زمانی در فرانت‌اند).
+  reversal?: { level: string; opposed: boolean; oppLayer?: string }
 }
 
 const round2 = (x: number) => Math.round(x * 100) / 100
@@ -171,7 +174,10 @@ function styleFa(s: ManagePlan['style']): string {
  * @param a     خروجی analyze() روی داده‌ی زنده (قیمت/ATR/S/R/روند/سیگنال مدل)
  * @param modelProbPct احتمال کلاس «برد» مدل ONNX (٪) در صورت وجود — برای هم‌سو/مخالف بودن با معامله
  */
-export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: number): TradeStatus {
+export function evaluateTrade(
+  t: OpenTrade, a: AnalysisResult, modelProbPct?: number,
+  oppSignal?: OppSignalView,   // 🛡 جهتِ زندهٔ موتورِ همان کارت (runCard) — برای reversal_guard
+): TradeStatus {
   const price = a.price
   const atr = a.atr || 1
   const isLong = t.side === 'long'
@@ -372,7 +378,33 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   // روند/مومنتوم، سود/زیانِ R، تریلِ SL و سقفِ نگه‌داری.
   const trendAgainst = (isLong && a.trend === 'down') || (!isLong && a.trend === 'up')
   const macdAgainst = (isLong && a.macdHist < 0) || (!isLong && a.macdHist > 0)
-  if (trendAgainst) {
+
+  // ==========================================================================
+  // 🛡 نگهبانِ برگشت (User Note trade-mgmt) — برگشت را از سیگنالِ *موتور* (نه اندیکاتورِ
+  // خام) می‌سنجد و درجه‌بندی‌شده و ضدِ ضرر عمل می‌کند. اگر موتور جهتِ مخالفِ فعال بدهد،
+  // این هشدارِ قوی‌تر و قابلِ‌اعمال (suggestSl) از هشدارِ خامِ trend/macd است.
+  // ==========================================================================
+  let reversal: ReversalResult | null = null
+  if (oppSignal && !reachedTp && !reachedSl && !isFresh) {
+    reversal = assessReversal({
+      side: t.side, opp: oppSignal, inProfit, inRealLoss, pnlR,
+      price, entry: t.entry, atr, trendAgainst,
+    })
+    if (reversal.level !== 'none' && reversal.title) {
+      advices.push({
+        type: 'reversal',
+        severity: reversal.level === 'defend-close' ? 'critical'
+          : reversal.level === 'defend-profit' ? 'warning' : 'info',
+        title: reversal.title,
+        detail: reversal.detail || '',
+        ...(typeof reversal.suggestSl === 'number' ? { suggest: { field: 'sl' as const, value: reversal.suggestSl } } : {}),
+      })
+    }
+  }
+  // اگر نگهبانِ برگشتِ موتور یک هشدارِ فعال داده، بلوکِ خامِ trend/macd را تکرار نمی‌کنیم
+  // (تا پیام‌ها دوتایی/متناقض نشوند). فقط وقتی موتور ساکت است به trend/macd برمی‌گردیم.
+  const reversalActive = reversal != null && reversal.level !== 'none'
+  if (!reversalActive && trendAgainst) {
     // شدت: در سود → هشدار (سود را حفظ کن)؛ در ضررِ واقعی → بحرانی (بستن را جدی بگیر)؛
     // در ناحیهٔ خنثی (تازه/نزدیکِ ورود) → فقط اطلاع‌رسانی، نه ترساندن.
     advices.push({
@@ -429,6 +461,17 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
   let overallNote = 'شرایط پایدار است؛ طبق برنامه با TP/SL فعلی نگه‌دار.'
   if (reachedTp) { overallAction = 'close'; overallNote = 'به هدف رسیدی — سود را ثبت کن.' }
   else if (reachedSl) { overallAction = 'close'; overallNote = 'به حد ضرر رسیدی — طبق پلن خارج شو.' }
+  // 🛡 نگهبانِ برگشتِ موتور — اولویتِ بالا (اما ضدِ ضرر: هیچ‌وقت «کورکورانه ببند»).
+  else if (reversal?.level === 'defend-close') {
+    overallAction = 'tighten'
+    overallNote = trendAgainst
+      ? 'موتور برگشتِ تاییدشده می‌بیند و در ضرری — SL را نزدیک کن؛ اگر برگشت قوی‌تر شد، خروجِ دفاعی منطقی است.'
+      : 'موتور سیگنالِ مخالفِ فعال می‌دهد و در ضرری — SL را نزدیک کن تا ضرر محدود شود (بدونِ خروجِ زودهنگامِ کاذب).'
+  }
+  else if (reversal?.level === 'defend-profit') {
+    overallAction = 'tighten'
+    overallNote = 'موتور برگشتِ فعال می‌بیند ولی در سودی — سود را با کشیدنِ SL قفل کن؛ نبند.'
+  }
   // ★ سقفِ نگه‌داریِ لایه (maxHoldBars) — طبقِ پلنِ همان لایه معامله بسته می‌شود.
   else if (layerMgmt.closeForMaxHold) { overallAction = 'close'; overallNote = 'به سقفِ نگه‌داریِ این لایه رسیدی — طبقِ پلنِ لایه ببند.' }
   // «بستن» فقط وقتی روند معکوس شده و در ضررِ واقعی (خارج از ناحیهٔ اسپرد) هستیم.
@@ -462,6 +505,9 @@ export function evaluateTrade(t: OpenTrade, a: AnalysisResult, modelProbPct?: nu
     riskReward: `R:R اولیه ≈ 1:${round2(rewardDist / riskDist)}`,
     reachedTp, reachedSl,
     advices, overallAction, overallNote,
+    ...(reversalActive && reversal
+      ? { reversal: { level: reversal.level, opposed: reversal.opposed, oppLayer: reversal.oppLayer } }
+      : {}),
   }
 }
 
