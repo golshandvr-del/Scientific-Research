@@ -59,26 +59,33 @@ def precompute(df):
 
 
 def build_signal(S, trigger, rf_dip, tf_min, hu_min, r2_min, chop_max):
+    """نسخهٔ برداری‌شدهٔ numpy — بیت‌به‌بیت هم‌ارزِ حلقهٔ اصلی (بدون look-ahead).
+    تصمیمِ کندلِ i از دادهٔ تا i؛ ورود در i+1 توسطِ simulate_trades.
+    reflex[i-1] برای i=0 نامعتبر است ⇒ اندیس‌های 0 و 1 هرگز سیگنال نمی‌دهند
+    (منطبق با حلقهٔ اصلی که از i=2 شروع می‌شد)."""
     reflex, tflex, hurst, r2, chop = S['reflex'], S['tflex'], S['hurst'], S['r2'], S['chop']
     n = len(reflex)
-    sig = np.zeros(n, dtype=bool)
-    for i in range(2, n):
-        if not (np.isfinite(tflex[i]) and tflex[i] > tf_min):
-            continue
-        if not (np.isfinite(hurst[i]) and hurst[i] > hu_min):
-            continue
-        if r2_min is not None and not (np.isfinite(r2[i]) and r2[i] > r2_min):
-            continue
-        if chop_max is not None and not (np.isfinite(chop[i]) and chop[i] < chop_max):
-            continue
-        if not (np.isfinite(reflex[i]) and np.isfinite(reflex[i - 1])):
-            continue
-        if trigger == 'dip_turn':
-            if reflex[i - 1] <= -rf_dip and reflex[i] > reflex[i - 1]:
-                sig[i] = True
-        elif trigger == 'zero_up':
-            if reflex[i - 1] <= 0.0 and reflex[i] > 0.0:
-                sig[i] = True
+    # گیت‌های رژیم/کیفیت (finite-safe: NaN>x → False به‌طورِ خودکار)
+    gate = np.isfinite(tflex) & (tflex > tf_min)
+    gate &= np.isfinite(hurst) & (hurst > hu_min)
+    if r2_min is not None:
+        gate &= np.isfinite(r2) & (r2 > r2_min)
+    if chop_max is not None:
+        gate &= np.isfinite(chop) & (chop < chop_max)
+    # reflex شیفت‌یافته (reflex[i-1])
+    rprev = np.empty(n, dtype=float); rprev[0] = np.nan; rprev[1:] = reflex[:-1]
+    finite_r = np.isfinite(reflex) & np.isfinite(rprev)
+    if trigger == 'dip_turn':
+        trig = (rprev <= -rf_dip) & (reflex > rprev)
+    elif trigger == 'zero_up':
+        trig = (rprev <= 0.0) & (reflex > 0.0)
+    else:
+        trig = np.zeros(n, dtype=bool)
+    sig = gate & finite_r & trig
+    # اندیس‌های 0,1 را صفر کن (منطبق با range(2,n) در نسخهٔ حلقه)
+    sig[0] = False
+    if n > 1:
+        sig[1] = False
     return sig
 
 
