@@ -4280,21 +4280,21 @@ function rebaseFuturesToSpot(candles, spot, intervalSec = 900) {
   }));
   const nowSec = Math.floor(Date.now() / 1e3);
   const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
-  const last2 = rebased[rebased.length - 1];
-  if (last2.time >= curBucketStart) {
+  const last3 = rebased[rebased.length - 1];
+  if (last3.time >= curBucketStart) {
     rebased[rebased.length - 1] = {
-      ...last2,
+      ...last3,
       close: spot.price,
-      high: Math.max(last2.high, spot.price),
-      low: Math.min(last2.low, spot.price)
+      high: Math.max(last3.high, spot.price),
+      low: Math.min(last3.low, spot.price)
     };
   } else {
     rebased.push({
       time: curBucketStart,
-      open: last2.close,
+      open: last3.close,
       close: spot.price,
-      high: Math.max(last2.close, spot.price),
-      low: Math.min(last2.close, spot.price),
+      high: Math.max(last3.close, spot.price),
+      low: Math.min(last3.close, spot.price),
       volume: 0
     });
   }
@@ -4307,21 +4307,21 @@ function mergeLiveQuote(candles, livePrice, intervalSec = 900) {
   const nowSec = Math.floor(Date.now() / 1e3);
   const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
   const out = candles.slice();
-  const last2 = out[out.length - 1];
-  if (last2.time >= curBucketStart) {
+  const last3 = out[out.length - 1];
+  if (last3.time >= curBucketStart) {
     out[out.length - 1] = {
-      ...last2,
+      ...last3,
       close: livePrice,
-      high: Math.max(last2.high, livePrice),
-      low: Math.min(last2.low, livePrice)
+      high: Math.max(last3.high, livePrice),
+      low: Math.min(last3.low, livePrice)
     };
   } else {
     out.push({
       time: curBucketStart,
-      open: last2.close,
+      open: last3.close,
       close: livePrice,
-      high: Math.max(last2.close, livePrice),
-      low: Math.min(last2.close, livePrice),
+      high: Math.max(last3.close, livePrice),
+      low: Math.min(last3.close, livePrice),
       volume: 0
     });
   }
@@ -4331,8 +4331,8 @@ function closedBars(candles, intervalSec) {
   if (candles.length < 2) return candles;
   const nowSec = Math.floor(Date.now() / 1e3);
   const curBucketStart = Math.floor(nowSec / intervalSec) * intervalSec;
-  const last2 = candles[candles.length - 1];
-  if (last2.time >= curBucketStart) return candles.slice(0, -1);
+  const last3 = candles[candles.length - 1];
+  if (last3.time >= curBucketStart) return candles.slice(0, -1);
   return candles;
 }
 
@@ -5640,8 +5640,189 @@ function decideS332(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
 }
 
-// ../web_tool/src/strategy_registry.ts
+// ../web_tool/src/s333_pullback.ts
 var GOLD_PIP3 = 0.1;
+var nz2 = (v) => Number.isFinite(v) ? v : 0;
+var last2 = (a) => a[a.length - 1];
+function erLucasSeries(close, p = 29) {
+  const n = close.length;
+  const out = new Array(n).fill(NaN);
+  for (let i = p; i < n; i++) {
+    const ch = Math.abs(close[i] - close[i - p]);
+    let v = 0;
+    for (let k = 0; k < p; k++) v += Math.abs(close[i - k] - close[i - k - 1]);
+    out[i] = v ? ch / v : 0;
+  }
+  return out;
+}
+var S333_CFG = {
+  "XAUUSD-M5": {
+    id: "XAUUSD-M5",
+    emaFast: 20,
+    emaSlow: 100,
+    rsiP: 21,
+    rsiTh: 35,
+    confirm: "rsi_turn",
+    hurstTh: 0.57,
+    erTh: 0.25,
+    slPip: 120,
+    tpPip: 120,
+    maxHoldBars: 96
+  },
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    emaFast: 20,
+    emaSlow: 100,
+    rsiP: 21,
+    rsiTh: 32,
+    confirm: "none",
+    hurstTh: 0.57,
+    slPip: 200,
+    tpPip: 240,
+    maxHoldBars: 96
+  },
+  "XAUUSD-M30": {
+    id: "XAUUSD-M30",
+    emaFast: 20,
+    emaSlow: 100,
+    rsiP: 21,
+    rsiTh: 35,
+    confirm: "price_turn",
+    hurstTh: 0.53,
+    slPip: 380,
+    tpPip: 420,
+    maxHoldBars: 80
+  },
+  "XAUUSD-H1": {
+    id: "XAUUSD-H1",
+    emaFast: 20,
+    emaSlow: 100,
+    rsiP: 21,
+    rsiTh: 32,
+    confirm: "none",
+    hurstTh: 0.5,
+    erTh: 0.25,
+    slPip: 450,
+    tpPip: 520,
+    maxHoldBars: 64
+  }
+};
+function computeS333(candles, cfg) {
+  const n = candles.length;
+  const slDist = cfg.slPip * GOLD_PIP3;
+  const tpDist = cfg.tpPip * GOLD_PIP3;
+  const need = Math.max(cfg.emaSlow, 64) + 5;
+  if (n < need) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHoldBars,
+      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u0654 \u0631\u0648\u0646\u062F/\u0631\u0698\u06CC\u0645 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
+      indicators: []
+    };
+  }
+  const close = candles.map((c) => c.close);
+  const high = candles.map((c) => c.high);
+  const ef = ema(close, cfg.emaFast);
+  const es = ema(close, cfg.emaSlow);
+  const r = rsi(close, cfg.rsiP);
+  const hu = hurstSeries(close, 64);
+  const er = cfg.erTh != null ? erLucasSeries(close, 29) : null;
+  const i = n - 1;
+  const upTrend = ef[i] > es[i];
+  const huOk = nz2(hu[i]) > cfg.hurstTh;
+  const erOk = er == null ? true : nz2(er[i]) > cfg.erTh;
+  let coreActive = false;
+  let dipInProgress = false;
+  if (cfg.confirm === "none") {
+    coreActive = upTrend && r[i] < cfg.rsiTh;
+    dipInProgress = upTrend && r[i] < cfg.rsiTh + 5 && r[i] >= cfg.rsiTh;
+  } else if (cfg.confirm === "rsi_turn") {
+    coreActive = upTrend && r[i - 1] < cfg.rsiTh && r[i] > r[i - 1] && r[i] < cfg.rsiTh + 10;
+    dipInProgress = upTrend && r[i] < cfg.rsiTh;
+  } else {
+    const dipped = r[i] < cfg.rsiTh || r[i - 1] < cfg.rsiTh;
+    coreActive = upTrend && dipped && close[i] > high[i - 1];
+    dipInProgress = upTrend && dipped && close[i] <= high[i - 1];
+  }
+  const active = coreActive && huOk && erOk;
+  const approaching = !active && dipInProgress && huOk;
+  const indicators = [
+    {
+      name: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 EMA${cfg.emaFast}>EMA${cfg.emaSlow}`,
+      value: upTrend ? "\u0635\u0639\u0648\u062F\u06CC \u2713" : "\u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A",
+      status: upTrend ? "ok" : "bad"
+    },
+    {
+      name: `RSI${cfg.rsiP} (pullback < ${cfg.rsiTh})`,
+      value: r[i].toFixed(1),
+      status: r[i] < cfg.rsiTh ? "ok" : r[i] < cfg.rsiTh + 10 ? "warn" : "neutral"
+    },
+    {
+      name: "\u0631\u0698\u06CC\u0645\u0650 Hurst (\u067E\u0627\u06CC\u062F\u0627\u0631\u06CC\u0650 \u0631\u0648\u0646\u062F)",
+      value: `${nz2(hu[i]).toFixed(2)} (> ${cfg.hurstTh})`,
+      status: huOk ? "ok" : "bad"
+    }
+  ];
+  if (er != null) {
+    indicators.push({
+      name: "\u0646\u0633\u0628\u062A\u0650 \u06A9\u0627\u0631\u0622\u06CC\u06CC ER-Lucas29",
+      value: `${nz2(er[i]).toFixed(2)} (> ${cfg.erTh})`,
+      status: erOk ? "ok" : "bad"
+    });
+  }
+  indicators.push({
+    name: "\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A",
+    value: cfg.confirm === "none" ? "\u0648\u0631\u0648\u062F\u0650 \u0645\u0633\u062A\u0642\u06CC\u0645\u0650 pullback" : cfg.confirm === "rsi_turn" ? "\u0686\u0631\u062E\u0634\u0650 RSI \u0627\u0632 \u06A9\u0641" : "\u0634\u06A9\u0633\u062A\u0650 high \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644",
+    status: coreActive ? "ok" : dipInProgress ? "warn" : "neutral"
+  });
+  const reason = active ? `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646 (EMA${cfg.emaFast}>EMA${cfg.emaSlow}) \u067E\u0627\u0628\u0631\u062C\u0627\u0633\u062A \u0648 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u067E\u0627\u06CC\u062F\u0627\u0631 (Hurst=${nz2(hu[i]).toFixed(2)}${er != null ? `\u060C ER=${nz2(er[i]).toFixed(2)}` : ""}) \u06CC\u06A9 \u0627\u0635\u0644\u0627\u062D\u0650 RSI${cfg.rsiP} \u062A\u0623\u06CC\u06CC\u062F\u200C\u0634\u062F\u0647 \u0631\u062E \u062F\u0627\u062F \u21D2 \u062E\u0631\u06CC\u062F \u062F\u0631 \u067E\u0648\u0644\u0628\u06A9. TP=${cfg.tpPip}pip\u060C SL=${cfg.slPip}pip (\u0647\u0646\u062F\u0633\u0647\u0654 \u0645\u0646\u0635\u0641\u0627\u0646\u0647\u060C R:R\u22651). WR \u0648\u0627\u0642\u0639\u06CC\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A \u2248 \u06F6\u06F3\u2013\u06F6\u06F7\u066A.` : approaching ? `\u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0648 \u06CC\u06A9 \u0627\u0635\u0644\u0627\u062D\u0650 RSI \u062F\u0631 \u062C\u0631\u06CC\u0627\u0646 \u0627\u0633\u062A\u061B \u0631\u0698\u06CC\u0645 \u067E\u0627\u06CC\u062F\u0627\u0631 \u0627\u0633\u062A \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 \xAB\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\xBB \u06A9\u0627\u0645\u0644 \u0646\u0634\u062F\u0647.` : upTrend ? `\u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u0627\u0645\u0627 \u06CC\u0627 \u0627\u0635\u0644\u0627\u062D\u06CC \u062F\u0631 \u062C\u0631\u06CC\u0627\u0646 \u0646\u06CC\u0633\u062A \u06CC\u0627 \u0631\u0698\u06CC\u0645 \u067E\u0627\u06CC\u062F\u0627\u0631 \u0646\u06CC\u0633\u062A (Hurst=${nz2(hu[i]).toFixed(2)}).` : `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A\u061B \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u062E\u0631\u06CC\u062F \u0645\u06CC\u200C\u062F\u0647\u062F.`;
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHoldBars,
+    reason,
+    approachReason: approaching ? "\u0645\u0646\u062A\u0638\u0631\u0650 \xAB\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650\xBB pullback (\u0686\u0631\u062E\u0634\u0650 RSI \u06CC\u0627 \u0634\u06A9\u0633\u062A\u0650 high \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644)." : void 0,
+    indicators
+  };
+}
+function decideS333(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS333(candles, cfg);
+  const { adx: adxArr } = adx(candles, 14);
+  const reg = {
+    regime: raw2.active || raw2.approaching ? "trend_up" : "range",
+    efficiencyRatio: 0,
+    trendy: raw2.active || raw2.approaching,
+    adx: nz2(last2(adxArr)),
+    activeStream: "bull",
+    bucket: "s333_pullback"
+  };
+  const meta = {
+    code: "S333",
+    name: "\u062E\u0631\u06CC\u062F \u062F\u0631 \u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F (Trend-Pullback)",
+    kind: "ma-confluence",
+    manageStyle: "structural-trail",
+    beTriggerR: 1,
+    manageNote: "\u067E\u0633 \u0627\u0632 \u06F1R \u0633\u0648\u062F\u060C SL \u0631\u0627 \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646 \u0628\u0628\u0631\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 EMA20 \u062A\u0631\u06CC\u0644 \u06A9\u0646. \u0627\u06AF\u0631 \u0631\u0648\u0646\u062F \u0634\u06A9\u0633\u062A (close < EMA100) \u06CC\u0627 Hurst \u0628\u0647 \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647 \u0627\u0641\u062A\u0627\u062F\u060C \u0632\u0648\u062F\u062A\u0631 \u062E\u0627\u0631\u062C \u0634\u0648.",
+    filters: [
+      `\u0631\u0648\u0646\u062F\u0650 EMA${cfg.emaFast}>EMA${cfg.emaSlow}`,
+      `pullback\u0650 RSI${cfg.rsiP}<${cfg.rsiTh}`,
+      `\u0631\u0698\u06CC\u0645\u0650 Hurst>${cfg.hurstTh}`,
+      ...cfg.erTh != null ? [`ER-Lucas29>${cfg.erTh}`] : [],
+      cfg.confirm === "none" ? "\u0648\u0631\u0648\u062F\u0650 \u0645\u0633\u062A\u0642\u06CC\u0645" : cfg.confirm === "rsi_turn" ? "\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0686\u0631\u062E\u0634\u0650 RSI" : "\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0634\u06A9\u0633\u062A\u0650 high"
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/strategy_registry.ts
+var GOLD_PIP4 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
   return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
 }
@@ -5714,8 +5895,8 @@ var s310Layer = (ctx) => {
     active,
     approaching,
     direction: "LONG",
-    slDist: EOM_SL_PIP * GOLD_PIP3,
-    tpDist: EOM_TP_PIP * GOLD_PIP3,
+    slDist: EOM_SL_PIP * GOLD_PIP4,
+    tpDist: EOM_TP_PIP * GOLD_PIP4,
     maxHoldBars: EOM_MAX_HOLD,
     reason: sig.reason,
     approachReason: approaching ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647` : void 0,
@@ -5753,8 +5934,8 @@ function s312Layer(slPip, tpPip, maxHold) {
       active,
       approaching,
       direction: "LONG",
-      slDist: slPip * GOLD_PIP3,
-      tpDist: tpPip * GOLD_PIP3,
+      slDist: slPip * GOLD_PIP4,
+      tpDist: tpPip * GOLD_PIP4,
       maxHoldBars: maxHold,
       reason: sig.reason,
       approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
@@ -5796,14 +5977,19 @@ var s324Layer = (cfg) => (ctx) => decideS324(cfg, ctx.a, ctx.candles, ctx.capita
 var s328Layer = (cfg) => (ctx) => decideS328(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s330Layer = (cfg) => (ctx) => decideS330(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s332Layer = (cfg) => (ctx) => decideS332(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s333Layer = (cfg) => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
+    s333Layer(S333_CFG["XAUUSD-M5"]),
+    // احیای S79 — pullback با هندسهٔ منصفانه + rsi_turn — RQS+=91.3 (WR 65.6% · PF 2.85)
     s330Layer(S330_CFG["XAUUSD-M5"]),
     s328Layer(S328_CFG["XAUUSD-M5"]),
     s327Layer(SELL_CLIMAX_CFG["XAUUSD-M5"]),
     s326Layer(STREAK_REV_CFG["XAUUSD-M5"])
   ],
   "XAUUSD-M15": [
+    s333Layer(S333_CFG["XAUUSD-M15"]),
+    // احیای S79 — pullback (ورودِ مستقیم) — RQS+=91.7 (WR 62.8% · PF 2.30)
     s332Layer(S332_CFG["XAUUSD-M15"]),
     // احیای squeeze با فیلترِ آماری r2+hurst — RQS+=91.2
     s324Layer(S324_CFG["XAUUSD-M15"]),
@@ -5813,6 +5999,8 @@ var CARD_LAYERS = {
     s312Layer(295, 295, 48)
   ],
   "XAUUSD-M30": [
+    s333Layer(S333_CFG["XAUUSD-M30"]),
+    // احیای S79 — pullback با تأییدِ price_turn — RQS+=91.1 (WR 66.7% · PF 2.48)
     s313Layer(S313_M30),
     s324Layer(S324_CFG["XAUUSD-M30"]),
     s321Layer(S321_CFG["XAUUSD-M30"]),
@@ -5822,6 +6010,8 @@ var CARD_LAYERS = {
     s312Layer(295, 295, 36)
   ],
   "XAUUSD-H1": [
+    s333Layer(S333_CFG["XAUUSD-H1"]),
+    // احیای S79 — pullback (ورودِ مستقیم + ER) — RQS+=89.8 (WR 62.2% · PF 1.85)
     s313Layer(S313_H1),
     s328Layer(S328_CFG["XAUUSD-H1"]),
     s327Layer(SELL_CLIMAX_CFG["XAUUSD-H1"]),
@@ -8942,14 +9132,14 @@ app.get("/api/history/:asset", async (c) => {
     const store = await getHistoryStore();
     const candles = await store.load(asset, tf, limit);
     const total = await store.count(asset, tf);
-    const last2 = await store.lastTime(asset, tf);
+    const last3 = await store.lastTime(asset, tf);
     return c.json({
       ok: true,
       asset,
       tf,
       total,
       returned: candles.length,
-      lastClosedTime: last2,
+      lastClosedTime: last3,
       candles: candles.map((k) => ({ t: k.time, o: k.open, h: k.high, l: k.low, c: k.close, v: k.volume || 0 }))
     });
   } catch (e) {
