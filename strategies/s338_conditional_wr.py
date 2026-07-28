@@ -142,9 +142,11 @@ def mine_indicator(df, name, entry_idx, win, base_wr, min_frac=0.05):
     return best
 
 
-def run(asset=ASSET, tf=TF, direction='long', max_names=None):
-    print(f"\n=== S338 CONDITIONAL-WR MINING {asset}/{tf} dir={direction} ===")
+def run(asset=ASSET, tf=TF, direction='long', max_names=None, tail=None):
+    print(f"\n=== S338 CONDITIONAL-WR MINING {asset}/{tf} dir={direction} ===", flush=True)
     df = load(asset, tf)
+    if tail:
+        df = df.iloc[-tail:].reset_index(drop=True)
     n = len(df)
     days = n / TF_BARS_PER_DAY[tf]
     print(f"n_candles={n} (~{days:.0f} روز)")
@@ -164,11 +166,15 @@ def run(asset=ASSET, tf=TF, direction='long', max_names=None):
         all_names = all_names[:max_names]
     print(f"اسکنِ {len(all_names)} اندیکاتور با اعتبارسنجیِ IS/OOS ...\n")
 
+    import time
+    t0 = time.time()
     results = []
     for i, name in enumerate(all_names):
         rec = mine_indicator(df, name, entry_idx, win, base_wr)
         if rec is not None:
             results.append(rec)
+        if (i + 1) % 50 == 0:
+            print(f"  ...{i+1}/{len(all_names)} cand={len(results)} ({time.time()-t0:.0f}s)", flush=True)
 
     # مرتب بر اساس score (کمینهٔ WR_is,WR_oos) و p_oos
     results.sort(key=lambda r: (-r['score'], r['p_oos']))
@@ -194,4 +200,5 @@ if __name__ == '__main__':
     asset = sys.argv[1] if len(sys.argv) > 1 else ASSET
     tf = sys.argv[2] if len(sys.argv) > 2 else TF
     direction = sys.argv[3] if len(sys.argv) > 3 else 'long'
-    run(asset, tf, direction)
+    tail = int(sys.argv[4]) if len(sys.argv) > 4 else None
+    run(asset, tf, direction, tail=tail)
