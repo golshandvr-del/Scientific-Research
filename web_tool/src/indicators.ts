@@ -181,6 +181,29 @@ export function zscore(x: number[], period: number): number[] {
   return x.map((_, i) => (std[i] ? (x[i] - mean[i]) / std[i] : NaN))
 }
 
+// Rolling excess kurtosis — verbatim معادلِ engine/indicator_bank.py :: kurt(p=20)
+//   _k(w) = mean((x-μ)^4) / v^2 − 3   با   v = mean((x-μ)^2)   (واریانسِ جمعیتی، ddof=0)
+//   برای رژیمِ mean-reversion به‌عنوان safety-gate ریسکِ دُم (S334). بدونِ look-ahead.
+export function kurtosis(x: number[], period = 20): number[] {
+  const out = NaNArr(x.length)
+  for (let i = period - 1; i < x.length; i++) {
+    let m = 0
+    for (let k = i - period + 1; k <= i; k++) m += x[k]
+    m /= period
+    let v = 0, q = 0
+    for (let k = i - period + 1; k <= i; k++) {
+      const d = x[k] - m
+      const d2 = d * d
+      v += d2
+      q += d2 * d2
+    }
+    v /= period
+    q /= period
+    out[i] = v ? q / (v * v) - 3 : 0
+  }
+  return out
+}
+
 // شیب رگرسیون خطی روی پنجره متحرک (معادل rolling_slope)
 export function rollingSlope(x: number[], period: number): number[] {
   const out = NaNArr(x.length)
