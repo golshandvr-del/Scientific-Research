@@ -135,6 +135,44 @@ def main():
                              f"base z>{zt} rsi>{rt} SL{sl}/TP{tp}")
         print("\n>>> baseline کامل شد. هیچ‌کدام انتظار می‌رود RQS+≥۸۰ نباشد (بدونِ فیلترِ رژیم).")
 
+    elif args.stage == 'finetune':
+        # نقطهٔ شیرینِ diag: z34/2.4 rsi70 [hurst<0.5 + kurt<1.5] SL110/TP125 = RQS 79.2 (ACCEPT ولی زیر ۸۰)
+        # ریزتنظیمِ آستانه‌ها/RR حولِ این نقطه تا RQS از ۸۰ عبور کند (بدونِ TP<SL — اشتباه #۹).
+        print("### ریزتنظیم حولِ نقطهٔ شیرین برای عبورِ RQS از ۸۰ ###")
+        reg = precompute_regime(df)
+        best = None
+        for z_thr in [2.3, 2.4, 2.5]:
+            for rsi_thr in [69, 70, 71]:
+                base = build_short_mr(df, z_win=34, z_thr=z_thr, rsi_thr=rsi_thr)
+                for h_thr in [0.49, 0.50, 0.51]:
+                    for k_thr in [1.2, 1.5, 1.8]:
+                        mask = (reg['hurst'] < h_thr) & (reg['kurt'] < k_thr)
+                        ssig = base & mask
+                        if ssig.sum() < 40:
+                            continue
+                        for (sl, tp, mh) in [(108, 122, 20), (110, 125, 20),
+                                             (112, 128, 22), (105, 120, 18), (115, 130, 22)]:
+                            lab = f"z34/{z_thr}r{rsi_thr} h<{h_thr} k<{k_thr} SL{sl}/TP{tp}"
+                            tr, r = evaluate(df, ssig, sl, tp, mh, args.asset, lab, verbose=False)
+                            if r and r['passed']:
+                                m = r['metrics']
+                                print(f"{lab:46s} RQS={r['rqs_score']:5.1f} n={m['n_trades']} "
+                                      f"WR={m['win_rate']}% PF={m['profit_factor']} p={m['p_value']}")
+                                if best is None or r['rqs_score'] > best[1]['rqs_score']:
+                                    best = (lab, r, dict(z_win=34, z_thr=z_thr, rsi_thr=rsi_thr,
+                                            h=h_thr, k=k_thr, sl=sl, tp=tp, mh=mh))
+        print("\n" + "=" * 70)
+        if best:
+            lab, r, cfg = best
+            print(f"🏆 بهترین: {lab}  RQS+={r['rqs_score']}")
+            out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
+                       rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
+            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+                json.dump(out, f, ensure_ascii=False, indent=1, default=float)
+            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+        else:
+            print("❌ finetune ACCEPT نداد.")
+
     elif args.stage == 'diag':
         # تشخیصِ نقطهٔ شیرینِ scan2: z34/2.4 rsi70 hurst<0.5 SL120/TP135 (۵ گیت، فقط G4 رد)
         # هدف: کدام پنجرهٔ walk-forward منفی است؟ و کدام فیلترِ مکمل آن را پاک می‌کند؟
