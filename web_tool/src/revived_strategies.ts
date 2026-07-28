@@ -818,3 +818,110 @@ export function decideS323(cfg: S323Config, a: AnalysisResult, candles: Candle[]
     filters: [`روند EMA200 + ADX≥${cfg.adxMin}`, `pullback حمایت ≤${cfg.nearMax}×ATR`, `فضا ≥${cfg.roomMin}×ATR`, `RSI≤${cfg.rsiMax}`, cfg.golden ? `پنجرهٔ طلایی ${cfg.hLo}-${cfg.hHi} UTC` : 'بدونِ فیلترِ زمان'],
   }, cfg.id, a.price, reg, capital, riskPct)
 }
+
+// ===========================================================================
+// S334 — Mean-Reversion Fade فروش + گیتِ رژیمِ Hurst/Kurtosis   منشأ: s122
+// ---------------------------------------------------------------------------
+// احیای لایهٔ mean-reversion SHORT روی M5 (که خام RQS≈۸ بود). تز: fade فقط در
+//   رژیمِ mean-reverting (Hurst<h) و کنترلِ ریسکِ دُم (Kurtosis<k) کار می‌کند.
+// ماشه (verbatim از strategies/s334_mr_short_revival.py :: build_short_mr):
+//   z34 = (close − SMA34)/STD34  ;  z34 > z_thr        (کش‌آمدگیِ آماریِ بالای میانگین)
+//   RSI14 > rsi_thr                                    (اشباعِ خرید)
+//   کندلِ نزولی: close<open  &  close<close[prev]        (شروعِ بازگشت)
+// گیتِ رژیم (بانکِ آماری/فراکتالی):
+//   Hurst(64) < hurstMax   (بازار ضدِّروند/بازگشتی — نه روندِ ماندگار)
+//   Kurtosis(20) < kurtMax (safety-gate: بدونِ ریسکِ دُمِ پرش که استاپِ fade را بزند)
+// TP/SL ثابتِ pip، غیررند، per-TF (اشتباهِ رایج #۶/#۷). RR کمی مثبت (TP≥SL) تا
+//   WR واقعی از دقتِ ورود بیاید، نه از TP<SL (اشتباهِ رایج #۹).
+// ===========================================================================
+export interface S334Config {
+  id: string          // XAUUSD-M5 | EURUSD-M5
+  pip: number         // 0.1 (XAU) | 0.0001 (EUR)
+  zWin: number        // 34
+  zThr: number        // 2.4
+  rsiThr: number      // 70
+  hurstMax: number    // 0.50 (XAU) | 0.52 (EUR)
+  kurtMax: number     // 1.8 (XAU) | 2.2 (EUR)
+  slPip: number       // 110 (XAU) | 12.2 (EUR)
+  tpPip: number       // 125 (XAU) | 13.7 (EUR)
+  maxHold: number     // 20 (XAU) | 24 (EUR)
+}
+
+export const S334_CFG: Record<string, S334Config> = {
+  // منبعِ اعداد: results/_s334_XAUUSD_M5.json  (RQS+ 81.6 · WR 61.7% · PF 1.61 · DD 1.87%)
+  'XAUUSD-M5': { id: 'XAUUSD-M5', pip: 0.1,    zWin: 34, zThr: 2.4, rsiThr: 70, hurstMax: 0.50, kurtMax: 1.8, slPip: 110,  tpPip: 125,  maxHold: 20 },
+  // منبعِ اعداد: results/_s334_EURUSD_M5.json  (RQS+ 84.1 · WR 66.7% · PF 1.62 · DD 5.41%)
+  'EURUSD-M5': { id: 'EURUSD-M5', pip: 0.0001, zWin: 34, zThr: 2.4, rsiThr: 70, hurstMax: 0.52, kurtMax: 2.2, slPip: 12.2, tpPip: 13.7, maxHold: 24 },
+}
+
+export function computeS334(candles: Candle[], cfg: S334Config): RawSignal {
+  const close = candles.map(c => c.close)
+  const open = candles.map(c => c.open)
+  const n = close.length
+  const i = n - 1
+  const slDist = cfg.slPip * cfg.pip
+  const tpDist = cfg.tpPip * cfg.pip
+
+  // z-score(close, zWin) و RSI(14) — verbatim معادلِ پایتون
+  const z = zscore(close, cfg.zWin)
+  const r = rsi(close, 14)
+  const hu = hurstSeries(close, 64)
+  const ku = kurtosis(close, 20)
+
+  const zNow = z[i], rsiNow = r[i], huNow = hu[i], kuNow = ku[i]
+  const bearCandle = i >= 1 && close[i] < open[i] && close[i] < close[i - 1]
+
+  // شرط‌های ماشه و رژیم
+  const zOk = Number.isFinite(zNow) && zNow > cfg.zThr
+  const rsiOk = Number.isFinite(rsiNow) && rsiNow > cfg.rsiThr
+  const hurstOk = Number.isFinite(huNow) && huNow < cfg.hurstMax
+  const kurtOk = Number.isFinite(kuNow) && kuNow < cfg.kurtMax
+  const regimeOk = hurstOk && kurtOk
+
+  const active = zOk && rsiOk && bearCandle && regimeOk
+  // approaching: کش‌آمدگی+اشباع هست و رژیم اجازه می‌دهد، اما کندلِ نزولیِ تأیید نیامده
+  const approaching = !active && zOk && rsiOk && regimeOk
+
+  const indicators: RouterDecision['indicators'] = [
+    { name: `Z-Score(${cfg.zWin}) (کش‌آمدگی > ${cfg.zThr})`,
+      value: Number.isFinite(zNow) ? zNow.toFixed(2) + (zOk ? ' (کش‌آمده)' : '') : '—',
+      status: zOk ? 'ok' : 'neutral' },
+    { name: `RSI-14 (اشباعِ خرید > ${cfg.rsiThr})`,
+      value: Number.isFinite(rsiNow) ? rsiNow.toFixed(1) + (rsiOk ? ' (اشباع)' : '') : '—',
+      status: rsiOk ? 'ok' : 'neutral' },
+    { name: 'کندلِ بازگشتیِ نزولی',
+      value: bearCandle ? 'بله ✔' : 'هنوز نه',
+      status: bearCandle ? 'ok' : (active || approaching ? 'warn' : 'neutral') },
+    { name: `رژیمِ بازگشتی (Hurst64 < ${cfg.hurstMax})`,
+      value: Number.isFinite(huNow) ? huNow.toFixed(2) + (hurstOk ? ' ✔' : ' ✘ روندی') : '—',
+      status: (hurstOk ? 'ok' : 'bad') as 'ok' | 'bad' },
+    { name: `safety-gate دُم (Kurtosis20 < ${cfg.kurtMax})`,
+      value: Number.isFinite(kuNow) ? kuNow.toFixed(2) + (kurtOk ? ' ✔' : ' ✘ ریسکِ پرش') : '—',
+      status: (kurtOk ? 'ok' : 'bad') as 'ok' | 'bad' },
+  ]
+
+  return {
+    active, approaching, direction: 'SHORT', slDist, tpDist, maxHoldBars: cfg.maxHold,
+    reason: active
+      ? `قیمت ${zNow.toFixed(2)}σ بالای میانگین و RSI=${rsiNow.toFixed(1)} (اشباعِ خرید)؛ کندلِ بازگشتیِ نزولی در رژیمِ mean-reverting (Hurst=${huNow.toFixed(2)}) ⇒ فروشِ fade.`
+      : approaching
+        ? `کش‌آمدگیِ آماری (${Number.isFinite(zNow) ? zNow.toFixed(2) : '—'}σ) و اشباعِ خرید در رژیمِ بازگشتی برقرار است؛ منتظرِ کندلِ بازگشتیِ نزولی برای ماشهٔ فروش.`
+        : (!regimeOk && (zOk || rsiOk))
+          ? `اشباع هست اما رژیم مناسب نیست (Hurst/Kurtosis گیت را رد کرد) ⇒ fade امن نیست.`
+          : `شرطِ کش‌آمدگی/اشباعِ خرید برقرار نیست؛ سیگنالِ S334 نداریم.`,
+    approachReason: approaching ? 'کندلِ بازگشتیِ نزولی (close<open و close<close قبلی)' : undefined,
+    indicators,
+  }
+}
+
+export function decideS334(cfg: S334Config, a: AnalysisResult, candles: Candle[], capital = 10000, riskPct = 1.0): RouterDecision {
+  const raw = computeS334(candles, cfg)
+  const { adx: adxArr } = adx(candles, 14)
+  const reg = lightRegime(candles.map(c => c.close), nz(last(adxArr)), false, 's334_mr_fade')
+  return rawToDecision(raw, {
+    code: 'S334', name: 'Mean-Reversion Fade فروش', kind: 'mean-reversion' as any,
+    manageStyle: 'fixed-tp-sl',
+    manageNote: 'هدف/حدِ ثابت (mean-reversion fade). SL/TP جابه‌جا نشود؛ تا max_hold یا برخورد به TP/SL نگه‌دار. اگر Hurst به بالای آستانه برگشت (رژیم روندی شد)، پیش‌دستانه ببند.',
+    filters: [`Z-Score(${cfg.zWin})>${cfg.zThr}`, `RSI-14>${cfg.rsiThr}`, 'کندلِ بازگشتیِ نزولی', `Hurst64<${cfg.hurstMax}`, `Kurtosis20<${cfg.kurtMax}`],
+  }, cfg.id, a.price, reg, capital, riskPct)
+}
