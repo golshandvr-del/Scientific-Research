@@ -13,6 +13,9 @@ web_tool/.dev.vars
 web_tool/tools/full_ref_2000.json
 web_tool/tools/full_feats_2000.json
 web_tool/dist_parity/
+# دادهٔ برابریِ S335 (بازتولیدپذیر با s335_parity_export.py / s335_signal_export.py)
+strategies/s335_parity_ref.json
+strategies/s335_signal_*.json
 .tmp_logs/
 
 # P2 (webplan) — دادهٔ runtime گرهِ قیمت (HistoryStore/DiskHistoryStore).
