@@ -1,0 +1,49 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M5",
+ "label": "z34/2.4r70 h<0.5 k<1.8 SL110/TP125",
+ "cfg": {
+  "z_win": 34,
+  "z_thr": 2.4,
+  "rsi_thr": 70,
+  "h": 0.5,
+  "k": 1.8,
+  "sl": 110,
+  "tp": 125,
+  "mh": 20
+ },
+ "rqs": 81.6,
+ "gates": {
+  "G0": true,
+  "G1": true,
+  "G2": 1.0,
+  "G3": true,
+  "G4": true,
+  "G5": true
+ },
+ "metrics": {
+  "n_trades": 47,
+  "win_rate": 61.7,
+  "net_profit": 609.9,
+  "profit_factor": 1.61,
+  "max_dd_pct": 1.87,
+  "max_consec_losses": 3,
+  "expectancy_pip": 14.5638,
+  "spread_cost_pip": 3.3,
+  "wr_breakeven": 46.81,
+  "wr_excess": 14.89,
+  "p_value": 0.02867,
+  "sl_pip": 110,
+  "tp_pip": 125,
+  "wf_nets": [
+   169.0,
+   128.5,
+   45.5,
+   273.0
+  ],
+  "half_nets": [
+   297.5,
+   318.5
+  ]
+ }
+}
