@@ -125,6 +125,7 @@ def regime_masks(df):
     out['fdi'] = s('fdi')                  # fractal dimension — پایین=روندی
     out['kurt'] = s('kurt')                # dm safety-gate
     out['entropy'] = s('entropy')          # بی‌نظمی — پایین=ساختارمندتر
+    out['corr_t'] = s('corr_t')            # همبستگیِ قیمت-زمان: <0 = روندِ نزولیِ تمیز
     # همه را shift(1) می‌کنیم تا مقدارِ کندلِ i فقط از داده تا i-1 بیاید (safe)
     for k in list(out.keys()):
         out[k] = out[k].shift(1)
@@ -286,6 +287,71 @@ def stage_refine(asset, tf):
               f"| r2>{c['r2']} chop<{c['chop']} H>{c['hu']} kurt<{c['kt']} ent<{c['et']} SL{c['sl']}/TP{c['tp']} nsig={c['nsig']}")
 
 
+def _apply_and_rqs(df, asset, base_sig, mask, sl, tp, max_hold):
+    """اعمالِ ماسک روی سیگنالِ خامِ از پیش محاسبه‌شده و محاسبهٔ RQS (کارآمد)."""
+    sig = base_sig & mask
+    n_sig = int(sig.sum())
+    short_sig = sig; long_sig = np.zeros(len(df), dtype=bool)
+    trades = se.simulate_trades(df, long_sig, short_sig, sl_pip=sl, tp_pip=tp,
+                                asset=asset, max_hold=max_hold, allow_overlap=False)
+    if trades is not None and len(trades):
+        trades = trades.copy(); trades['tp_pip'] = float(tp)
+    r = rqs.compute_rqs(trades, asset, sl_pip=sl, tp_pip=tp)
+    return r, n_sig, trades
+
+
+def stage_smart(asset, tf, max_hold=48, verbose=True):
+    """
+    احیای هوشمند: corr_t (خلوصِ روندِ نزولی) به‌عنوان فیلترِ اصلیِ جهت + r2/chop/kurt.
+    سیگنالِ خام یک‌بار محاسبه می‌شود؛ فقط ماسک‌ها اسکن می‌شوند (بسیار سریع‌تر).
+    خروجی: بهترین پیکربندی (dict) یا None.
+    """
+    df = load_tf(asset, tf)
+    if df is None:
+        if verbose: print(f"داده {asset}_{tf} موجود نیست"); 
+        return None
+    if verbose:
+        print(f"=== SMART {asset}/{tf} — corr_t خلوصِ روندِ نزولی + رژیم ===  کندل‌ها={len(df)}")
+    base_sig = short_signal(df, trend_gate=True)
+    m = regime_masks(df)
+    corr = m['corr_t']; r2 = m['r2']; chop = m['chop']; kurt = m['kurt']; hurst = m['hurst']
+
+    # آستانه‌های غیررند
+    corr_thr = [-0.30, -0.45, -0.60, -0.75]   # corr_t < این = روندِ نزولیِ تمیز
+    r2_thr   = [0.0, 0.30, 0.45]
+    chop_thr = [61.8, 50.0, 38.2]
+    kurt_thr = [None, 3.0, 1.5]
+    sltp_grid = [(34, 55), (55, 89), (89, 144), (55, 72), (89, 110), (110, 144), (72, 100)]
+
+    best = None; rows = []
+    for ct, r2t, cht, kt in itertools.product(corr_thr, r2_thr, chop_thr, kurt_thr):
+        mask = (corr < ct).fillna(False).values & (r2 > r2t).fillna(False).values \
+             & (chop < cht).fillna(False).values
+        if kt is not None:
+            mask = mask & (kurt < kt).fillna(False).values
+        for sl, tp in sltp_grid:
+            r, nsig, _ = _apply_and_rqs(df, asset, base_sig, mask, sl, tp, max_hold)
+            npass = sum(r['gates'].values())
+            rows.append((r['rqs_score'], npass, r, dict(corr=ct, r2=r2t, chop=cht, kt=kt, sl=sl, tp=tp, nsig=nsig)))
+            if best is None or (npass, r['rqs_score']) > (best[1], best[0]):
+                best = (r['rqs_score'], npass, r, dict(corr=ct, r2=r2t, chop=cht, kt=kt, sl=sl, tp=tp, nsig=nsig))
+    rows.sort(key=lambda x: (x[1], x[0]), reverse=True)
+    if verbose:
+        print(f"{'RQS':>5} {'g':>2}  cfg")
+        for rr in rows[:16]:
+            c = rr[3]; met = rr[2]['metrics']; g = rr[2]['gates']
+            gl = ''.join('1' if v else '0' for v in g.values())
+            print(f"{rr[0]:>5.1f} {rr[1]:>2d}  corr<{c['corr']} r2>{c['r2']} chop<{c['chop']} kurt<{c['kt']} "
+                  f"SL{c['sl']}/TP{c['tp']} n={met.get('n_trades',0)} WR={met.get('win_rate',0)} "
+                  f"PF={met.get('profit_factor',0)} G={gl}")
+        if best:
+            c = best[3]
+            print("\n--- بهترین ---")
+            print(rqs.format_report(f'S335_{asset}_{tf}', best[2]),
+                  f"| corr<{c['corr']} r2>{c['r2']} chop<{c['chop']} kurt<{c['kt']} SL{c['sl']}/TP{c['tp']} nsig={c['nsig']}")
+    return best
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--asset', default='XAUUSD')
@@ -298,3 +364,5 @@ if __name__ == '__main__':
         stage_scan(a.asset, a.tf)
     elif a.stage == 'refine':
         stage_refine(a.asset, a.tf)
+    elif a.stage == 'smart':
+        stage_smart(a.asset, a.tf)
