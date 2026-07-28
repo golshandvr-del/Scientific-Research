@@ -135,6 +135,51 @@ def main():
                              f"base z>{zt} rsi>{rt} SL{sl}/TP{tp}")
         print("\n>>> baseline کامل شد. هیچ‌کدام انتظار می‌رود RQS+≥۸۰ نباشد (بدونِ فیلترِ رژیم).")
 
+    elif args.stage == 'scan2':
+        # درسِ scan۱: فیلترِ hurst کیفیت را می‌سازد (PF 0.75→1.5، DD 95٪→2٪) اما
+        # فیلترِ سخت n را می‌کشد ⇒ G0(WR≥60) و G1(معناداری) رد. راهبردِ scan۲:
+        #   (الف) RR متقارن‌تر (1:1..1.2) ⇒ breakeven WR پایین‌تر ⇒ G0/G1 آسان‌تر
+        #   (ب) فیلترِ hurst متعادل‌تر تا n≥50 حفظ شود
+        #   (ج) rsi اشباعِ عمیق‌تر (انتخابِ فقط بهترین fadeها بدونِ کشتنِ n)
+        print("### مرحلهٔ ۳ (scan2) — RR متقارن + فیلترِ متعادل برای عبور از G0/G1 ###")
+        best = None
+        for z_win in [34, 55]:
+            for z_thr in [2.4, 2.7, 3.0]:
+                for rsi_thr in [70, 74]:
+                    base = build_short_mr(df, z_win=z_win, z_thr=z_thr, rsi_thr=rsi_thr)
+                    if base.sum() < 80:
+                        continue
+                    for (h, k, c, r2t) in [
+                        (0.50, None, None, None),
+                        (0.50, 1.0, None, None),
+                        (0.52, None, 48.0, None),
+                        (0.50, 0.5, 50.0, 0.45),
+                    ]:
+                        mask, used = regime_filters(df, h, k, c, r2t)
+                        ssig = base & mask
+                        if ssig.sum() < 40:
+                            continue
+                        # RR متقارن/کمی‌مثبت، غیررند، per-TF (M5 اسکالپ)
+                        for (sl, tp, mh) in [(150, 150, 24), (135, 145, 22),
+                                             (120, 135, 20), (165, 175, 28),
+                                             (110, 118, 18)]:
+                            lab = f"z{z_win}/{z_thr}r{rsi_thr} [{'+'.join(used)}] SL{sl}/TP{tp}"
+                            tr, r = evaluate(df, ssig, sl, tp, mh, args.asset, lab)
+                            if r and r['passed'] and (best is None or r['rqs_score'] > best[1]['rqs_score']):
+                                best = (lab, r, dict(z_win=z_win, z_thr=z_thr, rsi_thr=rsi_thr,
+                                        h=h, k=k, c=c, r2=r2t, sl=sl, tp=tp, mh=mh))
+        print("\n" + "=" * 70)
+        if best:
+            lab, r, cfg = best
+            print(f"🏆 بهترین ACCEPT: {lab}  RQS+={r['rqs_score']}")
+            out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
+                       rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
+            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+                json.dump(out, f, ensure_ascii=False, indent=1, default=float)
+            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+        else:
+            print("❌ scan2 هم ACCEPT نداد.")
+
     elif args.stage == 'scan':
         # مرحلهٔ احیا: فیلترِ رژیم (hurst/kurt/chop/r2) + TP/SL غیررند per-TF
         print("### مرحلهٔ ۲ — احیا با فیلترِ رژیمِ mean-reverting (جعبه‌ابزارِ بانک) ###")
