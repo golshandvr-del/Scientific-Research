@@ -1,0 +1,13 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M5",
+ "n_s333": 48,
+ "n_s328": 42,
+ "overlap_pct": 8.3,
+ "overlap_hits": 4,
+ "same_candle": 2,
+ "rqs_full": 81.6,
+ "wr_full": 61.7,
+ "rqs_nonoverlap": 18.5,
+ "wr_nonoverlap": 58.14
+}
