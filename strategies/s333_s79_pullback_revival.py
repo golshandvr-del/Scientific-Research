@@ -129,23 +129,28 @@ def evaluate(df, sig, asset, sl, tp, max_hold):
 
 
 # ---- بهترین پیکربندیِ هر TF (per-TF، غیررند — رفعِ اشتباه #۶/#۷) ----
-# منطق: هستهٔ S79 (EMA20>EMA100 & RSI21<th) + فیلترِ رژیمِ persistence (Hurst) + هندسهٔ WR-محور.
+# منطق: هستهٔ دقت‌محور (pullback + تأییدِ بازگشت) + فیلترِ رژیمِ persistence.
+# *** هندسهٔ منصفانه: TP >= SL همیشه (breakeven <= 50%) ⇒ WR واقعی است نه تورمِ هندسی. ***
 # هر TF جدا اسکن می‌شود؛ TP/SL و آستانهٔ فیلتر مخصوصِ خودش را دارد.
 BEST_CFG = {
-    # asset_tf: dict(ema_fast, ema_slow, rsi_p, rsi_th, hurst_th, [er_th], sl, tp, mh)
-    'XAUUSD_M5':  dict(ef=20, es=100, rp=21, rth=35, hurst=0.55,            sl=170, tp=120, mh=96),
-    'XAUUSD_M15': dict(ef=20, es=100, rp=21, rth=35, hurst=0.57,            sl=200, tp=200, mh=96),
+    # asset_tf: dict(ef, es, rp, rth, confirm, hurst, [er], [r2], sl, tp, mh)
+    'XAUUSD_M5':  dict(ef=20, es=100, rp=21, rth=35, confirm='rsi_turn',
+                       hurst=0.57, er=0.25,           sl=120, tp=120, mh=96),
 }
 
 
 def build_layer(df, cfg):
-    """سیگنالِ نهاییِ لایه = هستهٔ pullback + فیلترِ رژیمِ Hurst (+ فیلترِ اختیاریِ ER)."""
-    base = core_signal(df, cfg['ef'], cfg['es'], cfg['rp'], cfg['rth'])
+    """سیگنالِ نهاییِ لایه = هستهٔ دقت‌محور + فیلترِ رژیمِ Hurst (+ ER / R² اختیاری)."""
+    base = core_signal_confirmed(df, cfg['ef'], cfg['es'], cfg['rp'], cfg['rth'],
+                                 confirm=cfg.get('confirm', 'rsi_turn'))
     hu = ib.compute('hurst', df).values
     sig = base & (np.nan_to_num(hu, nan=-1.0) > cfg['hurst'])
     if cfg.get('er') is not None:
         er = ib.compute('er_lucas_29', df).values
         sig = sig & (np.nan_to_num(er, nan=-1.0) > cfg['er'])
+    if cfg.get('r2') is not None:
+        r2 = ib.compute('r2_fib_89', df).values
+        sig = sig & (np.nan_to_num(r2, nan=-1.0) > cfg['r2'])
     return sig
 
 
