@@ -134,8 +134,15 @@ def evaluate(df, sig, asset, sl, tp, max_hold):
 # هر TF جدا اسکن می‌شود؛ TP/SL و آستانهٔ فیلتر مخصوصِ خودش را دارد.
 BEST_CFG = {
     # asset_tf: dict(ef, es, rp, rth, confirm, hurst, [er], [r2], sl, tp, mh)
+    #   breakeven = SL/(SL+TP) — همه‌جا <=50٪ (هندسهٔ منصفانه، WR واقعی).
     'XAUUSD_M5':  dict(ef=20, es=100, rp=21, rth=35, confirm='rsi_turn',
-                       hurst=0.57, er=0.25,           sl=120, tp=120, mh=96),
+                       hurst=0.57, er=0.25,            sl=120, tp=120, mh=96),  # RQS 91.3 WR65.6 PF2.85 n64
+    'XAUUSD_M15': dict(ef=20, es=100, rp=21, rth=32, confirm='none',
+                       hurst=0.57,                     sl=200, tp=240, mh=96),  # RQS 91.7 WR62.8 PF2.30 n51
+    'XAUUSD_M30': dict(ef=20, es=100, rp=21, rth=35, confirm='price_turn',
+                       hurst=0.53,                     sl=380, tp=420, mh=80),  # RQS 91.1 WR66.7 PF2.48 n42
+    'XAUUSD_H1':  dict(ef=20, es=100, rp=21, rth=32, confirm='none',
+                       hurst=0.50, er=0.25,            sl=450, tp=520, mh=64),  # RQS 89.8 WR62.2 PF1.85 n74
 }
 
 
