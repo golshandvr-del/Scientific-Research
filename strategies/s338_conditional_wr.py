@@ -72,10 +72,16 @@ def build_baseline(df, asset, direction, k_atr=1.5, max_hold=24):
 
 
 def binom_p(wins, n, p0=0.5):
-    """p-value دو دامنه که WR با p0 فرق دارد."""
+    """p-value دو دامنه (normal approx به binomial) — برداری و سریع.
+    برای n بزرگ (اینجا n>=30) تقریبِ نرمال دقیق است."""
     if n == 0:
         return 1.0
-    return stats.binomtest(int(wins), int(n), p0, alternative='two-sided').pvalue
+    phat = wins / n
+    se_ = np.sqrt(p0 * (1 - p0) / n)
+    if se_ == 0:
+        return 1.0
+    z = (phat - p0) / se_
+    return 2.0 * (1.0 - stats.norm.cdf(abs(z)))
 
 
 def mine_indicator(df, name, entry_idx, win, base_wr, min_frac=0.05):
@@ -104,30 +110,32 @@ def mine_indicator(df, name, entry_idx, win, base_wr, min_frac=0.05):
     min_n_is = max(30, int(len(v_is) * min_frac))
     # آستانه‌های کاندیدا = صدک‌های ۵..۹۵ (نه اعداد رند؛ داده‌محور)
     qs = np.percentile(v_is, np.arange(5, 96, 5))
+    w_is_f = w_is.astype(np.float64)
+    w_oos_f = w_oos.astype(np.float64)
     best = None
     for th in qs:
         for side in ('gt', 'lt'):
             mask_is = (v_is > th) if side == 'gt' else (v_is < th)
-            n_is = mask_is.sum()
+            n_is = int(mask_is.sum())
             if n_is < min_n_is:
                 continue
-            wr_is = w_is[mask_is].mean() * 100
+            wr_is = w_is_f[mask_is].mean() * 100
             # فقط بهبودِ معنادار نسبت به baseline جالب است
             if wr_is <= base_wr + 3:
                 continue
             # همان شرط در OOS
             mask_oos = (v_oos > th) if side == 'gt' else (v_oos < th)
-            n_oos = mask_oos.sum()
+            n_oos = int(mask_oos.sum())
             if n_oos < 30:
                 continue
-            wr_oos = w_oos[mask_oos].mean() * 100
-            wins_oos = w_oos[mask_oos].sum()
+            wins_oos = float(w_oos_f[mask_oos].sum())
+            wr_oos = wins_oos / n_oos * 100
             p_oos = binom_p(wins_oos, n_oos, 0.5)
             # معیارِ کاندیدا: WR_oos هم بالای baseline+3 و p<0.05
             score = min(wr_is, wr_oos)
             rec = dict(name=name, side=side, th=float(th),
-                       wr_is=wr_is, n_is=int(n_is),
-                       wr_oos=wr_oos, n_oos=int(n_oos),
+                       wr_is=wr_is, n_is=n_is,
+                       wr_oos=wr_oos, n_oos=n_oos,
                        p_oos=p_oos, score=score)
             if best is None or score > best['score']:
                 best = rec
