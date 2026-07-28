@@ -565,4 +565,121 @@ _reg('obv', obv); _reg('ad', ad); _reg('adosc', adosc); _reg('efi', efi)
 _reg('mfi', mfi); _reg('wvad', wvad); _reg('vpt', vpt); _reg('emv', emv)
 
 
+# ===========================================================================
+# بخش ۴ — STATISTICAL / FRACTAL (۸) — نام‌ها ۱:۱ با statistical.ts
+# نام‌ها: skew kurt corr_t r2 hurst entropy frama fdi
+# ⚑ r2 و hurst کلیدِ احیای S332 بودند — دقتِ ریاضی حیاتی است.
+# ===========================================================================
+def skew(df, p=20):
+    x = _c(df)
+    def _s(w):
+        m = w.mean(); d = w - m
+        sd = np.sqrt((d * d).mean())
+        return (d ** 3).mean() / (sd ** 3) if sd else 0.0
+    return x.rolling(p).apply(_s, raw=True)
+
+
+def kurt(df, p=20):
+    x = _c(df)
+    def _k(w):
+        m = w.mean(); d = w - m
+        v = (d * d).mean()
+        return (d ** 4).mean() / (v * v) - 3 if v else 0.0
+    return x.rolling(p).apply(_k, raw=True)
+
+
+def corr_t(df, p=20):
+    x = _c(df); t = np.arange(p, dtype='float64')
+    st = t.sum(); stt = (t * t).sum()
+    def _c_fn(w):
+        sy = w.sum(); sxy = (t * w).sum(); syy = (w * w).sum()
+        num = p * sxy - st * sy
+        den = np.sqrt((p * stt - st * st) * (p * syy - sy * sy))
+        return num / den if den else 0.0
+    return x.rolling(p).apply(_c_fn, raw=True)
+
+
+def r2(df, p=20):
+    x = _c(df); t = np.arange(p, dtype='float64')
+    st = t.sum(); stt = (t * t).sum()
+    def _r2(w):
+        sy = w.sum(); sxy = (t * w).sum(); syy = (w * w).sum()
+        num = p * sxy - st * sy
+        den = (p * stt - st * st) * (p * syy - sy * sy)
+        r = num / np.sqrt(den) if den > 0 else 0.0
+        return r * r
+    return x.rolling(p).apply(_r2, raw=True)
+
+
+def hurst(df, p=64):
+    # نمای هرست به روشِ Rescaled Range روی log-returns (منطبق با statistical.ts)
+    x = _c(df); n = len(x); xv = x.values
+    ret = np.zeros(n)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        ret[1:] = np.where(xv[:-1] != 0, np.log(xv[1:] / xv[:-1]), 0.0)
+    ret = np.nan_to_num(ret)
+    out = np.full(n, np.nan)
+    logp = np.log(p)
+    for i in range(p, n):
+        w = ret[i - p + 1:i + 1]
+        m = w.mean(); dev = w - m
+        cum = np.cumsum(dev)
+        R = cum.max() - cum.min()
+        sd = np.sqrt((dev * dev).mean())
+        out[i] = np.log(R / sd) / logp if (sd and R > 0) else 0.5
+    return pd.Series(out, index=x.index)
+
+
+def entropy(df, p=20, bins=8):
+    x = _c(df); n = len(x); xv = x.values
+    ret = np.zeros(n)
+    ret[1:] = np.where(xv[:-1] != 0, (xv[1:] - xv[:-1]) / xv[:-1], 0.0)
+    out = np.full(n, np.nan)
+    for i in range(p, n):
+        w = ret[i - p + 1:i + 1]
+        mn, mx = w.min(), w.max(); rng = (mx - mn) or 1e-10
+        idx = np.minimum(bins - 1, ((w - mn) / rng * bins).astype(int))
+        hist = np.bincount(idx, minlength=bins)
+        pr = hist[hist > 0] / p
+        out[i] = -(pr * np.log2(pr)).sum()
+    return pd.Series(out, index=x.index)
+
+
+def frama(df, p=16):
+    # Fractal Adaptive MA (اِهلرز) — برچسبِ trend ولی منطقِ فراکتالی
+    h = df['high'].values; l = df['low'].values; xv = _c(df).values
+    n = len(xv); out = np.full(n, np.nan)
+    per = p if p % 2 == 0 else p + 1
+    half = per // 2
+    prev = np.nan
+    for i in range(n):
+        if i < per:
+            out[i] = xv[i]; prev = xv[i]; continue
+        n1 = (h[i - half:i].max() - l[i - half:i].min()) / half
+        n2 = (h[i - half + 1:i + 1].max() - l[i - half + 1:i + 1].min()) / half
+        n3 = (h[i - per + 1:i + 1].max() - l[i - per + 1:i + 1].min()) / per
+        D = 1.0
+        if n1 > 0 and n2 > 0 and n3 > 0:
+            D = (np.log(n1 + n2) - np.log(n3)) / np.log(2)
+        alpha = float(np.clip(np.exp(-4.6 * (D - 1)), 0.01, 1.0))
+        prev = alpha * xv[i] + (1 - alpha) * prev if np.isfinite(prev) else xv[i]
+        out[i] = prev
+    return pd.Series(out, index=df.index)
+
+
+def fdi(df, p=30):
+    x = _c(df); n = len(x); xv = x.values; out = np.full(n, np.nan)
+    for i in range(p - 1, n):
+        w = xv[i - p + 1:i + 1]
+        rng = (w.max() - w.min()) or 1e-10
+        d1 = np.diff(w) / rng
+        L = np.sqrt(d1 * d1 + 1.0 / (p * p)).sum()
+        out[i] = 1 + (np.log(L) + np.log(2)) / np.log(2 * p)
+    return pd.Series(out, index=x.index)
+
+
+_reg('skew', skew); _reg('kurt', kurt); _reg('corr_t', corr_t); _reg('r2', r2)
+_reg('hurst', hurst); _reg('entropy', entropy); _reg('frama', frama); _reg('fdi', fdi)
+
+
 # ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
