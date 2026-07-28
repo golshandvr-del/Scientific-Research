@@ -1266,4 +1266,258 @@ for _nm, _fn in [
     _reg(_nm, _fn)
 
 
+# ===========================================================================
+# بخش ۹ — VARIANT EXPANSION (بسطِ پارامتریِ علمی) — نام‌ها ۱:۱ با variants.ts
+# قاعده‌ی نام: f"{base}_{per}"  (مثال: sma_fib_55، r2_fib_89، laguerre_g_47)
+# ۲۵ خانواده‌ی FIB × ۱۰ + ۳ خانواده‌ی LUCAS × ۹ = ۲۵۰ + ۲۷ = ۲۷۷ نمونه.
+# همه causal (بدونِ look-ahead) — منطق verbatim از variants.ts.
+# اشتباهِ رایج #۷ (اعدادِ رند) را مستقیماً رفع می‌کند: دوره‌ها فیبوناچی/لوکاس‌اند.
+# ===========================================================================
+def _expand(base: str, build, periods):
+    """برای هر دوره یک نمونه‌ی مجزا با نام f'{base}_{per}' ثبت می‌کند."""
+    for _per in periods:
+        _reg(f"{base}_{_per}", (lambda p: (lambda df: build(df, p)))(_per))
+
+
+# --- خانواده‌های میانگین (روی close) — FIB ---
+_expand('sma_fib', lambda df, p: sma_s(_c(df), p), FIB_PERIODS)
+_expand('ema_fib', lambda df, p: ema_s(_c(df), p), FIB_PERIODS)
+_expand('wma_fib', lambda df, p: wma_s(_c(df), p), FIB_PERIODS)
+_expand('rma_fib', lambda df, p: rma_s(_c(df), p), FIB_PERIODS)
+
+
+def _hma_v(df, p):
+    x = _c(df)
+    half = wma_s(x, max(1, p // 2)); full = wma_s(x, p)
+    return wma_s(2 * half - full, max(1, int(np.sqrt(p))))
+
+
+_expand('hma_fib', _hma_v, FIB_PERIODS)
+
+# --- RSI — LUCAS ---
+_expand('rsi_lucas', lambda df, p: rsi_s(_c(df), p), LUCAS_PERIODS)
+
+
+# --- CMO — FIB (verbatim: مجموعِ up/dn روی پنجره) ---
+def _cmo_v(df, p):
+    x = _c(df).values; n = len(x); out = np.full(n, np.nan)
+    for i in range(p, n):
+        up = dn = 0.0
+        for k in range(p):
+            d = x[i - k] - x[i - k - 1]
+            if d > 0:
+                up += d
+            else:
+                dn -= d
+        out[i] = (100 * (up - dn)) / (up + dn) if (up + dn) else 0.0
+    return pd.Series(out, index=_c(df).index)
+
+
+_expand('cmo_fib', _cmo_v, FIB_PERIODS)
+
+
+# --- ROC — FIB ---
+def _roc_v(df, p):
+    x = _c(df)
+    return 100 * (x - x.shift(p)) / x.shift(p).replace(0, np.nan)
+
+
+_expand('roc_fib', _roc_v, FIB_PERIODS)
+
+# --- std — FIB ---
+_expand('std_fib', lambda df, p: std_s(_c(df), p), FIB_PERIODS)
+
+
+# --- BIAS — FIB ---
+def _bias_v(df, p):
+    x = _c(df); s = sma_s(x, p)
+    return 100 * (x - s) / s.replace(0, np.nan)
+
+
+_expand('bias_fib', _bias_v, FIB_PERIODS)
+
+
+# --- Kaufman ER — LUCAS ---
+def _er_v(df, p):
+    x = _c(df).values; n = len(x); out = np.full(n, np.nan)
+    for i in range(p, n):
+        ch = abs(x[i] - x[i - p]); v = 0.0
+        for k in range(p):
+            v += abs(x[i - k] - x[i - k - 1])
+        out[i] = ch / v if v else 0.0
+    return pd.Series(out, index=_c(df).index)
+
+
+_expand('er_lucas', _er_v, LUCAS_PERIODS)
+
+
+# --- z-score — FIB ---
+def _zscore_v(df, p):
+    x = _c(df); s = sma_s(x, p); sd = std_s(x, p)
+    return (x - s) / sd.replace(0, np.nan)
+
+
+_expand('zscore_fib', _zscore_v, FIB_PERIODS)
+
+
+# --- WR (ویلیامز %R چینی: (hh-close)/(hh-ll)*100) — FIB ---
+def _wr_v(df, p):
+    hh = highest_s(df['high'], p); ll = lowest_s(df['low'], p)
+    return 100 * (hh - df['close']) / (hh - ll).replace(0, np.nan)
+
+
+_expand('wr_fib', _wr_v, FIB_PERIODS)
+
+
+# --- DEMA / TEMA — FIB ---
+def _dema_v(df, p):
+    e1 = ema_s(_c(df), p); e2 = ema_s(e1, p)
+    return 2 * e1 - e2
+
+
+def _tema_v(df, p):
+    e1 = ema_s(_c(df), p); e2 = ema_s(e1, p); e3 = ema_s(e2, p)
+    return 3 * e1 - 3 * e2 + e3
+
+
+_expand('dema_fib', _dema_v, FIB_PERIODS)
+_expand('tema_fib', _tema_v, FIB_PERIODS)
+
+
+# --- mom (خام) — FIB ---
+def _mom_v(df, p):
+    return _c(df).diff(p)
+
+
+_expand('mom_fib', _mom_v, FIB_PERIODS)
+
+
+# --- DPO — FIB (x[i] - sma[i-sh]، sh=floor(p/2)+1؛ causal) ---
+def _dpo_v(df, p):
+    x = _c(df); sh = p // 2 + 1
+    return x - sma_s(x, p).shift(sh)
+
+
+_expand('dpo_fib', _dpo_v, FIB_PERIODS)
+
+
+# --- TRIX — FIB ---
+def _trix_v(df, p):
+    e = ema_s(ema_s(ema_s(_c(df), p), p), p)
+    return 100 * e.diff() / e.shift(1).replace(0, np.nan)
+
+
+_expand('trix_fib', _trix_v, FIB_PERIODS)
+
+
+# --- PSY — FIB ---
+def _psy_v(df, p):
+    up = (_c(df).diff() > 0).astype('float64')
+    return 100 * up.rolling(p).sum() / p
+
+
+_expand('psy_fib', _psy_v, FIB_PERIODS)
+
+
+# --- NATR — FIB ---
+def _natr_v(df, p):
+    x = _c(df); a = rma_s(_tr(df), p)
+    return 100 * a / x.replace(0, np.nan)
+
+
+_expand('natr_fib', _natr_v, FIB_PERIODS)
+
+# --- ATR (وایلدر) — FIB ---
+_expand('atr_fib', lambda df, p: rma_s(_tr(df), p), FIB_PERIODS)
+
+
+# --- CHOP — FIB ---
+def _chop_v(df, p):
+    tr = _tr(df); sum_tr = tr.rolling(p).sum()
+    hh = df['high'].rolling(p).max(); ll = df['low'].rolling(p).min()
+    rng = (hh - ll).replace(0, np.nan)
+    return 100 * np.log10(sum_tr / rng) / np.log10(p)
+
+
+_expand('chop_fib', _chop_v, FIB_PERIODS)
+
+
+# --- CG (مرکزِ ثقلِ اِهلرز) — FIB ---
+def _cg_v(df, p):
+    x = _c(df); k = np.arange(1, p + 1, dtype='float64')
+    def _f(w):
+        wr = w[::-1]  # w[-1] جدیدترین → x[i-k] با k=0..
+        num = (k * wr).sum(); den = wr.sum()
+        return -num / den + (p + 1) / 2 if den else 0.0
+    return x.rolling(p).apply(_f, raw=True)
+
+
+_expand('cg_fib', _cg_v, FIB_PERIODS)
+
+
+# --- SSF (سوپر-اسموترِ اِهلرز) — FIB ---
+def _ssf_v(df, p):
+    return pd.Series(_ssf_arr(_c(df).values, p), index=df.index)
+
+
+_expand('ssf_fib', _ssf_v, FIB_PERIODS)
+
+
+# --- corr_t (همبستگیِ قیمت-زمان) — FIB ---
+def _corr_t_v(df, p):
+    x = _c(df); t = np.arange(p, dtype='float64')
+    st = t.sum(); stt = (t * t).sum()
+    def _f(w):
+        sy = w.sum(); sxy = (t * w).sum(); syy = (w * w).sum()
+        num = p * sxy - st * sy
+        den = np.sqrt((p * stt - st * st) * (p * syy - sy * sy))
+        return num / den if den else 0.0
+    return x.rolling(p).apply(_f, raw=True)
+
+
+_expand('corr_t_fib', _corr_t_v, FIB_PERIODS)
+
+
+# --- r2 (ضریبِ تعیین R²) — FIB ---
+def _r2_v(df, p):
+    x = _c(df); t = np.arange(p, dtype='float64')
+    st = t.sum(); stt = (t * t).sum()
+    def _f(w):
+        sy = w.sum(); sxy = (t * w).sum(); syy = (w * w).sum()
+        num = p * sxy - st * sy
+        den = (p * stt - st * st) * (p * syy - sy * sy)
+        r = num / np.sqrt(den) if den > 0 else 0.0
+        return r * r
+    return x.rolling(p).apply(_f, raw=True)
+
+
+_expand('r2_fib', _r2_v, FIB_PERIODS)
+
+
+# --- laguerre_g (گاما از period: g=min(0.95, 1-2/(per+1))) — LUCAS ---
+def _laguerre_g_v(df, per):
+    x = _c(df).values; n = len(x); out = np.full(n, np.nan)
+    g = min(0.95, 1 - 2 / (per + 1))
+    L0 = L1 = L2 = L3 = 0.0
+    for i in range(n):
+        p0, p1, p2 = L0, L1, L2
+        L0 = (1 - g) * x[i] + g * L0
+        L1 = -g * L0 + p0 + g * L1
+        L2 = -g * L1 + p1 + g * L2
+        L3 = -g * L2 + p2 + g * L3
+        out[i] = (L0 + 2 * L1 + 2 * L2 + L3) / 6
+    return pd.Series(out, index=_c(df).index)
+
+
+_expand('laguerre_g', _laguerre_g_v, LUCAS_PERIODS)
+
+
+# --- donchmid (میانیِ دونچیان) — FIB ---
+def _donchmid_v(df, p):
+    return (df['high'].rolling(p).max() + df['low'].rolling(p).min()) / 2
+
+
+_expand('donchmid_fib', _donchmid_v, FIB_PERIODS)
+
+
 # ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
