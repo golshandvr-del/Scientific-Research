@@ -193,6 +193,51 @@ def stage_baseline(asset, tf):
     print(rqs.format_report(f'S335_{asset}_{tf}_LONG_ctrl', rL), f'| nsig={nL}')
 
 
+def stage_scan(asset, tf):
+    """
+    مرحلهٔ احیا: افزودنِ فیلترهای رژیم + اسکنِ TP/SL غیررند.
+    تز: تقاطعِ نزولیِ MACD فقط در روندِ نزولیِ *تمیز* کیفیت دارد.
+    """
+    df = load_tf(asset, tf)
+    if df is None:
+        print(f"داده {asset}_{tf} موجود نیست"); return
+    print(f"=== SCAN {asset}/{tf} — D3_MACD SHORT + فیلترهای رژیم ===")
+    print(f"کندل‌ها: {len(df)}")
+    m = regime_masks(df)
+
+    # آستانه‌های رژیم (کاندیدا) — تفسیر: روندِ نزولیِ تمیز
+    r2_thr    = [0.30, 0.45, 0.60]
+    chop_thr  = [61.8, 50.0, 38.2]     # زیرِ این = روندی (فیبوناچی)
+    hurst_thr = [0.50, 0.55]
+    # TP/SL غیررند (اسکالپ M5 طلا؛ مضربِ ATR). واحد pip طلا=0.1$
+    sltp_grid = [(34, 55), (55, 89), (89, 144), (55, 55), (89, 110), (144, 178)]
+
+    best = None
+    rows = []
+    for r2t, cht, hut in itertools.product(r2_thr, chop_thr, hurst_thr):
+        filt = [m['r2'] > r2t, m['chop'] < cht, m['hurst'] > hut]
+        for sl, tp in sltp_grid:
+            r, nsig, _ = run_config(df, asset, sl, tp, 'short', trend_gate=True,
+                                    filters=filt, max_hold=48)
+            met = r['metrics']
+            npass = sum(r['gates'].values())
+            rows.append((r['rqs_score'], npass, r2t, cht, hut, sl, tp, met.get('n_trades', 0),
+                         met.get('win_rate', 0), met.get('profit_factor', 0)))
+            if best is None or (r['rqs_score'] > best[0]):
+                best = (r['rqs_score'], r, r2t, cht, hut, sl, tp, nsig)
+    # چاپِ ۱۲ نتیجهٔ برتر
+    rows.sort(key=lambda x: (x[1], x[0]), reverse=True)
+    print(f"\n{'RQS':>5} {'gts':>3} {'r2>':>5} {'chop<':>6} {'H>':>5} {'SL':>4} {'TP':>4} "
+          f"{'n':>4} {'WR':>5} {'PF':>5}")
+    for row in rows[:14]:
+        print(f"{row[0]:>5.1f} {row[1]:>3d} {row[2]:>5.2f} {row[3]:>6.1f} {row[4]:>5.2f} "
+              f"{row[5]:>4d} {row[6]:>4d} {row[7]:>4d} {row[8]:>5.1f} {row[9]:>5.2f}")
+    if best:
+        print("\n--- بهترین ---")
+        print(rqs.format_report(f'S335_{asset}_{tf}_BEST', best[1]),
+              f"| r2>{best[2]} chop<{best[3]} H>{best[4]} SL{best[5]}/TP{best[6]} nsig={best[7]}")
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--asset', default='XAUUSD')
@@ -201,3 +246,5 @@ if __name__ == '__main__':
     a = ap.parse_args()
     if a.stage == 'baseline':
         stage_baseline(a.asset, a.tf)
+    elif a.stage == 'scan':
+        stage_scan(a.asset, a.tf)
