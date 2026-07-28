@@ -119,3 +119,74 @@ if __name__ == '__main__':
     import sys
     a = sys.argv[1] if len(sys.argv) > 1 else 'XAUUSD'
     ladder(a)
+
+
+def run_tf_v2(asset, tf, mode, r2_min=0.55, hurst_th=0.5, sl_mult=1.5, tp_mult=1.5, mh=24):
+    """چند منطق را روی یک TF می‌سنجد. mode:
+       'fade_trend'  = معکوسِ v1 (fade پول‌بک؛ یعنی در روندِ صعودی SHORT بزن روی جهش)
+       'mr_extreme'  = mean-reversion در رژیمِ ضدروند (hurst<th) روی کششِ افراطی
+       'breakout'    = شکستِ کانال در روندِ تمیز (follow با تریگرِ مومنتوم)
+    """
+    df = load(asset, tf); n = len(df)
+    if n < 500: return None
+    days = n / TF_BARS_PER_DAY[tf]
+    hurst = ib.compute('hurst', df).shift(1).values
+    r2 = ib.compute('r2_fib_55', df).shift(1).values
+    ema_dist = ib.compute('ema_dist_atr', df).shift(1).values
+    hma = ib.compute('hma_fib_34', df)
+    slope = (hma - hma.shift(3)).shift(1).values
+    atrp = atr_pips(df, asset)
+    sl = float(np.nanmedian(atrp)) * sl_mult
+    tp = float(np.nanmedian(atrp)) * tp_mult
+    if not np.isfinite(sl) or sl < 1: return None
+
+    if mode == 'fade_trend':
+        up = (hurst > hurst_th) & (r2 > r2_min) & (slope > 0)
+        dn = (hurst > hurst_th) & (r2 > r2_min) & (slope < 0)
+        short_sig = up & (ema_dist < -0.2) & (ema_dist > -1.2)   # معکوسِ v1
+        long_sig  = dn & (ema_dist > 0.2) & (ema_dist < 1.2)
+    elif mode == 'mr_extreme':
+        # رژیمِ بازگشتی (hurst پایین) + کششِ افراطی → fade
+        long_sig  = (hurst < hurst_th) & (ema_dist < -2.0)       # افتِ شدید → LONG
+        short_sig = (hurst < hurst_th) & (ema_dist > 2.0)        # جهشِ شدید → SHORT
+    elif mode == 'breakout':
+        up = (hurst > hurst_th) & (r2 > r2_min) & (slope > 0)
+        dn = (hurst > hurst_th) & (r2 > r2_min) & (slope < 0)
+        long_sig  = up & (ema_dist > 0.5)                         # follow با مومنتوم
+        short_sig = dn & (ema_dist < -0.5)
+    else:
+        return None
+
+    long_sig = pd.Series(np.nan_to_num(long_sig, nan=0).astype(bool))
+    short_sig = pd.Series(np.nan_to_num(short_sig, nan=0).astype(bool))
+    tr = se.simulate_trades(df, long_sig, short_sig, sl, tp, asset, mh, False)
+    if tr is None or len(tr) == 0:
+        return dict(tf=tf, days=days, n=0, wr=0, pf=0, sl=sl, tp=tp, perday=0, mode=mode)
+    tr = tr.copy(); tr['tp_pip'] = float(tp)
+    ntr, wr, pf = wr_pf(tr)
+    return dict(tf=tf, days=days, n=ntr, wr=wr, pf=pf, sl=sl, tp=tp,
+                perday=ntr/days if days else 0, mode=mode, trades=tr)
+
+
+def ladder_v2(asset='XAUUSD'):
+    print(f"\n=== TF LADDER v2 {asset} === سه منطقِ متفاوت روی نردبانِ TF")
+    print(f"{'mode':>12} {'TF':>4} {'n':>6} {'/day':>6} {'WR%':>6} {'PF':>6} {'RQS':>6}")
+    print("-" * 52)
+    for mode in ['fade_trend', 'mr_extreme', 'breakout']:
+        for tf in TFS:
+            try:
+                r = run_tf_v2(asset, tf, mode)
+            except Exception as e:
+                print(f"{mode:>12} {tf:>4}  ERR {str(e)[:30]}"); continue
+            if r is None: continue
+            rq = 0.0
+            if r['n'] >= 20:
+                res = rqs.compute_rqs(r['trades'], asset, r['sl'], r['tp'])
+                rq = res.get('rqs_plus', res.get('rqs', 0)) if isinstance(res, dict) else 0
+            print(f"{r['mode']:>12} {r['tf']:>4} {r['n']:>6} {r['perday']:>6.2f} "
+                  f"{r['wr']:>6.1f} {r['pf']:>6.2f} {rq:>6.1f}")
+        print()
+
+
+if __name__ == '__main__' and len(__import__('sys').argv) > 2 and __import__('sys').argv[2] == 'v2':
+    ladder_v2(__import__('sys').argv[1])
