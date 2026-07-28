@@ -85,6 +85,23 @@ def evaluate(df, sig, asset, sl, tp, max_hold):
     return tr, r
 
 
+# ---- بهترین پیکربندیِ هر TF (per-TF، غیررند — رفعِ اشتباه #۶/#۷) ----
+# منطق: هستهٔ S79 (EMA20>EMA100 & RSI21<th) + فیلترِ رژیمِ persistence (Hurst) + هندسهٔ WR-محور.
+# هر TF جدا اسکن می‌شود؛ TP/SL و آستانهٔ فیلتر مخصوصِ خودش را دارد.
+BEST_CFG = {
+    # asset_tf: dict(ema_fast, ema_slow, rsi_p, rsi_th, hurst_th, sl, tp, mh)
+    'XAUUSD_M5':  dict(ef=20, es=100, rp=21, rth=35, hurst=0.55, sl=170, tp=120, mh=96),
+}
+
+
+def build_layer(df, cfg):
+    """سیگنالِ نهاییِ لایه = هستهٔ pullback + فیلترِ رژیمِ Hurst."""
+    base = core_signal(df, cfg['ef'], cfg['es'], cfg['rp'], cfg['rth'])
+    hu = ib.compute('hurst', df).values
+    sig = base & (np.nan_to_num(hu, nan=-1.0) > cfg['hurst'])
+    return sig
+
+
 def brief(r):
     """یک‌خطی‌سازیِ متریک‌های RQS+ برای اسکن."""
     m = r['metrics']; g = r['gates']
