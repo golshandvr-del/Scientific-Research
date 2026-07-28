@@ -27,13 +27,13 @@ s333_mr_short_revival.py — احیای لایهٔ «Mean-Reversion SHORT» (م�
 ================================================================================
 """
 import sys, os, json, argparse
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'engine'))
-import numpy as np, pandas as pd
-import scalp_engine as se
-import indicator_bank as ib
-import rqs
-
 ROOT = os.path.join(os.path.dirname(__file__), '..')
+sys.path.insert(0, ROOT)
+sys.path.insert(0, os.path.join(ROOT, 'engine'))
+import numpy as np, pandas as pd
+from engine import scalp_engine as se
+from engine import indicator_bank as ib
+from engine import rqs
 RESULTS = os.path.join(ROOT, 'results')
 
 
