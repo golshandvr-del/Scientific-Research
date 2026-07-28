@@ -1520,4 +1520,82 @@ def _donchmid_v(df, p):
 _expand('donchmid_fib', _donchmid_v, FIB_PERIODS)
 
 
-# ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
+# ===========================================================================
+# ثبتِ دسته‌ها — نگاشتِ name -> category (۱:۱ با آرگومانِ category در بانکِ TS).
+# به AIِ احیاکن اجازه می‌دهد جعبه‌ابزار را دسته‌ای انتخاب کند:
+#   ib.by_category('momentum')  →  همه‌ی مومنتوم‌ها (پایه + variant)
+# ===========================================================================
+# دسته‌ی پایه‌ها (۱۲۴) — دقیقاً طبقِ آرگومانِ دومِ def(...) در فایل‌های TS.
+_BASE_CATEGORY: dict[str, str] = {
+    # --- trend (trend.ts) ---
+    'dema': 'trend', 'tema': 'trend', 'zlema': 'trend', 'hma': 'trend', 'rma': 'trend',
+    'wma': 'trend', 'trima': 'trend', 't3': 'trend', 'kama': 'trend', 'vidya': 'trend',
+    'mcgd': 'trend', 'alma': 'trend', 'fwma': 'trend', 'sinwma': 'trend', 'dma': 'trend', 'bbi': 'trend',
+    # --- momentum (momentum.ts) ---
+    'ao': 'momentum', 'ac': 'momentum', 'apo': 'momentum', 'ppo': 'momentum', 'cmo': 'momentum',
+    'tsi': 'momentum', 'roc': 'momentum', 'mom': 'momentum', 'bop': 'momentum', 'cfo': 'momentum',
+    'pgo': 'momentum', 'fisher': 'momentum', 'ifish_rsi': 'momentum', 'rvgi': 'momentum', 'kdj_j': 'momentum',
+    'bias': 'momentum', 'wr_cn': 'momentum', 'psy': 'momentum', 'br': 'momentum', 'ar': 'momentum',
+    'cr': 'momentum', 'trix': 'momentum', 'dpo': 'momentum', 'mtm': 'momentum', 'adtm': 'momentum',
+    # --- volatility + volume (volatility.ts) ---
+    'natr': 'volatility', 'rvi_vol': 'volatility', 'ulcer': 'volatility', 'chop': 'volatility',
+    'mass': 'volatility', 'atr_pct': 'volatility',
+    'obv': 'volume', 'ad': 'volume', 'adosc': 'volume', 'efi': 'volume',
+    'mfi': 'volume', 'wvad': 'volume', 'vpt': 'volume', 'emv': 'volume',
+    # --- statistical / fractal (statistical.ts) ---
+    'skew': 'statistical', 'kurt': 'statistical', 'corr_t': 'statistical', 'r2': 'statistical',
+    'hurst': 'statistical', 'entropy': 'statistical', 'frama': 'trend', 'fdi': 'statistical',
+    # --- cycle / ehlers (cycle.ts) ---
+    'ssf': 'cycle', 'ehp': 'cycle', 'roof': 'cycle', 'laguerre': 'cycle', 'laguerre_rsi': 'cycle',
+    'reflex': 'cycle', 'trendflex': 'cycle', 'cg': 'cycle', 'dsma': 'cycle',
+    # --- structure (structure.ts) ---
+    'supertrend': 'trend', 'psar': 'trend', 'aroon': 'trend', 'vortex': 'trend',
+    'donchian_mid': 'trend', 'qqe': 'momentum', 'stc': 'momentum', 'crsi': 'momentum',
+    'waddah': 'momentum', 'elder_impulse': 'composite', 'chandelier': 'trend',
+    'gann_hilo': 'trend', 'tdi': 'momentum',
+    # --- composite / overlap (composite.ts) ---
+    'hl2': 'overlap', 'hlc3': 'overlap', 'ohlc4': 'overlap', 'wcp': 'overlap', 'midpoint': 'overlap',
+    'ema_dist_atr': 'composite', 'rsi_of_er': 'composite', 'trend_gate': 'composite',
+}
+# دسته‌ی خانواده‌ی variantها (۲۸ base؛ طبقِ آرگومانِ category در variants.ts).
+_VARIANT_CATEGORY: dict[str, str] = {
+    'sma_fib': 'trend', 'ema_fib': 'trend', 'wma_fib': 'trend', 'rma_fib': 'trend', 'hma_fib': 'trend',
+    'rsi_lucas': 'momentum', 'cmo_fib': 'momentum', 'roc_fib': 'momentum', 'std_fib': 'volatility',
+    'bias_fib': 'momentum', 'er_lucas': 'composite', 'zscore_fib': 'statistical', 'wr_fib': 'momentum',
+    'dema_fib': 'trend', 'tema_fib': 'trend', 'mom_fib': 'momentum', 'dpo_fib': 'momentum',
+    'trix_fib': 'momentum', 'psy_fib': 'momentum', 'natr_fib': 'volatility', 'atr_fib': 'volatility',
+    'chop_fib': 'volatility', 'cg_fib': 'cycle', 'ssf_fib': 'cycle', 'corr_t_fib': 'statistical',
+    'r2_fib': 'statistical', 'laguerre_g': 'cycle', 'donchmid_fib': 'trend',
+}
+
+# نگاشتِ نهاییِ کاملِ ۴۰۱ اندیکاتور — با پیمایشِ رجیستری ساخته می‌شود.
+_CATEGORY: dict[str, str] = {}
+for _name in _REGISTRY:
+    if _name in _BASE_CATEGORY:
+        _CATEGORY[_name] = _BASE_CATEGORY[_name]
+    elif _name.startswith('cdl_'):
+        _CATEGORY[_name] = 'pattern'
+    else:
+        # variant: نامِ f'{base}_{per}' — base با جداکردنِ آخرین «_عدد» به‌دست می‌آید.
+        _base = _name.rsplit('_', 1)[0]
+        _CATEGORY[_name] = _VARIANT_CATEGORY.get(_base, 'composite')
+
+
+def category_of(name: str) -> str:
+    """دسته‌ی یک اندیکاتور (trend/momentum/volatility/volume/statistical/cycle/overlap/composite/pattern)."""
+    if name not in _CATEGORY:
+        raise KeyError(f"unknown indicator '{name}'")
+    return _CATEGORY[name]
+
+
+def by_category(cat: str) -> list[str]:
+    """همه‌ی نام‌های یک دسته (مرتب‌شده) — جعبه‌ابزارِ دسته‌ایِ AIِ احیاکن."""
+    return sorted(n for n, c in _CATEGORY.items() if c == cat)
+
+
+def categories() -> dict[str, int]:
+    """نگاشتِ دسته -> تعدادِ اندیکاتورها (خلاصه‌ی جعبه‌ابزار)."""
+    out: dict[str, int] = {}
+    for c in _CATEGORY.values():
+        out[c] = out.get(c, 0) + 1
+    return dict(sorted(out.items()))
