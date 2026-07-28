@@ -1,0 +1,51 @@
+{
+ "asset": "EURUSD",
+ "tf": "M5",
+ "label": "z34/2.4r70 h<0.52 k<2.2 SL12.2/TP13.7",
+ "cfg": {
+  "z_win": 34,
+  "z_thr": 2.4,
+  "rsi_thr": 70,
+  "h": 0.52,
+  "k": 2.2,
+  "sl": 12.2,
+  "tp": 13.7,
+  "mh": 24,
+  "atr_mult_sl": 4.0,
+  "atr_mult_tp": 4.5
+ },
+ "rqs": 84.1,
+ "gates": {
+  "G0": true,
+  "G1": true,
+  "G2": 1.0,
+  "G3": true,
+  "G4": true,
+  "G5": true
+ },
+ "metrics": {
+  "n_trades": 60,
+  "win_rate": 66.67,
+  "net_profit": 1106.8,
+  "profit_factor": 1.623,
+  "max_dd_pct": 5.41,
+  "max_consec_losses": 5,
+  "expectancy_pip": 2.1833,
+  "spread_cost_pip": 1.0,
+  "wr_breakeven": 47.1,
+  "wr_excess": 19.56,
+  "p_value": 0.00176,
+  "sl_pip": 12.2,
+  "tp_pip": 13.7,
+  "wf_nets": [
+   166.3,
+   756.1,
+   51.5,
+   110.2
+  ],
+  "half_nets": [
+   933.9,
+   163.9
+  ]
+ }
+}
