@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-S333 — ممیزیِ همپوشانی با لایه‌های موجود (قانونِ اجباریِ همپوشانی)
+S334 — ممیزیِ همپوشانی با لایه‌های موجود (قانونِ اجباریِ همپوشانی)
 ================================================================================
-لایهٔ جدید (S333): Mean-Reversion SHORT با z-score(34)>2.4 + RSI>70 + شمعِ نزولی،
+لایهٔ جدید (S334): Mean-Reversion SHORT با z-score(34)>2.4 + RSI>70 + شمعِ نزولی،
   گیتِ رژیمِ hurst<0.5 و kurt<1.8، SL110/TP125 — روی XAUUSD M5 (RQS+ 81.6).
 
 نزدیک‌ترین لایهٔ موجودِ هم‌دارایی/هم‌TF/هم‌جهت: S328 (RSI-21 Fade SHORT, XAU M5, RQS 94.2).
@@ -11,12 +11,12 @@ S333 — ممیزیِ همپوشانی با لایه‌های موجود (قان
 هدف (شبیه‌سازِ رویداد-محورِ استانداردِ پروژه):
   ۱) بازتولیدِ سیگنال‌های هر دو لایه با کانفیگِ نهاییِ قفل‌شده.
   ۲) اندازه‌گیریِ همپوشانیِ زمانیِ *بازه‌های معامله* (نه فقط کندلِ سیگنال):
-       overlap% = |بازه‌های S333 که با هر بازهٔ S328 تقاطع دارند| / |کلِ بازه‌های S333|
+       overlap% = |بازه‌های S334 که با هر بازهٔ S328 تقاطع دارند| / |کلِ بازه‌های S334|
   ۳) طبق بندِ ۳ قانونِ همپوشانی: بررسیِ استفاده از بخشِ همپوشان به‌عنوان فیلتر:
-       آیا حذفِ بازه‌های همپوشانِ S333 با S328، RQS+ را بهبود می‌دهد؟
-       آیا هم‌پوشانیِ S328 می‌تواند S333 را تقویت کند (هم‌جهت = تأییدِ متقابل)؟
+       آیا حذفِ بازه‌های همپوشانِ S334 با S328، RQS+ را بهبود می‌دهد؟
+       آیا هم‌پوشانیِ S328 می‌تواند S334 را تقویت کند (هم‌جهت = تأییدِ متقابل)؟
 
-خروجی: results/_s333_overlap_audit.json
+خروجی: results/_s334_overlap_audit.json
 """
 import sys, os, json
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -38,8 +38,8 @@ def rsi_np(x, p=14):
     return 100 - 100/(1 + rs)
 
 
-def s333_short_signal(df, z_win=34, z_thr=2.4, rsi_thr=70, h_thr=0.5, k_thr=1.8):
-    """سیگنالِ SHORTِ نهاییِ S333 (کانفیگِ قفل‌شدهٔ XAU-M5)."""
+def s334_short_signal(df, z_win=34, z_thr=2.4, rsi_thr=70, h_thr=0.5, k_thr=1.8):
+    """سیگنالِ SHORTِ نهاییِ S334 (کانفیگِ قفل‌شدهٔ XAU-M5)."""
     c = df['close'].values.astype(float); o = df['open'].values.astype(float)
     ma = pd.Series(c).rolling(z_win).mean().values
     sd = pd.Series(c).rolling(z_win).std().values
@@ -82,43 +82,43 @@ def main():
     df = df.reset_index(drop=True)
     print(f"# داده: {len(df)} کندلِ {asset}_{tf}\n")
 
-    # --- سیگنالِ S333 (SHORT) ---
-    s333_sig = s333_short_signal(df)
-    n333 = int(s333_sig.sum())
+    # --- سیگنالِ S334 (SHORT) ---
+    s334_sig = s334_short_signal(df)
+    n334 = int(s334_sig.sum())
 
     # --- سیگنالِ S328 (SHORT) با کانفیگِ نهاییِ XAU-M5: rsi21, hi=75, adx_max=30 ---
     _, s328_sig = s328_build(df, rsi_period=21, lo=25, hi=75, adx_max=30)
     s328_sig = np.asarray(s328_sig, dtype=bool)
     n328 = int(s328_sig.sum())
 
-    print(f"S333 سیگنالِ SHORT: n={n333}")
+    print(f"S334 سیگنالِ SHORT: n={n334}")
     print(f"S328 سیگنالِ SHORT: n={n328}")
 
-    # --- همپوشانیِ بازه‌ای (S333 max_hold=20 ، S328 max_hold=24) ---
-    iv333 = intervals_from_signal(s333_sig, 20)
+    # --- همپوشانیِ بازه‌ای (S334 max_hold=20 ، S328 max_hold=24) ---
+    iv334 = intervals_from_signal(s334_sig, 20)
     iv328 = intervals_from_signal(s328_sig, 24)
-    ov_pct, ov_hit = overlap_pct(iv333, iv328)
-    print(f"\n>>> همپوشانیِ زمانیِ بازه‌ها: {ov_hit}/{len(iv333)} = {ov_pct:.1f}% از بازه‌های S333 با S328 تقاطع دارند.")
+    ov_pct, ov_hit = overlap_pct(iv334, iv328)
+    print(f"\n>>> همپوشانیِ زمانیِ بازه‌ها: {ov_hit}/{len(iv334)} = {ov_pct:.1f}% از بازه‌های S334 با S328 تقاطع دارند.")
 
     # همپوشانیِ کندلِ دقیق (سیگنالِ همزمان روی همان کندل)
-    same_candle = int((s333_sig & s328_sig).sum())
+    same_candle = int((s334_sig & s328_sig).sum())
     print(f">>> سیگنالِ همزمان روی همان کندل: {same_candle}")
 
     # --- بندِ ۳: بررسیِ استفاده از همپوشان به‌عنوان فیلتر ---
-    # حالت الف: حذفِ بازه‌های S333 که با S328 همپوشان‌اند (آیا RQS بهتر می‌شود؟)
+    # حالت الف: حذفِ بازه‌های S334 که با S328 همپوشان‌اند (آیا RQS بهتر می‌شود؟)
     empty = np.zeros(len(df), bool)
-    tr_full = se.simulate_trades(df, empty, s333_sig, 110, 125, asset, max_hold=20, allow_overlap=False)
+    tr_full = se.simulate_trades(df, empty, s334_sig, 110, 125, asset, max_hold=20, allow_overlap=False)
     r_full = rqs.compute_rqs(tr_full, asset, sl_pip=110, tp_pip=125)
-    print(f"\nS333 کامل: RQS={r_full['rqs_score']} WR={r_full['metrics']['win_rate']}% n={r_full['metrics']['n_trades']}")
+    print(f"\nS334 کامل: RQS={r_full['rqs_score']} WR={r_full['metrics']['win_rate']}% n={r_full['metrics']['n_trades']}")
 
-    # ماسکِ سیگنال‌های S333 که با S328 تقاطع ندارند (بخشِ ناهمپوشان)
+    # ماسکِ سیگنال‌های S334 که با S328 تقاطع ندارند (بخشِ ناهمپوشان)
     b_sorted = sorted(iv328)
     b_starts = np.array([s for s, _ in b_sorted]) if b_sorted else np.array([])
     b_ends = np.array([e for _, e in b_sorted]) if b_sorted else np.array([])
-    idx333 = np.where(s333_sig)[0]
+    idx334 = np.where(s334_sig)[0]
     keep_nonoverlap = np.zeros(len(df), bool)
     keep_overlap = np.zeros(len(df), bool)
-    for i in idx333:
+    for i in idx334:
         s, e = i, i + 20
         cross = (len(b_starts) > 0) and np.any((b_starts <= e) & (b_ends >= s))
         if cross:
@@ -126,7 +126,7 @@ def main():
         else:
             keep_nonoverlap[i] = True
 
-    result = dict(asset=asset, tf=tf, n_s333=n333, n_s328=n328,
+    result = dict(asset=asset, tf=tf, n_s334=n334, n_s328=n328,
                   overlap_pct=round(ov_pct, 1), overlap_hits=ov_hit,
                   same_candle=same_candle,
                   rqs_full=r_full['rqs_score'],
@@ -135,17 +135,17 @@ def main():
     if keep_nonoverlap.sum() >= 20:
         tr_no = se.simulate_trades(df, empty, keep_nonoverlap, 110, 125, asset, max_hold=20, allow_overlap=False)
         r_no = rqs.compute_rqs(tr_no, asset, sl_pip=110, tp_pip=125)
-        print(f"S333 بدونِ بازه‌های همپوشان: RQS={r_no['rqs_score']} WR={r_no['metrics']['win_rate']}% n={r_no['metrics']['n_trades']}")
+        print(f"S334 بدونِ بازه‌های همپوشان: RQS={r_no['rqs_score']} WR={r_no['metrics']['win_rate']}% n={r_no['metrics']['n_trades']}")
         result['rqs_nonoverlap'] = r_no['rqs_score']
         result['wr_nonoverlap'] = r_no['metrics']['win_rate']
     else:
         print(f"بخشِ ناهمپوشان n={int(keep_nonoverlap.sum())} < 20 — تستِ جدا بی‌معنا.")
         result['rqs_nonoverlap'] = None
 
-    out_path = os.path.join(ROOT, 'results', '_s333_overlap_audit.json')
+    out_path = os.path.join(ROOT, 'results', '_s334_overlap_audit.json')
     with open(out_path, 'w') as f:
         json.dump(result, f, ensure_ascii=False, indent=1, default=float)
-    print(f"\n✅ ذخیره: results/_s333_overlap_audit.json")
+    print(f"\n✅ ذخیره: results/_s334_overlap_audit.json")
 
 
 if __name__ == '__main__':
