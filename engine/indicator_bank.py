@@ -1032,4 +1032,238 @@ _reg('midpoint', midpoint); _reg('ema_dist_atr', ema_dist_atr)
 _reg('rsi_of_er', rsi_of_er); _reg('trend_gate', trend_gate)
 
 
+# ===========================================================================
+# بخش ۸ — CANDLESTICK PATTERNS (۳۱) — نام‌ها ۱:۱ با pattern.ts
+# خروجی: +100 صعودی / −100 نزولی / 0 بدونِ الگو. بدونِ look-ahead
+# (هر کندل فقط به i, i-1, i-2 نگاه می‌کند). vectorized با shift(+k).
+# ===========================================================================
+def _cndl(df):
+    o, h, l, c = df['open'], df['high'], df['low'], df['close']
+    body = (c - o).abs(); rng = (h - l)
+    up_sh = h - pd.concat([o, c], axis=1).max(axis=1)
+    dn_sh = pd.concat([o, c], axis=1).min(axis=1) - l
+    is_bull = c >= o; is_bear = c < o
+    return o, h, l, c, body, rng, up_sh, dn_sh, is_bull, is_bear
+
+
+def cdl_doji(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    return np.where((rng > 0) & (body <= 0.1 * rng), 100.0, 0.0)
+
+
+def cdl_dragonfly(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    return np.where((rng > 0) & (body <= 0.1 * rng) & (ds >= 0.6 * rng), 100.0, 0.0)
+
+
+def cdl_gravestone(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    return np.where((rng > 0) & (body <= 0.1 * rng) & (us >= 0.6 * rng), -100.0, 0.0)
+
+
+def cdl_hammer(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (rng > 0) & (ds >= 2 * body) & (us <= 0.15 * rng) & (c.shift(1) < c.shift(2))
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_invhammer(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (rng > 0) & (us >= 2 * body) & (ds <= 0.15 * rng) & (c.shift(1) < c.shift(2))
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_hangingman(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (rng > 0) & (ds >= 2 * body) & (us <= 0.15 * rng) & (c.shift(1) > c.shift(2))
+    return np.where(cond, -100.0, 0.0)
+
+
+def cdl_shootingstar(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (rng > 0) & (us >= 2 * body) & (ds <= 0.15 * rng) & (c.shift(1) > c.shift(2))
+    return np.where(cond, -100.0, 0.0)
+
+
+def cdl_marubozu(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (rng > 0) & (body >= 0.95 * rng)
+    return np.where(cond, np.where(bu, 100.0, -100.0), 0.0)
+
+
+def cdl_spinningtop(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (rng > 0) & (body <= 0.3 * rng) & (us >= 0.3 * rng) & (ds >= 0.3 * rng)
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_engulf_bull(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = be.shift(1).fillna(False) & bu & (c >= o.shift(1)) & (o <= c.shift(1))
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_engulf_bear(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = bu.shift(1).fillna(False) & be & (o >= c.shift(1)) & (c <= o.shift(1))
+    return np.where(cond, -100.0, 0.0)
+
+
+def cdl_harami_bull(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    mx = pd.concat([o, c], axis=1).max(axis=1); mn = pd.concat([o, c], axis=1).min(axis=1)
+    cond = be.shift(1).fillna(False) & (body.shift(1) > 0) & (mx < o.shift(1)) & (mn > c.shift(1))
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_harami_bear(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    mx = pd.concat([o, c], axis=1).max(axis=1); mn = pd.concat([o, c], axis=1).min(axis=1)
+    cond = bu.shift(1).fillna(False) & (body.shift(1) > 0) & (mx < c.shift(1)) & (mn > o.shift(1))
+    return np.where(cond, -100.0, 0.0)
+
+
+def cdl_piercing(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    mid = (o.shift(1) + c.shift(1)) / 2
+    cond = be.shift(1).fillna(False) & bu & (o < l.shift(1)) & (c > mid) & (c < o.shift(1))
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_darkcloud(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    mid = (o.shift(1) + c.shift(1)) / 2
+    cond = bu.shift(1).fillna(False) & be & (o > h.shift(1)) & (c < mid) & (c > o.shift(1))
+    return np.where(cond, -100.0, 0.0)
+
+
+def cdl_morningstar(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    rng1 = (h.shift(1) - l.shift(1)).replace(0, np.nan)
+    mid2 = (o.shift(2) + c.shift(2)) / 2
+    cond = be.shift(2).fillna(False) & (body.shift(1) <= 0.3 * rng1) & bu & (c > mid2)
+    return np.where(cond.fillna(False), 100.0, 0.0)
+
+
+def cdl_eveningstar(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    rng1 = (h.shift(1) - l.shift(1)).replace(0, np.nan)
+    mid2 = (o.shift(2) + c.shift(2)) / 2
+    cond = bu.shift(2).fillna(False) & (body.shift(1) <= 0.3 * rng1) & be & (c < mid2)
+    return np.where(cond.fillna(False), -100.0, 0.0)
+
+
+def cdl_3whitesoldiers(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (bu & bu.shift(1).fillna(False) & bu.shift(2).fillna(False) &
+            (c > c.shift(1)) & (c.shift(1) > c.shift(2)) &
+            (o > o.shift(1)) & (o.shift(1) > o.shift(2)))
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_3blackcrows(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (be & be.shift(1).fillna(False) & be.shift(2).fillna(False) &
+            (c < c.shift(1)) & (c.shift(1) < c.shift(2)) &
+            (o < o.shift(1)) & (o.shift(1) < o.shift(2)))
+    return np.where(cond, -100.0, 0.0)
+
+
+def cdl_beltuphold_bull(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = bu & (o == l) & (body >= 0.7 * rng) & (rng > 0)
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_beltuphold_bear(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = be & (o == h) & (body >= 0.7 * rng) & (rng > 0)
+    return np.where(cond, -100.0, 0.0)
+
+
+def cdl_longleg_doji(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (rng > 0) & (body <= 0.1 * rng) & (us >= 0.35 * rng) & (ds >= 0.35 * rng)
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_highwave(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    cond = (rng > 0) & (body <= 0.2 * rng) & ((us >= 0.4 * rng) | (ds >= 0.4 * rng))
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_3inside_up(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    mx1 = pd.concat([o.shift(1), c.shift(1)], axis=1).max(axis=1)
+    mn1 = pd.concat([o.shift(1), c.shift(1)], axis=1).min(axis=1)
+    cond = be.shift(2).fillna(False) & (mx1 < o.shift(2)) & (mn1 > c.shift(2)) & bu & (c > o.shift(2))
+    return np.where(cond.fillna(False), 100.0, 0.0)
+
+
+def cdl_3inside_dn(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    mx1 = pd.concat([o.shift(1), c.shift(1)], axis=1).max(axis=1)
+    mn1 = pd.concat([o.shift(1), c.shift(1)], axis=1).min(axis=1)
+    cond = bu.shift(2).fillna(False) & (mx1 < c.shift(2)) & (mn1 > o.shift(2)) & be & (c < o.shift(2))
+    return np.where(cond.fillna(False), -100.0, 0.0)
+
+
+def cdl_tweezerbottom(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    tol = 0.05 * rng.replace(0, 1)
+    cond = ((l - l.shift(1)).abs() <= tol) & be.shift(1).fillna(False) & bu
+    return np.where(cond, 100.0, 0.0)
+
+
+def cdl_tweezertop(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    tol = 0.05 * rng.replace(0, 1)
+    cond = ((h - h.shift(1)).abs() <= tol) & bu.shift(1).fillna(False) & be
+    return np.where(cond, -100.0, 0.0)
+
+
+def cdl_kicking_bull(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    rng1 = (h.shift(1) - l.shift(1))
+    cond = (be.shift(1).fillna(False) & (body.shift(1) >= 0.9 * rng1) &
+            bu & (body >= 0.9 * rng) & (o > o.shift(1)))
+    return np.where(cond.fillna(False), 100.0, 0.0)
+
+
+def cdl_kicking_bear(df):
+    o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
+    rng1 = (h.shift(1) - l.shift(1))
+    cond = (bu.shift(1).fillna(False) & (body.shift(1) >= 0.9 * rng1) &
+            be & (body >= 0.9 * rng) & (o < o.shift(1)))
+    return np.where(cond.fillna(False), -100.0, 0.0)
+
+
+def cdl_gap_up(df):
+    return np.where(df['low'] > df['high'].shift(1), 100.0, 0.0)
+
+
+def cdl_gap_dn(df):
+    return np.where(df['high'] < df['low'].shift(1), -100.0, 0.0)
+
+
+for _nm, _fn in [
+    ('cdl_doji', cdl_doji), ('cdl_dragonfly', cdl_dragonfly), ('cdl_gravestone', cdl_gravestone),
+    ('cdl_hammer', cdl_hammer), ('cdl_invhammer', cdl_invhammer), ('cdl_hangingman', cdl_hangingman),
+    ('cdl_shootingstar', cdl_shootingstar), ('cdl_marubozu', cdl_marubozu), ('cdl_spinningtop', cdl_spinningtop),
+    ('cdl_engulf_bull', cdl_engulf_bull), ('cdl_engulf_bear', cdl_engulf_bear),
+    ('cdl_harami_bull', cdl_harami_bull), ('cdl_harami_bear', cdl_harami_bear),
+    ('cdl_piercing', cdl_piercing), ('cdl_darkcloud', cdl_darkcloud),
+    ('cdl_morningstar', cdl_morningstar), ('cdl_eveningstar', cdl_eveningstar),
+    ('cdl_3whitesoldiers', cdl_3whitesoldiers), ('cdl_3blackcrows', cdl_3blackcrows),
+    ('cdl_beltuphold_bull', cdl_beltuphold_bull), ('cdl_beltuphold_bear', cdl_beltuphold_bear),
+    ('cdl_longleg_doji', cdl_longleg_doji), ('cdl_highwave', cdl_highwave),
+    ('cdl_3inside_up', cdl_3inside_up), ('cdl_3inside_dn', cdl_3inside_dn),
+    ('cdl_tweezerbottom', cdl_tweezerbottom), ('cdl_tweezertop', cdl_tweezertop),
+    ('cdl_kicking_bull', cdl_kicking_bull), ('cdl_kicking_bear', cdl_kicking_bear),
+    ('cdl_gap_up', cdl_gap_up), ('cdl_gap_dn', cdl_gap_dn),
+]:
+    _reg(_nm, _fn)
+
+
 # ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
