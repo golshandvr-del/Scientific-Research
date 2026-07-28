@@ -265,6 +265,9 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s332Layer(S332_CFG['XAUUSD-H4']),   // احیای squeeze با فیلترِ ADX/DI — RQS+=92.1
     s327Layer(SELL_CLIMAX_CFG['XAUUSD-H4']),
   ],
+  'EURUSD-M5': [
+    s334Layer(S334_CFG['EURUSD-M5']),    // احیای s122 — MR-fade فروش + گیتِ Hurst<0.52/Kurt<2.2 — RQS+=84.1 (WR 66.7% · PF 1.62)
+  ],
   'EURUSD-M15': [
     s326Layer(STREAK_REV_CFG['EURUSD-M15']),
   ],
