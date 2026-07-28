@@ -453,4 +453,116 @@ _reg('wr_cn', wr_cn); _reg('psy', psy); _reg('br', br); _reg('ar', ar)
 _reg('cr', cr); _reg('trix', trix); _reg('dpo', dpo); _reg('mtm', mtm); _reg('adtm', adtm)
 
 
+# ===========================================================================
+# بخش ۳ — VOLATILITY (۶) + VOLUME (۸) — نام‌ها ۱:۱ با volatility.ts
+# نام‌ها: natr rvi_vol ulcer chop mass atr_pct | obv ad adosc efi mfi wvad vpt emv
+# ===========================================================================
+def natr(df, p=14):
+    x = _c(df); a = rma_s(_tr(df), p)
+    return 100 * a / x.replace(0, np.nan)
+
+
+def rvi_vol(df, p=14):
+    x = _c(df); sd = std_s(x, p)
+    up = sd.where(x > x.shift(1), 0.0)
+    dn = sd.where(x <= x.shift(1), 0.0)
+    eu = ema_s(up, p); ed = ema_s(dn, p)
+    return 100 * eu / (eu + ed).replace(0, np.nan)
+
+
+def ulcer(df, p=14):
+    x = _c(df); n = len(x); xv = x.values; out = np.full(n, np.nan)
+    hh = x.rolling(p).max().values
+    for i in range(p - 1, n):
+        h = hh[i]
+        if not h:
+            continue
+        window = xv[i - p + 1:i + 1]
+        dd = 100 * (window - h) / h
+        out[i] = np.sqrt(np.mean(dd * dd))
+    return pd.Series(out, index=x.index)
+
+
+def chop(df, p=14):
+    tr = _tr(df)
+    sum_tr = tr.rolling(p).sum()
+    hh = df['high'].rolling(p).max(); ll = df['low'].rolling(p).min()
+    rng = (hh - ll).replace(0, np.nan)
+    return 100 * np.log10(sum_tr / rng) / np.log10(p)
+
+
+def mass(df, ema=9, summ=25):
+    rng = (df['high'] - df['low'])
+    e1 = ema_s(rng, ema); e2 = ema_s(e1, ema)
+    ratio = e1 / e2.replace(0, np.nan)
+    return ratio.rolling(summ).sum()
+
+
+def atr_pct(df, p=14, lookback=100):
+    a = rma_s(_tr(df), p)
+    # صدکِ درصدیِ ATR جاری در پنجره‌ی گذشته (شاملِ خودش) — بدونِ look-ahead
+    return a.rolling(lookback + 1).apply(
+        lambda w: 100.0 * (w <= w[-1]).sum() / len(w), raw=True)
+
+
+def obv(df):
+    x = _c(df); v = df['volume']
+    sign = np.sign(x.diff().fillna(0))
+    return (sign * v).cumsum()
+
+
+def _adl(df):
+    rng = (df['high'] - df['low'])
+    mfm = (((df['close'] - df['low']) - (df['high'] - df['close'])) / rng.replace(0, np.nan)).fillna(0)
+    return (mfm * df['volume']).cumsum()
+
+
+def ad(df):
+    return _adl(df)
+
+
+def adosc(df, fast=3, slow=10):
+    adl = _adl(df)
+    return ema_s(adl, fast) - ema_s(adl, slow)
+
+
+def efi(df, p=13):
+    raw = _c(df).diff() * df['volume']
+    return ema_s(raw, p)
+
+
+def mfi(df, p=14):
+    tp = (df['high'] + df['low'] + df['close']) / 3
+    mf = tp * df['volume']
+    up = mf.where(tp > tp.shift(1), 0.0).rolling(p).sum()
+    dn = mf.where(tp < tp.shift(1), 0.0).rolling(p).sum()
+    return 100 - 100 / (1 + up / dn.replace(0, np.nan))
+
+
+def wvad(df, p=24):
+    rng = (df['high'] - df['low'])
+    raw = (((df['close'] - df['open']) / rng.replace(0, np.nan)) * df['volume']).fillna(0)
+    return sma_s(raw, p)
+
+
+def vpt(df):
+    x = _c(df); v = df['volume']
+    raw = (v * (x.diff() / x.shift(1).replace(0, np.nan))).fillna(0)
+    return raw.cumsum()
+
+
+def emv(df, p=14):
+    mid = ((df['high'] + df['low']) / 2).diff()
+    rng = (df['high'] - df['low'])
+    box = (df['volume'] / 1e6) / rng.replace(0, np.nan)
+    raw = (mid / box.replace(0, np.nan)).fillna(0)
+    return sma_s(raw, p)
+
+
+_reg('natr', natr); _reg('rvi_vol', rvi_vol); _reg('ulcer', ulcer); _reg('chop', chop)
+_reg('mass', mass); _reg('atr_pct', atr_pct)
+_reg('obv', obv); _reg('ad', ad); _reg('adosc', adosc); _reg('efi', efi)
+_reg('mfi', mfi); _reg('wvad', wvad); _reg('vpt', vpt); _reg('emv', emv)
+
+
 # ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
