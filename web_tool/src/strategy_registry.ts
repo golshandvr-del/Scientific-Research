@@ -237,6 +237,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s330Layer(S330_CFG['XAUUSD-M5']),
     s328Layer(S328_CFG['XAUUSD-M5']),
     s334Layer(S334_CFG['XAUUSD-M5']),    // احیای s122 — MR-fade فروش + گیتِ Hurst<0.5/Kurt<1.8 — RQS+=81.6 (WR 61.7% · PF 1.61)
+    s335Layer(S335_CFG['XAUUSD-M5']),    // S335 — Reflex zero-up چرخهٔ اِهلرز، خریدِ کفِ چرخه — RQS+=92.2 (WR 62.7% · PF 2.22) · همپوشانیِ صفر با S333
     s327Layer(SELL_CLIMAX_CFG['XAUUSD-M5']),
     s326Layer(STREAK_REV_CFG['XAUUSD-M5']),
   ],
@@ -246,6 +247,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s324Layer(S324_CFG['XAUUSD-M15']),
     s322Layer(S322_CFG['XAUUSD-M15']),
     s323Layer(S323_CFG['XAUUSD-M15']),
+    s335Layer(S335_CFG['XAUUSD-M15']),  // S335 — Reflex dip-turn + گیتِ r2>0.55 — RQS+=89.7 (WR 60.0% · PF 2.08) · همپوشانیِ صفر با S333
     s310Layer,
     s312Layer(295, 295, 48),
   ],
@@ -265,6 +267,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s328Layer(S328_CFG['XAUUSD-H1']),
     s327Layer(SELL_CLIMAX_CFG['XAUUSD-H1']),
     s323Layer(S323_CFG['XAUUSD-H1']),
+    s335Layer(S335_CFG['XAUUSD-H1']),   // S335 — Reflex dip-turn + گیتِ Chop<38.2 — RQS+=89.7 (WR 61.2% · PF 1.85) · همپوشانیِ صفر با S333
     s312Layer(395, 395, 24),
   ],
   'XAUUSD-H4': [
