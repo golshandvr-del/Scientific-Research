@@ -64,27 +64,37 @@ def build_short_mr(df, z_win, z_thr, rsi_thr, rsi_p=14):
     return np.nan_to_num(sig, nan=0).astype(bool)
 
 
+_REG_CACHE = {}
+
+
+def precompute_regime(df):
+    """اندیکاتورهای رژیم را یک‌بار محاسبه و کش کن (hurst کند است)."""
+    key = id(df)
+    if key in _REG_CACHE:
+        return _REG_CACHE[key]
+    reg = {
+        'hurst': np.nan_to_num(pd.Series(ib.compute('hurst', df)).values, nan=1.0),
+        'kurt':  np.nan_to_num(pd.Series(ib.compute('kurt', df)).values, nan=99.0),
+        'chop':  np.nan_to_num(pd.Series(ib.compute('chop', df)).values, nan=0.0),
+        'r2':    np.nan_to_num(pd.Series(ib.compute('r2', df)).values, nan=1.0),
+    }
+    _REG_CACHE[key] = reg
+    return reg
+
+
 def regime_filters(df, h_thr=None, k_thr=None, c_thr=None, r2_thr=None):
-    """ماسکِ رژیمِ mean-reverting از بانکِ ۴۰۱‌تایی (بدونِ look-ahead)."""
-    n = len(df)
-    mask = np.ones(n, dtype=bool)
+    """ماسکِ رژیمِ mean-reverting از بانکِ ۴۰۱‌تایی (بدونِ look-ahead، از کش)."""
+    reg = precompute_regime(df)
+    mask = np.ones(len(df), dtype=bool)
     used = []
     if h_thr is not None:
-        hu = pd.Series(ib.compute('hurst', df)).values          # H<thr = mean-reverting
-        mask &= np.nan_to_num(hu, nan=1.0) < h_thr
-        used.append(f'hurst<{h_thr}')
+        mask &= reg['hurst'] < h_thr;  used.append(f'hurst<{h_thr}')
     if k_thr is not None:
-        ku = pd.Series(ib.compute('kurt', df)).values           # safety-gate ریسکِ دُم
-        mask &= np.nan_to_num(ku, nan=99.0) < k_thr
-        used.append(f'kurt<{k_thr}')
+        mask &= reg['kurt'] < k_thr;   used.append(f'kurt<{k_thr}')
     if c_thr is not None:
-        ch = pd.Series(ib.compute('chop', df)).values           # رنج
-        mask &= np.nan_to_num(ch, nan=0.0) > c_thr
-        used.append(f'chop>{c_thr}')
+        mask &= reg['chop'] > c_thr;   used.append(f'chop>{c_thr}')
     if r2_thr is not None:
-        r2 = pd.Series(ib.compute('r2', df)).values             # نبودِ روندِ خطی
-        mask &= np.nan_to_num(r2, nan=1.0) < r2_thr
-        used.append(f'r2<{r2_thr}')
+        mask &= reg['r2'] < r2_thr;    used.append(f'r2<{r2_thr}')
     return mask, used
 
 
