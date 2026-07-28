@@ -46,9 +46,9 @@ from engine import indicator_bank as ib
 # ---------------------------------------------------------------------------
 def build_long_signal(df, p_rf, p_tf, rf_dip, tf_min, p_hu, hu_min):
     """آرایهٔ بولینِ هم‌طولِ df؛ True = سیگنالِ خریدِ کندلِ i (ورود در i+1)."""
-    reflex = ib.compute('reflex', df, p=p_rf).values.astype(float)
-    tflex  = ib.compute('trendflex', df, p=p_tf).values.astype(float)
-    hurst  = ib.compute('hurst', df, p=p_hu).values.astype(float)
+    reflex = ib.reflex(df, period=p_rf).values.astype(float)
+    tflex  = ib.trendflex(df, period=p_tf).values.astype(float)
+    hurst  = ib.hurst(df, p=p_hu).values.astype(float)
     n = len(df)
     sig = np.zeros(n, dtype=bool)
     for i in range(1, n):
