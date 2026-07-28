@@ -47,6 +47,10 @@ import { decideS332, S332_CFG } from './squeeze_s332'
 // --- ماژولِ نوِ این نشست: احیای S79 (Trend-Pullback) با هندسهٔ منصفانه TP≥SL
 //     روی XAU M5/M15/M30/H1 — WR واقعی از دقتِ ورود (rsi_turn/price_turn) + رژیمِ Hurst/ER ---
 import { decideS333, S333_CFG } from './s333_pullback'
+// --- لایهٔ نوِ این نشست: S335 Reflex-TrendFlex Cycle-Turn (چرخهٔ DSP اِهلرز) ---
+//     خریدِ کفِ چرخه درونِ روندِ صعودیِ کم‌تأخیر روی XAU M5/M15/H1 —
+//     همپوشانیِ صفر با S333؛ RQS+ = 92.2/89.7/89.7 ---
+import { decideS335, S335_CFG } from './s335_reflex_cycle'
 
 const GOLD_PIP = 0.1
 
