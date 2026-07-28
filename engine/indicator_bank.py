@@ -973,4 +973,63 @@ _reg('waddah', waddah); _reg('elder_impulse', elder_impulse); _reg('chandelier',
 _reg('gann_hilo', gann_hilo); _reg('tdi', tdi)
 
 
+# ===========================================================================
+# بخش ۷ — COMPOSITE / OVERLAP (۵ تبدیلِ قیمت + ۳ ترکیبیِ رژیم‌محور = ۸)
+# نام‌ها ۱:۱ با composite.ts:
+#   hl2 hlc3 ohlc4 wcp midpoint | ema_dist_atr rsi_of_er trend_gate
+# ===========================================================================
+def hl2(df):
+    return (df['high'] + df['low']) / 2
+
+
+def hlc3(df):
+    return (df['high'] + df['low'] + df['close']) / 3
+
+
+def ohlc4(df):
+    return (df['open'] + df['high'] + df['low'] + df['close']) / 4
+
+
+def wcp(df):
+    return (df['high'] + df['low'] + 2 * df['close']) / 4
+
+
+def midpoint(df, period=14):
+    x = _c(df)
+    return (x.rolling(period).max() + x.rolling(period).min()) / 2
+
+
+def ema_dist_atr(df, emaP=50, atrP=14):
+    x = _c(df); e = ema_s(x, emaP); a = rma_s(_tr(df), atrP)
+    return (x - e) / a.replace(0, np.nan)
+
+
+def rsi_of_er(df, erP=10, rsiP=14):
+    x = _c(df); n = len(x); xv = x.values
+    er = np.zeros(n)
+    absdiff = np.abs(np.diff(xv, prepend=xv[0]))
+    vol = pd.Series(absdiff).rolling(erP).sum().values
+    change = np.abs(xv - np.concatenate([np.full(erP, np.nan), xv[:-erP]]))
+    with np.errstate(invalid='ignore'):
+        er = np.where((vol != 0) & np.isfinite(change), change / vol, 0.0)
+    er = np.nan_to_num(er)
+    return rsi_s(pd.Series(er * 100, index=x.index), rsiP)
+
+
+def trend_gate(df, chopP=14, emaP=50, thr=38.2):
+    x = _c(df); e = ema_s(x, emaP)
+    tr = _tr(df)
+    sum_tr = tr.rolling(chopP).sum()
+    rng = (df['high'].rolling(chopP).max() - df['low'].rolling(chopP).min())
+    chop_v = 100 * np.log10(sum_tr / rng.replace(0, np.nan)) / np.log10(chopP)
+    slope = np.sign(e.diff())
+    out = np.where(chop_v < thr, slope, 0.0)
+    return pd.Series(out, index=df.index)
+
+
+_reg('hl2', hl2); _reg('hlc3', hlc3); _reg('ohlc4', ohlc4); _reg('wcp', wcp)
+_reg('midpoint', midpoint); _reg('ema_dist_atr', ema_dist_atr)
+_reg('rsi_of_er', rsi_of_er); _reg('trend_gate', trend_gate)
+
+
 # ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
