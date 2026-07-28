@@ -43,6 +43,9 @@ import {
 import { assetSpec, computeLots, type RegimeInfo } from './router'
 // --- ماژولِ نوِ این نشست: احیای squeeze روی H4 (ADX/DI) و M15 (r2+hurst) ---
 import { decideS332, S332_CFG } from './squeeze_s332'
+// --- ماژولِ نوِ این نشست: احیای S79 (Trend-Pullback) با هندسهٔ منصفانه TP≥SL
+//     روی XAU M5/M15/M30/H1 — WR واقعی از دقتِ ورود (rsi_turn/price_turn) + رژیمِ Hurst/ER ---
+import { decideS333, S333_CFG } from './s333_pullback'
 
 const GOLD_PIP = 0.1
 
@@ -199,6 +202,8 @@ const s328Layer = (cfg: typeof S328_CFG[string]): LayerFn => (ctx) => decideS328
 const s330Layer = (cfg: typeof S330_CFG[string]): LayerFn => (ctx) => decideS330(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ نوِ این نشست: squeeze احیاشده (H4=ADX/DI · M15=r2+hurst)
 const s332Layer = (cfg: typeof S332_CFG[string]): LayerFn => (ctx) => decideS332(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// لایهٔ نوِ این نشست: S333 Trend-Pullback (هندسهٔ منصفانه TP≥SL · WR واقعی)
+const s333Layer = (cfg: typeof S333_CFG[string]): LayerFn => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 
 // ---------------------------------------------------------------------------
 // نگاشتِ کارت → لایه‌های فعال (به‌ترتیبِ اولویت). فقط لایه‌هایی که روی همان
@@ -206,22 +211,27 @@ const s332Layer = (cfg: typeof S332_CFG[string]): LayerFn => (ctx) => decideS332
 // افزودنِ کارت/لایهٔ جدید فقط این جدول را تغییر می‌دهد (ماژولار/توسعه‌پذیر).
 //
 //   کارت         لایه‌های ACCEPTED (منبعِ نامِ فایل results/)
-//   XAUUSD-M5    S330(FADE) · S328(SHORT) · S327(LONG) · S326(LONG)
-//   XAUUSD-M15   S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
-//   XAUUSD-M30   S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
-//   XAUUSD-H1    S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
+//   XAUUSD-M5    S333(LONG·pullback·RQS 91.3) · S330(FADE) · S328(SHORT) · S327(LONG) · S326(LONG)
+//   XAUUSD-M15   S333(LONG·pullback·RQS 91.7) · S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
+//   XAUUSD-M30   S333(LONG·pullback·RQS 91.1) · S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
+//   XAUUSD-H1    S333(LONG·pullback·RQS 89.8) · S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
 //   XAUUSD-H4    S332(LONG·squeeze ADX/DI) · S327(LONG)
 //   EURUSD-M15   S326(LONG)
 //   EURUSD-M30   S327(LONG)
+//
+//   ⚖️ S333 = احیای S79 با هندسهٔ منصفانه (TP≥SL، breakeven≤۵۰٪): WR واقعی از دقتِ
+//      محلِ ورود (rsi_turn/price_turn) + رژیمِ Hurst/ER، نه از TP<SL. (تصحیحِ User Note)
 // ---------------------------------------------------------------------------
 export const CARD_LAYERS: Record<string, LayerFn[]> = {
   'XAUUSD-M5': [
+    s333Layer(S333_CFG['XAUUSD-M5']),    // احیای S79 — pullback با هندسهٔ منصفانه + rsi_turn — RQS+=91.3 (WR 65.6% · PF 2.85)
     s330Layer(S330_CFG['XAUUSD-M5']),
     s328Layer(S328_CFG['XAUUSD-M5']),
     s327Layer(SELL_CLIMAX_CFG['XAUUSD-M5']),
     s326Layer(STREAK_REV_CFG['XAUUSD-M5']),
   ],
   'XAUUSD-M15': [
+    s333Layer(S333_CFG['XAUUSD-M15']),   // احیای S79 — pullback (ورودِ مستقیم) — RQS+=91.7 (WR 62.8% · PF 2.30)
     s332Layer(S332_CFG['XAUUSD-M15']),   // احیای squeeze با فیلترِ آماری r2+hurst — RQS+=91.2
     s324Layer(S324_CFG['XAUUSD-M15']),
     s322Layer(S322_CFG['XAUUSD-M15']),
@@ -230,6 +240,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s312Layer(295, 295, 48),
   ],
   'XAUUSD-M30': [
+    s333Layer(S333_CFG['XAUUSD-M30']),   // احیای S79 — pullback با تأییدِ price_turn — RQS+=91.1 (WR 66.7% · PF 2.48)
     s313Layer(S313_M30),
     s324Layer(S324_CFG['XAUUSD-M30']),
     s321Layer(S321_CFG['XAUUSD-M30']),
@@ -239,6 +250,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s312Layer(295, 295, 36),
   ],
   'XAUUSD-H1': [
+    s333Layer(S333_CFG['XAUUSD-H1']),    // احیای S79 — pullback (ورودِ مستقیم + ER) — RQS+=89.8 (WR 62.2% · PF 1.85)
     s313Layer(S313_H1),
     s328Layer(S328_CFG['XAUUSD-H1']),
     s327Layer(SELL_CLIMAX_CFG['XAUUSD-H1']),
