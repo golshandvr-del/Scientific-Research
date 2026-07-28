@@ -85,5 +85,15 @@ def evaluate(df, sig, asset, sl, tp, max_hold):
     return tr, r
 
 
+def brief(r):
+    """یک‌خطی‌سازیِ متریک‌های RQS+ برای اسکن."""
+    m = r['metrics']; g = r['gates']
+    gs = ''.join('✓' if g[k] else '✗' for k in ['G0','G1','G2','G3','G4','G5'])
+    return (f"n={m['n_trades']:4d} WR={m['win_rate']:5.1f}% PF={m['profit_factor']:.2f} "
+            f"DD={m['max_dd_pct']:4.1f}% MCL={m['max_consec_losses']:2d} "
+            f"exp={m['expectancy_pip']:+6.2f} p={m['p_value']:.3f} "
+            f"RQS={r['rqs_score']:5.1f} [{gs}] {'ACCEPT' if r['passed'] else 'reject'}")
+
+
 if __name__ == '__main__':
-    print('module ready — use run_scan()')
+    print('module ready — import and call core_signal/apply_regime/evaluate/brief')
