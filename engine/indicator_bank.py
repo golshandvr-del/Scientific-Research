@@ -135,8 +135,8 @@ def compute_many(names: list[str], df: pd.DataFrame) -> pd.DataFrame:
 
 
 # ===========================================================================
-# بخش ۱ — TREND (روند / میانگین‌های پیشرفته) — ۱۶ پایه
-# منبع: web_tool/src/indicators/bank/trend.ts
+# بخش ۱ — TREND (روند / میانگین‌های پیشرفته) — ۱۶ پایه (نام‌ها ۱:۱ با trend.ts)
+# نام‌ها: dema tema zlema hma rma wma trima t3 kama vidya mcgd alma fwma sinwma dma bbi
 # ===========================================================================
 def dema(df, p=20):
     e1 = ema_s(_c(df), p); e2 = ema_s(e1, p)
@@ -148,19 +148,38 @@ def tema(df, p=20):
     return 3 * e1 - 3 * e2 + e3
 
 
+def zlema(df, p=20):
+    x = _c(df); lag = (p - 1) // 2
+    return ema_s(x + (x - x.shift(lag)), p)
+
+
 def hma(df, p=20):
     x = _c(df)
     half = wma_s(x, max(1, p // 2)); full = wma_s(x, p)
     return wma_s(2 * half - full, max(1, int(np.sqrt(p))))
 
 
-def zlema(df, p=20):
-    x = _c(df); lag = (p - 1) // 2
-    return ema_s(x + (x - x.shift(lag)), p)
-
-
 def rma_ind(df, p=14):
     return rma_s(_c(df), p)
+
+
+def wma_ind(df, p=20):
+    return wma_s(_c(df), p)
+
+
+def trima(df, p=20):
+    # TRIMA = SMA(SMA) با نیم‌پنجره‌ها — منطبق با trend.ts (h=ceil((p+1)/2))
+    h = (p + 1 + 1) // 2  # ceil((p+1)/2)
+    return sma_s(sma_s(_c(df), h), p // 2 + 1)
+
+
+def t3(df, p=10, v=0.7):
+    x = _c(df)
+    e1 = ema_s(x, p); e2 = ema_s(e1, p); e3 = ema_s(e2, p)
+    e4 = ema_s(e3, p); e5 = ema_s(e4, p); e6 = ema_s(e5, p)
+    c1 = -v ** 3; c2 = 3 * v ** 2 + 3 * v ** 3
+    c3 = -6 * v ** 2 - 3 * v - 3 * v ** 3; c4 = 1 + 3 * v + v ** 3 + 3 * v ** 2
+    return c1 * e6 + c2 * e5 + c3 * e4 + c4 * e3
 
 
 def kama(df, p=10, fast=2, slow=30):
@@ -184,16 +203,16 @@ def vidya(df, p=14, cmo_p=9):
     d = np.diff(xv, prepend=xv[0])
     up = pd.Series(np.where(d > 0, d, 0.0)).rolling(cmo_p).sum().values
     dn = pd.Series(np.where(d < 0, -d, 0.0)).rolling(cmo_p).sum().values
-    cmo = np.where((up + dn) != 0, np.abs((up - dn) / (up + dn)), 0.0)
+    cmo_v = np.where((up + dn) != 0, np.abs((up - dn) / (up + dn)), 0.0)
     alpha = 2.0 / (p + 1)
     out = np.full(n, np.nan); prev = xv[0]
     for i in range(n):
-        k = alpha * cmo[i] if not np.isnan(cmo[i]) else 0.0
+        k = alpha * cmo_v[i] if not np.isnan(cmo_v[i]) else 0.0
         prev = prev + k * (xv[i] - prev); out[i] = prev
     return pd.Series(out, index=x.index)
 
 
-def mcginley(df, p=14):
+def mcgd(df, p=14):
     x = _c(df); n = len(x); xv = x.values
     out = np.full(n, np.nan); prev = xv[0]
     for i in range(n):
@@ -205,24 +224,6 @@ def mcginley(df, p=14):
     return pd.Series(out, index=x.index)
 
 
-def t3(df, p=10, v=0.7):
-    x = _c(df)
-    e1 = ema_s(x, p); e2 = ema_s(e1, p); e3 = ema_s(e2, p)
-    e4 = ema_s(e3, p); e5 = ema_s(e4, p); e6 = ema_s(e5, p)
-    c1 = -v ** 3; c2 = 3 * v ** 2 + 3 * v ** 3
-    c3 = -6 * v ** 2 - 3 * v - 3 * v ** 3; c4 = 1 + 3 * v + v ** 3 + 3 * v ** 2
-    return c1 * e6 + c2 * e5 + c3 * e4 + c4 * e3
-
-
-def trima(df, p=20):
-    return sma_s(sma_s(_c(df), (p + 1) // 2), p // 2 + 1)
-
-
-def vwma(df, p=20):
-    x = _c(df); vv = df['volume']
-    return (x * vv).rolling(p).sum() / vv.rolling(p).sum().replace(0, np.nan)
-
-
 def alma(df, p=21, offset=0.85, sigma=6.0):
     x = _c(df)
     m = offset * (p - 1); s = p / sigma
@@ -230,155 +231,45 @@ def alma(df, p=21, offset=0.85, sigma=6.0):
     return x.rolling(p).apply(lambda a: np.dot(a, w), raw=True)
 
 
-def swma(df, p=None):
-    # Symmetric Weighted MA (4-period مثلثی، منطبق با pine swma)
+def fwma(df, p=10):
+    # میانگینِ وزنیِ فیبوناچی (وزن‌ها = دنباله‌ی فیبوناچیِ p جمله)
+    fib = [1, 1]
+    for k in range(2, p):
+        fib.append(fib[k - 1] + fib[k - 2])
+    fib = np.array(fib[:p], dtype='float64'); wsum = fib.sum()
+    return _c(df).rolling(p).apply(lambda a: np.dot(a, fib) / wsum, raw=True)
+
+
+def sinwma(df, p=14):
+    # میانگینِ وزنیِ سینوسی (وزن‌ها = sin(kπ/(p+1)))
+    w = np.array([np.sin(k * np.pi / (p + 1)) for k in range(1, p + 1)], dtype='float64')
+    wsum = w.sum()
+    return _c(df).rolling(p).apply(lambda a: np.dot(a, w) / wsum, raw=True)
+
+
+def dma_ind(df, fast=10, slow=50):
+    # 平均差 — تفاضلِ دو SMA
     x = _c(df)
-    return (x.shift(3) * 1 + x.shift(2) * 2 + x.shift(1) * 2 + x * 1) / 6
+    return sma_s(x, fast) - sma_s(x, slow)
 
 
-def hwma(df, p=20):
-    # Hull-like: نامِ داخلی برای میانگینِ ترکیبیِ چهارگانه‌ی trend.ts
+def bbi(df, p1=3, p2=6, p3=12, p4=24):
+    # 多空均线 — میانگینِ چهار SMA
     x = _c(df)
-    a = wma_s(x, p); b = ema_s(x, p); d = sma_s(x, p); e = rma_s(x, p)
-    return (a + b + d + e) / 4
+    return (sma_s(x, p1) + sma_s(x, p2) + sma_s(x, p3) + sma_s(x, p4)) / 4
 
 
-_reg('dema', dema); _reg('tema', tema); _reg('hma', hma); _reg('zlema', zlema)
-_reg('rma', rma_ind); _reg('kama', kama); _reg('vidya', vidya); _reg('mcgd', mcginley)
-_reg('t3', t3); _reg('trima', trima); _reg('vwma', vwma); _reg('alma', alma)
-_reg('swma', swma); _reg('hwma', hwma)
+_reg('dema', dema); _reg('tema', tema); _reg('zlema', zlema); _reg('hma', hma)
+_reg('rma', rma_ind); _reg('wma', wma_ind); _reg('trima', trima); _reg('t3', t3)
+_reg('kama', kama); _reg('vidya', vidya); _reg('mcgd', mcgd); _reg('alma', alma)
+_reg('fwma', fwma); _reg('sinwma', sinwma); _reg('dma', dma_ind); _reg('bbi', bbi)
 
 
 # ===========================================================================
-# بخش ۲ — MOMENTUM (مومنتوم / اسیلاتورها) — ۲۵ پایه
-# منبع: web_tool/src/indicators/bank/momentum.ts
+# بخش ۲ — MOMENTUM (مومنتوم / اسیلاتورها) — ۲۵ پایه (نام‌ها ۱:۱ با momentum.ts)
+# نام‌ها: ao ac apo ppo cmo tsi roc mom bop cfo pgo fisher ifish_rsi rvgi kdj_j
+#         bias wr_cn psy br ar cr trix dpo mtm adtm
 # ===========================================================================
-def tsi(df, long=25, short=13):
-    m = _c(df).diff()
-    r = ema_s(ema_s(m, long), short); a = ema_s(ema_s(m.abs(), long), short)
-    return 100 * r / a.replace(0, np.nan)
-
-
-def trix(df, p=15):
-    e = ema_s(ema_s(ema_s(_c(df), p), p), p)
-    return 100 * e.diff() / e.shift(1).replace(0, np.nan)
-
-
-def cmo(df, p=14):
-    d = _c(df).diff()
-    up = d.clip(lower=0).rolling(p).sum(); dn = (-d.clip(upper=0)).rolling(p).sum()
-    return 100 * (up - dn) / (up + dn).replace(0, np.nan)
-
-
-def ppo(df, fast=12, slow=26):
-    ef = ema_s(_c(df), fast); es = ema_s(_c(df), slow)
-    return 100 * (ef - es) / es.replace(0, np.nan)
-
-
-def roc(df, p=10):
-    x = _c(df)
-    return 100 * (x - x.shift(p)) / x.shift(p).replace(0, np.nan)
-
-
-def mom(df, p=10):
-    return _c(df).diff(p)
-
-
-def rmi(df, p=14, mom_p=5):
-    d = _c(df).diff(mom_p)
-    up = d.clip(lower=0); dn = -d.clip(upper=0)
-    au = rma_s(up, p); ad = rma_s(dn, p)
-    return 100 - 100 / (1 + au / ad.replace(0, np.nan))
-
-
-def fisher(df, p=10):
-    h = highest_s(df['high'], p); l = lowest_s(df['low'], p)
-    mid = (df['high'] + df['low']) / 2
-    raw = 2 * (mid - l) / (h - l).replace(0, np.nan) - 1
-    raw = raw.clip(-0.999, 0.999).fillna(0)
-    n = len(raw); out = np.full(n, np.nan); v = 0.0; fish = 0.0
-    rv = raw.values
-    for i in range(n):
-        v = 0.33 * rv[i] + 0.67 * v
-        v = min(0.999, max(-0.999, v))
-        fish = 0.5 * np.log((1 + v) / (1 - v)) + 0.5 * fish
-        out[i] = fish
-    return pd.Series(out, index=raw.index)
-
-
-def cci(df, p=20):
-    tp = (df['high'] + df['low'] + df['close']) / 3
-    ma = sma_s(tp, p)
-    md = (tp - ma).abs().rolling(p).mean()
-    return (tp - ma) / (0.015 * md).replace(0, np.nan)
-
-
-def dpo(df, p=20):
-    x = _c(df); sh = p // 2 + 1
-    return x - sma_s(x, p).shift(sh)
-
-
-def kdj_j(df, p=9, k_s=3, d_s=3):
-    ll = lowest_s(df['low'], p); hh = highest_s(df['high'], p)
-    rsv = 100 * (df['close'] - ll) / (hh - ll).replace(0, np.nan)
-    k = rsv.ewm(alpha=1.0 / k_s, adjust=False).mean()
-    d = k.ewm(alpha=1.0 / d_s, adjust=False).mean()
-    return 3 * k - 2 * d
-
-
-def willr(df, p=14):
-    hh = highest_s(df['high'], p); ll = lowest_s(df['low'], p)
-    return -100 * (hh - df['close']) / (hh - ll).replace(0, np.nan)
-
-
-def bias(df, p=6):
-    x = _c(df); s = sma_s(x, p)
-    return 100 * (x - s) / s.replace(0, np.nan)
-
-
-def psy(df, p=12):
-    up = (_c(df).diff() > 0).astype('float64')
-    return 100 * up.rolling(p).sum() / p
-
-
-def ultimate(df, s1=7, s2=14, s3=28):
-    c = df['close']; pc = c.shift(1)
-    bp = c - pd.concat([df['low'], pc], axis=1).min(axis=1)
-    tr = _tr(df)
-    a1 = bp.rolling(s1).sum() / tr.rolling(s1).sum().replace(0, np.nan)
-    a2 = bp.rolling(s2).sum() / tr.rolling(s2).sum().replace(0, np.nan)
-    a3 = bp.rolling(s3).sum() / tr.rolling(s3).sum().replace(0, np.nan)
-    return 100 * (4 * a1 + 2 * a2 + a3) / 7
-
-
-def coppock(df, roc1=14, roc2=11, wma_p=10):
-    x = _c(df)
-    r1 = 100 * (x - x.shift(roc1)) / x.shift(roc1).replace(0, np.nan)
-    r2 = 100 * (x - x.shift(roc2)) / x.shift(roc2).replace(0, np.nan)
-    return wma_s(r1 + r2, wma_p)
-
-
-def kst(df):
-    x = _c(df)
-    def _roc(pp): return 100 * (x - x.shift(pp)) / x.shift(pp).replace(0, np.nan)
-    return (sma_s(_roc(10), 10) * 1 + sma_s(_roc(15), 10) * 2 +
-            sma_s(_roc(20), 10) * 3 + sma_s(_roc(30), 15) * 4)
-
-
-def stochrsi(df, p=14, k=3):
-    r = rsi_s(_c(df), p)
-    ll = r.rolling(p).min(); hh = r.rolling(p).max()
-    sr = 100 * (r - ll) / (hh - ll).replace(0, np.nan)
-    return sr.rolling(k).mean()
-
-
-def rvi(df, p=10):
-    o, h, l, c = df['open'], df['high'], df['low'], df['close']
-    num = ((c - o) + 2 * (c.shift(1) - o.shift(1)) + 2 * (c.shift(2) - o.shift(2)) + (c.shift(3) - o.shift(3))) / 6
-    den = ((h - l) + 2 * (h.shift(1) - l.shift(1)) + 2 * (h.shift(2) - l.shift(2)) + (h.shift(3) - l.shift(3))) / 6
-    return num.rolling(p).mean() / den.rolling(p).mean().replace(0, np.nan)
-
-
 def ao(df):
     mid = (df['high'] + df['low']) / 2
     return sma_s(mid, 5) - sma_s(mid, 34)
@@ -390,8 +281,121 @@ def ac(df):
     return aos - sma_s(aos, 5)
 
 
+def apo(df, fast=12, slow=26):
+    x = _c(df)
+    return ema_s(x, fast) - ema_s(x, slow)
+
+
+def ppo(df, fast=12, slow=26):
+    ef = ema_s(_c(df), fast); es = ema_s(_c(df), slow)
+    return 100 * (ef - es) / es.replace(0, np.nan)
+
+
+def cmo(df, p=14):
+    d = _c(df).diff()
+    up = d.clip(lower=0).rolling(p).sum(); dn = (-d.clip(upper=0)).rolling(p).sum()
+    return 100 * (up - dn) / (up + dn).replace(0, np.nan)
+
+
+def tsi(df, long=25, short=13):
+    m = _c(df).diff()
+    r = ema_s(ema_s(m, long), short); a = ema_s(ema_s(m.abs(), long), short)
+    return 100 * r / a.replace(0, np.nan)
+
+
+def roc(df, p=10):
+    x = _c(df)
+    return 100 * (x - x.shift(p)) / x.shift(p).replace(0, np.nan)
+
+
+def mom(df, p=10):
+    return _c(df).diff(p)
+
+
+def bop(df, smooth=14):
+    rng = (df['high'] - df['low']).replace(0, np.nan)
+    raw = ((df['close'] - df['open']) / rng).fillna(0)
+    return sma_s(raw, smooth)
+
+
+def cfo(df, p=14):
+    # Chande Forecast Oscillator — انحراف از خطِ رگرسیونِ خطیِ p جمله
+    x = _c(df); n = len(x); xv = x.values; out = np.full(n, np.nan)
+    kk = np.arange(p, dtype='float64'); sx = kk.sum(); sxx = (kk * kk).sum()
+    denom = p * sxx - sx * sx
+    for i in range(p - 1, n):
+        y = xv[i - p + 1:i + 1]
+        sy = y.sum(); sxy = (kk * y).sum()
+        b = (p * sxy - sx * sy) / denom
+        a = (sy - b * sx) / p
+        forecast = a + b * (p - 1)
+        out[i] = 100 * (xv[i] - forecast) / xv[i] if xv[i] else np.nan
+    return pd.Series(out, index=x.index)
+
+
+def pgo(df, p=14):
+    # Pretty Good Oscillator — (close − SMA)/EMA(TR)
+    x = _c(df); sma = sma_s(x, p)
+    eatr = ema_s(_tr(df), p)
+    return (x - sma) / eatr.replace(0, np.nan)
+
+
+def fisher(df, p=9):
+    # تبدیلِ فیشرِ اِهلرز — منطبق با momentum.ts (0.66/0.67 روی median نرمال‌شده)
+    med = ((df['high'] + df['low']) / 2)
+    n = len(med); mv = med.values
+    hh = med.rolling(p).max().values; ll = med.rolling(p).min().values
+    out = np.full(n, np.nan); v = 0.0; prev_f = 0.0
+    for i in range(p - 1, n):
+        rng = (hh[i] - ll[i]) or 1e-10
+        v = 0.66 * (2 * (mv[i] - ll[i]) / rng - 1) + 0.67 * v
+        vv = min(0.999, max(-0.999, v))
+        f = 0.5 * np.log((1 + vv) / (1 - vv)) + 0.5 * prev_f
+        out[i] = f; prev_f = f
+    return pd.Series(out, index=med.index)
+
+
+def ifish_rsi(df, p=14):
+    # Inverse Fisher of RSI
+    r = rsi_s(_c(df), p)
+    v = 0.1 * (r - 50)
+    return (np.exp(2 * v) - 1) / (np.exp(2 * v) + 1)
+
+
+def rvgi(df, p=10):
+    o, h, l, c = df['open'], df['high'], df['low'], df['close']
+    co = c - o; hl = h - l
+    num = (co + 2 * co.shift(1) + 2 * co.shift(2) + co.shift(3)) / 6
+    den = (hl + 2 * hl.shift(1) + 2 * hl.shift(2) + hl.shift(3)) / 6
+    return sma_s(num, p) / sma_s(den, p).replace(0, np.nan)
+
+
+def kdj_j(df, p=9, k_s=3, d_s=3):
+    ll = lowest_s(df['low'], p); hh = highest_s(df['high'], p)
+    rsv = 100 * (df['close'] - ll) / (hh - ll).replace(0, np.nan)
+    k = rsv.ewm(alpha=1.0 / k_s, adjust=False).mean()
+    d = k.ewm(alpha=1.0 / d_s, adjust=False).mean()
+    return 3 * k - 2 * d
+
+
+def bias(df, p=6):
+    x = _c(df); s = sma_s(x, p)
+    return 100 * (x - s) / s.replace(0, np.nan)
+
+
+def wr_cn(df, p=14):
+    # ویلیامز %R چینی: (hh−close)/(hh−ll)*100  (بازه‌ی 0..100، معکوسِ %R غربی)
+    hh = highest_s(df['high'], p); ll = lowest_s(df['low'], p)
+    return 100 * (hh - df['close']) / (hh - ll).replace(0, np.nan)
+
+
+def psy(df, p=12):
+    up = (_c(df).diff() > 0).astype('float64')
+    return 100 * up.rolling(p).sum() / p
+
+
 def br(df, p=26):
-    # 情绪指标 BR — احساساتِ چینی
+    # 情绪指标 BR
     h, l, pc = df['high'], df['low'], df['close'].shift(1)
     up = (h - pc).clip(lower=0).rolling(p).sum()
     dn = (pc - l).clip(lower=0).rolling(p).sum()
@@ -412,20 +416,41 @@ def cr(df, p=26):
     return 100 * up / dn.replace(0, np.nan)
 
 
-def vr(df, p=26):
-    d = _c(df).diff(); vv = df['volume']
-    uv = vv.where(d > 0, 0.0).rolling(p).sum()
-    dv = vv.where(d < 0, 0.0).rolling(p).sum()
-    ev = vv.where(d == 0, 0.0).rolling(p).sum()
-    return 100 * (uv + ev / 2) / (dv + ev / 2).replace(0, np.nan)
+def trix(df, p=15):
+    e = ema_s(ema_s(ema_s(_c(df), p), p), p)
+    return 100 * e.diff() / e.shift(1).replace(0, np.nan)
 
 
-_reg('tsi', tsi); _reg('trix', trix); _reg('cmo', cmo); _reg('ppo', ppo)
-_reg('roc', roc); _reg('mom', mom); _reg('rmi', rmi); _reg('fisher', fisher)
-_reg('cci', cci); _reg('dpo', dpo); _reg('kdj_j', kdj_j); _reg('willr', willr)
-_reg('bias', bias); _reg('psy', psy); _reg('ultimate', ultimate); _reg('coppock', coppock)
-_reg('kst', kst); _reg('stochrsi', stochrsi); _reg('rvi', rvi); _reg('ao', ao)
-_reg('ac', ac); _reg('br', br); _reg('ar', ar); _reg('cr', cr); _reg('vr', vr)
+def dpo(df, p=20):
+    x = _c(df); sh = p // 2 + 1
+    return x - sma_s(x, p).shift(sh)
+
+
+def mtm(df, p=12, smooth=6):
+    raw = _c(df).diff(p)
+    return sma_s(raw, smooth)
+
+
+def adtm(df, p=23, smooth=8):
+    o, h, l = df['open'], df['high'], df['low']
+    po = o.shift(1)
+    dtm = np.where(o <= po, 0.0,
+                   np.maximum((h - o).values, (o - po).values))
+    dbm = np.where(o >= po, 0.0,
+                   np.maximum((o - l).values, (o - po).values))
+    dtm = pd.Series(dtm, index=o.index); dbm = pd.Series(dbm, index=o.index)
+    sd = dtm.rolling(p).sum(); sb = dbm.rolling(p).sum()
+    stm = pd.concat([sd, sb], axis=1).max(axis=1)
+    out = ((sd - sb) / stm.replace(0, np.nan)).fillna(0)
+    return sma_s(out, smooth)
+
+
+_reg('ao', ao); _reg('ac', ac); _reg('apo', apo); _reg('ppo', ppo)
+_reg('cmo', cmo); _reg('tsi', tsi); _reg('roc', roc); _reg('mom', mom)
+_reg('bop', bop); _reg('cfo', cfo); _reg('pgo', pgo); _reg('fisher', fisher)
+_reg('ifish_rsi', ifish_rsi); _reg('rvgi', rvgi); _reg('kdj_j', kdj_j); _reg('bias', bias)
+_reg('wr_cn', wr_cn); _reg('psy', psy); _reg('br', br); _reg('ar', ar)
+_reg('cr', cr); _reg('trix', trix); _reg('dpo', dpo); _reg('mtm', mtm); _reg('adtm', adtm)
 
 
 # ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
