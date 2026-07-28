@@ -20,7 +20,8 @@
 // strategy_registry.ts آن را به کارتِ مربوطه بدهد (معماریِ ماژولار/توسعه‌پذیر).
 // ============================================================================
 
-import { ema, sma, rsi, atr, adx, bollinger, type Candle } from './indicators'
+import { ema, sma, rsi, atr, adx, bollinger, zscore, kurtosis, type Candle } from './indicators'
+import { hurstSeries } from './squeeze_s332'
 import { assetSpec, computeLots, type RouterDecision, type RegimeInfo, type RouterState } from './router'
 import type { AnalysisResult } from './signal'
 
