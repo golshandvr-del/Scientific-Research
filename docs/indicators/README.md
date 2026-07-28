@@ -24,7 +24,7 @@
 | `statistical.md` | `bank/statistical.ts` | 8 | آماری/فراکتالی |
 | `cycle.md` | `bank/cycle.ts` | 9 | چرخه/DSP اِهلرز |
 | `structure.md` | `bank/structure.ts` | 13 | ساختاری/روند-دنبال‌کن |
-| `composite_overlap.md` | `bank/composite.ts` | 8 | تبدیلِ قیمت (overlap) + ترکیبی |
+| `composite.md` | `bank/composite.ts` | 8 | تبدیلِ قیمت (overlap) + ترکیبی |
 | `pattern.md` | `bank/pattern.ts` | 31 | الگوهای کندلی (±۱۰۰/۰) |
 | `variants.md` | `bank/variants.ts` | 277 | بسطِ پارامتریِ غیررند (خانواده‌های `_fib`/`_lucas`) |
 | **جمع** | | **401** | |
@@ -46,6 +46,15 @@
 در دسترس‌اند تا اسکریپت‌های `strategies/*.py` بتوانند مستقیم صدایشان بزنند:
 ```python
 from engine import indicator_bank as ib
-h  = ib.hurst(df['close'].values, period=64)      # np.array هم‌طولِ df
-r2 = ib.r2(df['close'].values, period=20)
+# روشِ اصلی — با نام (شاملِ ۲۷۷ variant)؛ ورودی کلِ DataFrame، خروجی pd.Series هم‌طول:
+s   = ib.compute('r2_fib_55', df)          # variantِ غیررند (دوره‌ی فیبوناچیِ 55)
+h   = ib.compute('hurst', df)              # نمونه‌ی پایه با پیش‌فرضِ p=64
+# صداکردنِ مستقیمِ تابع (برای پارامترِ سفارشی):
+r2  = ib.r2(df, p=20)                       # پارامتر p (نه period)
+hu  = ib.hurst(df, p=64)
+# چند اندیکاتور یک‌جا → DataFrame هم‌تراز:
+feats = ib.compute_many(['r2_fib_55', 'hurst', 'ssf_fib_21'], df)
+# انتخابِ دسته‌ای از جعبه‌ابزار (برای AIِ احیاکن):
+mom_tools = ib.by_category('momentum')     # لیستِ نام‌ها
+print(ib.categories())                     # {'trend':104, 'momentum':119, ...}
 ```
