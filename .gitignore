@@ -12,6 +12,7 @@ web_tool/.dev.vars
 # ابزار توسعه parity (حجیم)
 web_tool/tools/full_ref_2000.json
 web_tool/tools/full_feats_2000.json
+web_tool/dist_parity/
 .tmp_logs/
 
 # P2 (webplan) — دادهٔ runtime گرهِ قیمت (HistoryStore/DiskHistoryStore).
