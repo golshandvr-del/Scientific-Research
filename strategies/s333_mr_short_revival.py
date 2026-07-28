@@ -304,6 +304,54 @@ def main():
         else:
             print("❌ در این گرید هیچ ترکیبی RQS+≥۸۰ نگرفت — گرید را گسترش بده.")
 
+    elif args.stage == 'mtf':
+        # قانونِ اولِ پروژه: هر TF جداگانه، SL/TP per-TF غیررند (مضربِ ATRِ همان TF).
+        # منطقِ لایه ثابت (fade اشباعِ خرید + hurst<h + kurt<k)؛ فقط پارامترها per-TF اسکن.
+        # اجتناب از اشتباه #۶ (TP/SL یکسان) و #۷ (اعدادِ رند): SL/TP از ATRِ واقعی می‌آید.
+        print(f"### MTF — {args.asset}/{args.tf} (SL/TP مضربِ ATRِ همین TF) ###")
+        atr = pd.Series(ib.atr_s(df, 14))
+        pip = se.ASSETS[args.asset]['pip']
+        med_atr_pip = float(atr.median()) / pip
+        print(f"medianATR = {med_atr_pip:.1f} pip")
+        reg = precompute_regime(df)
+        best = None
+        for z_thr in [2.2, 2.4, 2.6]:
+            for rsi_thr in [69, 70, 72]:
+                base = build_short_mr(df, z_win=34, z_thr=z_thr, rsi_thr=rsi_thr)
+                for h_thr in [0.49, 0.50, 0.52]:
+                    for k_thr in [1.5, 1.8, 2.2]:
+                        mask = (reg['hurst'] < h_thr) & (reg['kurt'] < k_thr)
+                        ssig = base & mask
+                        if ssig.sum() < 40:
+                            continue
+                        # ضرایبِ ATR (شامل ضریب‌های بزرگِ اسکالپ که در M5 جواب داد)
+                        for (sl_m, tp_m, mh) in [(3.0, 3.4, 20), (3.5, 4.0, 22),
+                                                 (4.0, 4.5, 24), (2.5, 2.9, 18),
+                                                 (5.0, 5.7, 26), (7.0, 8.0, 28)]:
+                            sl = round(sl_m * med_atr_pip, 1)
+                            tp = round(tp_m * med_atr_pip, 1)
+                            lab = f"z34/{z_thr}r{rsi_thr} h<{h_thr} k<{k_thr} SL{sl}/TP{tp}"
+                            tr, r = evaluate(df, ssig, sl, tp, mh, args.asset, lab, verbose=False)
+                            if r and r['passed']:
+                                m = r['metrics']
+                                print(f"{lab:52s} RQS={r['rqs_score']:5.1f} n={m['n_trades']} "
+                                      f"WR={m['win_rate']}% PF={m['profit_factor']} p={m['p_value']}")
+                                if best is None or r['rqs_score'] > best[1]['rqs_score']:
+                                    best = (lab, r, dict(z_win=34, z_thr=z_thr, rsi_thr=rsi_thr,
+                                            h=h_thr, k=k_thr, sl=sl, tp=tp, mh=mh,
+                                            atr_mult_sl=sl_m, atr_mult_tp=tp_m))
+        print("\n" + "=" * 70)
+        if best:
+            lab, r, cfg = best
+            print(f"🏆 {args.asset}/{args.tf} بهترین: {lab}  RQS+={r['rqs_score']}")
+            out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
+                       rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
+            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+                json.dump(out, f, ensure_ascii=False, indent=1, default=float)
+            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+        else:
+            print(f"❌ {args.asset}/{args.tf}: هیچ ترکیبی RQS+≥۸۰ نگرفت (REJECT روی این TF).")
+
 
 if __name__ == '__main__':
     main()
