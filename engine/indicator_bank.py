@@ -1099,41 +1099,41 @@ def cdl_spinningtop(df):
 
 def cdl_engulf_bull(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
-    cond = be.shift(1).fillna(False) & bu & (c >= o.shift(1)) & (o <= c.shift(1))
+    cond = be.shift(1, fill_value=False) & bu & (c >= o.shift(1)) & (o <= c.shift(1))
     return np.where(cond, 100.0, 0.0)
 
 
 def cdl_engulf_bear(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
-    cond = bu.shift(1).fillna(False) & be & (o >= c.shift(1)) & (c <= o.shift(1))
+    cond = bu.shift(1, fill_value=False) & be & (o >= c.shift(1)) & (c <= o.shift(1))
     return np.where(cond, -100.0, 0.0)
 
 
 def cdl_harami_bull(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     mx = pd.concat([o, c], axis=1).max(axis=1); mn = pd.concat([o, c], axis=1).min(axis=1)
-    cond = be.shift(1).fillna(False) & (body.shift(1) > 0) & (mx < o.shift(1)) & (mn > c.shift(1))
+    cond = be.shift(1, fill_value=False) & (body.shift(1) > 0) & (mx < o.shift(1)) & (mn > c.shift(1))
     return np.where(cond, 100.0, 0.0)
 
 
 def cdl_harami_bear(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     mx = pd.concat([o, c], axis=1).max(axis=1); mn = pd.concat([o, c], axis=1).min(axis=1)
-    cond = bu.shift(1).fillna(False) & (body.shift(1) > 0) & (mx < c.shift(1)) & (mn > o.shift(1))
+    cond = bu.shift(1, fill_value=False) & (body.shift(1) > 0) & (mx < c.shift(1)) & (mn > o.shift(1))
     return np.where(cond, -100.0, 0.0)
 
 
 def cdl_piercing(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     mid = (o.shift(1) + c.shift(1)) / 2
-    cond = be.shift(1).fillna(False) & bu & (o < l.shift(1)) & (c > mid) & (c < o.shift(1))
+    cond = be.shift(1, fill_value=False) & bu & (o < l.shift(1)) & (c > mid) & (c < o.shift(1))
     return np.where(cond, 100.0, 0.0)
 
 
 def cdl_darkcloud(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     mid = (o.shift(1) + c.shift(1)) / 2
-    cond = bu.shift(1).fillna(False) & be & (o > h.shift(1)) & (c < mid) & (c > o.shift(1))
+    cond = bu.shift(1, fill_value=False) & be & (o > h.shift(1)) & (c < mid) & (c > o.shift(1))
     return np.where(cond, -100.0, 0.0)
 
 
@@ -1141,7 +1141,7 @@ def cdl_morningstar(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     rng1 = (h.shift(1) - l.shift(1)).replace(0, np.nan)
     mid2 = (o.shift(2) + c.shift(2)) / 2
-    cond = be.shift(2).fillna(False) & (body.shift(1) <= 0.3 * rng1) & bu & (c > mid2)
+    cond = be.shift(2, fill_value=False) & (body.shift(1) <= 0.3 * rng1) & bu & (c > mid2)
     return np.where(cond.fillna(False), 100.0, 0.0)
 
 
@@ -1149,13 +1149,13 @@ def cdl_eveningstar(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     rng1 = (h.shift(1) - l.shift(1)).replace(0, np.nan)
     mid2 = (o.shift(2) + c.shift(2)) / 2
-    cond = bu.shift(2).fillna(False) & (body.shift(1) <= 0.3 * rng1) & be & (c < mid2)
+    cond = bu.shift(2, fill_value=False) & (body.shift(1) <= 0.3 * rng1) & be & (c < mid2)
     return np.where(cond.fillna(False), -100.0, 0.0)
 
 
 def cdl_3whitesoldiers(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
-    cond = (bu & bu.shift(1).fillna(False) & bu.shift(2).fillna(False) &
+    cond = (bu & bu.shift(1, fill_value=False) & bu.shift(2, fill_value=False) &
             (c > c.shift(1)) & (c.shift(1) > c.shift(2)) &
             (o > o.shift(1)) & (o.shift(1) > o.shift(2)))
     return np.where(cond, 100.0, 0.0)
@@ -1163,7 +1163,7 @@ def cdl_3whitesoldiers(df):
 
 def cdl_3blackcrows(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
-    cond = (be & be.shift(1).fillna(False) & be.shift(2).fillna(False) &
+    cond = (be & be.shift(1, fill_value=False) & be.shift(2, fill_value=False) &
             (c < c.shift(1)) & (c.shift(1) < c.shift(2)) &
             (o < o.shift(1)) & (o.shift(1) < o.shift(2)))
     return np.where(cond, -100.0, 0.0)
@@ -1197,7 +1197,7 @@ def cdl_3inside_up(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     mx1 = pd.concat([o.shift(1), c.shift(1)], axis=1).max(axis=1)
     mn1 = pd.concat([o.shift(1), c.shift(1)], axis=1).min(axis=1)
-    cond = be.shift(2).fillna(False) & (mx1 < o.shift(2)) & (mn1 > c.shift(2)) & bu & (c > o.shift(2))
+    cond = be.shift(2, fill_value=False) & (mx1 < o.shift(2)) & (mn1 > c.shift(2)) & bu & (c > o.shift(2))
     return np.where(cond.fillna(False), 100.0, 0.0)
 
 
@@ -1205,28 +1205,28 @@ def cdl_3inside_dn(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     mx1 = pd.concat([o.shift(1), c.shift(1)], axis=1).max(axis=1)
     mn1 = pd.concat([o.shift(1), c.shift(1)], axis=1).min(axis=1)
-    cond = bu.shift(2).fillna(False) & (mx1 < c.shift(2)) & (mn1 > o.shift(2)) & be & (c < o.shift(2))
+    cond = bu.shift(2, fill_value=False) & (mx1 < c.shift(2)) & (mn1 > o.shift(2)) & be & (c < o.shift(2))
     return np.where(cond.fillna(False), -100.0, 0.0)
 
 
 def cdl_tweezerbottom(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     tol = 0.05 * rng.replace(0, 1)
-    cond = ((l - l.shift(1)).abs() <= tol) & be.shift(1).fillna(False) & bu
+    cond = ((l - l.shift(1)).abs() <= tol) & be.shift(1, fill_value=False) & bu
     return np.where(cond, 100.0, 0.0)
 
 
 def cdl_tweezertop(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     tol = 0.05 * rng.replace(0, 1)
-    cond = ((h - h.shift(1)).abs() <= tol) & bu.shift(1).fillna(False) & be
+    cond = ((h - h.shift(1)).abs() <= tol) & bu.shift(1, fill_value=False) & be
     return np.where(cond, -100.0, 0.0)
 
 
 def cdl_kicking_bull(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     rng1 = (h.shift(1) - l.shift(1))
-    cond = (be.shift(1).fillna(False) & (body.shift(1) >= 0.9 * rng1) &
+    cond = (be.shift(1, fill_value=False) & (body.shift(1) >= 0.9 * rng1) &
             bu & (body >= 0.9 * rng) & (o > o.shift(1)))
     return np.where(cond.fillna(False), 100.0, 0.0)
 
@@ -1234,7 +1234,7 @@ def cdl_kicking_bull(df):
 def cdl_kicking_bear(df):
     o, h, l, c, body, rng, us, ds, bu, be = _cndl(df)
     rng1 = (h.shift(1) - l.shift(1))
-    cond = (bu.shift(1).fillna(False) & (body.shift(1) >= 0.9 * rng1) &
+    cond = (bu.shift(1, fill_value=False) & (body.shift(1) >= 0.9 * rng1) &
             be & (body >= 0.9 * rng) & (o < o.shift(1)))
     return np.where(cond.fillna(False), -100.0, 0.0)
 
