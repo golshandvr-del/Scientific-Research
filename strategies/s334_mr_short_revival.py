@@ -1,5 +1,5 @@
 """
-s333_mr_short_revival.py — احیای لایهٔ «Mean-Reversion SHORT» (منشأ: s122) با RQS+
+s334_mr_short_revival.py — احیای لایهٔ «Mean-Reversion SHORT» (منشأ: s122) با RQS+
 ================================================================================
 > معیارِ رسمی = RQS+ ≥ ۸۰ (نه سودِ خالص، نه WR خام). سند: docs/RQS_ROBUST_QUALITY_SCORE.md
 ================================================================================
@@ -167,9 +167,9 @@ def main():
             print(f"🏆 بهترین: {lab}  RQS+={r['rqs_score']}")
             out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
                        rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
-            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+            with open(os.path.join(RESULTS, f'_s334_{args.asset}_{args.tf}.json'), 'w') as f:
                 json.dump(out, f, ensure_ascii=False, indent=1, default=float)
-            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+            print(f"✅ ذخیره: results/_s334_{args.asset}_{args.tf}.json")
         else:
             print("❌ finetune ACCEPT نداد.")
 
@@ -210,9 +210,9 @@ def main():
             print(f"🏆 ACCEPT: {lab}  RQS+={r['rqs_score']}")
             out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
                        rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
-            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+            with open(os.path.join(RESULTS, f'_s334_{args.asset}_{args.tf}.json'), 'w') as f:
                 json.dump(out, f, ensure_ascii=False, indent=1, default=float)
-            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+            print(f"✅ ذخیره: results/_s334_{args.asset}_{args.tf}.json")
         else:
             print("❌ diag ACCEPT نداد — فیلترِ مکملِ دیگری لازم است.")
 
@@ -255,9 +255,9 @@ def main():
             print(f"🏆 بهترین ACCEPT: {lab}  RQS+={r['rqs_score']}")
             out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
                        rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
-            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+            with open(os.path.join(RESULTS, f'_s334_{args.asset}_{args.tf}.json'), 'w') as f:
                 json.dump(out, f, ensure_ascii=False, indent=1, default=float)
-            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+            print(f"✅ ذخیره: results/_s334_{args.asset}_{args.tf}.json")
         else:
             print("❌ scan2 هم ACCEPT نداد.")
 
@@ -298,9 +298,9 @@ def main():
             print(f"🏆 بهترین ACCEPT: {lab}  RQS+={r['rqs_score']}")
             out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
                        rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
-            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+            with open(os.path.join(RESULTS, f'_s334_{args.asset}_{args.tf}.json'), 'w') as f:
                 json.dump(out, f, ensure_ascii=False, indent=1, default=float)
-            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+            print(f"✅ ذخیره: results/_s334_{args.asset}_{args.tf}.json")
         else:
             print("❌ در این گرید هیچ ترکیبی RQS+≥۸۰ نگرفت — گرید را گسترش بده.")
 
@@ -346,9 +346,9 @@ def main():
             print(f"🏆 {args.asset}/{args.tf} بهترین: {lab}  RQS+={r['rqs_score']}")
             out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
                        rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
-            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+            with open(os.path.join(RESULTS, f'_s334_{args.asset}_{args.tf}.json'), 'w') as f:
                 json.dump(out, f, ensure_ascii=False, indent=1, default=float)
-            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+            print(f"✅ ذخیره: results/_s334_{args.asset}_{args.tf}.json")
         else:
             print(f"❌ {args.asset}/{args.tf}: هیچ ترکیبی RQS+≥۸۰ نگرفت (REJECT روی این TF).")
 
