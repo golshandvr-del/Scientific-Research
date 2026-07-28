@@ -19,13 +19,15 @@ FINAL = {
     'M15': dict(trigger='dip_turn', rf_dip=1.0, tf_min=0.5, hu_min=0.50, r2_min=0.55, chop_max=None),
     'H1':  dict(trigger='dip_turn', rf_dip=1.0, tf_min=0.5, hu_min=0.50, r2_min=None, chop_max=38.2),
 }
-BARS = 8000  # زیرمجموعهٔ کافی
+# تعداد کندلِ استخراج برای هر TF — به‌قدری که چند ورودِ واقعی داشته باشیم
+BARS = {'M5': 12000, 'M15': 20000, 'H1': 90000}
 
 def main():
     for tf, cfg in FINAL.items():
         df = se.load_data(f'data/XAUUSD_{tf}.csv')
-        if len(df) > BARS:
-            df = df.iloc[:BARS].reset_index(drop=True)
+        lim = BARS.get(tf, 12000)
+        if len(df) > lim:
+            df = df.iloc[:lim].reset_index(drop=True)
         S = M.precompute(df)
         sig = M.build_signal(S, cfg['trigger'], cfg['rf_dip'], cfg['tf_min'],
                              cfg['hu_min'], cfg['r2_min'], cfg['chop_max'])
