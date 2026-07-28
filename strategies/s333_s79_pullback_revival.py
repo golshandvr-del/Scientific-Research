@@ -68,11 +68,46 @@ def rsi(x, p):
 
 
 def core_signal(df, ema_fast, ema_slow, rsi_p, rsi_th):
-    """هستهٔ S79: روندِ صعودیِ کلان + pullbackِ RSI (فقط Long)."""
+    """هستهٔ S79 خام: روندِ صعودیِ کلان + pullbackِ RSI (فقط Long) — بدونِ تأییدِ بازگشت."""
     c = df['close'].values
     ef = ema(c, ema_fast); es = ema(c, ema_slow); r = rsi(c, rsi_p)
     long_sig = np.nan_to_num((ef > es) & (r < rsi_th)).astype(bool)
     return long_sig
+
+
+def core_signal_confirmed(df, ema_fast, ema_slow, rsi_p, rsi_th, confirm='rsi_turn'):
+    """هستهٔ دقت‌محور: روندِ صعودی + pullback + *تأییدِ بازگشت* (افزایشِ WR از راهِ علمی).
+
+    منطق: به‌جای ورود صرفاً چون «RSI پایین است»، صبر می‌کنیم تا pullback واقعاً
+    *تمام و در حالِ چرخش* باشد. این ورود را از «وسطِ سقوطِ چاقو» به «کفِ تأییدشده»
+    منتقل می‌کند ⇒ WR از دقتِ نقطهٔ ورود بالا می‌رود، نه از هندسهٔ TP/SL.
+
+      confirm:
+        'none'      → مثلِ هستهٔ خام (RSI<th فعال).
+        'rsi_turn'  → کندلِ قبلی RSI<th بود و RSI حالا بالاتر از کندلِ قبل رفت
+                      (RSI از کفِ خود برگشت) و هنوز RSI<th+10 (هنوز در ناحیهٔ ارزش).
+        'price_turn'→ RSI اخیراً زیرِ th رفت + close > high کندلِ قبلی
+                      (بازگشتِ قیمتی: کندلِ صعودیِ تأییدی).
+    """
+    c = df['close'].values
+    h = df['high'].values
+    ef = ema(c, ema_fast); es = ema(c, ema_slow); r = rsi(c, rsi_p)
+    up_trend = ef > es
+    r_prev = np.concatenate([[r[0]], r[:-1]])
+    c_prevhigh = np.concatenate([[h[0]], h[:-1]])
+
+    if confirm == 'none':
+        sig = up_trend & (r < rsi_th)
+    elif confirm == 'rsi_turn':
+        # کفِ RSI شکل گرفت: کندلِ قبل در ناحیهٔ اشباع بود، حالا RSI برمی‌گردد بالا.
+        sig = up_trend & (r_prev < rsi_th) & (r > r_prev) & (r < rsi_th + 10)
+    elif confirm == 'price_turn':
+        # RSI اخیراً به ناحیهٔ pullback رفت + کندلِ تأییدیِ صعودی (close از high قبلی رد شد).
+        dipped = (r < rsi_th) | (r_prev < rsi_th)
+        sig = up_trend & dipped & (c > c_prevhigh)
+    else:
+        raise ValueError(confirm)
+    return np.nan_to_num(sig).astype(bool)
 
 
 def apply_regime(df, base_sig, filters):
