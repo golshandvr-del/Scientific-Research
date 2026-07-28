@@ -682,4 +682,138 @@ _reg('skew', skew); _reg('kurt', kurt); _reg('corr_t', corr_t); _reg('r2', r2)
 _reg('hurst', hurst); _reg('entropy', entropy); _reg('frama', frama); _reg('fdi', fdi)
 
 
+# ===========================================================================
+# بخش ۵ — CYCLE / EHLERS / DSP (۹) — نام‌ها ۱:۱ با cycle.ts
+# نام‌ها: ssf ehp roof laguerre laguerre_rsi reflex trendflex cg dsma
+# فیلترهای بازگشتی (stateful) — پورتِ حلقه‌به‌حلقه، بدونِ look-ahead.
+# ===========================================================================
+def _ssf_arr(xv, period):
+    n = len(xv); out = np.empty(n)
+    a = np.exp(-1.414 * np.pi / period)
+    b = 2 * a * np.cos(1.414 * np.pi / period)
+    c2 = b; c3 = -a * a; c1 = 1 - c2 - c3
+    for i in range(n):
+        if i < 2:
+            out[i] = xv[i]
+        else:
+            out[i] = c1 * (xv[i] + xv[i - 1]) / 2 + c2 * out[i - 1] + c3 * out[i - 2]
+    return out
+
+
+def ssf(df, period=10):
+    return pd.Series(_ssf_arr(_c(df).values, period), index=df.index)
+
+
+def ehp(df, period=48):
+    xv = _c(df).values; n = len(xv); out = np.zeros(n)
+    a = (np.cos(2 * np.pi / period) + np.sin(2 * np.pi / period) - 1) / np.cos(2 * np.pi / period)
+    for i in range(1, n):
+        out[i] = (1 - a / 2) * (xv[i] - xv[i - 1]) + (1 - a) * out[i - 1]
+    return pd.Series(out, index=df.index)
+
+
+def roof(df, hp=48, ss=10):
+    xv = _c(df).values; n = len(xv); hpf = np.zeros(n)
+    a = (np.cos(2 * np.pi / hp) + np.sin(2 * np.pi / hp) - 1) / np.cos(2 * np.pi / hp)
+    for i in range(2, n):
+        hpf[i] = ((1 - a / 2) ** 2) * (xv[i] - 2 * xv[i - 1] + xv[i - 2]) \
+                 + 2 * (1 - a) * hpf[i - 1] - ((1 - a) ** 2) * hpf[i - 2]
+    out = np.empty(n)
+    aa = np.exp(-1.414 * np.pi / ss); bb = 2 * aa * np.cos(1.414 * np.pi / ss)
+    c2 = bb; c3 = -aa * aa; c1 = 1 - c2 - c3
+    for i in range(n):
+        if i < 2:
+            out[i] = hpf[i]
+        else:
+            out[i] = c1 * (hpf[i] + hpf[i - 1]) / 2 + c2 * out[i - 1] + c3 * out[i - 2]
+    return pd.Series(out, index=df.index)
+
+
+def _laguerre_levels(xv, g):
+    n = len(xv)
+    L0s = np.empty(n); L1s = np.empty(n); L2s = np.empty(n); L3s = np.empty(n)
+    L0 = L1 = L2 = L3 = 0.0
+    for i in range(n):
+        pL0, pL1, pL2 = L0, L1, L2
+        L0 = (1 - g) * xv[i] + g * L0
+        L1 = -g * L0 + pL0 + g * L1
+        L2 = -g * L1 + pL1 + g * L2
+        L3 = -g * L2 + pL2 + g * L3
+        L0s[i], L1s[i], L2s[i], L3s[i] = L0, L1, L2, L3
+    return L0s, L1s, L2s, L3s
+
+
+def laguerre(df, gamma=0.8):
+    L0, L1, L2, L3 = _laguerre_levels(_c(df).values, gamma)
+    return pd.Series((L0 + 2 * L1 + 2 * L2 + L3) / 6, index=df.index)
+
+
+def laguerre_rsi(df, gamma=0.5):
+    L0, L1, L2, L3 = _laguerre_levels(_c(df).values, gamma)
+    cu = np.zeros_like(L0); cd = np.zeros_like(L0)
+    for a, b in ((L0, L1), (L1, L2), (L2, L3)):
+        up = a >= b
+        cu += np.where(up, a - b, 0.0)
+        cd += np.where(~up, b - a, 0.0)
+    tot = cu + cd
+    return pd.Series(np.where(tot != 0, 100 * cu / tot, 50.0), index=df.index)
+
+
+def _flex(df, period, trend):
+    xv = _c(df).values; n = len(xv)
+    ssf = _ssf_arr(xv, period / 2)
+    out = np.zeros(n); ms = 0.0
+    for i in range(period, n):
+        if trend:
+            s = sum(ssf[i] - ssf[i - k] for k in range(1, period + 1)) / period
+        else:
+            slope = (ssf[i - period] - ssf[i]) / period
+            s = sum(ssf[i] + k * slope - ssf[i - k] for k in range(1, period + 1)) / period
+        ms = 0.04 * s * s + 0.96 * ms
+        out[i] = s / np.sqrt(ms) if ms else 0.0
+    return pd.Series(out, index=df.index)
+
+
+def reflex(df, period=20):
+    return _flex(df, period, trend=False)
+
+
+def trendflex(df, period=20):
+    return _flex(df, period, trend=True)
+
+
+def cg(df, period=10):
+    x = _c(df); k = np.arange(1, period + 1, dtype='float64')
+    def _cg(w):
+        wr = w[::-1]  # w[-1] جدیدترین → معادلِ x[i-k] با k=0..
+        num = (k * wr).sum(); den = wr.sum()
+        return -num / den + (period + 1) / 2 if den else 0.0
+    return x.rolling(period).apply(_cg, raw=True)
+
+
+def dsma(df, period=20):
+    xv = _c(df).values; n = len(xv)
+    out = np.empty(n); zeros = np.zeros(n); filt = np.zeros(n)
+    a = np.exp(-1.414 * np.pi / (period / 2)); b = 2 * a * np.cos(1.414 * np.pi / (period / 2))
+    c2 = b; c3 = -a * a; c1 = 1 - c2 - c3
+    prev = np.nan
+    for i in range(n):
+        zeros[i] = xv[i] - xv[i - 2] if i >= 2 else 0.0
+        if i < 2:
+            filt[i] = 0.0; out[i] = xv[i]; prev = xv[i]; continue
+        filt[i] = c1 * (zeros[i] + zeros[i - 1]) / 2 + c2 * filt[i - 1] + c3 * filt[i - 2]
+        w = min(period, i + 1)
+        rms = np.sqrt((filt[i - w + 1:i + 1] ** 2).mean())
+        sc = abs(filt[i] / rms) if rms else 0.0
+        alpha = float(np.clip((5 * sc) / period, 0.01, 1.0))
+        prev = alpha * xv[i] + (1 - alpha) * prev
+        out[i] = prev
+    return pd.Series(out, index=df.index)
+
+
+_reg('ssf', ssf); _reg('ehp', ehp); _reg('roof', roof); _reg('laguerre', laguerre)
+_reg('laguerre_rsi', laguerre_rsi); _reg('reflex', reflex); _reg('trendflex', trendflex)
+_reg('cg', cg); _reg('dsma', dsma)
+
+
 # ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
