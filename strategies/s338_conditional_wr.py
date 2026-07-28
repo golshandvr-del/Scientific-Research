@@ -23,7 +23,6 @@ from scipy import stats
 
 from engine import scalp_engine as se
 from engine import indicator_bank as ib
-from engine.data_loader import load_candles
 
 ASSET = 'XAUUSD'
 TF = 'M5'
@@ -33,7 +32,7 @@ TF_BARS_PER_DAY = {'M1': 1440, 'M5': 288, 'M15': 96, 'M30': 48,
 
 
 def load(asset, tf):
-    return load_candles(asset, tf)
+    return se.load_data(f'data/{asset}_{tf}.csv')
 
 
 def atr_pips(df, asset):
@@ -67,7 +66,7 @@ def build_baseline(df, asset, direction, k_atr=1.5, max_hold=24):
                             max_hold=max_hold, allow_overlap=True)
     if tr is None or len(tr) == 0:
         return None, None, None, None
-    entry_idx = tr['entry_idx'].values if 'entry_idx' in tr.columns else tr.index.values
+    entry_idx = tr['entry_bar'].values
     win = (tr['pnl_pip'].values > 0)
     return entry_idx, win, sl, tp
 
