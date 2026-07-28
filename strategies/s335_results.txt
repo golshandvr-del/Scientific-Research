@@ -1,0 +1,73 @@
+S335 Reflex-TrendFlex Cycle-Turn — MTF runner results
+======================================================================
+
+===== XAUUSD M5 — 26 ACCEPT / 432 tested (bars=200000, 35s) =====
+RQS  gP  n    WR    PF    DD   MCL  p     | trig     rf  tf  hu   r2   chop  sl   tp   hold
+top rows:
+92.2 6/6   75 62.7  2.22  2.6   3 0.000 | zero_up  0.6 0.2 0.53 None 38.2  150  225 55
+92.2 6/6   75 62.7  2.22  2.6   3 0.000 | zero_up  0.8 0.2 0.53 None 38.2  150  225 55
+92.2 6/6   75 62.7  2.22  2.6   3 0.000 | zero_up  1.0 0.2 0.53 None 38.2  150  225 55
+91.3 6/6   75 61.3  2.66  2.4   4 0.000 | zero_up  0.6 0.2 0.53 None 38.2  135  240 72
+91.3 6/6   75 61.3  2.66  2.4   4 0.000 | zero_up  0.8 0.2 0.53 None 38.2  135  240 72
+91.3 6/6   75 61.3  2.66  2.4   4 0.000 | zero_up  1.0 0.2 0.53 None 38.2  135  240 72
+91.2 6/6   74 64.9  2.62  2.0   5 0.000 | zero_up  0.6 0.2 0.53 None 38.2  170  255 60
+91.2 6/6   74 64.9  2.62  2.0   5 0.000 | zero_up  0.8 0.2 0.53 None 38.2  170  255 60
+91.2 6/6   74 64.9  2.62  2.0   5 0.000 | zero_up  1.0 0.2 0.53 None 38.2  170  255 60
+90.2 6/6   68 63.2  2.53  1.7   6 0.000 | zero_up  0.6 0.5 0.53 None 38.2  170  255 60
+90.2 6/6   68 63.2  2.53  1.7   6 0.000 | zero_up  0.8 0.5 0.53 None 38.2  170  255 60
+90.2 6/6   68 63.2  2.53  1.7   6 0.000 | zero_up  1.0 0.5 0.53 None 38.2  170  255 60
+
+===== XAUUSD M15 — 1 ACCEPT / 432 tested (bars=150000, 28s) =====
+RQS  gP  n    WR    PF    DD   MCL  p     | trig     rf  tf  hu   r2   chop  sl   tp   hold
+top rows:
+89.7 6/6  195 60.0  2.08  3.9   5 0.000 | dip_turn 1.0 0.5 0.5 0.55 None  200  340 64
+
+===== XAUUSD M30 — 0 ACCEPT / 432 tested (bars=181383, 31s) =====
+RQS  gP  n    WR    PF    DD   MCL  p     | trig     rf  tf  hu   r2   chop  sl   tp   hold
+top rows  (no ACCEPT — best 5/6 shown):
+34.6 5/6  100 57.0  2.09  2.3   3 0.000 | zero_up  0.6 0.2 0.5 None 38.2  320  480 40
+34.6 5/6  100 57.0  2.09  2.3   3 0.000 | zero_up  0.8 0.2 0.5 None 38.2  320  480 40
+34.6 5/6  100 57.0  2.09  2.3   3 0.000 | zero_up  1.0 0.2 0.5 None 38.2  320  480 40
+33.8 5/6   67 56.7  2.28  1.7   4 0.004 | zero_up  0.6 0.2 0.53 None 38.2  320  480 40
+33.8 5/6   67 56.7  2.28  1.7   4 0.004 | zero_up  0.8 0.2 0.53 None 38.2  320  480 40
+33.8 5/6   67 56.7  2.28  1.7   4 0.004 | zero_up  1.0 0.2 0.53 None 38.2  320  480 40
+33.6 5/6   86 55.8  1.92  2.3   3 0.002 | zero_up  0.6 0.5 0.5 None 38.2  320  480 40
+33.6 5/6   86 55.8  1.92  2.3   3 0.002 | zero_up  0.8 0.5 0.5 None 38.2  320  480 40
+
+===== XAUUSD H1 — 4 ACCEPT / 414 tested (bars=90950, 17s) =====
+RQS  gP  n    WR    PF    DD   MCL  p     | trig     rf  tf  hu   r2   chop  sl   tp   hold
+top rows:
+89.7 6/6   49 61.2  1.85  2.5   3 0.001 | dip_turn 1.0 0.2 0.5 None 38.2  390  663 48
+89.6 6/6   49 61.2  1.79  0.9   3 0.002 | dip_turn 1.0 0.2 0.5 None 38.2  480  720 40
+93.1 6/6   42 61.9  1.97  0.9   2 0.003 | dip_turn 1.0 0.5 0.5 None 38.2  480  720 40
+92.0 6/6   42 61.9  2.15  2.5   3 0.001 | dip_turn 1.0 0.5 0.5 None 38.2  390  663 48
+
+===== XAUUSD H4 — 0 ACCEPT / 234 tested (bars=23755, 5s) =====
+RQS  gP  n    WR    PF    DD   MCL  p     | trig     rf  tf  hu   r2   chop  sl   tp   hold
+top rows  (no ACCEPT — best 5/6 shown):
+33.3 5/6   90 62.2  2.27  1.4   3 0.000 | zero_up  0.6 0.2 0.53 None None  820 1230 28
+33.3 5/6   90 62.2  2.27  1.4   3 0.000 | zero_up  0.8 0.2 0.53 None None  820 1230 28
+33.3 5/6   90 62.2  2.27  1.4   3 0.000 | zero_up  1.0 0.2 0.53 None None  820 1230 28
+32.8 5/6   89 64.0  2.49  3.0   3 0.000 | zero_up  0.6 0.2 0.53 None None  650 1105 32
+32.8 5/6   89 64.0  2.49  3.0   3 0.000 | zero_up  0.8 0.2 0.53 None None  650 1105 32
+32.8 5/6   89 64.0  2.49  3.0   3 0.000 | zero_up  1.0 0.2 0.53 None None  650 1105 32
+31.4 5/6   43 62.8  1.89  1.4   4 0.002 | dip_turn 1.0 0.2 0.5 0.5  None  720 1080 24
+31.2 5/6   36 61.1  1.87  0.7   3 0.008 | dip_turn 1.0 0.2 0.5 0.55 None  720 1080 24
+
+===== EURUSD M5 — 0 ACCEPT / 432 tested (bars=200000, 33s) =====
+RQS  gP  n    WR    PF    DD   MCL  p     | trig     rf  tf  hu   r2   chop  sl   tp   hold
+top rows  (no ACCEPT — best 5/6 shown):
+
+===== EURUSD M15 — 0 ACCEPT / 432 tested (bars=200000, 32s) =====
+RQS  gP  n    WR    PF    DD   MCL  p     | trig     rf  tf  hu   r2   chop  sl   tp   hold
+top rows  (no ACCEPT — best 5/6 shown):
+
+===== EURUSD M30 — 0 ACCEPT / 432 tested (bars=200000, 33s) =====
+RQS  gP  n    WR    PF    DD   MCL  p     | trig     rf  tf  hu   r2   chop  sl   tp   hold
+top rows  (no ACCEPT — best 5/6 shown):
+
+[skip] data/EURUSD_H1.csv not found
+
+[skip] data/EURUSD_H4.csv not found
+
+=== DONE ALL JOBS ===
