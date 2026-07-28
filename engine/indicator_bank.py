@@ -816,4 +816,161 @@ _reg('laguerre_rsi', laguerre_rsi); _reg('reflex', reflex); _reg('trendflex', tr
 _reg('cg', cg); _reg('dsma', dsma)
 
 
+# ===========================================================================
+# بخش ۶ — STRUCTURE / TREND-FOLLOWING (۱۳) — نام‌ها ۱:۱ با structure.ts
+# نام‌ها: supertrend psar aroon vortex donchian_mid qqe stc crsi waddah
+#         elder_impulse chandelier gann_hilo tdi
+# ===========================================================================
+def supertrend(df, period=10, mult=3.0):
+    h = df['high'].values; l = df['low'].values; cl = df['close'].values
+    atr = rma_s(_tr(df), period).values
+    n = len(cl); out = np.full(n, np.nan)
+    final_up = final_dn = np.nan; direction = 1; started = False
+    for i in range(n):
+        if not np.isfinite(atr[i]):
+            continue
+        mid = (h[i] + l[i]) / 2
+        basic_up = mid - mult * atr[i]; basic_dn = mid + mult * atr[i]
+        if not started:
+            final_up, final_dn, direction = basic_up, basic_dn, 1
+            out[i] = final_up; started = True; continue
+        final_up = basic_up if (basic_up > final_up or cl[i - 1] < final_up) else final_up
+        final_dn = basic_dn if (basic_dn < final_dn or cl[i - 1] > final_dn) else final_dn
+        if direction == 1 and cl[i] < final_up:
+            direction = -1
+        elif direction == -1 and cl[i] > final_dn:
+            direction = 1
+        out[i] = final_up if direction == 1 else final_dn
+    return pd.Series(out, index=df.index)
+
+
+def psar(df, step=0.02, mx=0.2):
+    h = df['high'].values; l = df['low'].values; cl = df['close'].values
+    n = len(cl); out = np.full(n, np.nan)
+    if n < 2:
+        return pd.Series(out, index=df.index)
+    bull = cl[1] >= cl[0]
+    af = step; ep = h[0] if bull else l[0]; sar = l[0] if bull else h[0]
+    for i in range(1, n):
+        sar = sar + af * (ep - sar)
+        if bull:
+            if l[i] < sar:
+                bull = False; sar = ep; ep = l[i]; af = step
+            elif h[i] > ep:
+                ep = h[i]; af = min(mx, af + step)
+        else:
+            if h[i] > sar:
+                bull = True; sar = ep; ep = h[i]; af = step
+            elif l[i] < ep:
+                ep = l[i]; af = min(mx, af + step)
+        out[i] = sar
+    return pd.Series(out, index=df.index)
+
+
+def aroon(df, period=25):
+    h = df['high']; l = df['low']
+    # فاصله تا بیشینه/کمینه در پنجره‌ی period+1 (argmax روی پنجره) — بدونِ look-ahead
+    def _up(w): return 100 * (period - (len(w) - 1 - int(np.argmax(w)))) / period
+    def _dn(w): return 100 * (period - (len(w) - 1 - int(np.argmin(w)))) / period
+    up = h.rolling(period + 1).apply(_up, raw=True)
+    dn = l.rolling(period + 1).apply(_dn, raw=True)
+    return up - dn
+
+
+def vortex(df, period=14):
+    h = df['high']; l = df['low']
+    vmp = (h - l.shift(1)).abs(); vmn = (l - h.shift(1)).abs()
+    tr = _tr(df)
+    sp = vmp.rolling(period).sum(); sn = vmn.rolling(period).sum(); st = tr.rolling(period).sum()
+    return (sp - sn) / st.replace(0, np.nan)
+
+
+def donchian_mid(df, period=20):
+    return (df['high'].rolling(period).max() + df['low'].rolling(period).min()) / 2
+
+
+def qqe(df, rsiP=14, sf=5):
+    return ema_s(rsi_s(_c(df), rsiP), sf)
+
+
+def stc(df, fast=23, slow=50, cycle=10):
+    x = _c(df)
+    macd = ema_s(x, fast) - ema_s(x, slow)
+    hh1 = macd.rolling(cycle).max(); ll1 = macd.rolling(cycle).min()
+    st1 = (100 * (macd - ll1) / (hh1 - ll1).replace(0, np.nan)).fillna(50)
+    d1 = ema_s(st1, max(2, cycle // 2))
+    hh2 = d1.rolling(cycle).max(); ll2 = d1.rolling(cycle).min()
+    st2 = (100 * (d1 - ll2) / (hh2 - ll2).replace(0, np.nan)).fillna(50)
+    return ema_s(st2, max(2, cycle // 2))
+
+
+def crsi(df, rsiP=3, streakP=2, rankP=100):
+    x = _c(df); n = len(x); xv = x.values
+    r = rsi_s(x, rsiP)
+    streak = np.zeros(n); s = 0
+    for i in range(1, n):
+        if xv[i] > xv[i - 1]:
+            s = s + 1 if s >= 0 else 1
+        elif xv[i] < xv[i - 1]:
+            s = s - 1 if s <= 0 else -1
+        else:
+            s = 0
+        streak[i] = s
+    streak_rsi = rsi_s(pd.Series(streak, index=x.index), streakP)
+    ret = pd.Series(np.zeros(n), index=x.index)
+    ret.iloc[1:] = np.where(xv[:-1] != 0, (xv[1:] - xv[:-1]) / xv[:-1], 0.0)
+    rv = ret.values; rank = np.full(n, np.nan)
+    for i in range(rankP, n):
+        below = (rv[i - rankP:i] < rv[i]).sum()
+        rank[i] = 100 * below / rankP
+    rank = pd.Series(rank, index=x.index)
+    return (r + streak_rsi + rank) / 3
+
+
+def waddah(df, fast=20, slow=40, bbP=20, bbM=2.0):
+    x = _c(df)
+    macd = ema_s(x, fast) - ema_s(x, slow)
+    return (macd - macd.shift(1)) * 150
+
+
+def elder_impulse(df, emaP=13, macdF=12, macdS=26, macdSig=9):
+    x = _c(df)
+    e = ema_s(x, emaP)
+    macd = ema_s(x, macdF) - ema_s(x, macdS)
+    sig = ema_s(macd, macdSig)
+    hist = macd - sig
+    es = np.sign(e.diff()); hs = np.sign(hist.diff())
+    out = np.where((es > 0) & (hs > 0), 1.0, np.where((es < 0) & (hs < 0), -1.0, 0.0))
+    res = pd.Series(out, index=df.index); res.iloc[0] = np.nan
+    return res
+
+
+def chandelier(df, period=22, mult=3.0):
+    atr = rma_s(_tr(df), period)
+    return df['high'].rolling(period).max() - mult * atr
+
+
+def gann_hilo(df, period=10):
+    h = df['high']; l = df['low']; cl = df['close'].values
+    sh = sma_s(h, period).values; sl = sma_s(l, period).values
+    n = len(cl); out = np.full(n, np.nan); direction = 1
+    for i in range(period, n):
+        if cl[i] > sh[i - 1]:
+            direction = 1
+        elif cl[i] < sl[i - 1]:
+            direction = -1
+        out[i] = sl[i] if direction == 1 else sh[i]
+    return pd.Series(out, index=df.index)
+
+
+def tdi(df, rsiP=13, sig=7):
+    return sma_s(rsi_s(_c(df), rsiP), sig)
+
+
+_reg('supertrend', supertrend); _reg('psar', psar); _reg('aroon', aroon); _reg('vortex', vortex)
+_reg('donchian_mid', donchian_mid); _reg('qqe', qqe); _reg('stc', stc); _reg('crsi', crsi)
+_reg('waddah', waddah); _reg('elder_impulse', elder_impulse); _reg('chandelier', chandelier)
+_reg('gann_hilo', gann_hilo); _reg('tdi', tdi)
+
+
 # ثبتِ دسته‌ها در انتهای فایل انجام می‌شود (پس از تعریفِ همهٔ سازنده‌ها).
