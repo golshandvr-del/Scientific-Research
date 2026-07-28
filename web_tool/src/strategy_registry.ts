@@ -38,6 +38,7 @@ import {
 import {
   decideS321, S321_CFG, decideS322, S322_CFG, decideS323, S323_CFG,
   decideS324, S324_CFG, decideS328, S328_CFG, decideS330, S330_CFG,
+  decideS334, S334_CFG,
   rawToDecision, type RawSignal, type DecideMeta,
 } from './revived_strategies'
 import { assetSpec, computeLots, type RegimeInfo } from './router'
