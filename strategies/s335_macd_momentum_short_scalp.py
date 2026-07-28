@@ -238,6 +238,54 @@ def stage_scan(asset, tf):
               f"| r2>{best[2]} chop<{best[3]} H>{best[4]} SL{best[5]}/TP{best[6]} nsig={best[7]}")
 
 
+def stage_refine(asset, tf):
+    """
+    ریزتنظیم روی ناحیهٔ امیدوارکننده (chop تمیز) + فیلترهای مکملِ بانک برای عبور از
+    G0(WR≥60) و G4(پایداری). قانونِ «همه‌چیز شناور» + «همکاریِ بهبودها».
+    """
+    df = load_tf(asset, tf)
+    if df is None:
+        print(f"داده {asset}_{tf} موجود نیست"); return
+    print(f"=== REFINE {asset}/{tf} — عبور از G0/G4 ===")
+    m = regime_masks(df)
+
+    # ریزِ آستانه‌ها حولِ نقطهٔ برنده (غیررند)
+    r2_thr    = [0.40, 0.48, 0.55]
+    chop_thr  = [42.0, 38.2, 34.0, 30.0]
+    hurst_thr = [0.50, 0.53]
+    # فیلترهای مکمل (کاندیدا) — هرکدام None یعنی بدونِ آن فیلتر
+    kurt_thr    = [None, 2.5, 1.5, 0.5]      # کنترلِ ریسکِ دُم (G4)
+    entropy_thr = [None, 2.7, 2.4]           # زیرِ این = ساختارمندتر
+    sltp_grid = [(55, 89), (89, 144), (110, 178), (89, 110), (144, 200), (72, 110)]
+
+    best = None; rows = []
+    for r2t, cht, hut, kt, et in itertools.product(r2_thr, chop_thr, hurst_thr, kurt_thr, entropy_thr):
+        filt = [m['r2'] > r2t, m['chop'] < cht, m['hurst'] > hut]
+        if kt is not None:
+            filt.append(m['kurt'] < kt)
+        if et is not None:
+            filt.append(m['entropy'] < et)
+        for sl, tp in sltp_grid:
+            r, nsig, _ = run_config(df, asset, sl, tp, 'short', trend_gate=True,
+                                    filters=filt, max_hold=48)
+            met = r['metrics']; npass = sum(r['gates'].values())
+            rows.append((r['rqs_score'], npass, r, dict(r2=r2t, chop=cht, hu=hut, kt=kt, et=et, sl=sl, tp=tp, nsig=nsig)))
+            if best is None or (npass, r['rqs_score']) > (best[1], best[0]):
+                best = (r['rqs_score'], npass, r, dict(r2=r2t, chop=cht, hu=hut, kt=kt, et=et, sl=sl, tp=tp, nsig=nsig))
+    rows.sort(key=lambda x: (x[1], x[0]), reverse=True)
+    print(f"\n{'RQS':>5} {'gts':>3}  cfg")
+    for rr in rows[:16]:
+        c = rr[3]; met = rr[2]['metrics']; g = rr[2]['gates']
+        gl = ''.join('1' if v else '0' for v in g.values())
+        print(f"{rr[0]:>5.1f} {rr[1]:>3d}  r2>{c['r2']} chop<{c['chop']} H>{c['hu']} kurt<{c['kt']} ent<{c['et']} "
+              f"SL{c['sl']}/TP{c['tp']} | n={met.get('n_trades',0)} WR={met.get('win_rate',0)} PF={met.get('profit_factor',0)} G={gl}")
+    if best:
+        print("\n--- بهترین ---")
+        c = best[3]
+        print(rqs.format_report(f'S335_{asset}_{tf}_REFINE', best[2]),
+              f"| r2>{c['r2']} chop<{c['chop']} H>{c['hu']} kurt<{c['kt']} ent<{c['et']} SL{c['sl']}/TP{c['tp']} nsig={c['nsig']}")
+
+
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--asset', default='XAUUSD')
@@ -248,3 +296,5 @@ if __name__ == '__main__':
         stage_baseline(a.asset, a.tf)
     elif a.stage == 'scan':
         stage_scan(a.asset, a.tf)
+    elif a.stage == 'refine':
+        stage_refine(a.asset, a.tf)
