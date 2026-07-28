@@ -135,6 +135,49 @@ def main():
                              f"base z>{zt} rsi>{rt} SL{sl}/TP{tp}")
         print("\n>>> baseline کامل شد. هیچ‌کدام انتظار می‌رود RQS+≥۸۰ نباشد (بدونِ فیلترِ رژیم).")
 
+    elif args.stage == 'diag':
+        # تشخیصِ نقطهٔ شیرینِ scan2: z34/2.4 rsi70 hurst<0.5 SL120/TP135 (۵ گیت، فقط G4 رد)
+        # هدف: کدام پنجرهٔ walk-forward منفی است؟ و کدام فیلترِ مکمل آن را پاک می‌کند؟
+        print("### تشخیصِ G4 روی نقطهٔ شیرین + جستجوی فیلترِ مکمل ###")
+        base = build_short_mr(df, z_win=34, z_thr=2.4, rsi_thr=70)
+        reg = precompute_regime(df)
+        # فیلترهای مکملِ کاندیدا از بانک (بدونِ کشتنِ n)
+        cand_extra = {
+            'none':      np.ones(len(df), bool),
+            'kurt<1.5':  reg['kurt'] < 1.5,
+            'kurt<0.8':  reg['kurt'] < 0.8,
+            'chop>46':   reg['chop'] > 46.0,
+            'r2<0.55':   reg['r2'] < 0.55,
+            'entropy>2.5': np.nan_to_num(pd.Series(ib.compute('entropy', df)).values, nan=0) > 2.5,
+            'fdi>1.5':   np.nan_to_num(pd.Series(ib.compute('fdi', df)).values, nan=0) > 1.5,
+        }
+        hmask = reg['hurst'] < 0.5
+        best = None
+        for xname, xmask in cand_extra.items():
+            ssig = base & hmask & xmask
+            if ssig.sum() < 40:
+                print(f"{xname:12s} n<40 (n={int(ssig.sum())}) — رد")
+                continue
+            for (sl, tp, mh) in [(120, 135, 22), (135, 145, 24), (110, 125, 20)]:
+                lab = f"[hurst<0.5+{xname}] SL{sl}/TP{tp}"
+                tr, r = evaluate(df, ssig, sl, tp, mh, args.asset, lab)
+                if r:
+                    m = r['metrics']
+                    print(f"    wf={m['wf_nets']}  half={m['half_nets']}")
+                if r and r['passed'] and (best is None or r['rqs_score'] > best[1]['rqs_score']):
+                    best = (lab, r, dict(z_win=34, z_thr=2.4, rsi_thr=70, extra=xname, sl=sl, tp=tp, mh=mh))
+        print("\n" + "=" * 70)
+        if best:
+            lab, r, cfg = best
+            print(f"🏆 ACCEPT: {lab}  RQS+={r['rqs_score']}")
+            out = dict(asset=args.asset, tf=args.tf, label=lab, cfg=cfg,
+                       rqs=r['rqs_score'], gates=r['gates'], metrics=r['metrics'])
+            with open(os.path.join(RESULTS, f'_s333_{args.asset}_{args.tf}.json'), 'w') as f:
+                json.dump(out, f, ensure_ascii=False, indent=1, default=float)
+            print(f"✅ ذخیره: results/_s333_{args.asset}_{args.tf}.json")
+        else:
+            print("❌ diag ACCEPT نداد — فیلترِ مکملِ دیگری لازم است.")
+
     elif args.stage == 'scan2':
         # درسِ scan۱: فیلترِ hurst کیفیت را می‌سازد (PF 0.75→1.5، DD 95٪→2٪) اما
         # فیلترِ سخت n را می‌کشد ⇒ G0(WR≥60) و G1(معناداری) رد. راهبردِ scan۲:
