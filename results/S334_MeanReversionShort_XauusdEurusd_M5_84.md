@@ -41,7 +41,7 @@
 
 ## ۲) baseline خامِ s122 (نقطهٔ شروعِ احیا)
 
-`python strategies/s333_mr_short_revival.py --asset XAUUSD --tf M5 --stage baseline`
+`python strategies/s334_mr_short_revival.py --asset XAUUSD --tf M5 --stage baseline`
 
 | کانفیگِ خام (اعدادِ رند) | WR | PF | maxDD | MCL | RQS+ | verdict |
 |---|---|---|---|---|---|---|
@@ -111,7 +111,7 @@
 
 نزدیک‌ترین لایهٔ موجود: **S328 (RSI-21 Fade SHORT, XAU-M5, RQS 94)** — هم‌دارایی، هم‌TF، هم‌جهت، هم‌مکانیزم (fade اشباع).
 
-اسکریپت: `strategies/s333_overlap_audit.py` · خروجی: `results/_s333_overlap_audit.json`
+اسکریپت: `strategies/s334_overlap_audit.py` · خروجی: `results/_s334_overlap_audit.json`
 
 | سنجه | مقدار |
 |---|---|
@@ -187,7 +187,7 @@
 ---
 
 ### فایل‌ها
-- استراتژی/احیا: `strategies/s333_mr_short_revival.py`
-- ممیزی همپوشانی: `strategies/s333_overlap_audit.py`
-- داده: `results/_s333_XAUUSD_M5.json` · `results/_s333_EURUSD_M5.json` · `results/_s333_overlap_audit.json`
+- استراتژی/احیا: `strategies/s334_mr_short_revival.py`
+- ممیزی همپوشانی: `strategies/s334_overlap_audit.py`
+- داده: `results/_s334_XAUUSD_M5.json` · `results/_s334_EURUSD_M5.json` · `results/_s334_overlap_audit.json`
 - منشأ: `strategies/s122_m5_short_meanreversion.py`
