@@ -60,6 +60,11 @@ import { decideS340, S340_CFG } from './micro_channel_s340'
 //     XAUUSD-H1 LONG — از RQS+ 33 (مرده) → RQS+ 94.5 (WR 66.7% · PF 2.01 · +$387).
 //     همپوشانی با S333/S335 = 0.0% (رژیمِ رنج vs روند، ساختاراً متعامد). پورتِ verbatim تأییدشد (650/650 سیگنال یکسان).
 import { decideS341, S341_CFG } from './swing_fade_s341'
+// --- لایهٔ نوِ این نشست: S344 Brooks «Trend from the Open & Small Pullback Trends» (فصلِ ۲۳) ---
+//     open-extreme first-pullback continuation روی XAUUSD-M15 SHORT — RQS+=91.4 (WR 64.1% · PF 2.08 · +$1,571).
+//     لبهٔ مستقل خارج از پنجره‌های زمان-محورِ S139..S144: RQS+=92.9 (n=57) ⇒ لبهٔ نو (نه فیلتر).
+//     نخستین لبهٔ SHORT روی کارتِ XAUUSD-M15. پورتِ verbatim تأیید شد (۹۲/۹۲ سیگنال یکسان، mismatch=0).
+import { decideS344, S344_CFG } from './trend_from_open_s344'
 
 const GOLD_PIP = 0.1
 
@@ -225,6 +230,8 @@ const s335Layer = (cfg: typeof S335_CFG[string]): LayerFn => (ctx) => decideS335
 const s340Layer = (cfg: typeof S340_CFG[string]): LayerFn => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ احیاشدهٔ این نشست: S341 Swing-Points fade در رنج + مغناطیسِ میانه (Brooks فصلِ ۱۷)
 const s341Layer = (cfg: typeof S341_CFG[string]): LayerFn => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// لایهٔ نوِ این نشست: S344 Brooks Trend-from-Open first-pullback continuation (فصلِ ۲۳) — نخستین SHORT روی XAUUSD-M15
+const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 
 // ---------------------------------------------------------------------------
 // نگاشتِ کارت → لایه‌های فعال (به‌ترتیبِ اولویت). فقط لایه‌هایی که روی همان
@@ -262,6 +269,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s322Layer(S322_CFG['XAUUSD-M15']),
     s323Layer(S323_CFG['XAUUSD-M15']),
     s335Layer(S335_CFG['XAUUSD-M15']),  // S335 — Reflex dip-turn + گیتِ r2>0.55 — RQS+=89.7 (WR 60.0% · PF 2.08) · همپوشانیِ صفر با S333
+    s344Layer(S344_CFG['XAUUSD-M15']),  // S344 — Brooks فصلِ ۲۳ trend-from-open first-pullback SHORT — RQS+=91.4 (WR 64.1% · PF 2.08 · +$1,571) · مستقل=92.9 · نخستین SHORT این کارت
     s310Layer,
     s312Layer(295, 295, 48),
   ],
