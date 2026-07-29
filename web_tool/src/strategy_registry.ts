@@ -51,6 +51,10 @@ import { decideS333, S333_CFG } from './s333_pullback'
 //     خریدِ کفِ چرخه درونِ روندِ صعودیِ کم‌تأخیر روی XAU M5/M15/H1 —
 //     همپوشانیِ صفر با S333؛ RQS+ = 92.2/89.7/89.7 ---
 import { decideS335, S335_CFG } from './s335_reflex_cycle'
+// --- لایهٔ نوِ این نشست: S340 Brooks «Micro Channel» (فصلِ ۱۶) ---
+//     ادامهٔ روند/failed-pullback روی XAUUSD-H4 — RQS+ = 92.6 (WR 65.6% · PF 2.13 · +$1,080)
+//     همپوشانی: S327=0% ، S332=8.2% ⇒ لبهٔ مستقل (نه فیلتر). پورتِ verbatim تأییدشد (64/64 سیگنال یکسان).
+import { decideS340, S340_CFG } from './micro_channel_s340'
 
 const GOLD_PIP = 0.1
 
@@ -213,6 +217,7 @@ const s333Layer = (cfg: typeof S333_CFG[string]): LayerFn => (ctx) => decideS333
 const s334Layer = (cfg: typeof S334_CFG[string]): LayerFn => (ctx) => decideS334(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ نوِ این نشست: S335 Reflex-TrendFlex Cycle-Turn (خریدِ کفِ چرخهٔ اِهلرز درونِ روند)
 const s335Layer = (cfg: typeof S335_CFG[string]): LayerFn => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+const s340Layer = (cfg: typeof S340_CFG[string]): LayerFn => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 
 // ---------------------------------------------------------------------------
 // نگاشتِ کارت → لایه‌های فعال (به‌ترتیبِ اولویت). فقط لایه‌هایی که روی همان
@@ -271,6 +276,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s312Layer(395, 395, 24),
   ],
   'XAUUSD-H4': [
+    s340Layer(S340_CFG['XAUUSD-H4']),   // S340 — Brooks Micro-Channel، ادامهٔ روند/failed-pullback — RQS+=92.6 (WR 65.6% · PF 2.13) · همپوشانی S327=0%/S332=8.2%
     s332Layer(S332_CFG['XAUUSD-H4']),   // احیای squeeze با فیلترِ ADX/DI — RQS+=92.1
     s327Layer(SELL_CLIMAX_CFG['XAUUSD-H4']),
   ],
