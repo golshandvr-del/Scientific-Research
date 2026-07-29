@@ -6367,13 +6367,81 @@ function decideS340(cfg, a, candles, capital = 1e4, riskPct = 1) {
 // ../web_tool/src/swing_fade_s341.ts
 var GOLD_PIP5 = 0.1;
 var S341_CFG = {
+  // RQS+=94.7 | WR 70.8% | PF 2.22 — رژیمِ رنجِ سفت + سیگنالِ دوم (بدونِ فیلترِ کشش)
+  "XAUUSD-M5": {
+    id: "XAUUSD-M5",
+    tfFa: "M5",
+    w: 4,
+    bufFrac: 0.05,
+    useStretch: false,
+    stretch: 0,
+    useExh: false,
+    exh: 0,
+    requireSecond: true,
+    secondLookback: 40,
+    chopMin: 61.8,
+    r2Max: 0.22,
+    erMax: 0.16,
+    erP: 11,
+    slPip: 180,
+    tpPip: 260,
+    maxHold: 48,
+    rqs: 94.7
+  },
+  // RQS+=89.8 | WR 65.0% | PF 1.83
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tfFa: "M15",
+    w: 4,
+    bufFrac: 0.15,
+    useStretch: false,
+    stretch: 0,
+    useExh: false,
+    exh: 0,
+    requireSecond: true,
+    secondLookback: 40,
+    chopMin: 61.8,
+    r2Max: 0.22,
+    erMax: 0.16,
+    erP: 11,
+    slPip: 280,
+    tpPip: 620,
+    maxHold: 40,
+    rqs: 89.8
+  },
+  // RQS+=89.7 | WR 63.9% | PF 1.77 — رژیمِ میانی (chop≥58)
+  "XAUUSD-M30": {
+    id: "XAUUSD-M30",
+    tfFa: "M30",
+    w: 8,
+    bufFrac: 0.15,
+    useStretch: false,
+    stretch: 0,
+    useExh: false,
+    exh: 0,
+    requireSecond: true,
+    secondLookback: 40,
+    chopMin: 58,
+    r2Max: 0.3,
+    erMax: 0.22,
+    erP: 11,
+    slPip: 380,
+    tpPip: 840,
+    maxHold: 18,
+    rqs: 89.7
+  },
+  // RQS+=94.5 | WR 66.7% | PF 2.01 — احیاشده با فیلترِ جعبه‌ابزار (کشش+خستگی)، بدونِ سیگنالِ دوم
   "XAUUSD-H1": {
     id: "XAUUSD-H1",
     tfFa: "H1",
     w: 4,
     bufFrac: 0.05,
+    useStretch: true,
     stretch: 0.7,
+    useExh: true,
     exh: 0.25,
+    requireSecond: false,
+    secondLookback: 40,
     chopMin: 61.8,
     r2Max: 0.22,
     erMax: 0.16,
@@ -6549,7 +6617,39 @@ function computeS341(candles, cfg) {
   const edist = emaDistAtr(h, l, c, 50, 14);
   const ifr = ifishRsi(c, 14);
   const slArr = lastSwingLow(h, l, cfg.w);
+  const baseTrigger = (j) => {
+    if (!(isFinite(ch[j]) && ch[j] >= cfg.chopMin)) return false;
+    if (!(isFinite(r2[j]) && r2[j] <= cfg.r2Max)) return false;
+    if (!(isFinite(er[j]) && Math.abs(er[j]) <= cfg.erMax)) return false;
+    const aj = atrArr[j];
+    if (!(isFinite(aj) && aj > 0)) return false;
+    const lj = slArr[j];
+    if (!isFinite(lj)) return false;
+    const bj = aj * cfg.bufFrac;
+    if (!(l[j] < lj - bj && c[j] > lj)) return false;
+    if (cfg.useStretch) {
+      if (!(isFinite(edist[j]) && edist[j] <= -cfg.stretch)) return false;
+    }
+    if (cfg.useExh) {
+      if (!(isFinite(ifr[j]) && ifr[j] <= -cfg.exh)) return false;
+    }
+    return true;
+  };
+  const startJ = cfg.w + 2;
+  const recent = [];
+  const firesAt = (j) => {
+    if (!baseTrigger(j)) return false;
+    if (!cfg.requireSecond) return true;
+    while (recent.length && j - recent[0] > cfg.secondLookback) recent.shift();
+    recent.push(j);
+    return recent.length >= 2;
+  };
   const i = n - 1;
+  let active = false;
+  for (let j = startJ; j <= i; j++) {
+    const f = firesAt(j);
+    if (j === i) active = f;
+  }
   const chOk = isFinite(ch[i]) && ch[i] >= cfg.chopMin;
   const r2Ok = isFinite(r2[i]) && r2[i] <= cfg.r2Max;
   const erOk = isFinite(er[i]) && Math.abs(er[i]) <= cfg.erMax;
@@ -6560,9 +6660,8 @@ function computeS341(candles, cfg) {
   const brokeBelow = isFinite(lvl) && l[i] < lvl - buf2;
   const closedBack = isFinite(lvl) && c[i] > lvl;
   const failedBreak = brokeBelow && closedBack;
-  const stretchOk = isFinite(edist[i]) && edist[i] <= -cfg.stretch;
-  const exhOk = isFinite(ifr[i]) && ifr[i] <= -cfg.exh;
-  const active = rangeOk && failedBreak && stretchOk && exhOk;
+  const stretchOk = !cfg.useStretch || isFinite(edist[i]) && edist[i] <= -cfg.stretch;
+  const exhOk = !cfg.useExh || isFinite(ifr[i]) && ifr[i] <= -cfg.exh;
   const approaching = !active && rangeOk && stretchOk && !failedBreak && isFinite(lvl);
   const fmt3 = (x) => isFinite(x) ? x.toFixed(2) : "\u2014";
   const indicators = [
@@ -6580,26 +6679,32 @@ function computeS341(candles, cfg) {
       name: `\u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u067E\u0627\u06CC\u06CC\u0646 (|ER${cfg.erP}| \u2264 ${cfg.erMax})`,
       value: `${fmt3(Math.abs(er[i]))}` + (erOk ? " \u2714" : " \u2718"),
       status: erOk ? "ok" : "bad"
-    },
-    {
+    }
+  ];
+  if (cfg.useStretch) {
+    indicators.push({
       name: `\u06A9\u0634\u0634\u0650 \u0645\u063A\u0646\u0627\u0637\u06CC\u0633\u06CC (ema_dist_atr \u2264 \u2212${cfg.stretch})`,
       value: `${fmt3(edist[i])}` + (stretchOk ? " \u2714" : " \u2718"),
       status: stretchOk ? "ok" : "neutral"
-    },
-    {
+    });
+  }
+  if (cfg.useExh) {
+    indicators.push({
       name: `\u062E\u0633\u062A\u06AF\u06CC\u0650 \u0641\u0631\u0648\u0634 (ifish_rsi \u2264 \u2212${cfg.exh})`,
       value: `${fmt3(ifr[i])}` + (exhOk ? " \u2714" : " \u2718"),
       status: exhOk ? "ok" : "neutral"
-    },
-    {
-      name: "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF",
-      value: isFinite(lvl) ? failedBreak ? "\u0631\u062E \u062F\u0627\u062F \u2714" : "\u0646\u0647" : "\u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u0646\u0627\u0645\u0634\u062E\u0635",
-      status: failedBreak ? "ok" : "neutral"
-    }
-  ];
+    });
+  }
+  indicators.push({
+    name: "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF" + (cfg.requireSecond ? " (\u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062F\u0648\u0645)" : ""),
+    value: isFinite(lvl) ? failedBreak ? "\u0631\u062E \u062F\u0627\u062F \u2714" : "\u0646\u0647" : "\u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u0646\u0627\u0645\u0634\u062E\u0635",
+    status: failedBreak ? "ok" : "neutral"
+  });
   let reason;
   if (active) {
-    reason = `\u0631\u0648\u0632\u0650 \u0631\u0646\u062C (Chop=${fmt3(ch[i])})\u061B \u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u0634\u06A9\u0633\u062A \u0627\u0645\u0627 \u0646\u0627\u0645\u0648\u0641\u0642 \u0645\u0627\u0646\u062F \u0648 \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D \u0628\u0631\u06AF\u0634\u062A\u060C \u062F\u0631\u062D\u0627\u0644\u06CC\u200C\u06A9\u0647 \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u06A9\u0634\u06CC\u062F\u0647 (${fmt3(edist[i])} ATR) \u0648 \u0641\u0631\u0648\u0634 \u062E\u0633\u062A\u0647 \u0627\u0633\u062A \u21D2 \u0648\u0631\u0648\u062F\u0650 fade\u0650 \u062E\u0631\u06CC\u062F \u0628\u0647 \u0633\u0645\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647 (\u0645\u063A\u0646\u0627\u0637\u06CC\u0633).`;
+    const magnet = cfg.useStretch ? `\u062F\u0631\u062D\u0627\u0644\u06CC\u200C\u06A9\u0647 \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u06A9\u0634\u06CC\u062F\u0647 (${fmt3(edist[i])} ATR) \u0648 \u0641\u0631\u0648\u0634 \u062E\u0633\u062A\u0647 \u0627\u0633\u062A ` : "";
+    const second = cfg.requireSecond ? "(\u062F\u0648\u0645\u06CC\u0646 \u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642 \u062F\u0631 \u0646\u0627\u062D\u06CC\u0647 \u2014 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062F\u0648\u0645\u0650 Brooks) " : "";
+    reason = `\u0631\u0648\u0632\u0650 \u0631\u0646\u062C (Chop=${fmt3(ch[i])})\u061B \u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u0634\u06A9\u0633\u062A \u0627\u0645\u0627 \u0646\u0627\u0645\u0648\u0641\u0642 \u0645\u0627\u0646\u062F \u0648 \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D \u0628\u0631\u06AF\u0634\u062A ${second}${magnet}\u21D2 \u0648\u0631\u0648\u062F\u0650 fade\u0650 \u062E\u0631\u06CC\u062F \u0628\u0647 \u0633\u0645\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647 (\u0645\u063A\u0646\u0627\u0637\u06CC\u0633).`;
   } else if (approaching) {
     reason = `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C \u0648 \u06A9\u0634\u0634\u0650 \u067E\u0627\u06CC\u06CC\u0646 \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06CC\u06A9 \xAB\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\xBB \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF (\u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D) \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F\u0650 fade.`;
   } else if (!rangeOk) {
@@ -6811,6 +6916,8 @@ var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capita
 var s341Layer = (cfg) => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
+    s341Layer(S341_CFG["XAUUSD-M5"]),
+    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=94.7 (WR 70.8% · PF 2.22 · +$976) · بخشِ مستقل standalone پاس (96.4)
     s333Layer(S333_CFG["XAUUSD-M5"]),
     // احیای S79 — pullback با هندسهٔ منصفانه + rsi_turn — RQS+=91.3 (WR 65.6% · PF 2.85)
     s330Layer(S330_CFG["XAUUSD-M5"]),
@@ -6823,6 +6930,8 @@ var CARD_LAYERS = {
     s326Layer(STREAK_REV_CFG["XAUUSD-M5"])
   ],
   "XAUUSD-M15": [
+    s341Layer(S341_CFG["XAUUSD-M15"]),
+    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=89.8 (WR 65.0% · PF 1.83 · +$568) · لبهٔ رنج، جریانِ کامل لازم
     s333Layer(S333_CFG["XAUUSD-M15"]),
     // احیای S79 — pullback (ورودِ مستقیم) — RQS+=91.7 (WR 62.8% · PF 2.30)
     s332Layer(S332_CFG["XAUUSD-M15"]),
@@ -6836,6 +6945,8 @@ var CARD_LAYERS = {
     s312Layer(295, 295, 48)
   ],
   "XAUUSD-M30": [
+    s341Layer(S341_CFG["XAUUSD-M30"]),
+    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=89.7 (WR 63.9% · PF 1.77 · +$468) · لبهٔ رنج، جریانِ کامل لازم
     s333Layer(S333_CFG["XAUUSD-M30"]),
     // احیای S79 — pullback با تأییدِ price_turn — RQS+=91.1 (WR 66.7% · PF 2.48)
     s313Layer(S313_M30),
