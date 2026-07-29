@@ -6753,8 +6753,250 @@ function decideS341(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
 }
 
-// ../web_tool/src/strategy_registry.ts
+// ../web_tool/src/trend_from_open_s344.ts
 var GOLD_PIP6 = 0.1;
+var S344_CFG = {
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tfFa: "M15",
+    side: "SHORT",
+    nOpen: 4,
+    fRange: 0.2,
+    pullMax: 0.62,
+    minSpike: 0.2,
+    adrLookbackDays: 14,
+    r2Period: 34,
+    r2Min: 0.3,
+    hurstPeriod: 55,
+    hurstMin: 0.52,
+    slPip: 220,
+    tpPip: 340,
+    maxHold: 32,
+    rqs: 91.4
+  }
+};
+function dayId(tsSec) {
+  return Math.floor(tsSec / 86400);
+}
+function adrForDay(h, l, days, lookback) {
+  const n = h.length;
+  const uniq = [];
+  const dayHi = /* @__PURE__ */ new Map();
+  const dayLo = /* @__PURE__ */ new Map();
+  for (let i = 0; i < n; i++) {
+    const d = days[i];
+    if (!dayHi.has(d)) {
+      dayHi.set(d, h[i]);
+      dayLo.set(d, l[i]);
+      uniq.push(d);
+    } else {
+      if (h[i] > dayHi.get(d)) dayHi.set(d, h[i]);
+      if (l[i] < dayLo.get(d)) dayLo.set(d, l[i]);
+    }
+  }
+  const dayRange = /* @__PURE__ */ new Map();
+  for (const d of uniq) dayRange.set(d, dayHi.get(d) - dayLo.get(d));
+  const adrOfDay = /* @__PURE__ */ new Map();
+  for (let idx = 0; idx < uniq.length; idx++) {
+    const start = Math.max(0, idx - lookback);
+    const prev = uniq.slice(start, idx);
+    if (prev.length) {
+      let s = 0;
+      for (const p of prev) s += dayRange.get(p);
+      adrOfDay.set(uniq[idx], s / prev.length);
+    } else {
+      adrOfDay.set(uniq[idx], NaN);
+    }
+  }
+  return adrOfDay;
+}
+function computeS344(candles, cfg) {
+  const n = candles.length;
+  const o = candles.map((c2) => c2.open);
+  const h = candles.map((c2) => c2.high);
+  const l = candles.map((c2) => c2.low);
+  const c = candles.map((x) => x.close);
+  const t = candles.map((x) => x.time);
+  const side = cfg.side === "LONG" ? "long" : "short";
+  const slDist = cfg.slPip * GOLD_PIP6;
+  const tpDist = cfg.tpPip * GOLD_PIP6;
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  const need = cfg.hurstPeriod + cfg.nOpen + 10;
+  if (n < need) {
+    return {
+      active: false,
+      approaching: false,
+      direction: cfg.side,
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u0634\u062E\u06CC\u0635\u0650 trend-from-open \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
+      indicators: emptyInd
+    };
+  }
+  const days = t.map(dayId);
+  const adrMap = adrForDay(h, l, days, cfg.adrLookbackDays);
+  const r2 = r2Series(c, cfg.r2Period);
+  const hu = hurstSeries(c, cfg.hurstPeriod);
+  const i = n - 1;
+  const d = days[i];
+  let j0 = i;
+  while (j0 > 0 && days[j0 - 1] === d) j0 -= 1;
+  const idr = i - j0;
+  const bpd = { M5: 288, M15: 96, M30: 48, H1: 24 }[cfg.tfFa] ?? 96;
+  const entryFromBar = cfg.nOpen;
+  const entryToBar = Math.floor(0.85 * bpd);
+  const adr = adrMap.get(d);
+  const oi0 = j0;
+  const oi1 = j0 + cfg.nOpen;
+  const r2v = r2[i], huv = hu[i];
+  const r2Ok = isFinite(r2v) && r2v >= cfg.r2Min;
+  const huOk = isFinite(huv) && huv >= cfg.hurstMin;
+  const regimeOk = r2Ok && huOk;
+  let active = false;
+  let broke = false;
+  let legVal = 0;
+  let pullVal = NaN;
+  let initR = NaN;
+  let spikeDirOk = false;
+  let smallRange = false;
+  if (idr >= cfg.nOpen && oi1 <= n && isFinite(adr) && adr > 0) {
+    let initHi = -Infinity, initLo = Infinity;
+    for (let k = oi0; k < oi1; k++) {
+      if (h[k] > initHi) initHi = h[k];
+      if (l[k] < initLo) initLo = l[k];
+    }
+    initR = initHi - initLo;
+    const openPx = o[j0];
+    smallRange = initR < cfg.fRange * adr;
+    if (smallRange) {
+      const spikeDir = c[oi1 - 1] >= openPx ? "long" : "short";
+      spikeDirOk = spikeDir === side;
+      if (spikeDirOk) {
+        let legHi = initHi, legLo = initLo;
+        let firstPullBar = -1;
+        for (let k = oi1; k <= i; k++) {
+          const kIdr = k - j0;
+          if (side === "long") {
+            if (h[k] > legHi) legHi = h[k];
+            if (!broke && h[k] > initHi) broke = true;
+            if (broke) {
+              const leg = legHi - initLo;
+              if (leg >= cfg.minSpike * adr && leg > 0) {
+                const pull = (legHi - l[k]) / leg;
+                if (pull > 0 && pull <= cfg.pullMax && kIdr >= entryFromBar && kIdr <= entryToBar) {
+                  if (k >= 1 && l[k] < l[k - 1] && c[k] < legHi) {
+                    firstPullBar = k;
+                    legVal = leg;
+                    pullVal = pull;
+                    break;
+                  }
+                }
+              }
+            }
+          } else {
+            if (l[k] < legLo) legLo = l[k];
+            if (!broke && l[k] < initLo) broke = true;
+            if (broke) {
+              const leg = initHi - legLo;
+              if (leg >= cfg.minSpike * adr && leg > 0) {
+                const pull = (h[k] - legLo) / leg;
+                if (pull > 0 && pull <= cfg.pullMax && kIdr >= entryFromBar && kIdr <= entryToBar) {
+                  if (k >= 1 && h[k] > h[k - 1] && c[k] > legLo) {
+                    firstPullBar = k;
+                    legVal = leg;
+                    pullVal = pull;
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        }
+        active = firstPullBar === i && regimeOk;
+      }
+    }
+  }
+  const approaching = !active && smallRange && spikeDirOk && broke && regimeOk;
+  const dirFa = side === "short" ? "\u0646\u0632\u0648\u0644\u06CC" : "\u0635\u0639\u0648\u062F\u06CC";
+  const indicators = [
+    {
+      name: `\u0631\u0646\u062C\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u06A9\u0648\u0686\u06A9 (opening-range < ${cfg.fRange}\xD7ADR)`,
+      value: isFinite(initR) && isFinite(adr) && adr > 0 ? (initR / adr).toFixed(2) + "\xD7ADR" + (smallRange ? " \u2714" : " \u2718") : "\u2014",
+      status: smallRange ? "ok" : "neutral"
+    },
+    {
+      name: `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0647\u0645\u200C\u062C\u0647\u062A (${dirFa})`,
+      value: spikeDirOk ? "\u0647\u0645\u200C\u062C\u0647\u062A \u2714" : "\u0646\u0627\u0647\u0645\u200C\u062C\u0647\u062A/\u0646\u0627\u0645\u0634\u062E\u0635 \u2718",
+      status: spikeDirOk ? "ok" : "neutral"
+    },
+    {
+      name: `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC (R\xB2(${cfg.r2Period})\u2265${cfg.r2Min} \u0648 Hurst(${cfg.hurstPeriod})\u2265${cfg.hurstMin})`,
+      value: (isFinite(r2v) ? r2v.toFixed(2) : "\u2014") + "/" + (isFinite(huv) ? huv.toFixed(2) : "\u2014") + (regimeOk ? " \u2714" : " \u2718"),
+      status: regimeOk ? "ok" : "bad"
+    },
+    {
+      name: `\u0627\u0648\u0644\u06CC\u0646 pullback\u0650 \u06A9\u0648\u0686\u06A9 (pull \u2264 ${cfg.pullMax}\xD7leg)`,
+      value: isFinite(pullVal) ? pullVal.toFixed(2) + (active ? " \u2714" : "") : broke ? "\u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631" : "\u2014",
+      status: active ? "ok" : "neutral"
+    }
+  ];
+  let reason;
+  if (active) {
+    reason = `\u0631\u0648\u0632\u0650 trend-from-open ${dirFa}: \u0631\u0646\u062C\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u06A9\u0648\u0686\u06A9 + \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 ${dirFa} + \u0627\u0648\u0644\u06CC\u0646 pullback\u0650 \u06A9\u0648\u0686\u06A9 (${pullVal.toFixed(2)}\xD7leg) \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC \u21D2 \u0648\u0631\u0648\u062F\u0650 ${side === "short" ? "\u0641\u0631\u0648\u0634\u0650" : "\u062E\u0631\u06CC\u062F\u0650"} \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F.`;
+  } else if (approaching) {
+    reason = `\u0631\u0648\u0632\u0650 trend-from-open ${dirFa} \u062F\u0631 \u062D\u0627\u0644\u0650 \u0634\u06A9\u0644\u200C\u06AF\u06CC\u0631\u06CC (\u0631\u0646\u062C\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u06A9\u0648\u0686\u06A9 + \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 ${dirFa})\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0627\u0648\u0644\u06CC\u0646 pullback\u0650 \u06A9\u0648\u0686\u06A9\u0650 ${cfg.pullMax}\xD7leg \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F.`;
+  } else if (!smallRange) {
+    reason = "\u0631\u0646\u062C\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0631\u0648\u0632 \u06A9\u0648\u0686\u06A9 \u0646\u06CC\u0633\u062A (opening-range \u0628\u0632\u0631\u06AF) \u2014 \u0627\u0644\u06AF\u0648\u06CC trend-from-open \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A.";
+  } else if (!spikeDirOk) {
+    reason = `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0631\u0648\u0632 \u0647\u0645\u200C\u062C\u0647\u062A\u0650 ${dirFa} \u0646\u06CC\u0633\u062A \u2014 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`;
+  } else if (!regimeOk) {
+    reason = "\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC (R\xB2/Hurst) \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u2014 \u0627\u0632 \u0648\u0631\u0648\u062F \u067E\u0631\u0647\u06CC\u0632 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.";
+  } else {
+    reason = "\u0647\u0646\u0648\u0632 \u0627\u0648\u0644\u06CC\u0646 pullback\u0650 \u06A9\u0648\u0686\u06A9\u0650 \u0631\u0648\u0632 \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u0647 \u06CC\u0627 \u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u0648\u0631\u0648\u062F \u0627\u0633\u062A.";
+  }
+  return {
+    active,
+    approaching,
+    direction: cfg.side,
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0627\u0648\u0644\u06CC\u0646 pullback\u0650 \u06A9\u0648\u0686\u06A9\u0650 \u0631\u0648\u0632 (\u2264 ${cfg.pullMax}\xD7leg) \u062F\u0631 \u062C\u0647\u062A\u0650 ${dirFa}` : void 0,
+    indicators
+  };
+}
+function decideS344(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS344(candles, cfg);
+  const reg = {
+    regime: cfg.side === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: cfg.side === "SHORT" ? "bear" : "bull",
+    bucket: `s344_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S344",
+    name: `\u0631\u0648\u0646\u062F \u0627\u0632 \u0628\u0627\u0632\u0650 \u0631\u0648\u0632 (Brooks Trend-from-Open \xB7 ${cfg.tfFa})`,
+    kind: "trend_from_open",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 ${cfg.tfFa} (${cfg.tpPip}/${cfg.slPip} pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u061B \u0627\u06AF\u0631 \u0627\u06A9\u0633\u062A\u0631\u0645\u0645\u0650 \u0631\u0648\u0632 \u0634\u06A9\u0633\u062A \u06CC\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0631\u06AF\u0634\u062A\u06CC\u0650 \u0642\u0648\u06CC\u0650 \u0636\u062F\u0650 \u0631\u0648\u0646\u062F \u0628\u0633\u062A\u0647 \u0634\u062F (\u0627\u062D\u062A\u0645\u0627\u0644\u0650 climax \u067E\u0633 \u0627\u0632 ~\u06F2/\u06F3 \u0631\u0648\u0632)\u060C \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0627 \u0628\u0633\u0646\u062C.`,
+    filters: [
+      `\u0631\u0646\u062C\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u06A9\u0648\u0686\u06A9 < ${cfg.fRange}\xD7ADR`,
+      `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0627\u0648\u0644\u06CC\u0647 \u2265 ${cfg.minSpike}\xD7ADR \u0647\u0645\u200C\u062C\u0647\u062A`,
+      `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC R\xB2(${cfg.r2Period})\u2265${cfg.r2Min} \xB7 Hurst(${cfg.hurstPeriod})\u2265${cfg.hurstMin}`,
+      `\u0627\u0648\u0644\u06CC\u0646 pullback\u0650 \u06A9\u0648\u0686\u06A9 \u2264 ${cfg.pullMax}\xD7leg`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/strategy_registry.ts
+var GOLD_PIP7 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
   return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
 }
@@ -6827,8 +7069,8 @@ var s310Layer = (ctx) => {
     active,
     approaching,
     direction: "LONG",
-    slDist: EOM_SL_PIP * GOLD_PIP6,
-    tpDist: EOM_TP_PIP * GOLD_PIP6,
+    slDist: EOM_SL_PIP * GOLD_PIP7,
+    tpDist: EOM_TP_PIP * GOLD_PIP7,
     maxHoldBars: EOM_MAX_HOLD,
     reason: sig.reason,
     approachReason: approaching ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647` : void 0,
@@ -6866,8 +7108,8 @@ function s312Layer(slPip, tpPip, maxHold) {
       active,
       approaching,
       direction: "LONG",
-      slDist: slPip * GOLD_PIP6,
-      tpDist: tpPip * GOLD_PIP6,
+      slDist: slPip * GOLD_PIP7,
+      tpDist: tpPip * GOLD_PIP7,
       maxHoldBars: maxHold,
       reason: sig.reason,
       approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
@@ -6914,6 +7156,7 @@ var s334Layer = (cfg) => (ctx) => decideS334(cfg, ctx.a, ctx.candles, ctx.capita
 var s335Layer = (cfg) => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s341Layer = (cfg) => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s344Layer = (cfg) => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
     s341Layer(S341_CFG["XAUUSD-M5"]),
@@ -6941,6 +7184,8 @@ var CARD_LAYERS = {
     s323Layer(S323_CFG["XAUUSD-M15"]),
     s335Layer(S335_CFG["XAUUSD-M15"]),
     // S335 — Reflex dip-turn + گیتِ r2>0.55 — RQS+=89.7 (WR 60.0% · PF 2.08) · همپوشانیِ صفر با S333
+    s344Layer(S344_CFG["XAUUSD-M15"]),
+    // S344 — Brooks فصلِ ۲۳ trend-from-open first-pullback SHORT — RQS+=91.4 (WR 64.1% · PF 2.08 · +$1,571) · مستقل=92.9 · نخستین SHORT این کارت
     s310Layer,
     s312Layer(295, 295, 48)
   ],
