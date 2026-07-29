@@ -1,0 +1,501 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M5",
+ "elapsed_s": 162.1,
+ "best": {
+  "side": "long",
+  "n_open": 6,
+  "k_spike": 1.1,
+  "slope_min": 0.05,
+  "win": [
+   0.25,
+   0.9
+  ],
+  "reg": "ema_stretch",
+  "sl": 150,
+  "tp": 260,
+  "rqs": 19.6,
+  "passed": false,
+  "n": 149,
+  "wr": 52.35,
+  "pf": 1.134,
+  "gates": "010101"
+ },
+ "top": [
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.1,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 19.6,
+   "passed": false,
+   "n": 149,
+   "wr": 52.35,
+   "pf": 1.134,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "chop_hi",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 17.3,
+   "passed": false,
+   "n": 205,
+   "wr": 50.24,
+   "pf": 1.133,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": null,
+   "sl": 150,
+   "tp": 260,
+   "rqs": 17.3,
+   "passed": false,
+   "n": 96,
+   "wr": 50.0,
+   "pf": 1.131,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "adx_hi",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 17.3,
+   "passed": false,
+   "n": 96,
+   "wr": 50.0,
+   "pf": 1.131,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.1,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": null,
+   "sl": 150,
+   "tp": 260,
+   "rqs": 16.8,
+   "passed": false,
+   "n": 187,
+   "wr": 51.34,
+   "pf": 1.088,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.1,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "adx_hi",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 16.8,
+   "passed": false,
+   "n": 187,
+   "wr": 51.34,
+   "pf": 1.088,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 16.3,
+   "passed": false,
+   "n": 68,
+   "wr": 50.0,
+   "pf": 1.089,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "chop_hi",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 16.2,
+   "passed": false,
+   "n": 82,
+   "wr": 48.78,
+   "pf": 1.085,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 4,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 16.0,
+   "passed": false,
+   "n": 51,
+   "wr": 52.94,
+   "pf": 1.072,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": null,
+   "sl": 150,
+   "tp": 260,
+   "rqs": 15.9,
+   "passed": false,
+   "n": 236,
+   "wr": 50.0,
+   "pf": 1.093,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "adx_hi",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 15.9,
+   "passed": false,
+   "n": 236,
+   "wr": 50.0,
+   "pf": 1.093,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "r2_lo",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 15.8,
+   "passed": false,
+   "n": 81,
+   "wr": 49.38,
+   "pf": 1.198,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": null,
+   "sl": 150,
+   "tp": 260,
+   "rqs": 15.8,
+   "passed": false,
+   "n": 79,
+   "wr": 49.37,
+   "pf": 1.089,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "adx_hi",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 15.8,
+   "passed": false,
+   "n": 79,
+   "wr": 49.37,
+   "pf": 1.089,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "r2_lo",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 15.3,
+   "passed": false,
+   "n": 205,
+   "wr": 49.76,
+   "pf": 1.078,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "chop_hi",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 15.2,
+   "passed": false,
+   "n": 220,
+   "wr": 48.18,
+   "pf": 1.085,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 4,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 13.9,
+   "passed": false,
+   "n": 58,
+   "wr": 53.45,
+   "pf": 1.061,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 4,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 13.7,
+   "passed": false,
+   "n": 71,
+   "wr": 54.93,
+   "pf": 1.06,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.05,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "chop_hi",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 13.5,
+   "passed": false,
+   "n": 171,
+   "wr": 48.54,
+   "pf": 1.05,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 13.5,
+   "passed": false,
+   "n": 52,
+   "wr": 48.08,
+   "pf": 1.091,
+   "gates": "000101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 13.4,
+   "passed": false,
+   "n": 206,
+   "wr": 50.49,
+   "pf": 1.058,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 4,
+   "k_spike": 1.1,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 13.3,
+   "passed": false,
+   "n": 146,
+   "wr": 53.42,
+   "pf": 1.052,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "ema_stretch",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 13.0,
+   "passed": false,
+   "n": 79,
+   "wr": 50.63,
+   "pf": 1.058,
+   "gates": "010101"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "r2_lo",
+   "sl": 150,
+   "tp": 260,
+   "rqs": 12.7,
+   "passed": false,
+   "n": 61,
+   "wr": 49.18,
+   "pf": 1.125,
+   "gates": "010001"
+  },
+  {
+   "side": "long",
+   "n_open": 6,
+   "k_spike": 1.5,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": null,
+   "sl": 150,
+   "tp": 260,
+   "rqs": 12.7,
+   "passed": false,
+   "n": 91,
+   "wr": 49.45,
+   "pf": 1.025,
+   "gates": "010101"
+  }
+ ]
+}
