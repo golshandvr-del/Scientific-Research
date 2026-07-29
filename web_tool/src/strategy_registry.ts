@@ -55,6 +55,11 @@ import { decideS335, S335_CFG } from './s335_reflex_cycle'
 //     ادامهٔ روند/failed-pullback روی XAUUSD-H4 — RQS+ = 92.6 (WR 65.6% · PF 2.13 · +$1,080)
 //     همپوشانی: S327=0% ، S332=8.2% ⇒ لبهٔ مستقل (نه فیلتر). پورتِ verbatim تأییدشد (64/64 سیگنال یکسان).
 import { decideS340, S340_CFG } from './micro_channel_s340'
+// --- لایهٔ احیاشدهٔ این نشست: S341 Brooks «Swing Points / Horizontal Lines» (فصلِ ۱۷) ---
+//     failed-breakout swing-fade در رژیمِ رنج + فیلترِ «مغناطیسِ میانه» (ema_dist_atr≥0.7) از جعبه‌ابزار.
+//     XAUUSD-H1 LONG — از RQS+ 33 (مرده) → RQS+ 94.5 (WR 66.7% · PF 2.01 · +$387).
+//     همپوشانی با S333/S335 = 0.0% (رژیمِ رنج vs روند، ساختاراً متعامد). پورتِ verbatim تأییدشد (650/650 سیگنال یکسان).
+import { decideS341, S341_CFG } from './swing_fade_s341'
 
 const GOLD_PIP = 0.1
 
