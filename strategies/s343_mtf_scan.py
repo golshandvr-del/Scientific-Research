@@ -68,15 +68,25 @@ def scan_file(path, asset, tf, grid):
 
 
 if __name__ == '__main__':
+    import sys
+    OUT = 'strategies/s343_mtf_scan_result.txt'
     jobs = [(f'data/XAUUSD_{tf}.csv', 'XAUUSD', tf, g) for tf, g in XAU_GRID.items()]
     jobs += [(f'data/EURUSD_{tf}.csv', 'EURUSD', tf, g) for tf, g in EUR_GRID.items()]
-    for path, asset, tf, grid in jobs:
-        try:
-            top = scan_file(path, asset, tf, grid)
-            print(f"===== {asset} {tf} — top3 =====")
-            for rqs_s, net, line in top:
-                print("  " + line)
-        except FileNotFoundError:
-            print(f"[skip] {path} not found")
-        except Exception as e:
-            print(f"[err] {asset} {tf}: {e}")
+    # ذخیرهٔ تدریجی در repo (مقاوم به ریستِ سندباکس): بعد از هر TF فایل به‌روز می‌شود.
+    with open(OUT, 'w') as fh:
+        fh.write("# S343 MTF scan — Brooks Ch22 measured-move fade — top3 per (asset,TF)\n")
+        fh.flush()
+        for path, asset, tf, grid in jobs:
+            try:
+                top = scan_file(path, asset, tf, grid)
+                block = f"===== {asset} {tf} — top3 =====\n"
+                for rqs_s, net, line in top:
+                    block += "  " + line + f"  net={net:.0f}\n"
+            except FileNotFoundError:
+                block = f"[skip] {path} not found\n"
+            except Exception as e:
+                block = f"[err] {asset} {tf}: {e}\n"
+            print(block, end='')
+            sys.stdout.flush()
+            fh.write(block)
+            fh.flush()
