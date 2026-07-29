@@ -255,6 +255,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s326Layer(STREAK_REV_CFG['XAUUSD-M5']),
   ],
   'XAUUSD-M15': [
+    s341Layer(S341_CFG['XAUUSD-M15']),   // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=89.8 (WR 65.0% · PF 1.83 · +$568) · لبهٔ رنج، جریانِ کامل لازم
     s333Layer(S333_CFG['XAUUSD-M15']),   // احیای S79 — pullback (ورودِ مستقیم) — RQS+=91.7 (WR 62.8% · PF 2.30)
     s332Layer(S332_CFG['XAUUSD-M15']),   // احیای squeeze با فیلترِ آماری r2+hurst — RQS+=91.2
     s324Layer(S324_CFG['XAUUSD-M15']),
