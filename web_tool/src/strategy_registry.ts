@@ -245,6 +245,7 @@ const s341Layer = (cfg: typeof S341_CFG[string]): LayerFn => (ctx) => decideS341
 // ---------------------------------------------------------------------------
 export const CARD_LAYERS: Record<string, LayerFn[]> = {
   'XAUUSD-M5': [
+    s341Layer(S341_CFG['XAUUSD-M5']),    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=94.7 (WR 70.8% · PF 2.22 · +$976) · بخشِ مستقل standalone پاس (96.4)
     s333Layer(S333_CFG['XAUUSD-M5']),    // احیای S79 — pullback با هندسهٔ منصفانه + rsi_turn — RQS+=91.3 (WR 65.6% · PF 2.85)
     s330Layer(S330_CFG['XAUUSD-M5']),
     s328Layer(S328_CFG['XAUUSD-M5']),
