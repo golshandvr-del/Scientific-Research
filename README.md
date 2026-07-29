@@ -55,6 +55,18 @@
 > سند: `results/S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md`.
 > ▶ نشستِ بعد: **CHAPTER 18** (آغازِ Part III) کتابِ `1 Trading Price Action - Trends.pdf`.
 
+> **✅ لایهٔ این نشست — S344 (Al Brooks فصلِ ۲۳ «Trend from the Open & Small Pullback Trends»):**
+> تزِ مرکزی = **«open-extreme first-pullback continuation»**: روزی که در چند کندلِ نخست اکسترمم می‌سازد
+> (رنجِ اولیهٔ کوچک `<0.25×ADR` + اسپایکِ هم‌جهت) و با pullbackهای کوچک روند می‌گیرد ⇒ ورودِ با-روند در
+> **اولین pullback**. اسکنِ کاملِ MTF: تنها **XAUUSD-M15 SHORT** به لبهٔ مستقل رسید — **RQS+ = 91.4**
+> (WR 64.1% · PF 2.08 · n=92 · +$1,571). این **نخستین لایهٔ SHORT روی کارتِ XAUUSD-M15** است.
+> همپوشانیِ اجباری بررسی شد: خارج از پنجره‌های زمان‌محورِ S139..S144 هم **RQS+=92.9** (همپوشانی ~۳۸٪) ⇒
+> **لبهٔ نو، نه فیلتر**. H1-LONG رد شد (زمان-وابسته: لبهٔ مستقلش RQS+=29.7)؛ M5/M30 گلوگاهِ G0؛ EURUSD
+> در هیچ TF پاس نشد ⇒ لبهٔ محلیِ طلا. parity TS↔Python **صفر mismatch (۹۲/۹۲)**؛ یک باگِ ترتیبِ آرگومان
+> در `decideS344→rawToDecision` کشف و رفع شد (لایه در `runCard` بی‌صدا خطا می‌داد)، integration **۴/۴ ✅**.
+> **local-mobile و registry به‌روز شدند.** سند: `results/S344_BrooksTrendFromOpen_Xauusd_M15_rqs91.md`.
+> ▶ نشستِ بعد: **CHAPTER 24** کتابِ `1 Trading Price Action - Trends.pdf` (فصلِ ۲۳ کامل بسته شد).
+
 > **✅ احیای S132 (Bollinger Squeeze→Breakout) روی دو TF — با گنجینهٔ ۴۰۱ اندیکاتورِ بانک (این نشست):**
 > لایهٔ سوختهٔ squeeze (که با معیارِ قدیمِ WR ساخته شده بود) روی **XAUUSD H4** (RQS+ = **92.1**، فیلترِ
 > رژیمِ **ADX/DI**) و **XAUUSD M15** (RQS+ = **91.2**) احیا شد. کلیدِ شکستِ دیوارِ M15، دو فیلترِ
