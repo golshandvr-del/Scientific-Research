@@ -272,8 +272,43 @@ export function computeS341(candles: Candle[], cfg: S341Config): RawSignal {
   const ifr = ifishRsi(c, 14)
   const slArr = lastSwingLow(h, l, cfg.w)
 
-  const i = n - 1
+  // تابعِ کمکی: آیا کندلِ j یک «ماشهٔ پایه» است؟ (رژیم + failed-break + فیلترهای فعال)
+  //   دقیقاً منطبق بر swing_fade_confluence_signals در پایتون (پیش از منطقِ سیگنالِ دوم).
+  const baseTrigger = (j: number): boolean => {
+    if (!(isFinite(ch[j]) && ch[j] >= cfg.chopMin)) return false
+    if (!(isFinite(r2[j]) && r2[j] <= cfg.r2Max)) return false
+    if (!(isFinite(er[j]) && Math.abs(er[j]) <= cfg.erMax)) return false
+    const aj = atrArr[j]
+    if (!(isFinite(aj) && aj > 0)) return false
+    const lj = slArr[j]
+    if (!isFinite(lj)) return false
+    const bj = aj * cfg.bufFrac
+    if (!((l[j] < lj - bj) && (c[j] > lj))) return false          // failed breakout
+    if (cfg.useStretch) { if (!(isFinite(edist[j]) && edist[j] <= -cfg.stretch)) return false }
+    if (cfg.useExh)     { if (!(isFinite(ifr[j])   && ifr[j]   <= -cfg.exh))     return false }
+    return true
+  }
 
+  // منطقِ سیگنالِ دوم: بازپخشِ کاملِ تاریخچه تا شمارشِ ماشه‌ها در پنجرهٔ لغزان.
+  //   sig[j]=true فقط اگر (requireSecond=false) یا (این ≥ دومین ماشه در secondLookback کندل).
+  const startJ = cfg.w + 2
+  const recent: number[] = []
+  const firesAt = (j: number): boolean => {
+    if (!baseTrigger(j)) return false
+    if (!cfg.requireSecond) return true
+    while (recent.length && j - recent[0] > cfg.secondLookback) recent.shift()
+    recent.push(j)
+    return recent.length >= 2
+  }
+
+  const i = n - 1
+  let active = false
+  for (let j = startJ; j <= i; j++) {
+    const f = firesAt(j)
+    if (j === i) active = f
+  }
+
+  // مقادیرِ نمایشیِ کندلِ آخر (برای گزارش/approaching)
   const chOk = isFinite(ch[i]) && ch[i] >= cfg.chopMin
   const r2Ok = isFinite(r2[i]) && r2[i] <= cfg.r2Max
   const erOk = isFinite(er[i]) && Math.abs(er[i]) <= cfg.erMax
@@ -286,11 +321,10 @@ export function computeS341(candles: Candle[], cfg: S341Config): RawSignal {
   const closedBack = isFinite(lvl) && (c[i] > lvl)
   const failedBreak = brokeBelow && closedBack
 
-  const stretchOk = isFinite(edist[i]) && edist[i] <= -cfg.stretch
-  const exhOk = isFinite(ifr[i]) && ifr[i] <= -cfg.exh
+  const stretchOk = !cfg.useStretch || (isFinite(edist[i]) && edist[i] <= -cfg.stretch)
+  const exhOk = !cfg.useExh || (isFinite(ifr[i]) && ifr[i] <= -cfg.exh)
 
-  const active = rangeOk && failedBreak && stretchOk && exhOk
-  // approaching: رژیمِ رنج برقرار و قیمت کشیده/خسته هست، اما failed-breakout هنوز رخ نداده
+  // approaching: رژیمِ رنج برقرار (+کشش در صورتِ فعال) اما failed-breakout هنوز رخ نداده
   const approaching = !active && rangeOk && stretchOk && !failedBreak && isFinite(lvl)
 
   const fmt = (x: number) => (isFinite(x) ? x.toFixed(2) : '—')
