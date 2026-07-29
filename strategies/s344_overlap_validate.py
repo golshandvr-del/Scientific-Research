@@ -86,8 +86,9 @@ def eval_sig(df, sig, side, asset, sl, tp, maxhold):
         return None
     r = rqs.compute_rqs(tr, asset, sl_pip=sl, tp_pip=tp)
     m = r["metrics"]
-    return dict(rqs=round(r["rqs"], 1), passed=bool(r["passed"]),
-                gates="".join("1" if g else "0" for g in r["gates"].values()),
+    return dict(rqs=round(r["rqs_score"], 1), passed=bool(r["passed"]),
+                gates="".join("1" if r["gates"][g] else "0"
+                              for g in ["G0", "G1", "G2", "G3", "G4", "G5"]),
                 n=int(m["n_trades"]), wr=round(m["win_rate"], 2),
                 pf=round(m["profit_factor"], 3) if m["profit_factor"] != float("inf") else 999.0,
                 net=round(m["net_profit"], 1))
