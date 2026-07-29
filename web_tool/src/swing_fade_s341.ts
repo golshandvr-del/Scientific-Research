@@ -350,8 +350,10 @@ export function computeS341(candles: Candle[], cfg: S341Config): RawSignal {
 
   let reason: string
   if (active) {
-    reason = `روزِ رنج (Chop=${fmt(ch[i])})؛ قیمت زیرِ کفِ سوئینگ شکست اما ناموفق ماند و به بالای سطح برگشت، ` +
-      `درحالی‌که از میانگین کشیده (${fmt(edist[i])} ATR) و فروش خسته است ⇒ ورودِ fadeِ خرید به سمتِ میانه (مغناطیس).`
+    const magnet = cfg.useStretch ? `درحالی‌که از میانگین کشیده (${fmt(edist[i])} ATR) و فروش خسته است ` : ''
+    const second = cfg.requireSecond ? '(دومین شکستِ ناموفق در ناحیه — سیگنالِ دومِ Brooks) ' : ''
+    reason = `روزِ رنج (Chop=${fmt(ch[i])})؛ قیمت زیرِ کفِ سوئینگ شکست اما ناموفق ماند و به بالای سطح برگشت ${second}` +
+      `${magnet}⇒ ورودِ fadeِ خرید به سمتِ میانه (مغناطیس).`
   } else if (approaching) {
     reason = `رژیمِ رنج و کششِ پایین از میانگین برقرار است؛ منتظرِ یک «شکستِ ناموفق» زیرِ کفِ سوئینگ ` +
       `(بسته‌شدنِ دوباره بالای سطح) برای ورودِ fade.`
