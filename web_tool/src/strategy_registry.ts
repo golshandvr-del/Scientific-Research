@@ -266,6 +266,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s312Layer(295, 295, 48),
   ],
   'XAUUSD-M30': [
+    s341Layer(S341_CFG['XAUUSD-M30']),   // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=89.7 (WR 63.9% · PF 1.77 · +$468) · لبهٔ رنج، جریانِ کامل لازم
     s333Layer(S333_CFG['XAUUSD-M30']),   // احیای S79 — pullback با تأییدِ price_turn — RQS+=91.1 (WR 66.7% · PF 2.48)
     s313Layer(S313_M30),
     s324Layer(S324_CFG['XAUUSD-M30']),
