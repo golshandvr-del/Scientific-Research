@@ -1,0 +1,74 @@
+{
+ "XAU_M15_short": {
+  "config": {
+   "name": "XAU_M15_short",
+   "asset": "XAUUSD",
+   "tf": "M15",
+   "side": "short",
+   "n_open": 4,
+   "f_range": 0.2,
+   "pull_max": 0.62,
+   "min_spike": 0.2,
+   "reg": "r2h",
+   "sl": 220,
+   "tp": 340,
+   "maxhold": 32
+  },
+  "signals_total": 92,
+  "overlap_with_time_layers_pct": 38.0,
+  "full": {
+   "rqs": 91.4,
+   "passed": true,
+   "gates": "111111",
+   "n": 92,
+   "wr": 64.13,
+   "pf": 2.078,
+   "net": 1571.4
+  },
+  "independent": {
+   "rqs": 92.9,
+   "passed": true,
+   "gates": "111111",
+   "n": 57,
+   "wr": 64.91,
+   "pf": 2.043,
+   "net": 923.1
+  }
+ },
+ "XAU_H1_long": {
+  "config": {
+   "name": "XAU_H1_long",
+   "asset": "XAUUSD",
+   "tf": "H1",
+   "side": "long",
+   "n_open": 6,
+   "f_range": 0.2,
+   "pull_max": 0.5,
+   "min_spike": 0.3,
+   "reg": null,
+   "sl": 450,
+   "tp": 720,
+   "maxhold": 20
+  },
+  "signals_total": 77,
+  "overlap_with_time_layers_pct": 28.6,
+  "full": {
+   "rqs": 92.5,
+   "passed": true,
+   "gates": "111111",
+   "n": 77,
+   "wr": 62.34,
+   "pf": 3.14,
+   "net": 776.4
+  },
+  "independent": {
+   "rqs": 29.7,
+   "passed": false,
+   "gates": "011101",
+   "n": 55,
+   "wr": 56.36,
+   "pf": 2.131,
+   "net": 349.6
+  }
+ }
+}
