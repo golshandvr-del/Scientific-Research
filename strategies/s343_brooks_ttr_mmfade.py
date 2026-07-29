@@ -59,7 +59,10 @@ def rolling_min(a, N):
 
 
 def build_signals(df, N, atrLen, smallMult, k, climaxMult, gap=None,
-                  r2min=None, hurstmax=None, side='both'):
+                  r2min=None, hurstmax=None, side='both',
+                  chop_min=None, chop_ind='chop_fib_21',
+                  er_max=None, er_ind='er_lucas_18',
+                  return_levels=False):
     """
     خروجی: long_sig, short_sig (np.bool هم‌طولِ df) — بدونِ look-ahead.
     سیگنالِ کندلِ i فقط از داده‌ی تا i استفاده می‌کند؛ ورود در i+1.
@@ -122,6 +125,18 @@ def build_signals(df, N, atrLen, smallMult, k, climaxMult, gap=None,
         gate = hus <= hurstmax          # hurst پایین ⇒ mean-reverting ⇒ مطلوبِ fade
         long_sig &= gate
         short_sig &= gate
+    # ⭐ فیلترِ Choppiness (جعبه‌ابزار): chop بالا ⇒ بازارِ رِنج/choppy ⇒ مطلوبِ fade
+    if chop_min is not None:
+        chs = ib.compute(chop_ind, df).values
+        gate = chs >= chop_min
+        long_sig &= gate
+        short_sig &= gate
+    # ⭐ فیلترِ Efficiency-Ratio (جعبه‌ابزار): er پایین ⇒ بدونِ روندِ کارا ⇒ مطلوبِ fade
+    if er_max is not None:
+        ers = ib.compute(er_ind, df).values
+        gate = ers <= er_max
+        long_sig &= gate
+        short_sig &= gate
 
     # اطمینان از نبودِ NaN در ابتدای سری
     valid = ~(np.isnan(initR) | np.isnan(a) | np.isnan(refRange))
@@ -132,6 +147,12 @@ def build_signals(df, N, atrLen, smallMult, k, climaxMult, gap=None,
         short_sig[:] = False
     elif side == 'short':
         long_sig[:] = False
+
+    if return_levels:
+        # سطوحِ هدفِ پویا برای TP «بازگشت به breakout-gap» (تزِ اصلیِ Brooks):
+        # long ⇒ هدفِ بازگشت به initHi (سقفِ رِنجِ اولیه)؛ short ⇒ initLo.
+        levels = dict(initHi=initHi, initLo=initLo, tgtUp=tgtUp, tgtDn=tgtDn)
+        return long_sig, short_sig, levels
     return long_sig, short_sig
 
 
