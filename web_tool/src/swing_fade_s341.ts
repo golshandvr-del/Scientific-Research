@@ -335,14 +335,18 @@ export function computeS341(candles: Candle[], cfg: S341Config): RawSignal {
       value: `${fmt(r2[i])}` + (r2Ok ? ' ✔' : ' ✘'), status: r2Ok ? 'ok' : 'bad' },
     { name: `کاراییِ پایین (|ER${cfg.erP}| ≤ ${cfg.erMax})`,
       value: `${fmt(Math.abs(er[i]))}` + (erOk ? ' ✔' : ' ✘'), status: erOk ? 'ok' : 'bad' },
-    { name: `کششِ مغناطیسی (ema_dist_atr ≤ −${cfg.stretch})`,
-      value: `${fmt(edist[i])}` + (stretchOk ? ' ✔' : ' ✘'), status: stretchOk ? 'ok' : 'neutral' },
-    { name: `خستگیِ فروش (ifish_rsi ≤ −${cfg.exh})`,
-      value: `${fmt(ifr[i])}` + (exhOk ? ' ✔' : ' ✘'), status: exhOk ? 'ok' : 'neutral' },
-    { name: 'شکستِ ناموفقِ زیرِ کفِ سوئینگ',
-      value: isFinite(lvl) ? (failedBreak ? 'رخ داد ✔' : 'نه') : 'کفِ سوئینگ نامشخص',
-      status: failedBreak ? 'ok' : 'neutral' },
   ]
+  if (cfg.useStretch) {
+    indicators.push({ name: `کششِ مغناطیسی (ema_dist_atr ≤ −${cfg.stretch})`,
+      value: `${fmt(edist[i])}` + (stretchOk ? ' ✔' : ' ✘'), status: stretchOk ? 'ok' : 'neutral' })
+  }
+  if (cfg.useExh) {
+    indicators.push({ name: `خستگیِ فروش (ifish_rsi ≤ −${cfg.exh})`,
+      value: `${fmt(ifr[i])}` + (exhOk ? ' ✔' : ' ✘'), status: exhOk ? 'ok' : 'neutral' })
+  }
+  indicators.push({ name: 'شکستِ ناموفقِ زیرِ کفِ سوئینگ' + (cfg.requireSecond ? ' (سیگنالِ دوم)' : ''),
+    value: isFinite(lvl) ? (failedBreak ? 'رخ داد ✔' : 'نه') : 'کفِ سوئینگ نامشخص',
+    status: failedBreak ? 'ok' : 'neutral' })
 
   let reason: string
   if (active) {
