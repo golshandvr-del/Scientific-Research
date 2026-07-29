@@ -223,6 +223,8 @@ const s334Layer = (cfg: typeof S334_CFG[string]): LayerFn => (ctx) => decideS334
 // لایهٔ نوِ این نشست: S335 Reflex-TrendFlex Cycle-Turn (خریدِ کفِ چرخهٔ اِهلرز درونِ روند)
 const s335Layer = (cfg: typeof S335_CFG[string]): LayerFn => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 const s340Layer = (cfg: typeof S340_CFG[string]): LayerFn => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// لایهٔ احیاشدهٔ این نشست: S341 Swing-Points fade در رنج + مغناطیسِ میانه (Brooks فصلِ ۱۷)
+const s341Layer = (cfg: typeof S341_CFG[string]): LayerFn => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 
 // ---------------------------------------------------------------------------
 // نگاشتِ کارت → لایه‌های فعال (به‌ترتیبِ اولویت). فقط لایه‌هایی که روی همان
