@@ -6364,8 +6364,292 @@ function decideS340(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
 }
 
-// ../web_tool/src/strategy_registry.ts
+// ../web_tool/src/swing_fade_s341.ts
 var GOLD_PIP5 = 0.1;
+var S341_CFG = {
+  "XAUUSD-H1": {
+    id: "XAUUSD-H1",
+    tfFa: "H1",
+    w: 4,
+    bufFrac: 0.05,
+    stretch: 0.7,
+    exh: 0.25,
+    chopMin: 61.8,
+    r2Max: 0.22,
+    erMax: 0.16,
+    erP: 11,
+    slPip: 520,
+    tpPip: 1550,
+    maxHold: 16,
+    rqs: 94.5
+  }
+};
+function trueRange2(h, l, c) {
+  const n = h.length;
+  const tr = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    if (i === 0) {
+      tr[i] = h[i] - l[i];
+      continue;
+    }
+    const a = h[i] - l[i];
+    const b = Math.abs(h[i] - c[i - 1]);
+    const d = Math.abs(l[i] - c[i - 1]);
+    tr[i] = Math.max(a, b, d);
+  }
+  return tr;
+}
+function chopArr(h, l, c, p) {
+  const n = h.length;
+  const tr = trueRange2(h, l, c);
+  const out = new Array(n).fill(NaN);
+  for (let i = p - 1; i < n; i++) {
+    let sumTr = 0;
+    let hh = -Infinity, ll = Infinity;
+    for (let k = i - p + 1; k <= i; k++) {
+      sumTr += tr[k];
+      if (h[k] > hh) hh = h[k];
+      if (l[k] < ll) ll = l[k];
+    }
+    const rng = hh - ll;
+    if (rng > 0 && sumTr > 0) out[i] = 100 * Math.log10(sumTr / rng) / Math.log10(p);
+  }
+  return out;
+}
+function r2Arr(c, p) {
+  const n = c.length;
+  const out = new Array(n).fill(NaN);
+  const t = [];
+  for (let k = 0; k < p; k++) t.push(k);
+  const st = t.reduce((a, b) => a + b, 0);
+  const stt = t.reduce((a, b) => a + b * b, 0);
+  for (let i = p - 1; i < n; i++) {
+    let sy = 0, sxy = 0, syy = 0;
+    for (let k = 0; k < p; k++) {
+      const w = c[i - p + 1 + k];
+      sy += w;
+      sxy += t[k] * w;
+      syy += w * w;
+    }
+    const num = p * sxy - st * sy;
+    const den = (p * stt - st * st) * (p * syy - sy * sy);
+    const r = den > 0 ? num / Math.sqrt(den) : 0;
+    out[i] = r * r;
+  }
+  return out;
+}
+function erArr(c, p) {
+  const n = c.length;
+  const out = new Array(n).fill(NaN);
+  for (let i = p; i < n; i++) {
+    const ch = Math.abs(c[i] - c[i - p]);
+    let v = 0;
+    for (let k = 0; k < p; k++) v += Math.abs(c[i - k] - c[i - k - 1]);
+    out[i] = v ? ch / v : 0;
+  }
+  return out;
+}
+function rma(x, p) {
+  const n = x.length;
+  const out = new Array(n).fill(NaN);
+  const a = 1 / p;
+  let prev = NaN;
+  for (let i = 0; i < n; i++) {
+    if (!isFinite(x[i])) {
+      out[i] = prev;
+      continue;
+    }
+    prev = isFinite(prev) ? prev + a * (x[i] - prev) : x[i];
+    out[i] = prev;
+  }
+  return out;
+}
+function emaDistAtr(h, l, c, emaP, atrP) {
+  const n = c.length;
+  const e = ema(c, emaP);
+  const a = rma(trueRange2(h, l, c), atrP);
+  const out = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    if (isFinite(e[i]) && isFinite(a[i]) && a[i] !== 0) out[i] = (c[i] - e[i]) / a[i];
+  }
+  return out;
+}
+function rsiWilder(c, p) {
+  const n = c.length;
+  const out = new Array(n).fill(NaN);
+  const a = 1 / p;
+  let ag = NaN, al = NaN;
+  for (let i = 1; i < n; i++) {
+    const d = c[i] - c[i - 1];
+    const g = d > 0 ? d : 0;
+    const ls = d < 0 ? -d : 0;
+    ag = isFinite(ag) ? ag + a * (g - ag) : g;
+    al = isFinite(al) ? al + a * (ls - al) : ls;
+    const rs = al !== 0 ? ag / al : NaN;
+    out[i] = isFinite(rs) ? 100 - 100 / (1 + rs) : al === 0 ? 100 : NaN;
+  }
+  return out;
+}
+function ifishRsi(c, p) {
+  const r = rsiWilder(c, p);
+  const n = c.length;
+  const out = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    if (!isFinite(r[i])) continue;
+    const v = 0.1 * (r[i] - 50);
+    const e2 = Math.exp(2 * v);
+    out[i] = (e2 - 1) / (e2 + 1);
+  }
+  return out;
+}
+function lastSwingLow(h, l, w) {
+  const n = l.length;
+  const out = new Array(n).fill(NaN);
+  let curSl = NaN;
+  for (let i = 0; i < n; i++) {
+    const pp = i - w;
+    if (pp - w >= 0) {
+      const lp = l[pp];
+      let leftMin = Infinity, rightMin = Infinity;
+      for (let k = pp - w; k < pp; k++) if (l[k] < leftMin) leftMin = l[k];
+      for (let k = pp + 1; k <= pp + w; k++) if (l[k] < rightMin) rightMin = l[k];
+      if (lp < leftMin && lp < rightMin) curSl = lp;
+    }
+    out[i] = curSl;
+  }
+  return out;
+}
+function computeS341(candles, cfg) {
+  const n = candles.length;
+  const h = candles.map((c2) => c2.high);
+  const l = candles.map((c2) => c2.low);
+  const c = candles.map((x) => x.close);
+  const slDist = cfg.slPip * GOLD_PIP5;
+  const tpDist = cfg.tpPip * GOLD_PIP5;
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  const need = Math.max(60, cfg.w * 2 + 3, cfg.erP + 2);
+  if (n < need) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u0634\u062E\u06CC\u0635\u0650 \u0633\u0637\u062D\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF/\u0631\u0698\u06CC\u0645 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
+      indicators: emptyInd
+    };
+  }
+  const ch = chopArr(h, l, c, 14);
+  const r2 = r2Arr(c, 20);
+  const er = erArr(c, cfg.erP);
+  const atrArr = atr(candles, 14);
+  const edist = emaDistAtr(h, l, c, 50, 14);
+  const ifr = ifishRsi(c, 14);
+  const slArr = lastSwingLow(h, l, cfg.w);
+  const i = n - 1;
+  const chOk = isFinite(ch[i]) && ch[i] >= cfg.chopMin;
+  const r2Ok = isFinite(r2[i]) && r2[i] <= cfg.r2Max;
+  const erOk = isFinite(er[i]) && Math.abs(er[i]) <= cfg.erMax;
+  const rangeOk = chOk && r2Ok && erOk;
+  const a = atrArr[i];
+  const lvl = slArr[i];
+  const buf2 = (isFinite(a) ? a : 0) * cfg.bufFrac;
+  const brokeBelow = isFinite(lvl) && l[i] < lvl - buf2;
+  const closedBack = isFinite(lvl) && c[i] > lvl;
+  const failedBreak = brokeBelow && closedBack;
+  const stretchOk = isFinite(edist[i]) && edist[i] <= -cfg.stretch;
+  const exhOk = isFinite(ifr[i]) && ifr[i] <= -cfg.exh;
+  const active = rangeOk && failedBreak && stretchOk && exhOk;
+  const approaching = !active && rangeOk && stretchOk && !failedBreak && isFinite(lvl);
+  const fmt3 = (x) => isFinite(x) ? x.toFixed(2) : "\u2014";
+  const indicators = [
+    {
+      name: `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C (Chop14 \u2265 ${cfg.chopMin})`,
+      value: `${fmt3(ch[i])}` + (chOk ? " \u2714" : " \u2718"),
+      status: chOk ? "ok" : "bad"
+    },
+    {
+      name: `\u0628\u06CC\u200C\u0631\u0648\u0646\u062F\u06CC (R\xB220 \u2264 ${cfg.r2Max})`,
+      value: `${fmt3(r2[i])}` + (r2Ok ? " \u2714" : " \u2718"),
+      status: r2Ok ? "ok" : "bad"
+    },
+    {
+      name: `\u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u067E\u0627\u06CC\u06CC\u0646 (|ER${cfg.erP}| \u2264 ${cfg.erMax})`,
+      value: `${fmt3(Math.abs(er[i]))}` + (erOk ? " \u2714" : " \u2718"),
+      status: erOk ? "ok" : "bad"
+    },
+    {
+      name: `\u06A9\u0634\u0634\u0650 \u0645\u063A\u0646\u0627\u0637\u06CC\u0633\u06CC (ema_dist_atr \u2264 \u2212${cfg.stretch})`,
+      value: `${fmt3(edist[i])}` + (stretchOk ? " \u2714" : " \u2718"),
+      status: stretchOk ? "ok" : "neutral"
+    },
+    {
+      name: `\u062E\u0633\u062A\u06AF\u06CC\u0650 \u0641\u0631\u0648\u0634 (ifish_rsi \u2264 \u2212${cfg.exh})`,
+      value: `${fmt3(ifr[i])}` + (exhOk ? " \u2714" : " \u2718"),
+      status: exhOk ? "ok" : "neutral"
+    },
+    {
+      name: "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF",
+      value: isFinite(lvl) ? failedBreak ? "\u0631\u062E \u062F\u0627\u062F \u2714" : "\u0646\u0647" : "\u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u0646\u0627\u0645\u0634\u062E\u0635",
+      status: failedBreak ? "ok" : "neutral"
+    }
+  ];
+  let reason;
+  if (active) {
+    reason = `\u0631\u0648\u0632\u0650 \u0631\u0646\u062C (Chop=${fmt3(ch[i])})\u061B \u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u0634\u06A9\u0633\u062A \u0627\u0645\u0627 \u0646\u0627\u0645\u0648\u0641\u0642 \u0645\u0627\u0646\u062F \u0648 \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D \u0628\u0631\u06AF\u0634\u062A\u060C \u062F\u0631\u062D\u0627\u0644\u06CC\u200C\u06A9\u0647 \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u06A9\u0634\u06CC\u062F\u0647 (${fmt3(edist[i])} ATR) \u0648 \u0641\u0631\u0648\u0634 \u062E\u0633\u062A\u0647 \u0627\u0633\u062A \u21D2 \u0648\u0631\u0648\u062F\u0650 fade\u0650 \u062E\u0631\u06CC\u062F \u0628\u0647 \u0633\u0645\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647 (\u0645\u063A\u0646\u0627\u0637\u06CC\u0633).`;
+  } else if (approaching) {
+    reason = `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C \u0648 \u06A9\u0634\u0634\u0650 \u067E\u0627\u06CC\u06CC\u0646 \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06CC\u06A9 \xAB\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\xBB \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF (\u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D) \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F\u0650 fade.`;
+  } else if (!rangeOk) {
+    reason = `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C\u0650 \u0644\u0627\u0632\u0645 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A (Chop=${fmt3(ch[i])}\u060C R\xB2=${fmt3(r2[i])}\u060C |ER|=${fmt3(Math.abs(er[i]))}) \u2014 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0632\u0647\u0627\u06CC \u0631\u0646\u062C fade \u0645\u06CC\u200C\u06A9\u0646\u062F\u060C \u062F\u0631 \u0631\u0648\u0646\u062F \u062E\u06CC\u0631.`;
+  } else if (!stretchOk) {
+    reason = `\u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u062F\u0648\u0631 \u0646\u0634\u062F\u0647 (${fmt3(edist[i])})\u061B \xAB\u0645\u063A\u0646\u0627\u0637\u06CC\u0633\u0650 \u0645\u06CC\u0627\u0646\u0647\xBB \u0636\u0639\u06CC\u0641 \u0627\u0633\u062A.`;
+  } else {
+    reason = "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0631\u0646\u062C/\u06A9\u0634\u0634 \u0647\u0633\u062A \u0627\u0645\u0627 \u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u0645\u0639\u062A\u0628\u0631\u06CC \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u062B\u0628\u062A \u0646\u0634\u062F\u0647 \u0627\u0633\u062A.";
+  }
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? "\u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF (\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 close \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D)" : void 0,
+    indicators
+  };
+}
+function decideS341(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS341(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: "range",
+    efficiencyRatio: 0,
+    trendy: false,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s341_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S341",
+    name: `fade\u0650 \u0633\u0637\u062D\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u062F\u0631 \u0631\u0646\u062C (Brooks Swing-Points \xB7 ${cfg.tfFa})`,
+    kind: "swing_fade",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 ${cfg.tfFa} (${cfg.tpPip}/${cfg.slPip} pip\u060C TP \u0628\u0647 \u0633\u0645\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0631\u0646\u062C). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u061B \u0627\u06AF\u0631 \u0631\u0698\u06CC\u0645 \u0627\u0632 \u0631\u0646\u062C \u0628\u0647 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0642\u0648\u06CC \u062A\u063A\u06CC\u06CC\u0631 \u06A9\u0631\u062F (Chop \u0627\u0641\u062A \u06A9\u0631\u062F / \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0642\u0648\u06CC \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0634\u06A9\u0633\u062A \u0628\u0633\u062A)\u060C \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0627 \u0628\u0633\u0646\u062C.`,
+    filters: [
+      `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C (Chop14\u2265${cfg.chopMin} \xB7 R\xB220\u2264${cfg.r2Max} \xB7 |ER${cfg.erP}|\u2264${cfg.erMax})`,
+      "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF (failed breakout)",
+      `\u06A9\u0634\u0634\u0650 \u0645\u063A\u0646\u0627\u0637\u06CC\u0633\u06CC ema_dist_atr \u2264 \u2212${cfg.stretch}`,
+      `\u062E\u0633\u062A\u06AF\u06CC\u0650 \u0641\u0631\u0648\u0634 ifish_rsi \u2264 \u2212${cfg.exh}`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/strategy_registry.ts
+var GOLD_PIP6 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
   return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
 }
@@ -6438,8 +6722,8 @@ var s310Layer = (ctx) => {
     active,
     approaching,
     direction: "LONG",
-    slDist: EOM_SL_PIP * GOLD_PIP5,
-    tpDist: EOM_TP_PIP * GOLD_PIP5,
+    slDist: EOM_SL_PIP * GOLD_PIP6,
+    tpDist: EOM_TP_PIP * GOLD_PIP6,
     maxHoldBars: EOM_MAX_HOLD,
     reason: sig.reason,
     approachReason: approaching ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647` : void 0,
@@ -6477,8 +6761,8 @@ function s312Layer(slPip, tpPip, maxHold) {
       active,
       approaching,
       direction: "LONG",
-      slDist: slPip * GOLD_PIP5,
-      tpDist: tpPip * GOLD_PIP5,
+      slDist: slPip * GOLD_PIP6,
+      tpDist: tpPip * GOLD_PIP6,
       maxHoldBars: maxHold,
       reason: sig.reason,
       approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
@@ -6524,6 +6808,7 @@ var s333Layer = (cfg) => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capita
 var s334Layer = (cfg) => (ctx) => decideS334(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s335Layer = (cfg) => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s341Layer = (cfg) => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
     s333Layer(S333_CFG["XAUUSD-M5"]),
@@ -6562,6 +6847,8 @@ var CARD_LAYERS = {
     s312Layer(295, 295, 36)
   ],
   "XAUUSD-H1": [
+    s341Layer(S341_CFG["XAUUSD-H1"]),
+    // S341 — احیای فصلِ ۱۷ Brooks: swing-fade در رنج + مغناطیسِ میانه (ema_dist_atr≥0.7) — RQS+=94.5 (WR 66.7% · PF 2.01) · همپوشانیِ صفر (رژیمِ رنج vs روند)
     s333Layer(S333_CFG["XAUUSD-H1"]),
     // احیای S79 — pullback (ورودِ مستقیم + ER) — RQS+=89.8 (WR 62.2% · PF 1.85)
     s313Layer(S313_H1),
