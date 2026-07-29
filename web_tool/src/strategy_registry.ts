@@ -233,7 +233,7 @@ const s341Layer = (cfg: typeof S341_CFG[string]): LayerFn => (ctx) => decideS341
 //
 //   کارت         لایه‌های ACCEPTED (منبعِ نامِ فایل results/)
 //   XAUUSD-M5    S341(LONG·swing-fade·range·RQS 94.7) · S333(LONG·pullback·RQS 91.3) · S330(FADE) · S328(SHORT) · S327(LONG) · S326(LONG)
-//   XAUUSD-M15   S333(LONG·pullback·RQS 91.7) · S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
+//   XAUUSD-M15   S341(LONG·swing-fade·range·RQS 89.8) · S333(LONG·pullback·RQS 91.7) · S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
 //   XAUUSD-M30   S333(LONG·pullback·RQS 91.1) · S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
 //   XAUUSD-H1    S341(LONG·swing-fade·range·RQS 94.5) · S333(LONG·pullback·RQS 89.8) · S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
 //   XAUUSD-H4    S332(LONG·squeeze ADX/DI) · S327(LONG)
