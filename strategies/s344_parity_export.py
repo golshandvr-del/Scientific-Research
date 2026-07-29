@@ -11,6 +11,7 @@ sys.path.insert(0, '/home/user/webapp')
 os.chdir('/home/user/webapp')
 import numpy as np
 from strategies.s344_brooks_trend_from_open import trend_from_open_signals, load_tf
+from engine import indicator_bank as ib
 
 # پارامترهای پذیرفته‌شدهٔ کارت XAUUSD-M15 (از اسکن: reg=r2h جدا اعمال می‌شود در سایت،
 # اما سیگنالِ هندسیِ خام همینجاست؛ فیلترِ رژیم در TS داخلِ computeS344 چک می‌شود، پس
