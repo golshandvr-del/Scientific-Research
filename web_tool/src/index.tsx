@@ -425,7 +425,7 @@ app.get('/api/context', async (c) => {
 //
 //   کارت         لایه‌های ACCEPTED
 //   XAUUSD-M5    S330·S328·S327·S326
-//   XAUUSD-M15   S324·S322·S323·S310·S312
+//   XAUUSD-M15   S324·S322·S323·S335·S344·S310·S312   (S344 = نخستین لایهٔ SHORT — Brooks فصلِ ۲۳)
 //   XAUUSD-M30   S313·S324·S321·S327·S326·S323·S312
 //   XAUUSD-H1    S313·S328·S327·S323·S312
 //   XAUUSD-H4    S327
