@@ -1448,3 +1448,79 @@ _وضعیت: ✅ **مرحلهٔ ۲۱ (فصلِ ۱۷ Horizontal Lines / Swing Poi
 **سند نهایی:** `results/S344_BrooksTrendFromOpen_Xauusd_M15_rqs91.md`
 
 **جمع‌بندیِ فصلِ ۲۳:** تزِ مرکزیِ «open-extreme first-pullback continuation» روی طلا معتبر است اما فقط در **M15-SHORT** به لبهٔ مستقلِ RQS+≥80 می‌رسد؛ سایرِ TFها/یورو رد شدند. فصلِ ۲۳ **کامل استخراج و بسته شد**. مرحلهٔ بعدیِ کتاب: فصلِ ۲۴ (اولین فصلِ استخراج‌نشدهٔ بعدی).
+
+---
+
+## مرحلهٔ ۲۵ (فصلِ ۲۴) — Reversal Day (Part IV) — 🔬 در حالِ بررسی (S345، پارادایمِ RQS+ ≥ ۸۰)
+
+> نخستین فصلِ استخراج‌نشدهٔ بعد از فصلِ ۲۳ (Trend from the Open/S344). عنوانِ کامل:
+> «Reversal Day» (Part IV «Common Trend Patterns»؛ صص. ۴۱۵–۴۲۲ چاپی؛ pdf idx ۴۴۶–۴۵۳).
+> متنِ خام مستقیماً از PDF با `PyMuPDF` استخراج و بازخوانی شد (idx 446/447/449/451).
+
+### ۱. چیستی
+- **نوع:** فصلِ **الگوی روزِ روندی/ساختاری** — نه هندسهٔ یک کندل، بلکه یک **رژیمِ روزانه**:
+  روزی که ابتدا در یک جهت روند می‌گیرد و سپس **در جهتِ مخالف تا close** روند می‌گیرد (چرخشِ درون-روزیِ روند).
+- **دارایی/تایم‌فریمِ سازنده:** روشِ عمومیِ Brooks (Emini 5-min، مثال‌های Figure 24.1–24.3)،
+  دارایی-ناوابسته اما ذاتاً **درون-روزی (intraday)** و **زمان-آگاه** (چرخش در میانه/انتهای روز).
+
+### ۲. منطقِ استخراج‌شده (نقلِ مکانیکیِ Brooks، فصلِ ۲۴ — از متنِ خامِ PDF)
+مشخصاتِ اصلیِ «reversal day» (نقلِ مستقیم از صفحهٔ آغازِ فصل، pdf idx 446–447):
+1. **★ تعریفِ محوری:** «The day trends in one direction and then it trends in the opposite
+   direction into the close.» ⇒ روند اولیه (چند ساعتِ اول) در یک جهت، سپس **چرخش** و روندِ
+   جهتِ مخالف تا پایانِ روز.
+2. **اغلب به‌عنوان trending-trading-range day آغاز می‌شوند:** «Most reversal days begin as
+   trending trading range days.» ⇒ ارتباطِ رژیمی با S343 (فصل ۲۲).
+3. **★ قاعدهٔ follow-through (کلیدِ زمان):** «If the reversal starts in the **last couple of
+   hours** and is **strong**, it will usually have follow-through on the next day and often
+   the next several days.» ⇒ چرخشِ قوی در اواخرِ روز پایدارتر است.
+4. **★ قاعدهٔ countertrend-spike (ماشهٔ چرخش، pdf idx 446):** «There is almost always **at
+   least one countertrend spike** before the channel begins, so whenever you see a pullback
+   that has a strong countertrend spike, **be aware that the trend might be reversing**.»
+   ⇒ اسپایکِ ضدِ‌روندِ قوی (بدنهٔ بزرگ در جهتِ مخالفِ روندِ اولیه) = هشدارِ چرخش.
+5. **★ رشدِ pullback تا تبدیل به channel (pdf idx 447):** «the market is trending and then
+   begins a pullback, but the pullback **just grows endlessly and becomes a trend channel in
+   the opposite direction**… by the end of the day, the pullback can grow larger than the
+   [prior] trend.» ⇒ pullbackِ اولیه به روندِ کاملِ معکوس بدل می‌شود.
+6. **★ قاعدهٔ ساختاری (Figure 24.1, pdf idx 449):** چرخش با **شکستِ خطِ روندِ اولیه** + یک
+   **lower-high (روزِ صعودی→نزولی)** یا **higher-low (روزِ نزولی→صعودی)** تأیید می‌شود؛
+   «The pullback to bar 5 **broke the bull trend line**, and the bar 6 **lower high** set the
+   stage for a bear trend day into the close.» — این دقیقاً قاعدهٔ کدنویسی‌پذیرِ ماست.
+7. **قیدِ رفتار (ضدِ over-trade):** «If you recognize this behavior early, you should
+   **restrict your trading to buying only** [در روزِ چرخشِ صعودی] because you will lose money
+   on shorts as you desperately hope that the [first] trend resumes.» ⇒ پس از تأییدِ چرخش،
+   فقط در جهتِ **جدید** معامله کن (نه بازگشت به روندِ اولیه).
+8. **مدیریت (pdf idx 449):** «you would make more by **swinging** than by scalping… It is
+   better to **trail your stop above the prior swing high**.» ⇒ مادهٔ خامِ بخشِ چهارمِ کارت.
+
+### ۳. ایدهٔ قابلِ آزمون برای پروژهٔ ما (S345)
+لبهٔ **نو، مکانیکی، بک‌تست‌پذیر** که هنوز در پرتفو نیست = **«intraday trend-reversal (day flip)»**:
+- در ابتدای هر روزِ معاملاتی (مرزِ روزِ UTC داده)، **جهتِ روندِ اولیهٔ روز** را از `N` کندلِ
+  نخست تعیین کن (جهتِ اسپایکِ اولیه: close کندلِ N نسبت به open کندلِ ۱).
+- **ماشهٔ چرخش (قاعدهٔ ۴/۶):** پس از روندِ اولیهٔ صعودی، یک **countertrend spike قوی** (کندلِ
+  نزولی با بدنهٔ ≥`k×ATR`) که **خطِ روندِ اولیه را می‌شکند** و بازار یک **lower-high** نسبت به
+  اکسترممِ روز می‌سازد ⇒ ورودِ **SHORT** تا close. قرینهٔ کامل برای LONG در روزِ نزولی‌شونده.
+- **فیلترِ زمان (قاعدهٔ ۳):** چرخش فقط در **میانه/اواخرِ روز** معتبر است (نه در opening range)؛
+  پنجرهٔ ورود بین `t_min` و `t_max` (کندل‌های روز).
+- **فیلترِ رژیم (بانک):** برای بردنِ RQS+ بالای ۸۰، فیلترهای رژیم/کیفیت (r2/hurst/adx/chop/
+  ema_dist_atr) روی نقطهٔ چرخش تست می‌شوند.
+- **TP/SL** غیررند و per-TF: SL آن‌سوی اکسترممِ روز؛ TP = measured-move (اندازهٔ روندِ اولیه)
+  یا تریلِ زیرِ/بالای swing (مطابقِ مدیریتِ Brooks). `N`, `k`, پنجرهٔ زمانی **غیررند/per-TF**.
+
+### ۴. ارتباط با پرتفوی / تمایز و ریسک‌ها
+- **تمایز از S344 (فصل ۲۳، continuation):** S344 در **اولین pullback با-روند** وارد می‌شد
+  (ادامهٔ روندِ اولیه)؛ S345 دقیقاً **معکوس** است — در نقطهٔ **چرخشِ روند** وارد می‌شود
+  (خلافِ روندِ اولیه). رژیمِ متضاد ⇒ همپوشانیِ رژیمی احتمالاً پایین.
+- **تمایز از S343 (فصل ۲۲، measured-move fade):** S343 یک fade در هدفِ measured-move پس از
+  breakoutِ رِنجِ اولیه بود (و مُرد)؛ S345 یک **چرخشِ کاملِ روندِ روز** با تأییدِ ساختاری
+  (شکستِ خطِ روند + lower-high/higher-low) است — سنجهٔ متفاوت.
+- **تمایز از لایه‌های زمان-محورِ موجود (S139..S144):** آن‌ها بر پایهٔ ساعت/روز/روزِ ماهِ ثابت‌اند؛
+  S345 شرطِ **ساختاریِ چرخش** دارد. اما چون intraday و زمان-آگاه است، **همپوشانی محتمل است**
+  ⇒ طبقِ قانونِ همپوشانیِ اجباری پیش از حکم، هم مسیرِ مستقل و هم مسیرِ فیلتر بررسی می‌شود.
+- **ریسک:** طلا momentum-persistent است ⇒ «چرخشِ روز» ممکن است false باشد و روندِ اولیه
+  resume شود. Brooks خودش هشدار می‌دهد که چرخش را باید **زود و با تأییدِ قوی** شناخت. گلوگاهِ
+  RQS+ احتمالاً G0(WR≥۶۰) و G4(walk-forward) خواهد بود (مثلِ همهٔ لایه‌های reversal روی طلا).
+
+### ۵. نتیجهٔ بک‌تست (RQS+) — 🔬 در حالِ اجرا (اسکنِ کاملِ MTF)
+
+_وضعیت: در حالِ ساختِ استراتژیِ پایتون و اجرای اسکنِ مولتی‌تایم‌فریم (شروع از XAUUSD-M5
+طبقِ قانونِ MTF). نتایج مرحله‌به‌مرحله در ادامه و در فایلِ گزارشِ نهایی ثبت می‌شود._
