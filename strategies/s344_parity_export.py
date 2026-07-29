@@ -24,7 +24,12 @@ PARAMS = dict(side='short', n_open=4, f_range=0.20, pull_max=0.62,
 def export_card(card):
     asset, tf = card.split('-')
     df = load_tf(asset, tf)
-    sig = trend_from_open_signals(df, tf, **PARAMS)
+    geo = trend_from_open_signals(df, tf, **PARAMS)
+    # فیلترِ رژیمِ r2h (منطبق با s344_scan.py و computeS344 در TS)
+    r2v = ib.r2(df, p=34).to_numpy()
+    huv = ib.hurst(df, p=55).to_numpy()
+    reg = (r2v >= 0.30) & (huv >= 0.52) & np.isfinite(r2v) & np.isfinite(huv)
+    sig = geo & reg   # سیگنالِ نهایی = هندسی AND رژیم (همان active در TS)
     idx = [int(i) for i in np.where(sig)[0]]
     candles = [
         {'time': int(df['time'].iloc[i]),
