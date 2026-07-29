@@ -126,49 +126,60 @@ def reversal_day_signals(df, tf, side,
             i = j
             continue
 
-        # اکسترممِ روز (running) و شیبِ روندِ اولیه
-        for pos in range(t_from, min(day_len, t_to + 1)):
-            t = j0 + pos
-            if t + 1 >= n:  # نیاز به کندلِ بعد برای ورود
-                break
-            # پنجرهٔ روز تا کنون
-            seg_c = c[j0:t + 1]
-            m = len(seg_c)
-            if m < n_open + 2:
-                continue
-            # شیبِ روندِ اولیه (رگرسیونِ خطیِ close روی زمان)
-            xs = np.arange(m, dtype=float)
-            slope = np.polyfit(xs, seg_c, 1)[0]  # قیمت/کندل
-            slope_norm = slope / atr_ref
-            # روندِ اولیه باید در جهتِ init_dir و معنادار باشد
-            if init_dir > 0 and slope_norm < slope_min_frac:
-                continue
-            if init_dir < 0 and slope_norm > -slope_min_frac:
-                continue
+        # --- محاسبهٔ وکتوریِ رگرسیونِ تجمعیِ روز (فرمولِ بستهٔ OLS با cumsum) ---
+        # معناشناسی دقیقاً همان polyfit(xs, close[j0..t], 1) است، اما O(n) نه O(n²).
+        pos_lo = max(t_from, n_open + 1)          # m = pos+1 ≥ n_open+2
+        pos_hi = min(day_len - 1, t_to)
+        if pos_hi < pos_lo:
+            i = j
+            continue
+        seg_c_full = c[j0:j0 + day_len]
+        L = day_len
+        xs_full = np.arange(L, dtype=float)
+        cum_y = np.cumsum(seg_c_full)
+        cum_xy = np.cumsum(xs_full * seg_c_full)
 
-            body = abs(c[t] - o[t])
-            atr_t = atr[t] if np.isfinite(atr[t]) and atr[t] > 0 else atr_ref
+        p = np.arange(pos_lo, pos_hi + 1, dtype=float)   # موقعیتِ کندلِ جاری در روز
+        m_arr = p + 1.0
+        Sy = cum_y[pos_lo:pos_hi + 1]
+        Sxy = cum_xy[pos_lo:pos_hi + 1]
+        Sx = p * (p + 1.0) / 2.0
+        Sxx = p * (p + 1.0) * (2.0 * p + 1.0) / 6.0
+        denom = m_arr * Sxx - Sx * Sx
+        with np.errstate(divide='ignore', invalid='ignore'):
+            slope = np.where(denom > 0, (m_arr * Sxy - Sx * Sy) / denom, np.nan)
+            intercept = (Sy - slope * Sx) / m_arr
+        line_t = intercept + slope * p            # مقدارِ خطِ روند در کندلِ جاری
+        slope_norm = slope / atr_ref
 
-            if side == 'short':
-                # روزِ صعودی‌شونده→نزولی
-                day_high = np.max(h[j0:t + 1])
-                # خطِ روندِ صعودی (امتدادِ رگرسیون تا t)
-                line_t = np.polyval(np.polyfit(xs, seg_c, 1), m - 1)
-                # ماشه: countertrend bear spike + شکستِ خط + lower-high
-                bear_spike = (c[t] < o[t]) and (body >= k_spike * atr_t)
-                broke_line = c[t] < line_t
-                lower_high = h[t] < day_high  # سقفِ روز زده شده و این کندل زیرِ آن
-                if bear_spike and broke_line and lower_high:
-                    sig[t] = True
-            else:
-                # روزِ نزولی‌شونده→صعودی
-                day_low = np.min(l[j0:t + 1])
-                line_t = np.polyval(np.polyfit(xs, seg_c, 1), m - 1)
-                bull_spike = (c[t] > o[t]) and (body >= k_spike * atr_t)
-                broke_line = c[t] > line_t
-                higher_low = l[t] > day_low
-                if bull_spike and broke_line and higher_low:
-                    sig[t] = True
+        # اکسترممِ running روز (تا و شاملِ کندلِ جاری)
+        run_high = np.maximum.accumulate(h[j0:j0 + day_len])[pos_lo:pos_hi + 1]
+        run_low = np.minimum.accumulate(l[j0:j0 + day_len])[pos_lo:pos_hi + 1]
+
+        idx = np.arange(j0 + pos_lo, j0 + pos_hi + 1)
+        body = np.abs(c[idx] - o[idx])
+        atr_t = atr[idx].copy()
+        bad = ~np.isfinite(atr_t) | (atr_t <= 0)
+        atr_t[bad] = atr_ref
+        big_body = body >= k_spike * atr_t
+        need_next = idx + 1 < n                    # نیاز به کندلِ بعد برای ورود (causal)
+
+        if init_dir > 0:
+            trend_ok = slope_norm >= slope_min_frac
+        else:
+            trend_ok = slope_norm <= -slope_min_frac
+        trend_ok = trend_ok & np.isfinite(slope_norm)
+
+        if side == 'short':
+            # روزِ صعودی‌شونده→نزولی: bear spike + شکستِ خط + lower-high
+            trig = ((c[idx] < o[idx]) & big_body &
+                    (c[idx] < line_t) & (h[idx] < run_high))
+        else:
+            # روزِ نزولی‌شونده→صعودی: bull spike + شکستِ خط + higher-low
+            trig = ((c[idx] > o[idx]) & big_body &
+                    (c[idx] > line_t) & (l[idx] > run_low))
+
+        sig[idx[trig & trend_ok & need_next]] = True
         i = j
 
     return sig
