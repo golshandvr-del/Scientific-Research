@@ -310,7 +310,7 @@ export function decideS341(
 
   const reg: RegimeInfo = {
     regime: 'range', efficiencyRatio: 0, trendy: false,
-    adx: 0, activeStream: 'range', bucket: `s341_${cfg.tfFa.toLowerCase()}`,
+    adx: 0, activeStream: 'bull', bucket: `s341_${cfg.tfFa.toLowerCase()}`,
   }
 
   const meta: DecideMeta = {
