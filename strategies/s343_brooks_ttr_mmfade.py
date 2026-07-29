@@ -58,22 +58,30 @@ def rolling_min(a, N):
     return pd.Series(a).rolling(N, min_periods=N).min().values
 
 
-def build_signals(df, N, atrLen, smallMult, k, climaxMult,
+def build_signals(df, N, atrLen, smallMult, k, climaxMult, gap=None,
                   r2min=None, hurstmax=None, side='both'):
     """
     خروجی: long_sig, short_sig (np.bool هم‌طولِ df) — بدونِ look-ahead.
     سیگنالِ کندلِ i فقط از داده‌ی تا i استفاده می‌کند؛ ورود در i+1.
+
+    منطقِ درست (اصلاحِ باگِ صفر-سیگنال):
+      «رِنجِ اولیه» از پنجرهٔ N کندلی که `gap` کندل **پیش از i بسته شده** گرفته می‌شود
+      (shift به‌اندازهٔ gap) — نه شامل کندلِ جاری. سپس کندلِ جاری i می‌تواند از این رِنج
+      breakout کرده و به هدفِ measured-move برسد. این کاملاً forward-safe است چون
+      رِنجِ اولیه فقط از گذشته (تا i-gap) و climax از خودِ کندلِ i است.
     """
     o = df['open'].values.astype(float)
     h = df['high'].values.astype(float)
     l = df['low'].values.astype(float)
     c = df['close'].values.astype(float)
     n = len(df)
+    if gap is None:
+        gap = N                        # پیش‌فرض: رِنجِ اولیه یک بلوکِ N-کندلیِ کامل عقب‌تر
 
     a = atr(df, atrLen)
-    # رِنجِ اولیه: پنجرهٔ N کندلِ اخیر (شاملِ کندلِ i)
-    initHi = rolling_max(h, N)
-    initLo = rolling_min(l, N)
+    # رِنجِ اولیه: پنجرهٔ N کندلی که gap کندل قبل بسته شده (shift رو به گذشته)
+    initHi = pd.Series(rolling_max(h, N)).shift(gap).values
+    initLo = pd.Series(rolling_min(l, N)).shift(gap).values
     initR = initHi - initLo
 
     body = c - o                       # بدنهٔ کندل (علامت‌دار)
@@ -121,10 +129,10 @@ def build_signals(df, N, atrLen, smallMult, k, climaxMult,
 
 
 def run_one(path, asset, N, atrLen, smallMult, k, climaxMult,
-            sl_pip, tp_pip, max_hold, r2min=None, hurstmax=None, side='both',
+            sl_pip, tp_pip, max_hold, gap=None, r2min=None, hurstmax=None, side='both',
             label=''):
     df = se.load_data(path)
-    ls, ss = build_signals(df, N, atrLen, smallMult, k, climaxMult,
+    ls, ss = build_signals(df, N, atrLen, smallMult, k, climaxMult, gap=gap,
                            r2min=r2min, hurstmax=hurstmax, side=side)
     trades = se.simulate_trades(df, ls, ss, sl_pip=sl_pip, tp_pip=tp_pip,
                                 asset=asset, max_hold=max_hold, allow_overlap=False)
