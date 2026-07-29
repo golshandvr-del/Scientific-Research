@@ -32,8 +32,39 @@ from engine import rqs
 from strategies.s341_brooks_swing_levels import _fractal_levels, load_tf
 
 
-# پیکربندیِ تأییدشدهٔ نهایی (غیررند، per-TF) — طبق قانونِ #۷ (اجتناب از اعداد رند)
+# پیکربندیِ تأییدشدهٔ نهاییِ چند-تایم‌فریمی (غیررند، per-TF) — طبق قانونِ #۷ (اجتناب از اعداد رند)
+# و قانونِ اولِ مولتی‌تایم‌فریم (هر TF بهبود/تنظیمِ متناسبِ خود را دارد).
+# ───────────────────────────────────────────────────────────────────────────
+#  M5/M15/M30 : از همان آغاز ACCEPT بودند — از طریقِ رژیمِ رنجِ سفت + سیگنالِ دوم
+#               (require_second=True)، بدونِ نیاز به فیلترِ کششِ جعبه‌ابزار.
+#  H1         : در آغاز «سوخته» (RQS 33) بود؛ با فیلترِ جعبه‌ابزار ema_dist_atr≥0.7
+#               («مغناطیسِ میانه») احیا شد ⇒ RQS+ 94.5.
 CONFIG = {
+    # RQS+=94.7 | n=48 | WR=70.8% | PF=2.22 | DD=2.0% | MCL=2
+    'XAUUSD-M5': dict(
+        side='long', w=4, buf=0.05, require_second=True,
+        stretch=None, exh=None,                # فیلترِ کشش لازم نشد (رژیم+سیگنالِ دوم کافی بود)
+        sl=180, tp=260, mh=48,
+        chop_min=61.8, r2_max=0.22, er_max=0.16,
+        chop_p=14, r2_p=20, er_name='er_lucas_11',
+    ),
+    # RQS+=89.8 | n=40 | WR=65.0% | PF=1.83 | DD=1.8% | MCL=4
+    'XAUUSD-M15': dict(
+        side='long', w=4, buf=0.15, require_second=True,
+        stretch=None, exh=None,
+        sl=280, tp=620, mh=40,
+        chop_min=61.8, r2_max=0.22, er_max=0.16,
+        chop_p=14, r2_p=20, er_name='er_lucas_11',
+    ),
+    # RQS+=89.7 | n=61 | WR=63.9% | PF=1.77 | DD=1.5% | MCL=3
+    'XAUUSD-M30': dict(
+        side='long', w=8, buf=0.15, require_second=True,
+        stretch=None, exh=None,
+        sl=380, tp=840, mh=18,
+        chop_min=58, r2_max=0.30, er_max=0.22,
+        chop_p=14, r2_p=20, er_name='er_lucas_11',
+    ),
+    # RQS+=94.5 | n=42 | WR=66.7% | PF=2.01 | DD=1.5% | MCL=2  (احیاشده با فیلترِ جعبه‌ابزار)
     'XAUUSD-H1': dict(
         side='long', w=4, buf=0.05, require_second=False,
         stretch=0.7, exh=0.25,                 # فیلترهای جعبه‌ابزار
