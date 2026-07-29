@@ -1,0 +1,106 @@
+{
+ "base": {
+  "rqs": 89.8,
+  "passed": true,
+  "gates": "111111",
+  "n": 113,
+  "wr": 61.06,
+  "pf": 2.198,
+  "net": 2534.8
+ },
+ "chosen": [
+  "er_lucas_29>=0.11",
+  "r2_fib_55<=0.62",
+  "hurst>=0.43"
+ ],
+ "final": {
+  "rqs": 94.6,
+  "passed": true,
+  "gates": "111111",
+  "n": 45,
+  "wr": 71.11,
+  "pf": 3.406,
+  "net": 1583.9
+ },
+ "history": [
+  {
+   "step": 0,
+   "filters": [],
+   "result": {
+    "rqs": 89.8,
+    "passed": true,
+    "gates": "111111",
+    "n": 113,
+    "wr": 61.06,
+    "pf": 2.198,
+    "net": 2534.8
+   }
+  },
+  {
+   "step": 1,
+   "filters": [
+    "er_lucas_29>=0.11"
+   ],
+   "result": {
+    "rqs": 93.5,
+    "passed": true,
+    "gates": "111111",
+    "n": 51,
+    "wr": 68.63,
+    "pf": 2.995,
+    "net": 1735.8
+   }
+  },
+  {
+   "step": 2,
+   "filters": [
+    "er_lucas_29>=0.11",
+    "r2_fib_55<=0.62"
+   ],
+   "result": {
+    "rqs": 94.4,
+    "passed": true,
+    "gates": "111111",
+    "n": 46,
+    "wr": 69.57,
+    "pf": 2.875,
+    "net": 1462.2
+   }
+  },
+  {
+   "step": 3,
+   "filters": [
+    "er_lucas_29>=0.11",
+    "r2_fib_55<=0.62",
+    "hurst>=0.43"
+   ],
+   "result": {
+    "rqs": 94.6,
+    "passed": true,
+    "gates": "111111",
+    "n": 45,
+    "wr": 71.11,
+    "pf": 3.406,
+    "net": 1583.9
+   }
+  }
+ ],
+ "config": {
+  "asset": "XAUUSD",
+  "tf": "M15",
+  "side": "long",
+  "n_open": 4,
+  "k_spike": 1.1,
+  "slope_min": 0.05,
+  "win": [
+   0.4,
+   0.95
+  ],
+  "reg": "r2_lo",
+  "sl": 240,
+  "tp": 400,
+  "maxhold": 40,
+  "min_n": 45
+ },
+ "n_candidates": 45
+}

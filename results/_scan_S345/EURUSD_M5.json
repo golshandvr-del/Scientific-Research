@@ -1,0 +1,501 @@
+{
+ "asset": "EURUSD",
+ "tf": "M5",
+ "elapsed_s": 164.2,
+ "best": {
+  "side": "long",
+  "n_open": 8,
+  "k_spike": 0.8,
+  "slope_min": 0.1,
+  "win": [
+   0.4,
+   0.95
+  ],
+  "reg": "r2_lo",
+  "sl": 9,
+  "tp": 15,
+  "rqs": 30.5,
+  "passed": false,
+  "n": 54,
+  "wr": 59.26,
+  "pf": 1.675,
+  "gates": "011111"
+ },
+ "top": [
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "r2_lo",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 30.5,
+   "passed": false,
+   "n": 54,
+   "wr": 59.26,
+   "pf": 1.675,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "ema_stretch",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 30.5,
+   "passed": false,
+   "n": 35,
+   "wr": 57.14,
+   "pf": 1.708,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "r2_lo",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 30.4,
+   "passed": false,
+   "n": 38,
+   "wr": 57.89,
+   "pf": 1.7,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "chop_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 29.4,
+   "passed": false,
+   "n": 39,
+   "wr": 58.97,
+   "pf": 1.822,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "ema_stretch",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 28.7,
+   "passed": false,
+   "n": 40,
+   "wr": 57.5,
+   "pf": 1.748,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "r2_lo",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 27.8,
+   "passed": false,
+   "n": 44,
+   "wr": 54.55,
+   "pf": 1.527,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": null,
+   "sl": 9,
+   "tp": 15,
+   "rqs": 27.8,
+   "passed": false,
+   "n": 47,
+   "wr": 55.32,
+   "pf": 1.56,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "adx_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 27.8,
+   "passed": false,
+   "n": 47,
+   "wr": 55.32,
+   "pf": 1.56,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": null,
+   "sl": 9,
+   "tp": 15,
+   "rqs": 27.6,
+   "passed": false,
+   "n": 57,
+   "wr": 54.39,
+   "pf": 1.502,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "adx_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 27.6,
+   "passed": false,
+   "n": 57,
+   "wr": 54.39,
+   "pf": 1.502,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "chop_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 27.2,
+   "passed": false,
+   "n": 49,
+   "wr": 55.1,
+   "pf": 1.546,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "r2_lo",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 27.1,
+   "passed": false,
+   "n": 32,
+   "wr": 56.25,
+   "pf": 1.57,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "ema_stretch",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 26.8,
+   "passed": false,
+   "n": 47,
+   "wr": 53.19,
+   "pf": 1.507,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "hurst_lo",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 26.6,
+   "passed": false,
+   "n": 36,
+   "wr": 58.33,
+   "pf": 1.454,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "r2_lo",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 26.1,
+   "passed": false,
+   "n": 60,
+   "wr": 56.67,
+   "pf": 1.615,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": null,
+   "sl": 9,
+   "tp": 15,
+   "rqs": 25.5,
+   "passed": false,
+   "n": 64,
+   "wr": 54.69,
+   "pf": 1.527,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "adx_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 25.5,
+   "passed": false,
+   "n": 64,
+   "wr": 54.69,
+   "pf": 1.527,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "chop_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 25.1,
+   "passed": false,
+   "n": 32,
+   "wr": 56.25,
+   "pf": 1.622,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "hurst_lo",
+   "sl": 7,
+   "tp": 12,
+   "rqs": 24.9,
+   "passed": false,
+   "n": 34,
+   "wr": 55.88,
+   "pf": 1.538,
+   "gates": "011101"
+  },
+  {
+   "side": "short",
+   "n_open": 6,
+   "k_spike": 1.5,
+   "slope_min": 0.1,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "r2_lo",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 24.8,
+   "passed": false,
+   "n": 30,
+   "wr": 56.67,
+   "pf": 1.65,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "chop_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 24.4,
+   "passed": false,
+   "n": 42,
+   "wr": 57.14,
+   "pf": 1.503,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": null,
+   "sl": 9,
+   "tp": 15,
+   "rqs": 24.1,
+   "passed": false,
+   "n": 41,
+   "wr": 53.66,
+   "pf": 1.388,
+   "gates": "011111"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 1.1,
+   "slope_min": 0.1,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "adx_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 24.1,
+   "passed": false,
+   "n": 41,
+   "wr": 53.66,
+   "pf": 1.388,
+   "gates": "011111"
+  },
+  {
+   "side": "short",
+   "n_open": 6,
+   "k_spike": 1.5,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "r2_lo",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 23.7,
+   "passed": false,
+   "n": 37,
+   "wr": 54.05,
+   "pf": 1.532,
+   "gates": "011101"
+  },
+  {
+   "side": "long",
+   "n_open": 8,
+   "k_spike": 0.8,
+   "slope_min": 0.1,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "chop_hi",
+   "sl": 9,
+   "tp": 15,
+   "rqs": 23.5,
+   "passed": false,
+   "n": 63,
+   "wr": 53.97,
+   "pf": 1.39,
+   "gates": "011101"
+  }
+ ]
+}
