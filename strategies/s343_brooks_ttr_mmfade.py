@@ -80,15 +80,22 @@ def build_signals(df, N, atrLen, smallMult, k, climaxMult, gap=None,
 
     a = atr(df, atrLen)
     # رِنجِ اولیه: پنجرهٔ N کندلی که gap کندل قبل بسته شده (shift رو به گذشته)
-    initHi = pd.Series(rolling_max(h, N)).shift(gap).values
-    initLo = pd.Series(rolling_min(l, N)).shift(gap).values
+    winHi = rolling_max(h, N)
+    winLo = rolling_min(l, N)
+    winR = winHi - winLo               # رِنجِ N-کندلیِ هر لحظه
+    initHi = pd.Series(winHi).shift(gap).values
+    initLo = pd.Series(winLo).shift(gap).values
     initR = initHi - initLo
+
+    # ⭐ دامنهٔ مرجعِ «روزانه»: میانگینِ رِنجِ N-کندلیِ اخیر (Brooks: initR ≈ ½ average daily range).
+    # مقایسه با ATRِ تک‌کندلی غلط بود (initR ذاتاً ~N برابرِ ATR است). مرجعِ درست = رِنجِ هم‌مقیاس.
+    refRange = pd.Series(winR).rolling(N * 3, min_periods=N).mean().shift(gap).values
 
     body = c - o                       # بدنهٔ کندل (علامت‌دار)
     abody = np.abs(body)
 
-    # فیلترِ رژیمِ «رِنجِ کوچک» (Brooks: رِنجِ اولیه ≈ ½ دامنهٔ معمول)
-    small_ok = initR <= (smallMult * a)
+    # فیلترِ رژیمِ «رِنجِ کوچک» (Brooks: رِنجِ اولیه ≈ ½ دامنهٔ معمولِ هم‌مقیاس)
+    small_ok = initR <= (smallMult * refRange)
 
     tgtUp = initHi + k * initR
     tgtDn = initLo - k * initR
@@ -117,7 +124,7 @@ def build_signals(df, N, atrLen, smallMult, k, climaxMult, gap=None,
         short_sig &= gate
 
     # اطمینان از نبودِ NaN در ابتدای سری
-    valid = ~(np.isnan(initR) | np.isnan(a))
+    valid = ~(np.isnan(initR) | np.isnan(a) | np.isnan(refRange))
     long_sig &= valid
     short_sig &= valid
 
