@@ -2702,6 +2702,25 @@ function zscore(x, period) {
   const std = rollingStd(x, period);
   return x.map((_, i) => std[i] ? (x[i] - mean2[i]) / std[i] : NaN);
 }
+function kurtosis(x, period = 20) {
+  const out = NaNArr(x.length);
+  for (let i = period - 1; i < x.length; i++) {
+    let m = 0;
+    for (let k = i - period + 1; k <= i; k++) m += x[k];
+    m /= period;
+    let v = 0, q = 0;
+    for (let k = i - period + 1; k <= i; k++) {
+      const d = x[k] - m;
+      const d2 = d * d;
+      v += d2;
+      q += d2 * d2;
+    }
+    v /= period;
+    q /= period;
+    out[i] = v ? q / (v * v) - 3 : 0;
+  }
+  return out;
+}
 function rollingSlope(x, period) {
   const out = NaNArr(x.length);
   const xs = [];
@@ -4741,8 +4760,257 @@ function computeMidMonth(times, utcHour, filt) {
   };
 }
 
-// ../web_tool/src/revived_strategies.ts
+// ../web_tool/src/squeeze_s332.ts
 var GOLD_PIP = 0.1;
+function r2Series(close, period = 20) {
+  const n = close.length;
+  const out = new Array(n).fill(NaN);
+  for (let i = period - 1; i < n; i++) {
+    let sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
+    for (let k = 0; k < period; k++) {
+      const t = k, y = close[i - (period - 1 - k)];
+      sx += t;
+      sy += y;
+      sxy += t * y;
+      sxx += t * t;
+      syy += y * y;
+    }
+    const num = period * sxy - sx * sy;
+    const den = (period * sxx - sx * sx) * (period * syy - sy * sy);
+    const r = den ? num / Math.sqrt(den) : 0;
+    out[i] = r * r;
+  }
+  return out;
+}
+function hurstSeries(close, period = 64) {
+  const n = close.length;
+  const out = new Array(n).fill(0.5);
+  const ret = new Array(n).fill(NaN);
+  for (let i = 1; i < n; i++) ret[i] = close[i - 1] ? Math.log(close[i] / close[i - 1]) : 0;
+  const logP = Math.log(period);
+  for (let i = period; i < n; i++) {
+    const w = [];
+    for (let k = 0; k < period; k++) w.push(ret[i - k] || 0);
+    const m = w.reduce((a, b) => a + b, 0) / period;
+    let cum = 0, mn = Infinity, mx = -Infinity, s2 = 0;
+    for (let k = 0; k < period; k++) {
+      cum += w[k] - m;
+      if (cum < mn) mn = cum;
+      if (cum > mx) mx = cum;
+      s2 += (w[k] - m) * (w[k] - m);
+    }
+    const sd = Math.sqrt(s2 / period), R = mx - mn;
+    out[i] = sd && R > 0 ? Math.log(R / sd) / logP : 0.5;
+  }
+  return out;
+}
+var S332_CFG = {
+  // H4 — فیلترِ رژیمِ مومنتوم (ADX/DI)
+  "XAUUSD-H4": {
+    id: "XAUUSD-H4",
+    tfFa: "H4",
+    bbPeriod: 20,
+    bbMult: 2,
+    sqzLookback: 100,
+    sqzPct: 0.25,
+    breakoutLookback: 6,
+    emaFast: 50,
+    emaSlow: 200,
+    filterKind: "adx_di",
+    adxMin: 22,
+    slPip: 350,
+    tpPip: 500,
+    maxHold: 24,
+    rqs: 92.1
+  },
+  // M15 — فیلترِ آماری/فراکتالیِ بانک (r2 + hurst)
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tfFa: "M15",
+    bbPeriod: 20,
+    bbMult: 2,
+    sqzLookback: 100,
+    sqzPct: 0.25,
+    breakoutLookback: 6,
+    emaFast: 50,
+    emaSlow: 200,
+    filterKind: "r2_hurst",
+    r2Min: 0.58,
+    r2Period: 20,
+    hurstMin: 0.55,
+    hurstPeriod: 64,
+    slPip: 190,
+    tpPip: 285,
+    maxHold: 64,
+    rqs: 91.2
+  }
+};
+function computeS332(candles, cfg) {
+  const n = candles.length;
+  const close = candles.map((c) => c.close);
+  const high = candles.map((c) => c.high);
+  const slDist = cfg.slPip * GOLD_PIP;
+  const tpDist = cfg.tpPip * GOLD_PIP;
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  const need = Math.max(cfg.bbPeriod + cfg.sqzLookback, cfg.emaSlow, cfg.breakoutLookback) + 2;
+  if (n < need) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 / \u067E\u0646\u062C\u0631\u0647\u0654 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
+      indicators: emptyInd
+    };
+  }
+  const bb = bollinger(close, cfg.bbPeriod, cfg.bbMult);
+  const bw = new Array(n).fill(NaN);
+  for (let i2 = 0; i2 < n; i2++) {
+    const mid = bb.mid[i2];
+    if (isFinite(mid) && mid !== 0 && isFinite(bb.upper[i2]) && isFinite(bb.lower[i2])) {
+      bw[i2] = (bb.upper[i2] - bb.lower[i2]) / mid;
+    }
+  }
+  const ef = ema(close, cfg.emaFast);
+  const es = ema(close, cfg.emaSlow);
+  const i = n - 1;
+  const prev = i - 1;
+  const lo = Math.max(0, prev - cfg.sqzLookback + 1);
+  const window = bw.slice(lo, prev + 1).filter((v) => isFinite(v));
+  const bwPrev = bw[prev];
+  let bwPct = 1;
+  if (window.length > 5 && isFinite(bwPrev)) {
+    bwPct = window.filter((v) => v <= bwPrev).length / window.length;
+  }
+  const squeezed = isFinite(bwPrev) && bwPct <= cfg.sqzPct;
+  const bLo = Math.max(0, i - cfg.breakoutLookback);
+  let priorHigh = -Infinity;
+  for (let k = bLo; k < i; k++) if (isFinite(high[k])) priorHigh = Math.max(priorHigh, high[k]);
+  const breakout = isFinite(close[i]) && close[i] > priorHigh;
+  const trendUp = isFinite(ef[i]) && isFinite(es[i]) && ef[i] > es[i];
+  let filterOk = false;
+  const regimeInd = [];
+  let adxVal = NaN;
+  if (cfg.filterKind === "adx_di") {
+    const res = adx(candles, 14);
+    adxVal = res.adx[i];
+    const pdi = res.pdi[i], mdi = res.mdi[i];
+    const adxOk = isFinite(adxVal) && adxVal > (cfg.adxMin ?? 22);
+    const diOk = isFinite(pdi) && isFinite(mdi) && pdi > mdi;
+    filterOk = adxOk && diOk;
+    regimeInd.push(
+      {
+        name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645: ADX(14) > ${cfg.adxMin}`,
+        value: isFinite(adxVal) ? adxVal.toFixed(1) + (adxOk ? " \u2714" : " \u2718") : "\u2014",
+        status: adxOk ? "ok" : "bad"
+      },
+      {
+        name: "+DI > \u2212DI (\u062C\u0647\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC)",
+        value: isFinite(pdi) && isFinite(mdi) ? `${pdi.toFixed(0)} / ${mdi.toFixed(0)}` + (diOk ? " \u2714" : " \u2718") : "\u2014",
+        status: diOk ? "ok" : "bad"
+      }
+    );
+  } else {
+    const r2 = r2Series(close, cfg.r2Period ?? 20);
+    const hu = hurstSeries(close, cfg.hurstPeriod ?? 64);
+    const r2v = r2[i], huv = hu[i];
+    const r2Ok = isFinite(r2v) && r2v > (cfg.r2Min ?? 0.58);
+    const huOk = isFinite(huv) && huv > (cfg.hurstMin ?? 0.55);
+    filterOk = r2Ok && huOk;
+    regimeInd.push(
+      {
+        name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0622\u0645\u0627\u0631\u06CC: R\xB2(${cfg.r2Period}) > ${cfg.r2Min} (\u0631\u0648\u0646\u062F\u0650 \u062A\u0645\u06CC\u0632)`,
+        value: isFinite(r2v) ? r2v.toFixed(2) + (r2Ok ? " \u2714" : " \u2718") : "\u2014",
+        status: r2Ok ? "ok" : "bad"
+      },
+      {
+        name: `\u0646\u0645\u0627\u06CC \u0647\u0631\u0633\u062A(${cfg.hurstPeriod}) > ${cfg.hurstMin} (\u062D\u0627\u0641\u0638\u0647\u0654 \u0631\u0648\u0646\u062F\u06CC)`,
+        value: isFinite(huv) ? huv.toFixed(2) + (huOk ? " \u2714" : " \u2718") : "\u2014",
+        status: huOk ? "ok" : "bad"
+      }
+    );
+  }
+  const indicators = [
+    {
+      name: `\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 (BandWidth \u062F\u0631 \u06A9\u0641\u0650 ${Math.round(cfg.sqzPct * 100)}\u066A)`,
+      value: isFinite(bwPrev) ? `\u0635\u062F\u06A9 ${Math.round(bwPct * 100)}` + (squeezed ? " \u2714" : " \u2718") : "\u2014",
+      status: squeezed ? "ok" : "neutral"
+    },
+    {
+      name: `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC (close > \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644)`,
+      value: breakout ? "\u0628\u0644\u0647 \u2714" : "\u062E\u06CC\u0631",
+      status: breakout ? "ok" : "neutral"
+    },
+    {
+      name: "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F (EMA50 > EMA200)",
+      value: trendUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u063A\u06CC\u0631\u0635\u0639\u0648\u062F\u06CC \u2718",
+      status: trendUp ? "ok" : "bad"
+    },
+    ...regimeInd
+  ];
+  const active = squeezed && breakout && trendUp && filterOk;
+  const approaching = !active && squeezed && trendUp && filterOk && !breakout;
+  const filterFa = cfg.filterKind === "adx_di" ? `ADX>${cfg.adxMin} \u0648 +DI>\u2212DI` : `R\xB2>${cfg.r2Min} \u0648 \u0647\u0631\u0633\u062A>${cfg.hurstMin}`;
+  let reason;
+  if (active) {
+    reason = `\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647\u0654 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u0628\u0627 \u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0631\u0647\u0627 \u0634\u062F \u0648 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (${filterFa}) \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F \u21D2 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F.`;
+  } else if (approaching) {
+    reason = `\u0641\u0646\u0631 \u0641\u0634\u0631\u062F\u0647 \u0648 \u0631\u0698\u06CC\u0645 \u0645\u0633\u0627\u0639\u062F \u0627\u0633\u062A (${filterFa})\u060C \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 \u06A9\u0646\u062F\u0644\u0650 \u0634\u06A9\u0633\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback}\u200C\u06A9\u0646\u062F\u0644\u06CC \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647.`;
+  } else if (!squeezed) {
+    reason = "\u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u0641\u0634\u0631\u062F\u0647 \u0646\u06CC\u0633\u062A (\u0641\u0646\u0631 \u0622\u0645\u0627\u062F\u0647\u0654 \u0627\u0646\u0641\u062C\u0627\u0631 \u0646\u06CC\u0633\u062A).";
+  } else if (!trendUp) {
+    reason = "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A (EMA50 \u2264 EMA200) \u2014 \u0627\u0646\u0641\u062C\u0627\u0631 \u0647\u0645\u200C\u0633\u0648 \u0628\u0627 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A.";
+  } else if (!filterOk) {
+    reason = `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (${filterFa}) \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u062F \u2014 \u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else {
+    reason = "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0648\u0631\u0648\u062F \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A.";
+  }
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0634\u06A9\u0633\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback}\u200C\u06A9\u0646\u062F\u0644\u06CC` : void 0,
+    indicators
+  };
+}
+function decideS332(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS332(candles, cfg);
+  const price = a.price;
+  const filterFa = cfg.filterKind === "adx_di" ? "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F (ADX/DI)" : "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0622\u0645\u0627\u0631\u06CC/\u0641\u0631\u0627\u06A9\u062A\u0627\u0644\u06CC (R\xB2 + \u0647\u0631\u0633\u062A)";
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s332_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S332",
+    name: `\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (${cfg.tfFa})`,
+    kind: "squeeze",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 ${cfg.tfFa} (${cfg.tpPip}/${cfg.slPip} pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u061B \u0627\u06AF\u0631 ${filterFa} \u0645\u0639\u06A9\u0648\u0633 \u0634\u062F\u060C \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0627 \u0628\u0633\u0646\u062C.`,
+    filters: [
+      "\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 (BandWidth \u06A9\u0641 \u0635\u062F\u06A9 \u06F2\u06F5\u066A)",
+      `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644)`,
+      "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F EMA50>EMA200",
+      filterFa
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/revived_strategies.ts
+var GOLD_PIP2 = 0.1;
 function rawToDecision(raw2, meta, assetId, price, reg, capital, riskPct) {
   const spec = assetSpec(assetId.startsWith("EUR") ? "EURUSD" : "XAUUSD");
   const sourceLayer = {
@@ -4840,8 +5108,8 @@ function computeS328(candles, cfg) {
   const r = rsi(close, cfg.rsiPeriod);
   const { adx: adxArr } = adx(candles, 14);
   const i = close.length - 1;
-  const slDist = cfg.slPip * GOLD_PIP;
-  const tpDist = cfg.tpPip * GOLD_PIP;
+  const slDist = cfg.slPip * GOLD_PIP2;
+  const tpDist = cfg.tpPip * GOLD_PIP2;
   const rsiNow = r[i], rsiPrev = r[i - 1];
   const adxPrev = adxArr[i - 1];
   const adxOk = !isFinite(cfg.adxMax) || Number.isFinite(adxPrev) && adxPrev <= cfg.adxMax;
@@ -4944,7 +5212,7 @@ function computeS330(candles, cfg) {
   const orRange = orHi - orLo;
   const winStart = openIdx + cfg.orBars;
   const inWindow = i >= winStart && i <= winStart + cfg.tradeWindowBars;
-  indBase.push({ name: "\u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647\u0654 \u0622\u0633\u06CC\u0627 (OR)", value: `${orLo.toFixed(2)}\u2013${orHi.toFixed(2)} (${(orRange / GOLD_PIP).toFixed(0)} pip)`, status: "neutral" });
+  indBase.push({ name: "\u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647\u0654 \u0622\u0633\u06CC\u0627 (OR)", value: `${orLo.toFixed(2)}\u2013${orHi.toFixed(2)} (${(orRange / GOLD_PIP2).toFixed(0)} pip)`, status: "neutral" });
   if (!(orRange > 0) || !inWindow) {
     return empty(inWindow ? "\u0639\u0631\u0636\u0650 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647 \u0646\u0627\u0645\u0639\u062A\u0628\u0631 \u0627\u0633\u062A." : "\u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u067E\u0633 \u0627\u0632 \u0628\u0627\u0632\u0647\u0654 \u0627\u0641\u062A\u062A\u0627\u062D\u06CC\u0647\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u06CC \u0646\u06CC\u0633\u062A.", indBase);
   }
@@ -5390,254 +5658,83 @@ function decideS323(cfg, a, candles, utcHour, capital = 1e4, riskPct = 1) {
     filters: [`\u0631\u0648\u0646\u062F EMA200 + ADX\u2265${cfg.adxMin}`, `pullback \u062D\u0645\u0627\u06CC\u062A \u2264${cfg.nearMax}\xD7ATR`, `\u0641\u0636\u0627 \u2265${cfg.roomMin}\xD7ATR`, `RSI\u2264${cfg.rsiMax}`, cfg.golden ? `\u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC ${cfg.hLo}-${cfg.hHi} UTC` : "\u0628\u062F\u0648\u0646\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0632\u0645\u0627\u0646"]
   }, cfg.id, a.price, reg, capital, riskPct);
 }
-
-// ../web_tool/src/squeeze_s332.ts
-var GOLD_PIP2 = 0.1;
-function r2Series(close, period = 20) {
-  const n = close.length;
-  const out = new Array(n).fill(NaN);
-  for (let i = period - 1; i < n; i++) {
-    let sx = 0, sy = 0, sxy = 0, sxx = 0, syy = 0;
-    for (let k = 0; k < period; k++) {
-      const t = k, y = close[i - (period - 1 - k)];
-      sx += t;
-      sy += y;
-      sxy += t * y;
-      sxx += t * t;
-      syy += y * y;
-    }
-    const num = period * sxy - sx * sy;
-    const den = (period * sxx - sx * sx) * (period * syy - sy * sy);
-    const r = den ? num / Math.sqrt(den) : 0;
-    out[i] = r * r;
-  }
-  return out;
-}
-function hurstSeries(close, period = 64) {
-  const n = close.length;
-  const out = new Array(n).fill(0.5);
-  const ret = new Array(n).fill(NaN);
-  for (let i = 1; i < n; i++) ret[i] = close[i - 1] ? Math.log(close[i] / close[i - 1]) : 0;
-  const logP = Math.log(period);
-  for (let i = period; i < n; i++) {
-    const w = [];
-    for (let k = 0; k < period; k++) w.push(ret[i - k] || 0);
-    const m = w.reduce((a, b) => a + b, 0) / period;
-    let cum = 0, mn = Infinity, mx = -Infinity, s2 = 0;
-    for (let k = 0; k < period; k++) {
-      cum += w[k] - m;
-      if (cum < mn) mn = cum;
-      if (cum > mx) mx = cum;
-      s2 += (w[k] - m) * (w[k] - m);
-    }
-    const sd = Math.sqrt(s2 / period), R = mx - mn;
-    out[i] = sd && R > 0 ? Math.log(R / sd) / logP : 0.5;
-  }
-  return out;
-}
-var S332_CFG = {
-  // H4 — فیلترِ رژیمِ مومنتوم (ADX/DI)
-  "XAUUSD-H4": {
-    id: "XAUUSD-H4",
-    tfFa: "H4",
-    bbPeriod: 20,
-    bbMult: 2,
-    sqzLookback: 100,
-    sqzPct: 0.25,
-    breakoutLookback: 6,
-    emaFast: 50,
-    emaSlow: 200,
-    filterKind: "adx_di",
-    adxMin: 22,
-    slPip: 350,
-    tpPip: 500,
-    maxHold: 24,
-    rqs: 92.1
-  },
-  // M15 — فیلترِ آماری/فراکتالیِ بانک (r2 + hurst)
-  "XAUUSD-M15": {
-    id: "XAUUSD-M15",
-    tfFa: "M15",
-    bbPeriod: 20,
-    bbMult: 2,
-    sqzLookback: 100,
-    sqzPct: 0.25,
-    breakoutLookback: 6,
-    emaFast: 50,
-    emaSlow: 200,
-    filterKind: "r2_hurst",
-    r2Min: 0.58,
-    r2Period: 20,
-    hurstMin: 0.55,
-    hurstPeriod: 64,
-    slPip: 190,
-    tpPip: 285,
-    maxHold: 64,
-    rqs: 91.2
-  }
+var S334_CFG = {
+  // منبعِ اعداد: results/_s334_XAUUSD_M5.json  (RQS+ 81.6 · WR 61.7% · PF 1.61 · DD 1.87%)
+  "XAUUSD-M5": { id: "XAUUSD-M5", pip: 0.1, zWin: 34, zThr: 2.4, rsiThr: 70, hurstMax: 0.5, kurtMax: 1.8, slPip: 110, tpPip: 125, maxHold: 20 },
+  // منبعِ اعداد: results/_s334_EURUSD_M5.json  (RQS+ 84.1 · WR 66.7% · PF 1.62 · DD 5.41%)
+  "EURUSD-M5": { id: "EURUSD-M5", pip: 1e-4, zWin: 34, zThr: 2.4, rsiThr: 70, hurstMax: 0.52, kurtMax: 2.2, slPip: 12.2, tpPip: 13.7, maxHold: 24 }
 };
-function computeS332(candles, cfg) {
-  const n = candles.length;
+function computeS334(candles, cfg) {
   const close = candles.map((c) => c.close);
-  const high = candles.map((c) => c.high);
-  const slDist = cfg.slPip * GOLD_PIP2;
-  const tpDist = cfg.tpPip * GOLD_PIP2;
-  const emptyInd = [
-    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
-  ];
-  const need = Math.max(cfg.bbPeriod + cfg.sqzLookback, cfg.emaSlow, cfg.breakoutLookback) + 2;
-  if (n < need) {
-    return {
-      active: false,
-      approaching: false,
-      direction: "LONG",
-      slDist,
-      tpDist,
-      maxHoldBars: cfg.maxHold,
-      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 / \u067E\u0646\u062C\u0631\u0647\u0654 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
-      indicators: emptyInd
-    };
-  }
-  const bb = bollinger(close, cfg.bbPeriod, cfg.bbMult);
-  const bw = new Array(n).fill(NaN);
-  for (let i2 = 0; i2 < n; i2++) {
-    const mid = bb.mid[i2];
-    if (isFinite(mid) && mid !== 0 && isFinite(bb.upper[i2]) && isFinite(bb.lower[i2])) {
-      bw[i2] = (bb.upper[i2] - bb.lower[i2]) / mid;
-    }
-  }
-  const ef = ema(close, cfg.emaFast);
-  const es = ema(close, cfg.emaSlow);
+  const open = candles.map((c) => c.open);
+  const n = close.length;
   const i = n - 1;
-  const prev = i - 1;
-  const lo = Math.max(0, prev - cfg.sqzLookback + 1);
-  const window = bw.slice(lo, prev + 1).filter((v) => isFinite(v));
-  const bwPrev = bw[prev];
-  let bwPct = 1;
-  if (window.length > 5 && isFinite(bwPrev)) {
-    bwPct = window.filter((v) => v <= bwPrev).length / window.length;
-  }
-  const squeezed = isFinite(bwPrev) && bwPct <= cfg.sqzPct;
-  const bLo = Math.max(0, i - cfg.breakoutLookback);
-  let priorHigh = -Infinity;
-  for (let k = bLo; k < i; k++) if (isFinite(high[k])) priorHigh = Math.max(priorHigh, high[k]);
-  const breakout = isFinite(close[i]) && close[i] > priorHigh;
-  const trendUp = isFinite(ef[i]) && isFinite(es[i]) && ef[i] > es[i];
-  let filterOk = false;
-  const regimeInd = [];
-  let adxVal = NaN;
-  if (cfg.filterKind === "adx_di") {
-    const res = adx(candles, 14);
-    adxVal = res.adx[i];
-    const pdi = res.pdi[i], mdi = res.mdi[i];
-    const adxOk = isFinite(adxVal) && adxVal > (cfg.adxMin ?? 22);
-    const diOk = isFinite(pdi) && isFinite(mdi) && pdi > mdi;
-    filterOk = adxOk && diOk;
-    regimeInd.push(
-      {
-        name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645: ADX(14) > ${cfg.adxMin}`,
-        value: isFinite(adxVal) ? adxVal.toFixed(1) + (adxOk ? " \u2714" : " \u2718") : "\u2014",
-        status: adxOk ? "ok" : "bad"
-      },
-      {
-        name: "+DI > \u2212DI (\u062C\u0647\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC)",
-        value: isFinite(pdi) && isFinite(mdi) ? `${pdi.toFixed(0)} / ${mdi.toFixed(0)}` + (diOk ? " \u2714" : " \u2718") : "\u2014",
-        status: diOk ? "ok" : "bad"
-      }
-    );
-  } else {
-    const r2 = r2Series(close, cfg.r2Period ?? 20);
-    const hu = hurstSeries(close, cfg.hurstPeriod ?? 64);
-    const r2v = r2[i], huv = hu[i];
-    const r2Ok = isFinite(r2v) && r2v > (cfg.r2Min ?? 0.58);
-    const huOk = isFinite(huv) && huv > (cfg.hurstMin ?? 0.55);
-    filterOk = r2Ok && huOk;
-    regimeInd.push(
-      {
-        name: `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0622\u0645\u0627\u0631\u06CC: R\xB2(${cfg.r2Period}) > ${cfg.r2Min} (\u0631\u0648\u0646\u062F\u0650 \u062A\u0645\u06CC\u0632)`,
-        value: isFinite(r2v) ? r2v.toFixed(2) + (r2Ok ? " \u2714" : " \u2718") : "\u2014",
-        status: r2Ok ? "ok" : "bad"
-      },
-      {
-        name: `\u0646\u0645\u0627\u06CC \u0647\u0631\u0633\u062A(${cfg.hurstPeriod}) > ${cfg.hurstMin} (\u062D\u0627\u0641\u0638\u0647\u0654 \u0631\u0648\u0646\u062F\u06CC)`,
-        value: isFinite(huv) ? huv.toFixed(2) + (huOk ? " \u2714" : " \u2718") : "\u2014",
-        status: huOk ? "ok" : "bad"
-      }
-    );
-  }
+  const slDist = cfg.slPip * cfg.pip;
+  const tpDist = cfg.tpPip * cfg.pip;
+  const z = zscore(close, cfg.zWin);
+  const r = rsi(close, 14);
+  const hu = hurstSeries(close, 64);
+  const ku = kurtosis(close, 20);
+  const zNow = z[i], rsiNow = r[i], huNow = hu[i], kuNow = ku[i];
+  const bearCandle = i >= 1 && close[i] < open[i] && close[i] < close[i - 1];
+  const zOk = Number.isFinite(zNow) && zNow > cfg.zThr;
+  const rsiOk = Number.isFinite(rsiNow) && rsiNow > cfg.rsiThr;
+  const hurstOk = Number.isFinite(huNow) && huNow < cfg.hurstMax;
+  const kurtOk = Number.isFinite(kuNow) && kuNow < cfg.kurtMax;
+  const regimeOk = hurstOk && kurtOk;
+  const active = zOk && rsiOk && bearCandle && regimeOk;
+  const approaching = !active && zOk && rsiOk && regimeOk;
   const indicators = [
     {
-      name: `\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 (BandWidth \u062F\u0631 \u06A9\u0641\u0650 ${Math.round(cfg.sqzPct * 100)}\u066A)`,
-      value: isFinite(bwPrev) ? `\u0635\u062F\u06A9 ${Math.round(bwPct * 100)}` + (squeezed ? " \u2714" : " \u2718") : "\u2014",
-      status: squeezed ? "ok" : "neutral"
+      name: `Z-Score(${cfg.zWin}) (\u06A9\u0634\u200C\u0622\u0645\u062F\u06AF\u06CC > ${cfg.zThr})`,
+      value: Number.isFinite(zNow) ? zNow.toFixed(2) + (zOk ? " (\u06A9\u0634\u200C\u0622\u0645\u062F\u0647)" : "") : "\u2014",
+      status: zOk ? "ok" : "neutral"
     },
     {
-      name: `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC (close > \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644)`,
-      value: breakout ? "\u0628\u0644\u0647 \u2714" : "\u062E\u06CC\u0631",
-      status: breakout ? "ok" : "neutral"
+      name: `RSI-14 (\u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F > ${cfg.rsiThr})`,
+      value: Number.isFinite(rsiNow) ? rsiNow.toFixed(1) + (rsiOk ? " (\u0627\u0634\u0628\u0627\u0639)" : "") : "\u2014",
+      status: rsiOk ? "ok" : "neutral"
     },
     {
-      name: "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F (EMA50 > EMA200)",
-      value: trendUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u063A\u06CC\u0631\u0635\u0639\u0648\u062F\u06CC \u2718",
-      status: trendUp ? "ok" : "bad"
+      name: "\u06A9\u0646\u062F\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC\u0650 \u0646\u0632\u0648\u0644\u06CC",
+      value: bearCandle ? "\u0628\u0644\u0647 \u2714" : "\u0647\u0646\u0648\u0632 \u0646\u0647",
+      status: bearCandle ? "ok" : active || approaching ? "warn" : "neutral"
     },
-    ...regimeInd
+    {
+      name: `\u0631\u0698\u06CC\u0645\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC (Hurst64 < ${cfg.hurstMax})`,
+      value: Number.isFinite(huNow) ? huNow.toFixed(2) + (hurstOk ? " \u2714" : " \u2718 \u0631\u0648\u0646\u062F\u06CC") : "\u2014",
+      status: hurstOk ? "ok" : "bad"
+    },
+    {
+      name: `safety-gate \u062F\u064F\u0645 (Kurtosis20 < ${cfg.kurtMax})`,
+      value: Number.isFinite(kuNow) ? kuNow.toFixed(2) + (kurtOk ? " \u2714" : " \u2718 \u0631\u06CC\u0633\u06A9\u0650 \u067E\u0631\u0634") : "\u2014",
+      status: kurtOk ? "ok" : "bad"
+    }
   ];
-  const active = squeezed && breakout && trendUp && filterOk;
-  const approaching = !active && squeezed && trendUp && filterOk && !breakout;
-  const filterFa = cfg.filterKind === "adx_di" ? `ADX>${cfg.adxMin} \u0648 +DI>\u2212DI` : `R\xB2>${cfg.r2Min} \u0648 \u0647\u0631\u0633\u062A>${cfg.hurstMin}`;
-  let reason;
-  if (active) {
-    reason = `\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647\u0654 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u0628\u0627 \u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0631\u0647\u0627 \u0634\u062F \u0648 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (${filterFa}) \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F \u21D2 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F.`;
-  } else if (approaching) {
-    reason = `\u0641\u0646\u0631 \u0641\u0634\u0631\u062F\u0647 \u0648 \u0631\u0698\u06CC\u0645 \u0645\u0633\u0627\u0639\u062F \u0627\u0633\u062A (${filterFa})\u060C \u0627\u0645\u0627 \u0647\u0646\u0648\u0632 \u06A9\u0646\u062F\u0644\u0650 \u0634\u06A9\u0633\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback}\u200C\u06A9\u0646\u062F\u0644\u06CC \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647.`;
-  } else if (!squeezed) {
-    reason = "\u0628\u0627\u0646\u062F\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u0641\u0634\u0631\u062F\u0647 \u0646\u06CC\u0633\u062A (\u0641\u0646\u0631 \u0622\u0645\u0627\u062F\u0647\u0654 \u0627\u0646\u0641\u062C\u0627\u0631 \u0646\u06CC\u0633\u062A).";
-  } else if (!trendUp) {
-    reason = "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A (EMA50 \u2264 EMA200) \u2014 \u0627\u0646\u0641\u062C\u0627\u0631 \u0647\u0645\u200C\u0633\u0648 \u0628\u0627 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A.";
-  } else if (!filterOk) {
-    reason = `\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (${filterFa}) \u0647\u0646\u0648\u0632 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u062F \u2014 \u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A.`;
-  } else {
-    reason = "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0648\u0631\u0648\u062F \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A.";
-  }
   return {
     active,
     approaching,
-    direction: "LONG",
+    direction: "SHORT",
     slDist,
     tpDist,
     maxHoldBars: cfg.maxHold,
-    reason,
-    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0634\u06A9\u0633\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 ${cfg.breakoutLookback}\u200C\u06A9\u0646\u062F\u0644\u06CC` : void 0,
+    reason: active ? `\u0642\u06CC\u0645\u062A ${zNow.toFixed(2)}\u03C3 \u0628\u0627\u0644\u0627\u06CC \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0648 RSI=${rsiNow.toFixed(1)} (\u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F)\u061B \u06A9\u0646\u062F\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC\u0650 \u0646\u0632\u0648\u0644\u06CC \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 mean-reverting (Hurst=${huNow.toFixed(2)}) \u21D2 \u0641\u0631\u0648\u0634\u0650 fade.` : approaching ? `\u06A9\u0634\u200C\u0622\u0645\u062F\u06AF\u06CC\u0650 \u0622\u0645\u0627\u0631\u06CC (${Number.isFinite(zNow) ? zNow.toFixed(2) : "\u2014"}\u03C3) \u0648 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC\u0650 \u0646\u0632\u0648\u0644\u06CC \u0628\u0631\u0627\u06CC \u0645\u0627\u0634\u0647\u0654 \u0641\u0631\u0648\u0634.` : !regimeOk && (zOk || rsiOk) ? `\u0627\u0634\u0628\u0627\u0639 \u0647\u0633\u062A \u0627\u0645\u0627 \u0631\u0698\u06CC\u0645 \u0645\u0646\u0627\u0633\u0628 \u0646\u06CC\u0633\u062A (Hurst/Kurtosis \u06AF\u06CC\u062A \u0631\u0627 \u0631\u062F \u06A9\u0631\u062F) \u21D2 fade \u0627\u0645\u0646 \u0646\u06CC\u0633\u062A.` : `\u0634\u0631\u0637\u0650 \u06A9\u0634\u200C\u0622\u0645\u062F\u06AF\u06CC/\u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 S334 \u0646\u062F\u0627\u0631\u06CC\u0645.`,
+    approachReason: approaching ? "\u06A9\u0646\u062F\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC\u0650 \u0646\u0632\u0648\u0644\u06CC (close<open \u0648 close<close \u0642\u0628\u0644\u06CC)" : void 0,
     indicators
   };
 }
-function decideS332(cfg, a, candles, capital = 1e4, riskPct = 1) {
-  const raw2 = computeS332(candles, cfg);
-  const price = a.price;
-  const filterFa = cfg.filterKind === "adx_di" ? "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F (ADX/DI)" : "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0622\u0645\u0627\u0631\u06CC/\u0641\u0631\u0627\u06A9\u062A\u0627\u0644\u06CC (R\xB2 + \u0647\u0631\u0633\u062A)";
-  const reg = {
-    regime: "trend_up",
-    efficiencyRatio: 0,
-    trendy: true,
-    adx: 0,
-    activeStream: "bull",
-    bucket: `s332_${cfg.tfFa.toLowerCase()}`
-  };
-  const meta = {
-    code: "S332",
-    name: `\u0627\u0646\u0641\u062C\u0627\u0631\u0650 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0648\u0644\u06CC\u0646\u06AF\u0631 (${cfg.tfFa})`,
-    kind: "squeeze",
+function decideS334(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS334(candles, cfg);
+  const { adx: adxArr } = adx(candles, 14);
+  const reg = lightRegime(candles.map((c) => c.close), nz(last(adxArr)), false, "s334_mr_fade");
+  return rawToDecision(raw2, {
+    code: "S334",
+    name: "Mean-Reversion Fade \u0641\u0631\u0648\u0634",
+    kind: "mean-reversion",
     manageStyle: "fixed-tp-sl",
-    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 ${cfg.tfFa} (${cfg.tpPip}/${cfg.slPip} pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u061B \u0627\u06AF\u0631 ${filterFa} \u0645\u0639\u06A9\u0648\u0633 \u0634\u062F\u060C \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0627 \u0628\u0633\u0646\u062C.`,
-    filters: [
-      "\u0641\u0646\u0631\u0650 \u0641\u0634\u0631\u062F\u0647 (BandWidth \u06A9\u0641 \u0635\u062F\u06A9 \u06F2\u06F5\u066A)",
-      `\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC (\u0633\u0642\u0641\u0650 ${cfg.breakoutLookback} \u06A9\u0646\u062F\u0644)`,
-      "\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F EMA50>EMA200",
-      filterFa
-    ]
-  };
-  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+    manageNote: "\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A (mean-reversion fade). SL/TP \u062C\u0627\u0628\u0647\u200C\u062C\u0627 \u0646\u0634\u0648\u062F\u061B \u062A\u0627 max_hold \u06CC\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u0627\u06AF\u0631 Hurst \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647 \u0628\u0631\u06AF\u0634\u062A (\u0631\u0698\u06CC\u0645 \u0631\u0648\u0646\u062F\u06CC \u0634\u062F)\u060C \u067E\u06CC\u0634\u200C\u062F\u0633\u062A\u0627\u0646\u0647 \u0628\u0628\u0646\u062F.",
+    filters: [`Z-Score(${cfg.zWin})>${cfg.zThr}`, `RSI-14>${cfg.rsiThr}`, "\u06A9\u0646\u062F\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC\u0650 \u0646\u0632\u0648\u0644\u06CC", `Hurst64<${cfg.hurstMax}`, `Kurtosis20<${cfg.kurtMax}`]
+  }, cfg.id, a.price, reg, capital, riskPct);
 }
 
 // ../web_tool/src/s333_pullback.ts
@@ -5821,8 +5918,454 @@ function decideS333(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
 }
 
-// ../web_tool/src/strategy_registry.ts
+// ../web_tool/src/s335_reflex_cycle.ts
+function ssfArr(x, period) {
+  const n = x.length;
+  const out = new Array(n).fill(0);
+  const a = Math.exp(-1.414 * Math.PI / period);
+  const b = 2 * a * Math.cos(1.414 * Math.PI / period);
+  const c2 = b, c3 = -a * a, c1 = 1 - c2 - c3;
+  for (let i = 0; i < n; i++) {
+    if (i < 2) out[i] = x[i];
+    else out[i] = c1 * (x[i] + x[i - 1]) / 2 + c2 * out[i - 1] + c3 * out[i - 2];
+  }
+  return out;
+}
+function flexSeries(close, period, trend) {
+  const n = close.length;
+  const ssf = ssfArr(close, period / 2);
+  const out = new Array(n).fill(0);
+  let ms = 0;
+  for (let i = period; i < n; i++) {
+    let s;
+    if (trend) {
+      let sum = 0;
+      for (let k = 1; k <= period; k++) sum += ssf[i] - ssf[i - k];
+      s = sum / period;
+    } else {
+      const slope = (ssf[i - period] - ssf[i]) / period;
+      let sum = 0;
+      for (let k = 1; k <= period; k++) sum += ssf[i] + k * slope - ssf[i - k];
+      s = sum / period;
+    }
+    ms = 0.04 * s * s + 0.96 * ms;
+    out[i] = ms ? s / Math.sqrt(ms) : 0;
+  }
+  return out;
+}
+function reflexSeries(close, period = 20) {
+  return flexSeries(close, period, false);
+}
+function trendflexSeries(close, period = 20) {
+  return flexSeries(close, period, true);
+}
+function r2Series2(close, period = 20) {
+  const n = close.length;
+  const out = new Array(n).fill(NaN);
+  let st = 0, stt = 0;
+  for (let t = 0; t < period; t++) {
+    st += t;
+    stt += t * t;
+  }
+  for (let i = period - 1; i < n; i++) {
+    let sy = 0, sxy = 0, syy = 0;
+    for (let t = 0; t < period; t++) {
+      const y = close[i - (period - 1) + t];
+      sy += y;
+      sxy += t * y;
+      syy += y * y;
+    }
+    const num = period * sxy - st * sy;
+    const den = (period * stt - st * st) * (period * syy - sy * sy);
+    const r = den > 0 ? num / Math.sqrt(den) : 0;
+    out[i] = r * r;
+  }
+  return out;
+}
+function hurstSeries2(close, period = 64) {
+  const n = close.length;
+  const out = new Array(n).fill(NaN);
+  const ret = new Array(n).fill(0);
+  for (let i = 1; i < n; i++) ret[i] = close[i - 1] !== 0 ? Math.log(close[i] / close[i - 1]) : 0;
+  const logP = Math.log(period);
+  for (let i = period; i < n; i++) {
+    let m = 0;
+    for (let k = 0; k < period; k++) m += ret[i - period + 1 + k];
+    m /= period;
+    let cum = 0, mn = Infinity, mx = -Infinity, s2 = 0;
+    for (let k = 0; k < period; k++) {
+      const dev = ret[i - period + 1 + k] - m;
+      cum += dev;
+      if (cum < mn) mn = cum;
+      if (cum > mx) mx = cum;
+      s2 += dev * dev;
+    }
+    const sd = Math.sqrt(s2 / period), R = mx - mn;
+    out[i] = sd && R > 0 ? Math.log(R / sd) / logP : 0.5;
+  }
+  return out;
+}
+function chopSeries(c, period = 14) {
+  const n = c.length;
+  const out = new Array(n).fill(NaN);
+  const tr = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    const hl = c[i].high - c[i].low;
+    if (i === 0) {
+      tr[i] = hl;
+      continue;
+    }
+    const pc = c[i - 1].close;
+    tr[i] = Math.max(hl, Math.abs(c[i].high - pc), Math.abs(c[i].low - pc));
+  }
+  const logP = Math.log10(period);
+  for (let i = period - 1; i < n; i++) {
+    let sumTr = 0;
+    let hh = -Infinity, ll = Infinity;
+    for (let k = 0; k < period; k++) {
+      sumTr += tr[i - k];
+      if (c[i - k].high > hh) hh = c[i - k].high;
+      if (c[i - k].low < ll) ll = c[i - k].low;
+    }
+    const rng = hh - ll;
+    out[i] = rng > 0 ? 100 * Math.log10(sumTr / rng) / logP : NaN;
+  }
+  return out;
+}
+var S335_CFG = {
+  "XAUUSD-M5": {
+    id: "XAUUSD-M5",
+    tfFa: "M5",
+    trigger: "zero_up",
+    pRf: 21,
+    pTf: 34,
+    pHu: 55,
+    pR2: 21,
+    pChop: 21,
+    rfDip: 1,
+    tfMin: 0.2,
+    huMin: 0.53,
+    r2Min: null,
+    chopMax: 38.2,
+    slPip: 170,
+    tpPip: 255,
+    maxHoldBars: 60
+  },
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tfFa: "M15",
+    trigger: "dip_turn",
+    pRf: 21,
+    pTf: 34,
+    pHu: 55,
+    pR2: 21,
+    pChop: 21,
+    rfDip: 1,
+    tfMin: 0.5,
+    huMin: 0.5,
+    r2Min: 0.55,
+    chopMax: null,
+    slPip: 200,
+    tpPip: 340,
+    maxHoldBars: 64
+  },
+  "XAUUSD-H1": {
+    id: "XAUUSD-H1",
+    tfFa: "H1",
+    trigger: "dip_turn",
+    pRf: 21,
+    pTf: 34,
+    pHu: 55,
+    pR2: 21,
+    pChop: 21,
+    rfDip: 1,
+    tfMin: 0.5,
+    huMin: 0.5,
+    r2Min: null,
+    chopMax: 38.2,
+    slPip: 480,
+    tpPip: 720,
+    maxHoldBars: 40
+  }
+};
+function computeS335(candles, cfg) {
+  const need = Math.max(cfg.pHu, cfg.pTf, cfg.pR2, cfg.pChop) + 5;
+  const idle = (reason) => ({
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist: 0,
+    tpDist: 0,
+    maxHoldBars: cfg.maxHoldBars,
+    reason,
+    indicators: []
+  });
+  if (candles.length < need) return idle("\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u0654 \u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631\u0647\u0627\u06CC \u0686\u0631\u062E\u0647 \u0647\u0646\u0648\u0632 \u0641\u0631\u0627\u0647\u0645 \u0646\u06CC\u0633\u062A.");
+  const close = candles.map((c) => c.close);
+  const reflex = reflexSeries(close, cfg.pRf);
+  const tflex = trendflexSeries(close, cfg.pTf);
+  const hurst = hurstSeries2(close, cfg.pHu);
+  const r2 = cfg.r2Min != null ? r2Series2(close, cfg.pR2) : null;
+  const chop = cfg.chopMax != null ? chopSeries(candles, cfg.pChop) : null;
+  const i = candles.length - 1;
+  const rNow = reflex[i], rPrev = reflex[i - 1];
+  const tfNow = tflex[i], huNow = hurst[i];
+  const r2Now = r2 ? r2[i] : NaN;
+  const chopNow = chop ? chop[i] : NaN;
+  const tfOk = Number.isFinite(tfNow) && tfNow > cfg.tfMin;
+  const huOk = Number.isFinite(huNow) && huNow > cfg.huMin;
+  const r2Ok = cfg.r2Min == null ? true : Number.isFinite(r2Now) && r2Now > cfg.r2Min;
+  const chopOk = cfg.chopMax == null ? true : Number.isFinite(chopNow) && chopNow < cfg.chopMax;
+  const regimeOk = tfOk && huOk && r2Ok && chopOk;
+  let trigOk = false;
+  if (Number.isFinite(rNow) && Number.isFinite(rPrev)) {
+    if (cfg.trigger === "zero_up") trigOk = rPrev <= 0 && rNow > 0;
+    else trigOk = rPrev <= -cfg.rfDip && rNow > rPrev;
+  }
+  const indicators = [
+    {
+      name: "TrendFlex (\u0631\u0648\u0646\u062F)",
+      value: Number.isFinite(tfNow) ? tfNow.toFixed(2) : "\u2014",
+      status: tfOk ? "ok" : "bad"
+    },
+    {
+      name: "Hurst (\u062D\u0627\u0641\u0638\u0647\u0654 \u0631\u0648\u0646\u062F)",
+      value: Number.isFinite(huNow) ? huNow.toFixed(2) : "\u2014",
+      status: huOk ? "ok" : "bad"
+    },
+    {
+      name: "Reflex (\u0686\u0631\u062E\u0647)",
+      value: Number.isFinite(rNow) ? rNow.toFixed(2) : "\u2014",
+      status: trigOk ? "ok" : "neutral"
+    }
+  ];
+  if (cfg.r2Min != null) indicators.push(
+    {
+      name: "R\xB2 (\u062E\u0637\u06CC\u200C\u0628\u0648\u062F\u0646\u0650 \u0631\u0648\u0646\u062F)",
+      value: Number.isFinite(r2Now) ? r2Now.toFixed(2) : "\u2014",
+      status: r2Ok ? "ok" : "bad"
+    }
+  );
+  if (cfg.chopMax != null) indicators.push(
+    {
+      name: "Choppiness",
+      value: Number.isFinite(chopNow) ? chopNow.toFixed(1) : "\u2014",
+      status: chopOk ? "ok" : "bad"
+    }
+  );
+  const slDist = cfg.slPip * 0.1;
+  const tpDist = cfg.tpPip * 0.1;
+  if (regimeOk && trigOk) {
+    const trigTxt = cfg.trigger === "zero_up" ? "reflex \u0627\u0632 \u0632\u06CC\u0631\u0650 \u0635\u0641\u0631 \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u0635\u0641\u0631 \u0639\u0628\u0648\u0631 \u06A9\u0631\u062F (\u0634\u0631\u0648\u0639\u0650 \u0641\u0627\u0632\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0686\u0631\u062E\u0647)" : `reflex \u0627\u0632 \u06A9\u0641\u0650 \u0686\u0631\u062E\u0647 (\u0632\u06CC\u0631\u0650 ${(-cfg.rfDip).toFixed(1)}) \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627 \u0628\u0631\u06AF\u0634\u062A`;
+    return {
+      active: true,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHoldBars,
+      reason: `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0645\u200C\u062A\u0623\u062E\u06CC\u0631 \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A (TrendFlex=${tfNow.toFixed(2)}>0\u060C Hurst=${huNow.toFixed(2)}) \u0648 ${trigTxt} \u21D2 \u062E\u0631\u06CC\u062F\u0650 \u06A9\u0641\u0650 \u0686\u0631\u062E\u0647.`,
+      indicators
+    };
+  }
+  if (regimeOk && !trigOk) {
+    const wait = cfg.trigger === "zero_up" ? "\u0645\u0646\u062A\u0638\u0631\u0650 \u0639\u0628\u0648\u0631\u0650 reflex \u0627\u0632 \u0635\u0641\u0631 \u0628\u0647 \u0628\u0627\u0644\u0627 (\u067E\u0627\u06CC\u0627\u0646\u0650 \u0641\u0627\u0632\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0686\u0631\u062E\u0647) \u0628\u0627\u0634\u06CC\u062F." : `\u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0631\u06AF\u0634\u062A\u0650 reflex \u0627\u0632 \u06A9\u0641 (\u0632\u06CC\u0631\u0650 ${(-cfg.rfDip).toFixed(1)}) \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627 \u0628\u0627\u0634\u06CC\u062F.`;
+    return {
+      active: false,
+      approaching: true,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHoldBars,
+      reason: `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0645\u200C\u062A\u0623\u062E\u06CC\u0631 \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A \u0627\u0645\u0627 \u0686\u0631\u062E\u0647\u0654 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u0647\u0646\u0648\u0632 \u06A9\u0641 \u0646\u0632\u062F\u0647. Reflex \u0641\u0639\u0644\u06CC=${Number.isFinite(rNow) ? rNow.toFixed(2) : "\u2014"}.`,
+      approachReason: wait,
+      indicators
+    };
+  }
+  const bad = [];
+  if (!tfOk) bad.push("TrendFlex \u0647\u0646\u0648\u0632 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u0646\u06A9\u0631\u062F\u0647");
+  if (!huOk) bad.push("Hurst \u067E\u0627\u06CC\u06CC\u0646 \u0627\u0633\u062A (\u0628\u0627\u0632\u0627\u0631\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC/\u0646\u0648\u06CC\u0632\u06CC)");
+  if (!r2Ok) bad.push("R\xB2 \u067E\u0627\u06CC\u06CC\u0646 \u0627\u0633\u062A (\u0631\u0648\u0646\u062F\u0650 \u063A\u06CC\u0631\u062E\u0637\u06CC)");
+  if (!chopOk) bad.push("Choppiness \u0628\u0627\u0644\u0627\u0633\u062A (\u0628\u0627\u0632\u0627\u0631\u0650 \u0631\u0646\u062C)");
+  return {
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHoldBars,
+    reason: `\u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06AF\u06CC\u0631\u0645 \u0686\u0648\u0646: ${bad.join(" \xB7 ")}.`,
+    indicators
+  };
+}
+function decideS335(cfg, a, candles, capital, riskPct) {
+  const raw2 = computeS335(candles, cfg);
+  const price = candles.length ? candles[candles.length - 1].close : 0;
+  const reg = a && a.regime ? a.regime : { label: "\u0631\u0648\u0646\u062F\u06CC", kind: "trend" };
+  const filters = [
+    `TrendFlex>${cfg.tfMin}`,
+    `Hurst>${cfg.huMin}`,
+    ...cfg.r2Min != null ? [`R\xB2>${cfg.r2Min}`] : [],
+    ...cfg.chopMax != null ? [`Chop<${cfg.chopMax}`] : [],
+    cfg.trigger === "zero_up" ? "Reflex zero-up" : `Reflex dip-turn(${cfg.rfDip})`
+  ];
+  const meta = {
+    code: "S335",
+    name: "\u0686\u0631\u062E\u0634\u0650 \u0686\u0631\u062E\u0647\u0654 \u0627\u0650\u0647\u0644\u0631\u0632 (Reflex-TrendFlex)",
+    kind: "trend",
+    manageStyle: "fixed-tp-sl",
+    manageNote: "TP/SL \u062B\u0627\u0628\u062A\u0650 per-TF (\u063A\u06CC\u0631\u0631\u0646\u062F). \u062E\u0631\u0648\u062C \u0628\u0627 TP/TP \u06CC\u0627 \u0633\u0642\u0641\u0650 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC.",
+    filters
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/micro_channel_s340.ts
 var GOLD_PIP4 = 0.1;
+var S340_CFG = {
+  "XAUUSD-H4": {
+    id: "XAUUSD-H4",
+    tfFa: "H4",
+    kMin: 3,
+    kMax: 7,
+    emaFast: 8,
+    emaSlow: 21,
+    bodyMin: 0.4,
+    closePosMin: 0.45,
+    overlapMax: 0.7,
+    slPip: 520,
+    tpPip: 780,
+    maxHold: 20,
+    rqs: 92.6
+  }
+};
+function computeS340(candles, cfg) {
+  const n = candles.length;
+  const o = candles.map((c2) => c2.open);
+  const h = candles.map((c2) => c2.high);
+  const l = candles.map((c2) => c2.low);
+  const c = candles.map((x) => x.close);
+  const slDist = cfg.slPip * GOLD_PIP4;
+  const tpDist = cfg.tpPip * GOLD_PIP4;
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  const need = cfg.kMax + 3;
+  if (n < need + cfg.emaSlow) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u0634\u062E\u06CC\u0635\u0650 micro channel \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
+      indicators: emptyInd
+    };
+  }
+  const ef = ema(c, cfg.emaFast);
+  const es = ema(c, cfg.emaSlow);
+  const rng = (idx) => Math.max(h[idx] - l[idx], 1e-9);
+  const body2 = (idx) => c[idx] - o[idx];
+  const bodyFrac = (idx) => Math.abs(body2(idx)) / rng(idx);
+  const i = n - 1;
+  const trendUp = isFinite(ef[i]) && isFinite(es[i]) && ef[i] > es[i];
+  const isPullback = l[i] < l[i - 1];
+  const closePos = (c[i] - l[i]) / rng(i);
+  const failed = isPullback && closePos >= cfg.closePosMin;
+  let mcLen = 0;
+  let strongBody = 0;
+  let j = i - 1;
+  while (j >= 1) {
+    const asc = h[j] > h[j - 1] && l[j] >= l[j - 1];
+    if (!asc) break;
+    const ovLo = Math.max(l[j], l[j - 1]);
+    const ovHi = Math.min(h[j], h[j - 1]);
+    const overlap = Math.max(0, ovHi - ovLo) / rng(j);
+    if (overlap > cfg.overlapMax) break;
+    mcLen += 1;
+    if (body2(j) > 0 && bodyFrac(j) >= 0.35) strongBody += 1;
+    j -= 1;
+  }
+  const lenOk = mcLen >= cfg.kMin && mcLen <= cfg.kMax;
+  const bodyOk = mcLen > 0 && strongBody / mcLen >= cfg.bodyMin;
+  const active = trendUp && failed && lenOk && bodyOk;
+  const approaching = !active && trendUp && lenOk && bodyOk && !failed;
+  const indicators = [
+    {
+      name: "\u0631\u0698\u06CC\u0645\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA8 > EMA21)",
+      value: trendUp ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u063A\u06CC\u0631\u0635\u0639\u0648\u062F\u06CC \u2718",
+      status: trendUp ? "ok" : "bad"
+    },
+    {
+      name: `\u0637\u0648\u0644\u0650 micro channel \u062F\u0631 \u0628\u0627\u0632\u0647\u0654 [${cfg.kMin},${cfg.kMax}]`,
+      value: `${mcLen} \u06A9\u0646\u062F\u0644` + (lenOk ? " \u2714" : " \u2718"),
+      status: lenOk ? "ok" : "neutral"
+    },
+    {
+      name: `\u0628\u062F\u0646\u0647\u200C\u0647\u0627\u06CC \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC \u2265 ${Math.round(cfg.bodyMin * 100)}\u066A`,
+      value: mcLen > 0 ? `${Math.round(100 * strongBody / mcLen)}\u066A` + (bodyOk ? " \u2714" : " \u2718") : "\u2014",
+      status: bodyOk ? "ok" : "neutral"
+    },
+    {
+      name: `failed pullback (\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 close\u060C (c-l)/rng \u2265 ${cfg.closePosMin})`,
+      value: isPullback ? closePos.toFixed(2) + (failed ? " \u2714" : " \u2718") : "\u0628\u062F\u0648\u0646\u0650 pullback",
+      status: failed ? "ok" : "neutral"
+    }
+  ];
+  let reason;
+  if (active) {
+    reason = `micro channel\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 ${mcLen}\u200C\u06A9\u0646\u062F\u0644\u06CC + \u0634\u06A9\u0633\u062A\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0627\u0648\u0644 \u06A9\u0647 fail \u0634\u062F (close \u0628\u0631\u06AF\u0634\u062A \u0628\u0627\u0644\u0627) \u21D2 \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F.`;
+  } else if (approaching) {
+    reason = `micro channel\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 ${mcLen}\u200C\u06A9\u0646\u062F\u0644\u06CC \u0645\u0639\u062A\u0628\u0631 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06CC\u06A9 pullback\u0650 \u06A9\u0648\u0686\u06A9 \u06A9\u0647 fail \u0634\u0648\u062F (close \u0646\u0632\u062F\u06CC\u06A9\u0650 \u0628\u0627\u0644\u0627 \u0628\u0628\u0646\u062F\u062F) \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F.`;
+  } else if (!trendUp) {
+    reason = "\u0631\u0698\u06CC\u0645\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A (EMA8 \u2264 EMA21) \u2014 micro channel\u0650 \u0635\u0639\u0648\u062F\u06CC \u0645\u0639\u0646\u0627 \u0646\u062F\u0627\u0631\u062F.";
+  } else if (!lenOk) {
+    reason = mcLen > cfg.kMax ? `\u0631\u0634\u062A\u0647\u0654 \u0635\u0639\u0648\u062F\u06CC ${mcLen} \u06A9\u0646\u062F\u0644 \u0627\u0633\u062A (\u0628\u06CC\u0634 \u0627\u0632 ${cfg.kMax}) \u2014 \u0627\u062D\u062A\u0645\u0627\u0644\u0650 climax/\u0628\u0631\u06AF\u0634\u062A\u061B \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.` : `micro channel\u0650 \u0641\u0634\u0631\u062F\u0647\u200C\u0627\u06CC (\u062D\u062F\u0627\u0642\u0644 ${cfg.kMin} \u06A9\u0646\u062F\u0644) \u0647\u0646\u0648\u0632 \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u0647 \u0627\u0633\u062A.`;
+  } else {
+    reason = "\u0628\u062F\u0646\u0647\u200C\u0647\u0627\u06CC micro channel \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u0642\u0648\u06CC/\u0635\u0639\u0648\u062F\u06CC \u0646\u06CC\u0633\u062A\u0646\u062F.";
+  }
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? "\u0645\u0646\u062A\u0638\u0631\u0650 \u0627\u0648\u0644\u06CC\u0646 pullback\u0650 \u06A9\u0648\u0686\u06A9 \u06A9\u0647 fail \u0634\u0648\u062F (\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 close \u0646\u0632\u062F\u06CC\u06A9\u0650 \u0628\u0627\u0644\u0627)" : void 0,
+    indicators
+  };
+}
+function decideS340(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS340(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s340_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S340",
+    name: `\u06A9\u0627\u0646\u0627\u0644\u0650 \u0631\u06CC\u0632\u0650 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F (Brooks Micro-Channel \xB7 ${cfg.tfFa})`,
+    kind: "micro_channel",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 ${cfg.tfFa} (${cfg.tpPip}/${cfg.slPip} pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u061B \u0627\u06AF\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0635\u0639\u0648\u062F\u06CC (EMA8>EMA21) \u0645\u0639\u06A9\u0648\u0633 \u0634\u062F \u06CC\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0631\u06AF\u0634\u062A\u06CC\u0650 \u0642\u0648\u06CC \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 pullback \u0628\u0633\u062A\u0647 \u0634\u062F\u060C \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0627 \u0628\u0633\u0646\u062C.`,
+    filters: [
+      "\u0631\u0698\u06CC\u0645\u0650 \u0635\u0639\u0648\u062F\u06CC EMA8>EMA21",
+      `\u0637\u0648\u0644\u0650 micro channel \u2208 [${cfg.kMin},${cfg.kMax}] (\u0646\u0647 climax)`,
+      `\u0628\u062F\u0646\u0647\u200C\u0647\u0627\u06CC \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC \u2265 ${Math.round(cfg.bodyMin * 100)}\u066A`,
+      "failed downside breakout (\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 close)"
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/strategy_registry.ts
+var GOLD_PIP5 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
   return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
 }
@@ -5895,8 +6438,8 @@ var s310Layer = (ctx) => {
     active,
     approaching,
     direction: "LONG",
-    slDist: EOM_SL_PIP * GOLD_PIP4,
-    tpDist: EOM_TP_PIP * GOLD_PIP4,
+    slDist: EOM_SL_PIP * GOLD_PIP5,
+    tpDist: EOM_TP_PIP * GOLD_PIP5,
     maxHoldBars: EOM_MAX_HOLD,
     reason: sig.reason,
     approachReason: approaching ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647` : void 0,
@@ -5934,8 +6477,8 @@ function s312Layer(slPip, tpPip, maxHold) {
       active,
       approaching,
       direction: "LONG",
-      slDist: slPip * GOLD_PIP4,
-      tpDist: tpPip * GOLD_PIP4,
+      slDist: slPip * GOLD_PIP5,
+      tpDist: tpPip * GOLD_PIP5,
       maxHoldBars: maxHold,
       reason: sig.reason,
       approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
@@ -5978,12 +6521,19 @@ var s328Layer = (cfg) => (ctx) => decideS328(cfg, ctx.a, ctx.candles, ctx.capita
 var s330Layer = (cfg) => (ctx) => decideS330(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s332Layer = (cfg) => (ctx) => decideS332(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s333Layer = (cfg) => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s334Layer = (cfg) => (ctx) => decideS334(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s335Layer = (cfg) => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
     s333Layer(S333_CFG["XAUUSD-M5"]),
     // احیای S79 — pullback با هندسهٔ منصفانه + rsi_turn — RQS+=91.3 (WR 65.6% · PF 2.85)
     s330Layer(S330_CFG["XAUUSD-M5"]),
     s328Layer(S328_CFG["XAUUSD-M5"]),
+    s334Layer(S334_CFG["XAUUSD-M5"]),
+    // احیای s122 — MR-fade فروش + گیتِ Hurst<0.5/Kurt<1.8 — RQS+=81.6 (WR 61.7% · PF 1.61)
+    s335Layer(S335_CFG["XAUUSD-M5"]),
+    // S335 — Reflex zero-up چرخهٔ اِهلرز، خریدِ کفِ چرخه — RQS+=92.2 (WR 62.7% · PF 2.22) · همپوشانیِ صفر با S333
     s327Layer(SELL_CLIMAX_CFG["XAUUSD-M5"]),
     s326Layer(STREAK_REV_CFG["XAUUSD-M5"])
   ],
@@ -5995,6 +6545,8 @@ var CARD_LAYERS = {
     s324Layer(S324_CFG["XAUUSD-M15"]),
     s322Layer(S322_CFG["XAUUSD-M15"]),
     s323Layer(S323_CFG["XAUUSD-M15"]),
+    s335Layer(S335_CFG["XAUUSD-M15"]),
+    // S335 — Reflex dip-turn + گیتِ r2>0.55 — RQS+=89.7 (WR 60.0% · PF 2.08) · همپوشانیِ صفر با S333
     s310Layer,
     s312Layer(295, 295, 48)
   ],
@@ -6016,12 +6568,20 @@ var CARD_LAYERS = {
     s328Layer(S328_CFG["XAUUSD-H1"]),
     s327Layer(SELL_CLIMAX_CFG["XAUUSD-H1"]),
     s323Layer(S323_CFG["XAUUSD-H1"]),
+    s335Layer(S335_CFG["XAUUSD-H1"]),
+    // S335 — Reflex dip-turn + گیتِ Chop<38.2 — RQS+=89.7 (WR 61.2% · PF 1.85) · همپوشانیِ صفر با S333
     s312Layer(395, 395, 24)
   ],
   "XAUUSD-H4": [
+    s340Layer(S340_CFG["XAUUSD-H4"]),
+    // S340 — Brooks Micro-Channel، ادامهٔ روند/failed-pullback — RQS+=92.6 (WR 65.6% · PF 2.13) · همپوشانی S327=0%/S332=8.2%
     s332Layer(S332_CFG["XAUUSD-H4"]),
     // احیای squeeze با فیلترِ ADX/DI — RQS+=92.1
     s327Layer(SELL_CLIMAX_CFG["XAUUSD-H4"])
+  ],
+  "EURUSD-M5": [
+    s334Layer(S334_CFG["EURUSD-M5"])
+    // احیای s122 — MR-fade فروش + گیتِ Hurst<0.52/Kurt<2.2 — RQS+=84.1 (WR 66.7% · PF 1.62)
   ],
   "EURUSD-M15": [
     s326Layer(STREAK_REV_CFG["EURUSD-M15"])
