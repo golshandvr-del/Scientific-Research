@@ -286,5 +286,5 @@ export function decideS344(
     ],
   }
 
-  return rawToDecision(raw, a, capital, riskPct, reg, meta)
+  return rawToDecision(raw, meta, cfg.id, a.price, reg, capital, riskPct)
 }
