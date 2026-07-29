@@ -1,0 +1,146 @@
+{
+ "XAU_M15_long_A": {
+  "config": {
+   "name": "XAU_M15_long_A",
+   "asset": "XAUUSD",
+   "tf": "M15",
+   "side": "long",
+   "n_open": 4,
+   "k_spike": 1.1,
+   "slope_min": 0.05,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "r2_lo",
+   "sl": 240,
+   "tp": 400,
+   "maxhold": 40
+  },
+  "signals_total": 165,
+  "overlap_with_time_layers_pct": 48.5,
+  "full": {
+   "rqs": 89.8,
+   "passed": true,
+   "gates": "111111",
+   "n": 113,
+   "wr": 61.06,
+   "pf": 2.198,
+   "net": 2534.8
+  },
+  "independent": {
+   "rqs": 31.3,
+   "passed": false,
+   "gates": "111101",
+   "n": 60,
+   "wr": 65.0,
+   "pf": 2.556,
+   "net": 1530.7
+  },
+  "overlapping_part": {
+   "rqs": 30.0,
+   "passed": false,
+   "gates": "011111",
+   "n": 53,
+   "wr": 56.6,
+   "pf": 1.732,
+   "net": 768.8
+  }
+ },
+ "XAU_M15_long_B": {
+  "config": {
+   "name": "XAU_M15_long_B",
+   "asset": "XAUUSD",
+   "tf": "M15",
+   "side": "long",
+   "n_open": 4,
+   "k_spike": 1.1,
+   "slope_min": 0.05,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": "r2_lo",
+   "sl": 240,
+   "tp": 400,
+   "maxhold": 40
+  },
+  "signals_total": 214,
+  "overlap_with_time_layers_pct": 45.3,
+  "full": {
+   "rqs": 89.6,
+   "passed": true,
+   "gates": "111111",
+   "n": 154,
+   "wr": 61.04,
+   "pf": 2.044,
+   "net": 3326.2
+  },
+  "independent": {
+   "rqs": 32.8,
+   "passed": false,
+   "gates": "111101",
+   "n": 84,
+   "wr": 63.1,
+   "pf": 2.264,
+   "net": 2024.2
+  },
+  "overlapping_part": {
+   "rqs": 30.1,
+   "passed": false,
+   "gates": "011111",
+   "n": 70,
+   "wr": 58.57,
+   "pf": 1.766,
+   "net": 1105.5
+  }
+ },
+ "XAU_M15_long_C": {
+  "config": {
+   "name": "XAU_M15_long_C",
+   "asset": "XAUUSD",
+   "tf": "M15",
+   "side": "long",
+   "n_open": 4,
+   "k_spike": 1.1,
+   "slope_min": 0.05,
+   "win": [
+    0.3,
+    0.75
+   ],
+   "reg": "r2_lo",
+   "sl": 240,
+   "tp": 400,
+   "maxhold": 40
+  },
+  "signals_total": 198,
+  "overlap_with_time_layers_pct": 44.4,
+  "full": {
+   "rqs": 88.7,
+   "passed": true,
+   "gates": "111111",
+   "n": 141,
+   "wr": 60.28,
+   "pf": 2.04,
+   "net": 3061.4
+  },
+  "independent": {
+   "rqs": 32.8,
+   "passed": false,
+   "gates": "111101",
+   "n": 78,
+   "wr": 62.82,
+   "pf": 2.362,
+   "net": 1961.1
+  },
+  "overlapping_part": {
+   "rqs": 28.3,
+   "passed": false,
+   "gates": "011111",
+   "n": 63,
+   "wr": 57.14,
+   "pf": 1.618,
+   "net": 840.6
+  }
+ }
+}
