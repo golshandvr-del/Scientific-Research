@@ -163,8 +163,11 @@ def run(card='XAUUSD-H1'):
 
 
 if __name__ == '__main__':
-    r, tr = run('XAUUSD-H1')
-    print(rqs.format_report('S341_XAU_H1_revived', r))
-    m = r['metrics']
-    print(f"  net=${m.get('net_profit',0):.0f}  n={m.get('n_trades',0)}  "
-          f"WR={m.get('win_rate',0):.1f}%  PF={m.get('profit_factor',0):.2f}  passed={r['passed']}")
+    import sys
+    cards = sys.argv[1:] or list(CONFIG.keys())
+    for card in cards:
+        r, tr = run(card)
+        print(rqs.format_report(f'S341_{card}', r))
+        m = r['metrics']
+        print(f"  net=${m.get('net_profit',0):.0f}  n={m.get('n_trades',0)}  "
+              f"WR={m.get('win_rate',0):.1f}%  PF={m.get('profit_factor',0):.2f}  passed={r['passed']}")
