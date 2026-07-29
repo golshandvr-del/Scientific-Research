@@ -246,11 +246,11 @@ SL250/TP375):** سهمِ مستقلِ کلِ پرتفوی net=**+$2,140**، WR �
 | 15 | Channels | II | ⬜ |
 | 16 | Micro Channels | II | ⬜ |
 | 17 | Horizontal Lines: Swing Points | II | ⬜ |
-| 18 | Example of How to Trade a Trend | III | ⬜ |
+| 18 | Example of How to Trade a Trend | III | ⛔ **S342** رد (مرحلهٔ ۲۲، MA-return با-روند — سقفِ WR≈۵۹٪) |
 | **19** | **Signs of Strength** | III | ✅ **S171** (نشست ۴) |
 | **20** | **Two Legs** | III | ✅ **S172** (نشست ۵/قبلی) |
 | **21** | **Spike and Channel Trend** | IV | ⛔ **S169** رد (نشست ۲) |
-| 22 | Trending Trading Range Days | IV | ⬜ |
+| 22 | Trending Trading Range Days | IV | 🔬 **S343** (مرحلهٔ ۲۳ — measured-move fade — در حالِ بررسی) ◀ **نشستِ جاری** |
 | 23 | Trend from the Open & Small Pullback Trends | IV | ⬜ |
 | 24 | Reversal Day | IV | ⬜ |
 | 25 | Trend Resumption Day | IV | ⬜ |
