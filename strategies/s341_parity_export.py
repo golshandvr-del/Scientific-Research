@@ -13,9 +13,10 @@ import numpy as np
 from strategies.s341_brooks_swing_levels import load_tf
 from strategies.s341_swing_fade_h1_revived import CONFIG, swing_fade_confluence_signals
 
-def main():
-    cfg = CONFIG['XAUUSD-H1']
-    df = load_tf('XAUUSD', 'H1')
+def export_card(card):
+    asset, tf = card.split('-')
+    cfg = CONFIG[card]
+    df = load_tf(asset, tf)
     sig = swing_fade_confluence_signals(df, cfg)
     idx = [int(i) for i in np.where(sig)[0]]
     candles = [
@@ -27,12 +28,21 @@ def main():
          'volume': float(df['volume'].iloc[i]) if 'volume' in df.columns else 0.0}
         for i in range(len(df))
     ]
-    out = {'cfg': {k: cfg[k] for k in cfg if isinstance(cfg[k], (int, float, str, bool))},
+    out = {'card': card,
+           'cfg': {k: cfg[k] for k in cfg if isinstance(cfg[k], (int, float, str, bool))},
            'n': len(df), 'signal_idx': idx, 'candles': candles}
-    with open('strategies/s341_parity_ref.json', 'w') as f:
+    # نامِ فایل: H1 → همان s341_parity_ref.json (سازگاریِ عقب‌رو)؛ بقیه → per-card
+    fn = 'strategies/s341_parity_ref.json' if card == 'XAUUSD-H1' \
+         else f'strategies/s341_parity_ref_{card}.json'
+    with open(fn, 'w') as f:
         json.dump(out, f)
-    print(f'exported n={len(df)} candles, {len(idx)} active-signal bars -> strategies/s341_parity_ref.json')
-    print('first 10 signal idx:', idx[:10])
+    print(f'[{card}] exported n={len(df)} candles, {len(idx)} active-signal bars -> {fn}')
+    print(f'[{card}] first 10 signal idx:', idx[:10])
+
+def main():
+    cards = sys.argv[1:] or ['XAUUSD-M5', 'XAUUSD-M15', 'XAUUSD-M30', 'XAUUSD-H1']
+    for card in cards:
+        export_card(card)
 
 if __name__ == '__main__':
     main()
