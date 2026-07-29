@@ -34,24 +34,60 @@ const GOLD_PIP = 0.1
 export interface S341Config {
   id: string            // XAUUSD-H1
   tfFa: string
-  w: number             // 4 — نیم‌پنجرهٔ فراکتال
-  bufFrac: number       // 0.05 — بافرِ ATR برای «واقعا زیرِ سطح رفته»
-  stretch: number       // 0.7 — |ema_dist_atr| حداقل (کششِ مغناطیسی)
-  exh: number           // 0.25 — |ifish_rsi| حداقل (خستگی)
-  chopMin: number       // 61.8
-  r2Max: number         // 0.22
-  erMax: number         // 0.16
-  erP: number           // 11 (Kaufman ER lucas)
-  slPip: number         // 520
-  tpPip: number         // 1550
-  maxHold: number       // 16
+  w: number             // نیم‌پنجرهٔ فراکتال
+  bufFrac: number       // بافرِ ATR برای «واقعا زیرِ سطح رفته»
+  // فیلترهای جعبه‌ابزار (H1). برای M5/M15/M30 استفاده نمی‌شوند (useStretch/useExh=false).
+  useStretch: boolean   // آیا گیتِ کششِ مغناطیسی اعمال شود؟
+  stretch: number       // |ema_dist_atr| حداقل (وقتی useStretch)
+  useExh: boolean       // آیا گیتِ خستگی اعمال شود؟
+  exh: number           // |ifish_rsi| حداقل (وقتی useExh)
+  requireSecond: boolean // سیگنالِ دوم (Brooks: «fade of a SECOND ... is even more likely»)
+  secondLookback: number // پنجرهٔ شمارشِ سیگنالِ دوم (کندل) — پیش‌فرض ۴۰
+  chopMin: number
+  r2Max: number
+  erMax: number
+  erP: number           // Kaufman ER lucas period
+  slPip: number
+  tpPip: number
+  maxHold: number
   rqs: number
 }
 
+// پیکربندیِ چند-تایم‌فریمی — دقیقاً منطبق بر strategies/s341_swing_fade_h1_revived.py:CONFIG
 export const S341_CFG: Record<string, S341Config> = {
+  // RQS+=94.7 | WR 70.8% | PF 2.22 — رژیمِ رنجِ سفت + سیگنالِ دوم (بدونِ فیلترِ کشش)
+  'XAUUSD-M5': {
+    id: 'XAUUSD-M5', tfFa: 'M5',
+    w: 4, bufFrac: 0.05,
+    useStretch: false, stretch: 0, useExh: false, exh: 0,
+    requireSecond: true, secondLookback: 40,
+    chopMin: 61.8, r2Max: 0.22, erMax: 0.16, erP: 11,
+    slPip: 180, tpPip: 260, maxHold: 48, rqs: 94.7,
+  },
+  // RQS+=89.8 | WR 65.0% | PF 1.83
+  'XAUUSD-M15': {
+    id: 'XAUUSD-M15', tfFa: 'M15',
+    w: 4, bufFrac: 0.15,
+    useStretch: false, stretch: 0, useExh: false, exh: 0,
+    requireSecond: true, secondLookback: 40,
+    chopMin: 61.8, r2Max: 0.22, erMax: 0.16, erP: 11,
+    slPip: 280, tpPip: 620, maxHold: 40, rqs: 89.8,
+  },
+  // RQS+=89.7 | WR 63.9% | PF 1.77 — رژیمِ میانی (chop≥58)
+  'XAUUSD-M30': {
+    id: 'XAUUSD-M30', tfFa: 'M30',
+    w: 8, bufFrac: 0.15,
+    useStretch: false, stretch: 0, useExh: false, exh: 0,
+    requireSecond: true, secondLookback: 40,
+    chopMin: 58, r2Max: 0.30, erMax: 0.22, erP: 11,
+    slPip: 380, tpPip: 840, maxHold: 18, rqs: 89.7,
+  },
+  // RQS+=94.5 | WR 66.7% | PF 2.01 — احیاشده با فیلترِ جعبه‌ابزار (کشش+خستگی)، بدونِ سیگنالِ دوم
   'XAUUSD-H1': {
     id: 'XAUUSD-H1', tfFa: 'H1',
-    w: 4, bufFrac: 0.05, stretch: 0.7, exh: 0.25,
+    w: 4, bufFrac: 0.05,
+    useStretch: true, stretch: 0.7, useExh: true, exh: 0.25,
+    requireSecond: false, secondLookback: 40,
     chopMin: 61.8, r2Max: 0.22, erMax: 0.16, erP: 11,
     slPip: 520, tpPip: 1550, maxHold: 16, rqs: 94.5,
   },
