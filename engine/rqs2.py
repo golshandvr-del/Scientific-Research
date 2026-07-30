@@ -43,7 +43,25 @@ N_SIDE_FLOOR     = 15       # حداقلِ معاملاتِ هر سمت (اگر 
 MAX_CONCURRENCY  = 1        # معاملاتِ هم‌پوشان ⇒ p-valueِ دوجمله‌ای نامعتبر
 
 # H1 — کیفیتِ خام
-WR_FLOOR         = 60.0
+# ⚠️ اصلاحِ v2.1 — **خطای بُعدی (dimensional error)** که کاربر افشا کرد:
+#   نسخهٔ ۲.۰ در H1 شرطِ مطلقِ `WR ≥ ۶۰٪` داشت. اما **عددِ WR بدونِ RR هیچ
+#   معنایی ندارد.** سربه‌سرِ واقعی `(SL+cost)/(SL+TP)` است، پس:
+#       RR=1  ⇒ سربه‌سر ۵۷.۹٪  (با TP=۲۱pip طلا)
+#       RR=3  ⇒ سربه‌سر ۳۶.۸٪
+#   یک اسکالپِ `SL=7 TP=21 WR=45%` امیدِ ریاضیِ **+۲.۳۰pip** و `PF=1.32` دارد —
+#   یعنی صریحاً سودده — ولی در کفِ ۶۰٪ **رد** می‌شد. این «سخت‌گیری» نبود،
+#   خطای مشخصه‌نویسی بود: کفِ ۶۰٪ از `RQS+` ارث رسیده بود، یعنی از همان
+#   پارادایمِ قدیمی که وسواسِ WR داشت، و فرضِ نااعلامِ `RR≈1` را در خود پنهان
+#   می‌کرد.
+#
+#   ⛔ تمایزِ حیاتی: این **کوک‌کردنِ آستانه برای قبولاندنِ یک کاندیدای خاص
+#   نیست** (کاری که در موردِ H5 و کاندیدای C1 قبول نکردم). این رفعِ یک ایرادِ
+#   بُعدی است: سطحِ WR از H1 **حذف** می‌شود و شرطِ WR فقط در جایی می‌ماند که
+#   بُعدش درست است — یعنی H2، که آن را نسبت به سربه‌سرِ **هزینه‌دارِ خودِ لایه**
+#   می‌سنجد. هیچ لایه‌ای آسان‌تر نمی‌شود: همه باید ۳pp از سربه‌سرِ خودشان بالا بزنند.
+WR_FLOOR_NO_RR   = 60.0     # فقط وقتی `tp_pip` نامعلوم است ⇒ H2 نمی‌تواند بسنجد
+WIN_FLOOR        = 10       # حداقلِ تعدادِ **برنده** — دمِ برنده باید نمونه‌گیری شده باشد
+TOP_WIN_SHARE_MAX = 0.50    # سهمِ بزرگ‌ترین برنده از سودِ ناخالص (ضدِ «بلیتِ بخت‌آزمایی»)
 PF_MIN           = 1.3
 
 # H2 — لبهٔ هندسیِ هزینه‌دار (ضدِ تقلبِ اشتباهِ رایجِ #۸)
@@ -534,7 +552,33 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     h0 = (len(h0_reasons) == 0)
 
     # ------------------------------ H1 کیفیتِ خام ------------------------------
-    h1 = (wr >= WR_FLOOR) and (pf >= PF_MIN)
+    # RR-خنثی: `PF` هر دو سمتِ معادله را می‌بیند، پس بُعدش درست است. اما دو خطرِ
+    # نوظهور با حذفِ کفِ WR باید پوشش داده شوند — و هر دو **معکوسِ** اشتباهِ
+    # رایجِ #۸ هستند (آن‌جا `TP<SL` بود تا WR جعلی بالا رود؛ این‌جا `TP>>SL` است
+    # تا امیدِ ریاضی روی چند برندهٔ نادر سوار شود):
+    #   ۱) دمِ برنده **نمونه‌گیری‌نشده**: با `RR=20` و `WR=۵٪` ممکن است کلِ سود
+    #      از ۲ معامله بیاید ⇒ برآوردِ امیدِ ریاضی واریانسِ نجومی دارد.
+    #   ۲) **تمرکزِ سود**: یک معاملهٔ استثنایی نیمی از سودِ ناخالص را بسازد.
+    win_mask = np.array([o == 'win' for o in outcomes], dtype=bool)
+    win_pnl = pnl[win_mask]
+    gross_win_pip = float(win_pnl.sum()) if win_pnl.size else 0.0
+    top_win_share = (float(win_pnl.max()) / gross_win_pip
+                     if (win_pnl.size and gross_win_pip > 0) else None)
+    h1_reasons = []
+    if pf < PF_MIN:
+        h1_reasons.append(f"PF={pf:.3f}<{PF_MIN}")
+    if wins < WIN_FLOOR:
+        h1_reasons.append(f"n_wins={wins}<{WIN_FLOOR} (winning tail unsampled)")
+    if top_win_share is not None and wins >= 5 and top_win_share > TOP_WIN_SHARE_MAX:
+        h1_reasons.append(f"top_win_share={top_win_share:.2f}>{TOP_WIN_SHARE_MAX}")
+    if tp_pip is None or float(tp_pip) <= 0:
+        # بدونِ `tp_pip`، دروازهٔ H2 خاموش است و هیچ سنجهٔ RR-آگاهی وجود ندارد؛
+        # پس کفِ ارثیِ محافظه‌کارانه برمی‌گردد تا حذفِ آن به یک **حفره** بدل نشود.
+        if wr < WR_FLOOR_NO_RR:
+            h1_reasons.append(f"WR={wr:.2f}<{WR_FLOOR_NO_RR} (no tp_pip ⇒ "
+                              f"RR-aware breakeven unavailable, legacy floor applies)")
+    h1 = (len(h1_reasons) == 0)
+    res['notes'].extend(h1_reasons)
 
     # -------------------- H2 لبهٔ هندسیِ هزینه‌دار (ضدِ تقلب) --------------------
     if tp_pip is None or float(tp_pip) <= 0:
