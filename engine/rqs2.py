@@ -502,17 +502,25 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
                 prune_sides.append(s)
 
     # ------------------------ H5 بقا در آزمونِ چندگانه ------------------------
+    # ⭐ آزمونِ اصلی = **قضیهٔ استراتژیِ کاذب**، نه Bonferroni.
+    #   پرسش: «بهترینِ N تلاش را برداشتم؛ شانسِ محض چقدر خوب ظاهر می‌شد؟»
+    #   کران = E[max_N]. آمارهٔ سنجیده = همان zِ دوجمله‌ای که جست‌وجو بیشینه کرد.
+    #   Bonferroni تنها به‌عنوان **تشخیصِ گزارشی** نگه داشته می‌شود.
     if nb is None or not n_trials:
         h5 = None
-        p_emp = p_adj = None
+        p_emp = p_adj = z_obs = z_bar = None
         if not n_trials:
-            res['notes'].append("H5 UNKNOWN: n_trials not supplied — with a "
-                                "1296-geometry x 401-indicator search, an "
-                                "uncorrected p<0.05 is meaningless")
+            res['notes'].append("H5 UNKNOWN: n_trials not supplied — the size of "
+                                "the space actually searched must be declared; a "
+                                "finding cannot be judged without knowing how many "
+                                "chances luck was given")
     else:
-        p_emp = binom_p_one_sided(wins, n, nb['ref_wr'] / 100.0)
-        p_adj = float(min(1.0, p_emp * float(n_trials)))
-        h5 = (p_adj < P_ADJ_MAX)
+        p0 = nb['ref_wr'] / 100.0
+        p_emp = binom_p_one_sided(wins, n, p0)
+        p_adj = float(min(1.0, p_emp * float(n_trials)))   # فقط تشخیصی
+        z_obs = binom_z(wins, n, p0)
+        z_bar = expected_max_z(n_trials)
+        h5 = (z_obs > z_bar)
 
     # -------------------------- H6 پایداریِ تقویمی --------------------------
     wins_cal = calendar_windows(tr, bar_time, CAL_WINDOWS)
