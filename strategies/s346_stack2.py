@@ -202,10 +202,8 @@ def run(card, geom, wr_floor=61.0, pf_floor=1.35, tag_extra=''):
               f" | H n={base_h['n']} WR={base_h['wr']:.2f} PF={base_h['pf']:.3f}"
               f" | cands={len(cands)}", flush=True)
         stack, hist, mask = stack_maxn(P, cands, wr_floor=wr_floor, pf_floor=pf_floor)
-        pnl, win, is_d, spread = P['pnl'], P['win'], P['is_d'], P['spread']
-        sd = stats(pnl[mask & is_d], win[mask & is_d], spread)
-        sh = stats(pnl[mask & ~is_d], win[mask & ~is_d], spread)
-        sa = stats(pnl[mask], win[mask], spread)
+        # ⭐ گزارشِ نهایی هم صف‌آگاه: عددِ اینجا باید با داورِ رسمی هم‌خوان باشد
+        sd, sh, sa = q_stats(P, mask)
         ok = (min(sd['wr'], sh['wr']) >= wr_floor and
               min(sd['pf'], sh['pf']) >= pf_floor)
         print(f"  [{label}] RESULT {'REACHED' if ok else 'not-reached'} "
