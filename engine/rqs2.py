@@ -32,7 +32,7 @@ RQS+ لبه را نسبت به **نقطهٔ صفرِ نظری** `SL/(SL+TP)` م�
 """
 import numpy as np
 import pandas as pd
-from math import comb, erfc, sqrt
+from math import comb, erfc, sqrt, log, ceil
 
 from engine import scalp_engine as se
 
@@ -92,7 +92,18 @@ OOS_PF_MIN       = 1.2
 
 # H8 — ریسکِ دنباله و بازیافت
 MAXDD_MAX_PCT    = 8.0
-MCL_MAX          = 8
+# ⚠️ اصلاحِ v2.1 — **دومین خطای بُعدیِ هم‌خانواده با کفِ WR:**
+#   `MCL_MAX = 8` مطلق بود، ولی رشتهٔ باختِ بلند در WRِ پایین **طبیعی است،
+#   نه بیمارگونه**. طولانی‌ترین رشتهٔ باختِ **موردِ انتظار** (قضیهٔ Erdős–Rényi):
+#       WR=۷۵٪ n=۲۵۰  ⇒  E≈۳.۷   ⇒ کران ۸ معقول است
+#       WR=۴۵٪ n=۱۰۰۰ ⇒  E≈۱۰.۷  ⇒ کران ۸ **ریاضیاً غلط** است
+#   پس یک اسکالپِ سوددهِ `RR=3` فقط به‌خاطرِ داشتنِ WRِ پایین رد می‌شد.
+#   رفع: کران = `max(کاپِ عملی، E + 3sd)`. یعنی دروازه فقط وقتی می‌شکند که
+#   رشته **هم از کاپِ عملی بگذرد و هم از آنچه WRِ خودِ لایه پیش‌بینی می‌کند**.
+#   منطق: ۱۱ باختِ پشت‌سرهم در لایهٔ WR=۴۵٪ عادی است؛ در لایهٔ WR=۷۵٪
+#   معنایش این است که مدل **شکسته** — و دقیقاً همین را باید گرفت.
+MCL_ABS_CAP      = 8        # کاپِ عملی/روانی (معنادار برای لایهٔ WR-بالا)
+MCL_SIGMA        = 3.0      # تحملِ سیگما روی کرانِ آماری
 RECOVERY_MIN     = 3.0      # net / |maxDD$|
 
 # H9 — مقاومتِ هزینه
@@ -148,6 +159,33 @@ def counter_drift_mask(trades, close, lookback=REGIME_LOOKBACK):
 
 
 # ================================ توابعِ کمکی ================================
+def expected_max_loss_run(n, wr_pct):
+    """میانگین و sdِ **طولانی‌ترین رشتهٔ باخت** در `n` آزمونِ برنولی.
+
+    قضیهٔ کلاسیکِ Erdős–Rényi برای بلندترین رشتهٔ رخدادِ با احتمال `q`:
+        E[L]  ≈ log_{1/q}(n·p) + γ/ln(1/q) − 1/2
+        sd[L] ≈ π / (√6 · ln(1/q))  ≈ 1.2826 / ln(1/q)
+
+    نکتهٔ مهم: `sd` **به n وابسته نیست** — فقط به `q`. یعنی با بزرگ‌شدنِ
+    نمونه، رشتهٔ بیشینه **لگاریتمی رشد می‌کند** و پراکندگی‌اش ثابت می‌ماند.
+    """
+    p = max(min(float(wr_pct) / 100.0, 1.0 - 1e-9), 1e-9)
+    q = 1.0 - p
+    if q <= 1e-9 or n <= 1:
+        return 0.0, 0.0
+    lnq = log(1.0 / q)
+    mean = log(max(n * p, 1.0 + 1e-9)) / lnq + 0.5772156649 / lnq - 0.5
+    sd = 1.2825498 / lnq
+    return max(mean, 0.0), sd
+
+
+def mcl_bound(n, wr_pct, sigma=None):
+    """کرانِ مجازِ رشتهٔ باخت = `max(کاپِ عملی، E + σ·sd)`."""
+    sigma = MCL_SIGMA if sigma is None else sigma
+    mean, sd = expected_max_loss_run(n, wr_pct)
+    return max(MCL_ABS_CAP, int(ceil(mean + sigma * sd)))
+
+
 def _clip01(x):
     return float(min(1.0, max(0.0, x)))
 
@@ -703,7 +741,8 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
 
     # --------------------- H8 ریسکِ دنباله و ضریبِ بازیافت ---------------------
     mcl = max_consec_losses(outcomes)
-    h8 = (maxdd_pct <= MAXDD_MAX_PCT and mcl <= MCL_MAX
+    mcl_allowed = mcl_bound(n, wr)
+    h8 = (maxdd_pct <= MAXDD_MAX_PCT and mcl <= mcl_allowed
           and (recovery >= RECOVERY_MIN or not np.isfinite(recovery)))
 
     # -------------------------- H9 مقاومتِ هزینه --------------------------
@@ -760,7 +799,7 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     c_stab  = (positives / float(CAL_WINDOWS)) * (1.0 if all(x > 0 for x in half_nets) else 0.5)
     c_pf    = _clip01((pf - 1.0) / 1.0) if np.isfinite(pf) else 1.0
     c_exp   = _clip01(exp_pip / (2.0 * cost_pip)) if cost_pip > 0 else 1.0
-    c_tail  = _clip01(1 - maxdd_pct / MAXDD_MAX_PCT) * _clip01(1 - mcl / float(MCL_MAX))
+    c_tail  = _clip01(1 - maxdd_pct / MAXDD_MAX_PCT) * _clip01(1 - mcl / float(mcl_allowed))
     # مؤلفهٔ «بقای انتخاب» = چقدر **بالاتر از کرانِ بهترین‌شانس** ایستاده‌ایم.
     # (نه p تصحیح‌شده: p_adj در نمونه‌های بزرگ به صفر می‌چسبد و اشباع می‌شود،
     #  حال آنکه فاصله از کران، پیوسته و مستقیماً معنادار است.)
