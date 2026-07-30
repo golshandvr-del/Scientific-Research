@@ -714,6 +714,7 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
         'cal_positive': positives, 'cal_occupied': occupied,
         'half_nets': [round(x, 1) for x in half_nets],
         'oos': oos, 'max_concurrency': conc,
+        'counter_drift': cd,
     }
     res['gates'] = gates
     res['n_fail'] = n_fail
