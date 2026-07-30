@@ -193,6 +193,75 @@ GATE_NAMES = {
 }
 
 
+def to_epoch_seconds(bar_time):
+    """نرمال‌سازیِ محورِ زمان به **ثانیهٔ epoch** — دروازهٔ واحدِ `bar_time`.
+
+    ⚠️ نقصِ v2.4 که این نشست افشا شد — **سومین خطای بُعدی از یک خانواده**
+    ----------------------------------------------------------------------
+    از v2.3 افقِ رژیمِ `H10` زمان‌محور شد و با `REGIME_LOOKBACK_SECONDS`
+    (=۲۴٬۱۹۲٬۰۰۰ ثانیه) سنجیده می‌شود. اما `counter_drift_mask` ورودی را با
+    `np.asarray(bar_time, dtype='float64')` می‌خواند و **واحد را نمی‌پرسید**.
+
+    پیامد در عمل: `pandas` ستونِ زمان را `datetime64[ns]` می‌دهد، و ریختنش به
+    `float64` عددِ **نانوثانیه** می‌سازد. یعنی افقِ ۲۸۰روزه با یک محورِ زمان که
+    ۱۰⁹ برابر درشت‌تر است مقایسه می‌شد. نتیجه:
+
+        t_ref = t_entry − 24_192_000 ns  ≈  t_entry − 0.024 ثانیه
+        ⇒ prev ≈ entry_bar  ⇒  judgeable = (prev < entry_bar) = False
+
+    یعنی `H10` برای **همهٔ** معاملات `UNKNOWN` می‌شد و حکم بی‌صدا به
+    `INCOMPLETE` می‌رفت. و این دقیقاً همان دروازه‌ای است که RQS+ را کشت.
+
+    اندازه‌گیریِ دامنهٔ آسیب: `strategies/s346_rqs2_validate.py` درست عمل
+    می‌کرد (`df['time'].values` = ثانیهٔ epoch)، ولی
+    `strategies/s347_verdict.py` — یعنی **هارنسِ رسمیِ صدورِ حکم** —
+    `df['dt'].values` می‌فرستاد. پس هر حکمی که آن هارنس صادر کرده،
+    `H10` را در واقع **نسنجیده** است.
+
+    سیاستِ درست (همان که v2.2 برای `NaN` گرفت): **سقوطِ بلند، نه تخریبِ خاموش.**
+    این تابع واحد را تشخیص می‌دهد و اگر مبهم بود صریح اعتراض می‌کند، به‌جای
+    آن‌که حدس بزند و یک دروازه را در سکوت خاموش کند.
+    """
+    if bar_time is None:
+        return None
+    a = np.asarray(bar_time)
+
+    # حالتِ ۱ — زمانِ واقعیِ numpy/pandas: تبدیلِ دقیق و بی‌ابهام
+    if np.issubdtype(a.dtype, np.datetime64):
+        return a.astype('datetime64[s]').astype('float64')
+    if np.issubdtype(a.dtype, np.timedelta64):
+        return a.astype('timedelta64[s]').astype('float64')
+
+    f = a.astype('float64')
+    if f.size == 0:
+        return f
+    finite = f[np.isfinite(f)]
+    if finite.size == 0:
+        return f
+
+    # حالتِ ۲ — عددِ خام. قرارداد: **ثانیهٔ epoch**. اما اگر مقیاس صریحاً
+    # نانو/میکرو/میلی‌ثانیه باشد، حدس نمی‌زنیم و اعتراض می‌کنیم.
+    #   مرزِ تشخیص: ۱e12 ثانیه ≈ سالِ ۳۳٬۶۵۸ ⇒ هیچ دادهٔ بازاری چنین نیست،
+    #   پس عددِ بزرگ‌تر قطعاً واحدِ ریزتر است، نه تاریخِ دور.
+    mx = float(np.max(np.abs(finite)))
+    if mx > 1e12:
+        for scale, unit in ((1e9, 'nanoseconds'), (1e6, 'microseconds'),
+                            (1e3, 'milliseconds')):
+            if mx / scale < 1e12:
+                raise ValueError(
+                    f"RQS2 refuses to guess the unit of bar_time: the axis "
+                    f"looks like {unit} (max |t| = {mx:.3e}), but the regime "
+                    f"horizon REGIME_LOOKBACK_SECONDS is in SECONDS. Comparing "
+                    f"them silently disables H10 for every trade and downgrades "
+                    f"the verdict to INCOMPLETE without saying why. Pass epoch "
+                    f"SECONDS (e.g. df['time'].values) or a real datetime64 "
+                    f"array (e.g. df['dt'].values) — not a raw nanosecond int.")
+        raise ValueError(
+            f"RQS2 cannot interpret bar_time: max |t| = {mx:.3e} is not a "
+            f"plausible epoch-second timestamp.")
+    return f
+
+
 def counter_drift_mask(trades, close, lookback=REGIME_LOOKBACK, bar_time=None,
                        with_judgeable=False):
     """ماسکِ معاملاتی که **خلافِ رانشِ حاکم** باز شده‌اند.
