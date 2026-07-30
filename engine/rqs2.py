@@ -448,8 +448,17 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     worst_ok = (worst >= 0) or (net > 0 and abs(worst) <= CAL_WORST_FRAC * net)
     halves = calendar_windows(tr, bar_time, 2)
     half_nets = [_net_of(tr, asset, m, initial_capital) for m in halves]
-    h6 = (positives >= CAL_POS_MIN and occupied >= CAL_OCCUPIED_MIN
-          and worst_ok and all(x > 0 for x in half_nets))
+    if bar_time is None:
+        # بدونِ محورِ زمان، «پایداریِ تقویمی» ادعاپذیر نیست: نمی‌دانیم معاملات
+        # کلِ افقِ داده را پوشش می‌دهند یا در یک رژیمِ کوتاه خوشه شده‌اند.
+        # طبقِ اصلِ حاکم، ادعاِ نشده ⇒ UNKNOWN، نه «پاس».
+        h6 = None
+        res['notes'].append("H6 UNKNOWN: bar_time not supplied — calendar "
+                            "coverage cannot be verified (pass np.arange(len(df)) "
+                            "or df['time'].values)")
+    else:
+        h6 = (positives >= CAL_POS_MIN and occupied >= CAL_OCCUPIED_MIN
+              and worst_ok and all(x > 0 for x in half_nets))
 
     # --------------------------- H7 خارج از نمونه ---------------------------
     hm = None
