@@ -61,6 +61,14 @@ def _interleave(a, b):
     return out
 
 
+def horizon(trades, factor=1.0):
+    """محورِ زمانِ مصنوعی برای کارت. `factor=1` ⇒ افقِ داده ≈ گسترهٔ معاملات
+    (پوششِ کامل). `factor=5` ⇒ افقِ داده پنج برابرِ گسترهٔ معاملات، یعنی معاملات
+    در ~۲۰٪ نخستِ تقویم **خوشه** شده‌اند و `H6` باید آن را بگیرد."""
+    hi = int(trades['exit_bar'].max()) + 2
+    return np.arange(int(hi * factor), dtype='float64')
+
+
 def mk_null(long_wr, short_wr=None, sd=1.5, k=20, gap=4.0):
     """مدلِ صفرِ مصنوعی. `gap` = فاصلهٔ perm_max از perm_mean."""
     d = {}
