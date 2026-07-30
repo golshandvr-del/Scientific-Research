@@ -1008,8 +1008,12 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
         else:
             # v2.3: افقِ رژیم زمان‌محور است ⇒ کارتی که تاریخش کوتاه‌تر از افق
             #       است **قابلِ داوری نیست**. این یافتهٔ قابلِ‌اقدام است.
-            span_d = ((float(np.asarray(bar_time)[-1] - np.asarray(bar_time)[0])
-                       / 86400.0) if bar_time is not None else 0.0)
+            # v2.4 — پیشتر این عدد با محورِ خامِ نانوثانیه محاسبه می‌شد و
+            # تقسیم بر 86400 عددی نجومی می‌داد؛ یعنی همان پیامی که باید
+            # «چرا داوری نشد» را توضیح دهد، خودش گمراه‌کننده بود.
+            _bt = to_epoch_seconds(bar_time) if bar_time is not None else None
+            span_d = (float(_bt[-1] - _bt[0]) / 86400.0
+                      if _bt is not None and len(_bt) >= 2 else 0.0)
             res['notes'].append(
                 f"H10 UNKNOWN: the card's history spans {span_d:.0f} calendar "
                 f"days, which is shorter than the canonical regime horizon of "
