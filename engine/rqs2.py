@@ -559,7 +559,17 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
                             "absence of a control is not evidence of skill")
     else:
         lift = wr - nb['ref_wr']
-        z_skill = (lift / nb['perm_sd']) if nb['perm_sd'] > 0 else float('inf')
+        # ⚠️ ناسازگاریِ مقیاسی که اعتبارسنجیِ واقعی افشا کرد: `H3` از انحرافِ
+        #   معیارِ **جای‌گشت** استفاده می‌کرد (روی C1: ۲.۱۱pp) و `H5` از خطای
+        #   معیارِ **دوجمله‌ای** (۲.۹۷pp) ⇒ یک لایه در H3 «۵.۶σ» و در H5 «۴.۰σ»
+        #   بود. دو عدد از یک واقعیت، دو مقیاس. رفع: همیشه **بزرگ‌ترین** (یعنی
+        #   محافظه‌کارانه‌ترین) انحرافِ معیار.
+        #   چرا انحرافِ جای‌گشت کوچک‌تر درمی‌آید: قرعه‌های جای‌گشت روی همان
+        #   کندل‌ها/رژیم‌ها می‌افتند و کاملاً مستقل نیستند ⇒ پراکندگی‌شان
+        #   دست‌کم‌برآورد است. اتکا به آن، آزمون را مصنوعاً آسان می‌کند.
+        se_binom = sqrt(max(nb['ref_wr'], 1e-9) * (100.0 - nb['ref_wr']) / n)
+        sd_use = max(float(nb['perm_sd'] or 0.0), se_binom)
+        z_skill = (lift / sd_use) if sd_use > 0 else float('inf')
         h3 = (lift >= SKILL_LIFT_MIN and z_skill >= SKILL_Z_MIN
               and wr > nb['perm_max'] and nb['perm_k'] >= PERM_K_MIN)
 
