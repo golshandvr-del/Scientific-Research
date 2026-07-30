@@ -613,8 +613,43 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     exp_stress = exp_pip - (COST_STRESS_X - 1.0) * cost_pip
     h9 = (exp_pip > EXP_COST_MULT * spread) and (exp_stress > 0)
 
+    # ------------------ H10 ⭐ مقاومتِ رژیمی (خلافِ جریان) ------------------
+    cdm = counter_drift_mask(tr, close, REGIME_LOOKBACK)
+    cd = {}
+    if cdm is None:
+        h10 = None
+        res['notes'].append("H10 UNKNOWN: close series not supplied — cannot "
+                            "test whether the edge survives against the "
+                            "prevailing drift, which is the one question the "
+                            "permutation control structurally cannot answer")
+    else:
+        n_cd = int(cdm.sum())
+        n_al = int((~cdm).sum())
+        cd['n_counter'], cd['n_aligned'] = n_cd, n_al
+        if n_cd > 0:
+            sub = tr[cdm]
+            wcd = sum(1 for o in sub['outcome'] if o == 'win')
+            cd['wr_counter'] = round(wcd / n_cd * 100.0, 2)
+            cd['exp_counter'] = round(float(np.mean(pnl[cdm])), 3)
+        if n_al > 0:
+            sub = tr[~cdm]
+            wal = sum(1 for o in sub['outcome'] if o == 'win')
+            cd['wr_aligned'] = round(wal / n_al * 100.0, 2)
+            cd['exp_aligned'] = round(float(np.mean(pnl[~cdm])), 3)
+        if n_cd < REGIME_N_FLOOR:
+            # لایه هرگز در شرایطِ نامساعد آزموده نشده ⇒ ادعا نشده، نه تأیید شده
+            h10 = None
+            res['notes'].append(
+                f"H10 UNKNOWN: only {n_cd} counter-drift trades "
+                f"(<{REGIME_N_FLOOR}) — the layer has never actually been "
+                f"tested against an adverse drift regime")
+        else:
+            ok_exp = cd['exp_counter'] > 0
+            ok_wr = (be_cost is None) or (cd['wr_counter'] >= be_cost)
+            h10 = bool(ok_exp and ok_wr)
+
     gates = {'H0': h0, 'H1': h1, 'H2': h2, 'H3': h3, 'H4': h4,
-             'H5': h5, 'H6': h6, 'H7': h7, 'H8': h8, 'H9': h9}
+             'H5': h5, 'H6': h6, 'H7': h7, 'H8': h8, 'H9': h9, 'H10': h10}
 
     n_fail = sum(1 for v in gates.values() if v is False)
     n_unknown = sum(1 for v in gates.values() if v is None)
