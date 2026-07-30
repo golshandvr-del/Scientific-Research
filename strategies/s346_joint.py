@@ -196,7 +196,8 @@ def sweep_card(card, min_base_n=600, top_k=24, save=True, wr_min_base=51.0):
 
 
 def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
-             allow_time=False, top_report=15):
+             allow_time=False, top_report=15, wr_min_base=51.0,
+             min_nd=None, min_nh=None, min_ev_d=None, frac_keep=0.40):
     """
     مرحلهٔ ۱: غربالِ ارزانِ هندسه‌ها بر اساسِ «بودجهٔ N» (base n پس از صف).
     مرحلهٔ ۲: انباشتِ فیلتر روی هندسه‌های واجد بودجه.
