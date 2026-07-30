@@ -99,7 +99,34 @@ GATE_NAMES = {
     'H4': 'per-side skill', 'H5': 'multiple-testing survival',
     'H6': 'calendar stability', 'H7': 'out-of-sample',
     'H8': 'tail risk + recovery', 'H9': 'cost robustness',
+    'H10': 'regime robustness (counter-drift)',
 }
+
+
+def counter_drift_mask(trades, close, lookback=REGIME_LOOKBACK):
+    """ماسکِ معاملاتی که **خلافِ رانشِ حاکم** باز شده‌اند.
+
+    رانشِ حاکم در لحظهٔ ورود = علامتِ بازدهِ `lookback` کندلِ گذشته.
+    یک معامله «خلاف‌جریان» است اگر:
+        long  و رانش ≤ 0   یا   short و رانش ≥ 0
+
+    نکتهٔ ظریفِ طراحی: مرجع، رانشِ **خودِ دارایی** است نه بازار کلی، و در
+    لحظهٔ ورود محاسبه می‌شود (کاملاً causal، بدونِ نگاه به آینده).
+    """
+    if trades is None or len(trades) == 0 or close is None:
+        return None
+    c = np.asarray(close, dtype='float64')
+    if len(c) < lookback + 2:
+        return None
+    eb = np.clip(trades['entry_bar'].values.astype(int), 0, len(c) - 1)
+    prev = np.clip(eb - int(lookback), 0, len(c) - 1)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        drift = np.where(c[prev] > 0, c[eb] / c[prev] - 1.0, 0.0)
+    if 'direction' in trades.columns:
+        is_long = (trades['direction'].values == 'long')
+    else:
+        is_long = np.ones(len(trades), bool)
+    return np.where(is_long, drift <= 0.0, drift >= 0.0)
 
 
 # ================================ توابعِ کمکی ================================
