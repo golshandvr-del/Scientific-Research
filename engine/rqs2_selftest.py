@@ -15,6 +15,23 @@
   T7  خوشه‌ای‌شدنِ تقویمی  : همهٔ معاملات در یک بازه              ⇒ باید H6 رد شود
   T8  معاملاتِ هم‌پوشان    : ⇒ باید H0 رد شود (p-value نامعتبر)
 
+── موردهای نسخهٔ ۲.۱ — اعتبارسنجیِ رفعِ **سه خطای بُعدی** ──────────────────────
+کاربر افشا کرد که نسخهٔ ۲.۰ یک اسکالپِ **سوددهِ** `RR=3` را رد می‌کرد. سه دروازه
+عددِ WR را بدونِ RR می‌سنجیدند و در نتیجه فرضِ نااعلامِ `RR≈1` را حمل می‌کردند:
+`H1` (کفِ مطلقِ ۶۰٪) · `H8` (کاپِ مطلقِ MCL=8) · `H7` (کفِ یتیمِ ۵۷٪).
+این موردها ثابت می‌کنند رفع **کار می‌کند**، نه اینکه ادعا می‌شود:
+
+  T13 اسکالپِ `SL=7 TP=21 WR=45٪` : ⇒ H1/H2/H7/H8 **همه پاس** (هر سه قبلاً رد
+      می‌شدند) ولی H9 رد ⇒ REJECT. **علتِ رد اقتصادی است، نه بُعدی.**
+  T14 ⭐ همان اسکالپ با `WR=50٪`   : ⇒ **ACCEPT کامل.** اثباتِ اینکه RQS2 یک لایهٔ
+      WR-پایینِ RR-بالا را می‌پذیرد — یعنی «سوگیریِ ضدِ اسکالپ» رفع شد.
+  T15 همان اسکالپ با ترتیبِ تصادفی : MCL=12 ⇒ کاپِ قدیمِ ۸ می‌شکست، ولی کرانِ
+      Erdős–Rényi (۱۷) آن را **روتین** می‌شمارد و شکست به علتِ **واقعی** یعنی
+      افتِ سرمایه نسبت داده می‌شود.
+  T16 بلیتِ بخت‌آزمایی            : یک برندهٔ استثنایی ۶۴٪ سودِ ناخالص ⇒ H1 رد
+      (سپرِ نوِ `top_win_share` — معکوسِ اشتباهِ رایجِ #۸)
+  T17 دمِ برندهٔ نمونه‌گیری‌نشده    : فقط ۶ برنده ⇒ H1 رد (سپرِ نوِ `WIN_FLOOR`)
+
 اجرا:  python -m engine.rqs2_selftest
 """
 import numpy as np
@@ -98,6 +115,64 @@ def assign_outcomes(trades, close, wr_counter, wr_aligned, sl_pip, tp_pip):
     out['outcome'] = outcomes
     out['pnl_pip'] = [tp_pip if o == 'win' else -sl_pip for o in outcomes]
     return out
+
+
+def make_scalp(n, wr_pct, sl_lvl, tp_lvl, cost_pip, *, shuffle_seed=None,
+               step=10, hold=5):
+    """اسکالپِ مصنوعی با هندسهٔ `RR>1` و `pnl_pip`ِ **خالصِ پس از هزینه**.
+
+    تفاوتِ مهم با `make_trades`: این‌جا **سطح** و **نتیجهٔ اقتصادی** از هم جدا
+    می‌شوند، چون تمامِ بحثِ نسخهٔ ۲.۱ همین است —
+      • سطوح  (`sl_lvl`/`tp_lvl`) ⇒ هندسه، ورودیِ `breakeven_wr_cost`
+      • خالص  (`tp−c` و `−(sl+c)`) ⇒ اقتصاد، ورودیِ `expectancy`
+    `make_trades` هزینه را «از پیش لحاظ‌شده» فرض می‌کند که برای `SL=TP=100`
+    بی‌اثر است (۳.۳ در برابرِ ۱۰۰) ولی برای اسکالپ **تعیین‌کننده** است
+    (۳.۳ در برابرِ ۲۱ ⇒ ۱۵.۷٪ از هدف).
+
+    `shuffle_seed=None` ⇒ پخشِ یکنواخت (رشتهٔ باختِ مصنوعی نمی‌سازد).
+    `shuffle_seed=k`    ⇒ ترتیبِ **تصادفیِ واقع‌گرایانه** ⇒ رشتهٔ باختِ طبیعی.
+    """
+    nw = int(round(n * float(wr_pct) / 100.0))
+    nl = n - nw
+    if shuffle_seed is None:
+        seq = _interleave(nw, nl)
+    else:
+        seq = ['win'] * nw + ['loss'] * nl
+        np.random.default_rng(int(shuffle_seed)).shuffle(seq)
+    win_net = float(tp_lvl) - float(cost_pip)
+    loss_net = float(sl_lvl) + float(cost_pip)
+    rows, b = [], 0
+    for o in seq:
+        rows.append(dict(signal_bar=b, entry_bar=b, exit_bar=b + hold,
+                         direction='long', entry_price=1.0, exit_price=1.0,
+                         outcome=o,
+                         pnl_pip=(win_net if o == 'win' else -loss_net),
+                         sl_pip=float(sl_lvl), bars_held=hold))
+        b += step
+    return pd.DataFrame(rows)
+
+
+def make_trades_pnl(win_pnls, loss_pnls, sl_pip, *, step=10, hold=5):
+    """معاملات با `pnl_pip`ِ **دلخواه و نامتقارن** — برای آزمونِ سپرهای نوِ H1.
+
+    تنها راهِ ساختِ «بلیتِ بخت‌آزمایی» است: برندگانی با اندازه‌های متفاوت که
+    یکی‌شان بخشِ بزرگی از سودِ ناخالص را تنها می‌سازد.
+    """
+    seq = ([('win', v) for v in win_pnls] + [('loss', v) for v in loss_pnls])
+    order = _interleave(len(win_pnls), len(loss_pnls))
+    wq = list(win_pnls)
+    lq = list(loss_pnls)
+    rows, b = [], 0
+    for o in order:
+        v = wq.pop(0) if o == 'win' else lq.pop(0)
+        rows.append(dict(signal_bar=b, entry_bar=b, exit_bar=b + hold,
+                         direction='long', entry_price=1.0, exit_price=1.0,
+                         outcome=o,
+                         pnl_pip=(abs(v) if o == 'win' else -abs(v)),
+                         sl_pip=float(sl_pip), bars_held=hold))
+        b += step
+    assert not wq and not lq and len(rows) == len(seq)
+    return pd.DataFrame(rows)
 
 
 def mk_null(long_wr, short_wr=None, sd=1.5, k=20, gap=4.0):
@@ -245,6 +320,135 @@ def main():
                  tp_pip=TP, bar_time=BT, null=mk_null(52.0), n_trials=NT,
                  split_bar=1000)
     allok &= ok
+
+    # ======================================================================
+    #  موردهای نسخهٔ ۲.۱ — اعتبارسنجیِ رفعِ سه خطای بُعدی (RR-blindness)
+    # ======================================================================
+    print("-" * 96)
+    print("v2.1 CASES — validating the RR-awareness fixes (H1 / H7 / H8)")
+    print("-" * 96)
+
+    SL_S, TP_S = 7.0, 21.0                 # RR = 3
+    COST_S = R.se.ASSETS['XAUUSD']['spread_pip']       # ۳.۳pip
+    BE_COST = (SL_S + COST_S) / (SL_S + TP_S) * 100.0        # ۳۶.۷۹٪
+    BE_ROBUST = (SL_S + 2 * COST_S) / (SL_S + TP_S) * 100.0  # ۴۸.۵۷٪
+    print(f"    scalp geometry SL={SL_S} TP={TP_S} (RR=3) cost={COST_S}pip")
+    print(f"    cost breakeven      (SL+c)/(SL+TP)  = {BE_COST:.2f}%   ⇐ H2")
+    print(f"    ROBUST breakeven    (SL+2c)/(SL+TP) = {BE_ROBUST:.2f}%   ⇐ H9 "
+          f"(cost-stress) ⇒ the REAL bar for a scalp")
+
+    # ---- T13: اسکالپِ کاربر با WR=45٪ — سه دروازهٔ اصلاح‌شده باید پاس شوند ----
+    #   قبلِ نسخهٔ ۲.۱: H1 رد (۴۵<۶۰) · H7 رد (۴۵<۵۷) ⇒ «سوگیریِ ضدِ اسکالپ».
+    #   بعدِ نسخهٔ ۲.۱: هر دو پاس؛ رد فقط از H9 می‌آید چون
+    #   `exp=+۲.۳۰pip < cost=۳.۳pip` ⇒ اگر اسپرد دو برابر شود لایه زیان‌ده است.
+    #   این ردِ **اقتصادی** است نه بُعدی — و برای اسکالپ مهم‌ترین ریسکِ واقعی.
+    t13 = make_scalp(800, 45.0, SL_S, TP_S, COST_S)
+    BT13 = horizon(t13)
+    CL13 = mk_close(int(t13['exit_bar'].max()) + 400)
+    ok, r13 = _run("T13 RR=3 scalp WR=45 (H1/H2/H7/H8 pass, H9 fails)", t13,
+                   expect_gate={'H1': True, 'H2': True, 'H7': True,
+                                'H8': True, 'H9': False},
+                   expect_state='REJECT',
+                   sl_pip=SL_S, tp_pip=TP_S, bar_time=BT13, close=CL13,
+                   null=mk_null(36.0), n_trials=NT, split_bar=6000)
+    allok &= ok
+    m13 = r13['metrics']
+    sub = (abs(m13['breakeven_wr_cost'] - BE_COST) < 0.01
+           and m13['expectancy_at_2x_cost'] < 0)
+    print(f"        >>> {'OK  ' if sub else 'BAD '} economic cause: "
+          f"exp={m13['expectancy_pip']:+.2f}pip vs cost={COST_S}pip ⇒ "
+          f"exp@2x={m13['expectancy_at_2x_cost']:+.2f} ; be_cost="
+          f"{m13['breakeven_wr_cost']:.2f}% (H2 excess "
+          f"{m13['wr_excess_cost']:+.2f}pp)")
+    allok &= sub
+
+    # ---- T14 ⭐ همان اسکالپ با WR=50٪ (بالای سربه‌سرِ مقاوم ۴۸.۵۷٪) ⇒ ACCEPT ----
+    #   ⭐ **موردِ سرنوشت‌ساز.** اگر این پاس شود، ادعای «RQS2 اسکالپ را رد می‌کند»
+    #   قطعاً باطل است: لایه‌ای با WR=۵۰٪ — یعنی ۱۰pp زیرِ کفِ ارثیِ ۶۰٪ —
+    #   نمرهٔ کاملِ ACCEPT می‌گیرد، تنها به‌خاطرِ اینکه هندسه‌اش `RR=3` است.
+    t14 = make_scalp(800, 50.0, SL_S, TP_S, COST_S)
+    ok, r14 = _run("T14 ⭐ RR=3 scalp WR=50 (full ACCEPT)", t14,
+                   expect_gate={'H1': True, 'H2': True, 'H7': True,
+                                'H8': True, 'H9': True},
+                   expect_state='ACCEPT',
+                   sl_pip=SL_S, tp_pip=TP_S, bar_time=horizon(t14),
+                   close=mk_close(int(t14['exit_bar'].max()) + 400),
+                   null=mk_null(36.0), n_trials=NT, split_bar=6000)
+    allok &= ok
+    m14 = r14['metrics']
+    sub = (m14['win_rate'] < R.WR_FLOOR_NO_RR
+           and m14['win_rate'] > BE_ROBUST
+           and m14['expectancy_at_2x_cost'] > 0)
+    print(f"        >>> {'OK  ' if sub else 'BAD '} accepted at WR="
+          f"{m14['win_rate']:.2f}% which is {R.WR_FLOOR_NO_RR - m14['win_rate']:.2f}pp "
+          f"BELOW the legacy floor and {m14['win_rate'] - BE_ROBUST:+.2f}pp above "
+          f"the robust breakeven ⇒ anti-scalp bias is gone")
+    allok &= sub
+
+    # ---- T15: ترتیبِ تصادفیِ واقع‌گرایانه ⇒ MCL=12 ----
+    #   کاپِ قدیمِ `MCL≤8` این را «بیمارگونه» می‌شمرد. کرانِ Erdős–Rényi برای
+    #   `WR=45٪, n=800` عددِ ۱۷ است ⇒ رشتهٔ ۱۲ **روتین** است و دروازه باید شکست
+    #   را به علتِ **واقعی** نسبت دهد: افتِ سرمایه (۱۵.۴٪ > ۸٪ در ریسکِ ۱٪).
+    t15 = make_scalp(800, 45.0, SL_S, TP_S, COST_S, shuffle_seed=7)
+    ok, r15 = _run("T15 realistic ordering (MCL routine, DD is the real cause)",
+                   t15,
+                   expect_gate={'H8': False},
+                   sl_pip=SL_S, tp_pip=TP_S, bar_time=horizon(t15),
+                   close=mk_close(int(t15['exit_bar'].max()) + 400),
+                   null=mk_null(36.0), n_trials=NT, split_bar=6000)
+    allok &= ok
+    m15 = r15['metrics']
+    bound15 = R.mcl_bound(len(t15), m15['win_rate'])
+    sub = (m15['max_consec_losses'] > R.MCL_ABS_CAP
+           and m15['max_consec_losses'] <= bound15
+           and m15['max_dd_pct'] > R.MAXDD_MAX_PCT)
+    print(f"        >>> {'OK  ' if sub else 'BAD '} MCL="
+          f"{m15['max_consec_losses']} exceeds the legacy cap "
+          f"{R.MCL_ABS_CAP} but sits inside the Erdős–Rényi bound {bound15} "
+          f"⇒ streak EXCUSED; H8 fails on maxDD={m15['max_dd_pct']:.2f}% "
+          f"> {R.MAXDD_MAX_PCT}% ⇒ failure correctly re-attributed")
+    allok &= sub
+
+    # ---- T16: بلیتِ بخت‌آزمایی — معکوسِ اشتباهِ رایجِ #۸ ----
+    #   حذفِ کفِ WR یک حفره باز می‌کند: `TP>>SL` تا امیدِ ریاضی روی چند برندهٔ
+    #   نادر سوار شود. این‌جا ۱۲ برنده هست (پس `WIN_FLOOR` شلیک نمی‌کند) و
+    #   `PF=1.50` هم قبول است ⇒ تنها سپری که می‌تواند بگیرد `top_win_share` است.
+    t16 = make_trades_pnl([20.0] * 11 + [400.0], [10.3] * 40, SL_S)
+    ok, r16 = _run("T16 lottery-ticket concentration (fail H1)", t16,
+                   expect_gate={'H1': False},
+                   sl_pip=SL_S, tp_pip=TP_S, bar_time=horizon(t16),
+                   close=mk_close(int(t16['exit_bar'].max()) + 400),
+                   null=mk_null(15.0), n_trials=NT, split_bar=300)
+    allok &= ok
+    m16 = r16['metrics']
+    sub = (m16['profit_factor'] >= R.PF_MIN
+           and m16['n_wins'] >= R.WIN_FLOOR
+           and m16['top_win_share'] > R.TOP_WIN_SHARE_MAX)
+    print(f"        >>> {'OK  ' if sub else 'BAD '} isolated: PF="
+          f"{m16['profit_factor']:.3f}≥{R.PF_MIN} ✓ and n_wins="
+          f"{m16['n_wins']}≥{R.WIN_FLOOR} ✓, so ONLY top_win_share="
+          f"{m16['top_win_share']:.3f}>{R.TOP_WIN_SHARE_MAX} caused the failure")
+    allok &= sub
+
+    # ---- T17: دمِ برندهٔ نمونه‌گیری‌نشده ----
+    #   `RR` نجومی با ۶ برنده: برندگان هم‌اندازه‌اند (پس `top_win_share` شلیک
+    #   نمی‌کند) و `PF=2.33` قبول است ⇒ تنها `WIN_FLOOR` می‌تواند بگیرد.
+    t17 = make_trades_pnl([400.0] * 6, [10.3] * 100, SL_S)
+    ok, r17 = _run("T17 unsampled winning tail (fail H1)", t17,
+                   expect_gate={'H1': False},
+                   sl_pip=SL_S, tp_pip=800.0, bar_time=horizon(t17),
+                   close=mk_close(int(t17['exit_bar'].max()) + 400),
+                   null=mk_null(4.0), n_trials=NT, split_bar=600)
+    allok &= ok
+    m17 = r17['metrics']
+    sub = (m17['profit_factor'] >= R.PF_MIN
+           and m17['n_wins'] < R.WIN_FLOOR
+           and (m17['top_win_share'] or 0) <= R.TOP_WIN_SHARE_MAX)
+    print(f"        >>> {'OK  ' if sub else 'BAD '} isolated: PF="
+          f"{m17['profit_factor']:.3f}≥{R.PF_MIN} ✓ and top_win_share="
+          f"{m17['top_win_share']:.3f}≤{R.TOP_WIN_SHARE_MAX} ✓, so ONLY "
+          f"n_wins={m17['n_wins']}<{R.WIN_FLOOR} caused the failure")
+    allok &= sub
 
     print("=" * 96)
     print("SELF-TEST RESULT: " + ("ALL PASS ✅" if allok else "FAILURES PRESENT ❌"))
