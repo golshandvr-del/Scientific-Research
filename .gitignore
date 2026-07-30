@@ -29,3 +29,9 @@ local-mobile/data/
 Telegram-Resource/**/*.mp4
 Telegram-Resource/**/*.ppsx
 strategies/_s332_cache/
+
+# S346 — کشِ ویژگیِ بانکِ ۴۰۱ اندیکاتوری (پارتیشن‌های mmap شدهٔ float32).
+# اینها **بازتولیدپذیر** با build_parts() هستند و ~۷MB به‌ازای هر کارت اشغال
+# می‌کنند ⇒ از git حذف می‌شوند. اما فایل‌های JSON نتیجه (sweep / joint / manifest)
+# **یافتهٔ علمی** هستند و باید چک‌پوینت شوند، پس ignore نمی‌شوند.
+results/_scan_S346/*.npy
