@@ -233,13 +233,18 @@ def part_b():
     sc_solid = 40.0 + 60.0 * ws
     print(f"      {'':9s} {'':6s} {ws:8.4f}   ⇐ weighted")
     print()
-    print(f"      verdict (11 gates) = ACCEPT ✅        score = {sc_solid:.1f}")
-    print(f"      project rule (≥{R.RQS2_ACCEPT_FLOOR:.0f})            = "
-          f"{'ACCEPTED' if sc_solid >= R.RQS2_ACCEPT_FLOOR else 'BURNED ❌'}"
+    tier = next(t for thr, t in R.RANK_TIERS if sc_solid >= thr)
+    print(f"      verdict (11 gates) = ACCEPT ✅        score = {sc_solid:.1f} "
+          f"(rank tier {tier})")
+    print(f"      retired 80 rule    = "
+          f"{'ACCEPTED' if sc_solid >= R.RQS2_ACCEPT_FLOOR else 'would have BURNED ❌'}"
           f"  (short by {max(0.0, R.RQS2_ACCEPT_FLOOR - sc_solid):.1f} points)")
+    print(f"      v2.3 outcome       = ADMITTED by the gates, ranked {tier} — the score")
+    print(f"                           now prioritises this layer instead of vetoing it.")
     print()
-    print("  ⚠️  FINDING B2 — THE ANSWER TO 'IS 80 TOO STRICT'. The 80 rule does not")
-    print("      merely raise the bar; it CONTRADICTS the design philosophy of RQS2.")
+    print("  ✅ FINDING B2 — RESOLVED in v2.3 (user decision). THE ANSWER TO 'IS 80 TOO")
+    print("      STRICT' was that the 80 rule did not merely raise the bar; it")
+    print("      CONTRADICTED the design philosophy of RQS2.")
     print("      Eleven gates exist precisely because their conditions are")
     print("      NON-COMPENSABLE: no amount of skill excuses a failed cost-stress")
     print("      test, and no drawdown record excuses an unsampled winning tail.")
@@ -250,11 +255,22 @@ def part_b():
     print("      scientifically derived gates have already certified.")
     print("      A weighted sum is the right tool for RANKING and the wrong tool")
     print("      for ADMISSION. Admission belongs to the gates.")
+    print()
+    print(f"      ⇒ v2.3 does exactly that: R.ADMISSION_RULE = {R.ADMISSION_RULE!r},")
+    print(f"        and the score survives as a {len(R.RANK_TIERS)}-way rank tier "
+          f"({', '.join(t for _, t in R.RANK_TIERS)}).")
+    print(f"      ⚠️  AND NO STRICTNESS WAS LOST: all 11 gates remain mandatory and")
+    print(f"        untouched. Only the UNDERIVED veto was removed — strictness moved")
+    print(f"        to where every threshold has a derivation, not to where the")
+    print(f"        weights were chosen by taste.")
     return dict(single_component_can_reach_80=bool(any_single),
                 min_perfect_components=len(used),
                 strong_layer_score=round(40 + 60 * wg, 1),
                 solid_all_pass_score=round(sc_solid, 1),
-                solid_layer_burned=bool(sc_solid < R.RQS2_ACCEPT_FLOOR))
+                solid_layer_burned_under_old_rule=bool(
+                    sc_solid < R.RQS2_ACCEPT_FLOOR),
+                solid_layer_admitted_now=True,
+                solid_layer_rank_tier=tier)
 
 
 def _clip(x):
