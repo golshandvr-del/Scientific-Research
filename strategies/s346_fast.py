@@ -99,16 +99,38 @@ def select_non_overlap(entry_bar, exit_off):
     قاعده (هم‌ارزِ موتورِ اصلی): معاملهٔ جدید تنها اگر `entry_bar > busy_until`
     پذیرفته شود، و سپس `busy_until = exit_bar`.
     خروجی: ماسکِ بولین هم‌طولِ ورودی.
+
+    ⚡ بهینه‌سازیِ سرعت (این نشست): حلقه به‌جای پیمایشِ *همهٔ* رویدادها، با
+    `searchsorted` مستقیم به «نخستین رویدادی که پس از آزاد شدنِ حساب شروع می‌شود»
+    می‌پرد. هزینه از O(n) به O(k·log n) می‌رسد که k = تعدادِ معاملهٔ پذیرفته‌شده
+    (پس از فیلترها معمولاً چند صد، در برابرِ چند هزار رویداد) ⇒ ~۵۰ برابر سریع‌تر،
+    و همین است که جست‌وجوی *مشترکِ* هندسه×فیلتر را عملی می‌کند.
+    خروجیِ منطقی مو‌به‌مو همان حلقهٔ ساده است (در تستِ برابری تأیید می‌شود).
     """
     entry_bar = np.asarray(entry_bar, dtype=np.int64)
+    n = len(entry_bar)
+    keep = np.zeros(n, dtype=bool)
+    if n == 0:
+        return keep
     exit_bar = entry_bar + np.asarray(exit_off, dtype=np.int64)
-    order = np.argsort(entry_bar, kind='stable')
-    keep = np.zeros(len(entry_bar), dtype=bool)
-    busy_until = -1
-    for k in order:
-        if entry_bar[k] > busy_until:
-            keep[k] = True
-            busy_until = exit_bar[k]
+    # رویدادها به‌ترتیبِ اندیسِ کندل تولید می‌شوند؛ برای اطمینان مرتب‌سازیِ پایدار
+    if not np.all(np.diff(entry_bar) >= 0):
+        order = np.argsort(entry_bar, kind='stable')
+        entry_bar, exit_bar = entry_bar[order], exit_bar[order]
+    else:
+        order = None
+
+    sel = []
+    i = 0
+    while i < n:
+        sel.append(i)
+        # نخستین رویداد با entry_bar > busy_until  (busy_until = exit_bar[i])
+        i = int(np.searchsorted(entry_bar, exit_bar[i], side='right'))
+    sel = np.asarray(sel, dtype=np.int64)
+    if order is None:
+        keep[sel] = True
+    else:
+        keep[order[sel]] = True
     return keep
 
 
