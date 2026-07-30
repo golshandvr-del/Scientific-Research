@@ -593,7 +593,11 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     c_pf    = _clip01((pf - 1.0) / 1.0) if np.isfinite(pf) else 1.0
     c_exp   = _clip01(exp_pip / (2.0 * cost_pip)) if cost_pip > 0 else 1.0
     c_tail  = _clip01(1 - maxdd_pct / MAXDD_MAX_PCT) * _clip01(1 - mcl / float(MCL_MAX))
-    c_sel   = _clip01((P_ADJ_MAX - p_adj) / P_ADJ_MAX) if p_adj is not None else 0.0
+    # مؤلفهٔ «بقای انتخاب» = چقدر **بالاتر از کرانِ بهترین‌شانس** ایستاده‌ایم.
+    # (نه p تصحیح‌شده: p_adj در نمونه‌های بزرگ به صفر می‌چسبد و اشباع می‌شود،
+    #  حال آنکه فاصله از کران، پیوسته و مستقیماً معنادار است.)
+    c_sel   = (_clip01((z_obs - z_bar) / 2.0)
+               if (z_obs is not None and z_bar is not None) else 0.0)
     c_edge  = _clip01(wr_excess / 10.0) if wr_excess is not None else 0.0
 
     weighted = (0.30 * c_skill + 0.15 * c_oos + 0.15 * c_stab + 0.10 * c_pf +
