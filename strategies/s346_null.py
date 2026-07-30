@@ -188,7 +188,8 @@ def run(card, verdict_file=None, top_k=3, n_perm=20, save=True):
               f"m={g['mult']} er={g['er_thr']} sl={g['sl_k']} rr={g['rr']} "
               f"h={g['hold']} | filters={nf} | claimed RQS="
               f"{r['formal']['rqs_score']}", flush=True)
-        res = null_baselines(card, g, n_perm=n_perm)
+        res = null_baselines(card, g, filters=r.get('filters') or [],
+                             n_perm=n_perm)
         out.append(dict(geom=g, n_filters=nf,
                         claimed_rqs=r['formal']['rqs_score'],
                         signal=res['signal'], null_long=res['null_long'],
