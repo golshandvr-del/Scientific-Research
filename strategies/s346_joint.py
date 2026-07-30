@@ -201,9 +201,13 @@ def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
                   f"| {g['mode']}/{g['side']} p={g['p']} m={g['mult']} "
                   f"sl={g['sl_k']} rr={g['rr']} h={g['hold']} | F={len(stack)}",
                   flush=True)
-        if (gi + 1) % 25 == 0:
-            print(f"  ... {gi+1}/{len(geoms)} scanned, kept={len(rows)}", flush=True)
-            _save(card, allow_time, rows, best)
+        # ⚠️ قانونِ «اندک اندک»: چون کلِ لیست ۲۴ هندسه است، checkpoint هر ۲۵ گام
+        # هرگز اجرا نمی‌شد و در صورتِ ریستِ سندباکس تمامِ ساعت‌ها کار از دست می‌رفت.
+        # پس بعد از **هر** هندسه ذخیره می‌کنیم.
+        print(f"  ... {gi+1}/{len(geoms)} scanned, kept={len(rows)}, "
+              f"last n={sa['n']} WR={sa['wr']:.2f} PF={sa['pf']:.2f} "
+              f"reached={ok}", flush=True)
+        _save(card, allow_time, rows, best)
 
     _save(card, allow_time, rows, best)
     rows_ok = [r for r in rows if r['reached']]
