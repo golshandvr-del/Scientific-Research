@@ -103,7 +103,7 @@ def ref_quantiles(save=True):
     df = se.load_data(p)
     q = {}
     for f in C1_FILTERS:
-        v = _ind(df, f['col'])
+        v = _ind(df, f['col'], f['kind'])
         v = v[WARMUP_REF:]
         v = v[np.isfinite(v)]
         # چارکِ آستانه = سهمِ کندل‌هایی که مقدارشان از آستانه کم‌تر است
@@ -125,7 +125,7 @@ def transferred_gate(df, q):
     gate = np.ones(n, bool)
     thrs = {}
     for f in C1_FILTERS:
-        v = _ind(df, f['col'])
+        v = _ind(df, f['col'], f['kind'])
         ok = np.isfinite(v)
         pool = v[WARMUP_REF:]
         pool = pool[np.isfinite(pool)]
