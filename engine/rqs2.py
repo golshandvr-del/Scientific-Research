@@ -670,9 +670,13 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     c_sel   = (_clip01((z_obs - z_bar) / 2.0)
                if (z_obs is not None and z_bar is not None) else 0.0)
     c_edge  = _clip01(wr_excess / 10.0) if wr_excess is not None else 0.0
+    # مؤلفهٔ رژیم = سلامتِ لبه در زیرمجموعهٔ خلاف‌جریان، مقیاس‌شده با هزینه.
+    c_reg   = (_clip01(cd['exp_counter'] / (2.0 * cost_pip))
+               if cd.get('exp_counter') is not None and cost_pip > 0 else 0.0)
 
-    weighted = (0.30 * c_skill + 0.15 * c_oos + 0.15 * c_stab + 0.10 * c_pf +
-                0.10 * c_exp + 0.10 * c_tail + 0.05 * c_sel + 0.05 * c_edge)
+    weighted = (0.26 * c_skill + 0.13 * c_oos + 0.13 * c_stab + 0.08 * c_pf +
+                0.09 * c_exp + 0.09 * c_tail + 0.05 * c_sel + 0.05 * c_edge +
+                0.12 * c_reg)
 
     score = 40.0 + 60.0 * weighted if all_pass else min(40.0, 40.0 * weighted)
 
