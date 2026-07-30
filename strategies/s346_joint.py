@@ -241,12 +241,24 @@ def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
         if ba['n'] < min_base_n:
             continue
 
+        # ⭐ کف‌های نمونهٔ **شناور** (قانونِ «شاید همه چیز شناور است»)
+        # کفِ ثابتِ ۴۵/۲۵ روی D1 و W1 — که پایه‌شان ~۱۰۰ معامله است — همهٔ
+        # فیلترها را حذف می‌کرد، درحالی‌که همان کف روی M5 با پایهٔ ۴۰٬۰۰۰ بی‌اثر
+        # است. پس کف باید **کسری از پایهٔ همان هندسه** باشد، نه یک عددِ مطلق.
+        _nd = min_nd if min_nd is not None else max(30, int(frac_keep * bd['n']))
+        _nh = min_nh if min_nh is not None else max(20, int(frac_keep * bh['n']))
+        _ev = (min_ev_d if min_ev_d is not None
+               else max(60, int(0.30 * int(P['is_d'].sum()))))
+
         # ⭐ غربال روی **کلِ ۴۰۱ ابزار** (نه فهرستِ دستیِ ۱۱۲تایی) — قانونِ جعبه‌ابزار
-        _, _, cands = screen401(P, card, man, allow_time=allow_time)
+        _, _, cands = screen401(P, card, man, allow_time=allow_time,
+                                min_ev_d=_ev, min_nd=_nd, min_nh=_nh,
+                                verbose=False)
         if not cands:
             continue
         stack, hist, mask = stack_maxn(P, cands, wr_floor=wr_floor,
-                                       pf_floor=pf_floor, verbose=False)
+                                       pf_floor=pf_floor, min_nd=_nd,
+                                       min_nh=_nh, verbose=False)
         sd, sh, sa = q_stats(P, mask)
         ok = (min(sd['wr'], sh['wr']) >= wr_floor and
               min(sd['pf'], sh['pf']) >= pf_floor and
