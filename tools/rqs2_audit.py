@@ -187,9 +187,60 @@ def part_b():
     print("      simultaneously excellent on several independent axes. It is not a")
     print("      'pass' line; it is a 'top decile' line. That may be the RIGHT policy —")
     print("      but it must be a DECLARED policy, not an accident of a transplanted number.")
+
+    # --------------------------------------------------------------------------
+    #  ⭐ آزمونِ سرنوشت‌سازِ سؤالِ پنجم: لایه‌ای که **هر ۱۱ دروازه را پاس می‌کند**
+    #     و با این حال قاعدهٔ ۸۰ آن را می‌سوزاند. اگر چنین لایه‌ای «قابلِ‌قبول»
+    #     به نظر برسد، پس ۸۰ در حالِ سوزاندنِ یافته‌های واقعیِ پروژه است.
+    # --------------------------------------------------------------------------
+    print()
+    print(SUB)
+    print("  ⭐ THE DECISIVE TEST — a layer that passes ALL ELEVEN GATES and is")
+    print("     nonetheless BURNED by the 80 rule. Every value below comfortably")
+    print("     clears its own gate; none sits on a boundary.")
+    print(SUB)
+    solid = [
+        ('c_skill', 4.5 / 6.0, "z = 4.5σ vs the measured null (gate asks 3.0σ)"),
+        ('c_oos', (1.45 - 1.0) / 0.8, "holdout PF = 1.45 (gate asks 1.20)"),
+        ('c_stab', 1.0, "all 4 calendar windows positive (gate asks 3 of 4)"),
+        ('c_pf', (1.55 - 1.0) / 1.0, "PF = 1.55 (gate asks 1.30)"),
+        ('c_exp', 0.55, "expectancy = 1.1× spread (gate asks 0.5×)"),
+        ('c_tail', _clip(1 - 5.0 / R.MAXDD_MAX_PCT) * _clip(1 - 0.55),
+         "maxDD = 5% (gate caps 8%), streak = 55% of the Erdős–Rényi bound"),
+        ('c_sel', 0.30, "z_obs stands 0.6σ above the best-of-N bound (gate asks >0)"),
+        ('c_edge', 0.62, "WR excess = 6.2pp over cost breakeven (gate asks 3.0pp)"),
+        ('c_reg', 0.28, "counter-drift expectancy = 0.56× spread (gate asks >0)"),
+    ]
+    ws = 0.0
+    print(f"      {'component':9s} {'value':>6s} {'contrib':>8s}   margin over its own gate")
+    for k, v, why in solid:
+        ws += WEIGHTS[k] * v
+        print(f"      {k:9s} {v:6.3f} {WEIGHTS[k] * v:8.4f}   {why}")
+    sc_solid = 40.0 + 60.0 * ws
+    print(f"      {'':9s} {'':6s} {ws:8.4f}   ⇐ weighted")
+    print()
+    print(f"      verdict (11 gates) = ACCEPT ✅        score = {sc_solid:.1f}")
+    print(f"      project rule (≥{R.RQS2_ACCEPT_FLOOR:.0f})            = "
+          f"{'ACCEPTED' if sc_solid >= R.RQS2_ACCEPT_FLOOR else 'BURNED ❌'}"
+          f"  (short by {max(0.0, R.RQS2_ACCEPT_FLOOR - sc_solid):.1f} points)")
+    print()
+    print("  ⚠️  FINDING B2 — THE ANSWER TO 'IS 80 TOO STRICT'. The 80 rule does not")
+    print("      merely raise the bar; it CONTRADICTS the design philosophy of RQS2.")
+    print("      Eleven gates exist precisely because their conditions are")
+    print("      NON-COMPENSABLE: no amount of skill excuses a failed cost-stress")
+    print("      test, and no drawdown record excuses an unsampled winning tail.")
+    print("      A weighted SUM is compensable by construction. Using a threshold on")
+    print("      that sum as a SECOND admission rule therefore re-introduces exactly")
+    print("      the trade-off logic the gate architecture was built to forbid —")
+    print("      and it does so in the harmful direction, by vetoing layers the")
+    print("      scientifically derived gates have already certified.")
+    print("      A weighted sum is the right tool for RANKING and the wrong tool")
+    print("      for ADMISSION. Admission belongs to the gates.")
     return dict(single_component_can_reach_80=bool(any_single),
                 min_perfect_components=len(used),
-                strong_layer_score=round(40 + 60 * wg, 1))
+                strong_layer_score=round(40 + 60 * wg, 1),
+                solid_all_pass_score=round(sc_solid, 1),
+                solid_layer_burned=bool(sc_solid < R.RQS2_ACCEPT_FLOOR))
 
 
 def _clip(x):
