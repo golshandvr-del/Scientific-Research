@@ -215,12 +215,21 @@ def main(hold, n_sample):
             med_s = f'{med:>10.1f}' if np.isfinite(med) else f'{">64":>10}'
             print(f'{k:>7.3f}{k * k:>13.2f}{med_s}{cells}')
         # ردیفِ هندسهٔ منجمد
+        # ⚠️ رفعِ باگِ تطبیقِ اعشاری: `1.618 × 3.236 = 5.235848…` است، نه
+        #    دقیقاً `5.236`ی که در گرید هست. جست‌وجوی عضویتِ `in` روی float
+        #    شکست می‌خورد و `P_touch(TP)` را `nan` می‌کرد — یعنی همان عددی که
+        #    کلِ کشف را اثبات می‌کند در سکوت گم می‌شد. **نزدیک‌ترین** k را
+        #    برمی‌داریم و اگر فاصله بیش از رزولوشنِ گرید بود، صریح اعتراض.
+        def _nearest(kv):
+            kk = min(K_GRID, key=lambda g: abs(g - kv))
+            return kk if abs(kk - kv) < 0.02 else None
+
         k_sl = FROZEN['sl_k']
         k_tp = FROZEN['sl_k'] * FROZEN['rr']
         hi_ = holds.index(hold) if hold in holds else 1
-        p_sl = res[k_sl]['p_at'][hi_] if k_sl in res else float('nan')
-        # k_tp=5.236 در گرید هست
-        p_tp = res[k_tp]['p_at'][hi_] if k_tp in res else float('nan')
+        ksl_g, ktp_g = _nearest(k_sl), _nearest(k_tp)
+        p_sl = res[ksl_g]['p_at'][hi_] if ksl_g is not None else float('nan')
+        p_tp = res[ktp_g]['p_at'][hi_] if ktp_g is not None else float('nan')
         frozen_rows[card] = (p_sl, p_tp)
         print(f'   FROZEN S348/S349 geometry @H={hold}:  '
               f'P_touch(SL={k_sl:.3f}ATR)={p_sl * 100:5.1f}%   '
