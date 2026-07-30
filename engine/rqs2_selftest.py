@@ -69,6 +69,37 @@ def horizon(trades, factor=1.0):
     return np.arange(int(hi * factor), dtype='float64')
 
 
+def mk_close(n_bars, cycle=800, amp=0.25):
+    """سریِ قیمتِ مصنوعی با رژیم‌های **متناوبِ** صعودی/نزولی.
+
+    با `REGIME_LOOKBACK=200` و `cycle=800`، علامتِ بازدهِ ۲۰۰ کندلِ گذشته به‌طورِ
+    دوره‌ای عوض می‌شود ⇒ حدوداً نیمی از معاملات «هم‌سو» و نیمی «خلاف‌جریان»
+    می‌افتند، که برای آزمونِ معنادارِ H10 لازم است.
+    """
+    t = np.arange(int(n_bars), dtype='float64')
+    return 100.0 * np.exp(amp * np.sin(2 * np.pi * t / float(cycle)))
+
+
+def assign_outcomes(trades, close, wr_counter, wr_aligned, sl_pip, tp_pip):
+    """بازنویسیِ نتیجهٔ معاملات تا WR در **دو زیرمجموعهٔ رژیمی** دقیقاً کنترل شود.
+
+    این تنها راهِ ساختِ موردِ معلوم‌الجواب برای H10 است: باید بتوانیم لایه‌ای
+    بسازیم که کلِ WR آن قابلِ قبول باشد ولی همهٔ سودش از معاملاتِ هم‌سو بیاید.
+    """
+    cdm = R.counter_drift_mask(trades, close)
+    assert cdm is not None, "close series too short for the regime lookback"
+    out = trades.copy().reset_index(drop=True)
+    outcomes = [None] * len(out)
+    for mask, wr in ((cdm, wr_counter), (~cdm, wr_aligned)):
+        idx = np.where(mask)[0]
+        k = int(round(len(idx) * float(wr) / 100.0))
+        for i, o in zip(idx, _interleave(k, len(idx) - k)):
+            outcomes[i] = o
+    out['outcome'] = outcomes
+    out['pnl_pip'] = [tp_pip if o == 'win' else -sl_pip for o in outcomes]
+    return out
+
+
 def mk_null(long_wr, short_wr=None, sd=1.5, k=20, gap=4.0):
     """مدلِ صفرِ مصنوعی. `gap` = فاصلهٔ perm_max از perm_mean."""
     d = {}
