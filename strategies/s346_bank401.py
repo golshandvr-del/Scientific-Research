@@ -228,15 +228,19 @@ def screen401(P, card, man, allow_time=False,
     _, cwr_h, _ = cheap_stats(pnl, win, ~is_d)
 
     pool = []
-    for p in man['parts']:
+    for p, cols in zip(man['parts'], man['part_cols']):
         try:
-            part = pd.read_parquet(p)
+            # mmap: هیچ‌گاه کلِ قطعه در RAM نمی‌آید؛ فقط سطرهای رویداد لمس می‌شوند
+            arr = np.load(p, mmap_mode='r')
         except Exception:
             continue
-        for col in part.columns:
+        # ⭐ نمونه‌گیریِ یک‌بارهٔ سطرهای رویداد (sb) ⇒ ماتریسِ کوچکِ n_ev×48
+        sub = np.asarray(arr[sb, :], dtype=np.float64)
+        del arr
+        for jj, col in enumerate(cols):
             if (not allow_time) and col.startswith('TIME:'):
                 continue
-            v = part[col].values.astype(np.float64)[sb]
+            v = sub[:, jj]
             finite = np.isfinite(v)
             if finite.sum() < 0.5 * len(v):
                 continue
@@ -260,7 +264,7 @@ def screen401(P, card, man, allow_time=False,
                     if gd >= min_gain_d and gh >= min_gain_h:
                         pool.append(dict(col=col, q=q, thr=thr, dir=d,
                                          cheap_min_gain=round(min(gd, gh), 3)))
-        del part
+        del sub
     pool.sort(key=lambda r: -r['cheap_min_gain'])
     pool = pool[:keep_top]
     if verbose:
