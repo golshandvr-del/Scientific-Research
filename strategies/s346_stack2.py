@@ -140,13 +140,13 @@ def stack_maxn(P, cands, wr_floor=61.0, pf_floor=1.35, max_filters=10,
     که **کم‌ترین ریزشِ n** را بدهد. وقتی کف برآورده شد، توقف (اضافه‌کردنِ فیلترِ
     بیشتر فقط n را می‌خورد ⇒ خلافِ هدفِ این نشست).
     """
-    pnl, win, is_d, spread, FV = P['pnl'], P['win'], P['is_d'], P['spread'], P['FV']
+    FV = P['FV']
     stack, used, hist = [], set(), []
     cur = np.ones(len(P['sb']), bool)
 
     for step in range(max_filters):
-        sd0 = stats(pnl[cur & is_d], win[cur & is_d], spread)
-        sh0 = stats(pnl[cur & ~is_d], win[cur & ~is_d], spread)
+        # ⭐ آمارِ صف‌آگاه: همان صفی که داورِ رسمی می‌بیند
+        sd0, sh0, _ = q_stats(P, cur)
         if min(sd0['wr'], sh0['wr']) >= wr_floor and min(sd0['pf'], sh0['pf']) >= pf_floor:
             break   # کف برآورده شد — n را بیش از این نمی‌خوریم
 
@@ -161,11 +161,10 @@ def stack_maxn(P, cands, wr_floor=61.0, pf_floor=1.35, max_filters=10,
             union = (cur | m).sum()
             if union > 0 and inter / max(cur.sum(), 1) > jaccard_max:
                 continue
-            nd_, nh_ = int((new & is_d).sum()), int((new & ~is_d).sum())
-            if nd_ < 60 or nh_ < 35:
+            sd, sh, _ = q_stats(P, new)
+            nd_, nh_ = sd['n'], sh['n']
+            if nd_ < 45 or nh_ < 25:
                 continue
-            sd = stats(pnl[new & is_d], win[new & is_d], spread)
-            sh = stats(pnl[new & ~is_d], win[new & ~is_d], spread)
             # باید کیفیت را در هر دو بازه بهبود دهد (تکرارپذیریِ گامِ انباشت)
             if sd['wr'] <= sd0['wr'] or sh['wr'] <= sh0['wr']:
                 continue
