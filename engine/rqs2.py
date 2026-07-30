@@ -193,30 +193,70 @@ GATE_NAMES = {
 }
 
 
-def counter_drift_mask(trades, close, lookback=REGIME_LOOKBACK):
+def counter_drift_mask(trades, close, lookback=REGIME_LOOKBACK, bar_time=None,
+                       with_judgeable=False):
     """ماسکِ معاملاتی که **خلافِ رانشِ حاکم** باز شده‌اند.
 
-    رانشِ حاکم در لحظهٔ ورود = علامتِ بازدهِ `lookback` کندلِ گذشته.
-    یک معامله «خلاف‌جریان» است اگر:
-        long  و رانش ≤ 0   یا   short و رانش ≥ 0
+    رانشِ حاکم در لحظهٔ ورود = علامتِ بازدهِ افقِ رژیم. یک معامله «خلاف‌جریان»
+    است اگر:  long و رانش ≤ 0  ،  یا  short و رانش ≥ 0.
 
     نکتهٔ ظریفِ طراحی: مرجع، رانشِ **خودِ دارایی** است نه بازار کلی، و در
     لحظهٔ ورود محاسبه می‌شود (کاملاً causal، بدونِ نگاه به آینده).
+
+    ── v2.3: افقِ رژیم **زمان‌محور** شد (تصمیمِ کاربر) ────────────────────────
+    اگر `bar_time` داده شود، افق `REGIME_LOOKBACK_TRADING_DAYS` **روزِ معاملاتی**
+    است و با `searchsorted` روی محورِ زمان یافته می‌شود — نه با شمارشِ کندل. دو
+    مزیت: (۱) معنایش روی همهٔ کارت‌ها یکی است، (۲) نسبت به شکافِ داده (تعطیلات،
+    آخرِ هفته، کندلِ گم‌شده) مصون است، چون در زمان می‌شمارد نه در ردیف.
+
+    ⚠️ و نقصِ دومی که همین‌جا رفع شد: کدِ قدیم `prev` را با
+    `np.clip(eb − lookback, 0, …)` می‌ساخت. یعنی برای معاملاتِ **ابتدای داده**
+    که تاریخِ کافی ندارند، پنجره **بی‌صدا کوتاه** می‌شد و رانشی مثلاً ۳روزه به
+    جای ۲۸۰روزه محاسبه می‌گشت — بعد همان معامله «هم‌سو/خلاف‌جریان» برچسب
+    می‌خورد و در آمارِ H10 وزن می‌گرفت. حالا این معاملات **غیرقابلِ‌داوری**
+    علامت می‌خورند و از هر دو زیرمجموعه حذف می‌شوند: «پنجرهٔ ناقص» شاهد نیست.
+
+    خروجی: ماسکِ خلاف‌جریان (یا اگر `with_judgeable=True`، جفتِ
+    `(خلاف‌جریان, قابلِ‌داوری)`). اگر افق قابلِ محاسبه نباشد ⇒ `None`.
     """
     if trades is None or len(trades) == 0 or close is None:
-        return None
+        return (None, None) if with_judgeable else None
     c = np.asarray(close, dtype='float64')
-    if len(c) < lookback + 2:
-        return None
+    n_tr = len(trades)
     eb = np.clip(trades['entry_bar'].values.astype(int), 0, len(c) - 1)
-    prev = np.clip(eb - int(lookback), 0, len(c) - 1)
+
+    if bar_time is not None and len(np.asarray(bar_time)) >= 2:
+        bt = np.asarray(bar_time, dtype='float64')
+        span = float(bt[-1] - bt[0])
+        # آیا تاریخِ کارت اصلاً افقِ کانونی را در خود دارد؟ اگر نه، داوری
+        # ممکن نیست — و این **یافتهٔ قابلِ‌اقدام** است (دادهٔ بلندتر لازم است)،
+        # نه بهانه‌ای برای پس‌گرد به رفتارِ نادرستِ کندل‌محور.
+        if span <= REGIME_LOOKBACK_SECONDS:
+            return (None, None) if with_judgeable else None
+        t_entry = bt[np.clip(eb, 0, len(bt) - 1)]
+        t_ref = t_entry - REGIME_LOOKBACK_SECONDS
+        prev = np.searchsorted(bt, t_ref, side='left')
+        prev = np.clip(prev, 0, len(c) - 1)
+        # قابلِ‌داوری = پنجرهٔ **کاملِ** رژیم پیش از ورود موجود بوده است
+        judgeable = (bt[np.clip(prev, 0, len(bt) - 1)] <= t_ref + 1e-9) & (prev < eb)
+    else:
+        lb = int(lookback)
+        if len(c) < lb + 2:
+            return (None, None) if with_judgeable else None
+        prev = eb - lb
+        judgeable = prev >= 0
+        prev = np.clip(prev, 0, len(c) - 1)
+
     with np.errstate(divide='ignore', invalid='ignore'):
         drift = np.where(c[prev] > 0, c[eb] / c[prev] - 1.0, 0.0)
     if 'direction' in trades.columns:
         is_long = (trades['direction'].values == 'long')
     else:
-        is_long = np.ones(len(trades), bool)
-    return np.where(is_long, drift <= 0.0, drift >= 0.0)
+        is_long = np.ones(n_tr, bool)
+    counter = np.where(is_long, drift <= 0.0, drift >= 0.0) & judgeable
+    if with_judgeable:
+        return counter, np.asarray(judgeable, bool)
+    return counter
 
 
 # ================================ توابعِ کمکی ================================
@@ -876,28 +916,47 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     h9 = (exp_pip > EXP_COST_MULT * spread) and (exp_stress > 0)
 
     # ------------------ H10 ⭐ مقاومتِ رژیمی (خلافِ جریان) ------------------
-    cdm = counter_drift_mask(tr, close, REGIME_LOOKBACK)
+    cdm, judge = counter_drift_mask(tr, close, REGIME_LOOKBACK,
+                                    bar_time=bar_time, with_judgeable=True)
     cd = {}
     if cdm is None:
         h10 = None
-        res['notes'].append("H10 UNKNOWN: close series not supplied — cannot "
-                            "test whether the edge survives against the "
-                            "prevailing drift, which is the one question the "
-                            "permutation control structurally cannot answer")
+        if close is None:
+            res['notes'].append("H10 UNKNOWN: close series not supplied — cannot "
+                                "test whether the edge survives against the "
+                                "prevailing drift, which is the one question the "
+                                "permutation control structurally cannot answer")
+        else:
+            # v2.3: افقِ رژیم زمان‌محور است ⇒ کارتی که تاریخش کوتاه‌تر از افق
+            #       است **قابلِ داوری نیست**. این یافتهٔ قابلِ‌اقدام است.
+            span_d = ((float(np.asarray(bar_time)[-1] - np.asarray(bar_time)[0])
+                       / 86400.0) if bar_time is not None else 0.0)
+            res['notes'].append(
+                f"H10 UNKNOWN: the card's history spans {span_d:.0f} calendar "
+                f"days, which is shorter than the canonical regime horizon of "
+                f"{REGIME_LOOKBACK_SECONDS / 86400.0:.0f} days "
+                f"({REGIME_LOOKBACK_TRADING_DAYS:.0f} trading days) ⇒ the "
+                f"prevailing drift at entry cannot be established. ACTION: "
+                f"obtain longer history for this card; do NOT fall back to a "
+                f"bar-count window, which is what made H10 incomparable")
     else:
+        cd['n_judgeable'] = int(judge.sum())
+        cd['n_unjudgeable'] = int((~judge).sum())
+        aligned = judge & (~cdm)
         n_cd = int(cdm.sum())
-        n_al = int((~cdm).sum())
+        n_al = int(aligned.sum())
         cd['n_counter'], cd['n_aligned'] = n_cd, n_al
+        cd['regime_lookback_days'] = round(REGIME_LOOKBACK_SECONDS / 86400.0, 1)
         if n_cd > 0:
             sub = tr[cdm]
             wcd = sum(1 for o in sub['outcome'] if o == 'win')
             cd['wr_counter'] = round(wcd / n_cd * 100.0, 2)
             cd['exp_counter'] = round(float(np.mean(pnl[cdm])), 3)
         if n_al > 0:
-            sub = tr[~cdm]
+            sub = tr[aligned]
             wal = sum(1 for o in sub['outcome'] if o == 'win')
             cd['wr_aligned'] = round(wal / n_al * 100.0, 2)
-            cd['exp_aligned'] = round(float(np.mean(pnl[~cdm])), 3)
+            cd['exp_aligned'] = round(float(np.mean(pnl[aligned])), 3)
         if n_cd < REGIME_N_FLOOR:
             # لایه هرگز در شرایطِ نامساعد آزموده نشده ⇒ ادعا نشده، نه تأیید شده
             h10 = None
