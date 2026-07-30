@@ -182,10 +182,8 @@ def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
         if g['p'] not in ch_cache:
             ch_cache[g['p']] = adaptive_channel(df, p=g['p'], mult=1.0)
         ch = ch_cache[g['p']]
-        if F is None:
-            F = build_features(df, ch, card)
         warmup = max(5 * g['p'], 250)
-        P = prepare_fast(df, ch, F, asset, split_idx, g, warmup)
+        P = prepare_fast(df, ch, None, asset, split_idx, g, warmup)
         if P is None:
             continue
         n_ev = len(P['sb'])
@@ -194,7 +192,8 @@ def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
         if ba['n'] < min_base_n:
             continue
 
-        _, _, cands = screen(P, allow_time=allow_time)
+        # ⭐ غربال روی **کلِ ۴۰۱ ابزار** (نه فهرستِ دستیِ ۱۱۲تایی) — قانونِ جعبه‌ابزار
+        _, _, cands = screen401(P, card, man, allow_time=allow_time)
         if not cands:
             continue
         stack, hist, mask = stack_maxn(P, cands, wr_floor=wr_floor,
