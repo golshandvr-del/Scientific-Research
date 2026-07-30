@@ -145,26 +145,28 @@ def main():
     # سناریوها رد می‌شد و آزمونِ بقیهٔ دروازه‌ها بی‌معنا می‌گشت.
     t = make_trades(252, 148, SL, TP)                      # WR = 63.0٪
     BT = horizon(t)                                        # پوششِ کاملِ تقویم
+    CL = mk_close(int(t['exit_bar'].max()) + 400)          # رژیم‌های متناوب
 
     # ---- T1: فقط رانش — WR=63٪ ولی مبنای بی‌سیگنال هم ۶۰٪ است ----
     ok, _ = _run("T1 drift-only (fail H3)", t,
                  expect_gate={'H3': False}, expect_state='REJECT',
-                 tp_pip=TP, bar_time=BT, null=mk_null(60.0), n_trials=NT,
-                 split_bar=1000)
+                 tp_pip=TP, bar_time=BT, close=CL, null=mk_null(60.0),
+                 n_trials=NT, split_bar=1000)
     allok &= ok
 
     # ---- T2: مهارتِ واقعی — همان WR ولی مبنا ۵۲٪ ⇒ باید کاملاً ACCEPT شود ----
     #   این سخت‌ترین آزمونِ معیار است: معیاری که همه‌چیز را رد کند بی‌فایده است.
     ok, _ = _run("T2 real skill (full ACCEPT)", t,
                  expect_gate={'H3': True}, expect_state='ACCEPT',
-                 tp_pip=TP, bar_time=BT, null=mk_null(52.0), n_trials=NT,
-                 split_bar=1000)
+                 tp_pip=TP, bar_time=BT, close=CL, null=mk_null(52.0),
+                 n_trials=NT, split_bar=1000)
     allok &= ok
 
     # ---- T3: نبودِ tp_pip ⇒ H2 نامعلوم، حکم INCOMPLETE (نه ACCEPT، نه REJECT) ----
     ok, _ = _run("T3 tp_pip missing (H2=?)", t,
                  expect_gate={'H2': None}, expect_state='INCOMPLETE',
-                 bar_time=BT, null=mk_null(52.0), n_trials=NT, split_bar=1000)
+                 bar_time=BT, close=CL, null=mk_null(52.0), n_trials=NT,
+                 split_bar=1000)
     allok &= ok
 
     # ---- T4: تقلبِ TP<SL — WR جعلیِ ۷۸٪ با TP=0.3×SL ----
@@ -172,6 +174,7 @@ def main():
     ok, _ = _run("T4 TP<SL gaming (fail H2)", t4,
                  expect_gate={'H2': False},
                  tp_pip=30.0, sl_pip=SL, bar_time=horizon(t4),
+                 close=mk_close(int(t4['exit_bar'].max()) + 400),
                  null=mk_null(52.0), n_trials=NT, split_bar=1000)
     allok &= ok
 
@@ -179,7 +182,7 @@ def main():
     ok, _ = _run("T5 no null model (H3/H4/H5=?)", t,
                  expect_gate={'H3': None, 'H4': None, 'H5': None},
                  expect_state='INCOMPLETE',
-                 tp_pip=TP, bar_time=BT, split_bar=1000)
+                 tp_pip=TP, bar_time=BT, close=CL, split_bar=1000)
     allok &= ok
 
     # ---- T6: سمتِ بی‌مهارت — لانگِ ماهر (۷۰٪ vs ۵۲) + شورتِ سوارِ رانش (۵۶٪ vs ۵۵) ----
@@ -188,29 +191,59 @@ def main():
     t6 = pd.concat([tl, ts], ignore_index=True).sort_values('exit_bar')
     ok, _ = _run("T6 one skilless side (fail H4)", t6,
                  expect_gate={'H4': False},
-                 tp_pip=TP, bar_time=horizon(t6), null=mk_null(52.0, 55.0),
-                 n_trials=NT, split_bar=1000)
+                 tp_pip=TP, bar_time=horizon(t6),
+                 close=mk_close(int(t6['exit_bar'].max()) + 400),
+                 null=mk_null(52.0, 55.0), n_trials=NT, split_bar=1000)
     allok &= ok
 
     # ---- T7: خوشه‌ای‌شدنِ تقویمی — معاملات فقط در ~۲۰٪ نخستِ افقِ داده ----
     ok, _ = _run("T7 calendar clustering (fail H6)", t,
                  expect_gate={'H6': False},
-                 tp_pip=TP, bar_time=horizon(t, factor=5), null=mk_null(52.0),
-                 n_trials=NT, split_bar=1000)
+                 tp_pip=TP, bar_time=horizon(t, factor=5), close=CL,
+                 null=mk_null(52.0), n_trials=NT, split_bar=1000)
     allok &= ok
 
     # ---- T8: معاملاتِ هم‌پوشان ⇒ استقلال نقض ⇒ H0 رد ----
     t8 = make_trades(252, 148, SL, TP, step=2, hold=9)     # hold > step
     ok, _ = _run("T8 overlapping trades (fail H0)", t8,
                  expect_gate={'H0': False},
-                 tp_pip=TP, bar_time=horizon(t8), null=mk_null(52.0),
-                 n_trials=NT, split_bar=1000)
+                 tp_pip=TP, bar_time=horizon(t8),
+                 close=mk_close(int(t8['exit_bar'].max()) + 400),
+                 null=mk_null(52.0), n_trials=NT, split_bar=1000)
     allok &= ok
 
     # ---- T9: نبودِ محورِ زمان ⇒ H6 نامعلوم (ادعا نشده ≠ تأیید شده) ----
     ok, _ = _run("T9 no bar_time (H6=?)", t,
                  expect_gate={'H6': None}, expect_state='INCOMPLETE',
-                 tp_pip=TP, null=mk_null(52.0), n_trials=NT, split_bar=1000)
+                 tp_pip=TP, close=CL, null=mk_null(52.0), n_trials=NT,
+                 split_bar=1000)
+    allok &= ok
+
+    # ---- T10 ⭐ سوارِ رانش: کلِ WR قابلِ قبول ولی همهٔ سود از معاملاتِ هم‌سو ----
+    #   این همان لایه‌ای است که *همهٔ* دروازه‌های دیگر — از جمله آزمونِ جای‌گشت —
+    #   از آن عبور می‌کنند، چون جای‌گشت رانشِ نمونه را حفظ می‌کند.
+    t10 = assign_outcomes(t, CL, wr_counter=40.0, wr_aligned=82.0, sl_pip=SL,
+                          tp_pip=TP)
+    ok, _ = _run("T10 drift-rider (fail H10)", t10,
+                 expect_gate={'H3': True, 'H10': False},
+                 tp_pip=TP, bar_time=BT, close=CL, null=mk_null(52.0),
+                 n_trials=NT, split_bar=1000)
+    allok &= ok
+
+    # ---- T11: لبهٔ واقعی — در هر دو رژیم سودده ⇒ H10 پاس ----
+    t11 = assign_outcomes(t, CL, wr_counter=62.0, wr_aligned=64.0, sl_pip=SL,
+                          tp_pip=TP)
+    ok, _ = _run("T11 regime-robust (pass H10)", t11,
+                 expect_gate={'H10': True}, expect_state='ACCEPT',
+                 tp_pip=TP, bar_time=BT, close=CL, null=mk_null(52.0),
+                 n_trials=NT, split_bar=1000)
+    allok &= ok
+
+    # ---- T12: نبودِ سریِ قیمت ⇒ H10 نامعلوم ----
+    ok, _ = _run("T12 no close (H10=?)", t,
+                 expect_gate={'H10': None}, expect_state='INCOMPLETE',
+                 tp_pip=TP, bar_time=BT, null=mk_null(52.0), n_trials=NT,
+                 split_bar=1000)
     allok &= ok
 
     print("=" * 96)
