@@ -573,8 +573,33 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     wins = sum(1 for o in outcomes if o == 'win')
     wr = wins / n * 100.0
     pnl = tr['pnl_pip'].values.astype('float64')
+
+    # ⚠️ رفعِ نقصِ v2.2 — **بی‌صداترین و خطرناک‌ترین** مسیرِ فسادِ داده که
+    #   حسابرسی افشا کرد. اندازه‌گیری: یک `NaN` در `pnl_pip` باعث می‌شد
+    #     net = nan  ·  expectancy = nan  ·  **profit_factor = 999.0**
+    #   و هیچ نوتی هم صادر نشود. عددِ ۹۹۹ فالبکِ «PF بی‌نهایت» است (یعنی
+    #   لایه‌ای که هیچ باختی ندارد) — پس یک بک‌تستِ **خراب** با یک بک‌تستِ
+    #   **بی‌نقص** به یک عدد نگاشت می‌شد. بدتر: در نمرهٔ پیوسته
+    #   `c_pf = 1.0 if not isfinite(pf)`، یعنی فسادِ داده مؤلفهٔ PF را
+    #   **کامل** می‌گرفت. این یک مسیرِ ارتقای نمره از راهِ خرابیِ داده بود.
+    #   سیاستِ درست برای یک معیارِ پژوهشی: **سقوطِ بلند، نه تخریبِ خاموش.**
+    if not np.all(np.isfinite(pnl)):
+        bad = np.where(~np.isfinite(pnl))[0]
+        raise ValueError(
+            f"RQS2 refuses to judge a corrupt backtest: {len(bad)} of {n} rows "
+            f"have a non-finite pnl_pip (first offending positions: "
+            f"{bad[:10].tolist()}). A NaN or inf P&L makes net, expectancy and "
+            f"profit factor meaningless, and the legacy code silently mapped it "
+            f"to profit_factor=999.0 — the same value used for a flawless layer "
+            f"with zero losses. Fix the simulator output; do not score it.")
     exp_pip = float(np.mean(pnl))
 
+    if asset not in se.ASSETS:
+        raise KeyError(
+            f"unknown asset {asset!r}: RQS2 needs the asset's real spread and "
+            f"pip value to judge cost resistance (H9) and drawdown (H8). "
+            f"Known assets: {sorted(se.ASSETS)}. A typo here would otherwise "
+            f"surface as an opaque KeyError deep inside the cost model.")
     cfg = se.ASSETS[asset]
     spread = float(cfg['spread_pip'])
     slip = float(cfg.get('slip_pip', 0.0))
