@@ -121,13 +121,22 @@ def build_parts(card, df, ch, force=False):
 
     names = ib.list_indicators()
     tidx = np.arange(len(df), dtype=np.float64)
-    parts, kinds = [], {}
+    parts, pcols, kinds = [], [], {}
     buf, pidx = {}, 0
 
     def flush(buf, pidx):
-        p = f"{OUT}/{card}_bank401_p{pidx:02d}.parquet"
-        pd.DataFrame(buf).to_parquet(p, compression='snappy')
+        """یک قطعه را به‌صورتِ آرایهٔ float32 دوبعدی (rows × cols) روی دیسک می‌نویسد."""
+        if not buf:
+            return {}, pidx
+        cols = list(buf)
+        arr = np.empty((len(df), len(cols)), dtype=np.float32)
+        for j, c in enumerate(cols):
+            arr[:, j] = buf[c]
+        p = f"{OUT}/{card}_bank401_p{pidx:02d}.npy"
+        np.save(p, arr)
         parts.append(p)
+        pcols.append(cols)
+        del arr
         return {}, pidx + 1
 
     # --- ۴۰۱ اندیکاتورِ بانک ---
