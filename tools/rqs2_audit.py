@@ -384,15 +384,20 @@ def part_d():
     cases.append(("split_bar = 0 (empty in-sample)", lambda: R.compute_rqs2(
         _mk(60, 60.0), 'XAUUSD', sl_pip=100.0, tp_pip=100.0,
         null=S.mk_null(50.0), n_trials=10, split_bar=0)))
-    # ۱۶) NaN در pnl
+    # ۱۶) NaN در pnl — ⚠️ این‌جا سقوط **مطلوب** است، نه باگ.
+    #     تمایزی که خودِ حسابرسی باید رعایت کند: «نبودِ استثنا» معیارِ سلامت
+    #     نیست. برای ورودیِ **فاسد**، سقوطِ بلند رفتارِ درست است و ادامه‌دادن
+    #     تخریبِ خاموش. پس دو ردهٔ متمایز داریم:
+    #       expect_raise=False ⇒ باید تمیز داوری شود
+    #       expect_raise=True  ⇒ باید صریحاً امتناع کند (سکوت = باگ)
     def nan_case():
         t = _mk(60, 60.0)
         t.loc[3, 'pnl_pip'] = np.nan
         return R.compute_rqs2(t, 'XAUUSD', sl_pip=100.0, tp_pip=100.0)
-    cases.append(("NaN in pnl_pip", nan_case))
-    # ۱۷) دارایی ناشناخته
-    cases.append(("unknown asset key", lambda: R.compute_rqs2(
-        _mk(60, 60.0), 'NOSUCH', sl_pip=100.0, tp_pip=100.0)))
+    cases.append(("NaN in pnl_pip (must REFUSE)", nan_case, ValueError))
+    # ۱۷) دارایی ناشناخته — باید با پیامِ خوانا امتناع کند
+    cases.append(("unknown asset key (must REFUSE)", lambda: R.compute_rqs2(
+        _mk(60, 60.0), 'NOSUCH', sl_pip=100.0, tp_pip=100.0), KeyError))
     # ۱۸) مدلِ صفر با perm_sd = 0
     cases.append(("null with perm_sd=0", lambda: R.compute_rqs2(
         _mk(60, 60.0), 'XAUUSD', sl_pip=100.0, tp_pip=100.0,
@@ -406,10 +411,19 @@ def part_d():
         _mk(60, 60.0), 'XAUUSD', sl_pip=100.0, tp_pip=100.0,
         initial_capital=0.0)))
 
+    # یکسان‌سازیِ شکلِ سه‌گانه: (نام، تابع، استثنایِ موردِ انتظار یا None)
+    cases = [(c if len(c) == 3 else (c[0], c[1], None)) for c in cases]
+
     fails = []
-    for name, fn in cases:
+    for name, fn, want_exc in cases:
         try:
             out = fn()
+            if want_exc is not None:
+                fails.append((name, f"SILENTLY ACCEPTED corrupt input — "
+                                    f"expected {want_exc.__name__}"))
+                print(f"  [SILENT]     {name:36s} ⇐ expected "
+                      f"{want_exc.__name__}, got a verdict instead")
+                continue
             if isinstance(out, dict):
                 v = f"verdict={out['verdict']:10s} score={out['rqs2_score']:6.1f}"
                 # آزمونِ انسجامِ خروجی
@@ -428,6 +442,10 @@ def part_d():
             else:
                 print(f"  [ok]         {name:36s} → {out}")
         except Exception as exc:      # noqa: BLE001 — شکارِ باگ، عمداً وسیع
+            if want_exc is not None and isinstance(exc, want_exc):
+                print(f"  [refused ✓]  {name:36s} {type(exc).__name__}: "
+                      f"{str(exc)[:70]}…")
+                continue
             fails.append((name, f"{type(exc).__name__}: {exc}"))
             print(f"  [CRASH]      {name:36s} {type(exc).__name__}: {exc}")
             traceback.print_exc(limit=2)
