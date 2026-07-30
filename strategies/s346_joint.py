@@ -170,11 +170,19 @@ def sweep_card(card, min_base_n=600, top_k=24, save=True, wr_min_base=51.0):
     elig = [r for r in rows
             if r['base_n'] >= min_base_n and r['base_wr_min'] >= wr_min_base]
     elig.sort(key=lambda r: -r['base_n'])
-    rows.sort(key=lambda r: -r['base_wr_min'])
 
-    print(f">>> {card} sweep done: {len(rows)} geoms. "
+    # ⚠️ رفعِ نقصِ گزارش‌دهی: رتبه‌بندیِ خامِ `base_wr_min` با ریزنمونه‌ها آلوده
+    #   می‌شود — روی W1 صدرِ جدول «n=2 WR=100%» بود که آماری بی‌معناست و خواننده
+    #   را گمراه می‌کند. جدولِ تشخیصی هم باید همان قیدِ `min_base_n` را داشته
+    #   باشد که خودِ انتخاب دارد ⇒ چیزی که چاپ می‌شود همان چیزی است که تصمیم
+    #   بر آن بنا شده. (شمارشِ reachable هم روی همین زیرمجموعه معنا دارد.)
+    diag = [r for r in rows if r['base_n'] >= min_base_n]
+    diag.sort(key=lambda r: -r['base_wr_min'])
+
+    print(f">>> {card} sweep done: {len(rows)} geoms "
+          f"({len(diag)} with base_n>={min_base_n}). "
           f"Top by BASE QUALITY (min WR over D/H):", flush=True)
-    for r in rows[:12]:
+    for r in diag[:12]:
         g = r['geom']
         print(f"   wr_min={r['base_wr_min']:5.2f} gap={r['gap_to_floor']:+6.2f} "
               f"{'REACH' if r['reachable'] else '  -  '} "
@@ -182,9 +190,9 @@ def sweep_card(card, min_base_n=600, top_k=24, save=True, wr_min_base=51.0):
               f"{g['mode']:8s}/{g['side']:5s} p={g['p']:2d} m={g['mult']} "
               f"sl={g['sl_k']} rr={g['rr']} h={g['hold']:2d}", flush=True)
 
-    n_reach = sum(1 for r in rows if r['reachable'])
-    print(f">>> reachable geoms (gap <= {LIFT_CEILING_PP}pp lift ceiling): "
-          f"{n_reach}/{len(rows)}", flush=True)
+    n_reach = sum(1 for r in diag if r['reachable'])
+    print(f">>> reachable geoms (gap <= {LIFT_CEILING_PP}pp lift ceiling, "
+          f"base_n>={min_base_n}): {n_reach}/{len(diag)}", flush=True)
     sel = elig[:top_k]
     print(f">>> selected {len(sel)} geometries for expensive stacking "
           f"(base n>={min_base_n} AND base wr_min>={wr_min_base})", flush=True)
