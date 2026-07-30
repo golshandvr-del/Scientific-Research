@@ -62,10 +62,18 @@ def _run(df, ls, ss, sl_pip, tp_pip, asset, hold):
     return RQS.compute_rqs(tr, asset)
 
 
-def null_baselines(card, geom, n_perm=20, seed=7, verbose=True):
+def null_baselines(card, geom, filters=None, n_perm=20, seed=7, verbose=True):
     """
-    خطوطِ مبنا برای یک هندسه. برمی‌گرداند dict با کلیدهای
-    signal / null_long / null_short / perm_long / perm_short.
+    خطوطِ مبنا برای یک لایه. برمی‌گرداند dict با کلیدهای
+    signal / null_long / null_short / perm.
+
+    `filters` : فهرستِ فیلترهای بانکِ ۴۰۱ (پیشوندِ `B:`). **باید** پاس داده شود
+        وقتی لایهٔ موردِ داوری فیلتر دارد، وگرنه `signal` پایهٔ بی‌فیلتر را
+        می‌سنجد و مقایسه بی‌معنا می‌شود. نکتهٔ ظریفِ طراحیِ کنترل: جای‌گشت با
+        **تعدادِ رویدادِ لایهٔ نهایی (پس از فیلتر)** انجام می‌شود، نه پایه —
+        چون فیلتر تعدادِ معاملات را کم می‌کند و WR در نمونهٔ کوچک‌تر واریانسِ
+        بیشتری دارد؛ اگر جای‌گشت با n بزرگ‌ترِ پایه ساخته شود، خطِ مبنا مصنوعاً
+        باریک و آزمون به‌غلط «معنادار» می‌شود.
     """
     asset, path = CARDS[card]
     df = se.load_data(path)
@@ -75,6 +83,13 @@ def null_baselines(card, geom, n_perm=20, seed=7, verbose=True):
     sl_pip, tp_pip = _brackets(df, ch, geom, asset)
 
     ls, ss = event_mask(df, ch, geom['mode'], geom['mult'], geom['er_thr'], warmup)
+    if filters:
+        from strategies.s346_bank401 import build_parts
+        from strategies.s346_verdict import gate_from_bank
+        man = build_parts(card, df, ch)
+        gate = gate_from_bank(man, filters, n)
+        ls = ls & gate
+        ss = ss & gate
     sd = geom['side']
     ls_s = np.zeros(n, bool) if sd == 'short' else ls.copy()
     ss_s = np.zeros(n, bool) if sd == 'long' else ss.copy()
