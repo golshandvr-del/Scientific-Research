@@ -178,24 +178,37 @@ def discover(df, asset, split, warmup, gate, votes, verbose=True):
         for sk in SL_K_GRID:
             sl_scaled = sl_d * sk                  # entries_for_K با SL_K=1.0
             for rr in RR_GRID:
-                tp_med = float(np.median(sl_scaled)) * rr
-                # (ج) قانونِ بارِ هزینه — سربه‌سرِ مقاوم باید < ۱۰۰٪ باشد
-                feasible = tp_med > 2.0 * c
                 st = queue_rr(df.iloc[:split], sig_d, isl_d, sl_scaled,
                               asset, ENS_HOLD, rr)
                 if st is None or st['n'] < MIN_N_DISC:
                     continue
+                # ⚠️ رفعِ خطای بُعدیِ این نشست — **همان‌جنسِ خطایی که v2.1 در H1
+                #   افشا کرد**، و این‌بار در خودِ همین ماژول تکرار شده بود.
+                #   `entries_for_K` فاصلهٔ SL را بر حسبِ **واحدِ قیمت** برمی‌گرداند
+                #   (چون از `atr_a`ِ خامِ کانال می‌آید)، اما `cost_pip` بر حسبِ
+                #   **pip** است. نسخهٔ نخست این دو را بی‌تبدیل در یک نامعادله جمع
+                #   می‌کرد ⇒ روی EURUSD (که pip=0.0001 است) سربه‌سرِ مقاوم عددِ
+                #   بی‌معنای **۱۶۹٬۷۵۳٪** می‌داد و دروازهٔ امکان‌سنجی هر ۱۵۰ ترکیب
+                #   را «ناممکن» علامت می‌زد؛ روی طلا هم انتخاب را مصنوعاً به سمتِ
+                #   بزرگ‌ترین `slk×rr` می‌راند.
+                #   ⛔ درسِ روش‌شناختی: هندسه را **بازمحاسبه نکن**. موتور خودش
+                #   `sl_pip`/`tp_pip` را بر حسبِ pip بیرون می‌دهد؛ همان را بخوان.
+                #   این‌طور امکانِ ناسازگاریِ واحد از بین می‌رود، نه آن‌که رفع شود.
+                sl_med = float(np.median(st['sl_pip']))
+                tp_med = float(np.median(st['tp_pip']))
+                # (ج) قانونِ بارِ هزینه — سربه‌سرِ مقاوم باید < ۱۰۰٪ باشد
+                feasible = tp_med > 2.0 * c
                 # (د) تکرارپذیریِ درونِ اکتشاف — هر دو نیمه مثبت
                 e1 = st['pnl'][st['entry_bar'] < half]
                 e2 = st['pnl'][st['entry_bar'] >= half]
                 repl = (len(e1) >= 5 and len(e2) >= 5
                         and float(e1.mean()) > 0 and float(e2.mean()) > 0)
-                rbe = rqs2.breakeven_wr_cost(float(np.median(sl_scaled)),
-                                             tp_med, 2.0 * c)
+                rbe = rqs2.breakeven_wr_cost(sl_med, tp_med, 2.0 * c)
                 rows.append(dict(
                     K=int(K), sl_k=float(sk), rr=float(rr),
                     n=st['n'], wr=st['wr'], exp=st['exp'], pf=st['pf'],
-                    sl_pip=float(np.median(sl_scaled)), tp_pip=tp_med,
+                    sl_pip=sl_med, tp_pip=tp_med,
+                    rr_eff=float(tp_med / sl_med) if sl_med > 0 else None,
                     robust_be=float(rbe), feasible=bool(feasible),
                     repl=bool(repl),
                     eligible=bool(feasible and repl and st['n'] >= MIN_N_DISC),
