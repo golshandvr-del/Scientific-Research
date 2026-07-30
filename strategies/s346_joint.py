@@ -141,18 +141,42 @@ def sweep_card(card, min_base_n=600, top_k=24, save=True, wr_min_base=51.0):
                          wr_d=bd['wr'], wr_h=bh['wr'], n_d=bd['n'], n_h=bh['n']))
         if (gi + 1) % 200 == 0:
             print(f"  ... {gi+1}/{len(geoms)}", flush=True)
-    rows.sort(key=lambda r: -r['base_n'])
+    # کیفیتِ پایه = بدترینِ دو بازه (تکرارپذیری از همان ابتدا الزامی است)
+    for r in rows:
+        r['base_wr_min'] = min(r['wr_d'], r['wr_h'])
+        # فاصله تا کف ⇒ آیا با سقفِ لیفتِ +۶.۵pp اصلاً قابلِ رسیدن است؟
+        r['gap_to_floor'] = round(WR_FLOOR_REF - r['base_wr_min'], 2)
+        r['reachable'] = bool(r['gap_to_floor'] <= LIFT_CEILING_PP)
     if save:
         with open(f"{OUT}/{card}_sweep.json", 'w') as f:
             json.dump(dict(card=card, rows=rows), f, default=float)
-    print(f">>> {card} sweep done: {len(rows)} geoms. Top by N-budget:", flush=True)
+
+    # ⭐ قیدِ کیفیت **قبل از** رتبهٔ N: «بیشترین N از میانِ پایه‌های قابلِ نجات»
+    elig = [r for r in rows
+            if r['base_n'] >= min_base_n and r['base_wr_min'] >= wr_min_base]
+    elig.sort(key=lambda r: -r['base_n'])
+    rows.sort(key=lambda r: -r['base_wr_min'])
+
+    print(f">>> {card} sweep done: {len(rows)} geoms. "
+          f"Top by BASE QUALITY (min WR over D/H):", flush=True)
     for r in rows[:12]:
         g = r['geom']
-        print(f"   base_n={r['base_n']:5d} (ev={r['n_ev']:6d}) WR={r['base_wr']:5.2f} "
-              f"PF={r['base_pf']:.3f} | {g['mode']:8s}/{g['side']:5s} p={g['p']:2d} "
-              f"m={g['mult']} sl={g['sl_k']} rr={g['rr']} h={g['hold']:2d}", flush=True)
-    sel = [r for r in rows if r['base_n'] >= min_base_n][:top_k]
-    print(f">>> selected {len(sel)} geometries for expensive stacking", flush=True)
+        print(f"   wr_min={r['base_wr_min']:5.2f} gap={r['gap_to_floor']:+6.2f} "
+              f"{'REACH' if r['reachable'] else '  -  '} "
+              f"n={r['base_n']:5d} PF={r['base_pf']:.3f} | "
+              f"{g['mode']:8s}/{g['side']:5s} p={g['p']:2d} m={g['mult']} "
+              f"sl={g['sl_k']} rr={g['rr']} h={g['hold']:2d}", flush=True)
+
+    n_reach = sum(1 for r in rows if r['reachable'])
+    print(f">>> reachable geoms (gap <= {LIFT_CEILING_PP}pp lift ceiling): "
+          f"{n_reach}/{len(rows)}", flush=True)
+    sel = elig[:top_k]
+    print(f">>> selected {len(sel)} geometries for expensive stacking "
+          f"(base n>={min_base_n} AND base wr_min>={wr_min_base})", flush=True)
+    if not sel:
+        print("!!! NO eligible geometry — the raw tool has no salvageable base on "
+              "this card at this quality floor. Widening geometry family is required "
+              "(subset selection alone cannot bridge the gap).", flush=True)
     return sel
 
 
