@@ -38,11 +38,39 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from engine import scalp_engine as se
 from strategies.s346_adaptive_channel import adaptive_channel
-from strategies.s346_fast import stats
+from strategies.s346_fast import stats, select_non_overlap
 from strategies.s346_geom import CARDS
 from strategies.s346_stack import build_features, outcomes_for_geom
 
 OUT = 'results/_scan_S346'
+
+
+# ------------------------------------------------------------------------------
+# ⭐ آمارِ «صف‌آگاه» — تابعِ هدفِ درست
+# ------------------------------------------------------------------------------
+def q_stats(P, mask):
+    """
+    آمارِ D/H/ALL روی **زیرمجموعهٔ بی‌همپوشانیِ** رویدادهای عبورکرده از فیلترها.
+
+    نکتهٔ کلیدیِ روش‌شناختی (کشفِ این نشست): فیلتر کردن، خودِ صفِ معاملات را
+    عوض می‌کند. اگر رویدادِ زودتر حذف شود، رویدادِ بعدی — که قبلاً به‌دلیلِ اشغال
+    بودنِ حساب معامله نمی‌شد — اکنون معامله می‌شود. پس ماسک باید **قبل** از
+    اعمالِ قاعدهٔ همپوشانی زده شود، نه بعد از آن. برابریِ این بازتولید با موتورِ
+    اصلی در `s346_parity_fast.run_case_noverlap` اثبات شده (۰ اختلاف).
+    """
+    fo, spread, is_d = P['fo'], P['spread'], P['is_d']
+    eb = fo['entry_bar'][mask]
+    eo = fo['exit_off'][mask]
+    if len(eb) == 0:
+        z = stats(np.array([]), np.array([], bool), spread)
+        return z, z, z
+    keep = select_non_overlap(eb, eo)
+    idx = np.where(mask)[0][keep]
+    pnl, win = P['pnl'][idx], P['win'][idx]
+    dsel = is_d[idx]
+    return (stats(pnl[dsel], win[dsel], spread),
+            stats(pnl[~dsel], win[~dsel], spread),
+            stats(pnl, win, spread))
 
 
 def prepare(card, geom):
