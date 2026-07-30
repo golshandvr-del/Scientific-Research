@@ -17,7 +17,7 @@
    "n_filters": 2,
    "rqs_plus": 83.9,
    "rqs_plus_verdict": "ACCEPT",
-   "rqs2": 32.6,
+   "rqs2": 29.8,
    "rqs2_verdict": "REJECT",
    "gates": {
     "H0": true,
@@ -51,7 +51,7 @@
     "wr_excess_cost": 11.42,
     "null_ref_wr": 50.45,
     "skill_lift_pp": 11.87,
-    "skill_z": 5.62,
+    "skill_z": 4.0,
     "perm_max": 54.74,
     "perm_k": 20,
     "side_n": {
@@ -70,9 +70,9 @@
     "p_emp": 3.7e-05,
     "p_adj_bonferroni": 1.0,
     "z_obs": 4.001,
-    "z_luck_bound": 4.385,
-    "z_margin": -0.384,
-    "n_trials": 97536,
+    "z_luck_bound": 4.265,
+    "z_margin": -0.264,
+    "n_trials": 56499,
     "cal_nets": [
      880.8,
      755.2,
@@ -127,7 +127,7 @@
    "n_filters": 1,
    "rqs_plus": 85.0,
    "rqs_plus_verdict": "ACCEPT",
-   "rqs2": 32.2,
+   "rqs2": 27.7,
    "rqs2_verdict": "REJECT",
    "gates": {
     "H0": true,
@@ -161,7 +161,7 @@
     "wr_excess_cost": 11.91,
     "null_ref_wr": 53.29,
     "skill_lift_pp": 9.28,
-    "skill_z": 6.94,
+    "skill_z": 3.4,
     "perm_max": 54.77,
     "perm_k": 20,
     "side_n": {
@@ -178,9 +178,9 @@
     "p_emp": 0.00041,
     "p_adj_bonferroni": 1.0,
     "z_obs": 3.401,
-    "z_luck_bound": 4.385,
-    "z_margin": -0.984,
-    "n_trials": 97536,
+    "z_luck_bound": 4.265,
+    "z_margin": -0.864,
+    "n_trials": 56499,
     "cal_nets": [
      691.4,
      -381.0,
@@ -235,7 +235,7 @@
    "n_filters": 0,
    "rqs_plus": 84.2,
    "rqs_plus_verdict": "ACCEPT",
-   "rqs2": 18.8,
+   "rqs2": 18.2,
    "rqs2_verdict": "REJECT",
    "gates": {
     "H0": true,
@@ -269,7 +269,7 @@
     "wr_excess_cost": 12.77,
     "null_ref_wr": 56.53,
     "skill_lift_pp": 6.52,
-    "skill_z": 1.92,
+    "skill_z": 1.54,
     "perm_max": 62.94,
     "perm_k": 20,
     "side_n": {
