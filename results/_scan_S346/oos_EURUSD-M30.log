@@ -1,0 +1,60 @@
+=== S346 OOS TRANSFER :: EURUSD-M30 (bars=200,000) ===
+    family + filters are FROZEN from XAUUSD-D1; only the filter
+    thresholds are re-expressed at the SAME quantile.
+  ref quantiles: cache hit -> {'cg_fib_13': 0.06445573682802888, 'std_fib_55': 0.7619684407595614}
+  transferred thresholds on target card:
+    cg_fib_13      q=0.0645 ⇒ thr=-0.00436779
+    std_fib_55     q=0.7620 ⇒ thr=+0.73766
+    gate keeps 143,798/200,000 bars (71.90%)
+    ... member 12/54
+    ... member 24/54
+    ... member 36/54
+    ... member 48/54
+
+  OBSERVED over 54 members:
+     BARE      mean WR=45.079%  mean exp=-2.044pip
+     FILTERED  mean WR=44.672%  mean exp=-2.100pip
+     ΔWR=-0.408pp   members improved: 0/54 (0.0%)
+
+  NULL-1: time permutation (does the FILTERED family have skill?)
+    perm 25/200  null WR mean=46.255 sd=0.042 max=46.327
+    perm 50/200  null WR mean=46.264 sd=0.045 max=46.347
+    perm 75/200  null WR mean=46.263 sd=0.044 max=46.392
+    perm 100/200  null WR mean=46.262 sd=0.045 max=46.392
+    perm 125/200  null WR mean=46.262 sd=0.044 max=46.392
+    perm 150/200  null WR mean=46.260 sd=0.043 max=46.392
+    perm 175/200  null WR mean=46.261 sd=0.042 max=46.392
+    perm 200/200  null WR mean=46.261 sd=0.042 max=46.392
+
+  NULL-2: equally-selective random subsets (does the FILTER add?)
+    perm 25/200  null ΔWR mean=-0.059 sd=0.025 max=+0.007
+    perm 50/200  null ΔWR mean=-0.063 sd=0.029 max=+0.007
+    perm 75/200  null ΔWR mean=-0.064 sd=0.030 max=+0.007
+    perm 100/200  null ΔWR mean=-0.064 sd=0.029 max=+0.007
+    perm 125/200  null ΔWR mean=-0.064 sd=0.029 max=+0.007
+    perm 150/200  null ΔWR mean=-0.062 sd=0.030 max=+0.007
+    perm 175/200  null ΔWR mean=-0.062 sd=0.030 max=+0.007
+    perm 200/200  null ΔWR mean=-0.063 sd=0.029 max=+0.007
+
+  ==========================================================================
+  TEST-1  filtered family vs TIME null (200 draws)
+     null WR  mean=46.261 sd=0.042 max=46.392   |  obs=44.672
+     null exp mean=-1.736 sd=0.010          |  obs=-2.100
+     lift WR=-1.590pp (-38.16σ)   exp=-0.364pip (-38.30σ)   p_emp=1.00000
+  TEST-2  filter increment vs SUBSET null (200 draws)
+     null ΔWR mean=-0.063 sd=0.029 max=+0.007  frac-improved=38.8%
+     lift=-0.345pp (-11.74σ)   p_emp=1.00000
+  N=1 bound = 0.520σ
+  ⇒ TRANSFER FAILED
+  ==========================================================================
+
+  top members after filtering (by WR):
+    p=34 m=1.272 er=0.146 h=13 | n 35346->22231 WR 46.37->45.99 (-0.37) exp    -2.02
+    p=34 m=1.618 er=0.146 h=13 | n 31940->19260 WR 46.30->45.91 (-0.38) exp    -2.02
+    p=34 m=1.272 er=0.236 h=13 | n 28015->16262 WR 46.24->45.81 (-0.43) exp    -2.06
+    p=34 m=1.618 er=0.236 h=13 | n 26250->14757 WR 46.16->45.69 (-0.47) exp    -2.06
+    p=21 m=1.272 er=0.146 h=13 | n 35600->23599 WR 45.95->45.54 (-0.41) exp    -2.07
+    p=34 m=2.058 er=0.146 h=13 | n 27558->15508 WR 46.01->45.52 (-0.48) exp    -2.13
+    p=34 m=2.058 er=0.236 h=13 | n 23721->12651 WR 46.04->45.46 (-0.58) exp    -2.15
+    p=21 m=1.272 er=0.236 h=13 | n 31419->20543 WR 45.99->45.46 (-0.54) exp    -2.08
+  saved -> results/_scan_S346/EURUSD-M30_oos.json
