@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from engine import scalp_engine as se
 from strategies.s346_adaptive_channel import build_signals
-from strategies.s346_fast import barrier_outcomes
+from strategies.s346_fast import barrier_outcomes, select_non_overlap
 
 
 CASES = [
