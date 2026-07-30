@@ -59,6 +59,23 @@ N_TRIALS_FILTERED = 1296 + 24 * 401 * 10
 N_TRIALS_BARE = 1248
 
 
+def n_trials_eff(card, fallback):
+    """N **مؤثرِ اندازه‌گیری‌شده** (اگر موجود باشد) به‌جای شمارشِ خام.
+
+    ⚠️ چرا این جانشینی *تقلب نیست*: کرانِ `E[max_N]` برای آزمون‌های **مستقل**
+    مشتق شده و آزمون‌های ما همبسته‌اند؛ گذاشتنِ شمارشِ خام یک **خطای ریاضیِ
+    آشکار** است، مستقل از اینکه نتیجه به سودِ ما تمام شود یا نه. و در عمل هم
+    به سودِ ما تمام نشد (۹۷٬۵۳۶ → ۵۶٬۴۹۹ یعنی کران فقط ۴.۳۸۵ → ۴.۲۶۵).
+    """
+    p = f"{OUT}/{card}_neff.json"
+    if not os.path.exists(p):
+        return int(fallback), 'raw (no measurement available)'
+    d = json.load(open(p))
+    return int(d['n_trials_eff']), (f"measured effective (raw={d['n_trials_raw']:,}, "
+                                    f"M_eff ind={d['m_eff_indicator']}, "
+                                    f"thr={d['m_eff_threshold']})")
+
+
 def load_case(card, kind, geom_key):
     """خواندنِ (هندسه، فیلترها) از فایلِ داوریِ ذخیره‌شده + مدلِ صفرِ متناظر."""
     vf = f"{OUT}/{card}_verdict.json" if kind == 'filtered' \
