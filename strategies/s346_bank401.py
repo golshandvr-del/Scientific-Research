@@ -253,12 +253,16 @@ def screen401(P, card, man, allow_time=False,
         return base_d, base_h, []
 
     # --- مرحلهٔ B: بار کردنِ فقط ستون‌های زنده‌مانده + بازآزمونِ صف‌آگاه ---
-    need = sorted({r['col'] for r in pool})
+    need = set(r['col'] for r in pool)
     vals = {}
     for p in man['parts']:
         try:
-            part = pd.read_parquet(p, columns=[c for c in need
-                                               if c in pd.read_parquet(p).columns])
+            # ⚡ خواندنِ ارزانِ فهرستِ ستون‌ها از فراداده (بدونِ بار کردنِ داده)
+            import pyarrow.parquet as pq
+            have = [c for c in pq.ParquetFile(p).schema.names if c in need]
+            if not have:
+                continue
+            part = pd.read_parquet(p, columns=have)
         except Exception:
             continue
         for col in part.columns:
