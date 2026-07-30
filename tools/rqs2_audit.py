@@ -50,11 +50,15 @@ def part_a():
     print("PART A — VERDICT COHERENCE: do the project's TWO admission rules agree?")
     print(SEP)
     print("""
-  RQS2 دو قاعدهٔ پذیرش دارد که **مستقل از هم** محاسبه می‌شوند:
+  تا v2.2 پروژه دو قاعدهٔ پذیرش داشت که **مستقل از هم** محاسبه می‌شدند:
       قاعدهٔ ۱ (دروازه‌ای) : verdict = 'ACCEPT'  ⟺  هر ۱۱ دروازه پاس
       قاعدهٔ ۲ (نمره‌ای)   : accepted           ⟺  all_pass AND score ≥ 80
   اگر این دو بر یک مرز نایستند، پروژه دو معیارِ پذیرشِ متفاوت دارد و «سوخته
   بودن» یک لایه به این بستگی پیدا می‌کند که خواننده کدام فیلد را نگاه کند.
+
+  ✅ **رفع‌شده در v2.3** — تصمیمِ کاربر «گزینهٔ الف»: پذیرش = فقط ۱۱ دروازه.
+  این بخش **عمداً حفظ شده** تا (۱) اندازه‌گیریِ اثبات‌کننده در مخزن بماند و
+  (۲) اگر روزی کسی کفِ نمره‌ای را برگرداند، همین بخش فوراً آن را بگیرد.
 """)
     # مؤلفه‌های نمره وقتی لایه **دقیقاً روی مرزِ هر دروازه** ایستاده است.
     # هر مقدار از کفِ همان دروازه استخراج شده، نه از سلیقه.
@@ -85,11 +89,21 @@ def part_a():
           f"  ⇒  {w_need / wsum:.2f}× the boundary")
     gap = R.RQS2_ACCEPT_FLOOR - score_boundary
     print()
-    print(f"  ⚠️  FINDING A1 — the two rules disagree by {gap:.1f} score points.")
-    print(f"      A layer passing all 11 gates *at their boundaries* reports")
-    print(f"      verdict='ACCEPT' while accepted={score_boundary >= R.RQS2_ACCEPT_FLOOR}.")
-    print(f"      The 80 floor is therefore NOT the gate boundary; it is a second,")
-    print(f"      undeclared hurdle demanding {w_need / wsum:.2f}× the strength the gates ask for.")
+    print(f"  ✅ FINDING A1 — RESOLVED in v2.3. The two rules disagreed by "
+          f"{gap:.1f} score points:")
+    print(f"      a layer passing all 11 gates *at their boundaries* scored "
+          f"{score_boundary:.1f} while the declared")
+    print(f"      floor was {R.RQS2_ACCEPT_FLOOR:.0f} — a second, undeclared hurdle demanding "
+          f"{w_need / wsum:.2f}× the strength")
+    print(f"      the gates ask for. Admission is now R.ADMISSION_RULE = "
+          f"{R.ADMISSION_RULE!r},")
+    print(f"      so the score RANKS and can no longer VETO.")
+    # ⚠️ آزمونِ زندهٔ بازگشتی — نه یک جملهٔ توضیحی. اگر روزی کسی کفِ نمره‌ای را
+    #    برگرداند، همین‌جا بلند فریاد می‌زند. حسابرسی‌ای که فقط تاریخ را روایت
+    #    کند، بازگشتِ همان نقص را نمی‌گیرد.
+    if R.ADMISSION_RULE != 'gates_only':
+        print(f"      🔴 REGRESSION: admission rule is {R.ADMISSION_RULE!r} "
+              f"— finding A1 is OPEN AGAIN.")
     print()
     print("  🔎 WHERE DID 80 COME FROM? It is inherited verbatim from RQS+, whose")
     print("     score was a DIFFERENT function with DIFFERENT components and a")
