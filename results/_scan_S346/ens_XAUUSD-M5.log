@@ -1,0 +1,78 @@
+=== S347 ENSEMBLE :: XAUUSD-M5 (bars=200,000) ===
+    18 signal streams · vote ceiling 18 · K grid (2, 3, 5, 8, 13)
+    ensemble hold = 8 (median of (5, 8, 13)), RR = 1.0 frozen
+    votes: bars with >=1 vote = 113,317  max_long=18 max_short=18
+    filter gate keeps 72.50% of bars  thr={'cg_fib_13': -0.003767, 'std_fib_55': 0.714363}
+      [A K=2] perm 50/300
+      [A K=2] perm 100/300
+      [A K=2] perm 150/300
+      [A K=2] perm 200/300
+      [A K=2] perm 250/300
+      [A K=2] perm 300/300
+  [A K= 2] n=45680 WR= 48.66% PF=0.766 exp=   -4.00pip | need>57.666% | N1 z=-0.539 N2 z=-0.887 | CD n=13755 exp=-6.190490342539711
+      [A K=3] perm 50/300
+      [A K=3] perm 100/300
+      [A K=3] perm 150/300
+      [A K=3] perm 200/300
+      [A K=3] perm 250/300
+      [A K=3] perm 300/300
+  [A K= 3] n=41668 WR= 48.65% PF=0.763 exp=   -4.06pip | need>57.642% | N1 z=-0.667 N2 z=-0.903 | CD n=12037 exp=-6.244199787152386
+      [A K=5] perm 50/300
+      [A K=5] perm 100/300
+      [A K=5] perm 150/300
+      [A K=5] perm 200/300
+      [A K=5] perm 250/300
+      [A K=5] perm 300/300
+  [A K= 5] n=37022 WR= 48.71% PF=0.768 exp=   -3.99pip | need>57.612% | N1 z=-0.37 N2 z=-0.722 | CD n=10323 exp=-6.237003287431629
+      [A K=8] perm 50/300
+      [A K=8] perm 100/300
+      [A K=8] perm 150/300
+      [A K=8] perm 200/300
+      [A K=8] perm 250/300
+      [A K=8] perm 300/300
+  [A K= 8] n=31938 WR= 48.55% PF=0.765 exp=   -4.09pip | need>57.586% | N1 z=-0.85 N2 z=-1.23 | CD n=8676 exp=-6.435080417490903
+      [A K=13] perm 50/300
+      [A K=13] perm 100/300
+      [A K=13] perm 150/300
+      [A K=13] perm 200/300
+      [A K=13] perm 250/300
+      [A K=13] perm 300/300
+  [A K=13] n=22147 WR= 48.22% PF=0.756 exp=   -4.41pip | need>57.347% | N1 z=-2.083 N2 z=-2.115 | CD n=5309 exp=-7.161144936273532
+      [B K=2] perm 50/300
+      [B K=2] perm 100/300
+      [B K=2] perm 150/300
+      [B K=2] perm 200/300
+      [B K=2] perm 250/300
+      [B K=2] perm 300/300
+  [B K= 2] n=29766 WR= 48.31% PF=0.726 exp=   -3.86pip | need>59.32% | N1 z=-2.144 N2 z=-1.948 | CD n=10963 exp=-5.472834276884007
+      [B K=3] perm 50/300
+      [B K=3] perm 100/300
+      [B K=3] perm 150/300
+      [B K=3] perm 200/300
+      [B K=3] perm 250/300
+      [B K=3] perm 300/300
+  [B K= 3] n=26587 WR= 48.37% PF=0.726 exp=   -3.84pip | need>59.365% | N1 z=-1.606 N2 z=-1.469 | CD n=9570 exp=-5.473951544843555
+      [B K=5] perm 50/300
+      [B K=5] perm 100/300
+      [B K=5] perm 150/300
+      [B K=5] perm 200/300
+      [B K=5] perm 250/300
+      [B K=5] perm 300/300
+  [B K= 5] n=22960 WR= 48.45% PF=0.727 exp=   -3.79pip | need>59.423% | N1 z=-1.214 N2 z=-1.151 | CD n=8125 exp=-5.500954798271377
+      [B K=8] perm 50/300
+      [B K=8] perm 100/300
+      [B K=8] perm 150/300
+      [B K=8] perm 200/300
+      [B K=8] perm 250/300
+      [B K=8] perm 300/300
+  [B K= 8] n=19320 WR= 48.29% PF=0.731 exp=   -3.71pip | need>59.506% | N1 z=-1.793 N2 z=-1.602 | CD n=6740 exp=-5.251214921925335
+      [B K=13] perm 50/300
+      [B K=13] perm 100/300
+      [B K=13] perm 150/300
+      [B K=13] perm 200/300
+      [B K=13] perm 250/300
+      [B K=13] perm 300/300
+  [B K=13] n=12436 WR= 47.99% PF=0.725 exp=   -3.82pip | need>59.458% | N1 z=-2.185 N2 z=-2.058 | CD n=3975 exp=-5.50663847790113
+
+  N=10 (K grid x 2 variants) ⇒ luck bound = 1.575σ
+  saved -> results/_scan_S346/XAUUSD-M5_ens.json
