@@ -68,7 +68,7 @@ def f_hurst(df, thr):
 
 def f_tom(df, _thr=None):
     dt = pd.DatetimeIndex(pd.to_datetime(df["time"], unit="s"))
-    return (dt.day > 3).to_numpy()
+    return np.asarray(dt.day > 3, dtype=bool)
 
 
 # آستانه‌های «برندهٔ» انباشتِ حریصانه
