@@ -75,14 +75,21 @@ def geometries():
 
 
 def prepare_fast(df, ch, F, asset, split_idx, geom, warmup):
-    """ساختِ P برای یک هندسه — با استفادهٔ مجدد از df/ch/F (کشِ گران‌ها)."""
+    """
+    ساختِ P برای یک هندسه — با استفادهٔ مجدد از df/ch (کشِ گران‌ها).
+
+    ⚠️ `F=None` مجاز است: در حالتِ بانکِ کاملِ ۴۰۱، ماتریسِ ویژگی هرگز یکجا در
+    حافظه نمی‌آید (۴۸۰MB > RAM). آن‌جا `screen401` خودش قطعاتِ parquet را
+    یکی‌یکی می‌خواند و در پایان تنها ستون‌های زنده‌مانده را در `P['FV']` می‌گذارد.
+    """
     fo, spread = outcomes_for_geom(df, ch, asset, geom, warmup)
     sb = fo['sig_idx']
     if len(sb) == 0:
         return None
-    return dict(fo=fo, sb=sb, spread=spread, F=F,
-                pnl=fo['pnl_pip'], win=fo['win'], is_d=sb < split_idx,
-                FV=F.iloc[sb].reset_index(drop=True))
+    P = dict(fo=fo, sb=sb, spread=spread, F=F,
+             pnl=fo['pnl_pip'], win=fo['win'], is_d=sb < split_idx)
+    P['FV'] = F.iloc[sb].reset_index(drop=True) if F is not None else None
+    return P
 
 
 def sweep_card(card, min_base_n=600, top_k=24, save=True):
