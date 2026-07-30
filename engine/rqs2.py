@@ -407,7 +407,7 @@ def blend_null(null, n_by_side):
 # ============================== هستهٔ محاسبهٔ RQS2 ==============================
 def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
                  null=None, n_trials=None, holdout_mask=None, split_bar=None,
-                 initial_capital=10000.0, allow_overlap=False):
+                 close=None, initial_capital=10000.0, allow_overlap=False):
     """
     ورودیِ اجباری
     -------------
