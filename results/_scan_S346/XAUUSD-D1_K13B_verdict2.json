@@ -62,6 +62,9 @@
    "profit_factor": 1.529,
    "max_dd_pct": 4.57,
    "max_consec_losses": 5,
+   "mcl_allowed": 10,
+   "n_wins": 149,
+   "top_win_share": 0.0329,
    "recovery_factor": 8.0,
    "expectancy_pip": 49.8299,
    "expectancy_at_2x_cost": 46.5299,
@@ -118,7 +121,8 @@
     "n": 90,
     "wr": 65.56,
     "pf": 2.008,
-    "net": 3243.2
+    "net": 3243.2,
+    "wr_req": 50.89
    },
    "max_concurrency": 1,
    "counter_drift": {
@@ -132,7 +136,7 @@
   },
   "notes": [],
   "passed": false,
-  "rqs2_score": 26.9,
+  "rqs2_score": 27.1,
   "verdict": "REJECT",
   "n_fail": 2,
   "n_unknown": 0,
@@ -160,6 +164,9 @@
    "profit_factor": 1.529,
    "max_dd_pct": 4.57,
    "max_consec_losses": 5,
+   "mcl_allowed": 10,
+   "n_wins": 149,
+   "top_win_share": 0.0329,
    "recovery_factor": 8.0,
    "expectancy_pip": 49.8299,
    "expectancy_at_2x_cost": 46.5299,
@@ -216,7 +223,8 @@
     "n": 90,
     "wr": 65.56,
     "pf": 2.008,
-    "net": 3243.2
+    "net": 3243.2,
+    "wr_req": 50.89
    },
    "max_concurrency": 1,
    "counter_drift": {
@@ -230,7 +238,7 @@
   },
   "notes": [],
   "passed": false,
-  "rqs2_score": 28.4,
+  "rqs2_score": 28.6,
   "verdict": "REJECT",
   "n_fail": 1,
   "n_unknown": 0,
