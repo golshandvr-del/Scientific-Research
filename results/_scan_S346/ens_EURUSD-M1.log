@@ -1,0 +1,78 @@
+=== S347 ENSEMBLE :: EURUSD-M1 (bars=200,000) ===
+    18 signal streams · vote ceiling 18 · K grid (2, 3, 5, 8, 13)
+    ensemble hold = 8 (median of (5, 8, 13)), RR = 1.0 frozen
+    votes: bars with >=1 vote = 123,177  max_long=18 max_short=18
+    filter gate keeps 72.45% of bars  thr={'cg_fib_13': -0.000584, 'std_fib_55': 0.796314}
+      [A K=2] perm 50/300
+      [A K=2] perm 100/300
+      [A K=2] perm 150/300
+      [A K=2] perm 200/300
+      [A K=2] perm 250/300
+      [A K=2] perm 300/300
+  [A K= 2] n=52025 WR= 15.73% PF=0.067 exp=   -1.61pip | need>94.028% | N1 z=-4.882 N2 z=-4.761 | CD n=16443 exp=-1.6637375660683023
+      [A K=3] perm 50/300
+      [A K=3] perm 100/300
+      [A K=3] perm 150/300
+      [A K=3] perm 200/300
+      [A K=3] perm 250/300
+      [A K=3] perm 300/300
+  [A K= 3] n=47600 WR= 15.72% PF=0.068 exp=   -1.61pip | need>93.983% | N1 z=-4.88 N2 z=-5.146 | CD n=14454 exp=-1.6646958487844281
+      [A K=5] perm 50/300
+      [A K=5] perm 100/300
+      [A K=5] perm 150/300
+      [A K=5] perm 200/300
+      [A K=5] perm 250/300
+      [A K=5] perm 300/300
+  [A K= 5] n=42147 WR= 15.79% PF=0.068 exp=   -1.61pip | need>93.806% | N1 z=-4.855 N2 z=-4.459 | CD n=12360 exp=-1.660628795899621
+      [A K=8] perm 50/300
+      [A K=8] perm 100/300
+      [A K=8] perm 150/300
+      [A K=8] perm 200/300
+      [A K=8] perm 250/300
+      [A K=8] perm 300/300
+  [A K= 8] n=36190 WR= 15.71% PF=0.067 exp=   -1.62pip | need>93.866% | N1 z=-5.142 N2 z=-5.251 | CD n=10312 exp=-1.6701606885882496
+      [A K=13] perm 50/300
+      [A K=13] perm 100/300
+      [A K=13] perm 150/300
+      [A K=13] perm 200/300
+      [A K=13] perm 250/300
+      [A K=13] perm 300/300
+  [A K=13] n=24308 WR= 15.85% PF=0.069 exp=   -1.63pip | need>93.259% | N1 z=-4.5 N2 z=-5.148 | CD n=6152 exp=-1.700440513996109
+      [B K=2] perm 50/300
+      [B K=2] perm 100/300
+      [B K=2] perm 150/300
+      [B K=2] perm 200/300
+      [B K=2] perm 250/300
+      [B K=2] perm 300/300
+  [B K= 2] n=34740 WR= 11.98% PF=0.044 exp=   -1.59pip | need>100.126% | N1 z=-31.289 N2 z=-2.658 | CD n=12938 exp=-1.6330565932902572
+      [B K=3] perm 50/300
+      [B K=3] perm 100/300
+      [B K=3] perm 150/300
+      [B K=3] perm 200/300
+      [B K=3] perm 250/300
+      [B K=3] perm 300/300
+  [B K= 3] n=31158 WR= 11.76% PF=0.044 exp=   -1.59pip | need>100.452% | N1 z=-31.058 N2 z=-4.463 | CD n=11308 exp=-1.6367345785374188
+      [B K=5] perm 50/300
+      [B K=5] perm 100/300
+      [B K=5] perm 150/300
+      [B K=5] perm 200/300
+      [B K=5] perm 250/300
+      [B K=5] perm 300/300
+  [B K= 5] n=26967 WR= 11.62% PF=0.043 exp=   -1.59pip | need>100.53% | N1 z=-30.389 N2 z=-5.316 | CD n=9600 exp=-1.6346619668308768
+      [B K=8] perm 50/300
+      [B K=8] perm 100/300
+      [B K=8] perm 150/300
+      [B K=8] perm 200/300
+      [B K=8] perm 250/300
+      [B K=8] perm 300/300
+  [B K= 8] n=22787 WR= 11.33% PF=0.041 exp=   -1.59pip | need>100.964% | N1 z=-28.083 N2 z=-6.538 | CD n=7997 exp=-1.6397346891451279
+      [B K=13] perm 50/300
+      [B K=13] perm 100/300
+      [B K=13] perm 150/300
+      [B K=13] perm 200/300
+      [B K=13] perm 250/300
+      [B K=13] perm 300/300
+  [B K=13] n=14374 WR= 10.92% PF=0.040 exp=   -1.60pip | need>101.334% | N1 z=-26.415 N2 z=-8.051 | CD n=4661 exp=-1.650568609337482
+
+  N=10 (K grid x 2 variants) ⇒ luck bound = 1.575σ
+  saved -> results/_scan_S346/EURUSD-M1_ens.json
