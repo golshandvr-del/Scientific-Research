@@ -133,7 +133,7 @@ def _mask_of(FV, f):
 
 
 def stack_maxn(P, cands, wr_floor=61.0, pf_floor=1.35, max_filters=14,
-               jaccard_max=0.92, verbose=True):
+               jaccard_max=0.92, min_nd=45, min_nh=25, verbose=True):
     """
     انباشتِ حریصانه با تابعِ هدفِ «بیشینهٔ n مشروط به کفِ کیفیت».
 
