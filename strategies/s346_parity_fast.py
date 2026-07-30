@@ -98,11 +98,67 @@ def run_case(asset, path, mode, p, mult, er_thr, sl_k, tp_k, max_hold, nbars=400
     return ok
 
 
+def run_case_noverlap(asset, path, mode, p, mult, er_thr, sl_k, tp_k, max_hold,
+                      nbars=40000):
+    """
+    آزمونِ برابریِ دوم و مهم‌تر: بازتولیدِ **صفِ بی‌همپوشانی**.
+    موتورِ اصلی با allow_overlap=False کدام رویدادها را معامله می‌کند؟
+    `select_non_overlap` باید *دقیقاً* همان مجموعهٔ signal_bar را بدهد.
+    """
+    cfg = se.ASSETS[asset]
+    pip = cfg['pip']
+    df = se.load_data(path)
+    if nbars and len(df) > nbars:
+        df = df.iloc[-nbars:].reset_index(drop=True)
+
+    ls, ss, slp, tpp, ch = build_signals(
+        df, mode=mode, p=p, mult=mult, er_thr=er_thr,
+        sl_k=sl_k, tp_k=tp_k, pip=pip)
+
+    tr = se.simulate_trades(df, ls, ss, slp, tpp, asset,
+                            max_hold=max_hold, allow_overlap=False)
+    if len(tr) == 0:
+        print(f"  [skip] {asset} {mode} p={p}: no trades")
+        return True
+
+    sig = np.where(ls | ss)[0]
+    is_long = ls[sig]
+    sl_d, tp_d = slp[sig] * pip, tpp[sig] * pip
+    ok = sl_d > 0
+    sig, is_long, sl_d, tp_d = sig[ok], is_long[ok], sl_d[ok], tp_d[ok]
+    fo = barrier_outcomes(df, sig, is_long, sl_d, tp_d, max_hold,
+                          pip, cfg['spread_pip'], cfg['slip_pip'])
+    keep = select_non_overlap(fo['entry_bar'], fo['exit_off'])
+
+    ref_bars = set(int(x) for x in tr['signal_bar'].values)
+    fast_bars = set(int(x) for x in fo['sig_idx'][keep])
+    # رویدادهای انتهای داده که موتورِ سریع حذف می‌کند را از مقایسه کنار می‌گذاریم
+    horizon = int(fo['sig_idx'].max()) if len(fo['sig_idx']) else 0
+    ref_bars = set(b for b in ref_bars if b <= horizon)
+
+    only_ref = ref_bars - fast_bars
+    only_fast = fast_bars - ref_bars
+    ok = (len(only_ref) == 0 and len(only_fast) == 0)
+    # سودِ خالصِ pip دو مسیر هم باید یکی باشد
+    ref_sum = float(tr[tr['signal_bar'] <= horizon]['pnl_pip'].sum())
+    fast_sum = float(fo['pnl_pip'][keep].sum())
+    dsum = abs(ref_sum - fast_sum)
+    ok = ok and dsum < 1e-6
+    tag = 'PASS' if ok else '**FAIL**'
+    print(f"  {tag} {asset:6s} {mode:8s} p={p:2d} QUEUE | ref_n={len(ref_bars):5d} "
+          f"fast_n={len(fast_bars):5d} only_ref={len(only_ref)} only_fast={len(only_fast)} "
+          f"| Σpnl ref={ref_sum:12.4f} fast={fast_sum:12.4f} d={dsum:.2e}")
+    return ok
+
+
 def run():
     print("=== S346 parity: fast vectorized barrier engine  vs  scalp_engine ===")
     all_ok = True
     for c in CASES:
         all_ok &= run_case(*c)
+    print("--- queue parity (allow_overlap=False reproduction) ---")
+    for c in CASES:
+        all_ok &= run_case_noverlap(*c)
     print("=== RESULT:", "ALL PASS — fast engine is trustworthy for exploration"
           if all_ok else "FAILURE — do NOT use fast engine", "===")
     return 0 if all_ok else 1
