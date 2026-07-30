@@ -246,7 +246,7 @@ def screen401(P, card, man, allow_time=False,
             if finite.sum() < 0.5 * len(v):
                 continue
             vd = v[is_d & finite]
-            if len(vd) < 300:
+            if len(vd) < min_ev_d:
                 continue
             uq = np.unique(vd[np.isfinite(vd)])
             if len(uq) < 5:          # ستونِ عملاً ثابت/دوحالته با تنوعِ ناکافی
@@ -297,7 +297,7 @@ def screen401(P, card, man, allow_time=False,
         finite = np.isfinite(v)
         m = ((v >= r['thr']) if r['dir'] == 'ge' else (v <= r['thr'])) & finite
         sd, sh, _ = q_stats(P, m)
-        if sd['n'] < 45 or sh['n'] < 25:
+        if sd['n'] < min_nd or sh['n'] < min_nh:
             continue
         gd, gh = sd['wr'] - base_d['wr'], sh['wr'] - base_h['wr']
         if gd >= min_gain_d and gh >= min_gain_h:
