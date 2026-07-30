@@ -191,7 +191,9 @@ def main():
          ('breakout', 'both', 21, 1.272, 13), 'REJECT', N_TRIALS_BARE),
     ]
     allok, out = True, []
-    for label, card, kind, gk, expect, nt in cases:
+    for label, card, kind, gk, expect, nt_fallback in cases:
+        nt, how = n_trials_eff(card, nt_fallback)
+        print(f"\n[{label}] n_trials = {nt:,}  [{how}]")
         try:
             ok, rec = judge(label, card, kind, gk, expect, nt)
         except SystemExit as e:
