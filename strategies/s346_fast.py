@@ -120,12 +120,19 @@ def select_non_overlap(entry_bar, exit_off):
     else:
         order = None
 
+    # ⚡⚡ جدولِ پرش با **یک** فراخوانِ بردارییِ searchsorted:
+    # nxt[i] = نخستین رویدادی که پس از بسته‌شدنِ معاملهٔ i شروع می‌شود.
+    # پیش‌تر searchsorted داخلِ حلقه صدا زده می‌شد؛ سرباری ~۴µs در هر تکرار
+    # (۳۰٬۰۰۰ رویداد ⇒ ~۱۲۰ms در هر فراخوان) گلوگاهِ واقعیِ اکتشاف بود.
+    # حالا هزینه = یک searchsorted بردارییِ C + حلقه‌ای با فقط اندیس‌گیریِ لیست.
+    # چون entry_bar اکیداً صعودی و exit_bar[i] ≥ entry_bar[i] است، همیشه
+    # nxt[i] > i تضمین می‌شود ⇒ حلقه قطعاً پایان می‌یابد.
+    nxt = np.searchsorted(entry_bar, exit_bar, side='right').tolist()
     sel = []
     i = 0
     while i < n:
         sel.append(i)
-        # نخستین رویداد با entry_bar > busy_until  (busy_until = exit_bar[i])
-        i = int(np.searchsorted(entry_bar, exit_bar[i], side='right'))
+        i = nxt[i]
     sel = np.asarray(sel, dtype=np.int64)
     if order is None:
         keep[sel] = True
