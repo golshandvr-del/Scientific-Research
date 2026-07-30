@@ -1,0 +1,19 @@
+{
+ "card": "XAUUSD-D1",
+ "bars": 3989,
+ "m_eff_signal": 94.231,
+ "n_signal_cols": 108,
+ "m_eff_bracket": 6.198,
+ "n_bracket_cols": 12,
+ "m_eff_indicator": 301.033,
+ "n_indicator_cols": 401,
+ "m_eff_threshold": 7.739,
+ "n_thresholds": 10,
+ "n_selected": 24,
+ "m_eff_selected": 24.0,
+ "n_trials_raw": 97536,
+ "n_trials_eff": 56499,
+ "bound_raw": 4.3854,
+ "bound_eff": 4.265,
+ "n_event_bars": 1297
+}
