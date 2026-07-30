@@ -157,7 +157,9 @@ def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
     ch_cache = {}
     F = None
     rows, best = [], None
-    geoms = list(geometries())
+    # ⚡ مرحلهٔ ۱: فقط هندسه‌های پرظرفیت (بودجهٔ N) به مرحلهٔ گران راه می‌یابند
+    sel = sweep_card(card, min_base_n=min_base_n)
+    geoms = [r['geom'] for r in sel]
     print(f"=== S346-JOINT :: {card} :: {len(geoms)} geometries :: "
           f"objective=max N s.t. WR>={wr_floor} PF>={pf_floor} "
           f"(allow_time={allow_time}) ===", flush=True)
