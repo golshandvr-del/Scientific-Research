@@ -47,6 +47,7 @@ from strategies.s346_adaptive_channel import adaptive_channel
 from strategies.s346_geom import CARDS
 from strategies.s346_stack import build_features, outcomes_for_geom
 from strategies.s346_stack2 import q_stats, screen, stack_maxn
+from strategies.s346_bank401 import build_parts, screen401
 
 OUT = 'results/_scan_S346'
 
