@@ -187,7 +187,7 @@ def build_parts(card, df, ch, force=False):
         buf, pidx = flush(buf, pidx)
 
     man = dict(card=card, n_rows=int(len(df)), n_cols=len(kinds),
-               parts=parts, kinds=kinds, failed=fail)
+               parts=parts, part_cols=pcols, kinds=kinds, failed=fail)
     json.dump(man, open(man_path, 'w'))
     nz = sum(1 for v in kinds.values() if v == 'z233')
     print(f"  bank401 built: {len(kinds)} cols in {len(parts)} parts "
