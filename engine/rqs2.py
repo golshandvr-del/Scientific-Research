@@ -836,6 +836,14 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
         'n_trades': n, 'win_rate': round(wr, 2), 'net_profit': round(net, 1),
         'profit_factor': round(pf, 3) if np.isfinite(pf) else 999.0,
         'max_dd_pct': round(maxdd_pct, 2), 'max_consec_losses': mcl,
+        # ⚠️ کرانِ **تطبیقیِ** رشتهٔ باخت هم منتشر می‌شود، نه فقط عددِ مشاهده‌شده:
+        #   بدونِ آن، خواننده `MCL=12` را می‌بیند و نمی‌داند دروازه آن را
+        #   «روتین» شمرده یا «بیمارگونه» — یعنی حکم غیرقابلِ‌بازرسی می‌شد.
+        'mcl_allowed': mcl_allowed,
+        # سنجه‌های دو سپرِ نوِ H1 (معکوسِ اشتباهِ رایجِ #۸)
+        'n_wins': int(wins),
+        'top_win_share': (round(top_win_share, 4)
+                          if top_win_share is not None else None),
         'recovery_factor': (round(recovery, 2) if np.isfinite(recovery) else 999.0),
         'expectancy_pip': round(exp_pip, 4),
         'expectancy_at_2x_cost': round(exp_stress, 4),
