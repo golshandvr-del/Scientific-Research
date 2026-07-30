@@ -295,7 +295,13 @@ def counter_drift_mask(trades, close, lookback=REGIME_LOOKBACK, bar_time=None,
     eb = np.clip(trades['entry_bar'].values.astype(int), 0, len(c) - 1)
 
     if bar_time is not None and len(np.asarray(bar_time)) >= 2:
-        bt = np.asarray(bar_time, dtype='float64')
+        # ⚠️ v2.4 — محورِ زمان **باید** از دروازهٔ واحد بگذرد. کدِ پیشین
+        #   `np.asarray(bar_time, dtype='float64')` بود که آرایهٔ
+        #   `datetime64[ns]` را به **نانوثانیه** می‌ریخت؛ آن‌گاه افقِ
+        #   ثانیه‌ایِ `REGIME_LOOKBACK_SECONDS` معادلِ ۲۴ میلی‌ثانیه می‌شد
+        #   ⇒ `prev` روی `entry_bar` می‌افتاد ⇒ `judgeable=False` برای
+        #   **همهٔ** معاملات ⇒ H10 در سکوت خاموش و حکم INCOMPLETE.
+        bt = to_epoch_seconds(bar_time)
         span = float(bt[-1] - bt[0])
         # آیا تاریخِ کارت اصلاً افقِ کانونی را در خود دارد؟ اگر نه، داوری
         # ممکن نیست — و این **یافتهٔ قابلِ‌اقدام** است (دادهٔ بلندتر لازم است)،
