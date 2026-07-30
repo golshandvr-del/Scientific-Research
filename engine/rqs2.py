@@ -171,18 +171,29 @@ def calendar_windows(trades, bar_time, k=CAL_WINDOWS):
 
     ورودی `bar_time`: آرایهٔ زمانِ هر کندل (unix یا هر معیارِ صعودی).
     خروجی: فهرستِ k آرایهٔ بولین روی ردیف‌های `trades`.
+
+    ⚠️ **باگی که تستِ واحد (`T7`) گرفت:** نسخهٔ اولِ این تابع دامنهٔ تقسیم را از
+    `min/max` خودِ **معاملات** می‌گرفت. نتیجه: اگر همهٔ معاملات در ربعِ اولِ
+    تاریخِ داده خوشه می‌شدند، همان خوشه به‌عنوانِ «کلِ تقویم» نرمال می‌شد و
+    خوشه‌ای‌شدن **نامرئی** می‌ماند — یعنی دقیقاً چیزی که این دروازه برای
+    گرفتنش ساخته شده بود. اصلاح: وقتی `bar_time` داده شود، دامنه = **افقِ
+    کاملِ دادهٔ کارت** `[bar_time[0], bar_time[-1]]`.
     """
     if trades is None or len(trades) == 0:
         return [np.zeros(0, bool) for _ in range(k)]
     n = len(trades)
     if bar_time is None:
-        # پس‌گردِ صادقانه: محورِ exit_bar به‌عنوانِ تقریبِ زمان (کندل‌ها هم‌فاصله‌اند)
+        # پس‌گردِ تنزل‌یافته: بدونِ محورِ زمان، خوشه‌ای‌شدن قابلِ تشخیص نیست.
+        # (compute_rqs2 در این حالت H6 را UNKNOWN می‌کند، نه «پاس».)
         t = trades['exit_bar'].values.astype('float64')
+        lo, hi = float(np.min(t)), float(np.max(t))
     else:
         bt = np.asarray(bar_time, dtype='float64')
         idx = np.clip(trades['exit_bar'].values.astype(int), 0, len(bt) - 1)
         t = bt[idx]
-    lo, hi = float(np.min(t)), float(np.max(t))
+        lo, hi = float(bt[0]), float(bt[-1])      # ⭐ افقِ کاملِ داده
+    if hi <= lo:
+        lo, hi = float(np.min(t)), float(np.max(t))
     if hi <= lo:
         m = np.ones(n, bool)
         return [m] + [np.zeros(n, bool) for _ in range(k - 1)]
