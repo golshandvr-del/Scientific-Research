@@ -209,7 +209,8 @@ def cheap_stats(pnl, win, sel):
 
 def screen401(P, card, man, allow_time=False,
               qlist=(0.10, 0.15, 0.20, 0.25, 0.30, 0.70, 0.75, 0.80, 0.85, 0.90),
-              min_gain_d=1.5, min_gain_h=1.0, keep_top=260, verbose=True):
+              min_gain_d=1.5, min_gain_h=1.0, keep_top=260,
+              min_ev_d=300, min_nd=45, min_nh=25, verbose=True):
     """
     غربالِ دومرحله‌ای روی کلِ بانک.
       A) تورِ ارزان روی همهٔ ستون‌ها × آستانه‌ها (بدونِ صف)
