@@ -84,7 +84,12 @@ def _ref_quantiles():
     """چارکِ آستانه‌های C1 روی کارتِ مرجع — یک‌بار، با کش."""
     path = f"{OUT}/oos_ref_quantiles.json"
     if os.path.exists(path):
-        return json.load(open(path))
+        # ⚠️ کشِ `s346_oos_transfer` چارک‌ها را زیرِ کلیدِ 'q' می‌گذارد، نه در
+        # ریشه. خواندنِ ریشه‌ای `KeyError` می‌داد — و بدتر: اگر با `.get`
+        # خاموش می‌شد، فیلتر **بی‌صدا غیرفعال** می‌ماند و گونهٔ B عملاً
+        # همان گونهٔ A می‌شد بی‌آنکه کسی بفهمد.
+        d = json.load(open(path))
+        return d.get('q', d)
     asset, p = CARDS[REF_CARD]
     df = se.load_data(p)
     q = {}
