@@ -47,18 +47,27 @@ from strategies.s346_fast import barrier_outcomes, stats
 
 OUT = 'results/_scan_S346'
 
+# ------------------------------------------------------------------------------
+# کارت‌ها = (جفت‌ارز، تایم‌فریم) — **همگام‌شده با فایل‌های واقعیِ پوشهٔ data/**
+# ------------------------------------------------------------------------------
+# ⚠️ اصلاحِ صحتِ داده (این نشست): نسخهٔ قبلی دو کارتِ **ناموجود** داشت
+#   (`XAUUSD_M1.csv` و `EURUSD_H1.csv` روی دیسک نیستند) و در عوض دو فایلِ
+#   **واقعیِ موجود** را نادیده می‌گرفت (`XAUUSD_D1`, `XAUUSD_W1`). این یعنی
+#   قانونِ MTF عملاً نقض می‌شد: دو تایم‌فریمِ بالا هرگز آزمون نمی‌شدند.
+#   نکته: چون XAUUSD روی M1 داده ندارد، «شروع از XAU-M1» ناممکن است ⇒ نقطهٔ
+#   شروعِ MTF برای طلا = **M5** (ریزترین تایم‌فریمِ موجود).
 CARDS = {
-    'XAUUSD-M1':  ('XAUUSD', 'data/XAUUSD_M1.csv'),
     'XAUUSD-M5':  ('XAUUSD', 'data/XAUUSD_M5.csv'),
     'XAUUSD-M15': ('XAUUSD', 'data/XAUUSD_M15.csv'),
     'XAUUSD-M30': ('XAUUSD', 'data/XAUUSD_M30.csv'),
     'XAUUSD-H1':  ('XAUUSD', 'data/XAUUSD_H1.csv'),
     'XAUUSD-H4':  ('XAUUSD', 'data/XAUUSD_H4.csv'),
+    'XAUUSD-D1':  ('XAUUSD', 'data/XAUUSD_D1.csv'),
+    'XAUUSD-W1':  ('XAUUSD', 'data/XAUUSD_W1.csv'),
     'EURUSD-M1':  ('EURUSD', 'data/EURUSD_M1.csv'),
     'EURUSD-M5':  ('EURUSD', 'data/EURUSD_M5.csv'),
     'EURUSD-M15': ('EURUSD', 'data/EURUSD_M15.csv'),
     'EURUSD-M30': ('EURUSD', 'data/EURUSD_M30.csv'),
-    'EURUSD-H1':  ('EURUSD', 'data/EURUSD_H1.csv'),
 }
 
 P_GRID    = [13, 21, 34, 55, 89]
