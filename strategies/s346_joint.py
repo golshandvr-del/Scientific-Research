@@ -214,8 +214,23 @@ def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
     ch_cache = {}
     rows, best = [], None
     # ⚡ مرحلهٔ ۱: فقط هندسه‌های پرظرفیت (بودجهٔ N) به مرحلهٔ گران راه می‌یابند
-    sel = sweep_card(card, min_base_n=min_base_n)
+    # کشِ sweep: اگر قبلاً پیمایش شده، دوباره ۱۲۹۶ هندسه را حساب نمی‌کنیم
+    cached = f"{OUT}/{card}_sweep.json"
+    if os.path.exists(cached):
+        allr = json.load(open(cached))['rows']
+        sel = [r for r in allr
+               if r['base_n'] >= min_base_n and r['base_wr_min'] >= wr_min_base]
+        sel.sort(key=lambda r: -r['base_n'])
+        sel = sel[:24]
+        print(f"  (sweep cache hit: {len(allr)} geoms -> {len(sel)} eligible)",
+              flush=True)
+    else:
+        sel = sweep_card(card, min_base_n=min_base_n, wr_min_base=wr_min_base)
     geoms = [r['geom'] for r in sel]
+    if not geoms:
+        print(f"!!! {card}: no eligible geometry at wr_min_base={wr_min_base} "
+              f"and min_base_n={min_base_n}", flush=True)
+        return []
     # ⭐ جعبه‌ابزارِ کاملِ ۴۰۱: قطعاتِ ویژگی یک‌بار ساخته و کش می‌شوند.
     # ویژگی‌های ساختاریِ کانال به p وابسته‌اند؛ p مرجع = پرتکرارترین p در sel
     # (اثرش تنها روی ۷ ستونِ CHAN است، نه ۴۰۱ ستونِ بانک).
