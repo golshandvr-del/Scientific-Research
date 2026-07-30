@@ -163,11 +163,17 @@ def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
 
     # کشِ کانال به‌ازای هر p (تنها به p وابسته است، نه به mult/side/hold)
     ch_cache = {}
-    F = None
     rows, best = [], None
     # ⚡ مرحلهٔ ۱: فقط هندسه‌های پرظرفیت (بودجهٔ N) به مرحلهٔ گران راه می‌یابند
     sel = sweep_card(card, min_base_n=min_base_n)
     geoms = [r['geom'] for r in sel]
+    # ⭐ جعبه‌ابزارِ کاملِ ۴۰۱: قطعاتِ ویژگی یک‌بار ساخته و کش می‌شوند.
+    # ویژگی‌های ساختاریِ کانال به p وابسته‌اند؛ p مرجع = پرتکرارترین p در sel
+    # (اثرش تنها روی ۷ ستونِ CHAN است، نه ۴۰۱ ستونِ بانک).
+    p_ref = max(set(g['p'] for g in geoms), key=[g['p'] for g in geoms].count) \
+        if geoms else 21
+    ch_ref = adaptive_channel(df, p=p_ref, mult=1.0)
+    man = build_parts(card, df, ch_ref)
     print(f"=== S346-JOINT :: {card} :: {len(geoms)} geometries :: "
           f"objective=max N s.t. WR>={wr_floor} PF>={pf_floor} "
           f"(allow_time={allow_time}) ===", flush=True)
