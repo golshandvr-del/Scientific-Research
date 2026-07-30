@@ -161,6 +161,7 @@ def stack_maxn(P, cands, wr_floor=61.0, pf_floor=1.35, max_filters=14,
     for step in range(max_filters):
         # ⭐ آمارِ صف‌آگاه: همان صفی که داورِ رسمی می‌بیند
         sd0, sh0, _ = q_stats(P, cur)
+        nd0, nh0 = sd0['n'], sh0['n']
         if min(sd0['wr'], sh0['wr']) >= wr_floor and min(sd0['pf'], sh0['pf']) >= pf_floor:
             break   # کف برآورده شد — n را بیش از این نمی‌خوریم
 
@@ -184,8 +185,13 @@ def stack_maxn(P, cands, wr_floor=61.0, pf_floor=1.35, max_filters=14,
                 continue
             wr_min = min(sd['wr'], sh['wr'])
             reached = (wr_min >= wr_floor) and (min(sd['pf'], sh['pf']) >= pf_floor)
-            # اولویت: (۱) رسیدن به کف  (۲) بیشترین n  — یعنی ارزان‌ترین راهِ رسیدن
-            key = (1 if reached else 0, nd_ + nh_)
+            # ⭐ کلیدِ گام: اگر کف برآورده شد ⇒ بیشینهٔ n؛ وگرنه ⇒ بهره‌به‌ازای‌هزینه
+            n_cur = max(nd0 + nh0, 1)
+            n_new = max(nd_ + nh_, 1)
+            cost = np.log(n_cur / n_new) if n_new < n_cur else 1e-9
+            gain = wr_min - min(sd0['wr'], sh0['wr'])
+            eff = gain / max(cost, 1e-9)
+            key = (1, nd_ + nh_) if reached else (0, eff)
             if best_key is None or key > best_key:
                 best_key, best = key, (r, sd, sh, nd_, nh_, new)
         if best is None:
