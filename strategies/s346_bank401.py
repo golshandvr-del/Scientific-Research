@@ -275,19 +275,17 @@ def screen401(P, card, man, allow_time=False,
     # --- مرحلهٔ B: بار کردنِ فقط ستون‌های زنده‌مانده + بازآزمونِ صف‌آگاه ---
     need = set(r['col'] for r in pool)
     vals = {}
-    for p in man['parts']:
+    for p, cols in zip(man['parts'], man['part_cols']):
+        idx = [j for j, c in enumerate(cols) if c in need]
+        if not idx:
+            continue                      # ⚡ قطعهٔ بی‌ربط هرگز باز نمی‌شود
         try:
-            # ⚡ خواندنِ ارزانِ فهرستِ ستون‌ها از فراداده (بدونِ بار کردنِ داده)
-            import pyarrow.parquet as pq
-            have = [c for c in pq.ParquetFile(p).schema.names if c in need]
-            if not have:
-                continue
-            part = pd.read_parquet(p, columns=have)
+            arr = np.load(p, mmap_mode='r')
         except Exception:
             continue
-        for col in part.columns:
-            vals[col] = part[col].values.astype(np.float64)[sb]
-        del part
+        for j in idx:
+            vals[cols[j]] = np.asarray(arr[sb, j], dtype=np.float64)
+        del arr
     P['FV'] = pd.DataFrame(vals)
 
     cands = []
