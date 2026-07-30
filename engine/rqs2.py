@@ -134,6 +134,49 @@ def _clip01(x):
     return float(min(1.0, max(0.0, x)))
 
 
+def effective_trials(X, min_var=1e-12):
+    """تعدادِ آزمون‌های **مؤثرِ مستقل** از ساختارِ همبستگیِ ستون‌های `X`.
+
+    مرجع: Nyholt (2004), *A Simple Correction for Multiple Testing for SNPs in
+    Linkage Disequilibrium*; Cheverud (2001), *A simple correction for multiple
+    comparisons in interval mapping genome scans*.
+
+        M_eff = 1 + (M − 1)·(1 − Var(λ)/M)
+
+    که در آن λ مقادیرِ ویژهٔ ماتریسِ همبستگیِ M×M هستند.
+
+    ⭐ **چرا این اصلاح حیاتی است؟**
+    قضیهٔ استراتژیِ کاذب کرانِ `E[max_N]` را برای N آزمونِ **مستقل** می‌دهد. اما
+    ۴۰۱ اندیکاتورِ ما مستقل نیستند — ده‌ها نسخهٔ میانگینِ متحرک، ده‌ها نسخهٔ
+    نوسان‌سنج. اگر N کل را به‌جای N مؤثر بگذاریم، کران **به‌شدت اغراق‌شده** است و
+    لبه‌های واقعی را هم رد می‌کند (دقیقاً همان چیزی که در اعتبارسنجیِ `C1` رخ داد:
+    z=4.00 در برابرِ کرانِ ۴.۳۹).
+
+    نکتهٔ ظریفِ رفتاری (آزمونِ سلامتِ خودِ برآوردگر):
+      • M ستونِ **یکسان**  ⇒ λ = (M,0,…,0) ⇒ Var(λ)=M−1 ⇒ M_eff ≈ 2 (≈۱ ✔)
+      • M ستونِ **متعامد** ⇒ همهٔ λ=1 ⇒ Var(λ)=0 ⇒ M_eff = M ✔
+    """
+    A = np.asarray(X, dtype='float64')
+    if A.ndim != 2 or A.shape[1] < 2:
+        return float(max(1, A.shape[1] if A.ndim == 2 else 1))
+    # ستون‌های بی‌واریانس (فیلترِ همیشه-روشن/خاموش) آزمونِ واقعی نیستند
+    keep = np.nanvar(A, axis=0) > min_var
+    A = A[:, keep]
+    M = A.shape[1]
+    if M < 2:
+        return float(max(1, M))
+    A = A - np.nanmean(A, axis=0, keepdims=True)
+    sd = np.nanstd(A, axis=0, keepdims=True)
+    sd[sd <= 0] = 1.0
+    A = np.nan_to_num(A / sd, nan=0.0)
+    C = (A.T @ A) / float(A.shape[0])
+    lam = np.linalg.eigvalsh(C)
+    lam = np.clip(lam, 0.0, None)
+    var_lam = float(np.mean(lam ** 2) - np.mean(lam) ** 2)
+    m_eff = 1.0 + (M - 1.0) * (1.0 - var_lam / float(M))
+    return float(min(max(m_eff, 1.0), float(M)))
+
+
 def expected_max_z(n_trials):
     """E[بیشینهٔ N نمونهٔ مستقلِ نرمالِ استاندارد] — قضیهٔ «استراتژیِ کاذب».
 
