@@ -603,7 +603,11 @@ def calendar_windows(trades, bar_time, k=CAL_WINDOWS):
         t = trades['exit_bar'].values.astype('float64')
         lo, hi = float(np.min(t)), float(np.max(t))
     else:
-        bt = np.asarray(bar_time, dtype='float64')
+        # v2.4 — همان دروازهٔ واحد. اینجا خطا «کشنده» نبود (تقسیمِ تقویمی با
+        # هر محورِ صعودیِ یکنوا درست کار می‌کند، چون فقط نسبت‌ها مهم‌اند)، ولی
+        # عبور از یک مسیرِ واحد اجباری است تا امکانِ واگراییِ واحدها بینِ
+        # H6 و H10 — که هر دو از یک `bar_time` تغذیه می‌شوند — از بین برود.
+        bt = to_epoch_seconds(bar_time)
         idx = np.clip(trades['exit_bar'].values.astype(int), 0, len(bt) - 1)
         t = bt[idx]
         lo, hi = float(bt[0]), float(bt[-1])      # ⭐ افقِ کاملِ داده
