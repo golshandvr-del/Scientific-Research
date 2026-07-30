@@ -91,9 +91,9 @@ def screen(P, min_gain_d=1.5, min_gain_h=1.0, allow_time=True,
            qlist=(0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.5,
                   0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.90)):
     """پرده‌بندیِ آستانه‌ای با آستانه‌های استخراج‌شده فقط از discovery."""
-    pnl, win, is_d, spread = P['pnl'], P['win'], P['is_d'], P['spread']
-    base_d = stats(pnl[is_d], win[is_d], spread)
-    base_h = stats(pnl[~is_d], win[~is_d], spread)
+    is_d = P['is_d']
+    n_ev = len(P['sb'])
+    base_d, base_h, _ = q_stats(P, np.ones(n_ev, bool))
     FV = P['FV']
     cands = []
     for col in FV.columns:
@@ -110,11 +110,10 @@ def screen(P, min_gain_d=1.5, min_gain_h=1.0, allow_time=True,
             thr = float(np.nanquantile(vd, q))
             for d in ('ge', 'le'):
                 m = ((v >= thr) if d == 'ge' else (v <= thr)) & finite
-                nd_, nh_ = int((m & is_d).sum()), int((m & ~is_d).sum())
-                if nd_ < 120 or nh_ < 60:
+                sd, sh, _ = q_stats(P, m)
+                nd_, nh_ = sd['n'], sh['n']
+                if nd_ < 45 or nh_ < 25:
                     continue
-                sd = stats(pnl[m & is_d], win[m & is_d], spread)
-                sh = stats(pnl[m & ~is_d], win[m & ~is_d], spread)
                 gd, gh = sd['wr'] - base_d['wr'], sh['wr'] - base_h['wr']
                 if gd >= min_gain_d and gh >= min_gain_h:
                     cands.append(dict(col=col, q=q, thr=thr, dir=d,
