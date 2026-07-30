@@ -259,15 +259,33 @@ TF_FILES = [
 
 
 def _atr_pip(path, pip, n=14):
+    """ATRِ میانه بر حسبِ pip ، تعدادِ کندل، و **گسترهٔ تقویمیِ کارت** بر حسبِ روز.
+
+    گسترهٔ تقویمی از v2.3 لازم شد: افقِ رژیمِ `H10` زمان‌محور است، پس کارتی که
+    تاریخش کوتاه‌تر از افق باشد اصلاً **قابلِ داوری نیست** و این باید اندازه‌گیری
+    شود، نه حدس زده شود.
+    """
     df = pd.read_csv(path)
     cols = {c.lower(): c for c in df.columns}
     h, l, c = cols.get('high'), cols.get('low'), cols.get('close')
     if not (h and l and c):
-        return None, 0
+        return None, 0, None
     hi, lo, cl = df[h].values, df[l].values, df[c].values
     prev = np.concatenate([[cl[0]], cl[:-1]])
     tr = np.maximum(hi - lo, np.maximum(np.abs(hi - prev), np.abs(lo - prev)))
-    return float(np.nanmedian(tr)) / pip, len(df)
+    span_days = None
+    tcol = next((cols[k] for k in ('time', 'date', 'datetime') if k in cols), None)
+    if tcol is not None and len(df) > 1:
+        t = df[tcol]
+        try:
+            if pd.api.types.is_numeric_dtype(t):
+                span_days = float(t.iloc[-1] - t.iloc[0]) / 86400.0
+            else:
+                tt = pd.to_datetime(t)
+                span_days = (tt.iloc[-1] - tt.iloc[0]).total_seconds() / 86400.0
+        except Exception:      # noqa: BLE001 — سنجهٔ کمکی؛ نبودش کشنده نیست
+            span_days = None
+    return float(np.nanmedian(tr)) / pip, len(df), span_days
 
 
 def part_c():
@@ -292,7 +310,7 @@ def part_c():
         spec = se.ASSETS[asset]
         pip = spec['pip']
         cost = spec['spread_pip'] + spec.get('slip_pip', 0.0)
-        atr, bars = _atr_pip(path, pip)
+        atr, bars, span_days = _atr_pip(path, pip)
         if atr is None:
             continue
         # SL واقع‌گرایانه = ۱ ATR ؛ TP_min از حلِ (SL+2c)/(SL+TP) ≤ 0.55
@@ -306,7 +324,7 @@ def part_c():
         sd = sqrt(0.5 * 0.5 / n_tr) * 100.0
         rows.append(dict(card=f"{asset}-{tf}", bars=bars, atr=atr, cost=cost,
                          cost_frac=cost_frac, sl=sl, tp_min=tp_min,
-                         rr_min=rr_min, n_tr=n_tr, sd=sd))
+                         rr_min=rr_min, n_tr=n_tr, sd=sd, span_days=span_days))
 
     print(f"  {'card':13s} {'bars':>7s} {'ATR(pip)':>9s} {'cost/ATR':>9s} "
           f"{'SL':>7s} {'TP_min':>8s} {'RR_min':>7s} {'n@5%':>7s} {'sd(pp)':>7s} {'N_FLOOR':>8s}")
@@ -346,17 +364,39 @@ def part_c():
               f"the z test binds and needs {R.SKILL_Z_MIN * hi_sd['sd']:.1f}pp.")
         print(f"      ⇒ the SAME nominal gate is a different physical requirement per card.")
 
-    # وابستگیِ صوریِ TF: REGIME_LOOKBACK بر حسب کندل است
+    # ── C3: افقِ رانشِ H10 — یافتهٔ v2.2 و **رفعِ v2.3** ─────────────────────
     print()
-    print(f"  ⚠️  FINDING C3 — R.REGIME_LOOKBACK = {R.REGIME_LOOKBACK} BARS is the only")
-    print(f"      threshold expressed in bars rather than in a scale-free unit, so the")
-    print(f"      'prevailing drift' that H10 tests against means:")
-    for asset, tf, mins in [('XAUUSD', 'M5', 5), ('XAUUSD', 'H1', 60),
-                            ('XAUUSD', 'D1', 1440), ('XAUUSD', 'W1', 10080)]:
-        span = R.REGIME_LOOKBACK * mins / 60.0 / 24.0
-        print(f"          {tf:3s} ⇒ {span:9.1f} days of look-back")
-    print(f"      A 17-hour drift on M5 and a 3.8-YEAR drift on W1 are not the same")
-    print(f"      concept, so H10's verdict is not comparable across cards.")
+    lb_days = R.REGIME_LOOKBACK_SECONDS / 86400.0
+    print(f"  ✅ FINDING C3 — RESOLVED in v2.3 (user decision: scale H10 per timeframe).")
+    print(f"      The defect was that REGIME_LOOKBACK = {R.REGIME_LOOKBACK} BARS was the only")
+    print(f"      threshold expressed in bars, so 'prevailing drift' meant a different")
+    print(f"      duration on every card and H10's verdicts were incomparable:")
+    for tf, mins in [('M5', 5), ('H1', 60), ('D1', 1440), ('W1', 10080)]:
+        print(f"          {tf:3s} ⇒ {R.REGIME_LOOKBACK * mins / 60.0 / 24.0:9.1f} days "
+              f"(old, bar-count)")
+    print(f"      The horizon is now {R.REGIME_LOOKBACK_TRADING_DAYS:.0f} TRADING DAYS "
+          f"= {lb_days:.0f} calendar days on EVERY card,")
+    print(f"      located by searchsorted on the time axis (immune to data gaps).")
+    print(f"      ⭐ The number 200 was never wrong, it was UNITLESS: on D1 it already meant")
+    print(f"      200 trading days — the canonical regime horizon of BLL 1992 / Faber 2007 —")
+    print(f"      so the old constant was a D1 constant generalised to all cards. Hence the")
+    print(f"      correction is D1-INVARIANT and forces the minimum possible re-testing.")
+    print()
+    print(f"      Consequence measured on the real cards — which cards can even be judged:")
+    for r in rows:
+        span_d = r.get('span_days')
+        if span_d is None:
+            continue
+        ok = span_d > lb_days
+        print(f"          {r['card']:14s} history {span_d:7.0f}d  "
+              f"{'✓ judgeable' if ok else '✗ H10 UNKNOWN — history shorter than horizon'}")
+    short = [r['card'] for r in rows
+             if r.get('span_days') is not None and r['span_days'] <= lb_days]
+    if short:
+        print(f"      ⚠️  ACTION REQUIRED for {len(short)} card(s): {', '.join(short)}")
+        print(f"      These cannot support the canonical regime test, so by the project's own")
+        print(f"      third-verdict rule they are INCOMPLETE rather than ACCEPT — never")
+        print(f"      silently 'passed'. Remedy is longer history, not a weaker gate.")
     return rows
 
 
