@@ -392,10 +392,17 @@ def breakeven_wr_cost(sl_pip, tp_pip, cost_pip):
     نکته: مخرج `SL+TP` است نه `SL+TP−2c`؛ جبر را ساده کنید تا ببینید.
     این عدد **همیشه ≥** نسخهٔ بی‌هزینهٔ `SL/(SL+TP)` است، پس RQS+ سربه‌سر را
     سیستماتیک کم‌برآورد می‌کرد.
+
+    ⚠️ رفعِ نقصِ v2.2 — فالبکِ ساختگی که حسابرسی گرفت: نسخهٔ قبل وقتی
+    `SL+TP ≤ 0` بود عددِ **۵۰.۰** را برمی‌گرداند. آن ۵۰ از هیچ‌جا نمی‌آمد —
+    یک حدسِ ظاهراً بی‌طرف که در عمل **بی‌طرف نیست**: با آن، لایه‌ای با
+    براکتِ خرابِ صفر می‌توانست شرطِ مازادِ ۳pp در `H2` را با `WR ≥ ۵۳٪` بگذراند،
+    یعنی هندسهٔ ناموجود به یک سدِ سهل بدل می‌شد. حالا `None` برمی‌گردد تا
+    `H2` صریحاً `UNKNOWN` شود و مسیرِ «نبودِ هندسه ⇒ هرگز ACCEPT» فعال گردد.
     """
     den = float(sl_pip) + float(tp_pip)
-    if den <= 0:
-        return 50.0
+    if den <= 0 or not np.isfinite(den):
+        return None
     return float((float(sl_pip) + float(cost_pip)) / den * 100.0)
 
 
@@ -681,9 +688,19 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     else:
         tp_pip = float(tp_pip)
         be_cost = breakeven_wr_cost(sl_pip, tp_pip, cost_pip)
-        wr_excess = wr - be_cost
-        rr = tp_pip / float(sl_pip) if sl_pip > 0 else 0.0
-        h2 = (wr_excess >= WR_EXCESS_MIN) and (rr >= RR_MIN) and (exp_pip > 0)
+        if be_cost is None:
+            # هندسهٔ واگن (`SL+TP ≤ 0`) ⇒ هیچ سربه‌سری تعریف‌شدنی نیست. از v2.2
+            # به بعد فالبکِ ساختگیِ ۵۰٪ حذف شده، پس این شاخه باید صریح باشد
+            # وگرنه `wr − None` می‌شکست.
+            h2 = None
+            rr = wr_excess = None
+            res['notes'].append(
+                f"H2 UNKNOWN: degenerate bracket (sl={sl_pip}, tp={tp_pip}) ⇒ "
+                f"no cost breakeven is definable")
+        else:
+            wr_excess = wr - be_cost
+            rr = tp_pip / float(sl_pip) if sl_pip > 0 else 0.0
+            h2 = (wr_excess >= WR_EXCESS_MIN) and (rr >= RR_MIN) and (exp_pip > 0)
 
     # ------------------- H3 ⭐ مهارت نسبت به مدلِ صفرِ اندازه‌گیری‌شده -------------------
     nb = blend_null(null, n_by_side)
