@@ -86,8 +86,15 @@ CAL_OCCUPIED_MIN = 3        # حداقل تعدادِ بازهٔ دارای مع
 CAL_WORST_FRAC   = 0.25     # زیانِ بدترین بازه ≤ ۲۵٪ نتِ کل
 
 # H7 — خارج از نمونه
+# ⚠️ اصلاحِ v2.1 — **سومین خطای بُعدیِ هم‌خانواده.** کفِ پیشین `۵۷٪` بود، که
+#   دقیقاً «کفِ درون‌نمونه ۶۰٪ منهای تحملِ ۳pp» بود ⇒ وقتی کفِ ۶۰٪ از H1 حذف شد،
+#   این عدد **یتیم** ماند و فرضِ `RR=1` را از درِ پشتی برمی‌گرداند: یک اسکالپِ
+#   سوددهِ `RR=3` با `WR=45%` در H7 رد می‌شد حتی اگر در پنجرهٔ خارج هم سودده
+#   می‌ماند. ترجمهٔ وفادارانهٔ همان قصد: `be_cost + WR_EXCESS_MIN − تحملِ ۳pp`
+#   که می‌شود **دقیقاً `be_cost`** — یعنی در پنجرهٔ خارج، لایه دست‌کم باید
+#   **از سربه‌سرِ هزینه‌دارِ خودش بگذرد** (به‌علاوهٔ `PF ≥ 1.2` و `n ≥ 15`).
 OOS_N_FLOOR      = 15
-OOS_WR_FLOOR     = 57.0     # کف با تحملِ ۳pp
+OOS_WR_FLOOR_NO_RR = 57.0   # فالبکِ ارثی — فقط وقتی `tp_pip` نامعلوم است
 OOS_PF_MIN       = 1.2
 
 # H8 — ریسکِ دنباله و بازیافت
@@ -737,7 +744,9 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
         pfo = float(so['profit_factor'])
         oos = dict(n=no, wr=round(wro, 2), pf=round(pfo, 3),
                    net=round(float(so['net_profit']), 1))
-        h7 = (no >= OOS_N_FLOOR and wro >= OOS_WR_FLOOR and pfo >= OOS_PF_MIN)
+        oos_wr_req = (be_cost if be_cost is not None else OOS_WR_FLOOR_NO_RR)
+        oos['wr_req'] = round(float(oos_wr_req), 2)
+        h7 = (no >= OOS_N_FLOOR and wro >= oos_wr_req and pfo >= OOS_PF_MIN)
 
     # --------------------- H8 ریسکِ دنباله و ضریبِ بازیافت ---------------------
     mcl = max_consec_losses(outcomes)
