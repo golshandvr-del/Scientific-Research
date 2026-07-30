@@ -85,6 +85,33 @@ def barrier_outcomes(df, sig_idx, is_long, sl_dist, tp_dist, max_hold,
                 sl_pip=sl_dist / pip, tp_pip=tp_dist / pip)
 
 
+def select_non_overlap(entry_bar, exit_off):
+    """
+    ⭐ انتخابِ زیرمجموعهٔ **بی‌همپوشانیِ** رویدادها — بازتولیدِ دقیقِ صفِ
+    `simulate_trades(allow_overlap=False)` ولی با هزینهٔ O(تعدادِ رویداد).
+
+    چرا حیاتی است؟ نتیجهٔ سدها (exit_off) فقط به خودِ رویداد وابسته است، پس یک‌بار
+    برداری حساب می‌شود؛ اما «کدام رویدادها واقعاً معامله می‌شوند» به صفِ اشغال
+    بستگی دارد. اگر اکتشاف روی *همهٔ* رویدادها بهینه‌سازی کند و داوری روی
+    *زیرمجموعهٔ بی‌همپوشانی* انجام شود، اکتشاف تابعِ هدفِ **اشتباهی** را بهینه
+    کرده است (دقیقاً اختلافی که در نشستِ S346 بینِ WR=63.1٪ اکتشاف و 58.2٪ داوری دیدیم).
+
+    قاعده (هم‌ارزِ موتورِ اصلی): معاملهٔ جدید تنها اگر `entry_bar > busy_until`
+    پذیرفته شود، و سپس `busy_until = exit_bar`.
+    خروجی: ماسکِ بولین هم‌طولِ ورودی.
+    """
+    entry_bar = np.asarray(entry_bar, dtype=np.int64)
+    exit_bar = entry_bar + np.asarray(exit_off, dtype=np.int64)
+    order = np.argsort(entry_bar, kind='stable')
+    keep = np.zeros(len(entry_bar), dtype=bool)
+    busy_until = -1
+    for k in order:
+        if entry_bar[k] > busy_until:
+            keep[k] = True
+            busy_until = exit_bar[k]
+    return keep
+
+
 def stats(pnl_pip, win, cost_pip):
     """آمارِ سریعِ pip-محور (بدونِ لایهٔ سرمایه)."""
     n = len(pnl_pip)
