@@ -65,6 +65,15 @@ import { decideS341, S341_CFG } from './swing_fade_s341'
 //     لبهٔ مستقل خارج از پنجره‌های زمان-محورِ S139..S144: RQS+=92.9 (n=57) ⇒ لبهٔ نو (نه فیلتر).
 //     نخستین لبهٔ SHORT روی کارتِ XAUUSD-M15. پورتِ verbatim تأیید شد (۹۲/۹۲ سیگنال یکسان، mismatch=0).
 import { decideS344, S344_CFG } from './trend_from_open_s344'
+// --- لایهٔ نوِ این نشست: S345 Brooks «Reversal Day» (فصلِ ۲۴) ---
+//     چرخشِ روندِ درون‌روزی: روندِ اولیهٔ روز + اسپایکِ ضدِ روندِ قوی + شکستِ خطِ روندِ روز
+//     + تأییدِ lower-high/higher-low، در پنجرهٔ میانه/اواخرِ روز و رژیمِ چرخش‌پذیر r2(34)≤0.55.
+//     • XAUUSD-M15 LONG  — RQS+=90.7 (WR 62.4% · PF 2.30 · +$2,422.8) + فیلترِ بهبود «حذفِ ابتدای ماه»
+//     • EURUSD-M30 SHORT — RQS+=91.7 (WR 62.5% · PF 2.38 · +$2,281.6) — نخستین لایهٔ SHORT این کارت
+//     همپوشانی: XAU-M15=48.5% با زمان-محورِ S139..S144 اما بخشِ مستقل کیفیتِ بالاتر (WR 65.0/PF 2.56)
+//     ⇒ لبهٔ نو، نه بازتولیدِ زمان-محور. EUR-M30=30.6% (خوش‌خیم).
+//     پورتِ verbatim تأیید شد (۱۹۳/۱۹۳ سیگنال یکسان روی هر دو کارت، mismatch=0).
+import { decideS345, S345_CFG } from './reversal_day_s345'
 
 const GOLD_PIP = 0.1
 
@@ -232,6 +241,8 @@ const s340Layer = (cfg: typeof S340_CFG[string]): LayerFn => (ctx) => decideS340
 const s341Layer = (cfg: typeof S341_CFG[string]): LayerFn => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ نوِ این نشست: S344 Brooks Trend-from-Open first-pullback continuation (فصلِ ۲۳) — نخستین SHORT روی XAUUSD-M15
 const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// لایهٔ نوِ این نشست: S345 Brooks Reversal Day — چرخشِ روندِ درون‌روزی (فصلِ ۲۴)
+const s345Layer = (cfg: typeof S345_CFG[string]): LayerFn => (ctx) => decideS345(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 
 // ---------------------------------------------------------------------------
 // نگاشتِ کارت → لایه‌های فعال (به‌ترتیبِ اولویت). فقط لایه‌هایی که روی همان
@@ -240,12 +251,12 @@ const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344
 //
 //   کارت         لایه‌های ACCEPTED (منبعِ نامِ فایل results/)
 //   XAUUSD-M5    S341(LONG·swing-fade·range·RQS 94.7) · S333(LONG·pullback·RQS 91.3) · S330(FADE) · S328(SHORT) · S327(LONG) · S326(LONG)
-//   XAUUSD-M15   S341(LONG·swing-fade·range·RQS 89.8) · S333(LONG·pullback·RQS 91.7) · S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
+//   XAUUSD-M15   S345(LONG·reversal-day·RQS 90.7) · S341(LONG·swing-fade·range·RQS 89.8) · S333(LONG·pullback·RQS 91.7) · S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
 //   XAUUSD-M30   S341(LONG·swing-fade·range·RQS 89.7) · S333(LONG·pullback·RQS 91.1) · S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
 //   XAUUSD-H1    S341(LONG·swing-fade·range·RQS 94.5) · S333(LONG·pullback·RQS 89.8) · S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
 //   XAUUSD-H4    S332(LONG·squeeze ADX/DI) · S327(LONG)
 //   EURUSD-M15   S326(LONG)
-//   EURUSD-M30   S327(LONG)
+//   EURUSD-M30   S327(LONG) · S345(SHORT·reversal-day·RQS 91.7)
 //
 //   ⚖️ S333 = احیای S79 با هندسهٔ منصفانه (TP≥SL، breakeven≤۵۰٪): WR واقعی از دقتِ
 //      محلِ ورود (rsi_turn/price_turn) + رژیمِ Hurst/ER، نه از TP<SL. (تصحیحِ User Note)
@@ -270,6 +281,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s323Layer(S323_CFG['XAUUSD-M15']),
     s335Layer(S335_CFG['XAUUSD-M15']),  // S335 — Reflex dip-turn + گیتِ r2>0.55 — RQS+=89.7 (WR 60.0% · PF 2.08) · همپوشانیِ صفر با S333
     s344Layer(S344_CFG['XAUUSD-M15']),  // S344 — Brooks فصلِ ۲۳ trend-from-open first-pullback SHORT — RQS+=91.4 (WR 64.1% · PF 2.08 · +$1,571) · مستقل=92.9 · نخستین SHORT این کارت
+    s345Layer(S345_CFG['XAUUSD-M15']),  // S345 — Brooks فصلِ ۲۴ reversal-day چرخشِ روندِ روز LONG — RQS+=90.7 (WR 62.4% · PF 2.30 · +$2,422.8) · همپوشانی 48.5% ولی بخشِ مستقل قوی‌تر (WR 65.0/PF 2.56)
     s310Layer,
     s312Layer(295, 295, 48),
   ],
@@ -306,6 +318,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s326Layer(STREAK_REV_CFG['EURUSD-M15']),
   ],
   'EURUSD-M30': [
+    s345Layer(S345_CFG['EURUSD-M30']),   // S345 — Brooks فصلِ ۲۴ reversal-day چرخشِ روندِ روز SHORT — RQS+=91.7 (WR 62.5% · PF 2.38 · +$2,281.6) · همپوشانی 30.6% · نخستین SHORT این کارت
     s327Layer(SELL_CLIMAX_CFG['EURUSD-M30']),
   ],
 }
