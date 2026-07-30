@@ -1,0 +1,177 @@
+# -*- coding: utf-8 -*-
+"""
+S346 — بهینه‌سازیِ **مشترکِ** هندسه × فیلتر با هدفِ «بیشینهٔ N»
+================================================================================
+چرا این فایل لازم شد؟ (درسِ روش‌شناختیِ این نشست)
+--------------------------------------------------------------------------------
+هندسهٔ قبلی (p=21، hold=34، fade/long) زیرِ تابعِ هدفِ **غلط** انتخاب شده بود
+(اکتشاف با allow_overlap=True، داوری با False). پس از اصلاحِ تابعِ هدف، آن هندسه
+تنها n=148 معاملهٔ نهایی می‌داد — مجاز (کفِ RQS+ برابر ۳۰ است) ولی خلافِ
+هدفِ صریحِ این نشست: **N بالا و تعدادِ معاملهٔ زیاد**.
+
+نکتهٔ کلیدی: `hold` بزرگ ⇒ حساب مدتِ طولانی اشغال ⇒ صف اکثرِ رویدادها را دور
+می‌ریزد. پس «تعدادِ معاملهٔ نهایی» تابعِ **مشترکِ** هندسه و فیلتر است و نمی‌توان
+اول هندسه را (با معیارِ WR) قطعی کرد و بعد فیلتر زد. باید هر دو را همزمان گشت.
+
+تابعِ هدفِ رسمیِ این فایل:
+        max  n_ALL(post-queue, post-filter)
+        به‌شرطِ   min(WR_D, WR_H) ≥ wr_floor     (پیش‌بینِ G0)
+                 min(PF_D, PF_H) ≥ pf_floor      (پیش‌بینِ G2)
+
+--------------------------------------------------------------------------------
+🛡️ سپرهای فعال در این فایل
+--------------------------------------------------------------------------------
+• **ضدِ اشتباهِ #۸ (تقلبِ WR با TP<SL):** قیدِ `rr ≥ 1.0` و در خانوادهٔ `mid`
+  قیدِ `tp_d ≥ sl_d` — به‌صورتِ **ساختاری** در فضای جست‌وجو. یعنی تقلب
+  «ناممکن» است، نه «ممنوع».
+• **ضدِ اشتباهِ #۷ (اعدادِ رند):** همهٔ دوره‌ها از دنبالهٔ لوکاس/فیبوناچی
+  (۱۳/۲۱/۳۴/۵۵/۷۶) و ضرایب از نسبت‌های طلایی (۱.۲۷۲/۱.۶۱۸/۲.۰۵۸/۲.۶۱۸) —
+  هیچ ۵۰/۱۰۰/۲۰۰ی در کار نیست.
+• **ضدِ اشتباهِ #۶ (TP/SL یکسان برای همهٔ TFها):** SL/TP بر حسبِ `sl_k × ATR_تطبیقی`
+  یعنی **شناور** و ذاتاً متناسبِ هر TF (قانونِ «شاید همه چیز شناور است»).
+• **ضدِ اشتباهِ #۵ (نتیجه‌گیری از یک TF):** این فایل روی همهٔ کارت‌ها اجرا می‌شود و
+  هر کارت مستقل ذخیره می‌شود.
+• **تکرارپذیری:** آستانه‌ها **فقط** از نیمهٔ discovery و شرطِ بهبود در **هر دو**
+  نیمه (discovery و holdout) اجباری است.
+"""
+import sys
+import os
+import json
+import itertools
+import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from engine import scalp_engine as se
+from strategies.s346_adaptive_channel import adaptive_channel
+from strategies.s346_geom import CARDS
+from strategies.s346_stack import build_features, outcomes_for_geom
+from strategies.s346_stack2 import q_stats, screen, stack_maxn
+
+OUT = 'results/_scan_S346'
+
+
+# ------------------------------------------------------------------------------
+# فضای هندسه — کوچک ولی هدفمند: hold کوتاه برای گردشِ سریعِ صف (⇒ N بالا)
+# ------------------------------------------------------------------------------
+P_LIST = (13, 21, 34)            # لوکاس/فیبوناچی — نه رند
+MULT_LIST = (1.272, 1.618, 2.058)  # نسبت‌های طلایی
+ER_LIST = (0.146, 0.236)         # آستانهٔ کاراییِ کایفمن
+SL_LIST = (1.0, 1.618)           # ضریبِ ATRِ تطبیقی برای SL
+RR_LIST = (1.0, 1.272)           # ⚠️ همیشه ≥ ۱ ⇒ ضدِ تقلبِ ساختاری
+HOLD_LIST = (5, 8, 13)           # ⭐ کوتاه = گردشِ سریعِ صف = N بالا
+MODES = ('fade', 'breakout')
+SIDES = ('long', 'short', 'both')
+
+
+def geometries():
+    """مولدِ هندسه‌ها با قیدِ سختِ ضدِ تقلب."""
+    for mode, side, p, mult, er, sl, rr, hold in itertools.product(
+            MODES, SIDES, P_LIST, MULT_LIST, ER_LIST, SL_LIST, RR_LIST, HOLD_LIST):
+        assert rr >= 1.0, 'anti-gaming: TP must be >= SL'
+        yield dict(mode=mode, side=side, p=p, mult=mult, er_thr=er,
+                   sl_k=sl, rr=rr, hold=hold, tp_mode='atr')
+
+
+def prepare_fast(df, ch, F, asset, split_idx, geom, warmup):
+    """ساختِ P برای یک هندسه — با استفادهٔ مجدد از df/ch/F (کشِ گران‌ها)."""
+    fo, spread = outcomes_for_geom(df, ch, asset, geom, warmup)
+    sb = fo['sig_idx']
+    if len(sb) == 0:
+        return None
+    return dict(fo=fo, sb=sb, spread=spread, F=F,
+                pnl=fo['pnl_pip'], win=fo['win'], is_d=sb < split_idx,
+                FV=F.iloc[sb].reset_index(drop=True))
+
+
+def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
+             allow_time=False, top_report=15):
+    """
+    مرحلهٔ ۱: غربالِ ارزانِ هندسه‌ها بر اساسِ «بودجهٔ N» (base n پس از صف).
+    مرحلهٔ ۲: انباشتِ فیلتر روی هندسه‌های واجد بودجه.
+    مرحلهٔ ۳: انتخابِ بیشینهٔ n نهایی مشروط به کف‌های کیفیت.
+
+    `allow_time=False` به‌صورتِ پیش‌فرض ⇒ سپرِ اشتباهِ رایجِ #۱ (لایهٔ زمان‌محور).
+    """
+    asset, path = CARDS[card]
+    df = se.load_data(path)
+    split_idx = int(len(df) * 0.60)
+    os.makedirs(OUT, exist_ok=True)
+
+    # کشِ کانال به‌ازای هر p (تنها به p وابسته است، نه به mult/side/hold)
+    ch_cache = {}
+    F = None
+    rows, best = [], None
+    geoms = list(geometries())
+    print(f"=== S346-JOINT :: {card} :: {len(geoms)} geometries :: "
+          f"objective=max N s.t. WR>={wr_floor} PF>={pf_floor} "
+          f"(allow_time={allow_time}) ===", flush=True)
+
+    for gi, g in enumerate(geoms):
+        if g['p'] not in ch_cache:
+            ch_cache[g['p']] = adaptive_channel(df, p=g['p'], mult=1.0)
+        ch = ch_cache[g['p']]
+        if F is None:
+            F = build_features(df, ch, card)
+        warmup = max(5 * g['p'], 250)
+        P = prepare_fast(df, ch, F, asset, split_idx, g, warmup)
+        if P is None:
+            continue
+        n_ev = len(P['sb'])
+        bd, bh, ba = q_stats(P, np.ones(n_ev, bool))
+        # --- غربالِ بودجهٔ N: اگر پایهٔ صف کوچک است، پس از فیلتر چیزی نمی‌ماند
+        if ba['n'] < min_base_n:
+            continue
+
+        _, _, cands = screen(P, allow_time=allow_time)
+        if not cands:
+            continue
+        stack, hist, mask = stack_maxn(P, cands, wr_floor=wr_floor,
+                                       pf_floor=pf_floor, verbose=False)
+        sd, sh, sa = q_stats(P, mask)
+        ok = (min(sd['wr'], sh['wr']) >= wr_floor and
+              min(sd['pf'], sh['pf']) >= pf_floor and
+              sd['n'] >= 30 and sh['n'] >= 20)
+        row = dict(geom=g, base_n=ba['n'], base_wr=ba['wr'],
+                   n_filters=len(stack), reached=bool(ok),
+                   filters=[dict(col=f['col'], dir=f['dir'], thr=f['thr'])
+                            for f in stack],
+                   D=sd, H=sh, ALL=sa)
+        rows.append(row)
+        if ok and (best is None or sa['n'] > best['ALL']['n']):
+            best = row
+            print(f"  ★ NEW BEST n={sa['n']:5d} WR={sa['wr']:5.2f} PF={sa['pf']:.2f} "
+                  f"| {g['mode']}/{g['side']} p={g['p']} m={g['mult']} "
+                  f"sl={g['sl_k']} rr={g['rr']} h={g['hold']} | F={len(stack)}",
+                  flush=True)
+        if (gi + 1) % 25 == 0:
+            print(f"  ... {gi+1}/{len(geoms)} scanned, kept={len(rows)}", flush=True)
+            _save(card, allow_time, rows, best)
+
+    _save(card, allow_time, rows, best)
+    rows_ok = [r for r in rows if r['reached']]
+    rows_ok.sort(key=lambda r: -r['ALL']['n'])
+    print(f">>> {card}: geoms_kept={len(rows)} reached={len(rows_ok)}", flush=True)
+    for r in rows_ok[:top_report]:
+        g = r['geom']
+        print(f"   n={r['ALL']['n']:5d} WR={r['ALL']['wr']:5.2f} PF={r['ALL']['pf']:.2f} "
+              f"exp={r['ALL']['exp']:6.2f} | D n={r['D']['n']:4d} WR={r['D']['wr']:5.2f} "
+              f"| H n={r['H']['n']:4d} WR={r['H']['wr']:5.2f} | "
+              f"{g['mode']}/{g['side']} p={g['p']} m={g['mult']} sl={g['sl_k']} "
+              f"rr={g['rr']} h={g['hold']} F={r['n_filters']}", flush=True)
+    return rows_ok
+
+
+def _save(card, allow_time, rows, best):
+    tag = 'notime' if not allow_time else 'time'
+    with open(f"{OUT}/{card}_joint_{tag}.json", 'w') as f:
+        json.dump(dict(card=card, allow_time=allow_time, rows=rows, best=best),
+                  f, default=float)
+
+
+if __name__ == '__main__':
+    args = sys.argv[1:]
+    if not args:
+        args = ['XAUUSD-M15']
+    for card in args:
+        run_card(card)
