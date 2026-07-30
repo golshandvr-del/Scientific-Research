@@ -178,7 +178,7 @@ def stack_maxn(P, cands, wr_floor=61.0, pf_floor=1.35, max_filters=14,
                 continue
             sd, sh, _ = q_stats(P, new)
             nd_, nh_ = sd['n'], sh['n']
-            if nd_ < 45 or nh_ < 25:
+            if nd_ < min_nd or nh_ < min_nh:
                 continue
             # باید کیفیت را در هر دو بازه بهبود دهد (تکرارپذیریِ گامِ انباشت)
             if sd['wr'] <= sd0['wr'] or sh['wr'] <= sh0['wr']:
