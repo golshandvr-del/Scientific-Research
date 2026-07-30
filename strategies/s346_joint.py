@@ -84,6 +84,61 @@ def prepare_fast(df, ch, F, asset, split_idx, geom, warmup):
                 FV=F.iloc[sb].reset_index(drop=True))
 
 
+def sweep_card(card, min_base_n=600, top_k=24, save=True):
+    """
+    ⚡ مرحلهٔ ۱ — **sweepِ ارزان**: برای هر هندسه فقط «آمارِ پایهٔ صف» را حساب
+    می‌کند (بدونِ غربالِ ۱۵۲ فیلتر). هدف: سنجشِ **بودجهٔ N** هر هندسه.
+
+    منطق: فیلترها معمولاً n را ۵ تا ۲۰ برابر آب می‌کنند. پس هندسه‌ای که پایه‌اش
+    n=۵۰۰ است هرگز به n نهاییِ بالا نمی‌رسد؛ صرفِ ۳۰ ثانیه غربال روی آن اتلاف
+    است. با این مرحله، جست‌وجوی گران فقط روی `top_k` هندسهٔ پرظرفیت اجرا می‌شود
+    (۱۲۹۶ → ۲۴ ⇒ حدودِ ۵۴ برابر صرفه‌جویی).
+
+    رتبه‌بندی بر اساسِ `base_n` (ظرفیت) — کیفیتِ پایه عمداً ملاک نیست، چون
+    کارِ فیلترها بالا بردنِ کیفیت است و لبهٔ خامِ نزدیک‌به‌تصادفی *بهترین* بستر
+    برای انباشتِ فیلتر است (یافتهٔ همین نشست).
+    """
+    asset, path = CARDS[card]
+    df = se.load_data(path)
+    split_idx = int(len(df) * 0.60)
+    os.makedirs(OUT, exist_ok=True)
+    ch_cache = {}
+    geoms = list(geometries())
+    print(f"=== S346-SWEEP :: {card} :: {len(geoms)} geometries (base-queue only) ===",
+          flush=True)
+    rows = []
+    for gi, g in enumerate(geoms):
+        if g['p'] not in ch_cache:
+            ch_cache[g['p']] = adaptive_channel(df, p=g['p'], mult=1.0)
+        ch = ch_cache[g['p']]
+        warmup = max(5 * g['p'], 250)
+        fo, spread = outcomes_for_geom(df, ch, asset, g, warmup)
+        sb = fo['sig_idx']
+        if len(sb) == 0:
+            continue
+        Pmin = dict(fo=fo, sb=sb, spread=spread, pnl=fo['pnl_pip'],
+                    win=fo['win'], is_d=sb < split_idx)
+        bd, bh, ba = q_stats(Pmin, np.ones(len(sb), bool))
+        rows.append(dict(geom=g, n_ev=int(len(sb)), base_n=ba['n'],
+                         base_wr=ba['wr'], base_pf=ba['pf'], base_exp=ba['exp'],
+                         wr_d=bd['wr'], wr_h=bh['wr'], n_d=bd['n'], n_h=bh['n']))
+        if (gi + 1) % 200 == 0:
+            print(f"  ... {gi+1}/{len(geoms)}", flush=True)
+    rows.sort(key=lambda r: -r['base_n'])
+    if save:
+        with open(f"{OUT}/{card}_sweep.json", 'w') as f:
+            json.dump(dict(card=card, rows=rows), f, default=float)
+    print(f">>> {card} sweep done: {len(rows)} geoms. Top by N-budget:", flush=True)
+    for r in rows[:12]:
+        g = r['geom']
+        print(f"   base_n={r['base_n']:5d} (ev={r['n_ev']:6d}) WR={r['base_wr']:5.2f} "
+              f"PF={r['base_pf']:.3f} | {g['mode']:8s}/{g['side']:5s} p={g['p']:2d} "
+              f"m={g['mult']} sl={g['sl_k']} rr={g['rr']} h={g['hold']:2d}", flush=True)
+    sel = [r for r in rows if r['base_n'] >= min_base_n][:top_k]
+    print(f">>> selected {len(sel)} geometries for expensive stacking", flush=True)
+    return sel
+
+
 def run_card(card, wr_floor=61.0, pf_floor=1.35, min_base_n=400,
              allow_time=False, top_report=15):
     """
