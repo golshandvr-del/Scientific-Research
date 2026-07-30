@@ -1,0 +1,378 @@
+{
+ "H1": {
+  "config": {
+   "asset": "XAUUSD",
+   "tf": "H1",
+   "side": "long",
+   "n_open": 3,
+   "k_spike": 1.5,
+   "slope_min": 0.18,
+   "win": [
+    0.25,
+    0.9
+   ],
+   "reg": null,
+   "sl": 470,
+   "tp": 800,
+   "maxhold": 22
+  },
+  "base": {
+   "rqs": 93.8,
+   "passed": true,
+   "gates": "111111",
+   "n": 30,
+   "wr": 66.67,
+   "pf": 2.863,
+   "net": 413.1
+  },
+  "A_neighbourhood": {
+   "n_open=2": {
+    "rqs": 36.5,
+    "passed": false,
+    "gates": "011111",
+    "n": 26,
+    "wr": 69.23,
+    "pf": 2.96,
+    "net": 493.3
+   },
+   "n_open=3": {
+    "rqs": 93.8,
+    "passed": true,
+    "gates": "111111",
+    "n": 30,
+    "wr": 66.67,
+    "pf": 2.863,
+    "net": 413.1
+   },
+   "n_open=4": {
+    "rqs": 26.3,
+    "passed": false,
+    "gates": "111101",
+    "n": 39,
+    "wr": 64.1,
+    "pf": 1.593,
+    "net": 233.0
+   },
+   "n_open=5": {
+    "rqs": 24.7,
+    "passed": false,
+    "gates": "111101",
+    "n": 43,
+    "wr": 62.79,
+    "pf": 1.459,
+    "net": 209.1
+   },
+   "k_spike=1.275": {
+    "rqs": 32.8,
+    "passed": false,
+    "gates": "011111",
+    "n": 61,
+    "wr": 55.74,
+    "pf": 1.908,
+    "net": 557.3
+   },
+   "k_spike=1.5": {
+    "rqs": 93.8,
+    "passed": true,
+    "gates": "111111",
+    "n": 30,
+    "wr": 66.67,
+    "pf": 2.863,
+    "net": 413.1
+   },
+   "k_spike=1.725": {
+    "rqs": 37.8,
+    "passed": false,
+    "gates": "011111",
+    "n": 13,
+    "wr": 76.92,
+    "pf": 3.241,
+    "net": 246.2
+   },
+   "slope_min=0.126": {
+    "rqs": 30.5,
+    "passed": false,
+    "gates": "111101",
+    "n": 54,
+    "wr": 61.11,
+    "pf": 1.715,
+    "net": 333.8
+   },
+   "slope_min=0.18": {
+    "rqs": 93.8,
+    "passed": true,
+    "gates": "111111",
+    "n": 30,
+    "wr": 66.67,
+    "pf": 2.863,
+    "net": 413.1
+   },
+   "slope_min=0.234": {
+    "rqs": 29.7,
+    "passed": false,
+    "gates": "001111",
+    "n": 13,
+    "wr": 61.54,
+    "pf": 3.34,
+    "net": 146.1
+   },
+   "win=(0.15, 0.9)": {
+    "rqs": 93.4,
+    "passed": true,
+    "gates": "111111",
+    "n": 31,
+    "wr": 64.52,
+    "pf": 2.838,
+    "net": 411.1
+   },
+   "win=(0.25, 0.9500000000000001)": {
+    "rqs": 94.1,
+    "passed": true,
+    "gates": "111111",
+    "n": 31,
+    "wr": 67.74,
+    "pf": 3.023,
+    "net": 448.4
+   },
+   "win=(0.35, 0.9)": {
+    "rqs": 35.7,
+    "passed": false,
+    "gates": "011111",
+    "n": 29,
+    "wr": 65.52,
+    "pf": 2.586,
+    "net": 351.6
+   }
+  },
+  "B_overlap": {
+   "signals_total": 30,
+   "overlap_pct": 30.0,
+   "independent": {
+    "rqs": 37.2,
+    "passed": false,
+    "gates": "011111",
+    "n": 21,
+    "wr": 71.43,
+    "pf": 6.228,
+    "net": 458.7
+   },
+   "overlapping_part": {
+    "rqs": 5.0,
+    "passed": false,
+    "gates": "000100",
+    "n": 9,
+    "wr": 55.56,
+    "pf": 0.66,
+    "net": -45.6
+   }
+  },
+  "C_halves": {
+   "H1st": {
+    "rqs": 29.5,
+    "passed": false,
+    "gates": "001111",
+    "n": 18,
+    "wr": 55.56,
+    "pf": 2.709,
+    "net": 173.9
+   },
+   "H2nd": {
+    "rqs": 38.5,
+    "passed": false,
+    "gates": "011111",
+    "n": 12,
+    "wr": 83.33,
+    "pf": 2.994,
+    "net": 239.2
+   }
+  }
+ },
+ "EURM30": {
+  "config": {
+   "asset": "EURUSD",
+   "tf": "M30",
+   "side": "short",
+   "n_open": 6,
+   "k_spike": 0.8,
+   "slope_min": 0.18,
+   "win": [
+    0.4,
+    0.95
+   ],
+   "reg": "r2_lo",
+   "sl": 20,
+   "tp": 33,
+   "maxhold": 28
+  },
+  "base": {
+   "rqs": 91.7,
+   "passed": true,
+   "gates": "111111",
+   "n": 40,
+   "wr": 62.5,
+   "pf": 2.382,
+   "net": 2281.6
+  },
+  "A_neighbourhood": {
+   "n_open=5": {
+    "rqs": 33.1,
+    "passed": false,
+    "gates": "011111",
+    "n": 36,
+    "wr": 58.33,
+    "pf": 2.038,
+    "net": 1649.4
+   },
+   "n_open=6": {
+    "rqs": 91.7,
+    "passed": true,
+    "gates": "111111",
+    "n": 40,
+    "wr": 62.5,
+    "pf": 2.382,
+    "net": 2281.6
+   },
+   "n_open=7": {
+    "rqs": 89.2,
+    "passed": true,
+    "gates": "111111",
+    "n": 35,
+    "wr": 60.0,
+    "pf": 2.162,
+    "net": 1691.2
+   },
+   "n_open=8": {
+    "rqs": 29.9,
+    "passed": false,
+    "gates": "011111",
+    "n": 49,
+    "wr": 55.1,
+    "pf": 1.755,
+    "net": 1729.0
+   },
+   "k_spike=0.68": {
+    "rqs": 91.4,
+    "passed": true,
+    "gates": "111111",
+    "n": 50,
+    "wr": 60.0,
+    "pf": 2.115,
+    "net": 2441.7
+   },
+   "k_spike=0.8": {
+    "rqs": 91.7,
+    "passed": true,
+    "gates": "111111",
+    "n": 40,
+    "wr": 62.5,
+    "pf": 2.382,
+    "net": 2281.6
+   },
+   "k_spike=0.92": {
+    "rqs": 32.8,
+    "passed": false,
+    "gates": "111101",
+    "n": 32,
+    "wr": 65.62,
+    "pf": 2.799,
+    "net": 2030.7
+   },
+   "slope_min=0.126": {
+    "rqs": 20.2,
+    "passed": false,
+    "gates": "010001",
+    "n": 148,
+    "wr": 46.62,
+    "pf": 1.224,
+    "net": 1921.8
+   },
+   "slope_min=0.18": {
+    "rqs": 91.7,
+    "passed": true,
+    "gates": "111111",
+    "n": 40,
+    "wr": 62.5,
+    "pf": 2.382,
+    "net": 2281.6
+   },
+   "slope_min=0.234": {
+    "rqs": 38.4,
+    "passed": false,
+    "gates": "011111",
+    "n": 15,
+    "wr": 80.0,
+    "pf": 5.076,
+    "net": 1423.8
+   },
+   "win=(0.30000000000000004, 0.95)": {
+    "rqs": 18.3,
+    "passed": false,
+    "gates": "011101",
+    "n": 66,
+    "wr": 50.0,
+    "pf": 1.388,
+    "net": 1492.2
+   },
+   "win=(0.4, 0.99)": {
+    "rqs": 91.7,
+    "passed": true,
+    "gates": "111111",
+    "n": 40,
+    "wr": 62.5,
+    "pf": 2.382,
+    "net": 2281.6
+   },
+   "win=(0.5, 0.95)": {
+    "rqs": 25.6,
+    "passed": false,
+    "gates": "001101",
+    "n": 22,
+    "wr": 54.55,
+    "pf": 1.824,
+    "net": 786.5
+   }
+  },
+  "B_overlap": {
+   "signals_total": 49,
+   "overlap_pct": 30.6,
+   "independent": {
+    "rqs": 34.4,
+    "passed": false,
+    "gates": "011111",
+    "n": 26,
+    "wr": 65.38,
+    "pf": 2.631,
+    "net": 1547.8
+   },
+   "overlapping_part": {
+    "rqs": 27.7,
+    "passed": false,
+    "gates": "001101",
+    "n": 14,
+    "wr": 57.14,
+    "pf": 2.073,
+    "net": 636.2
+   }
+  },
+  "C_halves": {
+   "H1st": {
+    "rqs": 33.2,
+    "passed": false,
+    "gates": "011111",
+    "n": 22,
+    "wr": 63.64,
+    "pf": 2.404,
+    "net": 1336.9
+   },
+   "H2nd": {
+    "rqs": 30.9,
+    "passed": false,
+    "gates": "011111",
+    "n": 18,
+    "wr": 61.11,
+    "pf": 2.35,
+    "net": 831.0
+   }
+  }
+ }
+}
