@@ -7367,6 +7367,239 @@ function decideS345(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
 }
 
+// ../web_tool/src/trend_resumption_s354.ts
+var S354_CFG = {
+  "XAUUSD-H1": {
+    id: "XAUUSD-H1",
+    tfFa: "H1",
+    pip: 0.1,
+    barsPerDay: 24,
+    nOpen: 3,
+    lateHour: 16,
+    spikeK: 0.8,
+    tightATR: 12,
+    atrPeriod: 21,
+    r2Period: 55,
+    r2Min: 0.394314,
+    slPipFixed: 50.6,
+    tpPipFixed: 101.2,
+    slK: 1.3,
+    rr: 2,
+    maxHold: 20
+  }
+};
+function dayIdOf2(tsSec) {
+  return Math.floor(tsSec / 86400);
+}
+function utcHourOf(tsSec) {
+  return Math.floor((tsSec % 86400 + 86400) % 86400 / 3600);
+}
+function atrSeriesS354(high, low, close, p) {
+  const n = high.length;
+  const tr = new Array(n).fill(0);
+  if (n === 0) return tr;
+  tr[0] = high[0] - low[0];
+  for (let i = 1; i < n; i++) {
+    tr[i] = Math.max(
+      high[i] - low[i],
+      Math.abs(high[i] - close[i - 1]),
+      Math.abs(low[i] - close[i - 1])
+    );
+  }
+  const atr2 = new Array(n).fill(NaN);
+  if (n >= p) {
+    let s = 0;
+    for (let k = 0; k < p; k++) s += tr[k];
+    atr2[p - 1] = s / p;
+    for (let i = p; i < n; i++) atr2[i] = (atr2[i - 1] * (p - 1) + tr[i]) / p;
+  }
+  return atr2;
+}
+function computeS354(candles, cfg) {
+  const n = candles.length;
+  const o = candles.map((c2) => c2.open);
+  const h = candles.map((c2) => c2.high);
+  const l = candles.map((c2) => c2.low);
+  const c = candles.map((x) => x.close);
+  const t = candles.map((x) => x.time);
+  const slDist = cfg.slK;
+  const need = cfg.r2Period + cfg.atrPeriod + cfg.barsPerDay + 10;
+  const fail = (reason) => ({
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist: 0,
+    tpDist: 0,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    indicators: [{ name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }]
+  });
+  if (n < need) return fail("\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u0634\u062E\u06CC\u0635\u0650 \u0631\u0648\u0632\u0650 \u0627\u0632\u0633\u0631\u06AF\u06CC\u0631\u06CC\u0650 \u0631\u0648\u0646\u062F (trend resumption) \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.");
+  const atr2 = atrSeriesS354(h, l, c, cfg.atrPeriod);
+  const r2 = r2Series(c, cfg.r2Period);
+  const i = n - 1;
+  const dToday = dayIdOf2(t[i]);
+  let ds = i;
+  while (ds > 0 && dayIdOf2(t[ds - 1]) === dToday) ds -= 1;
+  const pos = i - ds;
+  const ndlen = pos + 1;
+  const openEnd = ds + cfg.nOpen;
+  let lateStart = -1;
+  for (let k = Math.max(openEnd + 1, ds); k <= i; k++) {
+    if (utcHourOf(t[k]) >= cfg.lateHour) {
+      lateStart = k;
+      break;
+    }
+  }
+  const lateExists = lateStart >= 0;
+  const atrRef = openEnd - 1 < n ? atr2[openEnd - 1] : NaN;
+  const atrRefOk = isFinite(atrRef) && atrRef > 0;
+  const initRet = openEnd - 1 >= 0 ? c[openEnd - 1] - o[ds] : NaN;
+  const initDir = Math.sign(initRet);
+  const leg1 = Math.abs(initRet);
+  const spikeOk = atrRefOk && initDir > 0 && leg1 >= cfg.spikeK * atrRef;
+  const midLoIdx = openEnd;
+  const midHiIdx = lateExists ? Math.max(openEnd + 1, lateStart) : Number.MAX_SAFE_INTEGER;
+  const dayLongEnough = ndlen >= cfg.nOpen + 4;
+  const rangeReady = lateExists && midHiIdx - midLoIdx >= 2 && midHiIdx <= i;
+  const inLateWindow = lateExists && i >= Math.max(midHiIdx, lateStart);
+  const atrNow = isFinite(atr2[i - 1]) ? atr2[i - 1] : atrRef;
+  const r2Now = r2[i];
+  const regimeOk = isFinite(r2Now) && r2Now >= cfg.r2Min;
+  const slPip = cfg.slPipFixed;
+  const tpPip = cfg.tpPipFixed;
+  const slPrice = slPip * cfg.pip;
+  const tpPrice = tpPip * cfg.pip;
+  let msegHi = -Infinity, msegLo = Infinity;
+  for (let k = midLoIdx; k < i; k++) {
+    if (h[k] > msegHi) msegHi = h[k];
+    if (l[k] < msegLo) msegLo = l[k];
+  }
+  const midRange = msegHi - msegLo;
+  const tightOk = isFinite(atrNow) && atrNow > 0 && midRange > 0 && midRange <= cfg.tightATR * atrNow;
+  const fmt3 = (x) => isFinite(x) ? x.toFixed(2) : "\u2014";
+  const ind = [
+    // ⚠️ `status` فقط می‌تواند `'ok' | 'warn' | 'bad' | 'neutral'` باشد (router.ts:252).
+    //   نسخهٔ پیشین `'bullish'`/`'bearish'` می‌فرستاد که در این اتحاد نیست؛
+    //   چون esbuild نوع‌ها را حذف می‌کند، بدونِ خطا بیلد می‌شد ولی UI رنگِ
+    //   ناشناخته می‌گرفت ⇒ شاخص‌های این لایه بی‌رنگ/بی‌معنا دیده می‌شدند.
+    //   نگاشت: شرطِ برقرار → `ok`؛ شرطِ هنوز برقرارنشده → `neutral`؛
+    //   گیتِ رژیم که نقضِ صریح است → `bad` (همان قراردادِ s333/s341).
+    {
+      name: "\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0628\u062D (leg1/ATR)",
+      value: atrRefOk ? (leg1 / atrRef).toFixed(2) : "\u2014",
+      status: spikeOk ? "ok" : "neutral"
+    },
+    {
+      name: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0631\u0646\u062C\u0650 \u0645\u06CC\u0627\u0646\u06CC (range/ATR)",
+      value: isFinite(atrNow) && atrNow > 0 ? (midRange / atrNow).toFixed(2) : "\u2014",
+      status: tightOk ? "ok" : "neutral"
+    },
+    {
+      name: `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F R\xB2(${cfg.r2Period})`,
+      value: fmt3(r2Now),
+      status: regimeOk ? "ok" : "bad"
+    },
+    { name: "\u0633\u0642\u0641\u0650 \u0631\u0646\u062C\u0650 \u0645\u06CC\u0627\u0646\u06CC", value: isFinite(msegHi) ? msegHi.toFixed(2) : "\u2014", status: "neutral" }
+  ];
+  const structureOk = spikeOk && dayLongEnough && rangeReady && tightOk && regimeOk && slPip > 0;
+  const tStart = lateExists ? Math.max(midHiIdx, lateStart) : Number.MAX_SAFE_INTEGER;
+  let firstBreakBar = -1;
+  if (lateExists) {
+    let runHi = -Infinity, runLo = Infinity;
+    for (let k = midLoIdx; k < tStart; k++) {
+      if (h[k] > runHi) runHi = h[k];
+      if (l[k] < runLo) runLo = l[k];
+    }
+    for (let t2 = tStart; t2 <= i; t2++) {
+      const segHi = runHi, segLo = runLo;
+      const atrT = isFinite(atr2[t2 - 1]) ? atr2[t2 - 1] : atrRef;
+      const rng = segHi - segLo;
+      const tOk = isFinite(atrT) && atrT > 0 && rng > 0 && rng <= cfg.tightATR * atrT;
+      if (tOk && isFinite(segHi) && c[t2] > segHi) {
+        firstBreakBar = t2;
+        break;
+      }
+      if (h[t2] > runHi) runHi = h[t2];
+      if (l[t2] < runLo) runLo = l[t2];
+    }
+  }
+  const isFirstBreakoutNow = firstBreakBar === i;
+  if (structureOk && inLateWindow && isFirstBreakoutNow && c[i] > msegHi) {
+    return {
+      active: true,
+      approaching: false,
+      direction: "LONG",
+      slDist: slPrice,
+      tpDist: tpPrice,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u0631\u0648\u0632\u0650 \u0627\u0632\u0633\u0631\u06AF\u06CC\u0631\u06CC\u0650 \u0631\u0648\u0646\u062F: \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0635\u0628\u062D (leg1=${(leg1 / atrRef).toFixed(1)}\xD7ATR) \u2192 \u0631\u0646\u062C\u0650 \u0645\u06CC\u0627\u0646\u06CC\u0650 \u0641\u0634\u0631\u062F\u0647 (${(midRange / atrNow).toFixed(1)}\xD7ATR) \u2192 \u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u062F\u0631 \u0633\u0627\u0639\u062A\u0650 \u067E\u0627\u06CC\u0627\u0646\u06CC\u0650 \u0631\u0648\u0632 \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 \u0631\u0646\u062C ${msegHi.toFixed(2)}. leg \u062F\u0648\u0645 measured-move (TP=\u06F2\xD7SL).`,
+      indicators: ind
+    };
+  }
+  if (structureOk && inLateWindow && c[i] <= msegHi && firstBreakBar === -1) {
+    return {
+      active: false,
+      approaching: true,
+      direction: "LONG",
+      slDist: slPrice,
+      tpDist: tpPrice,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0631\u0648\u0632\u0650 \u0627\u0632\u0633\u0631\u06AF\u06CC\u0631\u06CC\u0650 \u0631\u0648\u0646\u062F \u06A9\u0627\u0645\u0644 \u0627\u0633\u062A (\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0635\u0628\u062D + \u0631\u0646\u062C\u0650 \u0645\u06CC\u0627\u0646\u06CC\u0650 \u0641\u0634\u0631\u062F\u0647 + \u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F)\u060C \u0627\u0645\u0627 \u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 \u0633\u0642\u0641\u0650 \u0631\u0646\u062C (${msegHi.toFixed(2)}) \u0631\u0627 \u0646\u0634\u06A9\u0633\u062A\u0647.`,
+      approachReason: `\u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0646\u0650 \u06CC\u06A9 \u06A9\u0646\u062F\u0644\u0650 H1 \u0628\u0627\u0644\u0627\u06CC ${msegHi.toFixed(2)} \u062F\u0631 \u0633\u0627\u0639\u062A\u0650 \u067E\u0627\u06CC\u0627\u0646\u06CC\u0650 \u0631\u0648\u0632 \u0628\u0627\u0634\u061B \u0622\u0646\u06AF\u0627\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 LONG \u0628\u0627 TP=\u06F2\xD7SL \u0641\u0639\u0627\u0644 \u0645\u06CC\u200C\u0634\u0648\u062F.`,
+      indicators: ind
+    };
+  }
+  let why = "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0631\u0648\u0632\u0650 \u0627\u0632\u0633\u0631\u06AF\u06CC\u0631\u06CC\u0650 \u0631\u0648\u0646\u062F \u0641\u0631\u0627\u0647\u0645 \u0646\u06CC\u0633\u062A: ";
+  if (!spikeOk) why += `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0642\u0648\u06CC\u0650 \u0635\u0628\u062D \u062A\u0634\u06A9\u06CC\u0644 \u0646\u0634\u062F\u0647 (leg1/ATR=${atrRefOk ? (leg1 / atrRef).toFixed(2) : "\u2014"} < ${cfg.spikeK}). `;
+  else if (!dayLongEnough) why += "\u0631\u0648\u0632 \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u067E\u06CC\u0634 \u0646\u0631\u0641\u062A\u0647. ";
+  else if (!tightOk) why += `\u0631\u0646\u062C\u0650 \u0645\u06CC\u0627\u0646\u06CC \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u0641\u0634\u0631\u062F\u0647 \u0646\u06CC\u0633\u062A (range/ATR=${isFinite(atrNow) && atrNow > 0 ? (midRange / atrNow).toFixed(1) : "\u2014"} > ${cfg.tightATR}). `;
+  else if (!regimeOk) why += `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F \u0636\u0639\u06CC\u0641 \u0627\u0633\u062A (R\xB2=${fmt3(r2Now)} < ${cfg.r2Min}). `;
+  else if (!inLateWindow) why += "\u0647\u0646\u0648\u0632 \u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u0633\u0627\u0639\u062A\u0650 \u067E\u0627\u06CC\u0627\u0646\u06CC\u0650 \u0631\u0648\u0632 \u0646\u0631\u0633\u06CC\u062F\u0647\u200C\u0627\u06CC\u0645. ";
+  else why += "\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0627\u0632 \u0633\u0642\u0641\u0650 \u0631\u0646\u062C \u0647\u0646\u0648\u0632 \u0631\u062E \u0646\u062F\u0627\u062F\u0647. ";
+  return {
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist: slPrice,
+    tpDist: tpPrice,
+    maxHoldBars: cfg.maxHold,
+    reason: why,
+    indicators: ind
+  };
+}
+function decideS354(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS354(candles, cfg);
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s354_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    // کدِ نمایشی = شمارهٔ **رکوردِ پذیرش**، نه شمارهٔ کشفِ اولیه. سایت به کاربر
+    // می‌گوید «این سیگنال از لایهٔ X است»؛ اگر X=S354 بماند، کاربر به سندی
+    // می‌رسد که همان لایه را POWER-LIMITED و وصل‌نشده اعلام می‌کند (چون آن سند
+    // نسخهٔ non-causal را داوری کرده بود). رکوردی که این لایه با آن پذیرفته شد
+    // `S356` است ⇒ کدِ نمایشی هم همان است تا ارجاع، قابلِ‌پیگیری و بی‌تناقض بماند.
+    code: "S356",
+    name: `\u0631\u0648\u0632\u0650 \u0627\u0632\u0633\u0631\u06AF\u06CC\u0631\u06CC\u0650 \u0631\u0648\u0646\u062F (Brooks Trend Resumption \xB7 ${cfg.tfFa})`,
+    kind: "trend_resumption",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A: SL=${cfg.slPipFixed} pip \u060C TP=${cfg.tpPipFixed} pip (RR=${cfg.rr}\u060C measured-move \u0628\u0631\u0627\u06CC leg \u062F\u0648\u0645\u0650 \u0631\u0648\u0632). \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u062A\u0627 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0627\u06AF\u0631 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062F\u0627\u062E\u0644\u0650 \u0631\u0646\u062C\u0650 \u0645\u06CC\u0627\u0646\u06CC \u0628\u0631\u06AF\u0634\u062A \u0648 \u0632\u06CC\u0631\u0650 \u0646\u0642\u0637\u0647\u0654 \u0634\u06A9\u0633\u062A \u0628\u0633\u062A\u0647 \u0634\u062F\u060C \u0634\u06A9\u0633\u062A \u0646\u0627\u0645\u0648\u0641\u0642 \u0627\u0633\u062A \u21D2 \u0645\u06CC\u200C\u062A\u0648\u0627\u0646\u06CC \u0632\u0648\u062F\u062A\u0631 \u062E\u0627\u0631\u062C \u0634\u0648\u06CC\u061B \u0627\u0645\u0627 \u062D\u062F\u0650 \u0636\u0631\u0631 \u0631\u0627 \u062F\u0648\u0631\u062A\u0631 \u0646\u0628\u0631.`,
+    filters: [
+      `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0635\u0628\u062D (${cfg.nOpen} \u06A9\u0646\u062F\u0644\u0650 \u0627\u0648\u0644) \u0628\u0627 leg1 \u2265 ${cfg.spikeK}\xD7ATR`,
+      `\u0631\u0646\u062C\u0650 \u0645\u06CC\u0627\u0646\u06CC\u0650 \u0641\u0634\u0631\u062F\u0647 \u2264 ${cfg.tightATR}\xD7ATR`,
+      "\u0634\u06A9\u0633\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC \u0627\u0632 \u0633\u0642\u0641\u0650 \u0631\u0646\u062C\u0650 \u0645\u06CC\u0627\u0646\u06CC \u062F\u0631 \u0633\u0627\u0639\u062A\u0650 \u067E\u0627\u06CC\u0627\u0646\u06CC\u0650 \u0631\u0648\u0632",
+      `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F R\xB2(${cfg.r2Period}) \u2265 ${cfg.r2Min}`,
+      "\u0641\u0642\u0637 \u0627\u0648\u0644\u06CC\u0646 \u0627\u0632\u0633\u0631\u06AF\u06CC\u0631\u06CC\u0650 \u0647\u0631 \u0631\u0648\u0632"
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
+}
+
 // ../web_tool/src/strategy_registry.ts
 var GOLD_PIP7 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
@@ -7530,6 +7763,7 @@ var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capita
 var s341Layer = (cfg) => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s344Layer = (cfg) => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s345Layer = (cfg) => (ctx) => decideS345(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s354Layer = (cfg) => (ctx) => decideS354(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
     s341Layer(S341_CFG["XAUUSD-M5"]),
@@ -7580,6 +7814,10 @@ var CARD_LAYERS = {
     s312Layer(295, 295, 36)
   ],
   "XAUUSD-H1": [
+    // S356 اول می‌آید چون تنها لایهٔ این کارت است که با معیارِ حاکمِ **RQS2 v2.4**
+    // داوری شده (هر ۱۱ دروازه، هر ۳ seed)؛ بقیه با RQS+ بازنشسته پذیرفته شده‌اند.
+    s354Layer(S354_CFG["XAUUSD-H1"]),
+    // S356 — Brooks trend-resumption (causal، ساعت≥۱۶ UTC) — RQS2=81.5 (WR 51.28% · lift +15.0 · z=3.36 · n=117) · همپوشانی ۲۵.۶٪ (S313=25 · S335=5)
     s341Layer(S341_CFG["XAUUSD-H1"]),
     // S341 — احیای فصلِ ۱۷ Brooks: swing-fade در رنج + مغناطیسِ میانه (ema_dist_atr≥0.7) — RQS+=94.5 (WR 66.7% · PF 2.01) · همپوشانیِ صفر (رژیمِ رنج vs روند)
     s333Layer(S333_CFG["XAUUSD-H1"]),
