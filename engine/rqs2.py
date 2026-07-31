@@ -918,6 +918,7 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     if nb is None:
         h3 = None
         lift = z_skill = None
+        p_perm = None
         res['notes'].append("H3 UNKNOWN: no measured null model supplied — "
                             "absence of a control is not evidence of skill")
     else:
@@ -933,8 +934,18 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
         se_binom = sqrt(max(nb['ref_wr'], 1e-9) * (100.0 - nb['ref_wr']) / n)
         sd_use = max(float(nb['perm_sd'] or 0.0), se_binom)
         z_skill = (lift / sd_use) if sd_use > 0 else float('inf')
-        h3 = (lift >= SKILL_LIFT_MIN and z_skill >= SKILL_Z_MIN
-              and wr > nb['perm_max'] and nb['perm_k'] >= PERM_K_MIN)
+        # ── v2.4 (F1+F2): آمارهٔ همگرا جایگزینِ `wr > perm_max`ِ ناهمگرا ──
+        #   اگر نول قرعه‌های خام یا p تجربی داشت (نول‌های v2.4) از آن استفاده
+        #   می‌شود؛ وگرنه p پارامتریکِ همگرا از z_skill ساخته می‌شود (سازگاریِ
+        #   عقب‌رو با همهٔ نول‌های قدیمی که فقط mean/sd/max/k دارند).
+        p_perm = nb.get('p_perm')
+        if p_perm is None:
+            p_perm = 0.5 * erfc(z_skill / sqrt(2)) if z_skill != float('inf') else 0.0
+        p_perm = float(p_perm)
+        # شرطِ واحد و همگرا: لیفتِ معنادار + معناداریِ آماریِ پایدار.
+        # (شرطِ ناهمگرای `wr > perm_max` عمداً حذف شد — نقصِ F1.)
+        h3 = (lift >= SKILL_LIFT_MIN and p_perm <= SKILL_P_MAX
+              and nb['perm_k'] >= PERM_K_MIN)
 
     # ---------------------------- H4 مهارتِ هر سمت ----------------------------
     side_lift, prune_sides = {}, []
