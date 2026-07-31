@@ -82,11 +82,10 @@ def build_null(df, asset, key, sl, tp, n_long, n_short, n_perm=200, seed=7):
                         rtr = se.simulate_trades(df, zero, sig, sl, tp, key,
                                                  max_hold=MAX_HOLD,
                                                  allow_overlap=False)
-                    if rtr is not None and len(rtr) >= 1:
-                        w = 100.0 * float((rtr["outcome"] > 0).mean()) \
-                            if "outcome" in rtr.columns else None
-                        if w is not None:
-                            wrs.append(w)
+                    if rtr is not None and len(rtr) >= 1 \
+                            and "outcome" in rtr.columns:
+                        w = 100.0 * float((rtr["outcome"] == "win").mean())
+                        wrs.append(w)
             if wrs:
                 a = np.asarray(wrs, dtype="float64")
                 d.update(uncond_wr=float(a.mean()), perm_mean=float(a.mean()),
@@ -121,8 +120,11 @@ def gatecheck(asset, tf, ampl, side, sl_k, rr, with_null=False):
 
     null = None
     if with_null:
-        n_long = int((tr["direction"] > 0).sum()) if "direction" in tr.columns else len(tr)
-        n_short = int((tr["direction"] < 0).sum()) if "direction" in tr.columns else 0
+        if "direction" in tr.columns:
+            n_long = int((tr["direction"] == "long").sum())
+            n_short = int((tr["direction"] == "short").sum())
+        else:
+            n_long, n_short = len(tr), 0
         null = build_null(df, asset, key, sl, tp, n_long, n_short)
 
     res = rqs2.compute_rqs2(tr, key, sl_pip=sl, tp_pip=tp, bar_time=bar_time,
