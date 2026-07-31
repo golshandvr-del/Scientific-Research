@@ -316,6 +316,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s323Layer(S323_CFG['XAUUSD-H1']),
     s335Layer(S335_CFG['XAUUSD-H1']),   // S335 — Reflex dip-turn + گیتِ Chop<38.2 — RQS+=89.7 (WR 61.2% · PF 1.85) · همپوشانیِ صفر با S333
     s312Layer(395, 395, 24),
+    s354Layer(S354_CFG['XAUUSD-H1']),   // S354 — Brooks فصلِ ۲۵ Trend Resumption Day LONG — RQS2=80.8 · ACCEPT (WR 50.5% · PF 1.556 · +$3,615) · family 4.82σ · مستقلِ خارج از زمان-محور 3.65σ
   ],
   'XAUUSD-H4': [
     s340Layer(S340_CFG['XAUUSD-H4']),   // S340 — Brooks Micro-Channel، ادامهٔ روند/failed-pullback — RQS+=92.6 (WR 65.6% · PF 2.13) · همپوشانی S327=0%/S332=8.2%
