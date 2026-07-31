@@ -106,10 +106,11 @@ def day_index(df):
     return dt.dt.floor("D").astype("int64").values
 
 
-def build_signals(df, asset, tf, n_open_frac, late_from, spike_k, tight_f):
+def build_signals(df, asset, tf, n_open_frac, late_from, spike_k, tight_atr):
     """
     ساختِ سیگنالِ long/short برای Trend Resumption Day.
     همه causal: در کندلِ t فقط از دادهٔ روزِ جاری تا t استفاده می‌شود.
+    قیدِ tightness: mid_range ≤ tight_atr × ATR (واحدِ نوسانِ پایدار، نه leg1).
     """
     n = len(df)
     o = df["open"].values.astype(float)
