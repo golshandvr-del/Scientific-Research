@@ -1,0 +1,9 @@
+{
+ "card": "EURUSD-D1",
+ "status": "NO_SIGNAL",
+ "n_signals": 0,
+ "sl": 111.6,
+ "tp": 223.2,
+ "maxhold": 20,
+ "bars": 4195
+}
