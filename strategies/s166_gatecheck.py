@@ -48,7 +48,55 @@ def _atr_pip(df, asset, period=14):
     return float(np.nanmedian(atr) / ASSET_BASE[asset]["pip"])
 
 
-def gatecheck(asset, tf, ampl, side, sl_k, rr):
+def build_null(df, asset, key, sl, tp, n_long, n_short, n_perm=200, seed=7):
+    """
+    مدلِ صفرِ اندازه‌گیری‌شده برای S166: «اگر همان تعدادِ معامله را در بارهای
+    **تصادفی** (نه سیگنالِ HalfTrend) با همان SL/TP می‌زدیم، WR چه می‌شد؟»
+    این می‌پرسد آیا سیگنالِ HalfTrend واقعاً بهتر از ورودِ تصادفی است.
+    خروجی با فرمتی که blend_null انتظار دارد: {side: {uncond_wr, perm_mean,
+    perm_sd, perm_max, perm_k}}.
+    """
+    rng = np.random.default_rng(seed)
+    n = len(df)
+    null = {}
+    for sd_side, is_long, n_side in (("long", True, n_long),
+                                     ("short", False, n_short)):
+        d = dict(uncond_wr=None, perm_mean=None, perm_sd=None,
+                 perm_max=None, perm_k=None)
+        if n_side and n_side >= 1:
+            wrs = []
+            # بازهٔ مجازِ ورود: از warmup تا n-max_hold
+            lo, hi = 260, n - MAX_HOLD - 1
+            if hi > lo + n_side:
+                for _ in range(n_perm):
+                    bars = np.sort(rng.choice(np.arange(lo, hi),
+                                              size=n_side, replace=False))
+                    sig = np.zeros(n, dtype=bool)
+                    sig[bars] = True
+                    zero = np.zeros(n, dtype=bool)
+                    if is_long:
+                        rtr = se.simulate_trades(df, sig, zero, sl, tp, key,
+                                                 max_hold=MAX_HOLD,
+                                                 allow_overlap=False)
+                    else:
+                        rtr = se.simulate_trades(df, zero, sig, sl, tp, key,
+                                                 max_hold=MAX_HOLD,
+                                                 allow_overlap=False)
+                    if rtr is not None and len(rtr) >= 1:
+                        w = 100.0 * float((rtr["outcome"] > 0).mean()) \
+                            if "outcome" in rtr.columns else None
+                        if w is not None:
+                            wrs.append(w)
+            if wrs:
+                a = np.asarray(wrs, dtype="float64")
+                d.update(uncond_wr=float(a.mean()), perm_mean=float(a.mean()),
+                         perm_sd=float(a.std(ddof=1)), perm_max=float(a.max()),
+                         perm_k=int(len(a)))
+        null[sd_side] = d
+    return null
+
+
+def gatecheck(asset, tf, ampl, side, sl_k, rr, with_null=False):
     df = _load(asset, tf)
     key = f"{asset}"
     se.ASSETS[key] = dict(file=f"data/{asset}_{tf}.csv", **ASSET_BASE[asset])
@@ -70,7 +118,15 @@ def gatecheck(asset, tf, ampl, side, sl_k, rr):
     tr = tr.copy()
     tr["sl_pip"] = float(sl)
     bar_time = df["dt"].values
-    res = rqs2.compute_rqs2(tr, key, sl_pip=sl, tp_pip=tp, bar_time=bar_time)
+
+    null = None
+    if with_null:
+        n_long = int((tr["direction"] > 0).sum()) if "direction" in tr.columns else len(tr)
+        n_short = int((tr["direction"] < 0).sum()) if "direction" in tr.columns else 0
+        null = build_null(df, asset, key, sl, tp, n_long, n_short)
+
+    res = rqs2.compute_rqs2(tr, key, sl_pip=sl, tp_pip=tp, bar_time=bar_time,
+                            null=null)
 
     print(f"=== {asset}_{tf} | ampl={ampl} side={side} sl_k={sl_k} rr={rr} ===")
     print(f"    sl={sl} tp={tp} atr_pip={round(atr_pip,1)}")
@@ -94,9 +150,21 @@ def gatecheck(asset, tf, ampl, side, sl_k, rr):
 
 
 if __name__ == "__main__":
-    # بهترین واریانت‌های اقتصادیِ کشف‌شده (بالاترین PF): long, ampl=2, rr=1.0, sl_k=?
-    # sl نمایش‌داده‌شده در اسکن ≈ 1.0*atr_pip بود، پس sl_k=1.0
-    for asset, tf in [("XAUUSD", "W1"), ("XAUUSD", "D1")]:
-        for sl_k in (1.0, 1.5, 2.0):
-            gatecheck(asset, tf, ampl=2, side="long", sl_k=sl_k, rr=1.0)
-            print()
+    # واریانت‌های طلایی که همهٔ گیت‌های اقتصادی را پاس کردند (INCOMPLETE، نه REJECT):
+    # با null اندازه‌گیری‌شده اجرا می‌شوند تا H3/lift/z واقعی و تصمیمِ POWER-LIMITED
+    # مشخص شود. فقط این‌ها چون null کند است (۲۰۰ جای‌گشت × شبیه‌سازی).
+    targets = []
+    if len(sys.argv) > 1 and sys.argv[1] == "gold":
+        targets = [("XAUUSD", "D1", 2.0), ("XAUUSD", "W1", 1.5),
+                   ("XAUUSD", "W1", 1.0)]
+    else:
+        # پیش‌فرض: مرورِ سریع بدونِ null روی همهٔ sl_k
+        for asset, tf in [("XAUUSD", "W1"), ("XAUUSD", "D1")]:
+            for sl_k in (1.0, 1.5, 2.0):
+                gatecheck(asset, tf, ampl=2, side="long", sl_k=sl_k, rr=1.0)
+                print()
+        sys.exit(0)
+    for asset, tf, sl_k in targets:
+        gatecheck(asset, tf, ampl=2, side="long", sl_k=sl_k, rr=1.0,
+                  with_null=True)
+        print()
