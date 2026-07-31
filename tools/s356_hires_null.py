@@ -154,12 +154,34 @@ def rebuild_card(card):
     valid = valid[res[valid] != 0]
 
     picks = np.flatnonzero(np.asarray(sig))
-    wr_obs = wr_of(picks, res, xbar)
     k = int(np.asarray(sig).sum())
     uncond = wr_of(valid, res, xbar)
+
+    # ── دو آمارهٔ مشاهده‌شده، و چرا **کوچک‌ترین** ملاک است ──
+    # `wr_table`  : همان کاهندهٔ `wr_of` که قرعه‌های نال هم با آن سنجیده می‌شوند.
+    # `wr_engine` : شبیه‌سازِ رسمیِ موتور (`se.simulate_trades`) — عددِ بایگانی.
+    #
+    # این دو یک‌سان نیستند (اختلافِ یکی-دو معامله در حسابداریِ ناهم‌پوشانی)، و این
+    # ناسازگاری از خودِ کدِ بایگانیِ `S354` به ارث رسیده است: آنجا هم آمارهٔ
+    # مشاهده‌شده با `simulate_trades` و قرعه‌های نال با `_wr_long` ساخته می‌شدند.
+    #
+    # جهتِ خطا اهمیت دارد: `wr_obs` بزرگ‌تر ⇒ قرعهٔ کمتری از آن عبور می‌کند ⇒ `p`
+    # کوچک‌تر ⇒ **به نفعِ لایه**. پس آستانهٔ تصمیم را روی `min(...)` می‌گذاریم تا
+    # لایه از این ناسازگاری سود نبرد. عددِ دیگر هم گزارش می‌شود تا اندازهٔ اثر
+    # قابلِ‌بازرسی باشد.
+    wr_table = wr_of(picks, res, xbar)
+    tr = se.simulate_trades(df, sig, np.zeros(len(df), bool), sl, tp, asset,
+                            max_hold=mh, allow_overlap=False)
+    wr_engine = (100.0 * float((tr["pnl_pip"] > 0).sum()) / len(tr)
+                 if tr is not None and len(tr) else None)
+    n_engine = int(len(tr)) if tr is not None else 0
+
+    cands = [x for x in (wr_table, wr_engine) if x is not None]
+    wr_obs = min(cands)                      # ← آستانهٔ محافظه‌کارانه
     return dict(df=df, asset=asset, tf=tf, sl=sl, tp=tp, mh=mh,
                 res=res, xbar=xbar, valid=valid, k=k,
-                wr_obs=wr_obs, uncond=uncond)
+                wr_obs=wr_obs, wr_table=wr_table, wr_engine=wr_engine,
+                n_engine=n_engine, uncond=uncond)
 
 
 # ═════════════════════════════════ اجرا ═════════════════════════════════
