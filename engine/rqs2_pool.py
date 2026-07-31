@@ -137,14 +137,20 @@ def pool_cards(members):
     که `tr` خروجیِ همان سازوکارِ لایه روی آن کارت است (ستون‌های لازم:
     direction, outcome/win, pnl_pip, entry_bar, exit_bar).
 
-    قواعدِ اعتبار (شرطِ ۲): هر عضوی که lift<=0 دارد **حذف** می‌شود و در
-    گزارش علامت می‌خورد؛ تجمیع فقط روی اعضای هم‌جهتِ مثبت انجام می‌شود.
+    قواعدِ اعتبار:
+      • شرطِ ۲ (هم‌جهتی): هر عضوی که lift<=0 دارد **حذف** می‌شود.
+      • شرطِ ۴ (همگنی): از میانِ اعضای هم‌جهت، فقط زیرمجموعه‌ای ادغام می‌شود
+        که `choose_homogeneous_subset` بیشینه‌کنندهٔ z_proxy تشخیص دهد؛
+        کارتی که lift>0 دارد ولی استخر را رقیق می‌کند در
+        `dropped` با دلیلِ 'dilutes pool' علامت می‌خورد.
 
-    خروجی: dict(pool=DataFrame, dt_cal=..., used=[...], dropped=[...],
-                n_before, n_after)
+    خروجی: dict(pool=DataFrame, used=[...], dropped=[...], n_before, n_after,
+                selection=<خروجیِ choose_homogeneous_subset>)
     یا None اگر هیچ عضوِ معتبری نماند.
     """
-    used, dropped, frames = [], [], []
+    # --- گامِ ۱: فیلترِ هم‌جهتی (شرطِ ۲) + آماده‌سازیِ نامزدها ---
+    dropped, cand = [], []
+    tr_by_card = {}
     for m in members:
         lift = m.get('lift')
         if lift is None or lift <= 0:
@@ -155,17 +161,31 @@ def pool_cards(members):
         if tr is None or len(tr) == 0:
             dropped.append(dict(card=m['card'], lift=lift, reason='no trades'))
             continue
-        cal = _to_calendar(tr, m['dt'])
-        cal['src_card'] = m['card']
-        frames.append(cal)
-        used.append(dict(card=m['card'], lift=lift, n=int(len(tr))))
+        tr_by_card[m['card']] = m
+        cand.append(dict(card=m['card'], lift=float(lift), n=int(len(tr))))
 
-    if not frames:
+    if not cand:
         return None
+
+    # --- گامِ ۲: انتخابِ زیرمجموعهٔ همگن (شرطِ ۴) ---
+    sel = choose_homogeneous_subset(cand)
+    chosen_cards = {c['card'] for c in sel['chosen']}
+    for c in sel['rejected_for_dilution']:
+        dropped.append(dict(card=c['card'], lift=c['lift'],
+                            reason='dilutes pool (lowers z_proxy)'))
+
+    # --- گامِ ۳: ادغامِ فقط زیرمجموعهٔ برنده روی زمانِ تقویمی (شرطِ ۳) ---
+    used, frames = [], []
+    for c in sel['chosen']:
+        m = tr_by_card[c['card']]
+        cal = _to_calendar(m['tr'], m['dt'])
+        cal['src_card'] = c['card']
+        frames.append(cal)
+        used.append(dict(card=c['card'], lift=c['lift'], n=int(len(m['tr']))))
 
     merged = pd.concat(frames, ignore_index=True)
     n_before = len(merged)
     pool = _fifo_calendar(merged)
     n_after = len(pool)
     return dict(pool=pool, used=used, dropped=dropped,
-                n_before=n_before, n_after=n_after)
+                n_before=n_before, n_after=n_after, selection=sel)
