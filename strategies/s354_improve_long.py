@@ -222,8 +222,12 @@ def main():
     n = len(tr) if tr is not None else 0
     close = df["close"].values.astype(float)
     bar_time = df["time"].values
+    # مدلِ صفرِ کانونی (H3/H4/H5) + تقسیمِ ۶۰٪ اکتشاف / ۴۰٪ خارج‌ازنمونه (H7)
+    null = build_null_canonical(df, ls, sl, tp, mh)
+    split_bar = int(len(df) * 0.60)
     res = R2.compute_rqs2(tr, ASSET, sl_pip=sl, tp_pip=tp, bar_time=bar_time,
-                          close=close, n_trials=N_TRIALS_HONEST)
+                          close=close, null=null, n_trials=N_TRIALS_HONEST,
+                          split_bar=split_bar)
     m = res.get("metrics", {})
     print(f"  OFFICIAL long: n={n} WR={m.get('win_rate')} PF={m.get('profit_factor')} "
           f"net={m.get('net_profit')}")
