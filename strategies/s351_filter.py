@@ -134,10 +134,26 @@ def run_card(card, n_perm=200, verbose=True):
             st = eval_combo(vals, thr, dirn, warmup, split)   # فقط اکتشاف
             if st is None:
                 continue
-            # امتیازِ اکتشاف = امیدِ ریاضی (نه WR؛ ضدِ اشتباه #۸)
-            score = st['exp']
+            # ---------------------------------------------------------------
+            # امتیازِ اکتشاف = **t-آمارهٔ امیدِ ریاضی**  t = exp·√n / σ(pnl)
+            #
+            # چرا نه خودِ exp؟ چون بیشینه‌سازیِ exp همیشه آستانهٔ افراطی را
+            # برمی‌گزیند (سخت‌گیرترین دروازه ⇒ چند معاملهٔ درشت). این n را
+            # نابود می‌کند و چون z ∝ √n است، H3 حتی با liftِ بزرگ رد می‌شود.
+            # همین دقیقاً روی XAUUSD-H1 رخ داد: chop≤30 لیفت را از +۲.۳ به
+            # +۷.۳pp سه‌برابر کرد ولی n را از ۱۹۳۷ به ۶۲ ریخت ⇒ z=0.9.
+            #
+            # t-آماره هر دو را هم‌زمان می‌خواهد: هم exp>0 (اقتصاد) و هم n
+            # بزرگ (قدرتِ آماری) — و همان کمیّتی است که H3 می‌سنجد. سپرِ
+            # اشتباهِ #۸ هم سرِ جایش می‌ماند: WR در تابعِ هدف نیست.
+            # ---------------------------------------------------------------
+            sd = float(np.std(st['pnl'], ddof=1)) if st['n'] > 1 else 0.0
+            if sd <= 0 or st['exp'] <= 0:
+                continue                    # دروازهٔ غیرسودده هرگز کاندید نیست
+            score = st['exp'] * np.sqrt(st['n']) / sd
             if best is None or score > best['score']:
-                best = dict(fname=fname, thr=thr, dirn=dirn, score=score,
+                best = dict(fname=fname, thr=thr, dirn=dirn,
+                            score=float(score), t_disc=float(score),
                             n_disc=st['n'], wr_disc=st['wr'], exp_disc=st['exp'])
         if verbose:
             print(f"    scanned {fname}", flush=True)
