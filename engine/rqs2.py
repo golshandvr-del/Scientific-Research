@@ -1125,6 +1125,9 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
 
     if all_pass:
         verdict = 'ACCEPT'
+    elif power_limited:
+        # لبهٔ اقتصاداً-سالم که فقط توانِ آماری کم دارد — نه ACCEPT، نه BURNED.
+        verdict = 'POWER-LIMITED'
     elif n_fail > 0:
         verdict = 'REJECT'
     else:
@@ -1179,6 +1182,14 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     res['verdict'] = verdict
     # v2.3 «گزینهٔ الف»: پذیرش = فقط دروازه‌ها. نمره **وتو نمی‌کند**.
     res['accepted'] = bool(all_pass)
+    # v2.5: طبقهٔ توان‌محدود — نه پذیرفته، نه سوخته؛ اتاقِ انتظار.
+    res['power_limited'] = bool(power_limited)
+    res['gate_families'] = {
+        'economic': {g: gates[g] for g in ECONOMIC_GATES},
+        'power': {g: gates[g] for g in POWER_GATES},
+        'economic_all_pass': bool(econ_ok),
+        'power_defects': [g for g in POWER_GATES if gates[g] is not True],
+    }
     res['admission_rule'] = ADMISSION_RULE
     res['rank_tier'] = next(t for thr, t in RANK_TIERS if score >= thr)
     return res
