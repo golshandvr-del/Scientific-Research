@@ -1093,10 +1093,16 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     # داده شود. ACCEPT همچنان فقط با پاس‌شدنِ هر ۱۱ دروازه است.
     econ_ok = all(gates[g] is True for g in ECONOMIC_GATES)
     power_defect = any(gates[g] is not True for g in POWER_GATES)
+    # ⚠️ گیت‌های ضدِ over-fit (H4 سمت، H5 چندگانگی، H6 تقویم) در هیچ خانواده‌ای
+    #    نیستند چون توانی نیستند. اگر هرکدام **False** شود یعنی لبه یا از
+    #    over-fit آمده یا در سمتی مریض است ⇒ کم‌توان نیست، غلط است ⇒ نباید
+    #    POWER-LIMITED شود. (None مجاز است: کمبودِ داده، نه شکستِ ساختاری.)
+    antioverfit_ok = all(gates[g] is not False for g in ('H4', 'H5', 'H6'))
     # جهتِ لبه باید مثبت باشد: کم‌توان بودن با غلط بودن فرق دارد.
     edge_positive = ((lift is not None and lift > 0) and
                      (z_skill is not None and z_skill > 0))
-    power_limited = (not all_pass) and econ_ok and power_defect and edge_positive
+    power_limited = ((not all_pass) and econ_ok and power_defect
+                     and antioverfit_ok and edge_positive)
 
     # ------------------------------ نمرهٔ پیوسته ------------------------------
     # ⚠️ برخلافِ RQS+، هیچ مؤلفه‌ای به **WR خام** پاداش نمی‌دهد؛ مؤلفهٔ کیفیتِ
