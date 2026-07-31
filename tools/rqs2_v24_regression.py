@@ -27,7 +27,7 @@ from math import erfc, sqrt
 # ثابت‌های معیارِ جدید (باید با engine/rqs2.py یکی باشند)
 SKILL_LIFT_MIN = 4.0
 SKILL_P_MAX = 0.001
-PERM_K_MIN = 10
+PERM_K_MIN = 500   # v2.4: کفِ همگراییِ perm_sd (باید با engine/rqs2.py یکی باشد)
 
 
 def p_perm_from_z(z):
