@@ -65,13 +65,17 @@ S333_CARDS = ['XAUUSD_M5', 'XAUUSD_M15', 'XAUUSD_M30', 'XAUUSD_H1']
 
 
 def brief(tr, r):
+    """متریک‌ها زیرِ کلیدِ `metrics` در خروجیِ RQS+ می‌نشینند، نه در ریشه."""
     if tr is None or r is None:
         return dict(n=0)
+    m = r.get('metrics', {}) or {}
     return dict(n=int(len(tr)),
-                wr=float(r.get('wr', float('nan'))),
-                pf=float(r.get('pf', float('nan'))),
-                net=float(r.get('net', float('nan'))),
-                rqs=float(r.get('rqs_score', r.get('rqs', float('nan')))))
+                wr=float(m.get('wr', float('nan'))),
+                pf=float(m.get('pf', float('nan'))),
+                net=float(m.get('net', m.get('net_profit', float('nan')))),
+                exp=float(m.get('exp', float('nan'))),
+                rqs=float(r.get('rqs_score', float('nan'))),
+                verdict=str(r.get('verdict', '?')))
 
 
 def run():
