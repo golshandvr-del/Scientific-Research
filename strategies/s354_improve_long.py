@@ -231,7 +231,7 @@ def main():
     m = res.get("metrics", {})
     print(f"  OFFICIAL long: n={n} WR={m.get('win_rate')} PF={m.get('profit_factor')} "
           f"net={m.get('net_profit')}")
-    print(f"  RQS2 = {res.get('score')}  verdict = {res.get('verdict')}  "
+    print(f"  RQS2 = {res.get('rqs2_score')}  verdict = {res.get('verdict')}  "
           f"power_limited = {res.get('power_limited')}")
     for k, v in (res.get("gates") or {}).items():
         print(f"      {k}: {v}")
@@ -241,7 +241,7 @@ def main():
                            tight=OFF_TIGHT, r2=R2_SPEC, sl_k=SL_K,
                            n_trials=N_TRIALS_HONEST),
                family_long=fam, n_trades=n, metrics=m,
-               rqs2=res.get("score"), verdict=res.get("verdict"),
+               rqs2=res.get("rqs2_score"), verdict=res.get("verdict"),
                power_limited=res.get("power_limited"), gates=res.get("gates"))
     os.makedirs(OUT, exist_ok=True)
     with open(f"{OUT}/XAUUSD_H1_improve_long.json", "w") as fh:
