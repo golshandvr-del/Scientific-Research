@@ -1,0 +1,98 @@
+{
+ "card": "XAUUSD-H1",
+ "sl_pip": 50.6,
+ "tp_pip": 101.2,
+ "max_hold": 20,
+ "n_trades": 117,
+ "wr_obs": 51.7241,
+ "wr_uncond": 34.5976,
+ "lift": 17.1266,
+ "valid_pool": 90668,
+ "k_hi": 200000,
+ "seeds": [
+  23,
+  101,
+  777
+ ],
+ "p_bar": 0.001,
+ "conf": 0.95,
+ "prereg": "results/S356_PREREG_ADDENDUM_HIRES_NULL.md",
+ "D2": {
+  "k": 5000,
+  "seed": 23,
+  "slow": {
+   "mean": 36.2968,
+   "sd": 4.4536,
+   "max": 51.7544,
+   "secs": 0.5
+  },
+  "fast": {
+   "mean": 36.3798,
+   "sd": 4.4389,
+   "max": 52.9915,
+   "secs": 0.5
+  },
+  "d_mean": 0.083,
+  "d_sd": 0.0147,
+  "ks_stat": 0.0164,
+  "ks_p": 0.51201,
+  "tol": {
+   "mean": 0.15,
+   "sd": 0.15,
+   "ks_p": 0.01
+  },
+  "sampler_valid": true
+ },
+ "per_seed": {
+  "23": {
+   "k": 200000,
+   "ge": 88,
+   "p_hat": 0.000445,
+   "p_upper95": 0.0005253,
+   "p_lower95": 0.00036581,
+   "perm_mean": 36.3605,
+   "perm_sd": 4.4508,
+   "perm_max": 57.5221,
+   "perm_q999": 50.4274,
+   "skill_z": 3.4519,
+   "D1_pass": true,
+   "secs": 19.5
+  },
+  "101": {
+   "k": 200000,
+   "ge": 81,
+   "p_hat": 0.00041,
+   "p_upper95": 0.00048719,
+   "p_lower95": 0.00033394,
+   "perm_mean": 36.3635,
+   "perm_sd": 4.4439,
+   "perm_max": 57.5221,
+   "perm_q999": 50.4348,
+   "skill_z": 3.4566,
+   "D1_pass": true,
+   "secs": 19.7
+  },
+  "777": {
+   "k": 200000,
+   "ge": 73,
+   "p_hat": 0.00037,
+   "p_upper95": 0.00044346,
+   "p_lower95": 0.0002977,
+   "perm_mean": 36.347,
+   "perm_sd": 4.4415,
+   "perm_max": 56.6372,
+   "perm_q999": 50.4274,
+   "skill_z": 3.4621,
+   "D1_pass": true,
+   "secs": 19.4
+  }
+ },
+ "decision": {
+  "rule": "D1",
+  "verdict": "D1_PASS",
+  "all_seeds_pass": true,
+  "p_hat_spread": 7.5e-05,
+  "P4_resolution_confirmed": true,
+  "note": "پاس در هر سه seed"
+ }
+}
