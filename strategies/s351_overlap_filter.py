@@ -69,13 +69,13 @@ def brief(tr, r):
     if tr is None or r is None:
         return dict(n=0)
     m = r.get('metrics', {}) or {}
-    return dict(n=int(len(tr)),
-                wr=float(m.get('wr', float('nan'))),
-                pf=float(m.get('pf', float('nan'))),
-                net=float(m.get('net', m.get('net_profit', float('nan')))),
-                exp=float(m.get('exp', float('nan'))),
+    return dict(n=int(m.get('n_trades', len(tr))),
+                wr=float(m.get('win_rate', float('nan'))),
+                pf=float(m.get('profit_factor', float('nan'))),
+                net=float(m.get('net_profit', float('nan'))),
+                exp=float(m.get('expectancy', m.get('exp', float('nan')))),
                 rqs=float(r.get('rqs_score', float('nan'))),
-                verdict=str(r.get('verdict', '?')))
+                verdict='PASS' if r.get('passed') else 'REJECT')
 
 
 def run():
