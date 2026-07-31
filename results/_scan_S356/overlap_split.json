@@ -1,0 +1,279 @@
+{
+ "card": "XAUUSD-H1",
+ "sl_pip": 50.6,
+ "tp_pip": 101.2,
+ "maxhold": 20,
+ "tol": 1,
+ "n_ours": 117,
+ "n_overlap": 30,
+ "n_disjoint": 87,
+ "n_trials": 288,
+ "prereg": "results/S356_PREREG_OVERLAP_SPLIT.md",
+ "branches": {
+  "FULL": {
+   "label": "FULL",
+   "status": "JUDGED",
+   "n_signals": 117,
+   "n_trades": 117,
+   "wr": 51.28,
+   "net_usd": 19292.0,
+   "seeds": {
+    "23": {
+     "verdict": "ACCEPT",
+     "score": 80.9,
+     "lift": 15.06,
+     "z": 3.32,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.001999,
+     "n_ge": 3,
+     "perm_k": 2000,
+     "failed": []
+    },
+    "101": {
+     "verdict": "ACCEPT",
+     "score": 80.6,
+     "lift": 14.9,
+     "z": 3.23,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.001499,
+     "n_ge": 2,
+     "perm_k": 2000,
+     "failed": []
+    },
+    "777": {
+     "verdict": "ACCEPT",
+     "score": 80.7,
+     "lift": 14.96,
+     "z": 3.29,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.0005,
+     "n_ge": 0,
+     "perm_k": 2000,
+     "failed": []
+    }
+   },
+   "lift": 15.06,
+   "z": 3.32,
+   "uncond": 34.59755909161131,
+   "seed_stable": true,
+   "verdicts": {
+    "23": "ACCEPT",
+    "101": "ACCEPT",
+    "777": "ACCEPT"
+   }
+  },
+  "DISJOINT": {
+   "label": "DISJOINT",
+   "status": "JUDGED",
+   "n_signals": 87,
+   "n_trades": 87,
+   "wr": 51.72,
+   "net_usd": 16696.0,
+   "seeds": {
+    "23": {
+     "verdict": "POWER-LIMITED",
+     "score": 27.7,
+     "lift": 15.24,
+     "z": 2.87,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.002999,
+     "n_ge": 5,
+     "perm_k": 2000,
+     "failed": [
+      "H3"
+     ]
+    },
+    "101": {
+     "verdict": "POWER-LIMITED",
+     "score": 27.9,
+     "lift": 15.46,
+     "z": 2.96,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.003498,
+     "n_ge": 6,
+     "perm_k": 2000,
+     "failed": [
+      "H3"
+     ]
+    },
+    "777": {
+     "verdict": "POWER-LIMITED",
+     "score": 28.0,
+     "lift": 15.48,
+     "z": 3.0,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.003998,
+     "n_ge": 7,
+     "perm_k": 2000,
+     "failed": [
+      "H3"
+     ]
+    }
+   },
+   "lift": 15.24,
+   "z": 2.87,
+   "uncond": 34.59755909161131,
+   "seed_stable": true,
+   "verdicts": {
+    "23": "POWER-LIMITED",
+    "101": "POWER-LIMITED",
+    "777": "POWER-LIMITED"
+   }
+  },
+  "OVERLAP": {
+   "label": "OVERLAP",
+   "status": "JUDGED",
+   "n_signals": 30,
+   "n_trades": 30,
+   "wr": 50.0,
+   "net_usd": 2596.0,
+   "seeds": {
+    "23": {
+     "verdict": "REJECT",
+     "score": 16.5,
+     "lift": 13.32,
+     "z": 1.48,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.10045,
+     "n_ge": 200,
+     "perm_k": 2000,
+     "failed": [
+      "H3",
+      "H5",
+      "H6",
+      "H7",
+      "H8"
+     ]
+    },
+    "101": {
+     "verdict": "REJECT",
+     "score": 16.6,
+     "lift": 13.62,
+     "z": 1.55,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.088456,
+     "n_ge": 176,
+     "perm_k": 2000,
+     "failed": [
+      "H3",
+      "H5",
+      "H6",
+      "H7",
+      "H8"
+     ]
+    },
+    "777": {
+     "verdict": "REJECT",
+     "score": 16.6,
+     "lift": 13.63,
+     "z": 1.55,
+     "uncond": 34.59755909161131,
+     "p_emp": 0.087956,
+     "n_ge": 175,
+     "perm_k": 2000,
+     "failed": [
+      "H3",
+      "H5",
+      "H6",
+      "H7",
+      "H8"
+     ]
+    }
+   },
+   "lift": 13.32,
+   "z": 1.48,
+   "uncond": 34.59755909161131,
+   "seed_stable": true,
+   "verdicts": {
+    "23": "REJECT",
+    "101": "REJECT",
+    "777": "REJECT"
+   }
+  }
+ },
+ "predictions": {
+  "P1_disjoint_lift_pos": true,
+  "P2_disjoint_ge_60pct": true,
+  "P3_z_in_band": true,
+  "P4_disjoint_H3_failed": true,
+  "P5_overlap_gt_disjoint": false
+ },
+ "split_verdict": "NOVEL_EDGE_CONFIRMED — لبهٔ نوِ مستقل",
+ "filter_direction_a": [
+  {
+   "code": "S341",
+   "n_all": 49,
+   "wr_all": 38.1,
+   "n_conf": 0,
+   "wr_conf": null,
+   "n_anti": 49,
+   "wr_anti": 38.1,
+   "delta": null
+  },
+  {
+   "code": "S333",
+   "n_all": 126,
+   "wr_all": 33.75,
+   "n_conf": 0,
+   "wr_conf": null,
+   "n_anti": 126,
+   "wr_anti": 33.75,
+   "delta": null
+  },
+  {
+   "code": "S313",
+   "n_all": 1164,
+   "wr_all": 37.92,
+   "n_conf": 30,
+   "wr_conf": 56.0,
+   "n_anti": 1134,
+   "wr_anti": 37.4,
+   "delta": 18.08
+  },
+  {
+   "code": "S328",
+   "n_all": 38,
+   "wr_all": 27.78,
+   "n_conf": 0,
+   "wr_conf": null,
+   "n_anti": 38,
+   "wr_anti": 27.78,
+   "delta": null
+  },
+  {
+   "code": "S327",
+   "n_all": 241,
+   "wr_all": 36.82,
+   "n_conf": 0,
+   "wr_conf": null,
+   "n_anti": 241,
+   "wr_anti": 36.82,
+   "delta": null
+  },
+  {
+   "code": "S323",
+   "n_all": 28,
+   "wr_all": 38.89,
+   "n_conf": 0,
+   "wr_conf": null,
+   "n_anti": 28,
+   "wr_anti": 38.89,
+   "delta": null
+  },
+  {
+   "code": "S335",
+   "n_all": 56,
+   "wr_all": 44.19,
+   "n_conf": 6,
+   "wr_conf": 60.0,
+   "n_anti": 50,
+   "wr_anti": 41.03,
+   "delta": 15.81
+  },
+  {
+   "code": "S312",
+   "n_all": 0,
+   "note": "بدونِ ورودِ قابلِ‌حل"
+  }
+ ]
+}
