@@ -45,9 +45,12 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import engine.strategy_engine as se          # noqa: E402
-import engine.rqs2 as R2                     # noqa: E402
-import strategies.s354_brooks_trend_resumption as base   # noqa: E402
+
+# ⚠️ نامِ ماژولِ موتور عیناً همان است که `s356_v24_rejudge` وارد می‌کند
+# (`engine.scalp_engine`). هر نامِ دیگری یک موتورِ دیگر است.
+from engine import scalp_engine as se                          # noqa: E402
+from engine import rqs2 as R2                                  # noqa: E402
+from strategies import s354_brooks_trend_resumption as base    # noqa: E402
 from strategies.s354_causal_check import build_signals_causal   # noqa: E402
 from strategies.s356_v24_rejudge import (     # noqa: E402
     FROZEN, SEEDS, P_BAR, PERM_K_PRE,
