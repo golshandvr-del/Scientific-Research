@@ -71,6 +71,25 @@ N_FAMILY = len(members())                    # = 9              ← حساسیت
 N_SINGLE = 1                                 #                  ← حساسیت
 
 
+def _fifo_non_overlap(entry_bar, exit_bar):
+    """
+    انتخابِ زیرمجموعهٔ بی‌همپوشانِ معاملات از استخرِ ادغام‌شدهٔ چند عضو.
+
+    قاعدهٔ FIFO: به ترتیبِ زمانِ ورود پیش می‌رویم؛ معامله فقط اگر ورودش پس از
+    خروجِ آخرین معاملهٔ پذیرفته‌شده باشد پذیرفته می‌شود. عیناً منطقِ
+    select_non_overlap موتور، اما چون معاملات از منابع (اعضای) مختلف آمده‌اند،
+    این‌جا روی اندیسِ سراسری اعمال می‌شود. خروجی: آرایهٔ اندیس‌های نگه‌داشته‌شده.
+    """
+    order = np.argsort(entry_bar, kind='mergesort')
+    keep = []
+    last_exit = -1
+    for idx in order:
+        if entry_bar[idx] > last_exit:
+            keep.append(idx)
+            last_exit = exit_bar[idx]
+    return np.array(sorted(keep), dtype=np.int64)
+
+
 def member_trades(df, atr, asset, L, f, warmup):
     """معاملاتِ یک عضو با هندسهٔ منجمد. برمی‌گرداند st (خروجی queue_rr) یا None."""
     ls, ss, _ = lpsb_signals(df, L, f, warmup=warmup)
@@ -166,8 +185,20 @@ def run_card(card, n_perm=200, verbose=True):
         _save(card, out)
         return out
 
-    fam = pd.concat(frames, ignore_index=True).sort_values('exit_bar')
-    fam = fam.reset_index(drop=True)
+    # ادغامِ اعضا + **حذفِ همپوشانیِ زمانی بینِ اعضا** (صفِ FIFO بی‌همپوشان).
+    # بدونِ این کار، ۹ عضو که هم‌زمان سیگنال می‌دهند concurrency و زنجیرهٔ
+    # باختِ مصنوعی می‌سازند و H0/H8 را به‌دلایلِ روش‌شناختی (نه واقعی) رد می‌کنند.
+    # این همان قاعدهٔ بی‌همپوشانیِ موتور است که روی کلِ استخرِ ادغام‌شده اعمال
+    # می‌شود؛ پس آماره‌ها همان چیزی می‌شوند که یک معامله‌گرِ واقعی تجربه می‌کند.
+    fam_all = pd.concat(frames, ignore_index=True).sort_values('entry_bar')
+    fam_all = fam_all.reset_index(drop=True)
+    eb = fam_all['entry_bar'].values.astype(np.int64)
+    xb = fam_all['exit_bar'].values.astype(np.int64)
+    keep_no = _fifo_non_overlap(eb, xb)
+    fam = fam_all.iloc[keep_no].sort_values('exit_bar').reset_index(drop=True)
+    n_before, n_after = len(fam_all), len(fam)
+    print(f"    merged {n_before} member-trades → {n_after} non-overlapping "
+          f"({100*n_after/n_before:.0f}% kept)", flush=True)
     n_long = int((fam['direction'] == 'long').sum())
     n_short = int(len(fam) - n_long)
     sl_med = float(np.median(fam['sl_pip']))
