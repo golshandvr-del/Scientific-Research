@@ -1,0 +1,71 @@
+{
+ "layer": "S354 causal XAUUSD-H1",
+ "K": 2000,
+ "runs": [
+  {
+   "seed": 11,
+   "K": 2000,
+   "obs_wr": 51.724137931034484,
+   "perm_max": 51.32743362831859,
+   "perm_p99": 46.9570419918246,
+   "perm_p95": 43.58974358974359,
+   "p_perm": 0.0004997501249375312,
+   "passes_max": true,
+   "passes_p99": true,
+   "passes_p95": true,
+   "passes_p_lt_05": true
+  },
+  {
+   "seed": 23,
+   "K": 2000,
+   "obs_wr": 51.724137931034484,
+   "perm_max": 51.75438596491228,
+   "perm_p99": 48.275862068965516,
+   "perm_p95": 43.58974358974359,
+   "p_perm": 0.001999000499750125,
+   "passes_max": false,
+   "passes_p99": true,
+   "passes_p95": true,
+   "passes_p_lt_05": true
+  },
+  {
+   "seed": 47,
+   "K": 2000,
+   "obs_wr": 51.724137931034484,
+   "perm_max": 50.86206896551724,
+   "perm_p99": 46.55172413793103,
+   "perm_p95": 43.48383500557413,
+   "p_perm": 0.0004997501249375312,
+   "passes_max": true,
+   "passes_p99": true,
+   "passes_p95": true,
+   "passes_p_lt_05": true
+  },
+  {
+   "seed": 101,
+   "K": 2000,
+   "obs_wr": 51.724137931034484,
+   "perm_max": 53.84615384615385,
+   "perm_p99": 47.012599469496024,
+   "perm_p95": 43.96551724137931,
+   "p_perm": 0.0009995002498750624,
+   "passes_max": false,
+   "passes_p99": true,
+   "passes_p95": true,
+   "passes_p_lt_05": true
+  },
+  {
+   "seed": 199,
+   "K": 2000,
+   "obs_wr": 51.724137931034484,
+   "perm_max": 50.86206896551724,
+   "perm_p99": 46.55172413793103,
+   "perm_p95": 43.96551724137931,
+   "p_perm": 0.0004997501249375312,
+   "passes_max": true,
+   "passes_p99": true,
+   "passes_p95": true,
+   "passes_p_lt_05": true
+  }
+ ]
+}
