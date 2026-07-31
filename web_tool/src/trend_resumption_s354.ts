@@ -168,8 +168,35 @@ export function computeS354(candles: Candle[], cfg: S354Config): RawSignal {
   // شرطِ کلیِ ساختارِ روز (پیش‌نیازِ ماشه)
   const structureOk = spikeOk && dayLongEnough && rangeReady && tightOk && regimeOk && slPip > 0
 
-  // --- ماشهٔ resumption: breakoutِ صعودی از سقفِ رنجِ میانی ---
-  if (structureOk && inLateWindow && c[i] > msegHi) {
+  // --- «اولین resumptionِ روز» (منطبق با `break` پایتون) ---
+  //   پایتون فقط اولین breakout هر روز را سیگنال می‌کند. در حالتِ زنده باید مطمئن
+  //   شویم هیچ کندلِ قبلیِ همین روز (از tStart تا i-1) اولین breakout نبوده است؛
+  //   وگرنه کندل‌های بعدی که هنوز بالای سقفِ رنجِ قدیمی‌اند به‌غلط active می‌شوند.
+  const tStart = Math.max(midHiIdx, lateStart)
+  let firstBreakBar = -1
+  {
+    // بازتولیدِ عینِ حلقهٔ build_signals: برای هر t، رنجِ [midLoIdx, t) و شکستِ c[t]>hi.
+    // midHiIdx = max(openEnd+1, lateStart) و رنج از openEnd محاسبه می‌شود.
+    let runHi = -Infinity, runLo = Infinity
+    for (let k = midLoIdx; k < tStart; k++) {
+      if (h[k] > runHi) runHi = h[k]
+      if (l[k] < runLo) runLo = l[k]
+    }
+    for (let t = tStart; t <= i; t++) {
+      const segHi = runHi, segLo = runLo    // رنجِ [midLoIdx, t)
+      const atrT = isFinite(atr[t - 1]) ? atr[t - 1] : atrRef
+      const rng = segHi - segLo
+      const tOk = isFinite(atrT) && atrT > 0 && rng > 0 && rng <= cfg.tightATR * atrT
+      if (tOk && isFinite(segHi) && c[t] > segHi) { firstBreakBar = t; break }
+      // به‌روزرسانیِ رنج برای t بعدی: افزودنِ کندلِ t (چون رنجِ t+1 = [midLoIdx, t+1))
+      if (h[t] > runHi) runHi = h[t]
+      if (l[t] < runLo) runLo = l[t]
+    }
+  }
+  const isFirstBreakoutNow = firstBreakBar === i
+
+  // --- ماشهٔ resumption: breakoutِ صعودی از سقفِ رنجِ میانی (فقط اولینِ روز) ---
+  if (structureOk && inLateWindow && isFirstBreakoutNow && c[i] > msegHi) {
     return {
       active: true, approaching: false, direction: 'LONG',
       slDist: slPrice, tpDist: tpPrice, maxHoldBars: cfg.maxHold,
@@ -180,8 +207,9 @@ export function computeS354(candles: Candle[], cfg: S354Config): RawSignal {
     }
   }
 
-  // --- حالتِ approaching: ساختار آماده است ولی هنوز breakout رخ نداده ---
-  if (structureOk && inLateWindow && c[i] <= msegHi) {
+  // --- حالتِ approaching: ساختار آماده است ولی هنوز breakout رخ نداده (و امروز هم
+  //     قبلاً breakout نداشته‌ایم؛ اگر داشت، فرصت مصرف شده و approaching بی‌معناست) ---
+  if (structureOk && inLateWindow && c[i] <= msegHi && firstBreakBar === -1) {
     return {
       active: false, approaching: true, direction: 'LONG',
       slDist: slPrice, tpDist: tpPrice, maxHoldBars: cfg.maxHold,
