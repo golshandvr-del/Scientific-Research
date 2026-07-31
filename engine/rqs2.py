@@ -1086,6 +1086,18 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     n_unknown = sum(1 for v in gates.values() if v is None)
     all_pass = (n_fail == 0 and n_unknown == 0)
 
+    # ------------------- v2.5: طبقه‌بندیِ POWER-LIMITED -------------------
+    # منطق در بلوکِ ثابت‌های `ECONOMIC_GATES`/`POWER_GATES` شرح داده شد.
+    # این طبقه‌بندی **هیچ آستانه‌ای را تغییر نمی‌دهد**؛ فقط شکستِ توان‌محورِ
+    # لبهٔ اقتصاداً-سالم را از شکستِ اقتصادی جدا می‌کند تا حکمِ صادقانه‌تری
+    # داده شود. ACCEPT همچنان فقط با پاس‌شدنِ هر ۱۱ دروازه است.
+    econ_ok = all(gates[g] is True for g in ECONOMIC_GATES)
+    power_defect = any(gates[g] is not True for g in POWER_GATES)
+    # جهتِ لبه باید مثبت باشد: کم‌توان بودن با غلط بودن فرق دارد.
+    edge_positive = ((lift is not None and lift > 0) and
+                     (z_skill is not None and z_skill > 0))
+    power_limited = (not all_pass) and econ_ok and power_defect and edge_positive
+
     # ------------------------------ نمرهٔ پیوسته ------------------------------
     # ⚠️ برخلافِ RQS+، هیچ مؤلفه‌ای به **WR خام** پاداش نمی‌دهد؛ مؤلفهٔ کیفیتِ
     #    ورود «مازادِ هزینه‌دار» است تا تقلبِ TP<SL خودبه‌خود بی‌اثر شود.
