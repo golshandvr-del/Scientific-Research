@@ -40,8 +40,21 @@ export interface S354Config {
   atrPeriod: number       // 21
   r2Period: number        // 55
   r2Min: number           // 0.394314 — آستانهٔ رژیمِ روند (q45 سراسری)
-  slK: number             // 1.3 — SL = slK×ATR (بر حسبِ pip)
-  rr: number              // 2.0 — TP = rr×SL
+  // ╔═ SL/TP عمداً **ثابتِ منجمد** است، نه شناور با ATRِ روز ═╗
+  //   در پایتونِ داوری‌شده:
+  //       atr_pip = _atr_pip(df, asset, 21)   ← **medianِ سراسریِ** ATR بر حسب pip
+  //       sl = round(1.3 × atr_pip, 1) = 50.6 pip   (یک عدد، برای همهٔ ۱۱۷ معامله)
+  //       tp = round(2.0 × sl,   1) = 101.2 pip
+  //   پورتِ پیشین `slK × (atrRef / pip)` می‌نوشت که ATRِ **همان روز** است ⇒
+  //   براکتِ متغیر ⇒ مجموعهٔ برآمدها با رکوردِ داوری‌شده یکی نمی‌شد.
+  //   medianِ سراسری خودش یک مقدارِ برگرفته از کلِ تاریخ است؛ بنابراین
+  //   مانندِ `r2Min` به‌عنوان **ثابتِ از‌پیش‌محاسبه‌شده** منجمد می‌شود (نه
+  //   بازمحاسبهٔ زنده)؛ این روشِ صادقانه و همانی است که سایرِ لایه‌های
+  //   سایت به کار می‌برند.
+  slPipFixed: number      // 50.6  — = round(1.3 × median(atr_fib_21)/pip, 1)
+  tpPipFixed: number      // 101.2 — = round(2.0 × slPipFixed, 1)
+  slK: number             // 1.3 — فقط برای مستندات/متنِ توضیح (در محاسبه به‌کار نمی‌رود)
+  rr: number              // 2.0 — TP/SL (همان نسبت، برای متنِ توضیح)
   maxHold: number         // 20
 }
 
@@ -50,7 +63,7 @@ export const S354_CFG: Record<string, S354Config> = {
     id: 'XAUUSD-H1', tfFa: 'H1', pip: 0.1, barsPerDay: 24,
     nOpen: 3, lateHour: 16, spikeK: 0.8, tightATR: 12.0,
     atrPeriod: 21, r2Period: 55, r2Min: 0.394314,
-    slK: 1.3, rr: 2.0, maxHold: 20,
+    slPipFixed: 50.6, tpPipFixed: 101.2, slK: 1.3, rr: 2.0, maxHold: 20,
   },
 }
 
@@ -179,8 +192,9 @@ export function computeS354(candles: Candle[], cfg: S354Config): RawSignal {
   const r2Now = r2[i]
   const regimeOk = isFinite(r2Now) && r2Now >= cfg.r2Min
 
-  const slPip = atrRefOk ? cfg.slK * (atrRef / cfg.pip) : 0
-  const tpPip = slPip * cfg.rr
+  // براکتِ ثابتِ منجمد — عیناً همان عددی که رکوردِ پذیرش با آن داوری شد.
+  const slPip = cfg.slPipFixed
+  const tpPip = cfg.tpPipFixed
   const slPrice = slPip * cfg.pip
   const tpPrice = tpPip * cfg.pip
 
@@ -295,7 +309,7 @@ export function decideS354(
     name: `روزِ ازسرگیریِ روند (Brooks Trend Resumption · ${cfg.tfFa})`,
     kind: 'trend_resumption' as any,
     manageStyle: 'fixed-tp-sl',
-    manageNote: `هدف/حدِ متناسب با نوسان: SL=${cfg.slK}×ATR ، TP=${cfg.rr}×SL (measured-move ` +
+    manageNote: `هدف/حدِ ثابت: SL=${cfg.slPipFixed} pip ، TP=${cfg.tpPipFixed} pip (RR=${cfg.rr}، measured-move ` +
       `برای leg دومِ روز). معامله را تا TP/SL یا پایانِ ${cfg.maxHold} کندل نگه‌دار. ` +
       `⚠️ اگر قیمت به داخلِ رنجِ میانی برگشت و زیرِ نقطهٔ شکست بسته شد، شکست ناموفق است ` +
       `⇒ می‌توانی زودتر خارج شوی؛ اما حدِ ضرر را دورتر نبر.`,
