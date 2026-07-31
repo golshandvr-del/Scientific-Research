@@ -80,7 +80,7 @@ def _wr_of(df, ls, ss, sl, tp, asset, mh):
                             allow_overlap=False)
     if tr is None or len(tr) == 0:
         return None, 0
-    wins = int((tr["pnl"] > 0).sum()) if "pnl" in tr else int((tr["net"] > 0).sum())
+    wins = int((tr["pnl_pip"] > 0).sum())
     n = len(tr)
     return 100.0 * wins / n, n
 
