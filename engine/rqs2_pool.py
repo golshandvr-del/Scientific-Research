@@ -94,29 +94,45 @@ def _z_proxy(subset):
     return _weighted_lift(subset) * (n ** 0.5)
 
 
-def choose_homogeneous_subset(candidates):
-    """
-    از میانِ کارت‌های هم‌جهتِ مثبت، بزرگ‌ترین زیرمجموعه‌ای را برمی‌گزیند که
-    نماینده z (lift·√n) را بیشینه کند — شرطِ ۴ (همگنیِ قدرتِ لبه).
+# حاشیهٔ معنادار برای پذیرشِ یک کارتِ اضافه (درسِ دومِ S351):
+# z_proxy=lift·√n فرض می‌کند sd جای‌گشت ثابت می‌ماند، ولی وقتی نمونه از ۷۴
+# به ۲۰۰۰ می‌رود مدلِ صفر و ساختارِ همبستگیِ معاملات کاملاً عوض می‌شود، پس
+# proxy **بیش‌ازحد خوش‌بین** است. در S351، افزودنِ H1 فقط z_proxy را ۱.۷٪
+# بالا برد (۱۲۰.۴→۱۲۲.۵) ولی z **واقعی** به ۱.۶ سقوط کرد. درس: یک بهبودِ
+# ناچیزِ proxy ارزشِ ریسکِ فروپاشیِ ساختارِ نمونه را ندارد. پس کارتِ اضافه
+# فقط وقتی پذیرفته می‌شود که z_proxy را **حداقل ۱۵٪** بالا ببرد.
+POOL_ADD_MARGIN = 0.15
 
-    راهبرد (حریصانه، از قوی‌ترین کارت): کارت‌ها را نزولی بر حسبِ lift مرتب
-    می‌کنیم و یکی‌یکی می‌افزاییم؛ در هر گام z_proxy را می‌سنجیم. زیرمجموعه‌ای
-    که بیشترین z_proxy را می‌دهد برنده است. این تضمین می‌کند یک کارتِ ضعیفِ
-    پرمعامله فقط وقتی وارد شود که واقعاً z را بالا ببرد، نه پایین.
+
+def choose_homogeneous_subset(candidates, add_margin=POOL_ADD_MARGIN):
+    """
+    از میانِ کارت‌های هم‌جهتِ مثبت، زیرمجموعه‌ای را برمی‌گزیند که نماینده z
+    (lift·√n) را با **حاشیهٔ معنادار** بیشینه کند — شرطِ ۴ (همگنیِ قدرتِ لبه).
+
+    راهبرد (حریصانه محافظه‌کار، از قوی‌ترین کارت): کارت‌ها را نزولی بر حسبِ
+    lift مرتب می‌کنیم. کارتِ k فقط وقتی افزوده می‌شود که z_proxy را نسبت به
+    بهترین زیرمجموعهٔ تاکنون **بیش از `add_margin`** (پیش‌فرض ۱۵٪) بالا ببرد.
+    این محافظه‌کاری از درسِ دومِ S351 می‌آید: proxy فرض می‌کند sd جای‌گشت
+    ثابت است، ولی بزرگ‌شدنِ نمونه آن را عوض می‌کند، پس فقط بهبودِ **معنادارِ**
+    proxy ارزشِ ریسکِ ادغام را دارد؛ بهبودِ ناچیز (مثل ۱.۷٪ در S351) رد می‌شود.
 
     ورودی: candidates = [dict(card, lift>0, n, ...), ...]
     خروجی: dict(chosen=[...], rejected_for_dilution=[...], z_full, z_chosen,
-                trace=[...])  — همان اشیاءِ ورودی، بدونِ تغییر.
+                add_margin, trace=[...])  — همان اشیاءِ ورودی، بدونِ تغییر.
     """
     ordered = sorted(candidates, key=lambda m: m['lift'], reverse=True)
     best_k, best_z, trace = 0, -1.0, []
     for k in range(1, len(ordered) + 1):
         sub = ordered[:k]
         zk = _z_proxy(sub)
+        # کارتِ اول همیشه پذیرفته می‌شود؛ کارت‌های بعد فقط با حاشیهٔ معنادار.
+        threshold = best_z * (1.0 + add_margin) if best_k > 0 else -1.0
+        accept = (zk > threshold)
         trace.append(dict(k=k, added=ordered[k - 1]['card'],
                           wlift=round(_weighted_lift(sub), 3),
-                          n=sum(m['n'] for m in sub), z_proxy=round(zk, 3)))
-        if zk > best_z:
+                          n=sum(m['n'] for m in sub), z_proxy=round(zk, 3),
+                          accepted=bool(accept)))
+        if accept:
             best_z, best_k = zk, k
     chosen = ordered[:best_k]
     rejected = ordered[best_k:]
@@ -125,6 +141,7 @@ def choose_homogeneous_subset(candidates):
                 rejected_for_dilution=rejected,
                 z_full=round(z_full, 3),
                 z_chosen=round(best_z, 3),
+                add_margin=add_margin,
                 trace=trace)
 
 
