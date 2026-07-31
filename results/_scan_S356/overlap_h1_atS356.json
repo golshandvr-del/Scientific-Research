@@ -1,0 +1,111 @@
+{
+ "card": "XAUUSD-H1",
+ "bars": 90950,
+ "win": 1500,
+ "mode": "atbars",
+ "stride": 1,
+ "evaluated": 342,
+ "layers": [
+  {
+   "code": "S341",
+   "kind": "swing-fade در رنج (LONG)",
+   "n_active": 0,
+   "n_approaching": 0,
+   "errors": 0,
+   "active_bars": []
+  },
+  {
+   "code": "S333",
+   "kind": "pullback احیای S79 (LONG)",
+   "n_active": 0,
+   "n_approaching": 0,
+   "errors": 0,
+   "active_bars": []
+  },
+  {
+   "code": "S313",
+   "kind": "squeeze-breakout (LONG)",
+   "n_active": 24,
+   "n_approaching": 13,
+   "errors": 0,
+   "active_bars": [
+    1761,
+    1762,
+    6440,
+    23224,
+    32464,
+    36116,
+    36117,
+    37015,
+    39482,
+    40621,
+    41109,
+    46674,
+    46675,
+    47103,
+    54904,
+    64103,
+    64239,
+    64240,
+    75862,
+    81568,
+    82075,
+    83953,
+    88190,
+    89242
+   ]
+  },
+  {
+   "code": "S328",
+   "kind": "RSI21 mean-reversion",
+   "n_active": 3,
+   "n_approaching": 5,
+   "errors": 0,
+   "active_bars": [
+    30141,
+    37563,
+    52389
+   ]
+  },
+  {
+   "code": "S327",
+   "kind": "sell-climax reversal",
+   "n_active": 0,
+   "n_approaching": 0,
+   "errors": 0,
+   "active_bars": []
+  },
+  {
+   "code": "S323",
+   "kind": "S/R pullback",
+   "n_active": 0,
+   "n_approaching": 0,
+   "errors": 0,
+   "active_bars": []
+  },
+  {
+   "code": "S335",
+   "kind": "reflex dip-turn (LONG)",
+   "n_active": 6,
+   "n_approaching": 72,
+   "errors": 0,
+   "active_bars": [
+    35340,
+    38406,
+    40769,
+    40770,
+    41473,
+    88213
+   ]
+  },
+  {
+   "code": "S312",
+   "kind": "mid-month drift (زمان-محور)",
+   "n_active": 0,
+   "n_approaching": 0,
+   "errors": 0,
+   "active_bars": []
+  }
+ ],
+ "elapsed_s": 2.13
+}
