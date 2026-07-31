@@ -67,7 +67,14 @@ def main() -> int:
     ours = json.load(open(os.path.join(SCAN, 'XAUUSD-H1_entrybars.json'), encoding='utf-8'))
     full = json.load(open(os.path.join(SCAN, 'overlap_h1_full.json'), encoding='utf-8'))
 
-    our_bars = np.asarray(ours['trade_bars'], dtype=int)
+    # ── ⚠️ اصلاحِ چارچوبِ مرجع: `signal_bars` نه `trade_bars` ──
+    # `signal_bars` کندلِ **تصمیم** است و `trade_bars = signal_bars + 1` کندلِ
+    # **ورود**. لایه‌های سایت هم `ENTRY` را در کندلِ تصمیم می‌دهند (ورود در
+    # open بعدی). پس مقایسهٔ درست «تصمیم به تصمیم» است. نسخهٔ پیشین از
+    # `trade_bars` استفاده می‌کرد ⇒ پنجرهٔ ±۱ نسبت به تصمیمِ ما عملاً
+    # `{۰,+۱,+۲}` را می‌پوشاند و لایه‌ای که **یک کندل قبل** از ما آتش کرده بود
+    # را نمی‌دید: سوگیریِ نامتقارن.
+    our_bars = np.asarray(ours['signal_bars'], dtype=int)
     n_ours = len(our_bars)
     win = int(full['win'])
     evaluated = int(full['evaluated'])
@@ -79,6 +86,11 @@ def main() -> int:
             if b + d >= win:
                 nbhd.add(int(b + d))
     k_probe = len(nbhd)
+
+    # نگاشتِ «هر ورودِ ما ← کندل‌های همسایه‌اش»، برای شمارشِ درست در واحدِ
+    # **ورودِ ما** (نه در واحدِ رویدادِ لایهٔ موجود).
+    nb_of = {int(b): {int(b + d) for d in range(-TOL, TOL + 1) if b + d >= win}
+             for b in our_bars}
 
     # ساعتِ UTC هر کندل — برای خطِ مبنای شرطی
     import pandas as pd
@@ -108,7 +120,15 @@ def main() -> int:
         n_act_late = int(late_mask[act].sum()) if n_all else 0
         q_late = (n_act_late / n_late) if n_late else 0.0
 
-        hit = int(np.isin(act, list(nbhd)).sum()) if n_all else 0
+        # ── ⚠️ اصلاحِ واحدِ شمارش ──
+        # نسخهٔ پیشین `hit` را «تعدادِ رویدادهای این لایه که در همسایگیِ ما
+        # افتاده‌اند» می‌شمرد. اگر دو رویدادِ همان لایه در پنجرهٔ ±۱ یک ورودِ ما
+        # بیفتد (مثلاً `S313@b-1` و `S313@b`)، آن **۲ رویداد ولی ۱ ورودِ آلوده**
+        # است. سؤالِ قانونِ همپوشانی «چند درصد از ورودهای ما آلوده‌اند» است، پس
+        # واحدِ درست «ورودِ ما»ست. `hit_events` هم برای شفافیت نگه داشته می‌شود.
+        act_set = set(int(x) for x in act)
+        hit = sum(1 for b, nb in nb_of.items() if act_set & nb)
+        hit_events = int(np.isin(act, list(nbhd)).sum()) if n_all else 0
         pct = 100.0 * hit / n_ours if n_ours else 0.0
         exp_all = q_all * k_probe
         # آزمونِ یک‌طرفهٔ بیش‌همپوشانی
@@ -127,15 +147,17 @@ def main() -> int:
               f'{hit:4d} {pct:5.1f}٪ {exp_all:6.2f} {p_over:9.2e} {p_late:9.2e}  {verdict}')
         rows.append(dict(code=code, kind=L['kind'], n_all=n_all,
                          q_all=round(q_all, 6), q_late=round(q_late, 6),
-                         hit=hit, pct_of_ours=round(pct, 2),
+                         hit=hit, hit_events=hit_events,
+                         pct_of_ours=round(pct, 2),
                          expected_chance=round(exp_all, 3),
                          p_over_uncond=p_over, p_over_late=p_late,
                          verdict=verdict))
 
-    union = set()
+    # اجتماع در واحدِ **ورودِ ما**: ورودی که ≥۱ لایه در همسایگی‌اش آتش کرده.
+    all_act = set()
     for L in full['layers']:
-        union |= (set(int(x) for x in L['active_bars']) & nbhd)
-    union_hit = len(union)
+        all_act |= set(int(x) for x in L['active_bars'])
+    union_hit = sum(1 for b, nb in nb_of.items() if all_act & nb)
     print()
     print(f'اجتماعِ همپوشانی (هر لایه‌ای): {union_hit}/{n_ours} = '
           f'{100.0*union_hit/n_ours:.1f}٪')
