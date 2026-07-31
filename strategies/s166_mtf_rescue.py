@@ -115,12 +115,13 @@ def judge_card(asset, tf):
                     bar_time = df["dt"].values
                     res = rqs2.compute_rqs2(tr, key, sl_pip=sl, tp_pip=tp,
                                             bar_time=bar_time)
+                    m = res.get("metrics", {})
                     rec = dict(ampl=ampl, side=side, sl=sl, tp=tp, rr=rr,
-                               n=res.get("n_trades"), wr=res.get("win_rate"),
-                               pf=res.get("profit_factor"),
-                               net=res.get("net_usd") if "net_usd" in res else None,
+                               n=m.get("n_trades"), wr=m.get("win_rate"),
+                               pf=m.get("profit_factor"),
+                               net=m.get("net_profit"),
                                rqs2=res.get("score"), verdict=res.get("verdict"),
-                               lift=res.get("skill_lift_pp"), z=res.get("skill_z"),
+                               lift=m.get("skill_lift_pp"), z=m.get("skill_z"),
                                power_limited=res.get("power_limited"))
                     variants.append(rec)
                     key_metric = (res.get("verdict") == "ACCEPT",
