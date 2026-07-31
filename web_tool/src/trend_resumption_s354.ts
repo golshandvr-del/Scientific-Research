@@ -9,13 +9,18 @@
 //        leg دوم اغلب هم‌اندازهٔ leg اول (⇒ TP = measured-move، RR شناور=۲).
 //
 //   کارتِ پذیرفته‌شده (RQS2=80.8 · ACCEPT · همه‌ی ۱۱ دروازه):
-//     XAUUSD-H1 · LONG only · SL=1.3×ATR · TP=2.0×SL · maxHold=20
+//     XAUUSD-H1 · LONG only · SL=50.6pip · TP=101.2pip · maxHold=20
 //     گیت: r2_fib_55 ≥ 0.394314 (آستانهٔ سراسریِ q45، ثابتِ از‌پیش‌محاسبه‌شده)
-//     پارامترها: nOpen=3 · lateFrom=0.68 · spikeK=0.8 · tightATR=12.0 · atrP=21
+//     پارامترها: nOpen=3 · **lateHour=16 (UTC)** · spikeK=0.8 · tightATR=12.0 · atrP=21
 //
-//   سند: results/S354_BrooksTrendResumption_Xauusd_H1_rqs2-80.md
-//   پورتِ verbatim از strategies/s354_brooks_trend_resumption.py::build_signals
-//   (فقط شاخهٔ LONG؛ ATR = atrSeriesS354 با parity ثابت‌شده تا 1.7e-6 با atr_fib_21).
+//   ⚠️ نسخهٔ **CAUSAL**. پورتِ اولیه از `build_signals` (نسخهٔ non-causal با
+//      `lateFrom = 0.68 × طولِ روز`) بود؛ آن نسخه look-ahead داشت و رد شد.
+//      نسخه‌ای که با معیارِ **RQS2 v2.4** هر ۱۱ دروازه را پاس کرد،
+//      `s354_causal_check.py::build_signals_causal` است: پنجرهٔ پایانی با
+//      **ساعتِ ثابتِ UTC ≥ 16**. این فایل الان verbatim از آن پورت شده است.
+//
+//   سند پذیرش: results/_scan_S356/XAUUSD-H1.json (RQS2 ACCEPT، هر ۳ seed)
+//   parity سیگنال: results/_scan_S356/parity_causal_after.json (باید mismatch=0)
 // ============================================================================
 import type { Candle } from './indicators'
 import type { RouterDecision, RegimeInfo } from './router'
@@ -29,7 +34,7 @@ export interface S354Config {
   pip: number             // اندازهٔ pip (۰.۱ برای طلا)
   barsPerDay: number      // 24 برای H1
   nOpen: number           // 3 — طولِ «ساعتِ اول» (کندل)
-  lateFrom: number        // 0.68 — کسرِ روز که پنجرهٔ پایانی از آن آغاز می‌شود
+  lateHour: number        // 16 — ساعتِ ثابتِ UTC که پنجرهٔ پایانی از آن آغاز می‌شود
   spikeK: number          // 0.8 — leg1 ≥ spikeK×ATR
   tightATR: number        // 12.0 — mid_range ≤ tightATR×ATR
   atrPeriod: number       // 21
@@ -43,7 +48,7 @@ export interface S354Config {
 export const S354_CFG: Record<string, S354Config> = {
   'XAUUSD-H1': {
     id: 'XAUUSD-H1', tfFa: 'H1', pip: 0.1, barsPerDay: 24,
-    nOpen: 3, lateFrom: 0.68, spikeK: 0.8, tightATR: 12.0,
+    nOpen: 3, lateHour: 16, spikeK: 0.8, tightATR: 12.0,
     atrPeriod: 21, r2Period: 55, r2Min: 0.394314,
     slK: 1.3, rr: 2.0, maxHold: 20,
   },
@@ -52,6 +57,14 @@ export const S354_CFG: Record<string, S354Config> = {
 // شناسهٔ روزِ UTC (منطبق با `dt.dt.floor('D')` پایتون)
 function dayIdOf(tsSec: number): number {
   return Math.floor(tsSec / 86400)
+}
+
+// ساعتِ UTC کندل (منطبق با `pd.to_datetime(..., unit='s').hour` پایتون).
+//   عمداً از `Date` استفاده نمی‌شود تا هیچ وابستگی‌ای به منطقهٔ زمانیِ میزبان
+//   نماند؛ حسابِ صحیح روی ثانیه‌های epoch همیشه UTC است. `%` دوگانه برای
+//   ایمنی در برابرِ زمانِ منفی (پیش از ۱۹۷۰) است.
+function utcHourOf(tsSec: number): number {
+  return Math.floor((((tsSec % 86400) + 86400) % 86400) / 3600)
 }
 
 // ATR (Wilder RMA، causal) — parity با atr_fib_21 پایتون تا 1.7e-6 پس از warmup.
@@ -118,7 +131,30 @@ export function computeS354(candles: Candle[], cfg: S354Config): RawSignal {
   const ndlen = pos + 1                     // طولِ روزِ جاری تا کنون (کندل)
 
   const openEnd = ds + cfg.nOpen            // پایانِ ساعتِ اول (exclusive)
-  const lateStart = ds + Math.round(cfg.lateFrom * ndlen)
+
+  // ── پنجرهٔ پایانیِ CAUSAL: اولین کندلِ روز با ساعتِ UTC ≥ lateHour ──
+  //   نسخهٔ پیشین `ds + round(lateFrom × ndlen)` بود که دو نقص داشت:
+  //     ۱) در پایتونِ اصلی `ndlen` = طولِ **کلِ** روز ⇒ look-ahead (روز تمام نشده
+  //        است و طولش معلوم نیست). همان نقصی که لایه را به POWER-LIMITED رساند.
+  //     ۲) در این پورتِ زنده `ndlen` = کندل‌های **تاکنونِ** روز شد؛ آن‌گاه شرطِ
+  //        `pos ≥ round(0.68×(pos+1))` از `pos≈2` به بعد همیشه صادق است ⇒ پنجرهٔ
+  //        پایانی عملاً بی‌اثر و لایه از ساعتِ ~۶ آتش می‌کرد (۳۰۲ سیگنال به‌جای
+  //        ۱۱۷؛ سندِ عددی: results/_scan_S356/parity_causal_before.json).
+  //   نسخهٔ پذیرفته‌شده با معیارِ v2.4 (`s354_causal_check.build_signals_causal`)
+  //   پنجره را با آستانهٔ **ساعتِ ثابتِ UTC** تعریف می‌کند؛ این هم causal است
+  //   (ساعتِ هر کندل در همان لحظه معلوم است) و هم verbatim قابلِ پورت.
+  //
+  //   معادلِ پایتون:
+  //     late_candidates = where(arange ≥ open_end+1 ∧ arange < j ∧ hours ≥ late_hour)
+  //     late_start = late_candidates[0]
+  //   در حالتِ زنده فقط بازهٔ [openEnd+1, i] در دسترس است؛ اگر اولین کندلِ واجد
+  //   شرط از i بزرگ‌تر باشد، در پایتون هم هیچ سیگنالی در i رخ نمی‌داد (چون
+  //   `t ≥ late_start`)، پس محدود کردنِ جست‌وجو به [openEnd+1, i] معادلِ دقیق است.
+  let lateStart = -1
+  for (let k = Math.max(openEnd + 1, ds); k <= i; k++) {
+    if (utcHourOf(t[k]) >= cfg.lateHour) { lateStart = k; break }
+  }
+  const lateExists = lateStart >= 0
 
   // --- اسپایکِ صبح (init_dir باید صعودی باشد ⇒ فقط LONG) ---
   const atrRef = openEnd - 1 < n ? atr[openEnd - 1] : NaN
@@ -130,10 +166,13 @@ export function computeS354(candles: Candle[], cfg: S354Config): RawSignal {
 
   // --- گاردِ روز و پنجرهٔ midday (منطبق با پایتون) ---
   const midLoIdx = openEnd
-  const midHiIdx = Math.max(openEnd + 1, lateStart)
+  //   اگر هنوز هیچ کندلی با ساعت ≥ lateHour نرسیده باشد (`lateExists=false`)،
+  //   پنجرهٔ پایانی آغاز نشده و هیچ سیگنالی ممکن نیست. `midHiIdx` را در آن حالت
+  //   عدداً بی‌اثر می‌گذاریم و با `lateExists` صریحاً مسدود می‌کنیم.
+  const midHiIdx = lateExists ? Math.max(openEnd + 1, lateStart) : Number.MAX_SAFE_INTEGER
   const dayLongEnough = ndlen >= cfg.nOpen + 4
-  const rangeReady = midHiIdx - midLoIdx >= 2 && midHiIdx <= i
-  const inLateWindow = i >= Math.max(midHiIdx, lateStart)
+  const rangeReady = lateExists && midHiIdx - midLoIdx >= 2 && midHiIdx <= i
+  const inLateWindow = lateExists && i >= Math.max(midHiIdx, lateStart)
 
   // ATR و r2 روی کندلِ جاری
   const atrNow = isFinite(atr[i - 1]) ? atr[i - 1] : atrRef
@@ -172,9 +211,9 @@ export function computeS354(candles: Candle[], cfg: S354Config): RawSignal {
   //   پایتون فقط اولین breakout هر روز را سیگنال می‌کند. در حالتِ زنده باید مطمئن
   //   شویم هیچ کندلِ قبلیِ همین روز (از tStart تا i-1) اولین breakout نبوده است؛
   //   وگرنه کندل‌های بعدی که هنوز بالای سقفِ رنجِ قدیمی‌اند به‌غلط active می‌شوند.
-  const tStart = Math.max(midHiIdx, lateStart)
+  const tStart = lateExists ? Math.max(midHiIdx, lateStart) : Number.MAX_SAFE_INTEGER
   let firstBreakBar = -1
-  {
+  if (lateExists) {
     // بازتولیدِ عینِ حلقهٔ build_signals: برای هر t، رنجِ [midLoIdx, t) و شکستِ c[t]>hi.
     // midHiIdx = max(openEnd+1, lateStart) و رنج از openEnd محاسبه می‌شود.
     let runHi = -Infinity, runLo = Infinity
