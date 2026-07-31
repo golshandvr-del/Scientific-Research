@@ -1,0 +1,10 @@
+{
+  "asset": "EURUSD",
+  "tf": "W1",
+  "atr_pip": 188.5,
+  "n_variants": 0,
+  "topk": 5,
+  "best": null,
+  "judged": [],
+  "stage1_top": []
+}
