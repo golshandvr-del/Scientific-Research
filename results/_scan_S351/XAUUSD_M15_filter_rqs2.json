@@ -22,8 +22,8 @@
   "n_base": 51,
   "n_filtered": 38,
   "base": {
-    "verdict": "REJECT",
-    "rqs2_score": 30.1,
+    "verdict": "POWER-LIMITED",
+    "rqs2_score": 29.9,
     "gates": {
       "H0": true,
       "H1": true,
@@ -35,7 +35,7 @@
       "H7": true,
       "H8": true,
       "H9": true,
-      "H10": null
+      "H10": true
     },
     "metrics": {
       "n_trades": 51,
@@ -57,11 +57,12 @@
       "rr": 1.2,
       "breakeven_wr_cost": 46.2,
       "wr_excess_cost": 16.54,
-      "null_ref_wr": 48.62,
-      "skill_lift_pp": 14.13,
-      "skill_z": 2.01,
+      "null_ref_wr": 48.91,
+      "skill_lift_pp": 13.84,
+      "skill_z": 1.98,
+      "skill_p_perm": 0.024048,
       "perm_max": 70.59,
-      "perm_k": 300,
+      "perm_k": 500,
       "side_n": {
         "long": 51,
         "short": 0
@@ -70,14 +71,14 @@
         "long": 62.75
       },
       "side_lift_pp": {
-        "long": 14.13
+        "long": 13.84
       },
       "prune_sides": [],
-      "p_emp": 0.029847,
-      "p_adj_bonferroni": 0.238774,
-      "z_obs": 2.019,
+      "p_emp": 0.032796,
+      "p_adj_bonferroni": 0.262367,
+      "z_obs": 1.977,
       "z_luck_bound": 1.459,
-      "z_margin": 0.56,
+      "z_margin": 0.518,
       "n_trials": 8,
       "cal_nets": [
         370.1,
@@ -114,15 +115,16 @@
         "wr_counter": 100.0,
         "exp_counter": 104.325,
         "wr_aligned": 59.52,
-        "exp_aligned": 64.714
+        "exp_aligned": 64.714,
+        "h10_substitute": "small-counter-sample-nonnegative"
       }
     },
     "notes": [
-      "H10 UNKNOWN: only 4 counter-drift trades (<20) — the layer has never actually been tested against an adverse drift regime"
+      "H10 WARN (substitute PASS): only 4 counter-drift trades (<20) but their expectancy is non-negative (+104.325 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
     ]
   },
   "filtered": {
-    "verdict": "REJECT",
+    "verdict": "POWER-LIMITED",
     "rqs2_score": 29.2,
     "gates": {
       "H0": true,
@@ -135,7 +137,7 @@
       "H7": true,
       "H8": true,
       "H9": true,
-      "H10": null
+      "H10": true
     },
     "metrics": {
       "n_trades": 38,
@@ -160,8 +162,9 @@
       "null_ref_wr": 48.38,
       "skill_lift_pp": 17.41,
       "skill_z": 2.15,
+      "skill_p_perm": 0.015896,
       "perm_max": 71.05,
-      "perm_k": 300,
+      "perm_k": 500,
       "side_n": {
         "long": 38,
         "short": 0
@@ -214,11 +217,12 @@
         "wr_counter": 100.0,
         "exp_counter": 60.2,
         "wr_aligned": 63.33,
-        "exp_aligned": 70.5
+        "exp_aligned": 70.5,
+        "h10_substitute": "small-counter-sample-nonnegative"
       }
     },
     "notes": [
-      "H10 UNKNOWN: only 3 counter-drift trades (<20) — the layer has never actually been tested against an adverse drift regime"
+      "H10 WARN (substitute PASS): only 3 counter-drift trades (<20) but their expectancy is non-negative (+60.200 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
     ]
   }
 }
