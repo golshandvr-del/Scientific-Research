@@ -1,0 +1,33 @@
+{
+  "n_records": 75,
+  "tests": {
+    "R4_lowz_stays_reject": {
+      "pass": true,
+      "violations": [],
+      "desc": "layers with z<3 must NOT pass new H3"
+    },
+    "R1_fakes_stay_reject": {
+      "pass": true,
+      "violations": [],
+      "desc": "layers with non-positive lift vs measured null must NOT pass new H3"
+    },
+    "R2_worthless_stays_reject": {
+      "pass": true,
+      "n_checked": 38,
+      "violations": [],
+      "desc": "layers failing >=8 gates must still fail a non-H3/H10 gate"
+    },
+    "R3_seed_stable": {
+      "pass": true,
+      "desc": "new H3 verdict must be seed-stable across the converged (K>=500) runs; runs below the floor are UNKNOWN and excluded",
+      "n_runs": 30,
+      "n_judged": 12,
+      "n_unknown_belowK": 18,
+      "n_pass_new": 12,
+      "n_reject_new": 0,
+      "old_n_pass": 22,
+      "note": "converged runs (K>=500) all agree; 18 sub-floor runs correctly excluded as UNKNOWN"
+    }
+  },
+  "ALL_PASS": true
+}
