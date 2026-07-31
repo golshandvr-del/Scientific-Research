@@ -153,24 +153,34 @@ def main():
     # ---- R3: پایداریِ بذر با آمارهٔ همگرا ----
     # از artifactِ reproducibility استفاده می‌کنیم: H3 جدید تابعِ z است، پس
     # روی هر ۳۰ اجرا p_perm از z همان اجرا حساب و حکم بازخوانی می‌شود.
-    r3 = {'pass': None, 'desc': 'new H3 verdict must be seed-stable across 30 runs'}
+    r3 = {'pass': None, 'desc': 'new H3 verdict must be seed-stable across the '
+          'converged (K>=500) runs; runs below the floor are UNKNOWN and excluded'}
     rp = 'results/_audit_H3/reproducibility.json'
     if os.path.exists(rp):
         runs = json.load(open(rp))['runs']
-        new_verdicts = []
+        # ⚠️ کلید: به هر اجرا K *واقعیِ خودش* را بده، نه PERM_K_MIN ثابت.
+        #   اجراهای K<500 حالا h3_new=None (UNKNOWN) می‌دهند — چون آماره
+        #   همگرا نشده — و باید از سنجشِ پایداری *کنار گذاشته* شوند، نه اینکه
+        #   ناپایداری تلقی شوند. این دقیقاً همان رفتارِ engine است.
+        judged, unknown = [], 0
         for run in runs:
-            v = h3_new(run.get('lift'), run.get('z'), PERM_K_MIN)
-            new_verdicts.append(v)
-        n_pass = sum(1 for v in new_verdicts if v)
-        n_rej = sum(1 for v in new_verdicts if v is False)
-        # پایدار = همه یکسان (یا همه پاس یا همه رد)
-        stable = (n_pass == len(new_verdicts)) or (n_rej == len(new_verdicts))
-        r3.update({'pass': bool(stable), 'n_runs': len(new_verdicts),
+            v = h3_new(run.get('lift'), run.get('z'), run.get('K'))
+            if v is None:
+                unknown += 1
+            else:
+                judged.append(v)
+        n_pass = sum(1 for v in judged if v)
+        n_rej = sum(1 for v in judged if v is False)
+        # پایدار = همهٔ اجراهای *قابلِ‌داوری* یکسان (همه پاس یا همه رد)
+        stable = len(judged) > 0 and (n_pass == len(judged) or n_rej == len(judged))
+        r3.update({'pass': bool(stable), 'n_runs': len(runs),
+                   'n_judged': len(judged), 'n_unknown_belowK': unknown,
                    'n_pass_new': n_pass, 'n_reject_new': n_rej,
                    'old_n_pass': sum(1 for run in runs if run.get('H3')),
-                   'note': ('new statistic gives identical verdict on all runs'
+                   'note': (f'converged runs (K>=500) all agree; '
+                            f'{unknown} sub-floor runs correctly excluded as UNKNOWN'
                             if stable else
-                            'still unstable — investigate')})
+                            'still unstable among converged runs — investigate')})
     out['tests']['R3_seed_stable'] = r3
 
     # ---- جمع‌بندی ----
