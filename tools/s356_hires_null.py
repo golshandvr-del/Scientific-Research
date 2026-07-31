@@ -141,9 +141,12 @@ def rebuild_card(card):
     tp = round(FROZEN["rr"] * sl, 1)
 
     gate = base.regime_gate(df, FROZEN["regime"])
+    # امضا عیناً همان فراخوانیِ `run_card` در `s356_v24_rejudge` است:
+    # `build_signals_causal(df, asset, tf, n_open_frac, late_hour, spike_k, tight_atr)`
+    # — براکت (`sl`/`tp`/`mh`) در ساختِ سیگنال نقشی ندارد و فقط در برآمد وارد می‌شود.
     sig = build_signals_causal(df, asset, tf, FROZEN["n_open_frac"],
                                FROZEN["late_hour"], FROZEN["spike_k"],
-                               FROZEN["tight_atr"], sl, tp, mh) & gate
+                               FROZEN["tight_atr"]) & gate
 
     res, xbar = outcome_table(df, asset, sl, tp, mh)
     n = len(df)
