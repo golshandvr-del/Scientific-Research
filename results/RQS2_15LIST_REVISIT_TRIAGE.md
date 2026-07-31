@@ -41,7 +41,7 @@
 | ۴ | `_scan_S351/XAUUSD_M5_filter_rqs2` (پایه) | 64 | 2.77 | ✅ | ⛔ POWER-LIMITED | `H3` — z=3.0 و `perm_max` بالا |
 | **۵** | **`_scan_S351/XAUUSD_M5_filter_rqs2` (فیلترشده)** | **47** | **2.74** | ✅ | ✅ **ACCEPT · RQS2=83.9** | **`H10` تنها سدِ v2.3 بود ⇒ F4 بازش کرد** |
 | ۶ | `_scan_S351/XAUUSD_H1_filter_rqs2` | 66 | 2.70 | ✅ | ⛔ POWER-LIMITED | `H3` — z=2.5 < 3.09 |
-| ۷ | `_scan_S351/XAUUSD_M5_bidir` | 78 | 2.69 | ✅ | ⛔ REJECT | **رقیق‌سازیِ لبه** — شورت lift=8.5pp |
+| ۷ | `_scan_S351/XAUUSD_M5_bidir` | 78 | 2.69 | ✅ | ⛔ POWER-LIMITED (`H3`✗ `H10`✗) | **رقیق‌سازیِ لبه** — شورت lift=8.5pp |
 | ۸ | `_scan_S351/XAUUSD_H1_filter_rqs2` (پایه) | 74 | 2.38 | ✅ | ⛔ POWER-LIMITED | `H3` |
 | ۹ | `_scan_S348/XAUUSD-D1` | 121 | 1.90 | ➖ | ⛔ REJECT (پیشین) | **چندگانگی** — جاروبِ هندسهٔ RR |
 | ۱۰ | `_scan_S351/XAUUSD-D1_rqs2` (خام) | 74 | 1.76 | ✅ (هم‌خانواده با #۱۵) | ⛔ REJECT | **نبودِ لبه** در LPSBِ خام |
