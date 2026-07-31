@@ -162,8 +162,11 @@ def build_signals(df, asset, tf, n_open_frac, late_from, spike_k, tight_atr):
                         if not (np.isfinite(mseg_hi) and np.isfinite(mseg_lo)):
                             continue
                         mid_range = mseg_hi - mseg_lo
-                        # قیدِ tightness رنجِ midday نسبت به leg1
-                        if mid_range > tight_f * leg1 or mid_range <= 0:
+                        # قیدِ tightness رنجِ midday نسبت به ATR (واحدِ قیمت): رنجِ فشرده.
+                        atr_now = atr[t - 1] if (t - 1) < n and np.isfinite(atr[t - 1]) else atr_ref
+                        if not (np.isfinite(atr_now) and atr_now > 0):
+                            continue
+                        if mid_range > tight_atr * atr_now or mid_range <= 0:
                             continue
                         # resumption در جهتِ روندِ صبح
                         if init_dir > 0:
