@@ -1,0 +1,138 @@
+{
+  "card": "XAUUSD-D1",
+  "protocol": "C_holdout_v2.4_stage2_test",
+  "lock_source": "results/_scan_S346/holdout_c_XAUUSD-D1.json",
+  "locked": {
+    "score": 66.15285998919556,
+    "er": 0.2,
+    "cq": 0.3,
+    "sq": 0.6,
+    "cg_thr": -0.016933289999518486,
+    "std_thr": 36.55013870195499,
+    "is_wr": 63.0,
+    "is_n": 100,
+    "is_net": 3152.9
+  },
+  "base": {
+    "mode": "breakout",
+    "p": 13,
+    "mult": 2.058,
+    "sl_k": 1.0,
+    "rr": 1.0,
+    "hold": 5
+  },
+  "n_trials": 1,
+  "perm_k": 500,
+  "inner_split": 3350,
+  "holdout_bar_range": [
+    2393,
+    3989
+  ],
+  "n_holdout_trades": 19,
+  "holdout_wr": 84.21,
+  "verdict": "REJECT",
+  "rqs2_score": 28.0,
+  "gates": {
+    "H0": false,
+    "H1": true,
+    "H2": null,
+    "H3": false,
+    "H4": false,
+    "H5": true,
+    "H6": false,
+    "H7": false,
+    "H8": true,
+    "H9": true,
+    "H10": true
+  },
+  "metrics": {
+    "n_trades": 19,
+    "win_rate": 84.21,
+    "net_profit": 1200.1,
+    "profit_factor": 4.744,
+    "max_dd_pct": 1.05,
+    "max_consec_losses": 1,
+    "mcl_allowed": 8,
+    "n_wins": 16,
+    "top_win_share": 0.1022,
+    "recovery_factor": 10.19,
+    "expectancy_pip": 138.27,
+    "expectancy_at_2x_cost": 134.97,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 226.106,
+    "tp_pip": null,
+    "rr": null,
+    "breakeven_wr_cost": null,
+    "wr_excess_cost": null,
+    "null_ref_wr": 49.83,
+    "skill_lift_pp": 34.39,
+    "skill_z": 3.0,
+    "skill_p_perm": 0.00136,
+    "perm_max": 72.5,
+    "perm_k": 500,
+    "side_n": {
+      "long": 17,
+      "short": 2
+    },
+    "side_wr": {
+      "long": 88.24,
+      "short": 50.0
+    },
+    "side_lift_pp": {
+      "long": 38.41,
+      "short": 0.17
+    },
+    "prune_sides": [
+      "short"
+    ],
+    "p_emp": 0.002111,
+    "p_adj_bonferroni": 0.002111,
+    "z_obs": 2.998,
+    "z_luck_bound": 0.52,
+    "z_margin": 2.478,
+    "n_trials": 1,
+    "cal_nets": [
+      0.0,
+      0.0,
+      420.1,
+      724.0
+    ],
+    "cal_counts": [
+      0,
+      0,
+      9,
+      10
+    ],
+    "cal_positive": 2,
+    "cal_occupied": 2,
+    "half_nets": [
+      0.0,
+      1200.1
+    ],
+    "oos": {
+      "n": 6,
+      "wr": 100.0,
+      "pf": Infinity,
+      "net": 600.8,
+      "wr_req": 57.0
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+      "n_judgeable": 19,
+      "n_unjudgeable": 0,
+      "n_counter": 4,
+      "n_aligned": 15,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 75.0,
+      "exp_counter": 111.812,
+      "wr_aligned": 86.67,
+      "exp_aligned": 145.325,
+      "h10_substitute": "small-counter-sample-nonnegative"
+    }
+  },
+  "notes": [
+    "H2 UNKNOWN: tp_pip not supplied — RQS2 refuses the tp=sl assumption that silently disabled RQS+'s anti-gaming guard",
+    "H10 WARN (substitute PASS): only 4 counter-drift trades (<20) but their expectancy is non-negative (+111.812 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+  ]
+}
