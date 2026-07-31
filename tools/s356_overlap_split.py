@@ -106,7 +106,12 @@ def judge(df, asset, sig_branch, sl, tp, mh, label, verbose=True):
         return dict(label=label, status="TOO_FEW", n_signals=n_sig)
     n = len(tr)
     wr = 100.0 * float((tr["pnl_pip"] > 0).sum()) / n
-    net = float(tr["pnl_usd"].sum()) if "pnl_usd" in tr.dtype.names else None
+    # `simulate_trades` یک DataFrame با ستونِ `pnl_pip` برمی‌گرداند (نه structured
+    # array و نه ستونِ دلاری). تبدیل به دلار با مشخصاتِ حسابِ دمو:
+    #   CONTRACT_SIZE=100 ⇒ حرکتِ ۱.۰۰ دلاری = ۱۰۰$/لات؛ pip طلا = ۰.۱ ⇒ ۱۰$/pip/لات
+    #   pip یورو = ۰.۰۰۰۱ ⇒ ۱۰$/pip/لات (۱ لات = ۱۰۰٬۰۰۰)
+    usd_per_pip = 10.0
+    net = float(tr["pnl_pip"].sum()) * usd_per_pip
     close = df["close"].values.astype(float)
     bar_time = df["time"].values
     split_bar = int(len(df) * 0.60)
