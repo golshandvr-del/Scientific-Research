@@ -252,8 +252,6 @@ const s341Layer = (cfg: typeof S341_CFG[string]): LayerFn => (ctx) => decideS341
 const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ نوِ این نشست: S345 Brooks Reversal Day — چرخشِ روندِ درون‌روزی (فصلِ ۲۴)
 const s345Layer = (cfg: typeof S345_CFG[string]): LayerFn => (ctx) => decideS345(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
-// لایهٔ نوِ این نشست: S354 Brooks Trend Resumption Day — روزِ ازسرگیریِ روند (فصلِ ۲۵)
-const s354Layer = (cfg: typeof S354_CFG[string]): LayerFn => (ctx) => decideS354(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 
 // ---------------------------------------------------------------------------
 // نگاشتِ کارت → لایه‌های فعال (به‌ترتیبِ اولویت). فقط لایه‌هایی که روی همان
