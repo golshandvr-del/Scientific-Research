@@ -1,0 +1,130 @@
+{
+ "asset": "XAUUSD",
+ "tf": "H1",
+ "side": "long",
+ "sl": 50.6,
+ "tp": 101.2,
+ "rr": 2.0,
+ "maxhold": 20,
+ "config": {
+  "n_open": 0.13,
+  "late": 0.68,
+  "spike": 0.8,
+  "tight": 12.0,
+  "r2": [
+   "r2_fib_55",
+   "ge",
+   0.45
+  ],
+  "sl_k": 1.3,
+  "n_trials": 96
+ },
+ "family_long": {
+  "n_members": 8,
+  "wr_obs": 45.022,
+  "null_mean": 36.494,
+  "null_sd": 1.993,
+  "lift": 8.528,
+  "z": 4.278,
+  "p_emp": 0.00332,
+  "luck_bound": 0.52,
+  "verdict": "CONFIRMED"
+ },
+ "n_trades": 109,
+ "metrics": {
+  "n_trades": 109,
+  "win_rate": 50.46,
+  "net_profit": 3615.0,
+  "profit_factor": 1.556,
+  "max_dd_pct": 5.19,
+  "max_consec_losses": 5,
+  "mcl_allowed": 12,
+  "n_wins": 55,
+  "top_win_share": 0.0229,
+  "recovery_factor": 4.86,
+  "expectancy_pip": 14.644,
+  "expectancy_at_2x_cost": 11.344,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 50.6,
+  "tp_pip": 101.2,
+  "rr": 2.0,
+  "breakeven_wr_cost": 35.51,
+  "wr_excess_cost": 14.95,
+  "null_ref_wr": 36.23,
+  "skill_lift_pp": 14.23,
+  "skill_z": 3.09,
+  "perm_max": 48.62,
+  "perm_k": 400,
+  "side_n": {
+   "long": 109,
+   "short": 0
+  },
+  "side_wr": {
+   "long": 50.46
+  },
+  "side_lift_pp": {
+   "long": 14.23
+  },
+  "prune_sides": [],
+  "p_emp": 0.001647,
+  "p_adj_bonferroni": 0.158108,
+  "z_obs": 3.091,
+  "z_luck_bound": 2.516,
+  "z_margin": 0.574,
+  "n_trials": 96,
+  "cal_nets": [
+   389.9,
+   1099.3,
+   1441.5,
+   258.9
+  ],
+  "cal_counts": [
+   20,
+   25,
+   22,
+   42
+  ],
+  "cal_positive": 4,
+  "cal_occupied": 4,
+  "half_nets": [
+   1545.4,
+   1763.4
+  ],
+  "oos": {
+   "n": 50,
+   "wr": 48.0,
+   "pf": 1.356,
+   "net": 1088.2,
+   "wr_req": 35.51
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 99,
+   "n_unjudgeable": 10,
+   "n_counter": 27,
+   "n_aligned": 72,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 48.15,
+   "exp_counter": 10.426,
+   "wr_aligned": 54.17,
+   "exp_aligned": 20.131
+  }
+ },
+ "rqs2": 79.5,
+ "verdict": "ACCEPT",
+ "power_limited": false,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": true,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": true
+ }
+}
