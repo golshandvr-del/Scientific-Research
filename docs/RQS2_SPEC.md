@@ -321,7 +321,7 @@ WR_breakeven = SL / (SL + TP)        ⇒  برای RR=1 عددِ ۵۰٪
 | **H7** | خارج از نمونه | `holdout: n ≥ 15، WR ≥ 57٪، PF ≥ 1.2` |
 | **H8** | ریسکِ دنباله و بازیافت | `maxDD ≤ 8٪`، `MCL ≤ 8`، `net/|DD| ≥ 3` |
 | **H9** | مقاومتِ هزینه | `exp > 0.5×spread` و `exp@2×spread > 0` |
-| **H10** | ⭐ **مقاومتِ رژیمی (خلافِ جریان)** | `exp_counter > 0` **و** `WR_counter ≥ breakeven_cost` ؛ اگر `n_counter < 20` ⇒ `UNKNOWN` |
+| **H10** | ⭐ **مقاومتِ رژیمی (خلافِ جریان)** | `exp_counter > 0` **و** `WR_counter ≥ breakeven_cost` ؛ **v2.4 (F4):** اگر `n_counter < 20` ⇒ آزمونِ جانشین: `n_counter=0` یا `exp_counter ≥ 0` ⇒ `PASS + WARN`؛ `exp_counter < 0` ⇒ `FAIL`. (پیشین: `UNKNOWN` ⇒ لایهٔ گزینشی هرگز ACCEPT نمی‌شد) |
 
 ### ⭐ H10 — دروازه‌ای که جای خالیِ همهٔ دروازه‌های دیگر را پر می‌کند
 
