@@ -40,12 +40,20 @@ def p_perm_from_z(z):
 
 
 def h3_new(lift, z, perm_k):
-    """منطقِ H3 جدید (v2.4). None اگر داده ناقص است."""
+    """منطقِ H3 جدید (v2.4). None اگر داده ناقص یا K زیرِ کفِ همگرایی است.
+
+    این باید *دقیقاً* رفتارِ engine را بازتاب دهد: با perm_k<PERM_K_MIN آماره
+    همگرا نشده ⇒ حکم UNKNOWN (None)، نه False. برگرداندنِ False در این حالت،
+    یک اجرای «نمی‌دانیم» را به «رد» تبدیل می‌کرد و R3 را به‌غلط ناپایدار
+    نشان می‌داد.
+    """
     if lift is None or z is None:
         return None
+    k = perm_k if perm_k is not None else PERM_K_MIN
+    if k < PERM_K_MIN:
+        return None  # UNKNOWN — آماره همگرا نشده
     p = p_perm_from_z(z)
-    k = perm_k if perm_k is not None else PERM_K_MIN  # نول‌های قدیمی k را همیشه دارند
-    return bool(lift >= SKILL_LIFT_MIN and p <= SKILL_P_MAX and k >= PERM_K_MIN)
+    return bool(lift >= SKILL_LIFT_MIN and p <= SKILL_P_MAX)
 
 
 def harvest_records():
