@@ -20,9 +20,12 @@ from engine import scalp_engine as se
 from engine import rqs2
 from strategies.s166_halftrend_heikenashi import signals
 
+# پایه‌های دارایی — دقیقاً مطابقِ موتورِ رسمی se.ASSETS (تناقض ممنوع).
 ASSET_BASE = {
-    "XAUUSD": dict(pip=0.1, contract=100.0, pip_value=1.0, spread_pip=3.3, comm=0.0),
-    "EURUSD": dict(pip=0.0001, contract=100_000.0, pip_value=10.0, spread_pip=1.4, comm=0.0),
+    "XAUUSD": dict(pip=0.10, contract=100.0, pip_value=10.0,
+                   spread_pip=3.3, comm=0.0, slip_pip=0.0),
+    "EURUSD": dict(pip=0.0001, contract=100_000.0, pip_value=10.0,
+                   spread_pip=1.0, comm=0.0, slip_pip=0.3),
 }
 ATR_P = 100
 MAX_HOLD = 16
