@@ -139,6 +139,69 @@ def family_test(df, sl, tp, mh, n_perm=300, seed=17):
                 verdict=verdict)
 
 
+def build_null_canonical(df, sig, sl, tp, mh, n_perm=400, seed=23):
+    """مدلِ صفرِ کانونیِ RQS2 برای سیگنالِ long رسمی: جای‌گشتِ زمانیِ همان تعدادِ
+    ورود. خروجی ساختارِ {'long':{uncond_wr,perm_mean,perm_sd,perm_max,perm_k},
+    'short':{...صفر}} که compute_rqs2 برای H3/H4/H5 می‌خواهد.
+
+    uncond_wr = WRِ ورودِ بی‌قیدِ هم‌جهت (خریدِ هر بار، همان براکت) — قوی‌ترین
+    رقیبِ بی‌مهارت. perm_* از توزیعِ جای‌گشت."""
+    rng = np.random.default_rng(seed)
+    o = df["open"].values.astype(float)
+    h = df["high"].values.astype(float)
+    l = df["low"].values.astype(float)
+    c = df["close"].values.astype(float)
+    n = len(df)
+    pip = se.ASSETS[ASSET]["pip"]
+    cfg = se.ASSETS[ASSET]
+    cost = cfg["spread_pip"] + 2 * cfg.get("slip_pip", 0.0)
+    sl_d, tp_d = sl * pip, tp * pip
+    k = int(sig.sum())
+    valid = np.arange(260, n - mh - 2)
+
+    def _wr_long(entries):
+        wins = used = 0
+        last_exit = -1
+        for si in entries:
+            if si <= last_exit:
+                continue
+            eb = si + 1
+            if eb >= n:
+                continue
+            ent = o[eb]
+            hit = None
+            kend = min(eb + mh, n)
+            for kk in range(eb, kend):
+                if l[kk] <= ent - sl_d:
+                    hit = False; last_exit = kk; break
+                if h[kk] >= ent + tp_d:
+                    hit = True; last_exit = kk; break
+            if hit is None:
+                last = c[kend - 1]; last_exit = kend - 1
+                hit = ((last - ent) / pip - cost) > 0
+            used += 1
+            if hit:
+                wins += 1
+        return (100.0 * wins / used) if used else None
+
+    # WRِ بی‌قید: ورود در «همهٔ» بارهای مجاز (رقیبِ بی‌مهارتِ هم‌جهت)
+    uncond = _wr_long(valid)
+
+    perms = []
+    for _ in range(n_perm):
+        pick = np.sort(rng.choice(valid, size=k, replace=False))
+        w = _wr_long(pick)
+        if w is not None:
+            perms.append(w)
+    pa = np.array(perms)
+    long_null = dict(uncond_wr=uncond, perm_mean=float(pa.mean()),
+                     perm_sd=float(pa.std(ddof=1)), perm_max=float(pa.max()),
+                     perm_k=len(pa))
+    zero = dict(uncond_wr=None, perm_mean=None, perm_sd=None,
+                perm_max=None, perm_k=0)
+    return {"long": long_null, "short": zero}
+
+
 def main():
     df = se.load_data(os.path.join("data", f"{ASSET}_{TF}.csv"))
     atr_pip = base._atr_pip(df, ASSET, base.TF_ATR_P.get(TF, 34))
