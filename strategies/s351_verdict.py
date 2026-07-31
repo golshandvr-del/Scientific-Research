@@ -70,6 +70,12 @@ N_OFFICIAL = len(members()) * len(CARDS)     # = 9 × 15 = 135   ← حکم
 N_FAMILY = len(members())                    # = 9              ← حساسیت
 N_SINGLE = 1                                 #                  ← حساسیت
 
+# عضوِ مرکزیِ پیش‌ثبت‌شده: مرکزِ فراکتالیِ هر دو محورِ خانواده. این فرضیهٔ اصلی
+# است چون یک عضوِ تنها ذاتاً بی‌همپوشان است و z صادقانه می‌دهد. از پیش تعیین
+# شده — نه پس از دیدنِ نتایج. حکمِ رسمی روی این عضو با N=15 (فقط کارت‌ها) است.
+CENTRAL = dict(L=8, f=0.33)
+N_CENTRAL = len(CARDS)                        # = 15  ← حکمِ عضوِ مرکزی
+
 
 def _fifo_non_overlap(entry_bar, exit_bar):
     """
@@ -185,6 +191,20 @@ def run_card(card, n_perm=200, verbose=True):
         _save(card, out)
         return out
 
+    # ---- ۱ب) عضوِ مرکزیِ پیش‌ثبت‌شده (فرضیهٔ اصلیِ صادقانه) ----
+    # L=8, f=0.33 = مرکزِ فراکتالیِ هر دو محور. یک عضوِ تنها **ذاتاً بی‌همپوشان**
+    # است (queue_rr صفِ FIFO دارد) ⇒ concurrency و زنجیرهٔ باخت واقعی، و z
+    # بدونِ تورمِ ناشی از ادغام. این حکمِ رسمیِ لایه است؛ خانواده فقط شاهدِ ثبات.
+    st_c = member_trades(df, atr, asset, CENTRAL['L'], CENTRAL['f'], warmup)
+    central = None
+    if st_c is not None and st_c['n'] >= 3:
+        tr_c = trades_df(st_c)
+        nLc = int((tr_c['direction'] == 'long').sum())
+        nSc = int(len(tr_c) - nLc)
+        slc = float(np.median(st_c['sl_pip']))
+        tpc = float(np.median(st_c['tp_pip']))
+        central = dict(tr=tr_c, n_long=nLc, n_short=nSc, sl=slc, tp=tpc)
+
     # ادغامِ اعضا + **حذفِ همپوشانیِ زمانی بینِ اعضا** (صفِ FIFO بی‌همپوشان).
     # بدونِ این کار، ۹ عضو که هم‌زمان سیگنال می‌دهند concurrency و زنجیرهٔ
     # باختِ مصنوعی می‌سازند و H0/H8 را به‌دلایلِ روش‌شناختی (نه واقعی) رد می‌کنند.
@@ -222,7 +242,19 @@ def run_card(card, n_perm=200, verbose=True):
     null = build_null_side(df, asset, valid, GEO_SL_K * atr, n_long, n_short,
                            n_perm, rng, verbose)
 
-    # ---- ۳) RQS2 روی خانوادهٔ ادغام‌شده، سه شمارش ----
+    # ---- ۳الف) حکمِ رسمی = عضوِ مرکزیِ پیش‌ثبت‌شده (ذاتاً بی‌همپوشان) ----
+    res_central = None
+    if central is not None:
+        nullc = build_null_side(df, asset, valid, GEO_SL_K * atr,
+                                central['n_long'], central['n_short'],
+                                n_perm, np.random.default_rng(SEED), verbose=False)
+        commonc = dict(sl_pip=central['sl'], tp_pip=central['tp'],
+                       bar_time=bar_time, null=nullc, split_bar=split, close=close)
+        res_central = rqs2.compute_rqs2(central['tr'], asset,
+                                        n_trials=N_CENTRAL, **commonc)
+        print(rqs2.format_rqs2(f'{card} CENTRAL ', res_central), flush=True)
+
+    # ---- ۳ب) شاهدِ ثبات = خانوادهٔ بی‌همپوشانِ ادغام‌شده، سه شمارش ----
     common = dict(sl_pip=sl_med, tp_pip=tp_med, bar_time=bar_time,
                   null=null, split_bar=split, close=close)
     res = {}
@@ -230,22 +262,31 @@ def run_card(card, n_perm=200, verbose=True):
                     ('single', N_SINGLE)):
         r = rqs2.compute_rqs2(fam, asset, n_trials=nt, **common)
         res[tag] = r
-        print(rqs2.format_rqs2(f'{card} {tag:<8}', r), flush=True)
+        print(rqs2.format_rqs2(f'{card} fam-{tag:<5}', r), flush=True)
+
+    # حکمِ لایه: عضوِ مرکزی اگر موجود باشد، وگرنه خانواده
+    official_verdict = (res_central['verdict'] if res_central is not None
+                        else res['official']['verdict'])
 
     out = dict(card=card, asset=asset, bars=len(df), cost_pip=c,
                split_bar=split,
                frozen=dict(sl_k=GEO_SL_K, rr=GEO_RR, hold=GEO_HOLD, atr_p=ATR_P),
+               central_member=dict(CENTRAL), n_central=N_CENTRAL,
                n_official=N_OFFICIAL, n_family=N_FAMILY,
                family=dict(n=len(fam), wr=fam_wr, exp=fam_exp, pf=fam_pf,
                            sl_pip=sl_med, tp_pip=tp_med, rr_eff=tp_med/sl_med,
                            robust_be=float(rbe), n_long=n_long, n_short=n_short),
                members=member_res,
-               verdict=res['official']['verdict'])
+               verdict=official_verdict)
+    if res_central is not None:
+        out['rqs2_central'] = {k: res_central[k] for k in
+                               ('verdict', 'rqs2_score', 'gates', 'metrics',
+                                'notes') if k in res_central}
     for tag in ('official', 'family', 'single'):
         r = res[tag]
-        out[f'rqs2_{tag}'] = {k: r[k] for k in
-                              ('verdict', 'rqs2_score', 'gates', 'metrics',
-                               'notes') if k in r}
+        out[f'rqs2_fam_{tag}'] = {k: r[k] for k in
+                                  ('verdict', 'rqs2_score', 'gates', 'metrics',
+                                   'notes') if k in r}
     _save(card, out)
     return out
 
