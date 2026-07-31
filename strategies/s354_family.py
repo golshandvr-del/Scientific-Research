@@ -85,7 +85,11 @@ def _wr_of(df, ls, ss, sl, tp, asset, mh):
     return 100.0 * wins / n, n
 
 
-def run(asset='XAUUSD', tf='H1', n_perm=300, seed=11, save=True):
+def run(asset='XAUUSD', tf='H1', n_perm=300, seed=11, save=True,
+        extra_mask=None, label=None):
+    """اگر extra_mask داده شود (بولینِ هم‌طولِ df)، به گیتِ رژیمِ خانواده AND می‌شود.
+    کاربرد: تستِ «لبهٔ مستقل» فقط روی سیگنال‌های خارج از پنجره‌های زمان-محور
+    (قانونِ همپوشانیِ اجباری). label فقط برای چاپ/نام‌گذاریِ خروجی است."""
     path = f"data/{asset}_{tf}.csv"
     df = se.load_data(path)
     n = len(df)
@@ -95,6 +99,8 @@ def run(asset='XAUUSD', tf='H1', n_perm=300, seed=11, save=True):
     mh = base.TF_MAX_HOLD.get(tf, 40)
     sl = round(FAM_SL_K * atr_pip, 1)
     gate = base.regime_gate(df, FAM_R2)
+    if extra_mask is not None:
+        gate = gate & np.asarray(extra_mask, dtype=bool)
 
     mem = members()
     print(f"=== S354 FAMILY-LEVEL TEST :: {asset}-{tf} (bars={n}) ===", flush=True)
@@ -244,9 +250,13 @@ def run(asset='XAUUSD', tf='H1', n_perm=300, seed=11, save=True):
                members=per_member)
     if save:
         os.makedirs(OUT, exist_ok=True)
-        with open(f"{OUT}/{asset}_{tf}_family.json", 'w') as fh:
+        # اگر label داده شود، فایلِ خروجیِ مجزا (تا family اصلیِ کارت بازنوشته نشود).
+        suffix = "" if not label else "_" + "".join(
+            ch if ch.isalnum() else "_" for ch in label)[:40]
+        fn = f"{OUT}/{asset}_{tf}_family{suffix}.json"
+        with open(fn, 'w') as fh:
             json.dump(rec, fh, default=float)
-        print(f"  saved -> {OUT}/{asset}_{tf}_family.json", flush=True)
+        print(f"  saved -> {fn}", flush=True)
     return rec
 
 
