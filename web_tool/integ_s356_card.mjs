@@ -94,10 +94,16 @@ for (const bar of positives) {
   const { dec, src, others, has356 } = evalAt(bar)
   const state = dec?.state ?? 'null'
   const dir = dec?.direction ?? '—'
-  const sl = dec?.slDist, tp = dec?.tpDist
-  // براکتِ منجمد: SL=50.6pip ⇒ 5.06$ ، TP=101.2pip ⇒ 10.12$
-  const bOk = sl != null && tp != null &&
-              Math.abs(sl - 50.6 * PIP) < 1e-6 && Math.abs(tp - 101.2 * PIP) < 1e-6
+  // ⚠️ `RouterDecision` فاصله نمی‌دهد؛ `entry`/`sl`/`tp` را به‌صورتِ **قیمتِ
+  //    مطلق** می‌دهد (router.ts:198-201). پس براکت را از تفاضل می‌سنجیم.
+  //    براکتِ منجمدِ داوری‌شده: SL=50.6pip ⇒ 5.06$ ، TP=101.2pip ⇒ 10.12$
+  //    تلورانس 1e-6 برای خطای شناورِ ضربِ pip کافی است (اعداد تا ۲ رقمِ اعشارند).
+  const ent = dec?.entry, slP = dec?.sl, tpP = dec?.tp
+  const slDist = (ent != null && slP != null) ? ent - slP : null
+  const tpDist = (ent != null && tpP != null) ? tpP - ent : null
+  const sl = slDist, tp = tpDist
+  const bOk = slDist != null && tpDist != null &&
+              Math.abs(slDist - 50.6 * PIP) < 1e-6 && Math.abs(tpDist - 101.2 * PIP) < 1e-6
   const pass = has356 && state === 'ENTRY' && dir === 'LONG'
   if (pass) okPos++
   if (bOk) bracketOk++
