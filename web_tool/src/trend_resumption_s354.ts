@@ -213,8 +213,8 @@ export function computeS354(candles: Candle[], cfg: S354Config): RawSignal {
 // decideS354 — آداپترِ لایه برای رجیستری.
 // ---------------------------------------------------------------------------
 export function decideS354(
-  cfg: S354Config, a: AnalysisInput, candles: Candle[],
-  capital: number, riskPct: number,
+  cfg: S354Config, a: AnalysisResult, candles: Candle[],
+  capital = 10000, riskPct = 1.0,
 ): RouterDecision {
   const raw = computeS354(candles, cfg)
 
