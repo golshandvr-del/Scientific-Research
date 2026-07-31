@@ -1,0 +1,147 @@
+{
+ "card": "XAUUSD-H1",
+ "n_layers": 9,
+ "positives": [
+  {
+   "bar": 1761,
+   "state": "ENTRY",
+   "dir": "LONG",
+   "src": "S356",
+   "others": [
+    "S313"
+   ],
+   "sl": 5.059999999999945,
+   "tp": 10.11999999999989,
+   "pass": true,
+   "bracket_ok": true
+  },
+  {
+   "bar": 36116,
+   "state": "ENTRY",
+   "dir": "LONG",
+   "src": "S356",
+   "others": [
+    "S313"
+   ],
+   "sl": 5.059999999999945,
+   "tp": 10.11999999999989,
+   "pass": true,
+   "bracket_ok": true
+  },
+  {
+   "bar": 55472,
+   "state": "ENTRY",
+   "dir": "LONG",
+   "src": "S356",
+   "others": [],
+   "sl": 5.059999999999945,
+   "tp": 10.11999999999989,
+   "pass": true,
+   "bracket_ok": true
+  },
+  {
+   "bar": 81545,
+   "state": "ENTRY",
+   "dir": "LONG",
+   "src": "S356",
+   "others": [],
+   "sl": 5.059999999999945,
+   "tp": 10.11999999999989,
+   "pass": true,
+   "bracket_ok": true
+  },
+  {
+   "bar": 90434,
+   "state": "ENTRY",
+   "dir": "LONG",
+   "src": "S356",
+   "others": [
+    "S335"
+   ],
+   "sl": 5.0600000000004,
+   "tp": 10.11999999999989,
+   "pass": true,
+   "bracket_ok": true
+  }
+ ],
+ "negatives": [
+  {
+   "bar": 1758,
+   "state": "APPROACHING",
+   "src": "S313",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 1764,
+   "state": "NEUTRAL",
+   "src": "S356",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 36113,
+   "state": "APPROACHING",
+   "src": "S335",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 36119,
+   "state": "APPROACHING",
+   "src": "S313",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 55469,
+   "state": "NEUTRAL",
+   "src": "S356",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 55475,
+   "state": "NEUTRAL",
+   "src": "S356",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 81542,
+   "state": "NEUTRAL",
+   "src": "S356",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 81548,
+   "state": "NEUTRAL",
+   "src": "S356",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 90431,
+   "state": "APPROACHING",
+   "src": "S335",
+   "others": [],
+   "ok": true
+  },
+  {
+   "bar": 90437,
+   "state": "APPROACHING",
+   "src": "S335",
+   "others": [],
+   "ok": true
+  }
+ ],
+ "summary": {
+  "positives_pass": 5,
+  "positives_total": 5,
+  "bracket_pass": 5,
+  "negatives_pass": 10,
+  "negatives_total": 10,
+  "verdict": "INTEG_PASS"
+ }
+}
