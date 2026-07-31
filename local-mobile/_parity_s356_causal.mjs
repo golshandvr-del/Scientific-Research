@@ -16,11 +16,16 @@
 //   انحراف مستند شود) و هم پس از آن (تا انطباق تأیید شود) قابلِ اجرا باشد.
 // ============================================================================
 import { readFileSync, writeFileSync } from 'node:fs'
-import { build } from 'esbuild'
 import { pathToFileURL } from 'node:url'
 
 const ROOT = '/home/user/webapp'
 const TAG = process.argv.find(a => a.startsWith('--tag='))?.slice(6) ?? 'run'
+
+// esbuild فقط در `web_tool/node_modules` نصب است و این پوشه `package.json`
+// ندارد، پس `import { build } from 'esbuild'` قابلِ resolve نیست. همان الگویی را
+// به‌کار می‌بریم که `local-mobile/build.mjs` استفاده می‌کند: importِ مسیرِ مطلق.
+const { build } = await import(
+  pathToFileURL(`${ROOT}/web_tool/node_modules/esbuild/lib/main.js`).href)
 
 // ۱) کامپایلِ ماژولِ لایه به یک باندلِ موقتِ ESM
 const outfile = `/tmp/_s356_layer_${TAG}.mjs`
