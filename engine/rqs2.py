@@ -1185,6 +1185,10 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
         'null_ref_wr': (round(nb['ref_wr'], 2) if nb else None),
         'skill_lift_pp': (round(lift, 2) if lift is not None else None),
         'skill_z': (round(z_skill, 2) if z_skill is not None else None),
+        # v2.4 (F1): p-valueِ همگرای H3 — آماره‌ای که جایگزینِ perm_max شد.
+        #   این عدد برخلافِ perm_max با K پایدار است و باید در گزارشِ هر
+        #   لایه ثبت شود (قاعدهٔ اجباریِ راهنمای استراتژی‌ساز).
+        'skill_p_perm': (round(p_perm, 6) if p_perm is not None else None),
         'perm_max': (round(nb['perm_max'], 2) if nb else None),
         'perm_k': (nb['perm_k'] if nb else None),
         'side_n': n_by_side, 'side_wr': {k: round(v, 2) for k, v in wr_by_side.items()},
