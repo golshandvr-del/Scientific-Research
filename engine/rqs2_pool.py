@@ -75,6 +75,59 @@ def _fifo_calendar(pool):
     return pool.iloc[keep].reset_index(drop=True)
 
 
+def _weighted_lift(subset):
+    """lift وزنیِ یک زیرمجموعه با وزنِ تعدادِ معامله (شرطِ ۴)."""
+    num = sum(m['lift'] * m['n'] for m in subset)
+    den = sum(m['n'] for m in subset)
+    return (num / den) if den > 0 else 0.0
+
+
+def _z_proxy(subset):
+    """
+    نماینده (proxy) از z مهارتِ استخر: z ∝ lift·√n.
+    این **جای‌گزینِ** compute_rqs2 نیست — فقط برای *انتخابِ* زیرمجموعه است.
+    حکمِ نهایی همیشه با compute_rqs2 روی استخرِ واقعی داده می‌شود.
+    z حاصل‌ضربِ «کیفیتِ لبه» (lift) و «توانِ آماری» (√n) است؛ ادغام n را
+    بزرگ می‌کند ولی می‌تواند lift را کوچک کند، پس باید حاصل‌ضرب بیشینه شود.
+    """
+    n = sum(m['n'] for m in subset)
+    return _weighted_lift(subset) * (n ** 0.5)
+
+
+def choose_homogeneous_subset(candidates):
+    """
+    از میانِ کارت‌های هم‌جهتِ مثبت، بزرگ‌ترین زیرمجموعه‌ای را برمی‌گزیند که
+    نماینده z (lift·√n) را بیشینه کند — شرطِ ۴ (همگنیِ قدرتِ لبه).
+
+    راهبرد (حریصانه، از قوی‌ترین کارت): کارت‌ها را نزولی بر حسبِ lift مرتب
+    می‌کنیم و یکی‌یکی می‌افزاییم؛ در هر گام z_proxy را می‌سنجیم. زیرمجموعه‌ای
+    که بیشترین z_proxy را می‌دهد برنده است. این تضمین می‌کند یک کارتِ ضعیفِ
+    پرمعامله فقط وقتی وارد شود که واقعاً z را بالا ببرد، نه پایین.
+
+    ورودی: candidates = [dict(card, lift>0, n, ...), ...]
+    خروجی: dict(chosen=[...], rejected_for_dilution=[...], z_full, z_chosen,
+                trace=[...])  — همان اشیاءِ ورودی، بدونِ تغییر.
+    """
+    ordered = sorted(candidates, key=lambda m: m['lift'], reverse=True)
+    best_k, best_z, trace = 0, -1.0, []
+    for k in range(1, len(ordered) + 1):
+        sub = ordered[:k]
+        zk = _z_proxy(sub)
+        trace.append(dict(k=k, added=ordered[k - 1]['card'],
+                          wlift=round(_weighted_lift(sub), 3),
+                          n=sum(m['n'] for m in sub), z_proxy=round(zk, 3)))
+        if zk > best_z:
+            best_z, best_k = zk, k
+    chosen = ordered[:best_k]
+    rejected = ordered[best_k:]
+    z_full = _z_proxy(ordered) if ordered else 0.0
+    return dict(chosen=chosen,
+                rejected_for_dilution=rejected,
+                z_full=round(z_full, 3),
+                z_chosen=round(best_z, 3),
+                trace=trace)
+
+
 def pool_cards(members):
     """
     ادغامِ چند کارتِ هم‌جهت به یک استخرِ واحد.
