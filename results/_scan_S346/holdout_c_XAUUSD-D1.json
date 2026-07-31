@@ -1,0 +1,24 @@
+{
+  "card": "XAUUSD-D1",
+  "protocol": "C_holdout_v2.4",
+  "base": {
+    "mode": "breakout",
+    "p": 13,
+    "mult": 2.058,
+    "sl_k": 1.0,
+    "rr": 1.0,
+    "hold": 5
+  },
+  "discovery_grid_N": 36,
+  "locked": {
+    "score": 66.15285998919556,
+    "er": 0.2,
+    "cq": 0.3,
+    "sq": 0.6,
+    "cg_thr": -0.016933289999518486,
+    "std_thr": 36.55013870195499,
+    "is_wr": 63.0,
+    "is_n": 100,
+    "is_net": 3152.9
+  }
+}
