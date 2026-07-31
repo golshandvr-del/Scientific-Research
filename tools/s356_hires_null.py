@@ -178,8 +178,12 @@ def rebuild_card(card):
 
     cands = [x for x in (wr_table, wr_engine) if x is not None]
     wr_obs = min(cands)                      # ← آستانهٔ محافظه‌کارانه
+    # `sig`/`picks` هم برگردانده می‌شوند تا مصرف‌کنندگانِ دیگر (مثلِ ممیزیِ
+    # اجباریِ همپوشانی) مجبور نشوند منطقِ ساختِ سیگنال را دوباره بنویسند. یک
+    # نسخهٔ دوم از آن منطق می‌توانست بی‌صدا از این نسخه دور شود و ممیزی را روی
+    # مجموعه‌ای غیر از مجموعهٔ داوری‌شده انجام دهد.
     return dict(df=df, asset=asset, tf=tf, sl=sl, tp=tp, mh=mh,
-                res=res, xbar=xbar, valid=valid, k=k,
+                res=res, xbar=xbar, valid=valid, k=k, sig=sig, picks=picks,
                 wr_obs=wr_obs, wr_table=wr_table, wr_engine=wr_engine,
                 n_engine=n_engine, uncond=uncond)
 
