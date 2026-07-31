@@ -1,0 +1,661 @@
+{
+  "asset": "XAUUSD",
+  "tf": "H1",
+  "atr_pip": 39.35,
+  "n_variants": 1152,
+  "topk": 5,
+  "best": {
+    "ampl": 2,
+    "r2_p": 43,
+    "hurst_p": 89,
+    "r2_q": 0.65,
+    "hurst_min": 0.5,
+    "ent_q": 1.0,
+    "side": "long",
+    "sl_k": 2.0,
+    "rr": 1.5,
+    "sl": 78.7,
+    "tp": 118.1,
+    "n": 1909,
+    "wr": 44.16,
+    "pf": 0.995,
+    "net": -481.2,
+    "stage": 2,
+    "verdict": "REJECT",
+    "gates": {
+      "H0": true,
+      "H1": false,
+      "H2": false,
+      "H3": false,
+      "H4": false,
+      "H5": null,
+      "H6": false,
+      "H7": null,
+      "H8": false,
+      "H9": false,
+      "H10": null
+    },
+    "gate_families": {
+      "economic": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H8": false,
+        "H9": false
+      },
+      "power": {
+        "H3": false,
+        "H7": null,
+        "H10": null
+      },
+      "economic_all_pass": false,
+      "power_defects": [
+        "H3",
+        "H7",
+        "H10"
+      ]
+    },
+    "lift": 1.16,
+    "z": 1.02,
+    "rqs2": null,
+    "power_limited": false,
+    "null_diag": {
+      "long": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 42.99,
+          "gated": 43.0
+        }
+      }
+    }
+  },
+  "judged": [
+    {
+      "ampl": 2,
+      "r2_p": 61,
+      "hurst_p": 55,
+      "r2_q": 0.65,
+      "hurst_min": 0.5,
+      "ent_q": 0.65,
+      "side": "long",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 1025,
+      "wr": 44.39,
+      "pf": 0.995,
+      "net": -254.5,
+      "stage": 2,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": false,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      },
+      "lift": 0.47,
+      "z": 0.3,
+      "rqs2": null,
+      "power_limited": false,
+      "null_diag": {
+        "long": {
+          "chosen": "gated",
+          "wrs": {
+            "uncond": 43.01,
+            "gated": 43.92
+          }
+        }
+      }
+    },
+    {
+      "ampl": 2,
+      "r2_p": 43,
+      "hurst_p": 89,
+      "r2_q": 0.65,
+      "hurst_min": 0.5,
+      "ent_q": 1.0,
+      "side": "long",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 1909,
+      "wr": 44.16,
+      "pf": 0.995,
+      "net": -481.2,
+      "stage": 2,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": false,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      },
+      "lift": 1.16,
+      "z": 1.02,
+      "rqs2": null,
+      "power_limited": false,
+      "null_diag": {
+        "long": {
+          "chosen": "gated",
+          "wrs": {
+            "uncond": 42.99,
+            "gated": 43.0
+          }
+        }
+      }
+    },
+    {
+      "ampl": 2,
+      "r2_p": 43,
+      "hurst_p": 55,
+      "r2_q": 0.35,
+      "hurst_min": 0.5,
+      "ent_q": 1.0,
+      "side": "long",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 2881,
+      "wr": 43.91,
+      "pf": 0.992,
+      "net": -1184.5,
+      "stage": 2,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": false,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      },
+      "lift": 0.69,
+      "z": 0.74,
+      "rqs2": null,
+      "power_limited": false,
+      "null_diag": {
+        "long": {
+          "chosen": "gated",
+          "wrs": {
+            "uncond": 42.76,
+            "gated": 43.22
+          }
+        }
+      }
+    },
+    {
+      "ampl": 2,
+      "r2_p": 61,
+      "hurst_p": 55,
+      "r2_q": 0.65,
+      "hurst_min": 0.5,
+      "ent_q": 1.0,
+      "side": "long",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 1536,
+      "wr": 43.88,
+      "pf": 0.989,
+      "net": -820.6,
+      "stage": 2,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": false,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      },
+      "lift": 0.11,
+      "z": 0.09,
+      "rqs2": null,
+      "power_limited": false,
+      "null_diag": {
+        "long": {
+          "chosen": "gated",
+          "wrs": {
+            "uncond": 42.84,
+            "gated": 43.77
+          }
+        }
+      }
+    },
+    {
+      "ampl": 2,
+      "r2_p": 61,
+      "hurst_p": 55,
+      "r2_q": 0.65,
+      "hurst_min": 0.55,
+      "ent_q": 0.65,
+      "side": "short",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 416,
+      "wr": 43.51,
+      "pf": 0.978,
+      "net": -507.7,
+      "stage": 2,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": false,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      },
+      "lift": 0.27,
+      "z": 0.11,
+      "rqs2": null,
+      "power_limited": false,
+      "null_diag": {
+        "short": {
+          "chosen": "gated",
+          "wrs": {
+            "uncond": 41.55,
+            "gated": 43.24
+          }
+        }
+      }
+    }
+  ],
+  "stage1_top": [
+    {
+      "ampl": 2,
+      "r2_p": 61,
+      "hurst_p": 55,
+      "r2_q": 0.65,
+      "hurst_min": 0.5,
+      "ent_q": 0.65,
+      "side": "long",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 1025,
+      "wr": 44.39,
+      "pf": 0.995,
+      "net": -254.5,
+      "stage": 1,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": null,
+        "H4": null,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": null,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      }
+    },
+    {
+      "ampl": 2,
+      "r2_p": 43,
+      "hurst_p": 89,
+      "r2_q": 0.65,
+      "hurst_min": 0.5,
+      "ent_q": 1.0,
+      "side": "long",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 1909,
+      "wr": 44.16,
+      "pf": 0.995,
+      "net": -481.2,
+      "stage": 1,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": null,
+        "H4": null,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": null,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      }
+    },
+    {
+      "ampl": 2,
+      "r2_p": 43,
+      "hurst_p": 55,
+      "r2_q": 0.35,
+      "hurst_min": 0.5,
+      "ent_q": 1.0,
+      "side": "long",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 2881,
+      "wr": 43.91,
+      "pf": 0.992,
+      "net": -1184.5,
+      "stage": 1,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": null,
+        "H4": null,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": null,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      }
+    },
+    {
+      "ampl": 2,
+      "r2_p": 61,
+      "hurst_p": 55,
+      "r2_q": 0.65,
+      "hurst_min": 0.5,
+      "ent_q": 1.0,
+      "side": "long",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 1536,
+      "wr": 43.88,
+      "pf": 0.989,
+      "net": -820.6,
+      "stage": 1,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": null,
+        "H4": null,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": null,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      }
+    },
+    {
+      "ampl": 2,
+      "r2_p": 61,
+      "hurst_p": 55,
+      "r2_q": 0.65,
+      "hurst_min": 0.55,
+      "ent_q": 0.65,
+      "side": "short",
+      "sl_k": 2.0,
+      "rr": 1.5,
+      "sl": 78.7,
+      "tp": 118.1,
+      "n": 416,
+      "wr": 43.51,
+      "pf": 0.978,
+      "net": -507.7,
+      "stage": 1,
+      "verdict": "REJECT",
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": null,
+        "H4": null,
+        "H5": null,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      },
+      "gate_families": {
+        "economic": {
+          "H0": true,
+          "H1": false,
+          "H2": false,
+          "H8": false,
+          "H9": false
+        },
+        "power": {
+          "H3": null,
+          "H7": null,
+          "H10": null
+        },
+        "economic_all_pass": false,
+        "power_defects": [
+          "H3",
+          "H7",
+          "H10"
+        ]
+      }
+    }
+  ]
+}
