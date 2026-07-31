@@ -1,0 +1,131 @@
+{
+  "XAUUSD_D1_slk2.0": {
+    "n": 351,
+    "wr": 55.56,
+    "pf": 1.323,
+    "net": 4583.9,
+    "lift": 2.43,
+    "z": 0.91,
+    "verdict": "POWER-LIMITED",
+    "power_limited": true,
+    "gates": {
+      "H0": true,
+      "H1": true,
+      "H2": true,
+      "H3": false,
+      "H4": true,
+      "H5": null,
+      "H6": true,
+      "H7": null,
+      "H8": true,
+      "H9": true,
+      "H10": null
+    },
+    "gate_families": {
+      "economic": {
+        "H0": true,
+        "H1": true,
+        "H2": true,
+        "H8": true,
+        "H9": true
+      },
+      "power": {
+        "H3": false,
+        "H7": null,
+        "H10": null
+      },
+      "economic_all_pass": true,
+      "power_defects": [
+        "H3",
+        "H7",
+        "H10"
+      ]
+    }
+  },
+  "XAUUSD_W1_slk1.5": {
+    "n": 104,
+    "wr": 60.58,
+    "pf": 1.63,
+    "net": 2127.5,
+    "lift": -2.07,
+    "z": -0.44,
+    "verdict": "REJECT",
+    "power_limited": false,
+    "gates": {
+      "H0": true,
+      "H1": true,
+      "H2": true,
+      "H3": false,
+      "H4": false,
+      "H5": null,
+      "H6": false,
+      "H7": null,
+      "H8": true,
+      "H9": true,
+      "H10": null
+    },
+    "gate_families": {
+      "economic": {
+        "H0": true,
+        "H1": true,
+        "H2": true,
+        "H8": true,
+        "H9": true
+      },
+      "power": {
+        "H3": false,
+        "H7": null,
+        "H10": null
+      },
+      "economic_all_pass": true,
+      "power_defects": [
+        "H3",
+        "H7",
+        "H10"
+      ]
+    }
+  },
+  "XAUUSD_W1_slk1.0": {
+    "n": 131,
+    "wr": 56.49,
+    "pf": 1.281,
+    "net": 1569.7,
+    "lift": -0.87,
+    "z": -0.2,
+    "verdict": "REJECT",
+    "power_limited": false,
+    "gates": {
+      "H0": true,
+      "H1": false,
+      "H2": true,
+      "H3": false,
+      "H4": false,
+      "H5": null,
+      "H6": false,
+      "H7": null,
+      "H8": false,
+      "H9": true,
+      "H10": null
+    },
+    "gate_families": {
+      "economic": {
+        "H0": true,
+        "H1": false,
+        "H2": true,
+        "H8": false,
+        "H9": true
+      },
+      "power": {
+        "H3": false,
+        "H7": null,
+        "H10": null
+      },
+      "economic_all_pass": false,
+      "power_defects": [
+        "H3",
+        "H7",
+        "H10"
+      ]
+    }
+  }
+}
