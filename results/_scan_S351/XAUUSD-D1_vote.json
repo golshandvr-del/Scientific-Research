@@ -1,0 +1,294 @@
+{
+ "card": "XAUUSD-D1",
+ "asset": "XAUUSD",
+ "bars": 3989,
+ "cost_pip": 3.3,
+ "split_bar": 2393,
+ "rule": "multi-scale vote confirmation on LPSB family",
+ "vote_k": 5,
+ "vote_space": [
+  2,
+  3,
+  4,
+  5,
+  6
+ ],
+ "n_official": 75,
+ "frozen": {
+  "sl_k": 1.618,
+  "rr": 1.618,
+  "hold": 12,
+  "atr_p": 21
+ },
+ "discovery": {
+  "k": 5,
+  "t": 1.7527148557402346,
+  "n_disc": 18,
+  "wr_disc": 72.22222222222221,
+  "exp_disc": 108.6972089411461
+ },
+ "grid": [
+  {
+   "k": 2,
+   "n_sig": 133,
+   "n": 71,
+   "wr": 53.52112676056338,
+   "exp": 34.2744602983455,
+   "pf": 1.3065844083314555,
+   "t": 0.9409915928469855
+  },
+  {
+   "k": 3,
+   "n_sig": 69,
+   "n": 45,
+   "wr": 51.11111111111111,
+   "exp": 21.956440147564617,
+   "pf": 1.1753658255936428,
+   "t": 0.46552567052138705
+  },
+  {
+   "k": 4,
+   "n_sig": 41,
+   "n": 33,
+   "wr": 51.515151515151516,
+   "exp": 8.000238385286417,
+   "pf": 1.0592907033691705,
+   "t": 0.14349076100500502
+  },
+  {
+   "k": 5,
+   "n_sig": 19,
+   "n": 18,
+   "wr": 72.22222222222221,
+   "exp": 108.6972089411461,
+   "pf": 2.548614028530448,
+   "t": 1.7527148557402346
+  },
+  {
+   "k": 6,
+   "n_sig": 12,
+   "n": 12,
+   "wr": 75.0,
+   "exp": 134.69007215848256,
+   "pf": 2.9723746517241305,
+   "t": 1.6684289332119138
+  }
+ ],
+ "realised": {
+  "n": 32,
+  "wr": 71.875,
+  "exp": 227.96893769480923,
+  "pf": 3.2487090836685937,
+  "sl_pip": 346.46861076920084,
+  "tp_pip": 560.5862122245669,
+  "rr_eff": 1.6179999999999999,
+  "robust_be": 38.92472668894312,
+  "n_long": 17,
+  "n_short": 15
+ },
+ "verdict": "REJECT",
+ "rqs2_official": {
+  "verdict": "REJECT",
+  "rqs2_score": 29.1,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": false,
+   "H8": true,
+   "H9": true,
+   "H10": null
+  },
+  "metrics": {
+   "n_trades": 32,
+   "win_rate": 71.88,
+   "net_profit": 1719.5,
+   "profit_factor": 2.794,
+   "max_dd_pct": 3.34,
+   "max_consec_losses": 2,
+   "mcl_allowed": 8,
+   "n_wins": 23,
+   "top_win_share": 0.2022,
+   "recovery_factor": 4.39,
+   "expectancy_pip": 227.9689,
+   "expectancy_at_2x_cost": 224.6689,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 346.469,
+   "tp_pip": 560.586,
+   "rr": 1.618,
+   "breakeven_wr_cost": 38.56,
+   "wr_excess_cost": 33.31,
+   "null_ref_wr": 47.95,
+   "skill_lift_pp": 23.92,
+   "skill_z": 2.63,
+   "perm_max": 74.41,
+   "perm_k": 300,
+   "side_n": {
+    "long": 17,
+    "short": 15
+   },
+   "side_wr": {
+    "long": 76.47,
+    "short": 66.67
+   },
+   "side_lift_pp": {
+    "long": 19.3,
+    "short": 29.17
+   },
+   "prune_sides": [],
+   "p_emp": 0.005295,
+   "p_adj_bonferroni": 0.397158,
+   "z_obs": 2.709,
+   "z_luck_bound": 2.428,
+   "z_margin": 0.281,
+   "n_trials": 75,
+   "cal_nets": [
+    228.2,
+    -115.6,
+    943.3,
+    663.6
+   ],
+   "cal_counts": [
+    6,
+    7,
+    12,
+    7
+   ],
+   "cal_positive": 3,
+   "cal_occupied": 4,
+   "half_nets": [
+    112.7,
+    1606.9
+   ],
+   "oos": {
+    "n": 14,
+    "wr": 71.43,
+    "pf": 3.116,
+    "net": 915.9,
+    "wr_req": 38.56
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 31,
+    "n_unjudgeable": 1,
+    "n_counter": 13,
+    "n_aligned": 18,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 69.23,
+    "exp_counter": 66.288,
+    "wr_aligned": 77.78,
+    "exp_aligned": 370.766
+   }
+  },
+  "notes": [
+   "H10 UNKNOWN: only 13 counter-drift trades (<20) \u2014 the layer has never actually been tested against an adverse drift regime"
+  ]
+ },
+ "rqs2_single": {
+  "verdict": "REJECT",
+  "rqs2_score": 30.8,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": false,
+   "H8": true,
+   "H9": true,
+   "H10": null
+  },
+  "metrics": {
+   "n_trades": 32,
+   "win_rate": 71.88,
+   "net_profit": 1719.5,
+   "profit_factor": 2.794,
+   "max_dd_pct": 3.34,
+   "max_consec_losses": 2,
+   "mcl_allowed": 8,
+   "n_wins": 23,
+   "top_win_share": 0.2022,
+   "recovery_factor": 4.39,
+   "expectancy_pip": 227.9689,
+   "expectancy_at_2x_cost": 224.6689,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 346.469,
+   "tp_pip": 560.586,
+   "rr": 1.618,
+   "breakeven_wr_cost": 38.56,
+   "wr_excess_cost": 33.31,
+   "null_ref_wr": 47.95,
+   "skill_lift_pp": 23.92,
+   "skill_z": 2.63,
+   "perm_max": 74.41,
+   "perm_k": 300,
+   "side_n": {
+    "long": 17,
+    "short": 15
+   },
+   "side_wr": {
+    "long": 76.47,
+    "short": 66.67
+   },
+   "side_lift_pp": {
+    "long": 19.3,
+    "short": 29.17
+   },
+   "prune_sides": [],
+   "p_emp": 0.005295,
+   "p_adj_bonferroni": 0.005295,
+   "z_obs": 2.709,
+   "z_luck_bound": 0.52,
+   "z_margin": 2.189,
+   "n_trials": 1,
+   "cal_nets": [
+    228.2,
+    -115.6,
+    943.3,
+    663.6
+   ],
+   "cal_counts": [
+    6,
+    7,
+    12,
+    7
+   ],
+   "cal_positive": 3,
+   "cal_occupied": 4,
+   "half_nets": [
+    112.7,
+    1606.9
+   ],
+   "oos": {
+    "n": 14,
+    "wr": 71.43,
+    "pf": 3.116,
+    "net": 915.9,
+    "wr_req": 38.56
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 31,
+    "n_unjudgeable": 1,
+    "n_counter": 13,
+    "n_aligned": 18,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 69.23,
+    "exp_counter": 66.288,
+    "wr_aligned": 77.78,
+    "exp_aligned": 370.766
+   }
+  },
+  "notes": [
+   "H10 UNKNOWN: only 13 counter-drift trades (<20) \u2014 the layer has never actually been tested against an adverse drift regime"
+  ]
+ }
+}
