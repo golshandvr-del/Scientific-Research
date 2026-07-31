@@ -1,0 +1,188 @@
+[
+ {
+  "card": "XAUUSD_M5",
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 35,
+   "confirm": "rsi_turn",
+   "hurst": 0.57,
+   "er": 0.25,
+   "sl": 120,
+   "tp": 120,
+   "mh": 96
+  },
+  "bars": 200000,
+  "n_s333_signals": 81,
+  "n_lpsb_events": 5707,
+  "overlap_bars": 0,
+  "overlap_pct": 0.0,
+  "baseline": {
+   "n": 64,
+   "wr": 65.62,
+   "pf": 2.85,
+   "net": 2667.7,
+   "exp": NaN,
+   "rqs": 91.3,
+   "verdict": "PASS"
+  },
+  "structure_up": {
+   "n": 18,
+   "wr": 50.0,
+   "pf": 1.515,
+   "net": 267.6,
+   "exp": NaN,
+   "rqs": 19.4,
+   "verdict": "REJECT"
+  },
+  "structure_down": {
+   "n": 47,
+   "wr": 72.34,
+   "pf": 3.951,
+   "net": 2469.0,
+   "exp": NaN,
+   "rqs": 94.7,
+   "verdict": "PASS"
+  }
+ },
+ {
+  "card": "XAUUSD_M15",
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 32,
+   "confirm": "none",
+   "hurst": 0.57,
+   "sl": 200,
+   "tp": 240,
+   "mh": 96
+  },
+  "bars": 150000,
+  "n_s333_signals": 87,
+  "n_lpsb_events": 4427,
+  "overlap_bars": 15,
+  "overlap_pct": 17.24137931034483,
+  "baseline": {
+   "n": 51,
+   "wr": 62.75,
+   "pf": 2.298,
+   "net": 1767.6,
+   "exp": NaN,
+   "rqs": 91.7,
+   "verdict": "PASS"
+  },
+  "structure_up": {
+   "n": 14,
+   "wr": 57.14,
+   "pf": 2.317,
+   "net": 538.2,
+   "exp": NaN,
+   "rqs": 24.4,
+   "verdict": "REJECT"
+  },
+  "structure_down": {
+   "n": 38,
+   "wr": 65.79,
+   "pf": 2.437,
+   "net": 1245.2,
+   "exp": NaN,
+   "rqs": 92.4,
+   "verdict": "PASS"
+  }
+ },
+ {
+  "card": "XAUUSD_M30",
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 35,
+   "confirm": "price_turn",
+   "hurst": 0.53,
+   "sl": 380,
+   "tp": 420,
+   "mh": 80
+  },
+  "bars": 181383,
+  "n_s333_signals": 46,
+  "n_lpsb_events": 5134,
+  "overlap_bars": 0,
+  "overlap_pct": 0.0,
+  "baseline": {
+   "n": 42,
+   "wr": 66.67,
+   "pf": 2.484,
+   "net": 897.5,
+   "exp": NaN,
+   "rqs": 91.1,
+   "verdict": "PASS"
+  },
+  "structure_up": {
+   "n": 14,
+   "wr": 64.29,
+   "pf": 2.306,
+   "net": 224.0,
+   "exp": NaN,
+   "rqs": 27.6,
+   "verdict": "REJECT"
+  },
+  "structure_down": {
+   "n": 28,
+   "wr": 67.86,
+   "pf": 2.555,
+   "net": 673.5,
+   "exp": NaN,
+   "rqs": 33.8,
+   "verdict": "REJECT"
+  }
+ },
+ {
+  "card": "XAUUSD_H1",
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 32,
+   "confirm": "none",
+   "hurst": 0.5,
+   "er": 0.25,
+   "sl": 450,
+   "tp": 520,
+   "mh": 64
+  },
+  "bars": 90950,
+  "n_s333_signals": 126,
+  "n_lpsb_events": 2394,
+  "overlap_bars": 21,
+  "overlap_pct": 16.666666666666668,
+  "baseline": {
+   "n": 74,
+   "wr": 62.16,
+   "pf": 1.851,
+   "net": 850.3,
+   "exp": NaN,
+   "rqs": 89.8,
+   "verdict": "PASS"
+  },
+  "structure_up": {
+   "n": 8,
+   "wr": 37.5,
+   "pf": 0.772,
+   "net": -38.1,
+   "exp": NaN,
+   "rqs": 5.7,
+   "verdict": "REJECT"
+  },
+  "structure_down": {
+   "n": 66,
+   "wr": 65.15,
+   "pf": 2.068,
+   "net": 888.3,
+   "exp": NaN,
+   "rqs": 93.9,
+   "verdict": "PASS"
+  }
+ }
+]
