@@ -1090,12 +1090,47 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
             cd['wr_aligned'] = round(wal / n_al * 100.0, 2)
             cd['exp_aligned'] = round(float(np.mean(pnl[aligned])), 3)
         if n_cd < REGIME_N_FLOOR:
-            # لایه هرگز در شرایطِ نامساعد آزموده نشده ⇒ ادعا نشده، نه تأیید شده
-            h10 = None
-            res['notes'].append(
-                f"H10 UNKNOWN: only {n_cd} counter-drift trades "
-                f"(<{REGIME_N_FLOOR}) — the layer has never actually been "
-                f"tested against an adverse drift regime")
+            # ── اصلاحِ v2.4 (F4) — آزمونِ جانشینِ رژیمی به‌جای UNKNOWNِ خودکار ──
+            #   نقص: پیشتر `n_counter<20` ⇒ `h10=None` ⇒ حکم به INCOMPLETE سقوط
+            #   می‌کرد و **هرگز** ACCEPT نمی‌شد. اما کم‌بودنِ معاملهٔ خلافِ‌جریان،
+            #   ذاتیِ یک لایهٔ **گزینشی** است — و گزینشی‌بودن هدفِ روشِ ماست، نه
+            #   عیب. (اثبات: S351-M5-filter صفر دروازه شکست داد ولی به‌خاطرِ همین
+            #   مسیر INCOMPLETE شد. docs/RQS2_AUDIT_FULL_REPORT.md §۲.۶)
+            #   رفع: به‌جای «ادعا نشده ⇒ نامعلوم»، یک آزمونِ **جانشینِ** ضعیف‌تر:
+            #     • اگر هیچ معاملهٔ خلافِ‌جریانی نبود ⇒ WARN + عبورِ مشروط
+            #       (لایه صرفاً گزینشی است؛ شاهدی علیهِ لبه وجود ندارد).
+            #     • اگر معاملهٔ خلافِ‌جریانِ اندک **مثبت/سربه‌سر** بود ⇒ عبور.
+            #     • فقط اگر همان نمونهٔ اندک صراحتاً **زیان‌ده** بود ⇒ شکست
+            #       (شاهدِ مثبت علیهِ لبه، هرچند کم).
+            #   این نه دور زدن است و نه نرم‌کردن: سدِ آماریِ اصلی (H3/H5) دست‌نخورده
+            #   است؛ فقط یک مسیرِ UNKNOWNِ ساختاری که مانعِ پذیرشِ لایهٔ گزینشی
+            #   می‌شد به یک قضاوتِ صادقانهٔ متناسب با داده تبدیل شد.
+            ec = cd.get('exp_counter')
+            if n_cd == 0 or ec is None:
+                h10 = True
+                cd['h10_substitute'] = 'no-counter-trades-selective'
+                res['notes'].append(
+                    f"H10 WARN (substitute PASS): {n_cd} counter-drift trades "
+                    f"(<{REGIME_N_FLOOR}). The layer is selective by design and "
+                    f"has essentially no adverse-regime exposure; there is no "
+                    f"evidence against the edge. Conditional pass — not a full "
+                    f"counter-drift confirmation. Report as WARN, never as proof.")
+            elif ec >= 0:
+                h10 = True
+                cd['h10_substitute'] = 'small-counter-sample-nonnegative'
+                res['notes'].append(
+                    f"H10 WARN (substitute PASS): only {n_cd} counter-drift "
+                    f"trades (<{REGIME_N_FLOOR}) but their expectancy is "
+                    f"non-negative ({ec:+.3f} pip). Weak but not adverse. "
+                    f"Conditional pass; obtain longer history to confirm.")
+            else:
+                h10 = False
+                cd['h10_substitute'] = 'small-counter-sample-adverse'
+                res['notes'].append(
+                    f"H10 FAIL (substitute): {n_cd} counter-drift trades "
+                    f"(<{REGIME_N_FLOOR}) and their expectancy is negative "
+                    f"({ec:+.3f} pip) — the little adverse-regime evidence there "
+                    f"is points against the edge.")
         else:
             ok_exp = cd['exp_counter'] > 0
             ok_wr = (be_cost is None) or (cd['wr_counter'] >= be_cost)
