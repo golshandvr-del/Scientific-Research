@@ -210,14 +210,36 @@ def build_null_strict(df, asset, sl, tp, n_long, n_short, gate, rng):
     return null, diag
 
 
+TOPK_NULL = 5      # چند واریانتِ برترِ مرحلهٔ ۱ با مدلِ صفر داوری شوند
+
+
+def _edge_proxy(rec):
+    """نمایندهٔ «کیفیت×توان» بدونِ مدلِ صفر: (PF−1)·√n."""
+    pf, nn = rec.get("pf"), rec.get("n")
+    if pf is None or nn is None or not np.isfinite(pf):
+        return -99.0
+    return (pf - 1.0) * (nn ** 0.5)
+
+
 def run_card(asset, tf, with_null=True, verbose=True):
+    """
+    دومرحله‌ای (اجباری از نظرِ محاسباتی):
+      مرحلهٔ ۱ — اسکنِ کاملِ شبکه **بدونِ** مدلِ صفر (سریع). رتبه‌بندی با
+                 نمایندهٔ (PF−1)·√n که همان منطقِ «کیفیت×توان» است.
+      مرحلهٔ ۲ — فقط TOPK_NULL واریانتِ برتر با **مدلِ صفرِ دوگانه** بازداوری
+                 می‌شوند تا lift/z/H3 واقعی و حکمِ نهایی به‌دست آید.
+    این هیچ آستانه‌ای را شل نمی‌کند؛ فقط ترتیبِ محاسبه است (۴۰۰ شبیه‌سازیِ
+    جای‌گشتی برای هر یک از ۱۱۵۲ واریانت عملاً ناممکن است).
+    """
     df = _load(asset, tf)
     _register(asset, tf)
     atr_pip = _atr_pip(df, asset)
     n = len(df)
     rng = np.random.default_rng(SEED)
+    bar_time = df["dt"].values
 
-    rows, best = [], None
+    # ---------------------------- مرحلهٔ ۱: اسکنِ خام ----------------------------
+    rows = []
     for ampl, r2_p, hurst_p in itertools.product(AMPL, R2_P, HURST_P):
         long_raw, short_raw = signals(df, ampl, ATR_P, True)
         reg = build_regime(df, r2_p, hurst_p)
@@ -228,8 +250,7 @@ def run_card(asset, tf, with_null=True, verbose=True):
                     if side == "long" else np.zeros(n, dtype=bool)
                 ss = (np.asarray(short_raw, dtype=bool) & gate) \
                     if side == "short" else np.zeros(n, dtype=bool)
-                n_sig = int(ls.sum() + ss.sum())
-                if n_sig < 30:
+                if int(ls.sum() + ss.sum()) < 30:
                     continue
                 for sl_k, rr in itertools.product(SL_K, RR):
                     sl = round(sl_k * atr_pip, 1)
@@ -241,40 +262,68 @@ def run_card(asset, tf, with_null=True, verbose=True):
                         continue
                     tr = tr.copy()
                     tr["sl_pip"] = float(sl)
-                    nl = int((tr["direction"] == "long").sum())
-                    ns = int((tr["direction"] == "short").sum())
-                    null, ndiag = (build_null_strict(df, asset, sl, tp, nl, ns,
-                                                     gate, rng)
-                                   if with_null else (None, {}))
                     res = rqs2.compute_rqs2(tr, asset, sl_pip=sl, tp_pip=tp,
-                                            bar_time=df["dt"].values,
-                                            null=null)
+                                            bar_time=bar_time, null=None)
                     m = res.get("metrics", {})
-                    lift = m.get("skill_lift_pp")
-                    z = m.get("skill_z")
-                    rec = dict(ampl=ampl, r2_p=r2_p, hurst_p=hurst_p,
-                               r2_q=r2_q, hurst_min=h_min, ent_q=e_q,
-                               side=side, sl_k=sl_k, rr=rr, sl=sl, tp=tp,
-                               n=m.get("n_trades"), wr=m.get("win_rate"),
-                               pf=m.get("profit_factor"),
-                               net=m.get("net_profit"),
-                               lift=lift, z=z, rqs2=res.get("score"),
-                               verdict=res.get("verdict"),
-                               power_limited=res.get("power_limited"),
-                               gates=res.get("gates"),
-                               gate_families=res.get("gate_families"),
-                               null_diag=ndiag)
-                    rows.append(rec)
-                    # اولویت: ACCEPT > POWER-LIMITED > lift·√n بزرگ‌تر
-                    key = (res.get("verdict") == "ACCEPT",
-                           bool(res.get("power_limited")),
-                           (lift or -99) * ((m.get("n_trades") or 0) ** 0.5))
-                    if best is None or key > best[0]:
-                        best = (key, rec)
+                    rows.append(dict(
+                        ampl=ampl, r2_p=r2_p, hurst_p=hurst_p, r2_q=r2_q,
+                        hurst_min=h_min, ent_q=e_q, side=side, sl_k=sl_k,
+                        rr=rr, sl=sl, tp=tp, n=m.get("n_trades"),
+                        wr=m.get("win_rate"), pf=m.get("profit_factor"),
+                        net=m.get("net_profit"), stage=1,
+                        verdict=res.get("verdict"),
+                        gates=res.get("gates"),
+                        gate_families=res.get("gate_families")))
+
+    # ------------------- مرحلهٔ ۲: بازداوریِ برترها با مدلِ صفر -------------------
+    ranked = sorted(rows, key=_edge_proxy, reverse=True)[:TOPK_NULL]
+    judged, best = [], None
+    if with_null:
+        for rec in ranked:
+            long_raw, short_raw = signals(df, rec["ampl"], ATR_P, True)
+            reg = build_regime(df, rec["r2_p"], rec["hurst_p"])
+            gate = gate_mask(reg, rec["r2_q"], rec["hurst_min"], rec["ent_q"])
+            ls = (np.asarray(long_raw, dtype=bool) & gate) \
+                if rec["side"] == "long" else np.zeros(n, dtype=bool)
+            ss = (np.asarray(short_raw, dtype=bool) & gate) \
+                if rec["side"] == "short" else np.zeros(n, dtype=bool)
+            tr = se.simulate_trades(df, ls, ss, rec["sl"], rec["tp"], asset,
+                                    max_hold=MAX_HOLD, allow_overlap=False)
+            if tr is None or len(tr) < 30:
+                continue
+            tr = tr.copy()
+            tr["sl_pip"] = float(rec["sl"])
+            nl = int((tr["direction"] == "long").sum())
+            ns = int((tr["direction"] == "short").sum())
+            null, ndiag = build_null_strict(df, asset, rec["sl"], rec["tp"],
+                                            nl, ns, gate, rng)
+            res = rqs2.compute_rqs2(tr, asset, sl_pip=rec["sl"],
+                                    tp_pip=rec["tp"], bar_time=bar_time,
+                                    null=null)
+            m = res.get("metrics", {})
+            out_rec = dict(rec)
+            out_rec.update(stage=2, n=m.get("n_trades"), wr=m.get("win_rate"),
+                           pf=m.get("profit_factor"), net=m.get("net_profit"),
+                           lift=m.get("skill_lift_pp"), z=m.get("skill_z"),
+                           rqs2=res.get("score"), verdict=res.get("verdict"),
+                           power_limited=res.get("power_limited"),
+                           gates=res.get("gates"),
+                           gate_families=res.get("gate_families"),
+                           null_diag=ndiag)
+            judged.append(out_rec)
+            key = (res.get("verdict") == "ACCEPT",
+                   bool(res.get("power_limited")),
+                   (m.get("skill_lift_pp") or -99)
+                   * ((m.get("n_trades") or 0) ** 0.5))
+            if best is None or key > best[0]:
+                best = (key, out_rec)
+    if best is None and ranked:
+        best = ((False, False, _edge_proxy(ranked[0])), ranked[0])
 
     out = dict(asset=asset, tf=tf, atr_pip=round(atr_pip, 2),
-               n_variants=len(rows),
-               best=(best[1] if best else None), variants=rows)
+               n_variants=len(rows), topk=TOPK_NULL,
+               best=(best[1] if best else None),
+               judged=judged, stage1_top=ranked)
     path = os.path.join(OUTDIR, f"{asset}_{tf}.json")
     with open(path, "w", encoding="utf-8") as f:
         json.dump(out, f, ensure_ascii=False, indent=2, default=str)
