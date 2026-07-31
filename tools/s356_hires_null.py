@@ -198,7 +198,13 @@ def main():
           f"|valid|={C['valid'].size:,}", flush=True)
 
     rec = dict(card=a.card, sl_pip=C["sl"], tp_pip=C["tp"], max_hold=C["mh"],
-               n_trades=C["k"], wr_obs=round(C["wr_obs"], 4),
+               n_signals=C["k"], n_trades_engine=C["n_engine"],
+               wr_obs=round(C["wr_obs"], 4),
+               wr_table=(round(C["wr_table"], 4) if C["wr_table"] else None),
+               wr_engine=(round(C["wr_engine"], 4) if C["wr_engine"] else None),
+               wr_threshold_note=("آستانه = min(wr_table, wr_engine) — "
+                                  "محافظه‌کارانه، تا لایه از ناسازگاریِ دو "
+                                  "کاهنده سود نبرد."),
                wr_uncond=round(C["uncond"], 4),
                lift=round(C["wr_obs"] - C["uncond"], 4),
                valid_pool=int(C["valid"].size),
