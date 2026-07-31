@@ -31,14 +31,20 @@ const candles = csv.slice(1).map(line => {
 const n = candles.length
 console.log('candles:', n, '| first time:', candles[0].time, '| last:', candles[n - 1].time)
 
-// ۳) شبیه‌سازیِ زنده: entry-bar های TS
+// ۳) شبیه‌سازیِ زنده با پنجرهٔ لغزان (به‌جای slice کاملِ O(n²)).
+//    computeS354 فقط به روزِ جاری + warmupِ ATR(21)/r2(55) نیاز دارد؛ یک پنجرهٔ
+//    ۳۰۰ کندلی تا i کافی و parity-محفوظ است (ATR بعد از ~۲۰۰ کندل همگرا).
+//    برای اطمینانِ کامل، پنجره را از ابتدای «روزِ حاویِ i منهای WARM» شروع می‌کنیم
+//    تا مرزِ روز و اسپایکِ صبحِ روزِ i کامل داخلِ پنجره باشد.
 const cfg = S354_CFG['XAUUSD-H1']
 const tsEntries = []
-// برای سرعت: فقط از warmup به بعد (need). اما برای دقتِ کامل از 0.
 const need = cfg.r2Period + cfg.atrPeriod + cfg.barsPerDay + 10
+const WARM = 280   // > 200 همگراییِ ATR + حاشیه
 for (let i = need; i < n; i++) {
-  const sub = candles.slice(0, i + 1)   // کندل‌های بسته تا i
+  const start = Math.max(0, i - WARM)
+  const sub = candles.slice(start, i + 1)   // پنجرهٔ ثابت‌طول O(WARM)
   const raw = computeS354(sub, cfg)
+  // active یعنی آخرین کندلِ پنجره (=i) سیگنالِ ورود دارد
   if (raw.active) tsEntries.push(i)
 }
 console.log('TS active entry-bars:', tsEntries.length)
