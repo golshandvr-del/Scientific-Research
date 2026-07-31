@@ -280,7 +280,10 @@ const s345Layer = (cfg: typeof S345_CFG[string]): LayerFn => (ctx) => decideS345
 export const CARD_LAYERS: Record<string, LayerFn[]> = {
   'XAUUSD-M5': [
     s341Layer(S341_CFG['XAUUSD-M5']),    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=94.7 (WR 70.8% · PF 2.22 · +$976) · بخشِ مستقل standalone پاس (96.4)
-    s333Layer(S333_CFG['XAUUSD-M5']),    // احیای S79 — pullback با هندسهٔ منصفانه + rsi_turn — RQS+=91.3 (WR 65.6% · PF 2.85)
+    // ⭐ S355 = S333/M5 **با دروازهٔ حالتِ ساختارِ LPSB** — تنها لایهٔ ۱۱/۱۱ دروازهٔ RQS2.
+    //    پایهٔ بدونِ دروازه: WR 65.6% · PF 2.85 · RQS2=27.5 (POWER-LIMITED، حقِ اتصال نداشت)
+    //    با دروازه:          WR 72.3% · PF 3.95 · RQS2=83.9 (ACCEPT ✓) ⇒ همین وصل می‌شود.
+    withLpsbGate(s333Layer(S333_CFG['XAUUSD-M5']), S355_CFG['XAUUSD-M5']),
     s330Layer(S330_CFG['XAUUSD-M5']),
     s328Layer(S328_CFG['XAUUSD-M5']),
     s334Layer(S334_CFG['XAUUSD-M5']),    // احیای s122 — MR-fade فروش + گیتِ Hurst<0.5/Kurt<1.8 — RQS+=81.6 (WR 61.7% · PF 1.61)
