@@ -1,0 +1,426 @@
+{
+ "asset": "EURUSD",
+ "tf": "H4",
+ "n_bars": 25133,
+ "n_stage1": 180,
+ "top": [
+  {
+   "n_open_frac": 0.13,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 5.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 1,
+   "verdict": "REJECT"
+  },
+  {
+   "n_open_frac": 0.13,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 8.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 1,
+   "verdict": "REJECT"
+  },
+  {
+   "n_open_frac": 0.13,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 12.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 1,
+   "verdict": "REJECT"
+  },
+  {
+   "n_open_frac": 0.21,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 5.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 1,
+   "verdict": "REJECT"
+  },
+  {
+   "n_open_frac": 0.21,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 8.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 1,
+   "verdict": "REJECT"
+  },
+  {
+   "n_open_frac": 0.21,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 12.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 1,
+   "verdict": "REJECT"
+  }
+ ],
+ "judged": [
+  {
+   "n_open_frac": 0.13,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 5.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 2,
+   "verdict": "REJECT",
+   "lift": 11.53,
+   "z": 1.37,
+   "rqs2": 14.6,
+   "power_limited": false,
+   "gates": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": true,
+    "H7": null,
+    "H8": false,
+    "H9": true,
+    "H10": null
+   },
+   "null_diag": {
+    "short": {
+     "chosen": "uncond",
+     "wrs": {
+      "uncond": 48.47,
+      "gated": 47.1
+     }
+    }
+   }
+  },
+  {
+   "n_open_frac": 0.13,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 8.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 2,
+   "verdict": "REJECT",
+   "lift": 11.58,
+   "z": 1.37,
+   "rqs2": 14.6,
+   "power_limited": false,
+   "gates": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": true,
+    "H7": null,
+    "H8": false,
+    "H9": true,
+    "H10": null
+   },
+   "null_diag": {
+    "short": {
+     "chosen": "uncond",
+     "wrs": {
+      "uncond": 48.42,
+      "gated": 47.0
+     }
+    }
+   }
+  },
+  {
+   "n_open_frac": 0.13,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 12.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 2,
+   "verdict": "REJECT",
+   "lift": 12.46,
+   "z": 1.39,
+   "rqs2": 14.6,
+   "power_limited": false,
+   "gates": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": true,
+    "H7": null,
+    "H8": false,
+    "H9": true,
+    "H10": null
+   },
+   "null_diag": {
+    "short": {
+     "chosen": "gated",
+     "wrs": {
+      "uncond": 47.41,
+      "gated": 47.54
+     }
+    }
+   }
+  },
+  {
+   "n_open_frac": 0.21,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 5.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 2,
+   "verdict": "REJECT",
+   "lift": 10.87,
+   "z": 1.2,
+   "rqs2": 14.3,
+   "power_limited": false,
+   "gates": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": true,
+    "H7": null,
+    "H8": false,
+    "H9": true,
+    "H10": null
+   },
+   "null_diag": {
+    "short": {
+     "chosen": "uncond",
+     "wrs": {
+      "uncond": 49.13,
+      "gated": 48.37
+     }
+    }
+   }
+  },
+  {
+   "n_open_frac": 0.21,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 8.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 2,
+   "verdict": "REJECT",
+   "lift": 11.32,
+   "z": 1.33,
+   "rqs2": 14.5,
+   "power_limited": false,
+   "gates": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": true,
+    "H7": null,
+    "H8": false,
+    "H9": true,
+    "H10": null
+   },
+   "null_diag": {
+    "short": {
+     "chosen": "uncond",
+     "wrs": {
+      "uncond": 48.68,
+      "gated": 48.05
+     }
+    }
+   }
+  },
+  {
+   "n_open_frac": 0.21,
+   "late_from": 0.68,
+   "spike_k": 0.8,
+   "tight_atr": 12.0,
+   "r2": "r2_fib_55:ge:0.45",
+   "side": "short",
+   "sl_k": 0.9,
+   "rr": 1.0,
+   "sl": 28.2,
+   "tp": 28.2,
+   "n": 35,
+   "wr": 60.0,
+   "pf": 1.337,
+   "net": 507.4,
+   "stage": 2,
+   "verdict": "REJECT",
+   "lift": 11.69,
+   "z": 1.38,
+   "rqs2": 14.6,
+   "power_limited": false,
+   "gates": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": true,
+    "H7": null,
+    "H8": false,
+    "H9": true,
+    "H10": null
+   },
+   "null_diag": {
+    "short": {
+     "chosen": "gated",
+     "wrs": {
+      "uncond": 47.63,
+      "gated": 48.31
+     }
+    }
+   }
+  }
+ ],
+ "best": {
+  "n_open_frac": 0.13,
+  "late_from": 0.68,
+  "spike_k": 0.8,
+  "tight_atr": 12.0,
+  "r2": "r2_fib_55:ge:0.45",
+  "side": "short",
+  "sl_k": 0.9,
+  "rr": 1.0,
+  "sl": 28.2,
+  "tp": 28.2,
+  "n": 35,
+  "wr": 60.0,
+  "pf": 1.337,
+  "net": 507.4,
+  "stage": 2,
+  "verdict": "REJECT",
+  "lift": 12.46,
+  "z": 1.39,
+  "rqs2": 14.6,
+  "power_limited": false,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": true,
+   "H5": false,
+   "H6": true,
+   "H7": null,
+   "H8": false,
+   "H9": true,
+   "H10": null
+  },
+  "null_diag": {
+   "short": {
+    "chosen": "gated",
+    "wrs": {
+     "uncond": 47.41,
+     "gated": 47.54
+    }
+   }
+  }
+ }
+}
