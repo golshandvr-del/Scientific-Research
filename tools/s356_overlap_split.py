@@ -79,12 +79,24 @@ def build():
 
 
 def overlap_masks(sig):
-    """ماسکِ `OVERLAP`/`DISJOINT` از فایلِ خروجیِ موتورِ واقعیِ سایت."""
-    probe = json.load(open(f"{OUT}/overlap_h1_atS356.json", encoding="utf-8"))
+    """ماسکِ `OVERLAP`/`DISJOINT` از **سوییپِ کاملِ** موتورِ واقعیِ سایت.
+
+    ⚠️ منبع عمداً `overlap_h1_full.json` است (سوییپِ `stride=1` روی کلِ تاریخ)، نه
+    `overlap_h1_atS356.json`. دلیل: پروبِ `atbars` فقط در همسایگیِ **کندل‌های
+    ورودِ** ما ارزیابی شده بود و کندلِ ورود یکی بعد از کندلِ تصمیم است، پس
+    پنجره‌اش نسبت به تصمیمِ ما `{۰,+۱,+۲}` را می‌پوشاند و لایه‌ای که **یک کندل
+    قبل** از ما آتش کرده بود را نمی‌دید — سوگیریِ نامتقارن. سوییپِ کامل همهٔ
+    کندل‌های آتش‌باریِ هر ۸ لایه را دارد، پس پنجرهٔ متقارنِ `[b-TOL, b+TOL]` حولِ
+    **کندلِ تصمیمِ** ما بی‌سوگیری محاسبه می‌شود.
+
+    `sig` روی کندلِ تصمیم است (`flatnonzero(sig)` = `signal_bars`)، و لایه‌های
+    سایت هم `ENTRY` را روی کندلِ تصمیم می‌دهند ⇒ مقایسه «تصمیم به تصمیم» است.
+    """
+    full = json.load(open(f"{OUT}/overlap_h1_full.json", encoding="utf-8"))
     n = len(sig)
     inc = np.zeros(n, bool)                    # کندل‌هایی که ≥۱ لایهٔ فعال ENTRY داده
     per_layer = {}
-    for L in probe["layers"]:
+    for L in full["layers"]:
         bars = np.asarray(L.get("active_bars", []), dtype=np.int64)
         per_layer[L["code"]] = bars
         for b in bars:
