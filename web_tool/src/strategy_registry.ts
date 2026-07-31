@@ -85,11 +85,24 @@ import { decideS344, S344_CFG } from './trend_from_open_s344'
 //     ⇒ لبهٔ نو، نه بازتولیدِ زمان-محور. EUR-M30=30.6% (خوش‌خیم).
 //     پورتِ verbatim تأیید شد (۱۹۳/۱۹۳ سیگنال یکسان روی هر دو کارت، mismatch=0).
 import { decideS345, S345_CFG } from './reversal_day_s345'
-// --- S354 Brooks «Trend Resumption Day» (فصلِ ۲۵) — ⚠️ NOT wired (POWER-LIMITED) ---
-//     لبهٔ میانگین واقعی و سودده (net + · OOS +) اما با nullِ ۲۰۰۰-جای‌گشتی H3 رد
-//     می‌شود (WR مشاهده < perm_max؛ RQS2 ≈ ۲۶–۲۷). ماهیتِ روزانهٔ نادر ⇒ n≈۱۱۰ کوچک.
-//     لایهٔ TS (`trend_resumption_s354.ts`) برای بازتولید/آینده می‌ماند ولی import نمی‌شود.
-//     سند: results/S354_BrooksTrendResumption_Xauusd_H1_POWERLIMITED_rqs2-27.md
+// --- S356 = احیای S354 Brooks «Trend Resumption Day» (فصلِ ۲۵) — ✅ WIRED ---
+//     تاریخچه: نسخهٔ non-causal (پنجرهٔ پایانی = ۰.۶۸ × طولِ **کلِ** روز) look-ahead
+//     داشت و کنار گذاشته شد؛ سپس نسخهٔ causal (ساعتِ ثابتِ UTC ≥ ۱۶) با معیارِ
+//     RQS2 نسخهٔ قدیم در دروازهٔ H3 رد شد — اما آن H3 با شرطِ بازنشسته‌شدهٔ
+//     `WR > perm_max` داوری می‌کرد که با تعدادِ قرعه بزرگ می‌شود، پس حکمش به seed
+//     وابسته و بی‌معنا بود.
+//     بازداوری با معیارِ اصلاح‌شدهٔ **v2.4**: ACCEPT در هر ۱۱ دروازه و در هر ۳ seed
+//     (RQS2 = ۸۱.۱/۸۱.۳/۸۱.۵) · n=۱۱۷ · WR=۵۱.۲۸٪ · lift=+۱۵.۰ نقطه · z=۳.۳۶
+//     · جریمهٔ سخت‌گیرانهٔ ۲۸۸-آزمونی هم ACCEPT.
+//     نالِ رزولوشن‌بالا (۲۰۰٬۰۰۰ قرعه × ۳ seed، با آستانهٔ محافظه‌کارانه):
+//     کرانِ بالای ۹۵٪ برای p = ۷.۲e-۴ < ۱e-۳ ⇒ مرزِ p قطعی حل شد.
+//     همپوشانی: ۲۵.۶٪ (۳۰/۱۱۷) — فقط با S313 (۲۵) و S335 (۵)؛ ۸۷ ورودِ بی‌همپوشان
+//     خودشان lift=+۱۵.۲۴ دارند ⇒ لبه در بخشِ همپوشان نیست.
+//     ⚠️ فقط روی XAUUSD-H1 وصل می‌شود؛ در سوییپِ ۱۶-کارتی، ۹ کارت REJECT و ۶ کارت
+//     بی‌سیگنال/بی‌داده بودند ⇒ هیچ کارتِ دیگری حقِ اتصال ندارد.
+//     parity سیگنال: ۱۱۷/۱۱۷ با mismatch=0 (results/_scan_S356/parity_causal_after.json)
+//     سند: results/S356_BrooksTrendResumptionCausal_Xauusd_H1_rqs2-81.md
+import { decideS354, S354_CFG } from './trend_resumption_s354'
 
 const GOLD_PIP = 0.1
 
@@ -259,6 +272,8 @@ const s341Layer = (cfg: typeof S341_CFG[string]): LayerFn => (ctx) => decideS341
 const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ نوِ این نشست: S345 Brooks Reversal Day — چرخشِ روندِ درون‌روزی (فصلِ ۲۴)
 const s345Layer = (cfg: typeof S345_CFG[string]): LayerFn => (ctx) => decideS345(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// لایهٔ احیاشدهٔ این نشست: S356 = S354-causal، Brooks Trend Resumption Day (فصلِ ۲۵)
+const s354Layer = (cfg: typeof S354_CFG[string]): LayerFn => (ctx) => decideS354(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 
 // ---------------------------------------------------------------------------
 // نگاشتِ کارت → لایه‌های فعال (به‌ترتیبِ اولویت). فقط لایه‌هایی که روی همان
@@ -269,7 +284,7 @@ const s345Layer = (cfg: typeof S345_CFG[string]): LayerFn => (ctx) => decideS345
 //   XAUUSD-M5    S341(LONG·swing-fade·range·RQS 94.7) · S333(LONG·pullback·RQS 91.3) · S330(FADE) · S328(SHORT) · S327(LONG) · S326(LONG)
 //   XAUUSD-M15   S345(LONG·reversal-day·RQS 90.7) · S341(LONG·swing-fade·range·RQS 89.8) · S333(LONG·pullback·RQS 91.7) · S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
 //   XAUUSD-M30   S341(LONG·swing-fade·range·RQS 89.7) · S333(LONG·pullback·RQS 91.1) · S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
-//   XAUUSD-H1    S341(LONG·swing-fade·range·RQS 94.5) · S333(LONG·pullback·RQS 89.8) · S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
+//   XAUUSD-H1    S356(LONG·trend-resumption·**RQS2 81.5**) · S341(LONG·swing-fade·range·RQS 94.5) · S333(LONG·pullback·RQS 89.8) · S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
 //   XAUUSD-H4    S332(LONG·squeeze ADX/DI) · S327(LONG)
 //   EURUSD-M15   S326(LONG)
 //   EURUSD-M30   S327(LONG) · S345(SHORT·reversal-day·RQS 91.7)
@@ -316,6 +331,9 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s312Layer(295, 295, 36),
   ],
   'XAUUSD-H1': [
+    // S356 اول می‌آید چون تنها لایهٔ این کارت است که با معیارِ حاکمِ **RQS2 v2.4**
+    // داوری شده (هر ۱۱ دروازه، هر ۳ seed)؛ بقیه با RQS+ بازنشسته پذیرفته شده‌اند.
+    s354Layer(S354_CFG['XAUUSD-H1']),    // S356 — Brooks trend-resumption (causal، ساعت≥۱۶ UTC) — RQS2=81.5 (WR 51.28% · lift +15.0 · z=3.36 · n=117) · همپوشانی ۲۵.۶٪ (S313=25 · S335=5)
     s341Layer(S341_CFG['XAUUSD-H1']),    // S341 — احیای فصلِ ۱۷ Brooks: swing-fade در رنج + مغناطیسِ میانه (ema_dist_atr≥0.7) — RQS+=94.5 (WR 66.7% · PF 2.01) · همپوشانیِ صفر (رژیمِ رنج vs روند)
     s333Layer(S333_CFG['XAUUSD-H1']),    // احیای S79 — pullback (ورودِ مستقیم + ER) — RQS+=89.8 (WR 62.2% · PF 1.85)
     s313Layer(S313_H1),
