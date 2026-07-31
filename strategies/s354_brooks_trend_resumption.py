@@ -68,7 +68,7 @@ LATE_FROM = [0.55, 0.68]              # شروعِ پنجرهٔ پایانی (ک
 SPIKE_K = [0.8, 1.3]                  # leg1 ≥ spike_k × ATR (اسپایکِ صبحِ واقعی)
 # قیدِ tightness رنجِ midday: mid_range ≤ tight_atr × ATR (رنجِ فشرده، مطابقِ متنِ Brooks
 # «very tight trading range») — نسبت به ATR نه leg1 ⇒ پایدارتر بینِ روزهای پرنوسان/آرام.
-TIGHT_ATR = [3.0, 5.0, 8.0]
+TIGHT_ATR = [5.0, 8.0, 12.0]
 SL_K = [0.9, 1.3]                     # SL = sl_k × ATR_pip
 RR = [1.0, 1.6]                       # TP/SL (measured-move→RR≈1؛ swing→RR≈1.6)
 # فیلترهای رژیمِ بانک (q = آستانهٔ صدکِ رولینگ؛ None = بدونِ فیلتر)
