@@ -1,0 +1,344 @@
+{
+ "z_bar_table": {
+  "declared_S346=56,499": 4.265,
+  "modest=1,296": 3.328,
+  "full_bank=5,196,960": 5.184
+ },
+ "cards": [
+  {
+   "card": "XAUUSD-M5",
+   "bars": 200000,
+   "max_hold": 96,
+   "n_max": 2083,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 2083,
+   "Lreq_every": 4.41,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 208,
+   "Lreq_selective": 13.94,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 41,
+   "Lreq_rare": 31.4,
+   "verdict_rare": "INFEASIBLE"
+  },
+  {
+   "card": "XAUUSD-M15",
+   "bars": 150000,
+   "max_hold": 40,
+   "n_max": 3750,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 3750,
+   "Lreq_every": 3.28,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 375,
+   "Lreq_selective": 10.38,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 75,
+   "Lreq_rare": 23.22,
+   "verdict_rare": "MARGINAL"
+  },
+  {
+   "card": "XAUUSD-M30",
+   "bars": 181383,
+   "max_hold": 28,
+   "n_max": 6477,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 6477,
+   "Lreq_every": 2.5,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 647,
+   "Lreq_selective": 7.9,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 129,
+   "Lreq_rare": 17.7,
+   "verdict_rare": "MARGINAL"
+  },
+  {
+   "card": "XAUUSD-H1",
+   "bars": 90950,
+   "max_hold": 20,
+   "n_max": 4547,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 4547,
+   "Lreq_every": 2.98,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 454,
+   "Lreq_selective": 9.44,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 90,
+   "Lreq_rare": 21.19,
+   "verdict_rare": "MARGINAL"
+  },
+  {
+   "card": "XAUUSD-H4",
+   "bars": 23755,
+   "max_hold": 10,
+   "n_max": 2375,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 2375,
+   "Lreq_every": 4.13,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 237,
+   "Lreq_selective": 13.06,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 47,
+   "Lreq_rare": 29.33,
+   "verdict_rare": "INFEASIBLE"
+  },
+  {
+   "card": "XAUUSD-D1",
+   "bars": 3989,
+   "max_hold": 5,
+   "n_max": 797,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 797,
+   "Lreq_every": 7.12,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 79,
+   "Lreq_selective": 22.62,
+   "verdict_selective": "MARGINAL",
+   "n_rare": 15,
+   "Lreq_rare": 51.91,
+   "verdict_rare": "INFEASIBLE"
+  },
+  {
+   "card": "XAUUSD-W1",
+   "bars": 810,
+   "max_hold": 13,
+   "n_max": 62,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 62,
+   "Lreq_every": 25.53,
+   "verdict_every": "INFEASIBLE",
+   "n_selective": 6,
+   "Lreq_selective": 82.08,
+   "verdict_selective": "INFEASIBLE",
+   "n_rare": 1,
+   "Lreq_rare": 201.05,
+   "verdict_rare": "INFEASIBLE"
+  },
+  {
+   "card": "EURUSD-M1",
+   "bars": 200000,
+   "max_hold": 200,
+   "n_max": 1000,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 1000,
+   "Lreq_every": 6.36,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 100,
+   "Lreq_selective": 20.11,
+   "verdict_selective": "MARGINAL",
+   "n_rare": 20,
+   "Lreq_rare": 44.96,
+   "verdict_rare": "INFEASIBLE"
+  },
+  {
+   "card": "EURUSD-M5",
+   "bars": 200000,
+   "max_hold": 96,
+   "n_max": 2083,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 2083,
+   "Lreq_every": 4.41,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 208,
+   "Lreq_selective": 13.94,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 41,
+   "Lreq_rare": 31.4,
+   "verdict_rare": "INFEASIBLE"
+  },
+  {
+   "card": "EURUSD-M15",
+   "bars": 200000,
+   "max_hold": 40,
+   "n_max": 5000,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 5000,
+   "Lreq_every": 2.84,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 500,
+   "Lreq_selective": 8.99,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 100,
+   "Lreq_rare": 20.11,
+   "verdict_rare": "MARGINAL"
+  },
+  {
+   "card": "EURUSD-M30",
+   "bars": 200000,
+   "max_hold": 28,
+   "n_max": 7142,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 7142,
+   "Lreq_every": 2.38,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 714,
+   "Lreq_selective": 7.52,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 142,
+   "Lreq_rare": 16.87,
+   "verdict_rare": "MARGINAL"
+  },
+  {
+   "card": "EURUSD-H1",
+   "bars": 100070,
+   "max_hold": 20,
+   "n_max": 5003,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 5003,
+   "Lreq_every": 2.84,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 500,
+   "Lreq_selective": 8.99,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 100,
+   "Lreq_rare": 20.11,
+   "verdict_rare": "MARGINAL"
+  },
+  {
+   "card": "EURUSD-H4",
+   "bars": 25133,
+   "max_hold": 10,
+   "n_max": 2513,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 2513,
+   "Lreq_every": 4.01,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 251,
+   "Lreq_selective": 12.69,
+   "verdict_selective": "FEASIBLE",
+   "n_rare": 50,
+   "Lreq_rare": 28.43,
+   "verdict_rare": "INFEASIBLE"
+  },
+  {
+   "card": "EURUSD-D1",
+   "bars": 4195,
+   "max_hold": 5,
+   "n_max": 839,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 839,
+   "Lreq_every": 6.94,
+   "verdict_every": "FEASIBLE",
+   "n_selective": 83,
+   "Lreq_selective": 22.07,
+   "verdict_selective": "MARGINAL",
+   "n_rare": 16,
+   "Lreq_rare": 50.26,
+   "verdict_rare": "INFEASIBLE"
+  },
+  {
+   "card": "EURUSD-W1",
+   "bars": 843,
+   "max_hold": 13,
+   "n_max": 64,
+   "p0": 0.3333,
+   "z_req": 4.265,
+   "n_every": 64,
+   "Lreq_every": 25.13,
+   "verdict_every": "INFEASIBLE",
+   "n_selective": 6,
+   "Lreq_selective": 82.08,
+   "verdict_selective": "INFEASIBLE",
+   "n_rare": 1,
+   "Lreq_rare": 201.05,
+   "verdict_rare": "INFEASIBLE"
+  }
+ ],
+ "notes": [],
+ "z_req_operational": 4.265,
+ "z_att_selective_15pp": [
+  {
+   "card": "XAUUSD-M5",
+   "n": 208,
+   "z_att": 4.589
+  },
+  {
+   "card": "XAUUSD-M15",
+   "n": 375,
+   "z_att": 6.162
+  },
+  {
+   "card": "XAUUSD-M30",
+   "n": 647,
+   "z_att": 8.094
+  },
+  {
+   "card": "XAUUSD-H1",
+   "n": 454,
+   "z_att": 6.78
+  },
+  {
+   "card": "XAUUSD-H4",
+   "n": 237,
+   "z_att": 4.899
+  },
+  {
+   "card": "XAUUSD-D1",
+   "n": 79,
+   "z_att": 2.828
+  },
+  {
+   "card": "XAUUSD-W1",
+   "n": 6,
+   "z_att": 0.779
+  },
+  {
+   "card": "EURUSD-M1",
+   "n": 100,
+   "z_att": 3.182
+  },
+  {
+   "card": "EURUSD-M5",
+   "n": 208,
+   "z_att": 4.589
+  },
+  {
+   "card": "EURUSD-M15",
+   "n": 500,
+   "z_att": 7.115
+  },
+  {
+   "card": "EURUSD-M30",
+   "n": 714,
+   "z_att": 8.502
+  },
+  {
+   "card": "EURUSD-H1",
+   "n": 500,
+   "z_att": 7.115
+  },
+  {
+   "card": "EURUSD-H4",
+   "n": 251,
+   "z_att": 5.041
+  },
+  {
+   "card": "EURUSD-D1",
+   "n": 83,
+   "z_att": 2.899
+  },
+  {
+   "card": "EURUSD-W1",
+   "n": 6,
+   "z_att": 0.779
+  }
+ ],
+ "z_bar_full_bank": 5.184
+}
