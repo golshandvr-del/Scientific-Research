@@ -47,6 +47,17 @@ import { decideS332, S332_CFG } from './squeeze_s332'
 // --- ماژولِ نوِ این نشست: احیای S79 (Trend-Pullback) با هندسهٔ منصفانه TP≥SL
 //     روی XAU M5/M15/M30/H1 — WR واقعی از دقتِ ورود (rsi_turn/price_turn) + رژیمِ Hurst/ER ---
 import { decideS333, S333_CFG } from './s333_pullback'
+// --- ⭐ لایهٔ S355 — نخستین لایهٔ پروژه با **۱۱/۱۱ دروازهٔ RQS2 (v2.4)** ---
+//     «دروازهٔ حالتِ ساختارِ لگ-متناسب» (LPSB, L=8 f=0.33) روی مولدِ S333/M5:
+//     ورودِ لانگ فقط اگر ساختارِ خُرد نزولی باشد (state=−1) — جهتِ ضدِ شهود، اندازه‌گیری‌شده.
+//     XAUUSD-M5: RQS2=83.9 · WR 72.34% · PF 3.951 · lift +25.27pp · z 3.47 · p_perm 0.000259
+//     holdout ۴۰٪ دست‌نخورده: WR 81.25% · maxDD 1.98% · Δسودِ خالص +$2,469
+//     منشأ: منبعِ تلگرامیِ Market_Structure_Break_and_Order_Block_v3 (MT4/GPL) — بازسازیِ **علّی**
+//     (نسخهٔ اصلی repaint داشت). پورتِ verbatim تأیید شد: mismatch=0 روی ۲۰۰٬۰۰۰ کندل
+//     (web_tool/parity_s355_state.mjs). همپوشانی: زیرمجموعهٔ اکیدِ S333 (۷۳.۴٪ از ورودهایش).
+//     ⚠️ فقط روی M5 وصل می‌شود؛ M15/M30/H1 در دروازهٔ H3 ماندند ⇒ حق اتصال ندارند.
+//     سند: results/S355_LPSBStateFilterRevival_Xauusd_M5_rqs2-84.md
+import { withLpsbGate, S355_CFG } from './lpsb_state_s355'
 // --- لایهٔ نوِ این نشست: S335 Reflex-TrendFlex Cycle-Turn (چرخهٔ DSP اِهلرز) ---
 //     خریدِ کفِ چرخه درونِ روندِ صعودیِ کم‌تأخیر روی XAU M5/M15/H1 —
 //     همپوشانیِ صفر با S333؛ RQS+ = 92.2/89.7/89.7 ---
