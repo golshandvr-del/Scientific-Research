@@ -139,7 +139,7 @@ def family_test(df, sl, tp, mh, n_perm=300, seed=17):
                 verdict=verdict)
 
 
-def build_null_canonical(df, sig, sl, tp, mh, n_perm=400, seed=23):
+def build_null_canonical(df, sig, sl, tp, mh, n_perm=2000, seed=23):
     """مدلِ صفرِ کانونیِ RQS2 برای سیگنالِ long رسمی: جای‌گشتِ زمانیِ همان تعدادِ
     ورود. خروجی ساختارِ {'long':{uncond_wr,perm_mean,perm_sd,perm_max,perm_k},
     'short':{...صفر}} که compute_rqs2 برای H3/H4/H5 می‌خواهد.
