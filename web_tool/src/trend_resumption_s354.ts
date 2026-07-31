@@ -209,12 +209,18 @@ export function computeS354(candles: Candle[], cfg: S354Config): RawSignal {
 
   const fmt = (x: number) => (isFinite(x) ? x.toFixed(2) : '—')
   const ind: RawSignal['indicators'] = [
+    // ⚠️ `status` فقط می‌تواند `'ok' | 'warn' | 'bad' | 'neutral'` باشد (router.ts:252).
+    //   نسخهٔ پیشین `'bullish'`/`'bearish'` می‌فرستاد که در این اتحاد نیست؛
+    //   چون esbuild نوع‌ها را حذف می‌کند، بدونِ خطا بیلد می‌شد ولی UI رنگِ
+    //   ناشناخته می‌گرفت ⇒ شاخص‌های این لایه بی‌رنگ/بی‌معنا دیده می‌شدند.
+    //   نگاشت: شرطِ برقرار → `ok`؛ شرطِ هنوز برقرارنشده → `neutral`؛
+    //   گیتِ رژیم که نقضِ صریح است → `bad` (همان قراردادِ s333/s341).
     { name: 'اسپایکِ صبح (leg1/ATR)', value: atrRefOk ? (leg1 / atrRef).toFixed(2) : '—',
-      status: spikeOk ? 'bullish' : 'neutral' },
+      status: spikeOk ? 'ok' : 'neutral' },
     { name: 'فشردگیِ رنجِ میانی (range/ATR)', value: (isFinite(atrNow) && atrNow > 0) ? (midRange / atrNow).toFixed(2) : '—',
-      status: tightOk ? 'bullish' : 'neutral' },
+      status: tightOk ? 'ok' : 'neutral' },
     { name: `رژیمِ روند R²(${cfg.r2Period})`, value: fmt(r2Now),
-      status: regimeOk ? 'bullish' : 'bearish' },
+      status: regimeOk ? 'ok' : 'bad' },
     { name: 'سقفِ رنجِ میانی', value: isFinite(msegHi) ? msegHi.toFixed(2) : '—', status: 'neutral' },
   ]
 
