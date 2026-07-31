@@ -71,7 +71,15 @@ RR_MIN           = 0.5      # TP/SL — سپرِ صریحِ «TP کوچک ⇒ WR
 # H3 — ⭐ مهارت نسبت به مدلِ صفرِ اندازه‌گیری‌شده
 SKILL_LIFT_MIN   = 4.0      # pp، نسبت به قوی‌ترین خطِ مبنا
 SKILL_Z_MIN      = 3.0      # سیگما، نسبت به sdِ جای‌گشت
-PERM_K_MIN       = 10       # حداقل تعدادِ جای‌گشت برای معنادار بودنِ sd
+PERM_K_MIN       = 500      # حداقل تعدادِ جای‌گشت برای **همگراییِ** sd
+# ── اصلاحِ v2.4 (F1، بخشِ دوم) — کفِ K از ۱۰ به ۵۰۰ ──────────────────────────
+#   آزمونِ بازگشتیِ R3 نشان داد پس از حذفِ `perm_max`، باقی‌ماندهٔ بی‌ثباتیِ حکم
+#   از `perm_sd` می‌آمد: با `K` کوچک (۱۰۰–۲۰۰) انحرافِ معیارِ جای‌گشت هنوز
+#   همگرا نشده ⇒ `z_skill` به بذر وابسته می‌ماند و ۴ اجرا از ۳۰ روی مرزِ ۳.۰۹
+#   نوسان می‌کردند. اندازه‌گیری: با `K ≥ ۴۰۰` حکم روی هر ۱۸ اجرا **۱۸/۱۸ پایدار**
+#   شد. پس کفِ ۵۰۰ تضمین می‌کند آماره پیش از صدورِ حکم همگرا شده باشد. این سخت‌گیری
+#   است نه نرمی: با `K<۵۰۰` حالا H3 صراحتاً UNKNOWN می‌شود («برو K را بالا ببر»)،
+#   نه یک حکمِ قطعیِ ناپایدار. (اثبات: results/_audit_H3/v24_regression.json)
 # ── اصلاحِ v2.4 (F1+F2) — رفعِ نقصِ ناهمگراییِ `perm_max` که حسابرسی افشا کرد ──
 #   نقص: شرطِ پیشینِ `wr > perm_max` **ناهمگرا** بود؛ `perm_max ≈ μ+σ√(2lnK)`
 #   با تعدادِ قرعه `K` بی‌کران بالا می‌رفت ⇒ حکمِ ACCEPT/REJECT به `K` وابسته
@@ -942,10 +950,18 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
         if p_perm is None:
             p_perm = 0.5 * erfc(z_skill / sqrt(2)) if z_skill != float('inf') else 0.0
         p_perm = float(p_perm)
-        # شرطِ واحد و همگرا: لیفتِ معنادار + معناداریِ آماریِ پایدار.
-        # (شرطِ ناهمگرای `wr > perm_max` عمداً حذف شد — نقصِ F1.)
-        h3 = (lift >= SKILL_LIFT_MIN and p_perm <= SKILL_P_MAX
-              and nb['perm_k'] >= PERM_K_MIN)
+        # کمبودِ K ⇒ آماره همگرا نشده ⇒ UNKNOWN (نه رد؛ «نمی‌دانیم» ≠ «بد»).
+        if nb['perm_k'] < PERM_K_MIN:
+            h3 = None
+            res['notes'].append(
+                f"H3 UNKNOWN: only {nb['perm_k']} permutations (<{PERM_K_MIN}) — "
+                f"the permutation standard deviation has not converged, so the "
+                f"skill z is still seed-dependent. ACTION: rerun the null with "
+                f"at least {PERM_K_MIN} permutations before judging H3.")
+        else:
+            # شرطِ واحد و همگرا: لیفتِ معنادار + معناداریِ آماریِ پایدار.
+            # (شرطِ ناهمگرای `wr > perm_max` عمداً حذف شد — نقصِ F1.)
+            h3 = (lift >= SKILL_LIFT_MIN and p_perm <= SKILL_P_MAX)
 
     # ---------------------------- H4 مهارتِ هر سمت ----------------------------
     side_lift, prune_sides = {}, []
