@@ -18,9 +18,9 @@
 //   (فقط شاخهٔ LONG؛ ATR = atrSeriesS354 با parity ثابت‌شده تا 1.7e-6 با atr_fib_21).
 // ============================================================================
 import type { Candle } from './indicators'
-import type { RouterDecision } from './router'
+import type { RouterDecision, RegimeInfo } from './router'
 import { type RawSignal, type DecideMeta, rawToDecision } from './revived_strategies'
-import type { RegimeInfo, AnalysisInput } from './router'
+import type { AnalysisResult } from './signal'
 import { r2Series } from './squeeze_s332'
 
 export interface S354Config {
