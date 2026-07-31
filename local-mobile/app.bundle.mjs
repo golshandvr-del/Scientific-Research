@@ -5918,6 +5918,122 @@ function decideS333(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
 }
 
+// ../web_tool/src/lpsb_state_s355.ts
+var LPSB_CENTRAL = { L: 8, f: 0.33 };
+var S355_CFG = {
+  "XAUUSD-M5": {
+    L: LPSB_CENTRAL.L,
+    f: LPSB_CENTRAL.f,
+    requiredState: -1,
+    code: "S355",
+    name: "S333 + \u062F\u0631\u0648\u0627\u0632\u0647\u0654 \u062D\u0627\u0644\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0644\u06AF-\u0645\u062A\u0646\u0627\u0633\u0628 (LPSB)"
+  }
+};
+function confirmedPivots(candles, L) {
+  const n = candles.length;
+  const hRef = new Array(n).fill(NaN);
+  const lRef = new Array(n).fill(NaN);
+  const w = 2 * L + 1;
+  if (n < w + 2) return { hRef, lRef };
+  const h = new Array(n);
+  const l = new Array(n);
+  for (let i = 0; i < n; i++) {
+    h[i] = candles[i].high;
+    l[i] = candles[i].low;
+  }
+  const isPh = new Array(n).fill(false);
+  const isPl = new Array(n).fill(false);
+  for (let j = L; j < n - L; j++) {
+    let mx = -Infinity, mn = Infinity;
+    for (let k = j - L; k <= j + L; k++) {
+      if (h[k] > mx) mx = h[k];
+      if (l[k] < mn) mn = l[k];
+    }
+    isPh[j] = h[j] >= mx;
+    isPl[j] = l[j] <= mn;
+  }
+  let curH = NaN, curL = NaN;
+  for (let i = 0; i < n; i++) {
+    const j = i - L;
+    if (j >= 0) {
+      if (isPh[j]) curH = h[j];
+      if (isPl[j]) curL = l[j];
+    }
+    hRef[i] = curH;
+    lRef[i] = curL;
+  }
+  return { hRef, lRef };
+}
+function lpsbStateSeries(candles, L, f) {
+  const n = candles.length;
+  const state = new Int8Array(n);
+  if (n === 0) return state;
+  const { hRef, lRef } = confirmedPivots(candles, L);
+  let cur = 0;
+  let prevClose = candles[0].close;
+  for (let i = 0; i < n; i++) {
+    const c = candles[i].close;
+    const leg = hRef[i] - lRef[i];
+    if (Number.isFinite(leg) && leg > 0 && i >= 1) {
+      const upLvl = hRef[i] + f * leg;
+      const dnLvl = lRef[i] - f * leg;
+      const crossUp = c > upLvl && !(prevClose > upLvl);
+      const crossDn = c < dnLvl && !(prevClose < dnLvl);
+      if (crossUp) cur = 1;
+      else if (crossDn) cur = -1;
+    }
+    state[i] = cur;
+    prevClose = c;
+  }
+  return state;
+}
+function lpsbStateNow(candles, L, f) {
+  const s = lpsbStateSeries(candles, L, f);
+  return s.length ? s[s.length - 1] : 0;
+}
+var stateLabel = (s) => s === 1 ? "\u0635\u0639\u0648\u062F\u06CC (+\u06F1)" : s === -1 ? "\u0646\u0632\u0648\u0644\u06CC (\u2212\u06F1)" : "\u0646\u0627\u0645\u0639\u0644\u0648\u0645 (\u06F0)";
+function withLpsbGate(inner, cfg) {
+  return (ctx) => {
+    const d = inner(ctx);
+    if (!d) return null;
+    const st = lpsbStateNow(ctx.candles, cfg.L, cfg.f);
+    const need = cfg.requiredState;
+    const open = st === need;
+    const gateTxt = `\u062F\u0631\u0648\u0627\u0632\u0647\u0654 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 LPSB (L=${cfg.L}, f=${cfg.f}): \u062D\u0627\u0644\u062A = ${stateLabel(st)}`;
+    if (d.state === "ENTRY") {
+      if (open) {
+        const filters = [...d.sourceLayer?.filters ?? [], `${gateTxt} \u2713 (\u0644\u0627\u0632\u0645: ${stateLabel(need)})`];
+        return {
+          ...d,
+          reason: `${d.reason} | ${gateTxt} \u2713 \u2014 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 ${cfg.code} \u0628\u0627\u0632 \u0627\u0633\u062A.`,
+          sourceLayer: d.sourceLayer ? { ...d.sourceLayer, code: cfg.code, name: cfg.name, filters } : void 0
+        };
+      }
+      return {
+        ...d,
+        state: "APPROACHING",
+        headline: "\u0646\u0632\u062F\u06CC\u06A9\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u2014 \u0645\u0646\u062A\u0638\u0631\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0633\u0627\u062E\u062A\u0627\u0631",
+        reason: `\u0645\u0648\u0644\u062F\u0650 \u067E\u0627\u06CC\u0647 (pullback\u0650 S333) \u0634\u0631\u0627\u06CC\u0637\u0650 \u0648\u0631\u0648\u062F \u0631\u0627 \u062F\u0627\u0631\u062F\u060C \u0627\u0645\u0627 ${gateTxt} \u0648 \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F \u062D\u0627\u0644\u062A\u0650 ${stateLabel(need)} \u0644\u0627\u0632\u0645 \u0627\u0633\u062A. \u0645\u0646\u062A\u0638\u0631 \u0628\u0627\u0634 \u062A\u0627 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0644\u06AF-\u0645\u062A\u0646\u0627\u0633\u0628 \u0628\u0647 \u0633\u0645\u062A\u0650 ${stateLabel(need)} \u0634\u06A9\u0633\u062A\u0647 \u0634\u0648\u062F\u061B \u062A\u0627 \u0622\u0646 \u0644\u062D\u0638\u0647 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645 (\u062F\u0631\u0648\u0627\u0632\u0647\u0654 ${cfg.code}).`,
+        sourceLayer: d.sourceLayer ? {
+          ...d.sourceLayer,
+          code: cfg.code,
+          name: cfg.name,
+          filters: [...d.sourceLayer.filters ?? [], `${gateTxt} \u2717 (\u0644\u0627\u0632\u0645: ${stateLabel(need)})`]
+        } : void 0,
+        // هندسهٔ معامله در حالتِ APPROACHING نباید نمایش داده شود
+        direction: void 0,
+        entry: void 0,
+        tp: void 0,
+        sl: void 0,
+        rr: void 0,
+        probability: void 0,
+        sizing: void 0
+      };
+    }
+    return { ...d, reason: `${d.reason} | ${gateTxt}` };
+  };
+}
+
 // ../web_tool/src/s335_reflex_cycle.ts
 function ssfArr(x, period) {
   const n = x.length;
@@ -6995,6 +7111,262 @@ function decideS344(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
 }
 
+// ../web_tool/src/reversal_day_s345.ts
+var S345_CFG = {
+  // منبعِ اعداد: results/_scan_S345/XAUUSD_M15.json + _adjudicate_M15.json (V2_dropTOM)
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tfFa: "M15",
+    side: "LONG",
+    pip: 0.1,
+    barsPerDay: 96,
+    nOpen: 4,
+    kSpike: 1.1,
+    slopeMin: 0.05,
+    winFrom: 0.4,
+    winTo: 0.95,
+    atrPeriod: 14,
+    r2Period: 34,
+    r2Max: 0.55,
+    dropTurnOfMonth: true,
+    slPip: 240,
+    tpPip: 400,
+    maxHold: 40,
+    rqs: 90.7
+  },
+  // منبعِ اعداد: results/_scan_S345/EURUSD_M30.json + _verify_h1_eur.json (EURM30)
+  "EURUSD-M30": {
+    id: "EURUSD-M30",
+    tfFa: "M30",
+    side: "SHORT",
+    pip: 1e-4,
+    barsPerDay: 48,
+    nOpen: 6,
+    kSpike: 0.8,
+    slopeMin: 0.18,
+    winFrom: 0.4,
+    winTo: 0.95,
+    atrPeriod: 14,
+    r2Period: 34,
+    r2Max: 0.55,
+    dropTurnOfMonth: false,
+    slPip: 20,
+    tpPip: 33,
+    maxHold: 28,
+    rqs: 91.7
+  }
+};
+function atrSeriesS345(high, low, close, p = 14) {
+  const n = close.length;
+  const tr = new Array(n).fill(0);
+  if (n === 0) return [];
+  tr[0] = high[0] - low[0];
+  for (let i = 1; i < n; i++) {
+    tr[i] = Math.max(
+      high[i] - low[i],
+      Math.abs(high[i] - close[i - 1]),
+      Math.abs(low[i] - close[i - 1])
+    );
+  }
+  const atr2 = new Array(n).fill(NaN);
+  if (n >= p) {
+    let s = 0;
+    for (let k = 0; k < p; k++) s += tr[k];
+    atr2[p - 1] = s / p;
+    for (let i = p; i < n; i++) atr2[i] = (atr2[i - 1] * (p - 1) + tr[i]) / p;
+  }
+  return atr2;
+}
+function dayIdOf(tsSec) {
+  return Math.floor(tsSec / 86400);
+}
+function utcDayOfMonth(tsSec) {
+  return new Date(tsSec * 1e3).getUTCDate();
+}
+function computeS345(candles, cfg) {
+  const n = candles.length;
+  const o = candles.map((c2) => c2.open);
+  const h = candles.map((c2) => c2.high);
+  const l = candles.map((c2) => c2.low);
+  const c = candles.map((x) => x.close);
+  const t = candles.map((x) => x.time);
+  const side = cfg.side === "LONG" ? "long" : "short";
+  const slDist = cfg.slPip * cfg.pip;
+  const tpDist = cfg.tpPip * cfg.pip;
+  const need = cfg.r2Period + cfg.atrPeriod + cfg.nOpen + 10;
+  if (n < need) {
+    return {
+      active: false,
+      approaching: false,
+      direction: cfg.side,
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u0634\u062E\u06CC\u0635\u0650 \u0686\u0631\u062E\u0634\u0650 \u0631\u0648\u0646\u062F\u0650 \u0631\u0648\u0632 (reversal day) \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
+      indicators: [{ name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }]
+    };
+  }
+  const atr2 = atrSeriesS345(h, l, c, cfg.atrPeriod);
+  const r2 = r2Series(c, cfg.r2Period);
+  const i = n - 1;
+  const dToday = dayIdOf(t[i]);
+  let j0 = i;
+  while (j0 > 0 && dayIdOf(t[j0 - 1]) === dToday) j0 -= 1;
+  const pos = i - j0;
+  const tFrom = Math.max(cfg.nOpen, Math.floor(cfg.winFrom * cfg.barsPerDay));
+  const tTo = Math.floor(cfg.winTo * cfg.barsPerDay);
+  const posLo = Math.max(tFrom, cfg.nOpen + 1);
+  const inWindow = pos >= posLo && pos <= tTo;
+  const dayLongEnough = pos + 1 > cfg.nOpen + 2;
+  const atrRef = atr2[j0 + cfg.nOpen - 1];
+  const atrRefOk = pos >= cfg.nOpen - 1 && isFinite(atrRef) && atrRef > 0;
+  let initDir = 0;
+  if (atrRefOk) initDir = Math.sign(c[j0 + cfg.nOpen - 1] - o[j0]);
+  const needInit = side === "short" ? 1 : -1;
+  const initDirOk = atrRefOk && initDir === needInit;
+  let slope = NaN, lineT = NaN, slopeNorm = NaN;
+  if (initDirOk && inWindow && dayLongEnough) {
+    const m = pos + 1;
+    let Sy = 0, Sxy = 0;
+    for (let k = 0; k < m; k++) {
+      Sy += c[j0 + k];
+      Sxy += k * c[j0 + k];
+    }
+    const P = pos;
+    const Sx = P * (P + 1) / 2;
+    const Sxx = P * (P + 1) * (2 * P + 1) / 6;
+    const denom = m * Sxx - Sx * Sx;
+    if (denom > 0) {
+      slope = (m * Sxy - Sx * Sy) / denom;
+      const intercept = (Sy - slope * Sx) / m;
+      lineT = intercept + slope * P;
+      slopeNorm = slope / atrRef;
+    }
+  }
+  const trendOk = isFinite(slopeNorm) && (initDir > 0 ? slopeNorm >= cfg.slopeMin : slopeNorm <= -cfg.slopeMin);
+  let runHigh = -Infinity, runLow = Infinity;
+  for (let k = j0; k <= i; k++) {
+    if (h[k] > runHigh) runHigh = h[k];
+    if (l[k] < runLow) runLow = l[k];
+  }
+  const body2 = Math.abs(c[i] - o[i]);
+  const atrT = isFinite(atr2[i]) && atr2[i] > 0 ? atr2[i] : atrRef;
+  const bigBody = isFinite(atrT) && body2 >= cfg.kSpike * atrT;
+  const spikeDirOk = side === "short" ? c[i] < o[i] : c[i] > o[i];
+  const brokeLine = isFinite(lineT) && (side === "short" ? c[i] < lineT : c[i] > lineT);
+  const structOk = side === "short" ? h[i] < runHigh : l[i] > runLow;
+  const r2v = r2[i];
+  const regimeOk = isFinite(r2v) && r2v <= cfg.r2Max;
+  const dom = utcDayOfMonth(t[i]);
+  const tomOk = !cfg.dropTurnOfMonth || dom > 3;
+  const active = initDirOk && inWindow && dayLongEnough && trendOk && spikeDirOk && bigBody && brokeLine && structOk && regimeOk && tomOk;
+  const approaching = !active && initDirOk && inWindow && dayLongEnough && trendOk && regimeOk && tomOk;
+  const initFa = initDir > 0 ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+  const flipFa = side === "short" ? "\u0646\u0632\u0648\u0644\u06CC" : "\u0635\u0639\u0648\u062F\u06CC";
+  const structFa = side === "short" ? "\u0633\u0642\u0641\u0650 \u067E\u0627\u06CC\u06CC\u0646\u200C\u062A\u0631 (lower-high)" : "\u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631 (higher-low)";
+  const indicators = [
+    {
+      name: `\u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0631\u0648\u0632 (${cfg.nOpen} \u06A9\u0646\u062F\u0644\u0650 \u0646\u062E\u0633\u062A) \u0628\u0627\u06CC\u062F ${side === "short" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC"} \u0628\u0627\u0634\u062F`,
+      value: atrRefOk ? initFa + (initDirOk ? " \u2714" : " \u2718") : "\u2014",
+      status: initDirOk ? "ok" : "neutral"
+    },
+    {
+      name: `\u0642\u062F\u0631\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647 (|\u0634\u06CC\u0628| \u2265 ${cfg.slopeMin}\xD7ATR \u062F\u0631 \u06A9\u0646\u062F\u0644)`,
+      value: isFinite(slopeNorm) ? slopeNorm.toFixed(3) + (trendOk ? " \u2714" : " \u2718") : "\u2014",
+      status: trendOk ? "ok" : "neutral"
+    },
+    {
+      name: `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0636\u062F\u0650 \u0631\u0648\u0646\u062F (\u0628\u062F\u0646\u0647 \u2265 ${cfg.kSpike}\xD7ATR\u060C \u062C\u0647\u062A\u0650 ${flipFa})`,
+      value: (isFinite(atrT) && atrT > 0 ? (body2 / atrT).toFixed(2) + "\xD7ATR" : "\u2014") + (spikeDirOk && bigBody ? " \u2714" : " \u2718"),
+      status: spikeDirOk && bigBody ? "ok" : "neutral"
+    },
+    {
+      name: "\u0634\u06A9\u0633\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0631\u0648\u0632 (\u0631\u06AF\u0631\u0633\u06CC\u0648\u0646\u0650 \u062A\u062C\u0645\u0639\u06CC\u0650 close)",
+      value: brokeLine ? "\u0634\u06A9\u0633\u062A\u0647 \u2714" : isFinite(lineT) ? "\u0646\u0634\u06A9\u0633\u062A\u0647 \u2718" : "\u2014",
+      status: brokeLine ? "ok" : "neutral"
+    },
+    {
+      name: `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC: ${structFa}`,
+      value: structOk ? "\u062A\u0623\u06CC\u06CC\u062F \u2714" : "\u0627\u06A9\u0633\u062A\u0631\u0645\u0645\u0650 \u062A\u0627\u0632\u0647 \u2718",
+      status: structOk ? "ok" : "neutral"
+    },
+    {
+      name: `\u0631\u0698\u06CC\u0645\u0650 \u0686\u0631\u062E\u0634\u200C\u067E\u0630\u06CC\u0631 (R\xB2(${cfg.r2Period}) \u2264 ${cfg.r2Max})`,
+      value: (isFinite(r2v) ? r2v.toFixed(2) : "\u2014") + (regimeOk ? " \u2714" : " \u2718"),
+      status: regimeOk ? "ok" : "bad"
+    },
+    {
+      name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u0686\u0631\u062E\u0634 (\u06A9\u0646\u062F\u0644\u0650 ${posLo}..${tTo} \u0631\u0648\u0632)`,
+      value: `${pos}` + (inWindow ? " \u2714" : " \u2718"),
+      status: inWindow ? "ok" : "neutral"
+    },
+    ...cfg.dropTurnOfMonth ? [{
+      name: "\u0641\u06CC\u0644\u062A\u0631\u0650 \u0628\u0647\u0628\u0648\u062F: \u0628\u06CC\u0631\u0648\u0646 \u0627\u0632 \u0627\u0628\u062A\u062F\u0627\u06CC \u0645\u0627\u0647 (\u0631\u0648\u0632\u0650 \u0645\u0627\u0647 > \u06F3)",
+      value: `${dom}` + (tomOk ? " \u2714" : " \u2718"),
+      status: tomOk ? "ok" : "bad"
+    }] : []
+  ];
+  let reason;
+  if (active) {
+    reason = `\u0631\u0648\u0632\u0650 \u0686\u0631\u062E\u0634 (Reversal Day): \u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 ${initFa} \u0631\u0648\u0632 \u0628\u0627 \u06CC\u06A9 \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0636\u062F\u0650 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC (${(body2 / atrT).toFixed(2)}\xD7ATR) \u0634\u06A9\u0633\u062A\u060C \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0631\u0648\u0632 \u0634\u06A9\u0633\u062A\u0647 \u0634\u062F \u0648 ${structFa} \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F \u21D2 \u0648\u0631\u0648\u062F\u0650 ${side === "short" ? "\u0641\u0631\u0648\u0634" : "\u062E\u0631\u06CC\u062F"} \u062F\u0631 \u062C\u0647\u062A\u0650 \u0686\u0631\u062E\u0634 \u062A\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0631\u0648\u0632.`;
+  } else if (approaching) {
+    reason = `\u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 ${initFa} \u0631\u0648\u0632 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0686\u0631\u062E\u0634\u200C\u067E\u0630\u06CC\u0631 \u0634\u06A9\u0644 \u06AF\u0631\u0641\u062A\u0647 \u0648 \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u0686\u0631\u062E\u0634 \u0647\u0633\u062A\u06CC\u0645\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0636\u062F\u0650 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC (\u2265 ${cfg.kSpike}\xD7ATR) + \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F + ${structFa}.`;
+  } else if (!atrRefOk) {
+    reason = "\u0631\u0648\u0632\u0650 \u062C\u0627\u0631\u06CC \u0647\u0646\u0648\u0632 \u06A9\u0646\u062F\u0644\u0650 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u0639\u06CC\u06CC\u0646\u0650 \u062C\u0647\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647 \u0646\u062F\u0627\u0631\u062F.";
+  } else if (!initDirOk) {
+    reason = `\u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0631\u0648\u0632 ${initFa} \u0627\u0633\u062A\u061B \u0628\u0631\u0627\u06CC \u0686\u0631\u062E\u0634\u0650 ${flipFa} \u0628\u0627\u06CC\u062F ${side === "short" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC"} \u0628\u0627\u0634\u062F \u2014 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`;
+  } else if (!inWindow) {
+    reason = "\u0628\u06CC\u0631\u0648\u0646 \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u0686\u0631\u062E\u0634 \u0647\u0633\u062A\u06CC\u0645 (\u0686\u0631\u062E\u0634 \u062F\u0631 \u0645\u06CC\u0627\u0646\u0647/\u0627\u0648\u0627\u062E\u0631\u0650 \u0631\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0627\u0633\u062A\u060C \u0646\u0647 \u062F\u0631 \u0628\u0627\u0632\u0650 \u0631\u0648\u0632).";
+  } else if (!regimeOk) {
+    reason = `\u0631\u0698\u06CC\u0645\u0650 \u0628\u0627\u0632\u0627\u0631 \u0686\u0631\u062E\u0634\u200C\u067E\u0630\u06CC\u0631 \u0646\u06CC\u0633\u062A (R\xB2(${cfg.r2Period}) > ${cfg.r2Max}) \u2014 \u0627\u0632 \u0648\u0631\u0648\u062F \u067E\u0631\u0647\u06CC\u0632 \u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`;
+  } else if (!tomOk) {
+    reason = "\u0627\u0628\u062A\u062F\u0627\u06CC \u0645\u0627\u0647 (\u0631\u0648\u0632\u0647\u0627\u06CC \u06F1..\u06F3) \u2014 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0628\u0647\u0628\u0648\u062F\u0650 \u0644\u0627\u06CC\u0647 \u0648\u0631\u0648\u062F \u0631\u0627 \u0645\u0633\u062F\u0648\u062F \u0645\u06CC\u200C\u06A9\u0646\u062F.";
+  } else if (!trendOk) {
+    reason = "\u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0631\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u0642\u0648\u06CC \u0646\u06CC\u0633\u062A (\u0634\u06CC\u0628 \u06A9\u0645) \u2014 \u0686\u0631\u062E\u0634\u0650 \u0645\u0639\u0646\u0627\u062F\u0627\u0631\u06CC \u062F\u0631 \u06A9\u0627\u0631 \u0646\u06CC\u0633\u062A.";
+  } else {
+    reason = "\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0636\u062F\u0650 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC / \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F / \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC \u0647\u0646\u0648\u0632 \u06A9\u0627\u0645\u0644 \u0646\u0634\u062F\u0647 \u0627\u0633\u062A.";
+  }
+  return {
+    active,
+    approaching,
+    direction: cfg.side,
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0645\u0627\u0634\u0647\u0654 \u0686\u0631\u062E\u0634: \u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0636\u062F\u0650 \u0631\u0648\u0646\u062F \u2265 ${cfg.kSpike}\xD7ATR + \u0634\u06A9\u0633\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u0631\u0648\u0632 + ${structFa}` : void 0,
+    indicators
+  };
+}
+function decideS345(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS345(candles, cfg);
+  const reg = {
+    regime: cfg.side === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: false,
+    adx: 0,
+    activeStream: cfg.side === "SHORT" ? "bear" : "bull",
+    bucket: `s345_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S345",
+    name: `\u0686\u0631\u062E\u0634\u0650 \u0631\u0648\u0646\u062F\u0650 \u0631\u0648\u0632 (Brooks Reversal Day \xB7 ${cfg.tfFa})`,
+    kind: "reversal_day",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 ${cfg.tfFa} (${cfg.tpPip}/${cfg.slPip} pip \xB7 \u0646\u0633\u0628\u062A ${(cfg.tpPip / cfg.slPip).toFixed(2)}). \u0637\u0628\u0642\u0650 \u0641\u0635\u0644\u0650 \u06F2\u06F4 Brooks \xABswinging \u0628\u0647\u062A\u0631 \u0627\u0632 scalping \u0627\u0633\u062A\xBB \u21D2 \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0627 \u062A\u0627 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631 \u0648 \u0632\u0648\u062F \u0646\u0628\u0646\u062F. \u0647\u0634\u062F\u0627\u0631\u0650 \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645: \u0627\u06AF\u0631 \u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0631\u0648\u0632 \u0627\u0632 \u0633\u0631 \u06AF\u0631\u0641\u062A\u0647 \u0634\u062F (\u0627\u06A9\u0633\u062A\u0631\u0645\u0645\u0650 ${cfg.side === "SHORT" ? "\u0633\u0642\u0641\u0650" : "\u06A9\u0641\u0650"} \u0631\u0648\u0632 \u0634\u06A9\u0633\u062A) \u0686\u0631\u062E\u0634 \u0634\u06A9\u0633\u062A \u062E\u0648\u0631\u062F\u0647 \u0627\u0633\u062A. \u26A0\uFE0F \u062A\u0631\u06CC\u0644\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0648\u06CC \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0622\u0632\u0645\u0648\u062F\u0647 \u0634\u062F \u0648 RQS+ \u0631\u0627 \u06A9\u0627\u0647\u0634 \u062F\u0627\u062F \u21D2 \u062D\u062F\u0650 \u0636\u0631\u0631 \u0631\u0627 \u062C\u0627\u0628\u0647\u200C\u062C\u0627 \u0646\u06A9\u0646.`,
+    filters: [
+      `\u0631\u0648\u0646\u062F\u0650 \u0627\u0648\u0644\u06CC\u0647\u0654 \u0631\u0648\u0632 (${cfg.nOpen} \u06A9\u0646\u062F\u0644) \u0628\u0627 |\u0634\u06CC\u0628| \u2265 ${cfg.slopeMin}\xD7ATR`,
+      `\u0627\u0633\u067E\u0627\u06CC\u06A9\u0650 \u0636\u062F\u0650 \u0631\u0648\u0646\u062F \u2265 ${cfg.kSpike}\xD7ATR`,
+      "\u0634\u06A9\u0633\u062A\u0650 \u062E\u0637\u0650 \u0631\u0648\u0646\u062F\u0650 \u062A\u062C\u0645\u0639\u06CC\u0650 \u0631\u0648\u0632",
+      cfg.side === "SHORT" ? "\u062A\u0623\u06CC\u06CC\u062F\u0650 lower-high" : "\u062A\u0623\u06CC\u06CC\u062F\u0650 higher-low",
+      `\u0631\u0698\u06CC\u0645\u0650 \u0686\u0631\u062E\u0634\u200C\u067E\u0630\u06CC\u0631 R\xB2(${cfg.r2Period}) \u2264 ${cfg.r2Max}`,
+      `\u067E\u0646\u062C\u0631\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC\u0650 \u0686\u0631\u062E\u0634 (${cfg.winFrom}..${cfg.winTo} \u0631\u0648\u0632)`,
+      ...cfg.dropTurnOfMonth ? ["\u062D\u0630\u0641\u0650 \u0627\u0628\u062A\u062F\u0627\u06CC \u0645\u0627\u0647 (\u0631\u0648\u0632\u0650 \u0645\u0627\u0647 > \u06F3)"] : []
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
+}
+
 // ../web_tool/src/strategy_registry.ts
 var GOLD_PIP7 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
@@ -7157,12 +7529,15 @@ var s335Layer = (cfg) => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capita
 var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s341Layer = (cfg) => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s344Layer = (cfg) => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s345Layer = (cfg) => (ctx) => decideS345(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
     s341Layer(S341_CFG["XAUUSD-M5"]),
     // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=94.7 (WR 70.8% · PF 2.22 · +$976) · بخشِ مستقل standalone پاس (96.4)
-    s333Layer(S333_CFG["XAUUSD-M5"]),
-    // احیای S79 — pullback با هندسهٔ منصفانه + rsi_turn — RQS+=91.3 (WR 65.6% · PF 2.85)
+    // ⭐ S355 = S333/M5 **با دروازهٔ حالتِ ساختارِ LPSB** — تنها لایهٔ ۱۱/۱۱ دروازهٔ RQS2.
+    //    پایهٔ بدونِ دروازه: WR 65.6% · PF 2.85 · RQS2=27.5 (POWER-LIMITED، حقِ اتصال نداشت)
+    //    با دروازه:          WR 72.3% · PF 3.95 · RQS2=83.9 (ACCEPT ✓) ⇒ همین وصل می‌شود.
+    withLpsbGate(s333Layer(S333_CFG["XAUUSD-M5"]), S355_CFG["XAUUSD-M5"]),
     s330Layer(S330_CFG["XAUUSD-M5"]),
     s328Layer(S328_CFG["XAUUSD-M5"]),
     s334Layer(S334_CFG["XAUUSD-M5"]),
@@ -7186,6 +7561,8 @@ var CARD_LAYERS = {
     // S335 — Reflex dip-turn + گیتِ r2>0.55 — RQS+=89.7 (WR 60.0% · PF 2.08) · همپوشانیِ صفر با S333
     s344Layer(S344_CFG["XAUUSD-M15"]),
     // S344 — Brooks فصلِ ۲۳ trend-from-open first-pullback SHORT — RQS+=91.4 (WR 64.1% · PF 2.08 · +$1,571) · مستقل=92.9 · نخستین SHORT این کارت
+    s345Layer(S345_CFG["XAUUSD-M15"]),
+    // S345 — Brooks فصلِ ۲۴ reversal-day چرخشِ روندِ روز LONG — RQS+=90.7 (WR 62.4% · PF 2.30 · +$2,422.8) · همپوشانی 48.5% ولی بخشِ مستقل قوی‌تر (WR 65.0/PF 2.56)
     s310Layer,
     s312Layer(295, 295, 48)
   ],
@@ -7230,6 +7607,8 @@ var CARD_LAYERS = {
     s326Layer(STREAK_REV_CFG["EURUSD-M15"])
   ],
   "EURUSD-M30": [
+    s345Layer(S345_CFG["EURUSD-M30"]),
+    // S345 — Brooks فصلِ ۲۴ reversal-day چرخشِ روندِ روز SHORT — RQS+=91.7 (WR 62.5% · PF 2.38 · +$2,281.6) · همپوشانی 30.6% · نخستین SHORT این کارت
     s327Layer(SELL_CLIMAX_CFG["EURUSD-M30"])
   ]
 };
