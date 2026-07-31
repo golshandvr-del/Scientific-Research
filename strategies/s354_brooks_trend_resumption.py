@@ -300,9 +300,9 @@ def scan_tf(asset, tf, with_null=True, seed=12345):
     rng = np.random.default_rng(seed)
 
     rows = []
-    for n_open_frac, late_from, spike_k, tight_f in itertools.product(
-            N_OPEN_FRAC, LATE_FROM, SPIKE_K, TIGHT_F):
-        long_raw, short_raw = build_signals(df, asset, tf, n_open_frac, late_from, spike_k, tight_f)
+    for n_open_frac, late_from, spike_k, tight_atr in itertools.product(
+            N_OPEN_FRAC, LATE_FROM, SPIKE_K, TIGHT_ATR):
+        long_raw, short_raw = build_signals(df, asset, tf, n_open_frac, late_from, spike_k, tight_atr)
         if int(long_raw.sum() + short_raw.sum()) < MIN_N:
             continue
         for r2_spec in R2_MODE:
@@ -327,7 +327,7 @@ def scan_tf(asset, tf, with_null=True, seed=12345):
                     m = res.get("metrics", {})
                     rows.append(dict(
                         n_open_frac=n_open_frac, late_from=late_from,
-                        spike_k=spike_k, tight_f=tight_f,
+                        spike_k=spike_k, tight_atr=tight_atr,
                         r2=(None if r2_spec is None else f"{r2_spec[0]}:{r2_spec[1]}:{r2_spec[2]}"),
                         side=side, sl_k=sl_k, rr=rr, sl=sl, tp=tp,
                         n=m.get("n_trades"), wr=m.get("win_rate"),
@@ -339,7 +339,7 @@ def scan_tf(asset, tf, with_null=True, seed=12345):
     if with_null:
         for rec in ranked:
             long_raw, short_raw = build_signals(df, asset, tf, rec["n_open_frac"],
-                                                rec["late_from"], rec["spike_k"], rec["tight_f"])
+                                                rec["late_from"], rec["spike_k"], rec["tight_atr"])
             r2_spec = None
             if rec["r2"]:
                 nm, op, q = rec["r2"].split(":")
