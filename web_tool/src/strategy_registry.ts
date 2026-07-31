@@ -74,6 +74,15 @@ import { decideS344, S344_CFG } from './trend_from_open_s344'
 //     ⇒ لبهٔ نو، نه بازتولیدِ زمان-محور. EUR-M30=30.6% (خوش‌خیم).
 //     پورتِ verbatim تأیید شد (۱۹۳/۱۹۳ سیگنال یکسان روی هر دو کارت، mismatch=0).
 import { decideS345, S345_CFG } from './reversal_day_s345'
+// --- لایهٔ نوِ این نشست: S354 Brooks «Trend Resumption Day» (فصلِ ۲۵) ---
+//     روزِ ازسرگیریِ روند: اسپایکِ صعودیِ صبح + رنجِ میانیِ فشرده + شکستِ صعودی در
+//     ساعتِ پایانیِ روز، رژیمِ روند r2(55)≥0.394. leg دوم measured-move ⇒ TP=۲×SL.
+//     • XAUUSD-H1 LONG — RQS2=80.8 · ACCEPT (همه‌ی ۱۱ دروازه) — WR 50.5% · PF 1.556 · +$3,615
+//       (بهبود: تفکیکِ جهت→long + RR شناور=۲ + SL=1.3×ATR؛ both/RR1 زیان‌ده بود).
+//     family test: ۳۲ عضو N=1 ⇒ +3.55pp/4.82σ CONFIRMED؛ همهٔ EUR و XAU-H4 NOT CONFIRMED.
+//     همپوشانی: ۵۰.۱٪ با زمان-محورِ S139..S144 اما خارج از آن پنجره‌ها 3.65σ CONFIRMED
+//     ⇒ لبهٔ نوِ مستقل، نه بازتولیدِ زمان-محور. سند: results/S354_...rqs2-80.md
+import { decideS354, S354_CFG } from './trend_resumption_s354'
 
 const GOLD_PIP = 0.1
 
