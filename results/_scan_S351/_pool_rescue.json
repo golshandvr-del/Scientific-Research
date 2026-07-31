@@ -1,0 +1,61 @@
+{
+  "members": [
+    {
+      "card": "XAUUSD-D1",
+      "n": 74,
+      "lift": 13.895929891248024
+    },
+    {
+      "card": "XAUUSD-H4",
+      "n": 515,
+      "lift": 0.882272681041286
+    },
+    {
+      "card": "XAUUSD-H1",
+      "n": 1937,
+      "lift": 2.3161805670001314
+    }
+  ],
+  "n_before": 2526,
+  "n_after": 2037,
+  "dropped": [],
+  "verdict": "REJECT",
+  "power_limited": false,
+  "rqs2_score": 11.1,
+  "gates": {
+    "H0": false,
+    "H1": false,
+    "H2": true,
+    "H3": false,
+    "H4": false,
+    "H5": true,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": true,
+    "H10": null
+  },
+  "gate_families": {
+    "economic": {
+      "H0": false,
+      "H1": false,
+      "H2": true,
+      "H8": false,
+      "H9": true
+    },
+    "power": {
+      "H3": false,
+      "H7": false,
+      "H10": null
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+      "H3",
+      "H7",
+      "H10"
+    ]
+  },
+  "skill_lift_pp": 2.49,
+  "skill_z": 1.57,
+  "n_trades": 2037
+}
