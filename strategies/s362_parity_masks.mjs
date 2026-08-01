@@ -42,13 +42,28 @@ const candles = rows.map(r => {
 })
 const N = candles.length
 
-// ── نمونهٔ قطعی (بذرِ ثابت) از نیمهٔ دومِ داده، جایی که همهٔ warm-upها گذشته ──
-let seed = 20250801
-const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
-const lo = Math.floor(N * 0.35)
-const idx = new Set()
-while (idx.size < Math.min(nSample, N - lo)) idx.add(lo + Math.floor(rnd() * (N - lo)))
-const sample = [...idx].sort((a, b) => a - b)
+// ── اندیس‌های آزمون ──
+// ⚠️ چرا نمونهٔ تصادفیِ صرف کافی **نیست**: این چهار لایه به‌ندرت شلیک می‌کنند
+// (روی H1، در ۳۰۰ نمونهٔ تصادفی فقط ۱ فعال دیده شد). با چنین نمونه‌ای، توافقِ
+// «۳۰۰ از ۳۰۰» تقریباً هیچ‌چیز اثبات نمی‌کند، چون یک بازتولیدِ کاملاً خرابی که
+// همیشه `false` برمی‌گرداند هم ~۹۹.۷٪ توافق می‌گیرد. پس آزمون **دوسویه** است:
+//   • همهٔ اندیس‌هایی که ماسکِ **پایتون** `active` می‌گوید ⇒ آزمونِ مثبت‌ها
+//     (کشفِ مثبتِ کاذبِ پایتون)
+//   • به‌علاوهٔ نمونهٔ تصادفیِ قطعی ⇒ آزمونِ منفی‌ها
+//     (کشفِ مثبتی که پایتون از دست داده)
+// فایلِ اندیس‌ها را **پایتون** می‌سازد تا هر دو طرف در نقاطِ یکسان سنجیده شوند.
+const idxFile = path.join(ROOT, '.tmp_logs', `parity_idx_${card}.json`)
+let sample
+if (fs.existsSync(idxFile)) {
+  sample = JSON.parse(fs.readFileSync(idxFile, 'utf8')).indices
+} else {
+  let seed = 20250801
+  const rnd = () => (seed = (seed * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
+  const lo = Math.floor(N * 0.35)
+  const idx = new Set()
+  while (idx.size < Math.min(nSample, N - lo)) idx.add(lo + Math.floor(rnd() * (N - lo)))
+  sample = [...idx].sort((a, b) => a - b)
+}
 
 const LAYERS = [
   ['S326', computeStreakReversal, STREAK_REV_CFG[card]],
