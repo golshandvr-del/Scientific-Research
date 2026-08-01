@@ -1883,13 +1883,13 @@
   },
   "seeds": {
    "23": {
-    "null_mean": 44.008,
-    "null_sd": 4.487,
-    "k": 120,
-    "lift_pp": 0.768,
-    "z": 0.171,
-    "p_empirical": 0.479339,
-    "n_draws_ge_obs": 57,
+    "null_mean": 44.015,
+    "null_sd": 4.507,
+    "k": 2000,
+    "lift_pp": 0.761,
+    "z": 0.169,
+    "p_empirical": 0.425287,
+    "n_draws_ge_obs": 850,
     "labels": {
      "honest": {
       "verdict": "REJECT",
@@ -1899,7 +1899,7 @@
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -1928,12 +1928,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.11,
-       "skill_lift_pp": 0.67,
-       "skill_z": 0.1,
-       "skill_p_perm": 0.458645,
-       "perm_max": 64.06,
-       "perm_k": 120,
+       "null_ref_wr": 43.99,
+       "skill_lift_pp": 0.78,
+       "skill_z": 0.13,
+       "skill_p_perm": 0.449723,
+       "perm_max": 68.0,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -1943,17 +1943,17 @@
         "short": 35.82
        },
        "side_lift_pp": {
-        "long": 6.63,
-        "short": -5.29
+        "long": 6.88,
+        "short": -5.31
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.471039,
-       "p_adj_bonferroni": 0.471039,
-       "z_obs": 0.156,
+       "p_emp": 0.460422,
+       "p_adj_bonferroni": 0.460422,
+       "z_obs": 0.183,
        "z_luck_bound": 0.52,
-       "z_margin": -0.363,
+       "z_margin": -0.337,
        "n_trials": 1,
        "cal_nets": [
         0.0,
@@ -1994,8 +1994,7 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      },
      "conservative": {
@@ -2006,7 +2005,7 @@
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -2035,12 +2034,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.11,
-       "skill_lift_pp": 0.67,
-       "skill_z": 0.1,
-       "skill_p_perm": 0.458645,
-       "perm_max": 64.06,
-       "perm_k": 120,
+       "null_ref_wr": 43.99,
+       "skill_lift_pp": 0.78,
+       "skill_z": 0.13,
+       "skill_p_perm": 0.449723,
+       "perm_max": 68.0,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -2050,17 +2049,17 @@
         "short": 35.82
        },
        "side_lift_pp": {
-        "long": 6.63,
-        "short": -5.29
+        "long": 6.88,
+        "short": -5.31
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.471039,
+       "p_emp": 0.460422,
        "p_adj_bonferroni": 1.0,
-       "z_obs": 0.156,
+       "z_obs": 0.183,
        "z_luck_bound": 2.616,
-       "z_margin": -2.46,
+       "z_margin": -2.433,
        "n_trials": 128,
        "cal_nets": [
         0.0,
@@ -2101,8 +2100,7 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      },
      "stress": {
@@ -2113,7 +2111,7 @@
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -2142,12 +2140,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.11,
-       "skill_lift_pp": 0.67,
-       "skill_z": 0.1,
-       "skill_p_perm": 0.458645,
-       "perm_max": 64.06,
-       "perm_k": 120,
+       "null_ref_wr": 43.99,
+       "skill_lift_pp": 0.78,
+       "skill_z": 0.13,
+       "skill_p_perm": 0.449723,
+       "perm_max": 68.0,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -2157,17 +2155,17 @@
         "short": 35.82
        },
        "side_lift_pp": {
-        "long": 6.63,
-        "short": -5.29
+        "long": 6.88,
+        "short": -5.31
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.471039,
+       "p_emp": 0.460422,
        "p_adj_bonferroni": 1.0,
-       "z_obs": 0.156,
+       "z_obs": 0.183,
        "z_luck_bound": 3.06,
-       "z_margin": -2.903,
+       "z_margin": -2.877,
        "n_trials": 512,
        "cal_nets": [
         0.0,
@@ -2208,21 +2206,20 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      }
     },
     "accept_conservative": false
    },
    "101": {
-    "null_mean": 43.817,
-    "null_sd": 4.295,
-    "k": 120,
-    "lift_pp": 0.959,
-    "z": 0.223,
-    "p_empirical": 0.454545,
-    "n_draws_ge_obs": 54,
+    "null_mean": 43.823,
+    "null_sd": 4.333,
+    "k": 2000,
+    "lift_pp": 0.953,
+    "z": 0.22,
+    "p_empirical": 0.423288,
+    "n_draws_ge_obs": 846,
     "labels": {
      "honest": {
       "verdict": "REJECT",
@@ -2232,7 +2229,7 @@
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -2261,12 +2258,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.08,
-       "skill_lift_pp": 0.7,
-       "skill_z": 0.11,
-       "skill_p_perm": 0.457099,
-       "perm_max": 61.62,
-       "perm_k": 120,
+       "null_ref_wr": 43.98,
+       "skill_lift_pp": 0.79,
+       "skill_z": 0.13,
+       "skill_p_perm": 0.447508,
+       "perm_max": 64.24,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -2277,16 +2274,16 @@
        },
        "side_lift_pp": {
         "long": 6.88,
-        "short": -5.49
+        "short": -5.29
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.468547,
-       "p_adj_bonferroni": 0.468547,
-       "z_obs": 0.163,
+       "p_emp": 0.459464,
+       "p_adj_bonferroni": 0.459464,
+       "z_obs": 0.185,
        "z_luck_bound": 0.52,
-       "z_margin": -0.357,
+       "z_margin": -0.334,
        "n_trials": 1,
        "cal_nets": [
         0.0,
@@ -2327,8 +2324,7 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      },
      "conservative": {
@@ -2339,7 +2335,7 @@
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -2368,12 +2364,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.08,
-       "skill_lift_pp": 0.7,
-       "skill_z": 0.11,
-       "skill_p_perm": 0.457099,
-       "perm_max": 61.62,
-       "perm_k": 120,
+       "null_ref_wr": 43.98,
+       "skill_lift_pp": 0.79,
+       "skill_z": 0.13,
+       "skill_p_perm": 0.447508,
+       "perm_max": 64.24,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -2384,16 +2380,16 @@
        },
        "side_lift_pp": {
         "long": 6.88,
-        "short": -5.49
+        "short": -5.29
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.468547,
+       "p_emp": 0.459464,
        "p_adj_bonferroni": 1.0,
-       "z_obs": 0.163,
+       "z_obs": 0.185,
        "z_luck_bound": 2.616,
-       "z_margin": -2.454,
+       "z_margin": -2.431,
        "n_trials": 128,
        "cal_nets": [
         0.0,
@@ -2434,8 +2430,7 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      },
      "stress": {
@@ -2446,7 +2441,7 @@
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -2475,12 +2470,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.08,
-       "skill_lift_pp": 0.7,
-       "skill_z": 0.11,
-       "skill_p_perm": 0.457099,
-       "perm_max": 61.62,
-       "perm_k": 120,
+       "null_ref_wr": 43.98,
+       "skill_lift_pp": 0.79,
+       "skill_z": 0.13,
+       "skill_p_perm": 0.447508,
+       "perm_max": 64.24,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -2491,16 +2486,16 @@
        },
        "side_lift_pp": {
         "long": 6.88,
-        "short": -5.49
+        "short": -5.29
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.468547,
+       "p_emp": 0.459464,
        "p_adj_bonferroni": 1.0,
-       "z_obs": 0.163,
+       "z_obs": 0.185,
        "z_luck_bound": 3.06,
-       "z_margin": -2.897,
+       "z_margin": -2.874,
        "n_trials": 512,
        "cal_nets": [
         0.0,
@@ -2541,31 +2536,30 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      }
     },
     "accept_conservative": false
    },
    "777": {
-    "null_mean": 43.885,
-    "null_sd": 4.425,
-    "k": 120,
-    "lift_pp": 0.891,
-    "z": 0.201,
-    "p_empirical": 0.421488,
-    "n_draws_ge_obs": 50,
+    "null_mean": 44.055,
+    "null_sd": 4.409,
+    "k": 2000,
+    "lift_pp": 0.721,
+    "z": 0.164,
+    "p_empirical": 0.43978,
+    "n_draws_ge_obs": 879,
     "labels": {
      "honest": {
       "verdict": "REJECT",
-      "score": 2.1,
+      "score": 2.2,
       "rank": null,
       "gates": {
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -2594,12 +2588,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.46,
-       "skill_lift_pp": 0.32,
-       "skill_z": 0.05,
-       "skill_p_perm": 0.479385,
-       "perm_max": 60.93,
-       "perm_k": 120,
+       "null_ref_wr": 44.01,
+       "skill_lift_pp": 0.76,
+       "skill_z": 0.12,
+       "skill_p_perm": 0.450359,
+       "perm_max": 66.93,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -2609,17 +2603,17 @@
         "short": 35.82
        },
        "side_lift_pp": {
-        "long": 6.88,
-        "short": -6.25
+        "long": 6.82,
+        "short": -5.29
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.504021,
-       "p_adj_bonferroni": 0.504021,
-       "z_obs": 0.074,
+       "p_emp": 0.462548,
+       "p_adj_bonferroni": 0.462548,
+       "z_obs": 0.178,
        "z_luck_bound": 0.52,
-       "z_margin": -0.446,
+       "z_margin": -0.342,
        "n_trials": 1,
        "cal_nets": [
         0.0,
@@ -2660,19 +2654,18 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      },
      "conservative": {
       "verdict": "REJECT",
-      "score": 2.1,
+      "score": 2.2,
       "rank": null,
       "gates": {
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -2701,12 +2694,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.46,
-       "skill_lift_pp": 0.32,
-       "skill_z": 0.05,
-       "skill_p_perm": 0.479385,
-       "perm_max": 60.93,
-       "perm_k": 120,
+       "null_ref_wr": 44.01,
+       "skill_lift_pp": 0.76,
+       "skill_z": 0.12,
+       "skill_p_perm": 0.450359,
+       "perm_max": 66.93,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -2716,17 +2709,17 @@
         "short": 35.82
        },
        "side_lift_pp": {
-        "long": 6.88,
-        "short": -6.25
+        "long": 6.82,
+        "short": -5.29
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.504021,
+       "p_emp": 0.462548,
        "p_adj_bonferroni": 1.0,
-       "z_obs": 0.074,
+       "z_obs": 0.178,
        "z_luck_bound": 2.616,
-       "z_margin": -2.543,
+       "z_margin": -2.439,
        "n_trials": 128,
        "cal_nets": [
         0.0,
@@ -2767,19 +2760,18 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      },
      "stress": {
       "verdict": "REJECT",
-      "score": 2.1,
+      "score": 2.2,
       "rank": null,
       "gates": {
        "H0": true,
        "H1": false,
        "H2": false,
-       "H3": null,
+       "H3": false,
        "H4": false,
        "H5": false,
        "H6": false,
@@ -2808,12 +2800,12 @@
        "rr": 1.68,
        "breakeven_wr_cost": 38.48,
        "wr_excess_cost": 6.29,
-       "null_ref_wr": 44.46,
-       "skill_lift_pp": 0.32,
-       "skill_z": 0.05,
-       "skill_p_perm": 0.479385,
-       "perm_max": 60.93,
-       "perm_k": 120,
+       "null_ref_wr": 44.01,
+       "skill_lift_pp": 0.76,
+       "skill_z": 0.12,
+       "skill_p_perm": 0.450359,
+       "perm_max": 66.93,
+       "perm_k": 2000,
        "side_n": {
         "long": 67,
         "short": 67
@@ -2823,17 +2815,17 @@
         "short": 35.82
        },
        "side_lift_pp": {
-        "long": 6.88,
-        "short": -6.25
+        "long": 6.82,
+        "short": -5.29
        },
        "prune_sides": [
         "short"
        ],
-       "p_emp": 0.504021,
+       "p_emp": 0.462548,
        "p_adj_bonferroni": 1.0,
-       "z_obs": 0.074,
+       "z_obs": 0.178,
        "z_luck_bound": 3.06,
-       "z_margin": -2.986,
+       "z_margin": -2.882,
        "n_trials": 512,
        "cal_nets": [
         0.0,
@@ -2874,8 +2866,7 @@
        }
       },
       "notes": [
-       "PF=0.918<1.3",
-       "H3 UNKNOWN: only 120 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+       "PF=0.918<1.3"
       ]
      }
     },

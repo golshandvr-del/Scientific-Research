@@ -1,0 +1,56 @@
+{
+ "card": "XAUUSD-W1",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "bars": 810,
+ "split_bar": 486,
+ "archive_bracket": {
+  "sl": 6247.5,
+  "tp": 13807.0,
+  "mh": 29,
+  "rr": 2.21,
+  "source": "DERIVED"
+ },
+ "transfer": true,
+ "phase_b": {
+  "card": "XAUUSD-W1",
+  "phase": "B",
+  "chosen": {
+   "k_sl": 2.1,
+   "rr": 1.68,
+   "atr_p": 34,
+   "theta": 4,
+   "mh": 29
+  },
+  "archive_bracket": {
+   "sl": 6247.5,
+   "tp": 13807.0,
+   "mh": 29,
+   "rr": 2.21,
+   "source": "DERIVED"
+  },
+  "oos_bars": [
+   486,
+   810
+  ],
+  "n_trials": {
+   "honest": 1,
+   "conservative": 128,
+   "stress": 512
+  },
+  "oos_walk": {
+   "wr": 0.0,
+   "base": 21.212,
+   "lift_pp": -21.212,
+   "z_binom": -0.519,
+   "n": 1,
+   "n_long": 0,
+   "n_short": 1
+  },
+  "status": "NO_TRADES_OOS",
+  "decision": "DEAD_UNDER_FLOATING_GEOMETRY"
+ },
+ "status": "NO_TRADES_OOS",
+ "decision": "DEAD_UNDER_FLOATING_GEOMETRY_TRANSFER",
+ "note": "outside the search domain — a transfer card cannot admit the layer on its own"
+}
