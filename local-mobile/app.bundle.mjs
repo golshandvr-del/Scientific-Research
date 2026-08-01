@@ -6480,397 +6480,8 @@ function decideS340(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
 }
 
-// ../web_tool/src/swing_fade_s341.ts
-var GOLD_PIP5 = 0.1;
-var S341_CFG = {
-  // RQS+=94.7 | WR 70.8% | PF 2.22 — رژیمِ رنجِ سفت + سیگنالِ دوم (بدونِ فیلترِ کشش)
-  "XAUUSD-M5": {
-    id: "XAUUSD-M5",
-    tfFa: "M5",
-    w: 4,
-    bufFrac: 0.05,
-    useStretch: false,
-    stretch: 0,
-    useExh: false,
-    exh: 0,
-    requireSecond: true,
-    secondLookback: 40,
-    chopMin: 61.8,
-    r2Max: 0.22,
-    erMax: 0.16,
-    erP: 11,
-    slPip: 180,
-    tpPip: 260,
-    maxHold: 48,
-    rqs: 94.7
-  },
-  // RQS+=89.8 | WR 65.0% | PF 1.83
-  "XAUUSD-M15": {
-    id: "XAUUSD-M15",
-    tfFa: "M15",
-    w: 4,
-    bufFrac: 0.15,
-    useStretch: false,
-    stretch: 0,
-    useExh: false,
-    exh: 0,
-    requireSecond: true,
-    secondLookback: 40,
-    chopMin: 61.8,
-    r2Max: 0.22,
-    erMax: 0.16,
-    erP: 11,
-    slPip: 280,
-    tpPip: 620,
-    maxHold: 40,
-    rqs: 89.8
-  },
-  // RQS+=89.7 | WR 63.9% | PF 1.77 — رژیمِ میانی (chop≥58)
-  "XAUUSD-M30": {
-    id: "XAUUSD-M30",
-    tfFa: "M30",
-    w: 8,
-    bufFrac: 0.15,
-    useStretch: false,
-    stretch: 0,
-    useExh: false,
-    exh: 0,
-    requireSecond: true,
-    secondLookback: 40,
-    chopMin: 58,
-    r2Max: 0.3,
-    erMax: 0.22,
-    erP: 11,
-    slPip: 380,
-    tpPip: 840,
-    maxHold: 18,
-    rqs: 89.7
-  },
-  // RQS+=94.5 | WR 66.7% | PF 2.01 — احیاشده با فیلترِ جعبه‌ابزار (کشش+خستگی)، بدونِ سیگنالِ دوم
-  "XAUUSD-H1": {
-    id: "XAUUSD-H1",
-    tfFa: "H1",
-    w: 4,
-    bufFrac: 0.05,
-    useStretch: true,
-    stretch: 0.7,
-    useExh: true,
-    exh: 0.25,
-    requireSecond: false,
-    secondLookback: 40,
-    chopMin: 61.8,
-    r2Max: 0.22,
-    erMax: 0.16,
-    erP: 11,
-    slPip: 520,
-    tpPip: 1550,
-    maxHold: 16,
-    rqs: 94.5
-  }
-};
-function trueRange2(h, l, c) {
-  const n = h.length;
-  const tr = new Array(n).fill(NaN);
-  for (let i = 0; i < n; i++) {
-    if (i === 0) {
-      tr[i] = h[i] - l[i];
-      continue;
-    }
-    const a = h[i] - l[i];
-    const b = Math.abs(h[i] - c[i - 1]);
-    const d = Math.abs(l[i] - c[i - 1]);
-    tr[i] = Math.max(a, b, d);
-  }
-  return tr;
-}
-function chopArr(h, l, c, p) {
-  const n = h.length;
-  const tr = trueRange2(h, l, c);
-  const out = new Array(n).fill(NaN);
-  for (let i = p - 1; i < n; i++) {
-    let sumTr = 0;
-    let hh = -Infinity, ll = Infinity;
-    for (let k = i - p + 1; k <= i; k++) {
-      sumTr += tr[k];
-      if (h[k] > hh) hh = h[k];
-      if (l[k] < ll) ll = l[k];
-    }
-    const rng = hh - ll;
-    if (rng > 0 && sumTr > 0) out[i] = 100 * Math.log10(sumTr / rng) / Math.log10(p);
-  }
-  return out;
-}
-function r2Arr(c, p) {
-  const n = c.length;
-  const out = new Array(n).fill(NaN);
-  const t = [];
-  for (let k = 0; k < p; k++) t.push(k);
-  const st = t.reduce((a, b) => a + b, 0);
-  const stt = t.reduce((a, b) => a + b * b, 0);
-  for (let i = p - 1; i < n; i++) {
-    let sy = 0, sxy = 0, syy = 0;
-    for (let k = 0; k < p; k++) {
-      const w = c[i - p + 1 + k];
-      sy += w;
-      sxy += t[k] * w;
-      syy += w * w;
-    }
-    const num = p * sxy - st * sy;
-    const den = (p * stt - st * st) * (p * syy - sy * sy);
-    const r = den > 0 ? num / Math.sqrt(den) : 0;
-    out[i] = r * r;
-  }
-  return out;
-}
-function erArr(c, p) {
-  const n = c.length;
-  const out = new Array(n).fill(NaN);
-  for (let i = p; i < n; i++) {
-    const ch = Math.abs(c[i] - c[i - p]);
-    let v = 0;
-    for (let k = 0; k < p; k++) v += Math.abs(c[i - k] - c[i - k - 1]);
-    out[i] = v ? ch / v : 0;
-  }
-  return out;
-}
-function rma(x, p) {
-  const n = x.length;
-  const out = new Array(n).fill(NaN);
-  const a = 1 / p;
-  let prev = NaN;
-  for (let i = 0; i < n; i++) {
-    if (!isFinite(x[i])) {
-      out[i] = prev;
-      continue;
-    }
-    prev = isFinite(prev) ? prev + a * (x[i] - prev) : x[i];
-    out[i] = prev;
-  }
-  return out;
-}
-function emaDistAtr(h, l, c, emaP, atrP) {
-  const n = c.length;
-  const e = ema(c, emaP);
-  const a = rma(trueRange2(h, l, c), atrP);
-  const out = new Array(n).fill(NaN);
-  for (let i = 0; i < n; i++) {
-    if (isFinite(e[i]) && isFinite(a[i]) && a[i] !== 0) out[i] = (c[i] - e[i]) / a[i];
-  }
-  return out;
-}
-function rsiWilder(c, p) {
-  const n = c.length;
-  const out = new Array(n).fill(NaN);
-  const a = 1 / p;
-  let ag = NaN, al = NaN;
-  for (let i = 1; i < n; i++) {
-    const d = c[i] - c[i - 1];
-    const g = d > 0 ? d : 0;
-    const ls = d < 0 ? -d : 0;
-    ag = isFinite(ag) ? ag + a * (g - ag) : g;
-    al = isFinite(al) ? al + a * (ls - al) : ls;
-    const rs = al !== 0 ? ag / al : NaN;
-    out[i] = isFinite(rs) ? 100 - 100 / (1 + rs) : al === 0 ? 100 : NaN;
-  }
-  return out;
-}
-function ifishRsi(c, p) {
-  const r = rsiWilder(c, p);
-  const n = c.length;
-  const out = new Array(n).fill(NaN);
-  for (let i = 0; i < n; i++) {
-    if (!isFinite(r[i])) continue;
-    const v = 0.1 * (r[i] - 50);
-    const e2 = Math.exp(2 * v);
-    out[i] = (e2 - 1) / (e2 + 1);
-  }
-  return out;
-}
-function lastSwingLow(h, l, w) {
-  const n = l.length;
-  const out = new Array(n).fill(NaN);
-  let curSl = NaN;
-  for (let i = 0; i < n; i++) {
-    const pp = i - w;
-    if (pp - w >= 0) {
-      const lp = l[pp];
-      let leftMin = Infinity, rightMin = Infinity;
-      for (let k = pp - w; k < pp; k++) if (l[k] < leftMin) leftMin = l[k];
-      for (let k = pp + 1; k <= pp + w; k++) if (l[k] < rightMin) rightMin = l[k];
-      if (lp < leftMin && lp < rightMin) curSl = lp;
-    }
-    out[i] = curSl;
-  }
-  return out;
-}
-function computeS341(candles, cfg) {
-  const n = candles.length;
-  const h = candles.map((c2) => c2.high);
-  const l = candles.map((c2) => c2.low);
-  const c = candles.map((x) => x.close);
-  const slDist = cfg.slPip * GOLD_PIP5;
-  const tpDist = cfg.tpPip * GOLD_PIP5;
-  const emptyInd = [
-    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
-  ];
-  const need = Math.max(60, cfg.w * 2 + 3, cfg.erP + 2);
-  if (n < need) {
-    return {
-      active: false,
-      approaching: false,
-      direction: "LONG",
-      slDist,
-      tpDist,
-      maxHoldBars: cfg.maxHold,
-      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u0634\u062E\u06CC\u0635\u0650 \u0633\u0637\u062D\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF/\u0631\u0698\u06CC\u0645 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.",
-      indicators: emptyInd
-    };
-  }
-  const ch = chopArr(h, l, c, 14);
-  const r2 = r2Arr(c, 20);
-  const er = erArr(c, cfg.erP);
-  const atrArr = atr(candles, 14);
-  const edist = emaDistAtr(h, l, c, 50, 14);
-  const ifr = ifishRsi(c, 14);
-  const slArr = lastSwingLow(h, l, cfg.w);
-  const baseTrigger = (j) => {
-    if (!(isFinite(ch[j]) && ch[j] >= cfg.chopMin)) return false;
-    if (!(isFinite(r2[j]) && r2[j] <= cfg.r2Max)) return false;
-    if (!(isFinite(er[j]) && Math.abs(er[j]) <= cfg.erMax)) return false;
-    const aj = atrArr[j];
-    if (!(isFinite(aj) && aj > 0)) return false;
-    const lj = slArr[j];
-    if (!isFinite(lj)) return false;
-    const bj = aj * cfg.bufFrac;
-    if (!(l[j] < lj - bj && c[j] > lj)) return false;
-    if (cfg.useStretch) {
-      if (!(isFinite(edist[j]) && edist[j] <= -cfg.stretch)) return false;
-    }
-    if (cfg.useExh) {
-      if (!(isFinite(ifr[j]) && ifr[j] <= -cfg.exh)) return false;
-    }
-    return true;
-  };
-  const startJ = cfg.w + 2;
-  const recent = [];
-  const firesAt = (j) => {
-    if (!baseTrigger(j)) return false;
-    if (!cfg.requireSecond) return true;
-    while (recent.length && j - recent[0] > cfg.secondLookback) recent.shift();
-    recent.push(j);
-    return recent.length >= 2;
-  };
-  const i = n - 1;
-  let active = false;
-  for (let j = startJ; j <= i; j++) {
-    const f = firesAt(j);
-    if (j === i) active = f;
-  }
-  const chOk = isFinite(ch[i]) && ch[i] >= cfg.chopMin;
-  const r2Ok = isFinite(r2[i]) && r2[i] <= cfg.r2Max;
-  const erOk = isFinite(er[i]) && Math.abs(er[i]) <= cfg.erMax;
-  const rangeOk = chOk && r2Ok && erOk;
-  const a = atrArr[i];
-  const lvl = slArr[i];
-  const buf2 = (isFinite(a) ? a : 0) * cfg.bufFrac;
-  const brokeBelow = isFinite(lvl) && l[i] < lvl - buf2;
-  const closedBack = isFinite(lvl) && c[i] > lvl;
-  const failedBreak = brokeBelow && closedBack;
-  const stretchOk = !cfg.useStretch || isFinite(edist[i]) && edist[i] <= -cfg.stretch;
-  const exhOk = !cfg.useExh || isFinite(ifr[i]) && ifr[i] <= -cfg.exh;
-  const approaching = !active && rangeOk && stretchOk && !failedBreak && isFinite(lvl);
-  const fmt3 = (x) => isFinite(x) ? x.toFixed(2) : "\u2014";
-  const indicators = [
-    {
-      name: `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C (Chop14 \u2265 ${cfg.chopMin})`,
-      value: `${fmt3(ch[i])}` + (chOk ? " \u2714" : " \u2718"),
-      status: chOk ? "ok" : "bad"
-    },
-    {
-      name: `\u0628\u06CC\u200C\u0631\u0648\u0646\u062F\u06CC (R\xB220 \u2264 ${cfg.r2Max})`,
-      value: `${fmt3(r2[i])}` + (r2Ok ? " \u2714" : " \u2718"),
-      status: r2Ok ? "ok" : "bad"
-    },
-    {
-      name: `\u06A9\u0627\u0631\u0627\u06CC\u06CC\u0650 \u067E\u0627\u06CC\u06CC\u0646 (|ER${cfg.erP}| \u2264 ${cfg.erMax})`,
-      value: `${fmt3(Math.abs(er[i]))}` + (erOk ? " \u2714" : " \u2718"),
-      status: erOk ? "ok" : "bad"
-    }
-  ];
-  if (cfg.useStretch) {
-    indicators.push({
-      name: `\u06A9\u0634\u0634\u0650 \u0645\u063A\u0646\u0627\u0637\u06CC\u0633\u06CC (ema_dist_atr \u2264 \u2212${cfg.stretch})`,
-      value: `${fmt3(edist[i])}` + (stretchOk ? " \u2714" : " \u2718"),
-      status: stretchOk ? "ok" : "neutral"
-    });
-  }
-  if (cfg.useExh) {
-    indicators.push({
-      name: `\u062E\u0633\u062A\u06AF\u06CC\u0650 \u0641\u0631\u0648\u0634 (ifish_rsi \u2264 \u2212${cfg.exh})`,
-      value: `${fmt3(ifr[i])}` + (exhOk ? " \u2714" : " \u2718"),
-      status: exhOk ? "ok" : "neutral"
-    });
-  }
-  indicators.push({
-    name: "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF" + (cfg.requireSecond ? " (\u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062F\u0648\u0645)" : ""),
-    value: isFinite(lvl) ? failedBreak ? "\u0631\u062E \u062F\u0627\u062F \u2714" : "\u0646\u0647" : "\u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u0646\u0627\u0645\u0634\u062E\u0635",
-    status: failedBreak ? "ok" : "neutral"
-  });
-  let reason;
-  if (active) {
-    const magnet = cfg.useStretch ? `\u062F\u0631\u062D\u0627\u0644\u06CC\u200C\u06A9\u0647 \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u06A9\u0634\u06CC\u062F\u0647 (${fmt3(edist[i])} ATR) \u0648 \u0641\u0631\u0648\u0634 \u062E\u0633\u062A\u0647 \u0627\u0633\u062A ` : "";
-    const second = cfg.requireSecond ? "(\u062F\u0648\u0645\u06CC\u0646 \u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642 \u062F\u0631 \u0646\u0627\u062D\u06CC\u0647 \u2014 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062F\u0648\u0645\u0650 Brooks) " : "";
-    reason = `\u0631\u0648\u0632\u0650 \u0631\u0646\u062C (Chop=${fmt3(ch[i])})\u061B \u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u0634\u06A9\u0633\u062A \u0627\u0645\u0627 \u0646\u0627\u0645\u0648\u0641\u0642 \u0645\u0627\u0646\u062F \u0648 \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D \u0628\u0631\u06AF\u0634\u062A ${second}${magnet}\u21D2 \u0648\u0631\u0648\u062F\u0650 fade\u0650 \u062E\u0631\u06CC\u062F \u0628\u0647 \u0633\u0645\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647 (\u0645\u063A\u0646\u0627\u0637\u06CC\u0633).`;
-  } else if (approaching) {
-    reason = `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C \u0648 \u06A9\u0634\u0634\u0650 \u067E\u0627\u06CC\u06CC\u0646 \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06CC\u06A9 \xAB\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\xBB \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF (\u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u062F\u0648\u0628\u0627\u0631\u0647 \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D) \u0628\u0631\u0627\u06CC \u0648\u0631\u0648\u062F\u0650 fade.`;
-  } else if (!rangeOk) {
-    reason = `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C\u0650 \u0644\u0627\u0632\u0645 \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A (Chop=${fmt3(ch[i])}\u060C R\xB2=${fmt3(r2[i])}\u060C |ER|=${fmt3(Math.abs(er[i]))}) \u2014 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0631\u0648\u0632\u0647\u0627\u06CC \u0631\u0646\u062C fade \u0645\u06CC\u200C\u06A9\u0646\u062F\u060C \u062F\u0631 \u0631\u0648\u0646\u062F \u062E\u06CC\u0631.`;
-  } else if (!stretchOk) {
-    reason = `\u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0642\u062F\u0631\u0650 \u06A9\u0627\u0641\u06CC \u0627\u0632 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u062F\u0648\u0631 \u0646\u0634\u062F\u0647 (${fmt3(edist[i])})\u061B \xAB\u0645\u063A\u0646\u0627\u0637\u06CC\u0633\u0650 \u0645\u06CC\u0627\u0646\u0647\xBB \u0636\u0639\u06CC\u0641 \u0627\u0633\u062A.`;
-  } else {
-    reason = "\u0634\u0631\u0627\u06CC\u0637\u0650 \u0631\u0646\u062C/\u06A9\u0634\u0634 \u0647\u0633\u062A \u0627\u0645\u0627 \u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u0645\u0639\u062A\u0628\u0631\u06CC \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u062B\u0628\u062A \u0646\u0634\u062F\u0647 \u0627\u0633\u062A.";
-  }
-  return {
-    active,
-    approaching,
-    direction: "LONG",
-    slDist,
-    tpDist,
-    maxHoldBars: cfg.maxHold,
-    reason,
-    approachReason: approaching ? "\u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF (\u0628\u0627\u0632\u06AF\u0634\u062A\u0650 close \u0628\u0627\u0644\u0627\u06CC \u0633\u0637\u062D)" : void 0,
-    indicators
-  };
-}
-function decideS341(cfg, a, candles, capital = 1e4, riskPct = 1) {
-  const raw2 = computeS341(candles, cfg);
-  const price = a.price;
-  const reg = {
-    regime: "range",
-    efficiencyRatio: 0,
-    trendy: false,
-    adx: 0,
-    activeStream: "bull",
-    bucket: `s341_${cfg.tfFa.toLowerCase()}`
-  };
-  const meta = {
-    code: "S341",
-    name: `fade\u0650 \u0633\u0637\u062D\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF \u062F\u0631 \u0631\u0646\u062C (Brooks Swing-Points \xB7 ${cfg.tfFa})`,
-    kind: "swing_fade",
-    manageStyle: "fixed-tp-sl",
-    manageNote: `\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A\u0650 \u0645\u062E\u0635\u0648\u0635\u0650 ${cfg.tfFa} (${cfg.tpPip}/${cfg.slPip} pip\u060C TP \u0628\u0647 \u0633\u0645\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0631\u0646\u062C). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u061B \u0627\u06AF\u0631 \u0631\u0698\u06CC\u0645 \u0627\u0632 \u0631\u0646\u062C \u0628\u0647 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0642\u0648\u06CC \u062A\u063A\u06CC\u06CC\u0631 \u06A9\u0631\u062F (Chop \u0627\u0641\u062A \u06A9\u0631\u062F / \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0642\u0648\u06CC \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0634\u06A9\u0633\u062A \u0628\u0633\u062A)\u060C \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0627 \u0628\u0633\u0646\u062C.`,
-    filters: [
-      `\u0631\u0698\u06CC\u0645\u0650 \u0631\u0646\u062C (Chop14\u2265${cfg.chopMin} \xB7 R\xB220\u2264${cfg.r2Max} \xB7 |ER${cfg.erP}|\u2264${cfg.erMax})`,
-      "\u0634\u06A9\u0633\u062A\u0650 \u0646\u0627\u0645\u0648\u0641\u0642\u0650 \u0632\u06CC\u0631\u0650 \u06A9\u0641\u0650 \u0633\u0648\u0626\u06CC\u0646\u06AF (failed breakout)",
-      `\u06A9\u0634\u0634\u0650 \u0645\u063A\u0646\u0627\u0637\u06CC\u0633\u06CC ema_dist_atr \u2264 \u2212${cfg.stretch}`,
-      `\u062E\u0633\u062A\u06AF\u06CC\u0650 \u0641\u0631\u0648\u0634 ifish_rsi \u2264 \u2212${cfg.exh}`
-    ]
-  };
-  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
-}
-
 // ../web_tool/src/trend_from_open_s344.ts
-var GOLD_PIP6 = 0.1;
+var GOLD_PIP5 = 0.1;
 var S344_CFG = {
   "XAUUSD-M15": {
     id: "XAUUSD-M15",
@@ -6934,8 +6545,8 @@ function computeS344(candles, cfg) {
   const c = candles.map((x) => x.close);
   const t = candles.map((x) => x.time);
   const side = cfg.side === "LONG" ? "long" : "short";
-  const slDist = cfg.slPip * GOLD_PIP6;
-  const tpDist = cfg.tpPip * GOLD_PIP6;
+  const slDist = cfg.slPip * GOLD_PIP5;
+  const tpDist = cfg.tpPip * GOLD_PIP5;
   const emptyInd = [
     { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
   ];
@@ -7601,7 +7212,7 @@ function decideS354(cfg, a, candles, capital = 1e4, riskPct = 1) {
 }
 
 // ../web_tool/src/strategy_registry.ts
-var GOLD_PIP7 = 0.1;
+var GOLD_PIP6 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
   return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
 }
@@ -7674,8 +7285,8 @@ var s310Layer = (ctx) => {
     active,
     approaching,
     direction: "LONG",
-    slDist: EOM_SL_PIP * GOLD_PIP7,
-    tpDist: EOM_TP_PIP * GOLD_PIP7,
+    slDist: EOM_SL_PIP * GOLD_PIP6,
+    tpDist: EOM_TP_PIP * GOLD_PIP6,
     maxHoldBars: EOM_MAX_HOLD,
     reason: sig.reason,
     approachReason: approaching ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647` : void 0,
@@ -7713,8 +7324,8 @@ function s312Layer(slPip, tpPip, maxHold) {
       active,
       approaching,
       direction: "LONG",
-      slDist: slPip * GOLD_PIP7,
-      tpDist: tpPip * GOLD_PIP7,
+      slDist: slPip * GOLD_PIP6,
+      tpDist: tpPip * GOLD_PIP6,
       maxHoldBars: maxHold,
       reason: sig.reason,
       approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
@@ -7760,14 +7371,12 @@ var s333Layer = (cfg) => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capita
 var s334Layer = (cfg) => (ctx) => decideS334(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s335Layer = (cfg) => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
-var s341Layer = (cfg) => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s344Layer = (cfg) => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s345Layer = (cfg) => (ctx) => decideS345(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s354Layer = (cfg) => (ctx) => decideS354(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
   "XAUUSD-M5": [
-    s341Layer(S341_CFG["XAUUSD-M5"]),
-    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=94.7 (WR 70.8% · PF 2.22 · +$976) · بخشِ مستقل standalone پاس (96.4)
+    // ⚰️ S341 حذف شد (RQS2=26.3 · سد=70) — سند: results/S341_BrooksSwingFadeRejudged_…_rqs2-28.md
     // ⭐ S355 = S333/M5 **با دروازهٔ حالتِ ساختارِ LPSB** — تنها لایهٔ ۱۱/۱۱ دروازهٔ RQS2.
     //    پایهٔ بدونِ دروازه: WR 65.6% · PF 2.85 · RQS2=27.5 (POWER-LIMITED، حقِ اتصال نداشت)
     //    با دروازه:          WR 72.3% · PF 3.95 · RQS2=83.9 (ACCEPT ✓) ⇒ همین وصل می‌شود.
@@ -7782,8 +7391,7 @@ var CARD_LAYERS = {
     s326Layer(STREAK_REV_CFG["XAUUSD-M5"])
   ],
   "XAUUSD-M15": [
-    s341Layer(S341_CFG["XAUUSD-M15"]),
-    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=89.8 (WR 65.0% · PF 1.83 · +$568) · لبهٔ رنج، جریانِ کامل لازم
+    // ⚰️ S341 حذف شد (RQS2=24.9 · سد=70) — ضعیف‌ترین کارتِ لایه: ۵/۱۰ دروازه شکست
     s333Layer(S333_CFG["XAUUSD-M15"]),
     // احیای S79 — pullback (ورودِ مستقیم) — RQS+=91.7 (WR 62.8% · PF 2.30)
     s332Layer(S332_CFG["XAUUSD-M15"]),
@@ -7801,8 +7409,7 @@ var CARD_LAYERS = {
     s312Layer(295, 295, 48)
   ],
   "XAUUSD-M30": [
-    s341Layer(S341_CFG["XAUUSD-M30"]),
-    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=89.7 (WR 63.9% · PF 1.77 · +$468) · لبهٔ رنج، جریانِ کامل لازم
+    // ⚰️ S341 حذف شد (RQS2=28.6 · سد=70) — بهترین کارتِ لایه، و همان هم رد شد
     s333Layer(S333_CFG["XAUUSD-M30"]),
     // احیای S79 — pullback با تأییدِ price_turn — RQS+=91.1 (WR 66.7% · PF 2.48)
     s313Layer(S313_M30),
@@ -7818,8 +7425,9 @@ var CARD_LAYERS = {
     // داوری شده (هر ۱۱ دروازه، هر ۳ seed)؛ بقیه با RQS+ بازنشسته پذیرفته شده‌اند.
     s354Layer(S354_CFG["XAUUSD-H1"]),
     // S356 — Brooks trend-resumption (causal، ساعت≥۱۶ UTC) — RQS2=81.5 (WR 51.28% · lift +15.0 · z=3.36 · n=117) · همپوشانی ۲۵.۶٪ (S313=25 · S335=5)
-    s341Layer(S341_CFG["XAUUSD-H1"]),
-    // S341 — احیای فصلِ ۱۷ Brooks: swing-fade در رنج + مغناطیسِ میانه (ema_dist_atr≥0.7) — RQS+=94.5 (WR 66.7% · PF 2.01) · همپوشانیِ صفر (رژیمِ رنج vs روند)
+    // ⚰️ S341 حذف شد (RQS2=28.0 · سد=70). نکتهٔ افشاشده: نمرهٔ ۶۶.۷٪ این کارت از فصلِ ۱۷
+    //    Brooks نمی‌آمد — از دو فیلترِ انتخاب‌شدهٔ stretch=0.7 / exh=0.25 می‌آمد؛ بهترین
+    //    عضوِ خانوادهٔ خالصِ Brooks اینجا فقط ۵۶.۱٪ می‌برد.
     s333Layer(S333_CFG["XAUUSD-H1"]),
     // احیای S79 — pullback (ورودِ مستقیم + ER) — RQS+=89.8 (WR 62.2% · PF 1.85)
     s313Layer(S313_H1),
