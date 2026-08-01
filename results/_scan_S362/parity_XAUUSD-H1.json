@@ -1,0 +1,44 @@
+{
+ "card": "XAUUSD-H1",
+ "n_bars": 90950,
+ "n_compared": 824,
+ "missing_sources": [
+  "S326"
+ ],
+ "layers": {
+  "S326": {
+   "status": "NO_DEPLOYED_CFG"
+  },
+  "S327": {
+   "status": "PARITY_OK",
+   "ts_active": 245,
+   "py_active": 245,
+   "n_compared": 824,
+   "n_disagree": 0,
+   "py_true_ts_false": 0,
+   "ts_true_py_false": 0,
+   "first_disagreements": []
+  },
+  "S333": {
+   "status": "PARITY_OK",
+   "ts_active": 126,
+   "py_active": 126,
+   "n_compared": 824,
+   "n_disagree": 0,
+   "py_true_ts_false": 0,
+   "ts_true_py_false": 0,
+   "first_disagreements": []
+  },
+  "S335": {
+   "status": "PARITY_OK",
+   "ts_active": 56,
+   "py_active": 56,
+   "n_compared": 824,
+   "n_disagree": 0,
+   "py_true_ts_false": 0,
+   "ts_true_py_false": 0,
+   "first_disagreements": []
+  }
+ },
+ "all_parity_ok": true
+}
