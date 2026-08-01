@@ -1,0 +1,3099 @@
+{
+ "card": "XAUUSD-M5",
+ "phase": "B",
+ "chosen": {
+  "name": "hurst",
+  "p": 89,
+  "dirn": -1,
+  "q": 0.42,
+  "thr": 0.5132289502690179,
+  "theta": 4,
+  "n_is": 623,
+  "wr_is": 50.241,
+  "wr_base_is": 46.717,
+  "n_base_is": 1051,
+  "keep_frac": 0.5928,
+  "lift_is": 3.523,
+  "z_binom": 1.763,
+  "sl": 180,
+  "tp": 260,
+  "mh": 48
+ },
+ "oos_bars": [
+  120000,
+  200000
+ ],
+ "n_trials": {
+  "honest": 1,
+  "conservative": 84,
+  "stress": 168
+ },
+ "oos_walk": {
+  "wr_filtered": 45.477,
+  "n_filtered": 409,
+  "wr_unfiltered": 47.004,
+  "n_unfiltered": 751,
+  "keep_frac": 0.5446,
+  "n_long": 218,
+  "n_short": 191
+ },
+ "n_trades_engine": 409,
+ "wr_engine": 45.477,
+ "parity_walk_vs_engine": {
+  "n_engine": 409,
+  "n_walk": 409,
+  "wr_engine": 45.477,
+  "wr_walk": 45.477
+ },
+ "split_bar_within_oos": 168000,
+ "uncond_wr_oos": {
+  "long": 44.457,
+  "short": 43.261
+ },
+ "seeds": {
+  "23": {
+   "subset": {
+    "null_mean": 48.264,
+    "null_sd": 2.197,
+    "k": 150,
+    "lift_pp": -2.787,
+    "z": -1.269,
+    "p_empirical": 0.900662,
+    "n_draws_ge_obs": 135,
+    "labels": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.3,
+       "skill_lift_pp": -2.82,
+       "skill_z": -0.85,
+       "skill_p_perm": 0.801066,
+       "perm_max": 56.89,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -4.99,
+        "short": -0.35
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.883475,
+       "p_adj_bonferroni": 0.883475,
+       "z_obs": -1.143,
+       "z_luck_bound": 0.52,
+       "z_margin": -1.663,
+       "n_trials": 1,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "conservative": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.3,
+       "skill_lift_pp": -2.82,
+       "skill_z": -0.85,
+       "skill_p_perm": 0.801066,
+       "perm_max": 56.89,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -4.99,
+        "short": -0.35
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.883475,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -1.143,
+       "z_luck_bound": 2.469,
+       "z_margin": -3.612,
+       "n_trials": 84,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.3,
+       "skill_lift_pp": -2.82,
+       "skill_z": -0.85,
+       "skill_p_perm": 0.801066,
+       "perm_max": 56.89,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -4.99,
+        "short": -0.35
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.883475,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -1.143,
+       "z_luck_bound": 2.708,
+       "z_margin": -3.851,
+       "n_trials": 168,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     }
+    }
+   },
+   "shift": {
+    "null_mean": 45.576,
+    "null_sd": 2.117,
+    "k": 150,
+    "lift_pp": -0.099,
+    "z": -0.047,
+    "p_empirical": 0.529801,
+    "n_draws_ge_obs": 79,
+    "labels": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 45.62,
+       "skill_lift_pp": -0.15,
+       "skill_z": -0.05,
+       "skill_p_perm": 0.519515,
+       "perm_max": 53.25,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -2.39,
+        "short": 2.41
+       },
+       "prune_sides": [
+        "long"
+       ],
+       "p_emp": 0.543589,
+       "p_adj_bonferroni": 0.543589,
+       "z_obs": -0.06,
+       "z_luck_bound": 0.52,
+       "z_margin": -0.58,
+       "n_trials": 1,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "conservative": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 45.62,
+       "skill_lift_pp": -0.15,
+       "skill_z": -0.05,
+       "skill_p_perm": 0.519515,
+       "perm_max": 53.25,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -2.39,
+        "short": 2.41
+       },
+       "prune_sides": [
+        "long"
+       ],
+       "p_emp": 0.543589,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.06,
+       "z_luck_bound": 2.469,
+       "z_margin": -2.528,
+       "n_trials": 84,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 45.62,
+       "skill_lift_pp": -0.15,
+       "skill_z": -0.05,
+       "skill_p_perm": 0.519515,
+       "perm_max": 53.25,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -2.39,
+        "short": 2.41
+       },
+       "prune_sides": [
+        "long"
+       ],
+       "p_emp": 0.543589,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.06,
+       "z_luck_bound": 2.708,
+       "z_margin": -2.768,
+       "n_trials": 168,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     }
+    }
+   },
+   "accept_both_nulls_conservative": false
+  },
+  "101": {
+   "subset": {
+    "null_mean": 48.755,
+    "null_sd": 2.556,
+    "k": 150,
+    "lift_pp": -3.279,
+    "z": -1.282,
+    "p_empirical": 0.907285,
+    "n_draws_ge_obs": 136,
+    "labels": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.77,
+       "skill_lift_pp": -3.29,
+       "skill_z": -0.98,
+       "skill_p_perm": 0.836338,
+       "perm_max": 59.53,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -5.31,
+        "short": -0.98
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.91637,
+       "p_adj_bonferroni": 0.91637,
+       "z_obs": -1.332,
+       "z_luck_bound": 0.52,
+       "z_margin": -1.851,
+       "n_trials": 1,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "conservative": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.77,
+       "skill_lift_pp": -3.29,
+       "skill_z": -0.98,
+       "skill_p_perm": 0.836338,
+       "perm_max": 59.53,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -5.31,
+        "short": -0.98
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.91637,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -1.332,
+       "z_luck_bound": 2.469,
+       "z_margin": -3.8,
+       "n_trials": 84,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.77,
+       "skill_lift_pp": -3.29,
+       "skill_z": -0.98,
+       "skill_p_perm": 0.836338,
+       "perm_max": 59.53,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -5.31,
+        "short": -0.98
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.91637,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -1.332,
+       "z_luck_bound": 2.708,
+       "z_margin": -4.04,
+       "n_trials": 168,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     }
+    }
+   },
+   "shift": {
+    "null_mean": 45.475,
+    "null_sd": 2.241,
+    "k": 150,
+    "lift_pp": 0.002,
+    "z": 0.001,
+    "p_empirical": 0.523179,
+    "n_draws_ge_obs": 78,
+    "labels": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 45.51,
+       "skill_lift_pp": -0.03,
+       "skill_z": -0.01,
+       "skill_p_perm": 0.504331,
+       "perm_max": 53.23,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -1.88,
+        "short": 2.08
+       },
+       "prune_sides": [
+        "long"
+       ],
+       "p_emp": 0.525005,
+       "p_adj_bonferroni": 0.525005,
+       "z_obs": -0.013,
+       "z_luck_bound": 0.52,
+       "z_margin": -0.533,
+       "n_trials": 1,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "conservative": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 45.51,
+       "skill_lift_pp": -0.03,
+       "skill_z": -0.01,
+       "skill_p_perm": 0.504331,
+       "perm_max": 53.23,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -1.88,
+        "short": 2.08
+       },
+       "prune_sides": [
+        "long"
+       ],
+       "p_emp": 0.525005,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.013,
+       "z_luck_bound": 2.469,
+       "z_margin": -2.482,
+       "n_trials": 84,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 45.51,
+       "skill_lift_pp": -0.03,
+       "skill_z": -0.01,
+       "skill_p_perm": 0.504331,
+       "perm_max": 53.23,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -1.88,
+        "short": 2.08
+       },
+       "prune_sides": [
+        "long"
+       ],
+       "p_emp": 0.525005,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.013,
+       "z_luck_bound": 2.708,
+       "z_margin": -2.721,
+       "n_trials": 168,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     }
+    }
+   },
+   "accept_both_nulls_conservative": false
+  },
+  "777": {
+   "subset": {
+    "null_mean": 48.008,
+    "null_sd": 2.126,
+    "k": 150,
+    "lift_pp": -2.531,
+    "z": -1.19,
+    "p_empirical": 0.880795,
+    "n_draws_ge_obs": 132,
+    "labels": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.02,
+       "skill_lift_pp": -2.54,
+       "skill_z": -0.85,
+       "skill_p_perm": 0.802182,
+       "perm_max": 56.13,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -4.53,
+        "short": -0.28
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.859756,
+       "p_adj_bonferroni": 0.859756,
+       "z_obs": -1.03,
+       "z_luck_bound": 0.52,
+       "z_margin": -1.549,
+       "n_trials": 1,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "conservative": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.02,
+       "skill_lift_pp": -2.54,
+       "skill_z": -0.85,
+       "skill_p_perm": 0.802182,
+       "perm_max": 56.13,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -4.53,
+        "short": -0.28
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.859756,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -1.03,
+       "z_luck_bound": 2.469,
+       "z_margin": -3.498,
+       "n_trials": 84,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 48.02,
+       "skill_lift_pp": -2.54,
+       "skill_z": -0.85,
+       "skill_p_perm": 0.802182,
+       "perm_max": 56.13,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -4.53,
+        "short": -0.28
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.859756,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -1.03,
+       "z_luck_bound": 2.708,
+       "z_margin": -3.738,
+       "n_trials": 168,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     }
+    }
+   },
+   "shift": {
+    "null_mean": 45.995,
+    "null_sd": 2.487,
+    "k": 150,
+    "lift_pp": -0.518,
+    "z": -0.208,
+    "p_empirical": 0.609272,
+    "n_draws_ge_obs": 91,
+    "labels": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 46.02,
+       "skill_lift_pp": -0.55,
+       "skill_z": -0.17,
+       "skill_p_perm": 0.568286,
+       "perm_max": 53.41,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -2.36,
+        "short": 1.53
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.606708,
+       "p_adj_bonferroni": 0.606708,
+       "z_obs": -0.221,
+       "z_luck_bound": 0.52,
+       "z_margin": -0.741,
+       "n_trials": 1,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "conservative": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 46.02,
+       "skill_lift_pp": -0.55,
+       "skill_z": -0.17,
+       "skill_p_perm": 0.568286,
+       "perm_max": 53.41,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -2.36,
+        "short": 1.53
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.606708,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.221,
+       "z_luck_bound": 2.469,
+       "z_margin": -2.69,
+       "n_trials": 84,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 4.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": null,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": true
+      },
+      "metrics": {
+       "n_trades": 409,
+       "win_rate": 45.48,
+       "net_profit": -1072.4,
+       "profit_factor": 0.934,
+       "max_dd_pct": 14.59,
+       "max_consec_losses": 9,
+       "mcl_allowed": 16,
+       "n_wins": 186,
+       "top_win_share": 0.0085,
+       "recovery_factor": -0.72,
+       "expectancy_pip": -3.9017,
+       "expectancy_at_2x_cost": -7.2017,
+       "cost_pip": 3.3,
+       "spread_pip": 3.3,
+       "sl_pip": 180.0,
+       "tp_pip": 260.0,
+       "rr": 1.444,
+       "breakeven_wr_cost": 41.66,
+       "wr_excess_cost": 3.82,
+       "null_ref_wr": 46.02,
+       "skill_lift_pp": -0.55,
+       "skill_z": -0.17,
+       "skill_p_perm": 0.568286,
+       "perm_max": 53.41,
+       "perm_k": 150,
+       "side_n": {
+        "long": 218,
+        "short": 191
+       },
+       "side_wr": {
+        "long": 44.04,
+        "short": 47.12
+       },
+       "side_lift_pp": {
+        "long": -2.36,
+        "short": 1.53
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.606708,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.221,
+       "z_luck_bound": 2.708,
+       "z_margin": -2.929,
+       "n_trials": 168,
+       "cal_nets": [
+        0.0,
+        0.0,
+        -93.9,
+        -985.0
+       ],
+       "cal_counts": [
+        0,
+        0,
+        135,
+        274
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 2,
+       "half_nets": [
+        0.0,
+        -1072.4
+       ],
+       "oos": {
+        "n": 186,
+        "wr": 43.55,
+        "pf": 0.963,
+        "net": -379.8,
+        "wr_req": 41.66
+       },
+       "max_concurrency": 1,
+       "counter_drift": {
+        "n_judgeable": 401,
+        "n_unjudgeable": 8,
+        "n_counter": 186,
+        "n_aligned": 215,
+        "regime_lookback_days": 280.0,
+        "wr_counter": 47.85,
+        "exp_counter": 5.252,
+        "wr_aligned": 44.19,
+        "exp_aligned": -9.538
+       }
+      },
+      "notes": [
+       "PF=0.934<1.3",
+       "H3 UNKNOWN: only 150 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+      ]
+     }
+    }
+   },
+   "accept_both_nulls_conservative": false
+  }
+ },
+ "all_seeds_accept": false,
+ "phase_c": {
+  "n_members": 72,
+  "better": 35,
+  "worse": 36,
+  "undetermined": 1,
+  "threshold": 44,
+  "passed": false,
+  "members": [
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 551,
+    "n_filt": 292,
+    "wr_base": 47.368,
+    "wr_filt": 46.575,
+    "delta": -0.793
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 308,
+    "n_filt": 176,
+    "wr_base": 48.052,
+    "wr_filt": 47.159,
+    "delta": -0.893
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 255,
+    "n_filt": 117,
+    "wr_base": 48.235,
+    "wr_filt": 47.863,
+    "delta": -0.372
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 74,
+    "n_filt": 39,
+    "wr_base": 54.054,
+    "wr_filt": 56.41,
+    "delta": 2.356
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 98,
+    "n_filt": 37,
+    "wr_base": 59.184,
+    "wr_filt": 59.459,
+    "delta": 0.276
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 14,
+    "n_filt": 9,
+    "wr_base": 85.714,
+    "wr_filt": 77.778,
+    "delta": -7.937
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 469,
+    "n_filt": 257,
+    "wr_base": 49.254,
+    "wr_filt": 47.082,
+    "delta": -2.172
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 213,
+    "n_filt": 131,
+    "wr_base": 50.235,
+    "wr_filt": 48.855,
+    "delta": -1.38
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 192,
+    "n_filt": 90,
+    "wr_base": 52.083,
+    "wr_filt": 52.222,
+    "delta": 0.139
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 50,
+    "n_filt": 25,
+    "wr_base": 50.0,
+    "wr_filt": 48.0,
+    "delta": -2.0
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 72,
+    "n_filt": 25,
+    "wr_base": 61.111,
+    "wr_filt": 64.0,
+    "delta": 2.889
+   },
+   {
+    "side": "long",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 10,
+    "n_filt": 7,
+    "wr_base": 80.0,
+    "wr_filt": 71.429,
+    "delta": -8.571
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 465,
+    "n_filt": 237,
+    "wr_base": 47.527,
+    "wr_filt": 46.414,
+    "delta": -1.113
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 243,
+    "n_filt": 132,
+    "wr_base": 47.737,
+    "wr_filt": 46.212,
+    "delta": -1.525
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 196,
+    "n_filt": 89,
+    "wr_base": 46.429,
+    "wr_filt": 44.944,
+    "delta": -1.485
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 55,
+    "n_filt": 30,
+    "wr_base": 58.182,
+    "wr_filt": 60.0,
+    "delta": 1.818
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 71,
+    "n_filt": 29,
+    "wr_base": 57.746,
+    "wr_filt": 51.724,
+    "delta": -6.022
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 7,
+    "n_filt": 3,
+    "wr_base": 71.429,
+    "wr_filt": 33.333,
+    "delta": -38.095
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 394,
+    "n_filt": 205,
+    "wr_base": 50.254,
+    "wr_filt": 48.293,
+    "delta": -1.961
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 172,
+    "n_filt": 101,
+    "wr_base": 49.419,
+    "wr_filt": 48.515,
+    "delta": -0.904
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 142,
+    "n_filt": 66,
+    "wr_base": 51.408,
+    "wr_filt": 50.0,
+    "delta": -1.408
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 38,
+    "n_filt": 19,
+    "wr_base": 52.632,
+    "wr_filt": 47.368,
+    "delta": -5.263
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 48,
+    "n_filt": 15,
+    "wr_base": 60.417,
+    "wr_filt": 53.333,
+    "delta": -7.083
+   },
+   {
+    "side": "long",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 5,
+    "n_filt": 3,
+    "wr_base": 60.0,
+    "wr_filt": 33.333,
+    "delta": -26.667
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 310,
+    "n_filt": 169,
+    "wr_base": 41.613,
+    "wr_filt": 43.787,
+    "delta": 2.174
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 148,
+    "n_filt": 86,
+    "wr_base": 43.243,
+    "wr_filt": 40.698,
+    "delta": -2.546
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 113,
+    "n_filt": 52,
+    "wr_base": 41.593,
+    "wr_filt": 42.308,
+    "delta": 0.715
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 30,
+    "n_filt": 18,
+    "wr_base": 60.0,
+    "wr_filt": 55.556,
+    "delta": -4.444
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 41,
+    "n_filt": 18,
+    "wr_base": 56.098,
+    "wr_filt": 55.556,
+    "delta": -0.542
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 4,
+    "n_filt": 3,
+    "wr_base": 75.0,
+    "wr_filt": 66.667,
+    "delta": -8.333
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 261,
+    "n_filt": 142,
+    "wr_base": 43.678,
+    "wr_filt": 45.775,
+    "delta": 2.096
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 108,
+    "n_filt": 70,
+    "wr_base": 45.37,
+    "wr_filt": 40.0,
+    "delta": -5.37
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 83,
+    "n_filt": 36,
+    "wr_base": 45.783,
+    "wr_filt": 47.222,
+    "delta": 1.439
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 20,
+    "n_filt": 13,
+    "wr_base": 70.0,
+    "wr_filt": 53.846,
+    "delta": -16.154
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 28,
+    "n_filt": 10,
+    "wr_base": 57.143,
+    "wr_filt": 50.0,
+    "delta": -7.143
+   },
+   {
+    "side": "long",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 3,
+    "n_filt": 1,
+    "wr_base": 100.0,
+    "wr_filt": 100.0,
+    "delta": 0.0
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 552,
+    "n_filt": 289,
+    "wr_base": 46.739,
+    "wr_filt": 48.097,
+    "delta": 1.358
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 277,
+    "n_filt": 155,
+    "wr_base": 49.458,
+    "wr_filt": 49.032,
+    "delta": -0.426
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 258,
+    "n_filt": 130,
+    "wr_base": 48.837,
+    "wr_filt": 50.0,
+    "delta": 1.163
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 87,
+    "n_filt": 45,
+    "wr_base": 51.724,
+    "wr_filt": 55.556,
+    "delta": 3.831
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 93,
+    "n_filt": 47,
+    "wr_base": 48.387,
+    "wr_filt": 44.681,
+    "delta": -3.706
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 21,
+    "n_filt": 11,
+    "wr_base": 47.619,
+    "wr_filt": 63.636,
+    "delta": 16.017
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 455,
+    "n_filt": 234,
+    "wr_base": 46.593,
+    "wr_filt": 47.009,
+    "delta": 0.415
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 182,
+    "n_filt": 103,
+    "wr_base": 49.451,
+    "wr_filt": 49.515,
+    "delta": 0.064
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 199,
+    "n_filt": 99,
+    "wr_base": 48.744,
+    "wr_filt": 51.515,
+    "delta": 2.771
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 48,
+    "n_filt": 27,
+    "wr_base": 54.167,
+    "wr_filt": 51.852,
+    "delta": -2.315
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 67,
+    "n_filt": 35,
+    "wr_base": 50.746,
+    "wr_filt": 48.571,
+    "delta": -2.175
+   },
+   {
+    "side": "short",
+    "w": 4,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 10,
+    "n_filt": 5,
+    "wr_base": 40.0,
+    "wr_filt": 60.0,
+    "delta": 20.0
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 445,
+    "n_filt": 225,
+    "wr_base": 48.09,
+    "wr_filt": 50.222,
+    "delta": 2.132
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 205,
+    "n_filt": 115,
+    "wr_base": 49.268,
+    "wr_filt": 50.435,
+    "delta": 1.166
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 194,
+    "n_filt": 91,
+    "wr_base": 48.454,
+    "wr_filt": 49.451,
+    "delta": 0.997
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 63,
+    "n_filt": 34,
+    "wr_base": 53.968,
+    "wr_filt": 61.765,
+    "delta": 7.796
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 70,
+    "n_filt": 36,
+    "wr_base": 45.714,
+    "wr_filt": 41.667,
+    "delta": -4.048
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 13,
+    "n_filt": 8,
+    "wr_base": 46.154,
+    "wr_filt": 62.5,
+    "delta": 16.346
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 358,
+    "n_filt": 181,
+    "wr_base": 47.207,
+    "wr_filt": 50.829,
+    "delta": 3.622
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 132,
+    "n_filt": 72,
+    "wr_base": 46.212,
+    "wr_filt": 48.611,
+    "delta": 2.399
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 144,
+    "n_filt": 67,
+    "wr_base": 45.833,
+    "wr_filt": 53.731,
+    "delta": 7.898
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 28,
+    "n_filt": 16,
+    "wr_base": 53.571,
+    "wr_filt": 56.25,
+    "delta": 2.679
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 45,
+    "n_filt": 23,
+    "wr_base": 44.444,
+    "wr_filt": 43.478,
+    "delta": -0.966
+   },
+   {
+    "side": "short",
+    "w": 5,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 5,
+    "n_filt": 3,
+    "wr_base": 60.0,
+    "wr_filt": 66.667,
+    "delta": 6.667
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 340,
+    "n_filt": 180,
+    "wr_base": 48.824,
+    "wr_filt": 51.667,
+    "delta": 2.843
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 158,
+    "n_filt": 93,
+    "wr_base": 46.835,
+    "wr_filt": 46.237,
+    "delta": -0.599
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 129,
+    "n_filt": 59,
+    "wr_base": 51.163,
+    "wr_filt": 49.153,
+    "delta": -2.01
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 34,
+    "n_filt": 21,
+    "wr_base": 61.765,
+    "wr_filt": 71.429,
+    "delta": 9.664
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 40,
+    "n_filt": 21,
+    "wr_base": 50.0,
+    "wr_filt": 42.857,
+    "delta": -7.143
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.05,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 5,
+    "n_filt": 4,
+    "wr_base": 40.0,
+    "wr_filt": 50.0,
+    "delta": 10.0
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": false,
+    "n_base": 270,
+    "n_filt": 145,
+    "wr_base": 47.407,
+    "wr_filt": 50.345,
+    "delta": 2.937
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 52,
+    "second": true,
+    "n_base": 113,
+    "n_filt": 64,
+    "wr_base": 46.903,
+    "wr_filt": 51.562,
+    "delta": 4.66
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": false,
+    "n_base": 97,
+    "n_filt": 46,
+    "wr_base": 47.423,
+    "wr_filt": 50.0,
+    "delta": 2.577
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 58,
+    "second": true,
+    "n_base": 22,
+    "n_filt": 14,
+    "wr_base": 59.091,
+    "wr_filt": 64.286,
+    "delta": 5.195
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": false,
+    "n_base": 26,
+    "n_filt": 15,
+    "wr_base": 42.308,
+    "wr_filt": 40.0,
+    "delta": -2.308
+   },
+   {
+    "side": "short",
+    "w": 8,
+    "buf": 0.15,
+    "chop_min": 61.8,
+    "second": true,
+    "n_base": 3,
+    "n_filt": 2,
+    "wr_base": 33.333,
+    "wr_filt": 50.0,
+    "delta": 16.667
+   }
+  ]
+ },
+ "status": "JUDGED",
+ "decision": "DEAD_UNDER_FILTER",
+ "phase_a_candidates": 78,
+ "phase_a_top10": [
+  {
+   "name": "hurst",
+   "p": 89,
+   "dirn": -1,
+   "q": 0.42,
+   "thr": 0.5132289502690179,
+   "theta": 4,
+   "n_is": 623,
+   "wr_is": 50.241,
+   "wr_base_is": 46.717,
+   "n_base_is": 1051,
+   "keep_frac": 0.5928,
+   "lift_is": 3.523,
+   "z_binom": 1.763
+  },
+  {
+   "name": "hurst",
+   "p": 89,
+   "dirn": -1,
+   "q": 0.42,
+   "thr": 0.5132289502690179,
+   "theta": 7,
+   "n_is": 410,
+   "wr_is": 52.439,
+   "wr_base_is": 49.333,
+   "n_base_is": 675,
+   "keep_frac": 0.6074,
+   "lift_is": 3.106,
+   "z_binom": 1.258
+  },
+  {
+   "name": "hurst",
+   "p": 64,
+   "dirn": -1,
+   "q": 0.15,
+   "thr": 0.46295390830073324,
+   "theta": 16,
+   "n_is": 74,
+   "wr_is": 55.405,
+   "wr_base_is": 48.148,
+   "n_base_is": 189,
+   "keep_frac": 0.3915,
+   "lift_is": 7.257,
+   "z_binom": 1.249
+  },
+  {
+   "name": "entropy",
+   "p": 47,
+   "dirn": -1,
+   "q": 0.28,
+   "thr": 2.399277953499144,
+   "theta": 4,
+   "n_is": 349,
+   "wr_is": 49.857,
+   "wr_base_is": 46.717,
+   "n_base_is": 1051,
+   "keep_frac": 0.3321,
+   "lift_is": 3.139,
+   "z_binom": 1.175
+  },
+  {
+   "name": "hurst",
+   "p": 64,
+   "dirn": -1,
+   "q": 0.28,
+   "thr": 0.48750186718514493,
+   "theta": 11,
+   "n_is": 212,
+   "wr_is": 51.415,
+   "wr_base_is": 47.642,
+   "n_base_is": 424,
+   "keep_frac": 0.5,
+   "lift_is": 3.774,
+   "z_binom": 1.1
+  },
+  {
+   "name": "entropy",
+   "p": 89,
+   "dirn": -1,
+   "q": 0.15,
+   "thr": 2.0209975258268997,
+   "theta": 4,
+   "n_is": 172,
+   "wr_is": 50.581,
+   "wr_base_is": 46.717,
+   "n_base_is": 1051,
+   "keep_frac": 0.1637,
+   "lift_is": 3.864,
+   "z_binom": 1.016
+  },
+  {
+   "name": "hurst",
+   "p": 64,
+   "dirn": -1,
+   "q": 0.28,
+   "thr": 0.48750186718514493,
+   "theta": 16,
+   "n_is": 106,
+   "wr_is": 52.83,
+   "wr_base_is": 48.148,
+   "n_base_is": 189,
+   "keep_frac": 0.5608,
+   "lift_is": 4.682,
+   "z_binom": 0.965
+  },
+  {
+   "name": "entropy",
+   "p": 89,
+   "dirn": -1,
+   "q": 0.42,
+   "thr": 2.3170127216432412,
+   "theta": 7,
+   "n_is": 268,
+   "wr_is": 52.239,
+   "wr_base_is": 49.333,
+   "n_base_is": 675,
+   "keep_frac": 0.397,
+   "lift_is": 2.905,
+   "z_binom": 0.951
+  },
+  {
+   "name": "fdi",
+   "p": 55,
+   "dirn": 1,
+   "q": 0.42,
+   "thr": 1.4736963749368983,
+   "theta": 11,
+   "n_is": 300,
+   "wr_is": 50.333,
+   "wr_base_is": 47.642,
+   "n_base_is": 424,
+   "keep_frac": 0.7075,
+   "lift_is": 2.692,
+   "z_binom": 0.934
+  },
+  {
+   "name": "hurst",
+   "p": 47,
+   "dirn": -1,
+   "q": 0.15,
+   "thr": 0.45513675763024614,
+   "theta": 4,
+   "n_is": 384,
+   "wr_is": 48.958,
+   "wr_base_is": 46.717,
+   "n_base_is": 1051,
+   "keep_frac": 0.3654,
+   "lift_is": 2.241,
+   "z_binom": 0.88
+  }
+ ],
+ "role": "SEARCH_CARD"
+}
