@@ -457,8 +457,7 @@ def prepare(card):
     cfg, source, _, _ = S357.resolve_cfg(card, df, asset)
     F = S357.base_features(df, cfg)
     fracs = {w: S357._fractal_levels(F['h'], F['l'], w) for w in S357.W_GRID}
-    v_long, v_short = S358.vote_counts(F, fracs)
-    v = dict(long=v_long, short=v_short)
+    v, _members = S358.vote_counts(F, fracs)   # v = {'long': counts, 'short': counts}
     arch = dict(sl=cfg['sl'], tp=cfg['tp'], mh=cfg['mh'],
                 rr=round(cfg['tp'] / cfg['sl'], 3), source=source)
     return df, asset, cfg, F, fracs, v, arch
