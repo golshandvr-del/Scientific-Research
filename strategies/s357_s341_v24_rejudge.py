@@ -91,6 +91,7 @@ SITE_CARDS = ["XAUUSD-M5", "XAUUSD-M15", "XAUUSD-M30", "XAUUSD-H1"]
 # قانونِ MTF: هر کارتی که دادهٔ آن در `data/` هست. `XAUUSD-M1` داده ندارد و
 # صریحاً `NO_DATA` گزارش می‌شود — حذفِ خاموش همان اشتباهِ رایجِ #۵ است.
 CARDS_ALL = SITE_CARDS + [
+    "XAUUSD-M1",                       # دادهٔ آن در repo نیست ⇒ `NO_DATA`ِ صریح
     "XAUUSD-H4", "XAUUSD-D1", "XAUUSD-W1",
     "EURUSD-M1", "EURUSD-M5", "EURUSD-M15", "EURUSD-M30",
     "EURUSD-H1", "EURUSD-H4", "EURUSD-D1", "EURUSD-W1",
