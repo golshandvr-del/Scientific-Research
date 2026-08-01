@@ -1,0 +1,33 @@
+{
+ "card": "XAUUSD-W1",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "cfg_source": "DERIVED",
+ "cfg": {
+  "side": "long",
+  "w": 4,
+  "buf": 0.05,
+  "require_second": true,
+  "stretch": null,
+  "exh": null,
+  "mh": 29,
+  "chop_min": 61.8,
+  "r2_max": 0.22,
+  "er_max": 0.16,
+  "chop_p": 14,
+  "r2_p": 20,
+  "er_name": "er_lucas_11",
+  "sl": 6247.5,
+  "tp": 13807.0
+ },
+ "bars": 810,
+ "parity_vec_vs_loop": {
+  "equal": true,
+  "n_vec": 0,
+  "n_loop": 0
+ },
+ "n_signals": 0,
+ "seeds": {},
+ "honest": {},
+ "status": "NO_SIGNAL"
+}
