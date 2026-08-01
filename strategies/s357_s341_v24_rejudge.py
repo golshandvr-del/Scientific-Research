@@ -69,7 +69,9 @@ SPLIT_FRAC = 0.60
 N_TRIALS_HONEST = 10_368        # گریدِ خامِ همان کارت (864 × stretch 4 × exh 3)
 N_TRIALS_STRESS = 82_944        # × ۸ ترکیبِ (دارایی×TF) که آرشیو جارو کرد
 N_BRACKETS = 12                 # sl(2) × tp(3) × mh(2) — سیگنال را عوض نمی‌کنند
-NEFF_ROW_CAP = 30_000           # سقفِ سطر برای تخمینِ همبستگیِ N_eff (stride)
+# ⚠️ `NEFF_ROW_CAP`/stride حذف شد — بندِ «چرا ماتریسِ داده ساخته نمی‌شود» در
+#    `measure_neff` دلیلِ علمیِ حذف را ثبت می‌کند (نمونه‌گیریِ سطری روی سیگنالِ
+#    تُنُک، جریمهٔ چندگانگی را مصنوعاً صفر می‌کرد).
 
 # ─────────── گریدِ آرشیو، عیناً از s341c_fast.py و s341f_revive.py ───────────
 W_GRID = [4, 5, 8]
@@ -341,25 +343,76 @@ def measure_neff(F, fracs, verbose=True):
 
     براکت‌ها (`sl×tp×mh`) سیگنال را عوض نمی‌کنند، پس ضربِ `× N_BRACKETS` **بدونِ
     تخفیف** اعمال می‌شود (محافظه‌کارانه: جریمه را بالا نگه می‌دارد).
-    سطرها با `stride` کم می‌شوند تا حافظه بترکد؛ همبستگی از نمونهٔ سطری برآورد
-    می‌شود و این برآورد بی‌سوگیری است.
+
+    ⚠️ **چرا ماتریسِ داده ساخته نمی‌شود — و چرا `stride` علماً غلط بود.**
+    نسخهٔ اولِ این تابع ۸۶۴ ستونِ کاملِ ۲۰۰٬۰۰۰-سطری را به `R2.effective_trials`
+    می‌داد و در سندباکسِ ۹۸۵MB **کشته شد**. راهِ ظاهراً بی‌ضررِ «نمونه‌گیریِ سطری
+    با stride» اینجا فقط ناکارآمد نیست، **جهت‌دارِ خطرناک** است: سیگنال‌ها به‌شدت
+    تُنُک‌اند (۶۳ سیگنال در ۲۰۰٬۰۰۰ کندلِ M5 ⇒ چگالیِ ۳ در ۱۰٬۰۰۰). با
+    `stride≈7` احتمالِ آنکه یک ستون **هیچ** سطرِ اطلاع‌داری را نگه دارد بالاست،
+    آن ستون بی‌واریانس می‌شود، فیلترِ `nanvar > min_var` حذفش می‌کند، `M` سقوط
+    می‌کند و `M_eff → 1` ⇒ **جریمهٔ چندگانگی مصنوعاً صفر**. یعنی آن باگِ حافظه در
+    مسیرِ دوم به لایه پاسِ ناشایست می‌داد؛ دقیقاً همان «دور زدنِ معیار» که
+    اشتباهِ رایجِ #۸ ممنوع کرده است.
+
+    راهِ درست: همبستگیِ پیرسونِ دو بردارِ **دودویی** فرمِ بستهٔ دقیق دارد (ضریبِ
+    `phi`)، پس ماتریسِ همبستگی **بدونِ ساختنِ ماتریسِ داده** و تنها از اندازهٔ
+    تقاطعِ مجموعه‌های تُنُک، **دقیق** (نه تقریبی) محاسبه می‌شود:
+
+        r_ij = (n·n_ij − n_i·n_j) / √( n_i(n−n_i) · n_j(n−n_j) )
+
+    این عیناً همان همبستگیِ جامعه‌ای است که `effective_trials` با تقسیم بر
+    `A.shape[0]` می‌سازد، سپس همان برآوردگرِ Nyholt(2004)/Cheverud(2001) روی
+    مقادیرِ ویژه اعمال می‌شود: `M_eff = 1 + (M−1)(1 − Var(λ)/M)`.
+    ⇒ هم بی‌نیاز از حافظه، هم **دقیق‌تر** از نسخهٔ نمونه‌گیری‌شده.
     """
     n = len(F['h'])
-    stride = max(1, n // NEFF_ROW_CAP)
-    cols = []
     combos = list(itertools.product(SIDE_GRID, W_GRID, BUF_GRID, REGIME_GRID,
                                     SECOND_GRID, STRETCH_GRID, EXH_GRID))
+    sets, counts = [], []
     for side, w, buf, reg, sec, st, ex in combos:
         s = signals_vec(F, fracs[w], side, w, buf, reg, sec, st, ex)
-        cols.append(s[::stride])
-    X = np.asarray(cols, dtype=np.float32).T
-    m_eff_sig = R2.effective_trials(X)
+        idx = np.flatnonzero(s)
+        sets.append(frozenset(idx.tolist()))
+        counts.append(int(idx.size))
+        del s, idx
+    # ستونِ بی‌واریانس (همیشه-خاموش یا همیشه-روشن) آزمونِ واقعی نیست — همان
+    # سیاستِ `effective_trials`.
+    keep = [i for i, k in enumerate(counts) if 0 < k < n]
+    M = len(keep)
+    if M < 2:
+        m_eff_sig = float(max(1, M))
+        n_eff = float(m_eff_sig * N_BRACKETS)
+        if verbose:
+            print(f"    N_eff: only {M}/{len(combos)} grid members carry variance "
+                  f"→ M_eff_sig={m_eff_sig:.1f} × {N_BRACKETS} = {n_eff:.0f}",
+                  flush=True)
+        return n_eff, m_eff_sig, len(combos), M
+
+    C = np.eye(M, dtype=np.float64)
+    nn = float(n)
+    for a in range(M):
+        ia = keep[a]
+        na = float(counts[ia])
+        sa = sets[ia]
+        da = na * (nn - na)
+        for b in range(a + 1, M):
+            ib = keep[b]
+            nb = float(counts[ib])
+            # تقاطع را از سمتِ مجموعهٔ کوچک‌تر می‌گیریم (هزینهٔ O(min))
+            nij = float(len(sa & sets[ib]) if na <= nb else len(sets[ib] & sa))
+            den = (da * nb * (nn - nb)) ** 0.5
+            C[a, b] = C[b, a] = 0.0 if den <= 0 else (nn * nij - na * nb) / den
+    lam = np.clip(np.linalg.eigvalsh(C), 0.0, None)
+    var_lam = float(np.mean(lam ** 2) - np.mean(lam) ** 2)
+    m_eff_sig = float(min(max(1.0 + (M - 1.0) * (1.0 - var_lam / float(M)), 1.0),
+                          float(M)))
     n_eff = float(m_eff_sig * N_BRACKETS)
     if verbose:
-        print(f"    N_eff: {len(combos)} signal columns (stride={stride}) → "
-              f"M_eff_sig={m_eff_sig:.1f} × {N_BRACKETS} brackets = {n_eff:.0f}",
-              flush=True)
-    return n_eff, float(m_eff_sig), len(combos), stride
+        print(f"    N_eff: {M}/{len(combos)} grid members carry variance → exact "
+              f"phi-correlation M_eff_sig={m_eff_sig:.1f} × {N_BRACKETS} brackets "
+              f"= {n_eff:.0f}", flush=True)
+    return n_eff, m_eff_sig, len(combos), M
 
 
 # ═══════════════════════════ ۵. اجرا برای یک کارت ═══════════════════════════
@@ -444,9 +497,10 @@ def run_card(card, do_neff=True, verbose=True):
 
     n_eff = float(nt_honest)
     if do_neff and source == 'ARCHIVE':
-        n_eff, m_eff_sig, n_cols, stride = measure_neff(F, fracs, verbose=verbose)
+        n_eff, m_eff_sig, n_cols, m_used = measure_neff(F, fracs, verbose=verbose)
         rec['neff'] = dict(n_eff=round(n_eff, 1), m_eff_signal=round(m_eff_sig, 2),
-                           n_signal_columns=n_cols, row_stride=stride,
+                           n_signal_columns=n_cols, m_with_variance=m_used,
+                           method='exact_phi_correlation',
                            bracket_multiplier=N_BRACKETS)
     else:
         rec['neff'] = dict(n_eff=n_eff, note='derived card: no selection ⇒ N=1')
