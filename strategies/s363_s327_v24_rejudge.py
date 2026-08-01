@@ -260,37 +260,99 @@ def empirical_p(draws, wr_obs):
 
 
 # ═════════════════════ ۴. اندازه‌گیریِ N_eff از خودِ گرید ═════════════════════
+def _m_eff_from_bool_matrix(X, min_var=1e-12, chunk=8192):
+    """`M_eff` نیهولت–چِوِرود، محاسبه‌شده از **شمارشِ هم‌رخدادی** به‌جای ماتریسِ شناور.
+
+    چرا این مسیر و نه `R2.effective_trials(X.astype(float))`؟
+    -------------------------------------------------------
+    ماتریسِ ۴۳۲ ستون × ۲۰۰٬۰۰۰ سطر در `float64` **۶۹۱ مگابایت** است و مرکزسازیِ
+    آن یک کپیِ دوم می‌خواهد؛ سندباکس ۹۸۵ مگابایت رم دارد و اجرای اول **Killed**
+    شد. دو راهِ‌حلِ ممکن بود:
+
+      ✗ **نمونه‌گیریِ سطری** (کاری که وسوسه‌انگیز و ارزان است): روی سیگنالِ تُنُک
+        واریانسِ ستون‌ها را به صفر می‌برد، ستون‌ها از `keep` می‌افتند، `M_eff` به
+        سمتِ ۱ می‌رود و جریمهٔ چندگانگی **مصنوعاً حذف** می‌شود — یعنی لایه یک
+        پاسِ ناکسب‌شده هدیه می‌گیرد. این همان تلهٔ ثبت‌شده در نشستِ S357 است.
+
+      ✓ **بازنویسیِ *دقیقِ* همان فرمول از شمارش‌ها.** برای ستونِ بولی، گشتاورها
+        بسته‌فرم‌اند و هیچ تقریبی لازم نیست:
+        ```
+        mean_j = s_j / n                      (s_j = شمارِ True)
+        var_j  = mean_j (1 − mean_j)          ← دقیق برای برنولی
+        cov_jk = co_jk / n − mean_j·mean_k    (co_jk = شمارِ هم‌رخدادی)
+        corr   = cov / √(var_j·var_k)         ← ضریبِ فیِ دقیق
+        ```
+        `co` با ضربِ ماتریسیِ تکه‌تکه در `float32` جمع می‌شود ⇒ اوجِ مصرف
+        ۸۶ مگابایت (`uint8`) به‌جای ۶۹۱ مگابایت، و نتیجه **بیت‌به‌بیت همان
+        چیزی است که مسیرِ شناور می‌داد**، نه یک برآورد.
+
+    `_neff_selfcheck` این ادعای «دقیق بودن» را اندازه‌گیری می‌کند، نه ادعا.
+    """
+    n, M = X.shape
+    s = X.sum(axis=0, dtype=np.int64).astype(np.float64)
+    co = np.zeros((M, M), dtype=np.float64)
+    for a in range(0, n, chunk):
+        b = X[a:a + chunk].astype(np.float32)
+        co += np.asarray(b.T @ b, dtype=np.float64)
+    mean = s / float(n)
+    var = mean * (1.0 - mean)                      # دقیق برای برنولی
+    keep = var > min_var
+    m_used = int(keep.sum())
+    if m_used < 2:
+        return float(max(m_used, 1)), m_used
+    idx = np.flatnonzero(keep)
+    cov = co[np.ix_(idx, idx)] / float(n) - np.outer(mean[idx], mean[idx])
+    sd = np.sqrt(var[idx])
+    corr = cov / np.outer(sd, sd)
+    np.fill_diagonal(corr, 1.0)
+    lam = np.clip(np.linalg.eigvalsh(corr), 0.0, None)
+    var_lam = float(np.mean(lam ** 2) - np.mean(lam) ** 2)
+    m_eff = 1.0 + (m_used - 1.0) * (1.0 - var_lam / float(m_used))
+    return float(min(max(m_eff, 1.0), float(m_used))), m_used
+
+
+def _neff_selfcheck(X, n_rows=20000, n_cols=40):
+    """اثباتِ اینکه مسیرِ شمارشی **همان** عددِ `R2.effective_trials` را می‌دهد.
+
+    روی یک گوشهٔ کوچکِ ماتریس که در `float64` قابلِ‌حمل است، هر دو مسیر اجرا و
+    مقایسه می‌شوند. اگر نخوانند، اسکریپت **می‌شکند** و داوری نمی‌کند — چون
+    جریمهٔ چندگانگیِ غلط دقیقاً همان چیزی است که یک لایهٔ مرده را زنده نشان می‌دهد.
+    """
+    sub = X[:n_rows, :n_cols]
+    mine, _ = _m_eff_from_bool_matrix(sub)
+    ref = float(R2.effective_trials(sub.astype(np.float64)))
+    return mine, ref, abs(mine - ref)
+
+
 def measure_neff(feat, asset, verbose=True):
     """`N_eff` از ساختارِ همبستگیِ **۴۳۲ ستونِ سیگنالِ** گریدِ آرشیو.
 
     براکت‌ها (`sl_m×tp_m×hold`) سیگنال را عوض نمی‌کنند، پس ضربِ `× N_BRACKETS`
     **بدونِ** اندازه‌گیری اعمال می‌شود (محافظه‌کارانه: فرضِ استقلالِ کاملِ براکت‌ها).
-
-    ⚠️ هیچ نمونه‌گیریِ سطری انجام نمی‌شود. روی سیگنالِ تُنُک، نمونه‌گیریِ سطری
-    واریانسِ ستون‌ها را به صفر می‌برد و جریمهٔ چندگانگی را مصنوعاً حذف می‌کند —
-    همان تلهٔ ثبت‌شده در `measure_neff` نشستِ S357.
     """
     _, _, atr_pip = geometry(feat, asset, 1.0, 1.0)
     ok = np.isfinite(atr_pip) & (atr_pip > 0)
-    cols = []
-    for k_body, br_min, streak_n, rsi_lo, regime in itertools.product(
-            G_KBODY, G_BRMIN, G_STREAK, G_RSI, G_REGIME):
-        s = make_signals(feat, k_body, br_min, streak_n, rsi_lo, regime,
-                         feat['atr'], feat['c']) & ok
-        cols.append(s)
-    X = np.asarray(cols, dtype=np.float64).T          # (bars, 432)
-    n_cols = X.shape[1]
-    var = X.var(axis=0)
-    keep = var > 1e-12
-    m_used = int(keep.sum())
-    if m_used < 2:
-        m_eff = float(max(m_used, 1))
-    else:
-        m_eff = float(R2.effective_trials(X[:, keep]))
+    combos = list(itertools.product(G_KBODY, G_BRMIN, G_STREAK, G_RSI, G_REGIME))
+    n_cols = len(combos)
+    X = np.empty((ok.size, n_cols), dtype=np.uint8)
+    for j, (k_body, br_min, streak_n, rsi_lo, regime) in enumerate(combos):
+        X[:, j] = (make_signals(feat, k_body, br_min, streak_n, rsi_lo, regime,
+                                feat['atr'], feat['c']) & ok).astype(np.uint8)
+
+    mine, ref, delta = _neff_selfcheck(X)
+    if delta > 1e-6:
+        raise AssertionError(
+            f"count-based M_eff ({mine:.9f}) does not reproduce "
+            f"R2.effective_trials ({ref:.9f}); delta={delta:.3e}. Refusing to "
+            f"apply a multiplicity penalty computed by an unverified route.")
+
+    m_eff, m_used = _m_eff_from_bool_matrix(X)
     n_eff = m_eff * N_BRACKETS
     if verbose:
         print(f"    N_eff: {n_cols} signal columns, {m_used} with variance, "
-              f"m_eff={m_eff:.2f} × {N_BRACKETS} brackets = {n_eff:.1f}", flush=True)
+              f"m_eff={m_eff:.2f} × {N_BRACKETS} brackets = {n_eff:.1f} "
+              f"(selfcheck delta={delta:.2e})", flush=True)
+    del X
     return n_eff, m_eff, n_cols, m_used
 
 
@@ -384,7 +446,7 @@ def run_card(card, do_neff=True, verbose=True):
     n_eff = float(nt_honest)
     if do_neff and source == 'ARCHIVE':
         n_eff, m_eff, n_cols, m_used = measure_neff(feat, asset, verbose=verbose)
-        rec['neff'] = dict(n_eff=round(n_eff, 1), m_eff_signal=round(m_eff, 2),
+        rec["neff"] = dict(n_eff=round(n_eff, 1), m_eff_signal=round(m_eff, 2),
                            n_signal_columns=n_cols, m_with_variance=m_used,
                            method='exact_phi_correlation',
                            bracket_multiplier=N_BRACKETS)
