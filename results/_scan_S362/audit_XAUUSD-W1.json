@@ -1,0 +1,13 @@
+{
+ "card": "XAUUSD-W1",
+ "status": "AUDITED",
+ "bars": 810,
+ "missing": [
+  "S326",
+  "S327",
+  "S333",
+  "S335"
+ ],
+ "sources_available": [],
+ "rows": []
+}

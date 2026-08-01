@@ -1,0 +1,13 @@
+{
+ "card": "EURUSD-H4",
+ "status": "AUDITED",
+ "bars": 25133,
+ "missing": [
+  "S326",
+  "S327",
+  "S333",
+  "S335"
+ ],
+ "sources_available": [],
+ "rows": []
+}

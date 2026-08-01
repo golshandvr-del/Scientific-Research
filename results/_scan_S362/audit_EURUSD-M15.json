@@ -1,0 +1,192 @@
+{
+ "card": "EURUSD-M15",
+ "status": "AUDITED",
+ "bars": 200000,
+ "missing": [
+  "S327",
+  "S333",
+  "S335"
+ ],
+ "sources_available": [
+  "S326",
+  "ANY_REVERSAL"
+ ],
+ "rows": [
+  {
+   "theta": 4,
+   "source": "S326",
+   "family": "reversal",
+   "window": 3,
+   "n_s341": 5694,
+   "n_source": 336,
+   "n_intersect": 1,
+   "share_of_s341": 0.018,
+   "jaccard": 0.017
+  },
+  {
+   "theta": 4,
+   "source": "S326",
+   "family": "reversal",
+   "window": 13,
+   "n_s341": 5694,
+   "n_source": 1301,
+   "n_intersect": 2,
+   "share_of_s341": 0.035,
+   "jaccard": 0.029
+  },
+  {
+   "theta": 4,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 3,
+   "n_s341": 5694,
+   "n_source": 336,
+   "n_intersect": 1,
+   "share_of_s341": 0.018,
+   "jaccard": 0.017
+  },
+  {
+   "theta": 4,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 13,
+   "n_s341": 5694,
+   "n_source": 1301,
+   "n_intersect": 2,
+   "share_of_s341": 0.035,
+   "jaccard": 0.029
+  },
+  {
+   "theta": 7,
+   "source": "S326",
+   "family": "reversal",
+   "window": 3,
+   "n_s341": 2987,
+   "n_source": 336,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 7,
+   "source": "S326",
+   "family": "reversal",
+   "window": 13,
+   "n_s341": 2987,
+   "n_source": 1301,
+   "n_intersect": 1,
+   "share_of_s341": 0.033,
+   "jaccard": 0.023
+  },
+  {
+   "theta": 7,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 3,
+   "n_s341": 2987,
+   "n_source": 336,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 7,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 13,
+   "n_s341": 2987,
+   "n_source": 1301,
+   "n_intersect": 1,
+   "share_of_s341": 0.033,
+   "jaccard": 0.023
+  },
+  {
+   "theta": 11,
+   "source": "S326",
+   "family": "reversal",
+   "window": 3,
+   "n_s341": 1563,
+   "n_source": 336,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 11,
+   "source": "S326",
+   "family": "reversal",
+   "window": 13,
+   "n_s341": 1563,
+   "n_source": 1301,
+   "n_intersect": 1,
+   "share_of_s341": 0.064,
+   "jaccard": 0.035
+  },
+  {
+   "theta": 11,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 3,
+   "n_s341": 1563,
+   "n_source": 336,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 11,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 13,
+   "n_s341": 1563,
+   "n_source": 1301,
+   "n_intersect": 1,
+   "share_of_s341": 0.064,
+   "jaccard": 0.035
+  },
+  {
+   "theta": 16,
+   "source": "S326",
+   "family": "reversal",
+   "window": 3,
+   "n_s341": 634,
+   "n_source": 336,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 16,
+   "source": "S326",
+   "family": "reversal",
+   "window": 13,
+   "n_s341": 634,
+   "n_source": 1301,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 16,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 3,
+   "n_s341": 634,
+   "n_source": 336,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 16,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 13,
+   "n_s341": 634,
+   "n_source": 1301,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  }
+ ]
+}

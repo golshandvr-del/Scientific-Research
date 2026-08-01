@@ -1,0 +1,192 @@
+{
+ "card": "XAUUSD-H4",
+ "status": "AUDITED",
+ "bars": 23755,
+ "missing": [
+  "S326",
+  "S333",
+  "S335"
+ ],
+ "sources_available": [
+  "S327",
+  "ANY_REVERSAL"
+ ],
+ "rows": [
+  {
+   "theta": 4,
+   "source": "S327",
+   "family": "reversal",
+   "window": 3,
+   "n_s341": 455,
+   "n_source": 133,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 4,
+   "source": "S327",
+   "family": "reversal",
+   "window": 13,
+   "n_s341": 455,
+   "n_source": 517,
+   "n_intersect": 1,
+   "share_of_s341": 0.22,
+   "jaccard": 0.103
+  },
+  {
+   "theta": 4,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 3,
+   "n_s341": 455,
+   "n_source": 133,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 4,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 13,
+   "n_s341": 455,
+   "n_source": 517,
+   "n_intersect": 1,
+   "share_of_s341": 0.22,
+   "jaccard": 0.103
+  },
+  {
+   "theta": 7,
+   "source": "S327",
+   "family": "reversal",
+   "window": 3,
+   "n_s341": 199,
+   "n_source": 133,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 7,
+   "source": "S327",
+   "family": "reversal",
+   "window": 13,
+   "n_s341": 199,
+   "n_source": 517,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 7,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 3,
+   "n_s341": 199,
+   "n_source": 133,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 7,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 13,
+   "n_s341": 199,
+   "n_source": 517,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 11,
+   "source": "S327",
+   "family": "reversal",
+   "window": 3,
+   "n_s341": 84,
+   "n_source": 133,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 11,
+   "source": "S327",
+   "family": "reversal",
+   "window": 13,
+   "n_s341": 84,
+   "n_source": 517,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 11,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 3,
+   "n_s341": 84,
+   "n_source": 133,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 11,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 13,
+   "n_s341": 84,
+   "n_source": 517,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 16,
+   "source": "S327",
+   "family": "reversal",
+   "window": 3,
+   "n_s341": 26,
+   "n_source": 133,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 16,
+   "source": "S327",
+   "family": "reversal",
+   "window": 13,
+   "n_s341": 26,
+   "n_source": 517,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 16,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 3,
+   "n_s341": 26,
+   "n_source": 133,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  },
+  {
+   "theta": 16,
+   "source": "ANY_REVERSAL",
+   "family": "combo",
+   "window": 13,
+   "n_s341": 26,
+   "n_source": 517,
+   "n_intersect": 0,
+   "share_of_s341": 0.0,
+   "jaccard": 0.0
+  }
+ ]
+}
