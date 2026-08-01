@@ -1,0 +1,2730 @@
+{
+ "card": "EURUSD-M1",
+ "asset": "EURUSD",
+ "tf": "M1",
+ "bars": 200000,
+ "bracket_source": "DERIVED",
+ "bracket": {
+  "sl": 14.6,
+  "tp": 32.3,
+  "mh": 29,
+  "rr": 2.212
+ },
+ "members_per_side": 36,
+ "vote_hist": {
+  "4": {
+   "long": 1646,
+   "short": 1506
+  },
+  "7": {
+   "long": 736,
+   "short": 677
+  },
+  "11": {
+   "long": 362,
+   "short": 328
+  },
+  "16": {
+   "long": 136,
+   "short": 119
+  }
+ },
+ "n_trials": {
+  "honest": 48,
+  "stress": 3456
+ },
+ "thetas": {
+  "4": {
+   "theta": 4,
+   "n_signals": 3134,
+   "n_sig_long": 1640,
+   "n_sig_short": 1494,
+   "seeds": {
+    "23": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 3.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 1547,
+       "win_rate": 37.69,
+       "net_profit": -7466.1,
+       "profit_factor": 0.573,
+       "max_dd_pct": 74.77,
+       "max_consec_losses": 15,
+       "mcl_allowed": 23,
+       "n_wins": 583,
+       "top_win_share": 0.0118,
+       "recovery_factor": -1.0,
+       "expectancy_pip": -1.2811,
+       "expectancy_at_2x_cost": -2.8811,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 3.14,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 2.43,
+       "skill_z": 1.46,
+       "skill_p_perm": 0.071767,
+       "perm_max": 40.53,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 796,
+        "short": 751
+       },
+       "side_wr": {
+        "long": 36.68,
+        "short": 38.75
+       },
+       "side_lift_pp": {
+        "long": 2.55,
+        "short": 2.3
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.024149,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 2.001,
+       "z_luck_bound": 2.261,
+       "z_margin": -0.259,
+       "n_trials": 48,
+       "cal_nets": [
+        -2800.8,
+        -3293.2,
+        -3006.7,
+        -2505.0
+       ],
+       "cal_counts": [
+        371,
+        396,
+        392,
+        388
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -5172.3,
+        -4755.1
+       ],
+       "oos": {
+        "n": 628,
+        "wr": 37.58,
+        "pf": 0.538,
+        "net": -3991.2,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.573<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 3.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 1547,
+       "win_rate": 37.69,
+       "net_profit": -7466.1,
+       "profit_factor": 0.573,
+       "max_dd_pct": 74.77,
+       "max_consec_losses": 15,
+       "mcl_allowed": 23,
+       "n_wins": 583,
+       "top_win_share": 0.0118,
+       "recovery_factor": -1.0,
+       "expectancy_pip": -1.2811,
+       "expectancy_at_2x_cost": -2.8811,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 3.14,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 2.43,
+       "skill_z": 1.46,
+       "skill_p_perm": 0.071767,
+       "perm_max": 40.53,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 796,
+        "short": 751
+       },
+       "side_wr": {
+        "long": 36.68,
+        "short": 38.75
+       },
+       "side_lift_pp": {
+        "long": 2.55,
+        "short": 2.3
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.024149,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 2.001,
+       "z_luck_bound": 3.593,
+       "z_margin": -1.591,
+       "n_trials": 3456,
+       "cal_nets": [
+        -2800.8,
+        -3293.2,
+        -3006.7,
+        -2505.0
+       ],
+       "cal_counts": [
+        371,
+        396,
+        392,
+        388
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -5172.3,
+        -4755.1
+       ],
+       "oos": {
+        "n": 628,
+        "wr": 37.58,
+        "pf": 0.538,
+        "net": -3991.2,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.573<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.95,
+      "sd": 1.216,
+      "k": 2000,
+      "lift_pp": 2.736,
+      "z": 2.249
+     },
+     "null_indep_combined": {
+      "mean": 35.003,
+      "sd": 0.958,
+      "k": 500,
+      "z": 2.799,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.269,
+     "p_empirical": 0.009495,
+     "n_draws_ge_obs": 18,
+     "p_parametric_engine": 0.071767,
+     "honest_accept": false
+    },
+    "101": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 3.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 1547,
+       "win_rate": 37.69,
+       "net_profit": -7466.1,
+       "profit_factor": 0.573,
+       "max_dd_pct": 74.77,
+       "max_consec_losses": 15,
+       "mcl_allowed": 23,
+       "n_wins": 583,
+       "top_win_share": 0.0118,
+       "recovery_factor": -1.0,
+       "expectancy_pip": -1.2811,
+       "expectancy_at_2x_cost": -2.8811,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 3.14,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 2.44,
+       "skill_z": 1.46,
+       "skill_p_perm": 0.072446,
+       "perm_max": 40.49,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 796,
+        "short": 751
+       },
+       "side_wr": {
+        "long": 36.68,
+        "short": 38.75
+       },
+       "side_lift_pp": {
+        "long": 2.56,
+        "short": 2.3
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.023862,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 2.006,
+       "z_luck_bound": 2.261,
+       "z_margin": -0.254,
+       "n_trials": 48,
+       "cal_nets": [
+        -2800.8,
+        -3293.2,
+        -3006.7,
+        -2505.0
+       ],
+       "cal_counts": [
+        371,
+        396,
+        392,
+        388
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -5172.3,
+        -4755.1
+       ],
+       "oos": {
+        "n": 628,
+        "wr": 37.58,
+        "pf": 0.538,
+        "net": -3991.2,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.573<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 3.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 1547,
+       "win_rate": 37.69,
+       "net_profit": -7466.1,
+       "profit_factor": 0.573,
+       "max_dd_pct": 74.77,
+       "max_consec_losses": 15,
+       "mcl_allowed": 23,
+       "n_wins": 583,
+       "top_win_share": 0.0118,
+       "recovery_factor": -1.0,
+       "expectancy_pip": -1.2811,
+       "expectancy_at_2x_cost": -2.8811,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 3.14,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 2.44,
+       "skill_z": 1.46,
+       "skill_p_perm": 0.072446,
+       "perm_max": 40.49,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 796,
+        "short": 751
+       },
+       "side_wr": {
+        "long": 36.68,
+        "short": 38.75
+       },
+       "side_lift_pp": {
+        "long": 2.56,
+        "short": 2.3
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.023862,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 2.006,
+       "z_luck_bound": 3.593,
+       "z_margin": -1.586,
+       "n_trials": 3456,
+       "cal_nets": [
+        -2800.8,
+        -3293.2,
+        -3006.7,
+        -2505.0
+       ],
+       "cal_counts": [
+        371,
+        396,
+        392,
+        388
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -5172.3,
+        -4755.1
+       ],
+       "oos": {
+        "n": 628,
+        "wr": 37.58,
+        "pf": 0.538,
+        "net": -3991.2,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.573<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.995,
+      "sd": 1.254,
+      "k": 2000,
+      "lift_pp": 2.69,
+      "z": 2.145
+     },
+     "null_indep_combined": {
+      "mean": 34.926,
+      "sd": 0.985,
+      "k": 500,
+      "z": 2.801,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.273,
+     "p_empirical": 0.016992,
+     "n_draws_ge_obs": 33,
+     "p_parametric_engine": 0.072446,
+     "honest_accept": false
+    },
+    "777": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 3.1,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 1547,
+       "win_rate": 37.69,
+       "net_profit": -7466.1,
+       "profit_factor": 0.573,
+       "max_dd_pct": 74.77,
+       "max_consec_losses": 15,
+       "mcl_allowed": 23,
+       "n_wins": 583,
+       "top_win_share": 0.0118,
+       "recovery_factor": -1.0,
+       "expectancy_pip": -1.2811,
+       "expectancy_at_2x_cost": -2.8811,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 3.14,
+       "null_ref_wr": 35.28,
+       "skill_lift_pp": 2.4,
+       "skill_z": 1.44,
+       "skill_p_perm": 0.075114,
+       "perm_max": 40.13,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 796,
+        "short": 751
+       },
+       "side_wr": {
+        "long": 36.68,
+        "short": 38.75
+       },
+       "side_lift_pp": {
+        "long": 2.49,
+        "short": 2.3
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.02557,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 1.977,
+       "z_luck_bound": 2.261,
+       "z_margin": -0.284,
+       "n_trials": 48,
+       "cal_nets": [
+        -2800.8,
+        -3293.2,
+        -3006.7,
+        -2505.0
+       ],
+       "cal_counts": [
+        371,
+        396,
+        392,
+        388
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -5172.3,
+        -4755.1
+       ],
+       "oos": {
+        "n": 628,
+        "wr": 37.58,
+        "pf": 0.538,
+        "net": -3991.2,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.573<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 3.1,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 1547,
+       "win_rate": 37.69,
+       "net_profit": -7466.1,
+       "profit_factor": 0.573,
+       "max_dd_pct": 74.77,
+       "max_consec_losses": 15,
+       "mcl_allowed": 23,
+       "n_wins": 583,
+       "top_win_share": 0.0118,
+       "recovery_factor": -1.0,
+       "expectancy_pip": -1.2811,
+       "expectancy_at_2x_cost": -2.8811,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 3.14,
+       "null_ref_wr": 35.28,
+       "skill_lift_pp": 2.4,
+       "skill_z": 1.44,
+       "skill_p_perm": 0.075114,
+       "perm_max": 40.13,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 796,
+        "short": 751
+       },
+       "side_wr": {
+        "long": 36.68,
+        "short": 38.75
+       },
+       "side_lift_pp": {
+        "long": 2.49,
+        "short": 2.3
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.02557,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 1.977,
+       "z_luck_bound": 3.593,
+       "z_margin": -1.616,
+       "n_trials": 3456,
+       "cal_nets": [
+        -2800.8,
+        -3293.2,
+        -3006.7,
+        -2505.0
+       ],
+       "cal_counts": [
+        371,
+        396,
+        392,
+        388
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -5172.3,
+        -4755.1
+       ],
+       "oos": {
+        "n": 628,
+        "wr": 37.58,
+        "pf": 0.538,
+        "net": -3991.2,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.573<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.997,
+      "sd": 1.212,
+      "k": 2000,
+      "lift_pp": 2.689,
+      "z": 2.219
+     },
+     "null_indep_combined": {
+      "mean": 34.923,
+      "sd": 1.01,
+      "k": 500,
+      "z": 2.737,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.2,
+     "p_empirical": 0.014993,
+     "n_draws_ge_obs": 29,
+     "p_parametric_engine": 0.075114,
+     "honest_accept": false
+    }
+   },
+   "status": "JUDGED",
+   "n_trades": 1547,
+   "wr_obs": 37.686,
+   "parity_walk_vs_engine": {
+    "n_engine": 1547,
+    "n_walk": 1547,
+    "wr_engine": 37.686,
+    "wr_walk": 37.686
+   },
+   "n_long_used": 796,
+   "n_short_used": 751,
+   "all_seeds_honest_accept": false
+  },
+  "7": {
+   "theta": 7,
+   "n_signals": 1408,
+   "n_sig_long": 734,
+   "n_sig_short": 674,
+   "seeds": {
+    "23": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 0.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 819,
+       "win_rate": 35.78,
+       "net_profit": -6031.0,
+       "profit_factor": 0.506,
+       "max_dd_pct": 60.5,
+       "max_consec_losses": 23,
+       "mcl_allowed": 23,
+       "n_wins": 293,
+       "top_win_share": 0.0245,
+       "recovery_factor": -0.99,
+       "expectancy_pip": -1.6352,
+       "expectancy_at_2x_cost": -3.2352,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 1.23,
+       "null_ref_wr": 35.23,
+       "skill_lift_pp": 0.55,
+       "skill_z": 0.23,
+       "skill_p_perm": 0.40825,
+       "perm_max": 43.38,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 420,
+        "short": 399
+       },
+       "side_wr": {
+        "long": 35.24,
+        "short": 36.34
+       },
+       "side_lift_pp": {
+        "long": 1.16,
+        "short": -0.1
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.385661,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.327,
+       "z_luck_bound": 2.261,
+       "z_margin": -1.933,
+       "n_trials": 48,
+       "cal_nets": [
+        -1916.2,
+        -1541.8,
+        -2282.8,
+        -2486.2
+       ],
+       "cal_counts": [
+        200,
+        227,
+        193,
+        199
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -3156.8,
+        -4200.4
+       ],
+       "oos": {
+        "n": 311,
+        "wr": 30.87,
+        "pf": 0.358,
+        "net": -3474.5,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.506<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 0.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 819,
+       "win_rate": 35.78,
+       "net_profit": -6031.0,
+       "profit_factor": 0.506,
+       "max_dd_pct": 60.5,
+       "max_consec_losses": 23,
+       "mcl_allowed": 23,
+       "n_wins": 293,
+       "top_win_share": 0.0245,
+       "recovery_factor": -0.99,
+       "expectancy_pip": -1.6352,
+       "expectancy_at_2x_cost": -3.2352,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 1.23,
+       "null_ref_wr": 35.23,
+       "skill_lift_pp": 0.55,
+       "skill_z": 0.23,
+       "skill_p_perm": 0.40825,
+       "perm_max": 43.38,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 420,
+        "short": 399
+       },
+       "side_wr": {
+        "long": 35.24,
+        "short": 36.34
+       },
+       "side_lift_pp": {
+        "long": 1.16,
+        "short": -0.1
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.385661,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.327,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.265,
+       "n_trials": 3456,
+       "cal_nets": [
+        -1916.2,
+        -1541.8,
+        -2282.8,
+        -2486.2
+       ],
+       "cal_counts": [
+        200,
+        227,
+        193,
+        199
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -3156.8,
+        -4200.4
+       ],
+       "oos": {
+        "n": 311,
+        "wr": 30.87,
+        "pf": 0.358,
+        "net": -3474.5,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.506<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.933,
+      "sd": 1.69,
+      "k": 2000,
+      "lift_pp": 0.842,
+      "z": 0.498
+     },
+     "null_indep_combined": {
+      "mean": 34.98,
+      "sd": 1.394,
+      "k": 500,
+      "z": 0.571,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.213,
+     "p_empirical": 0.304348,
+     "n_draws_ge_obs": 608,
+     "p_parametric_engine": 0.40825,
+     "honest_accept": false
+    },
+    "101": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 0.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 819,
+       "win_rate": 35.78,
+       "net_profit": -6031.0,
+       "profit_factor": 0.506,
+       "max_dd_pct": 60.5,
+       "max_consec_losses": 23,
+       "mcl_allowed": 23,
+       "n_wins": 293,
+       "top_win_share": 0.0245,
+       "recovery_factor": -0.99,
+       "expectancy_pip": -1.6352,
+       "expectancy_at_2x_cost": -3.2352,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 1.23,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 0.52,
+       "skill_z": 0.22,
+       "skill_p_perm": 0.412406,
+       "perm_max": 42.47,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 420,
+        "short": 399
+       },
+       "side_wr": {
+        "long": 35.24,
+        "short": 36.34
+       },
+       "side_lift_pp": {
+        "long": 1.12,
+        "short": -0.1
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.391279,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.313,
+       "z_luck_bound": 2.261,
+       "z_margin": -1.948,
+       "n_trials": 48,
+       "cal_nets": [
+        -1916.2,
+        -1541.8,
+        -2282.8,
+        -2486.2
+       ],
+       "cal_counts": [
+        200,
+        227,
+        193,
+        199
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -3156.8,
+        -4200.4
+       ],
+       "oos": {
+        "n": 311,
+        "wr": 30.87,
+        "pf": 0.358,
+        "net": -3474.5,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.506<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 0.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 819,
+       "win_rate": 35.78,
+       "net_profit": -6031.0,
+       "profit_factor": 0.506,
+       "max_dd_pct": 60.5,
+       "max_consec_losses": 23,
+       "mcl_allowed": 23,
+       "n_wins": 293,
+       "top_win_share": 0.0245,
+       "recovery_factor": -0.99,
+       "expectancy_pip": -1.6352,
+       "expectancy_at_2x_cost": -3.2352,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 1.23,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 0.52,
+       "skill_z": 0.22,
+       "skill_p_perm": 0.412406,
+       "perm_max": 42.47,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 420,
+        "short": 399
+       },
+       "side_wr": {
+        "long": 35.24,
+        "short": 36.34
+       },
+       "side_lift_pp": {
+        "long": 1.12,
+        "short": -0.1
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.391279,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.313,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.28,
+       "n_trials": 3456,
+       "cal_nets": [
+        -1916.2,
+        -1541.8,
+        -2282.8,
+        -2486.2
+       ],
+       "cal_counts": [
+        200,
+        227,
+        193,
+        199
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -3156.8,
+        -4200.4
+       ],
+       "oos": {
+        "n": 311,
+        "wr": 30.87,
+        "pf": 0.358,
+        "net": -3474.5,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.506<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.953,
+      "sd": 1.711,
+      "k": 2000,
+      "lift_pp": 0.822,
+      "z": 0.481
+     },
+     "null_indep_combined": {
+      "mean": 34.858,
+      "sd": 1.274,
+      "k": 500,
+      "z": 0.72,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.343,
+     "p_empirical": 0.32034,
+     "n_draws_ge_obs": 640,
+     "p_parametric_engine": 0.412406,
+     "honest_accept": false
+    },
+    "777": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 0.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 819,
+       "win_rate": 35.78,
+       "net_profit": -6031.0,
+       "profit_factor": 0.506,
+       "max_dd_pct": 60.5,
+       "max_consec_losses": 23,
+       "mcl_allowed": 23,
+       "n_wins": 293,
+       "top_win_share": 0.0245,
+       "recovery_factor": -0.99,
+       "expectancy_pip": -1.6352,
+       "expectancy_at_2x_cost": -3.2352,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 1.23,
+       "null_ref_wr": 35.3,
+       "skill_lift_pp": 0.48,
+       "skill_z": 0.2,
+       "skill_p_perm": 0.420223,
+       "perm_max": 42.89,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 420,
+        "short": 399
+       },
+       "side_wr": {
+        "long": 35.24,
+        "short": 36.34
+       },
+       "side_lift_pp": {
+        "long": 1.03,
+        "short": -0.1
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.40195,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.285,
+       "z_luck_bound": 2.261,
+       "z_margin": -1.976,
+       "n_trials": 48,
+       "cal_nets": [
+        -1916.2,
+        -1541.8,
+        -2282.8,
+        -2486.2
+       ],
+       "cal_counts": [
+        200,
+        227,
+        193,
+        199
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -3156.8,
+        -4200.4
+       ],
+       "oos": {
+        "n": 311,
+        "wr": 30.87,
+        "pf": 0.358,
+        "net": -3474.5,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.506<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 0.6,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 819,
+       "win_rate": 35.78,
+       "net_profit": -6031.0,
+       "profit_factor": 0.506,
+       "max_dd_pct": 60.5,
+       "max_consec_losses": 23,
+       "mcl_allowed": 23,
+       "n_wins": 293,
+       "top_win_share": 0.0245,
+       "recovery_factor": -0.99,
+       "expectancy_pip": -1.6352,
+       "expectancy_at_2x_cost": -3.2352,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 1.23,
+       "null_ref_wr": 35.3,
+       "skill_lift_pp": 0.48,
+       "skill_z": 0.2,
+       "skill_p_perm": 0.420223,
+       "perm_max": 42.89,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 420,
+        "short": 399
+       },
+       "side_wr": {
+        "long": 35.24,
+        "short": 36.34
+       },
+       "side_lift_pp": {
+        "long": 1.03,
+        "short": -0.1
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.40195,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.285,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.308,
+       "n_trials": 3456,
+       "cal_nets": [
+        -1916.2,
+        -1541.8,
+        -2282.8,
+        -2486.2
+       ],
+       "cal_counts": [
+        200,
+        227,
+        193,
+        199
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -3156.8,
+        -4200.4
+       ],
+       "oos": {
+        "n": 311,
+        "wr": 30.87,
+        "pf": 0.358,
+        "net": -3474.5,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.506<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 35.017,
+      "sd": 1.737,
+      "k": 2000,
+      "lift_pp": 0.758,
+      "z": 0.436
+     },
+     "null_indep_combined": {
+      "mean": 34.902,
+      "sd": 1.336,
+      "k": 500,
+      "z": 0.654,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.301,
+     "p_empirical": 0.334833,
+     "n_draws_ge_obs": 669,
+     "p_parametric_engine": 0.420223,
+     "honest_accept": false
+    }
+   },
+   "status": "JUDGED",
+   "n_trades": 819,
+   "wr_obs": 35.775,
+   "parity_walk_vs_engine": {
+    "n_engine": 819,
+    "n_walk": 819,
+    "wr_engine": 35.775,
+    "wr_walk": 35.775
+   },
+   "n_long_used": 420,
+   "n_short_used": 399,
+   "all_seeds_honest_accept": false
+  },
+  "11": {
+   "theta": 11,
+   "n_signals": 687,
+   "n_sig_long": 361,
+   "n_sig_short": 326,
+   "seeds": {
+    "23": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 0.1,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 449,
+       "win_rate": 35.19,
+       "net_profit": -4275.5,
+       "profit_factor": 0.454,
+       "max_dd_pct": 43.35,
+       "max_consec_losses": 19,
+       "mcl_allowed": 22,
+       "n_wins": 158,
+       "top_win_share": 0.0472,
+       "recovery_factor": -0.98,
+       "expectancy_pip": -1.7978,
+       "expectancy_at_2x_cost": -3.3978,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 0.65,
+       "null_ref_wr": 35.24,
+       "skill_lift_pp": -0.05,
+       "skill_z": -0.02,
+       "skill_p_perm": 0.506217,
+       "perm_max": 45.9,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 235,
+        "short": 214
+       },
+       "side_wr": {
+        "long": 34.04,
+        "short": 36.45
+       },
+       "side_lift_pp": {
+        "long": -0.1,
+        "short": 0.0
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.528624,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.022,
+       "z_luck_bound": 2.261,
+       "z_margin": -2.283,
+       "n_trials": 48,
+       "cal_nets": [
+        -1273.1,
+        -1365.2,
+        -1384.1,
+        -1177.9
+       ],
+       "cal_counts": [
+        115,
+        124,
+        105,
+        105
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -2470.9,
+        -2397.3
+       ],
+       "oos": {
+        "n": 164,
+        "wr": 30.49,
+        "pf": 0.366,
+        "net": -1894.3,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.454<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 0.1,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 449,
+       "win_rate": 35.19,
+       "net_profit": -4275.5,
+       "profit_factor": 0.454,
+       "max_dd_pct": 43.35,
+       "max_consec_losses": 19,
+       "mcl_allowed": 22,
+       "n_wins": 158,
+       "top_win_share": 0.0472,
+       "recovery_factor": -0.98,
+       "expectancy_pip": -1.7978,
+       "expectancy_at_2x_cost": -3.3978,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 0.65,
+       "null_ref_wr": 35.24,
+       "skill_lift_pp": -0.05,
+       "skill_z": -0.02,
+       "skill_p_perm": 0.506217,
+       "perm_max": 45.9,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 235,
+        "short": 214
+       },
+       "side_wr": {
+        "long": 34.04,
+        "short": 36.45
+       },
+       "side_lift_pp": {
+        "long": -0.1,
+        "short": 0.0
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.528624,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.022,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.615,
+       "n_trials": 3456,
+       "cal_nets": [
+        -1273.1,
+        -1365.2,
+        -1384.1,
+        -1177.9
+       ],
+       "cal_counts": [
+        115,
+        124,
+        105,
+        105
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -2470.9,
+        -2397.3
+       ],
+       "oos": {
+        "n": 164,
+        "wr": 30.49,
+        "pf": 0.366,
+        "net": -1894.3,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.454<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.95,
+      "sd": 2.277,
+      "k": 2000,
+      "lift_pp": 0.239,
+      "z": 0.105
+     },
+     "null_indep_combined": {
+      "mean": 34.897,
+      "sd": 1.913,
+      "k": 500,
+      "z": 0.153,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.19,
+     "p_empirical": 0.46027,
+     "n_draws_ge_obs": 920,
+     "p_parametric_engine": 0.506217,
+     "honest_accept": false
+    },
+    "101": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 0.1,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 449,
+       "win_rate": 35.19,
+       "net_profit": -4275.5,
+       "profit_factor": 0.454,
+       "max_dd_pct": 43.35,
+       "max_consec_losses": 19,
+       "mcl_allowed": 22,
+       "n_wins": 158,
+       "top_win_share": 0.0472,
+       "recovery_factor": -0.98,
+       "expectancy_pip": -1.7978,
+       "expectancy_at_2x_cost": -3.3978,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 0.65,
+       "null_ref_wr": 35.24,
+       "skill_lift_pp": -0.05,
+       "skill_z": -0.02,
+       "skill_p_perm": 0.506525,
+       "perm_max": 46.77,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 235,
+        "short": 214
+       },
+       "side_wr": {
+        "long": 34.04,
+        "short": 36.45
+       },
+       "side_lift_pp": {
+        "long": -0.1,
+        "short": 0.0
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.528895,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.023,
+       "z_luck_bound": 2.261,
+       "z_margin": -2.284,
+       "n_trials": 48,
+       "cal_nets": [
+        -1273.1,
+        -1365.2,
+        -1384.1,
+        -1177.9
+       ],
+       "cal_counts": [
+        115,
+        124,
+        105,
+        105
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -2470.9,
+        -2397.3
+       ],
+       "oos": {
+        "n": 164,
+        "wr": 30.49,
+        "pf": 0.366,
+        "net": -1894.3,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.454<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 0.1,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 449,
+       "win_rate": 35.19,
+       "net_profit": -4275.5,
+       "profit_factor": 0.454,
+       "max_dd_pct": 43.35,
+       "max_consec_losses": 19,
+       "mcl_allowed": 22,
+       "n_wins": 158,
+       "top_win_share": 0.0472,
+       "recovery_factor": -0.98,
+       "expectancy_pip": -1.7978,
+       "expectancy_at_2x_cost": -3.3978,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 0.65,
+       "null_ref_wr": 35.24,
+       "skill_lift_pp": -0.05,
+       "skill_z": -0.02,
+       "skill_p_perm": 0.506525,
+       "perm_max": 46.77,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 235,
+        "short": 214
+       },
+       "side_wr": {
+        "long": 34.04,
+        "short": 36.45
+       },
+       "side_lift_pp": {
+        "long": -0.1,
+        "short": 0.0
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.528895,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.023,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.616,
+       "n_trials": 3456,
+       "cal_nets": [
+        -1273.1,
+        -1365.2,
+        -1384.1,
+        -1177.9
+       ],
+       "cal_counts": [
+        115,
+        124,
+        105,
+        105
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -2470.9,
+        -2397.3
+       ],
+       "oos": {
+        "n": 164,
+        "wr": 30.49,
+        "pf": 0.366,
+        "net": -1894.3,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.454<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.968,
+      "sd": 2.299,
+      "k": 2000,
+      "lift_pp": 0.221,
+      "z": 0.096
+     },
+     "null_indep_combined": {
+      "mean": 34.858,
+      "sd": 1.934,
+      "k": 500,
+      "z": 0.171,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.189,
+     "p_empirical": 0.457771,
+     "n_draws_ge_obs": 915,
+     "p_parametric_engine": 0.506525,
+     "honest_accept": false
+    },
+    "777": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 0.1,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 449,
+       "win_rate": 35.19,
+       "net_profit": -4275.5,
+       "profit_factor": 0.454,
+       "max_dd_pct": 43.35,
+       "max_consec_losses": 19,
+       "mcl_allowed": 22,
+       "n_wins": 158,
+       "top_win_share": 0.0472,
+       "recovery_factor": -0.98,
+       "expectancy_pip": -1.7978,
+       "expectancy_at_2x_cost": -3.3978,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 0.65,
+       "null_ref_wr": 35.23,
+       "skill_lift_pp": -0.04,
+       "skill_z": -0.01,
+       "skill_p_perm": 0.505441,
+       "perm_max": 47.78,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 235,
+        "short": 214
+       },
+       "side_wr": {
+        "long": 34.04,
+        "short": 36.45
+       },
+       "side_lift_pp": {
+        "long": -0.09,
+        "short": 0.0
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.527292,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.019,
+       "z_luck_bound": 2.261,
+       "z_margin": -2.28,
+       "n_trials": 48,
+       "cal_nets": [
+        -1273.1,
+        -1365.2,
+        -1384.1,
+        -1177.9
+       ],
+       "cal_counts": [
+        115,
+        124,
+        105,
+        105
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -2470.9,
+        -2397.3
+       ],
+       "oos": {
+        "n": 164,
+        "wr": 30.49,
+        "pf": 0.366,
+        "net": -1894.3,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.454<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 0.1,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 449,
+       "win_rate": 35.19,
+       "net_profit": -4275.5,
+       "profit_factor": 0.454,
+       "max_dd_pct": 43.35,
+       "max_consec_losses": 19,
+       "mcl_allowed": 22,
+       "n_wins": 158,
+       "top_win_share": 0.0472,
+       "recovery_factor": -0.98,
+       "expectancy_pip": -1.7978,
+       "expectancy_at_2x_cost": -3.3978,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 0.65,
+       "null_ref_wr": 35.23,
+       "skill_lift_pp": -0.04,
+       "skill_z": -0.01,
+       "skill_p_perm": 0.505441,
+       "perm_max": 47.78,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 235,
+        "short": 214
+       },
+       "side_wr": {
+        "long": 34.04,
+        "short": 36.45
+       },
+       "side_lift_pp": {
+        "long": -0.09,
+        "short": 0.0
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.527292,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": -0.019,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.612,
+       "n_trials": 3456,
+       "cal_nets": [
+        -1273.1,
+        -1365.2,
+        -1384.1,
+        -1177.9
+       ],
+       "cal_counts": [
+        115,
+        124,
+        105,
+        105
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -2470.9,
+        -2397.3
+       ],
+       "oos": {
+        "n": 164,
+        "wr": 30.49,
+        "pf": 0.366,
+        "net": -1894.3,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.454<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.927,
+      "sd": 2.249,
+      "k": 2000,
+      "lift_pp": 0.263,
+      "z": 0.117
+     },
+     "null_indep_combined": {
+      "mean": 34.942,
+      "sd": 1.854,
+      "k": 500,
+      "z": 0.133,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.213,
+     "p_empirical": 0.450275,
+     "n_draws_ge_obs": 900,
+     "p_parametric_engine": 0.505441,
+     "honest_accept": false
+    }
+   },
+   "status": "JUDGED",
+   "n_trades": 449,
+   "wr_obs": 35.189,
+   "parity_walk_vs_engine": {
+    "n_engine": 449,
+    "n_walk": 449,
+    "wr_engine": 35.189,
+    "wr_walk": 35.189
+   },
+   "n_long_used": 235,
+   "n_short_used": 214,
+   "all_seeds_honest_accept": false
+  },
+  "16": {
+   "theta": 16,
+   "n_signals": 255,
+   "n_sig_long": 136,
+   "n_sig_short": 119,
+   "seeds": {
+    "23": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 1.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 188,
+       "win_rate": 37.23,
+       "net_profit": -1541.9,
+       "profit_factor": 0.583,
+       "max_dd_pct": 17.06,
+       "max_consec_losses": 9,
+       "mcl_allowed": 19,
+       "n_wins": 70,
+       "top_win_share": 0.0685,
+       "recovery_factor": -0.89,
+       "expectancy_pip": -1.2846,
+       "expectancy_at_2x_cost": -2.8846,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 2.69,
+       "null_ref_wr": 35.3,
+       "skill_lift_pp": 1.93,
+       "skill_z": 0.39,
+       "skill_p_perm": 0.348037,
+       "perm_max": 53.72,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 98,
+        "short": 90
+       },
+       "side_wr": {
+        "long": 36.73,
+        "short": 37.78
+       },
+       "side_lift_pp": {
+        "long": 2.48,
+        "short": 1.33
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.314471,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.554,
+       "z_luck_bound": 2.261,
+       "z_margin": -1.707,
+       "n_trials": 48,
+       "cal_nets": [
+        -482.7,
+        -38.1,
+        -631.9,
+        -476.1
+       ],
+       "cal_counts": [
+        53,
+        44,
+        45,
+        46
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -517.2,
+        -1078.2
+       ],
+       "oos": {
+        "n": 71,
+        "wr": 32.39,
+        "pf": 0.426,
+        "net": -763.0,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.583<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 1.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 188,
+       "win_rate": 37.23,
+       "net_profit": -1541.9,
+       "profit_factor": 0.583,
+       "max_dd_pct": 17.06,
+       "max_consec_losses": 9,
+       "mcl_allowed": 19,
+       "n_wins": 70,
+       "top_win_share": 0.0685,
+       "recovery_factor": -0.89,
+       "expectancy_pip": -1.2846,
+       "expectancy_at_2x_cost": -2.8846,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 2.69,
+       "null_ref_wr": 35.3,
+       "skill_lift_pp": 1.93,
+       "skill_z": 0.39,
+       "skill_p_perm": 0.348037,
+       "perm_max": 53.72,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 98,
+        "short": 90
+       },
+       "side_wr": {
+        "long": 36.73,
+        "short": 37.78
+       },
+       "side_lift_pp": {
+        "long": 2.48,
+        "short": 1.33
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.314471,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.554,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.039,
+       "n_trials": 3456,
+       "cal_nets": [
+        -482.7,
+        -38.1,
+        -631.9,
+        -476.1
+       ],
+       "cal_counts": [
+        53,
+        44,
+        45,
+        46
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -517.2,
+        -1078.2
+       ],
+       "oos": {
+        "n": 71,
+        "wr": 32.39,
+        "pf": 0.426,
+        "net": -763.0,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.583<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.879,
+      "sd": 3.469,
+      "k": 2000,
+      "lift_pp": 2.355,
+      "z": 0.679
+     },
+     "null_indep_combined": {
+      "mean": 35.044,
+      "sd": 2.977,
+      "k": 500,
+      "z": 0.735,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.165,
+     "p_empirical": 0.273363,
+     "n_draws_ge_obs": 546,
+     "p_parametric_engine": 0.348037,
+     "honest_accept": false
+    },
+    "101": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 1.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 188,
+       "win_rate": 37.23,
+       "net_profit": -1541.9,
+       "profit_factor": 0.583,
+       "max_dd_pct": 17.06,
+       "max_consec_losses": 9,
+       "mcl_allowed": 19,
+       "n_wins": 70,
+       "top_win_share": 0.0685,
+       "recovery_factor": -0.89,
+       "expectancy_pip": -1.2846,
+       "expectancy_at_2x_cost": -2.8846,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 2.69,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 1.99,
+       "skill_z": 0.41,
+       "skill_p_perm": 0.342321,
+       "perm_max": 50.53,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 98,
+        "short": 90
+       },
+       "side_wr": {
+        "long": 36.73,
+        "short": 37.78
+       },
+       "side_lift_pp": {
+        "long": 2.59,
+        "short": 1.33
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.308631,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.571,
+       "z_luck_bound": 2.261,
+       "z_margin": -1.69,
+       "n_trials": 48,
+       "cal_nets": [
+        -482.7,
+        -38.1,
+        -631.9,
+        -476.1
+       ],
+       "cal_counts": [
+        53,
+        44,
+        45,
+        46
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -517.2,
+        -1078.2
+       ],
+       "oos": {
+        "n": 71,
+        "wr": 32.39,
+        "pf": 0.426,
+        "net": -763.0,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.583<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 1.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 188,
+       "win_rate": 37.23,
+       "net_profit": -1541.9,
+       "profit_factor": 0.583,
+       "max_dd_pct": 17.06,
+       "max_consec_losses": 9,
+       "mcl_allowed": 19,
+       "n_wins": 70,
+       "top_win_share": 0.0685,
+       "recovery_factor": -0.89,
+       "expectancy_pip": -1.2846,
+       "expectancy_at_2x_cost": -2.8846,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 2.69,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 1.99,
+       "skill_z": 0.41,
+       "skill_p_perm": 0.342321,
+       "perm_max": 50.53,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 98,
+        "short": 90
+       },
+       "side_wr": {
+        "long": 36.73,
+        "short": 37.78
+       },
+       "side_lift_pp": {
+        "long": 2.59,
+        "short": 1.33
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.308631,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.571,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.022,
+       "n_trials": 3456,
+       "cal_nets": [
+        -482.7,
+        -38.1,
+        -631.9,
+        -476.1
+       ],
+       "cal_counts": [
+        53,
+        44,
+        45,
+        46
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -517.2,
+        -1078.2
+       ],
+       "oos": {
+        "n": 71,
+        "wr": 32.39,
+        "pf": 0.426,
+        "net": -763.0,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.583<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.997,
+      "sd": 3.481,
+      "k": 2000,
+      "lift_pp": 2.237,
+      "z": 0.643
+     },
+     "null_indep_combined": {
+      "mean": 35.138,
+      "sd": 2.932,
+      "k": 500,
+      "z": 0.715,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.187,
+     "p_empirical": 0.271864,
+     "n_draws_ge_obs": 543,
+     "p_parametric_engine": 0.342321,
+     "honest_accept": false
+    },
+    "777": {
+     "honest": {
+      "verdict": "REJECT",
+      "score": 1.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 188,
+       "win_rate": 37.23,
+       "net_profit": -1541.9,
+       "profit_factor": 0.583,
+       "max_dd_pct": 17.06,
+       "max_consec_losses": 9,
+       "mcl_allowed": 19,
+       "n_wins": 70,
+       "top_win_share": 0.0685,
+       "recovery_factor": -0.89,
+       "expectancy_pip": -1.2846,
+       "expectancy_at_2x_cost": -2.8846,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 2.69,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 1.98,
+       "skill_z": 0.41,
+       "skill_p_perm": 0.341198,
+       "perm_max": 53.72,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 98,
+        "short": 90
+       },
+       "side_wr": {
+        "long": 36.73,
+        "short": 37.78
+       },
+       "side_lift_pp": {
+        "long": 2.58,
+        "short": 1.33
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.308964,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.57,
+       "z_luck_bound": 2.261,
+       "z_margin": -1.691,
+       "n_trials": 48,
+       "cal_nets": [
+        -482.7,
+        -38.1,
+        -631.9,
+        -476.1
+       ],
+       "cal_counts": [
+        53,
+        44,
+        45,
+        46
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -517.2,
+        -1078.2
+       ],
+       "oos": {
+        "n": 71,
+        "wr": 32.39,
+        "pf": 0.426,
+        "net": -763.0,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.583<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "stress": {
+      "verdict": "REJECT",
+      "score": 1.2,
+      "rank": null,
+      "gates": {
+       "H0": true,
+       "H1": false,
+       "H2": false,
+       "H3": false,
+       "H4": false,
+       "H5": false,
+       "H6": false,
+       "H7": false,
+       "H8": false,
+       "H9": false,
+       "H10": null
+      },
+      "metrics": {
+       "n_trades": 188,
+       "win_rate": 37.23,
+       "net_profit": -1541.9,
+       "profit_factor": 0.583,
+       "max_dd_pct": 17.06,
+       "max_consec_losses": 9,
+       "mcl_allowed": 19,
+       "n_wins": 70,
+       "top_win_share": 0.0685,
+       "recovery_factor": -0.89,
+       "expectancy_pip": -1.2846,
+       "expectancy_at_2x_cost": -2.8846,
+       "cost_pip": 1.6,
+       "spread_pip": 1.0,
+       "sl_pip": 14.6,
+       "tp_pip": 32.3,
+       "rr": 2.212,
+       "breakeven_wr_cost": 34.54,
+       "wr_excess_cost": 2.69,
+       "null_ref_wr": 35.25,
+       "skill_lift_pp": 1.98,
+       "skill_z": 0.41,
+       "skill_p_perm": 0.341198,
+       "perm_max": 53.72,
+       "perm_k": 2000,
+       "side_n": {
+        "long": 98,
+        "short": 90
+       },
+       "side_wr": {
+        "long": 36.73,
+        "short": 37.78
+       },
+       "side_lift_pp": {
+        "long": 2.58,
+        "short": 1.33
+       },
+       "prune_sides": [
+        "long",
+        "short"
+       ],
+       "p_emp": 0.308964,
+       "p_adj_bonferroni": 1.0,
+       "z_obs": 0.57,
+       "z_luck_bound": 3.593,
+       "z_margin": -3.023,
+       "n_trials": 3456,
+       "cal_nets": [
+        -482.7,
+        -38.1,
+        -631.9,
+        -476.1
+       ],
+       "cal_counts": [
+        53,
+        44,
+        45,
+        46
+       ],
+       "cal_positive": 0,
+       "cal_occupied": 4,
+       "half_nets": [
+        -517.2,
+        -1078.2
+       ],
+       "oos": {
+        "n": 71,
+        "wr": 32.39,
+        "pf": 0.426,
+        "net": -763.0,
+        "wr_req": 34.54
+       },
+       "max_concurrency": 1,
+       "counter_drift": {}
+      },
+      "notes": [
+       "PF=0.583<1.3",
+       "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+      ]
+     },
+     "null_shift_combined": {
+      "mean": 34.861,
+      "sd": 3.408,
+      "k": 2000,
+      "lift_pp": 2.373,
+      "z": 0.696
+     },
+     "null_indep_combined": {
+      "mean": 35.077,
+      "sd": 3.071,
+      "k": 500,
+      "z": 0.703,
+      "note": "OPTIMISTIC — reported only, governs nothing"
+     },
+     "sd_understatement_factor": 1.11,
+     "p_empirical": 0.258871,
+     "n_draws_ge_obs": 517,
+     "p_parametric_engine": 0.341198,
+     "honest_accept": false
+    }
+   },
+   "status": "JUDGED",
+   "n_trades": 188,
+   "wr_obs": 37.234,
+   "parity_walk_vs_engine": {
+    "n_engine": 188,
+    "n_walk": 188,
+    "wr_engine": 37.234,
+    "wr_walk": 37.234
+   },
+   "n_long_used": 98,
+   "n_short_used": 90,
+   "all_seeds_honest_accept": false
+  }
+ },
+ "uncond_wr": {
+  "long": 34.065,
+  "short": 36.444
+ },
+ "reported_theta": 4,
+ "decision": "NOT_ALIVE_UNDER_ENSEMBLE",
+ "status": "JUDGED",
+ "min_z_shift_at_reported_theta": 2.145
+}
