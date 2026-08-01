@@ -66,11 +66,18 @@ import { decideS335, S335_CFG } from './s335_reflex_cycle'
 //     ادامهٔ روند/failed-pullback روی XAUUSD-H4 — RQS+ = 92.6 (WR 65.6% · PF 2.13 · +$1,080)
 //     همپوشانی: S327=0% ، S332=8.2% ⇒ لبهٔ مستقل (نه فیلتر). پورتِ verbatim تأییدشد (64/64 سیگنال یکسان).
 import { decideS340, S340_CFG } from './micro_channel_s340'
-// --- لایهٔ احیاشدهٔ این نشست: S341 Brooks «Swing Points / Horizontal Lines» (فصلِ ۱۷) ---
-//     failed-breakout swing-fade در رژیمِ رنج + فیلترِ «مغناطیسِ میانه» (ema_dist_atr≥0.7) از جعبه‌ابزار.
-//     XAUUSD-H1 LONG — از RQS+ 33 (مرده) → RQS+ 94.5 (WR 66.7% · PF 2.01 · +$387).
-//     همپوشانی با S333/S335 = 0.0% (رژیمِ رنج vs روند، ساختاراً متعامد). پورتِ verbatim تأییدشد (650/650 سیگنال یکسان).
-import { decideS341, S341_CFG } from './swing_fade_s341'
+// --- ⚰️ S341 Brooks «Swing Points / Horizontal Lines» (فصلِ ۱۷) — **حذف‌شده / DEAD** ---
+//     این لایه با نمرهٔ **RQS+** (94.7 / 89.8 / 89.7 / 94.5) وصل شده بود، نه با RQS2.
+//     بازداوریِ کامل زیرِ **RQS2 v2.4** ⇒ بهترین نمرهٔ اندازه‌گیری‌شده = **28.6** (سد = 70).
+//     هر چهار پروتکلِ بهبودِ پیش‌ثبت‌شده شکست خوردند (S357 · S358 · S359 · S360 · S362):
+//       · خانوادهٔ ۷۲ عضوی و رأیِ اجماعی تا **۳۸× نمونه** ⇒ لبه ناپدید شد، نه تیزتر.
+//       · فیلترِ رژیمِ Hurst/Entropy: درون‌نمونه +10.84pp ⇒ **خارج‌نمونه −3.70pp**.
+//       · هندسهٔ شناورِ ATR-محور: OOS lift ≈ صفر در هر ۴ کارت.
+//       · همپوشانی با لایه‌های هم‌کارت **< ۱.۸٪** ⇒ فیلترِ همپوشان حساباً no-op.
+//     ⇒ طبقِ «قانونِ مرگِ ابدی» حکم **DEAD** و از هر ۴ کارت **حذف** شد.
+//     سند: results/S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md
+//     ماژولِ ./swing_fade_s341 در مخزن **باقی می‌ماند** (رکوردِ تاریخی + منبعِ بازتولید)
+//     ولی دیگر import/سیم‌کشی نمی‌شود — این همان روشِ ماژولارِ ROS2-مانند است.
 // --- لایهٔ نوِ این نشست: S344 Brooks «Trend from the Open & Small Pullback Trends» (فصلِ ۲۳) ---
 //     open-extreme first-pullback continuation روی XAUUSD-M15 SHORT — RQS+=91.4 (WR 64.1% · PF 2.08 · +$1,571).
 //     لبهٔ مستقل خارج از پنجره‌های زمان-محورِ S139..S144: RQS+=92.9 (n=57) ⇒ لبهٔ نو (نه فیلتر).
@@ -266,8 +273,7 @@ const s334Layer = (cfg: typeof S334_CFG[string]): LayerFn => (ctx) => decideS334
 // لایهٔ نوِ این نشست: S335 Reflex-TrendFlex Cycle-Turn (خریدِ کفِ چرخهٔ اِهلرز درونِ روند)
 const s335Layer = (cfg: typeof S335_CFG[string]): LayerFn => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 const s340Layer = (cfg: typeof S340_CFG[string]): LayerFn => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
-// لایهٔ احیاشدهٔ این نشست: S341 Swing-Points fade در رنج + مغناطیسِ میانه (Brooks فصلِ ۱۷)
-const s341Layer = (cfg: typeof S341_CFG[string]): LayerFn => (ctx) => decideS341(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⚰️ s341Layer حذف شد — S341 زیرِ RQS2 v2.4 مرده است (بالا را ببینید).
 // لایهٔ نوِ این نشست: S344 Brooks Trend-from-Open first-pullback continuation (فصلِ ۲۳) — نخستین SHORT روی XAUUSD-M15
 const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ نوِ این نشست: S345 Brooks Reversal Day — چرخشِ روندِ درون‌روزی (فصلِ ۲۴)
@@ -281,10 +287,11 @@ const s354Layer = (cfg: typeof S354_CFG[string]): LayerFn => (ctx) => decideS354
 // افزودنِ کارت/لایهٔ جدید فقط این جدول را تغییر می‌دهد (ماژولار/توسعه‌پذیر).
 //
 //   کارت         لایه‌های ACCEPTED (منبعِ نامِ فایل results/)
-//   XAUUSD-M5    S341(LONG·swing-fade·range·RQS 94.7) · S333(LONG·pullback·RQS 91.3) · S330(FADE) · S328(SHORT) · S327(LONG) · S326(LONG)
-//   XAUUSD-M15   S345(LONG·reversal-day·RQS 90.7) · S341(LONG·swing-fade·range·RQS 89.8) · S333(LONG·pullback·RQS 91.7) · S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S310(LONG) · S312(LONG)
-//   XAUUSD-M30   S341(LONG·swing-fade·range·RQS 89.7) · S333(LONG·pullback·RQS 91.1) · S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
-//   XAUUSD-H1    S356(LONG·trend-resumption·**RQS2 81.5**) · S341(LONG·swing-fade·range·RQS 94.5) · S333(LONG·pullback·RQS 89.8) · S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S312(LONG)
+//   XAUUSD-M5    S355=S333+LPSB(LONG·**RQS2 83.9**) · S330(FADE) · S328(SHORT) · S334(SHORT) · S335(LONG) · S327(LONG) · S326(LONG)
+//   XAUUSD-M15   S345(LONG·reversal-day·RQS 90.7) · S333(LONG·pullback·RQS 91.7) · S332(LONG·squeeze r2+hurst) · S324(LONG) · S322(LONG) · S323(LONG) · S335(LONG) · S344(SHORT) · S310(LONG) · S312(LONG)
+//   XAUUSD-M30   S333(LONG·pullback·RQS 91.1) · S313(LONG) · S324(SHORT) · S321(L+S) · S327(LONG) · S326(LONG) · S323(LONG) · S312(LONG)
+//   XAUUSD-H1    S356(LONG·trend-resumption·**RQS2 81.5**) · S333(LONG·pullback·RQS 89.8) · S313(LONG) · S328(SHORT) · S327(LONG) · S323(LONG) · S335(LONG) · S312(LONG)
+//   ⚰️ S341 از هر ۴ کارتِ بالا حذف شد (RQS2 = 28.6 در بهترین حالت، سد = 70).
 //   XAUUSD-H4    S332(LONG·squeeze ADX/DI) · S327(LONG)
 //   EURUSD-M15   S326(LONG)
 //   EURUSD-M30   S327(LONG) · S345(SHORT·reversal-day·RQS 91.7)
@@ -294,7 +301,7 @@ const s354Layer = (cfg: typeof S354_CFG[string]): LayerFn => (ctx) => decideS354
 // ---------------------------------------------------------------------------
 export const CARD_LAYERS: Record<string, LayerFn[]> = {
   'XAUUSD-M5': [
-    s341Layer(S341_CFG['XAUUSD-M5']),    // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=94.7 (WR 70.8% · PF 2.22 · +$976) · بخشِ مستقل standalone پاس (96.4)
+    // ⚰️ S341 حذف شد (RQS2=26.3 · سد=70) — سند: results/S341_BrooksSwingFadeRejudged_…_rqs2-28.md
     // ⭐ S355 = S333/M5 **با دروازهٔ حالتِ ساختارِ LPSB** — تنها لایهٔ ۱۱/۱۱ دروازهٔ RQS2.
     //    پایهٔ بدونِ دروازه: WR 65.6% · PF 2.85 · RQS2=27.5 (POWER-LIMITED، حقِ اتصال نداشت)
     //    با دروازه:          WR 72.3% · PF 3.95 · RQS2=83.9 (ACCEPT ✓) ⇒ همین وصل می‌شود.
@@ -307,7 +314,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s326Layer(STREAK_REV_CFG['XAUUSD-M5']),
   ],
   'XAUUSD-M15': [
-    s341Layer(S341_CFG['XAUUSD-M15']),   // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=89.8 (WR 65.0% · PF 1.83 · +$568) · لبهٔ رنج، جریانِ کامل لازم
+    // ⚰️ S341 حذف شد (RQS2=24.9 · سد=70) — ضعیف‌ترین کارتِ لایه: ۵/۱۰ دروازه شکست
     s333Layer(S333_CFG['XAUUSD-M15']),   // احیای S79 — pullback (ورودِ مستقیم) — RQS+=91.7 (WR 62.8% · PF 2.30)
     s332Layer(S332_CFG['XAUUSD-M15']),   // احیای squeeze با فیلترِ آماری r2+hurst — RQS+=91.2
     s324Layer(S324_CFG['XAUUSD-M15']),
@@ -320,7 +327,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s312Layer(295, 295, 48),
   ],
   'XAUUSD-M30': [
-    s341Layer(S341_CFG['XAUUSD-M30']),   // S341 — Brooks فصلِ ۱۷ swing-fade در رنج + سیگنالِ دوم — RQS+=89.7 (WR 63.9% · PF 1.77 · +$468) · لبهٔ رنج، جریانِ کامل لازم
+    // ⚰️ S341 حذف شد (RQS2=28.6 · سد=70) — بهترین کارتِ لایه، و همان هم رد شد
     s333Layer(S333_CFG['XAUUSD-M30']),   // احیای S79 — pullback با تأییدِ price_turn — RQS+=91.1 (WR 66.7% · PF 2.48)
     s313Layer(S313_M30),
     s324Layer(S324_CFG['XAUUSD-M30']),
@@ -334,7 +341,9 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     // S356 اول می‌آید چون تنها لایهٔ این کارت است که با معیارِ حاکمِ **RQS2 v2.4**
     // داوری شده (هر ۱۱ دروازه، هر ۳ seed)؛ بقیه با RQS+ بازنشسته پذیرفته شده‌اند.
     s354Layer(S354_CFG['XAUUSD-H1']),    // S356 — Brooks trend-resumption (causal، ساعت≥۱۶ UTC) — RQS2=81.5 (WR 51.28% · lift +15.0 · z=3.36 · n=117) · همپوشانی ۲۵.۶٪ (S313=25 · S335=5)
-    s341Layer(S341_CFG['XAUUSD-H1']),    // S341 — احیای فصلِ ۱۷ Brooks: swing-fade در رنج + مغناطیسِ میانه (ema_dist_atr≥0.7) — RQS+=94.5 (WR 66.7% · PF 2.01) · همپوشانیِ صفر (رژیمِ رنج vs روند)
+    // ⚰️ S341 حذف شد (RQS2=28.0 · سد=70). نکتهٔ افشاشده: نمرهٔ ۶۶.۷٪ این کارت از فصلِ ۱۷
+    //    Brooks نمی‌آمد — از دو فیلترِ انتخاب‌شدهٔ stretch=0.7 / exh=0.25 می‌آمد؛ بهترین
+    //    عضوِ خانوادهٔ خالصِ Brooks اینجا فقط ۵۶.۱٪ می‌برد.
     s333Layer(S333_CFG['XAUUSD-H1']),    // احیای S79 — pullback (ورودِ مستقیم + ER) — RQS+=89.8 (WR 62.2% · PF 1.85)
     s313Layer(S313_H1),
     s328Layer(S328_CFG['XAUUSD-H1']),
