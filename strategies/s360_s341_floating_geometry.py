@@ -509,7 +509,38 @@ def run_search_card(card, k_perm=PERM_K, verbose=True):
     return rec
 
 
-def run_transfer_card(card, frozen, k_perm=PERM_K, verbose=True):
+TF_ORDER = ['M1', 'M5', 'M15', 'M30', 'H1', 'H4', 'D1', 'W1']
+
+
+def pick_frozen(card, asset, frozen_by_asset, frozen_by_tf):
+    """زوجِ منجمد برای یک کارتِ انتقال، با فالبکِ **بین‌دارایی**.
+
+    ⚠️ نکتهٔ علمیِ این فالبک: `k_sl` بر حسبِ **واحدِ ATR** است، یعنی
+    **بی‌بعد** (dimensionless). براکتِ ثابتِ آرشیو بر حسبِ pip بود و انتقالِ آن
+    از طلا به یورو بی‌معنا بود — همان چیزی که `WR`های ۳۵٪ِ یوروی گامِ ۳الف را
+    توضیح می‌داد. اما هندسهٔ **شناور** با نوسانِ خودِ دارایی مقیاس می‌گیرد، پس
+    انتقالِ آن بین دارایی‌ها **مشروع** است و آزمونِ انتقال‌پذیری معنا پیدا می‌کند.
+    بدونِ این فالبک، ۸ کارتِ یورو بی‌حکم می‌ماندند و تعهدِ چندتایم‌فریمیِ بندِ ۸
+    سندِ پیش‌ثبت **ناتمام** می‌ماند.
+
+    ترتیبِ اولویت: همان دارایی ← همان تایم‌فریم از داراییِ دیگر ← نزدیک‌ترین
+    تایم‌فریمِ موجود. منبع در رکورد ثبت می‌شود تا هیچ انتقالی «بومی» جا نزند.
+    """
+    tf = card.split('-')[1]
+    if frozen_by_asset.get(asset):
+        return dict(frozen_by_asset[asset]), f'same-asset pair ({asset})'
+    if frozen_by_tf.get(tf):
+        return dict(frozen_by_tf[tf]), f'cross-asset pair, same timeframe ({tf})'
+    if not frozen_by_tf:
+        return None, None
+    i = TF_ORDER.index(tf) if tf in TF_ORDER else 0
+    best = min(frozen_by_tf,
+               key=lambda t: abs((TF_ORDER.index(t) if t in TF_ORDER else 0) - i))
+    return dict(frozen_by_tf[best]), f'cross-asset pair, nearest timeframe ({best})'
+
+
+def run_transfer_card(card, frozen, frozen_by_tf=None, k_perm=PERM_K,
+                      verbose=True):
     pre = prepare(card)
     if pre is None:
         rec = dict(card=card, status='NO_DATA',
@@ -517,10 +548,10 @@ def run_transfer_card(card, frozen, k_perm=PERM_K, verbose=True):
         save(rec, card)
         return rec
     df, asset, cfg, F, fracs, v, arch = pre
-    ch = dict(frozen.get(asset) or {})
+    ch, src = pick_frozen(card, asset, frozen, frozen_by_tf or {})
     if not ch:
         rec = dict(card=card, status='NO_FROZEN_PAIR',
-                   note=f'no search card of asset {asset} produced a pair')
+                   note='no search card produced any pair to transfer')
         save(rec, card)
         return rec
     ch['mh'] = arch['mh']          # `max_hold` همان عددِ منجمدِ خودِ کارت
@@ -529,11 +560,12 @@ def run_transfer_card(card, frozen, k_perm=PERM_K, verbose=True):
     if verbose:
         print(f"\n=== {card} :: TRANSFER (outside search domain) bars={n} "
               f"frozen k_sl={ch['k_sl']} rr={ch['rr']} atr_p={ch['atr_p']} "
-              f"θ={ch['theta']} mh={ch['mh']}", flush=True)
+              f"θ={ch['theta']} mh={ch['mh']} | pair from: {src}", flush=True)
     b = phase_b(card, df, asset, F, fracs, v, cut, ch, arch,
                 k_perm=k_perm, verbose=verbose, run_gen=False)
     rec = dict(card=card, asset=asset, tf=card.split('-')[1], bars=n,
                split_bar=cut, archive_bracket=arch, transfer=True,
+               frozen_pair_source=src,
                phase_b=b, status=b['status'],
                decision=b['decision'] + '_TRANSFER',
                note='outside the search domain — a transfer card cannot admit '
@@ -557,15 +589,21 @@ def main():
         cards = [c.strip() for c in args.cards.split(',') if c.strip()]
         transfers = []
     verbose = not args.quiet
-    frozen = {}
+    frozen, frozen_by_tf = {}, {}
     for card in cards:
         rec = run_search_card(card, k_perm=args.k, verbose=verbose)
         ch = (rec.get('phase_a') or {}).get('chosen')
-        if ch and rec.get('asset') and rec['asset'] not in frozen:
-            frozen[rec['asset']] = dict(k_sl=ch['k_sl'], rr=ch['rr'],
-                                        atr_p=ch['atr_p'], theta=ch['theta'])
+        if not ch:
+            continue
+        pair = dict(k_sl=ch['k_sl'], rr=ch['rr'], atr_p=ch['atr_p'],
+                    theta=ch['theta'])
+        if rec.get('asset') and rec['asset'] not in frozen:
+            frozen[rec['asset']] = pair
+        if rec.get('tf'):
+            frozen_by_tf.setdefault(rec['tf'], pair)
     for card in transfers:
-        run_transfer_card(card, frozen, k_perm=args.k, verbose=verbose)
+        run_transfer_card(card, frozen, frozen_by_tf=frozen_by_tf,
+                          k_perm=args.k, verbose=verbose)
 
 
 if __name__ == '__main__':
