@@ -1,5 +1,49 @@
 {
  "card": "EURUSD-W1",
- "status": "NO_FROZEN_PAIR",
- "note": "no search card of asset EURUSD produced a pair"
+ "asset": "EURUSD",
+ "tf": "W1",
+ "bars": 843,
+ "split_bar": 505,
+ "archive_bracket": {
+  "sl": 2332.5,
+  "tp": 5154.8,
+  "mh": 29,
+  "rr": 2.21,
+  "source": "DERIVED"
+ },
+ "transfer": true,
+ "frozen_pair_source": "cross-asset pair, nearest timeframe (H1)",
+ "phase_b": {
+  "card": "EURUSD-W1",
+  "phase": "B",
+  "chosen": {
+   "k_sl": 2.1,
+   "rr": 1.68,
+   "atr_p": 14,
+   "theta": 11,
+   "mh": 29
+  },
+  "archive_bracket": {
+   "sl": 2332.5,
+   "tp": 5154.8,
+   "mh": 29,
+   "rr": 2.21,
+   "source": "DERIVED"
+  },
+  "oos_bars": [
+   505,
+   843
+  ],
+  "n_trials": {
+   "honest": 1,
+   "conservative": 128,
+   "stress": 512
+  },
+  "oos_walk": null,
+  "status": "NO_TRADES_OOS",
+  "decision": "DEAD_UNDER_FLOATING_GEOMETRY"
+ },
+ "status": "NO_TRADES_OOS",
+ "decision": "DEAD_UNDER_FLOATING_GEOMETRY_TRANSFER",
+ "note": "outside the search domain — a transfer card cannot admit the layer on its own"
 }
