@@ -229,11 +229,21 @@ def run_card(asset, tf, n_perm=N_PERM, seed=368, save=True):
         b_sl = (cost / b_burd) if b_burd > 0 else np.nan
         b_e = (b_lift * b_sl) if (b_lift is not None and np.isfinite(b_sl)) else np.nan
         b_n = base.get("n_total_trades")
-        if np.isfinite(b_e) and b_n:
+        b_alive = base.get("n_members_alive") or 0
+        if np.isfinite(b_e) and b_n and b_alive and n_alive:
             d_e = 100.0 * (e_pip - b_e) / abs(b_e) if b_e else np.nan
-            d_n = 100.0 * (tot - b_n) / b_n
+            # ⚠️ باگی که در نخستین اجرا گرفته شد: مقایسهٔ Σnِ خام بینِ دو خانواده
+            # با اندازهٔ متفاوت (۱۲ در برابرِ ۴۸) بی‌معناست. هر عضوِ پایه اینجا
+            # چهار بار (۴ تنظیمِ دروازه) شمرده می‌شود، پس Σn حتی وقتی دروازه
+            # نیمی از معاملات را حذف کرده باشد **بالا** می‌رود. با آن مقایسهٔ
+            # غلط، آزمونِ ابطالِ «FILTER-INERT» هرگز روشن نمی‌شد — یعنی دقیقاً
+            # همان چیزی که برای گرفتنش نوشته شده بود، از کار می‌افتاد.
+            # واحدِ درستِ مقایسه «معامله به‌ازای هر عضو» است.
+            b_pm = b_n / float(b_alive)
+            g_pm = tot / float(n_alive)
+            d_n = 100.0 * (g_pm - b_pm) / b_pm
             print(f"  ── vs S366(ungated): e_pip {b_e:+.2f} → {e_pip:+.2f} "
-                  f"({d_e:+.0f}%)   n {b_n:,} → {tot:,} ({d_n:+.0f}%)")
+                  f"({d_e:+.0f}%)   n/member {b_pm:.0f} → {g_pm:.0f} ({d_n:+.0f}%)")
             # آزمونِ متقارنِ ابطالِ بندِ ۵ پیش‌ثبت
             if abs(d_e) < 15.0 and d_n < -15.0:
                 print("     ⚠️ FILTER-INERT: n افت کرد ولی e_pip تقریباً ثابت ماند "
