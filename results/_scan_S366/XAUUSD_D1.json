@@ -1,0 +1,66 @@
+{
+ "asset": "XAUUSD",
+ "tf": "D1",
+ "bars": 3989,
+ "gate": true,
+ "max_hold": 41,
+ "n_members_alive": 4,
+ "n_members_total": 12,
+ "n_total_trades": 104,
+ "fam_meanR": -0.3719,
+ "null_meanR": -0.0517,
+ "sd": 0.1064,
+ "lift": -0.3201,
+ "z": -3.01,
+ "p_perm": 0.9975,
+ "burden_mean": 0.0131,
+ "half1_meanR": -0.4821,
+ "half2_meanR": -0.303,
+ "member_min": -0.4391,
+ "member_max": -0.3111,
+ "n_members_positive": 0,
+ "n_perm": 400,
+ "members": [
+  {
+   "k": 2,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 26,
+   "meanR": -0.4141,
+   "med_sl": 194.89,
+   "burden": 0.0161,
+   "wr": 26.92
+  },
+  {
+   "k": 2,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 26,
+   "meanR": -0.3232,
+   "med_sl": 306.36,
+   "burden": 0.0102,
+   "wr": 38.46
+  },
+  {
+   "k": 2,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 26,
+   "meanR": -0.4391,
+   "med_sl": 194.89,
+   "burden": 0.0161,
+   "wr": 19.23
+  },
+  {
+   "k": 2,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 26,
+   "meanR": -0.3111,
+   "med_sl": 306.36,
+   "burden": 0.0102,
+   "wr": 30.77
+  }
+ ],
+ "verdict": "DEAD_NO_SKILL"
+}
