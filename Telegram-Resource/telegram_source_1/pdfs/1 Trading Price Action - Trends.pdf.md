@@ -1571,7 +1571,105 @@ leg1 ≥ spike_k×ATR  ∧  mid_range ≤ tight_atr×ATR  # اسپایکِ قو�
 
 ---
 
-## فصلِ ۲۶ — «Stairs: Broad Channel Trend» (pdf idx 462+) → 🔬 **استخراج‌نشده (بعدی)**
+## فصلِ ۲۶ — «Stairs: Broad Channel Trend» (pdf idx 462–467) → **S364 · 🔬 در حالِ آزمون**
 
-_اولین فصلِ استخراج‌نشدهٔ کتاب. در نشستِ بعدیِ بخشِ کتاب‌ها از همین فصل شروع می‌شود
-(طبقِ User Note: کتاب به‌ترتیبِ فصل و از اولین فصلِ استخراج‌نشده)._
+> **آخرین فصلِ محتواییِ کتاب** (پس از آن فقط About the Author / Website / Index است).
+> استخراج در نشستِ جاری از متنِ خامِ PDF (صفحاتِ کتاب ۴۳۱–۴۳۶).
+
+### ۱. چیستی
+- **نوع:** فصلِ الگوی روندِ رایج (Part IV، Common Trend Patterns).
+- **الگو:** *Stairs* = واریانتی از «trending trading range day» که **دستِ‌کم سه** رنجِ
+  معاملاتیِ پشتِ‌هم دارد؛ سقف/کف‌ها روندی‌اند ولی نوسان‌ها **پهن** و **هم‌پوشان**.
+
+### ۲. منطقِ استخراج‌شده (نقلِ مکانیکیِ Brooks)
+مشخصاتِ اصلیِ روزِ stairs طبقِ متن:
+1. «A stairs day is a variant of a trending trading range day where there are **at least
+   three trading ranges**.» ⇒ حداقل **سه push** در یک کانالِ کم‌شیب.
+2. «The day has **broad swings**, but trending highs and lows.» ⇒ swingهای بزرگ با
+   HH/HL (گاوی) یا LL/LH (خرسی).
+3. ⭐ **قیدِ تعریف‌کنندهٔ الگو (تمایزش از micro-channel و spike):**
+   «**Almost every breakout is followed by a pullback (a breakout test) beyond the
+   breakout point**, so that there is some overlap between consecutive swings. For
+   example, in a broad bear channel, every breakout to a new low is followed by a rally
+   that goes back **above the breakout point** but stays below the most recent swing high.»
+   ⇒ شرطِ **همپوشانیِ swingهای متوالی** (rally از کفِ قبلی رد شود ولی از سقفِ قبلی نه).
+4. «If each breakout gets a little smaller than the prior one, then this is a
+   **shrinking stairs** pattern and a sign of **waning momentum**, which can lead to a
+   larger correction.» ⇒ متغیرِ «کوچک‌شوندگیِ شکست» = پیش‌بینِ اصلاح/چرخش.
+5. «Two-way trading is taking place within the broad channel, so traders can look for
+   entries **in both directions**.» ⇒ الگو ذاتاً **دوسویه** است.
+
+⭐ **مکانیکی‌ترین نقلِ‌قولِ کلِ کتاب (ص ۴۳۲) — و قلبِ لایهٔ ما:**
+> «Traders pay attention to **how many ticks breakouts run past the most recent swing
+> point**, and then **use that number to fade subsequent breakouts**, expecting a
+> breakout test. For example, if the last swing low fell **۱۴ ticks** below the swing low
+> before it, traders will look to scale into longs beginning around **۱۰ ticks** below the
+> most recent swing low… If the pullback from the most recent breakout was about
+> **۱۵ ticks**, they will look to take profits around **۱۰ تا ۱۵ ticks** up from the low.»
+
+و تکرارِ همان با اعدادِ دیگر در ص ۴۳۳: «the low of bar 5 was about **four points** below
+the low of bar 3. Aggressive bulls placed limit orders to buy at about **three to four
+points** below the low of bar 5… Since prior rallies were about **four points**, they took
+profits at around **three points** above their entries.»
+
+**⇒ ترجمهٔ ریاضیِ این دو پاراگراف (کشفِ اصلیِ فصل):**
+```
+entry_offset  =  f · (اندازهٔ شکستِ قبلی از swingِ قبل‌تر)      f ≈ 10/14 … 4/4  ⇒ [0.7 … 1.0]
+take_profit   =  g · (اندازهٔ pullbackِ قبلی)                   g ≈ 10/15 … 3/4  ⇒ [0.67 … 1.0]
+```
+یعنی **هیچ عددِ ثابت، هیچ ATR، هیچ pipِ رند**: هندسهٔ معامله از **خودِ الگو** و از
+**دو اندازه‌گیریِ اخیرِ بازار** مشتق می‌شود. این دقیقاً «قانونِ شاید همه‌چیز شناور است»
+در سطحِ TP/SL — و پادزهرِ ساختاریِ اشتباهِ رایجِ #۶ و #۷ (نه یک عددِ per-TF، بلکه یک
+عددِ **per-trade** که خودِ بازار تعیینش می‌کند).
+
+۶. **دو سبکِ ورود که خودِ Brooks تفکیک می‌کند:**
+   - *limit/scale-in* (نزدیکِ trend channel line): «This style of trading is **only for
+     experienced traders**.»
+   - *stop-entry پس از چرخش*: «Beginners should restrict themselves to **stop entries**…
+     it is safer to enter **on a stop as the market reverses** (for example, if the market
+     reverses up from the bottom of the channel, enter on a stop above the prior bar).»
+   ⇒ هر دو سبک باید جداگانه آزموده شوند (متغیرِ `entry_mode`).
+۷. **رفتارِ scalpِ صریح (ص ۴۳۶):** «Once the market begins to form stairs down, you can
+   usually **fade the close of every strong trend bar breakout** for a scalp. **Buy every
+   bear trend bar that closes below a prior bear stair** for a scalp.» ⇒ ماشهٔ ورود =
+   **کندلِ روندیِ** (بدنهٔ بزرگ) که **زیرِ stairِ قبلی می‌بندد**.
+۸. **حالتِ خروج از الگو (measured move):** اگر یک پله ناگهان از کانال **breakout** کند،
+   «the distance beyond the channel should be about the same as the distance within the
+   channel» ⇒ هدفِ اندازه‌گیری‌شده به‌اندازهٔ ارتفاعِ کانال.
+
+### ۳. ایدهٔ قابلِ آزمون برای پروژهٔ ما (S364)
+ترجمهٔ کاملاً causal (هر pivot با تأخیرِ `k` کندل تأیید می‌شود؛ ورود در `open` کندلِ بعد):
+```
+pivotها: swing high/low با بازوی k کندل (k ∈ {2,3,5}) — تأییدشده در t = p+k
+زمینهٔ خرسیِ stairs (آینهٔ گاوی هم آزموده می‌شود):
+    سه کفِ نزولی   L1 > L2 > L3           (≥۳ push)
+    سقف‌های نزولی  H1 > H2                 (کانالِ رو به پایین)
+    قیدِ همپوشانی  H2 > L2                 ⇐ «pullback beyond the breakout point» (بندِ ۳)
+اندازه‌گیری‌های شناور (واحد = قیمت، نه pipِ ثابت):
+    ext   = L2 − L3                        (شکستِ آخر چقدر از swingِ قبل رد شد)
+    pull  = H2 − L2                        (pullbackِ قبلی چقدر بود)
+ماشه (LONG = fade در کانالِ خرسی):
+    close[t] ≤ L3 − f·ext        (و در حالتِ trend-bar: بدنهٔ کندل ≥ body_k×دامنه)
+    entry_mode='stop': علاوه بر آن، close[t] > high[t−1] (چرخشِ رو به بالا)
+هندسهٔ معامله (کاملاً از الگو مشتق، per-trade):
+    TP = g·pull        SL = s·ext          ⇒ RR خودش شناور است
+```
+متغیرهای گرید: `k`, `f∈[0.7,1.0]`, `g∈[0.67,1.0]`, `s`, `body_k`, `shrinking` (فقط وقتی
+`ext ≤ ext_prev` = پلهٔ کوچک‌شونده)، و فیلترهای رژیمِ بانک (`hurst<0.5` برای fade،
+`chop`، `r2_fib_55`).
+
+### ۴. ارتباط با پرتفویِ فعلی — چرا **لبهٔ نو** و نه فیلتر
+- هیچ لایهٔ فعالِ پروژه TP/SL را از **هندسهٔ swingهای خودِ الگو** نمی‌سازد؛ همه یا
+  ATR-محورند (S332/S340/S354) یا pip-ثابتِ per-TF. این لایه **اولین هندسهٔ per-trade**
+  است ⇒ کانالِ اطلاعاتیِ متفاوت.
+- جهتِ معامله **خلافِ روندِ محلی** است (fade در کانال) ⇒ مکملِ پرتفوی که تقریباً همه‌اش
+  با-روند است، و پوششِ طبیعیِ زیرمجموعهٔ counter در دروازهٔ `H10`.
+- تمایز از فصولِ قبل: `S340` (فصلِ ۱۶) micro-channel = **بدونِ** همپوشانی؛ اینجا
+  همپوشانی **شرطِ لازم** است. `S354` (فصلِ ۲۵) ادامهٔ روند در ساعتِ پایانی؛ اینجا
+  زمان اصلاً نقشی ندارد (پادزهرِ اشتباهِ #۱).
+- ممیزیِ همپوشانیِ کندلی با لایه‌های فعالِ همان کارت پس از یافتنِ کاندیدا انجام و ثبت
+  می‌شود (قانونِ سومِ پروژه).
+
+### ۵. نتیجهٔ بک‌تست (RQS2) — 🔬 در حالِ اجرا
+مسیرِ چندگانگی **پیش از اجرا** ثبت شد: `results/S364_PREREG_multiplicity_route.md`.
+نتیجهٔ نهایی در `results/S364_*.md` مستند می‌شود.
