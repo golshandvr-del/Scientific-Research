@@ -1,0 +1,30 @@
+{
+ "card": "XAUUSD-M5",
+ "n_signals": 112,
+ "n_brackets": 15,
+ "n_brackets_with_variance": 15,
+ "m_eff_bracket": 5.8726,
+ "m_eff_sltp_dim": 2.7201,
+ "m_eff_hold_dim": 1.6667,
+ "mean_pairwise_corr": 0.8312,
+ "selfcheck_delta": 6.217248937900877e-15,
+ "assumed_multiplier": 15,
+ "reduction_factor": 2.554,
+ "bracket_labels": [
+  "sl2.4_tp0.8_h16",
+  "sl2.4_tp0.8_h24",
+  "sl2.4_tp0.8_h48",
+  "sl2.8_tp1.0_h16",
+  "sl2.8_tp1.0_h24",
+  "sl2.8_tp1.0_h48",
+  "sl3.1_tp1.15_h16",
+  "sl3.1_tp1.15_h24",
+  "sl3.1_tp1.15_h48",
+  "sl2.0_tp0.7_h16",
+  "sl2.0_tp0.7_h24",
+  "sl2.0_tp0.7_h48",
+  "sl3.5_tp1.3_h16",
+  "sl3.5_tp1.3_h24",
+  "sl3.5_tp1.3_h48"
+ ]
+}
