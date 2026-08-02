@@ -268,21 +268,50 @@ def _first_per_segment(trigger, seg):
     return trigger & (prev_before < last_start)
 
 
-def _armed_fire(trigger, seg, fire_cond):
-    """حالتِ stop: پس از ماشه مسلح می‌شویم؛ ورود در اولین بارِ برگشتِ همان زمینه."""
+def _armed_fire(trigger, ref, ext, pull, c, opp, long_side):
+    """
+    حالتِ stop (سبکِ محافظه‌کارِ خودِ Brooks): «enter on a stop **as the market reverses**».
+
+    ⚠️ درسِ یک باگ: نسخهٔ اولِ این تابع تسلیح را به «شناسهٔ زمینهٔ stairs» گره زده بود.
+    نتیجه‌اش این شد که **هیچ‌کدام از ۳۶ عضوِ حالتِ stop حتی یک معامله هم نساختند** —
+    و علتش بازار نبود، خودِ کد بود: وقتی قیمت کفِ تازه‌ای می‌سازد (که دقیقاً همان
+    چیزی است که ماشه را روشن می‌کند)، همان کف چند بار بعد به‌عنوان pivotِ تازه تأیید
+    می‌شود، zigzag به‌روز می‌شود و شناسهٔ زمینه عوض می‌شود ⇒ تسلیح پیش از رسیدنِ
+    چرخش نابود می‌شد. یعنی شرطِ نگهبانی، خودِ رویدادی را می‌کُشت که قرار بود منتظرش
+    بماند. اگر این را نمی‌دیدم، «نیمی از خانواده مرده است» را به‌عنوان یافتهٔ بازار
+    گزارش کرده بودم، در حالی که یافتهٔ ویرایشگر بود.
+
+    تسلیحِ درست، بدونِ افزودنِ هیچ پارامترِ عددیِ نو:
+      · با ماشه مسلح می‌شویم و سطحِ مرجع (پلهٔ قبلی، L3 یا H3) را **منجمد** می‌کنیم.
+      · ورود در اولین باری که بازار می‌چرخد: close > high[t−1] (لانگ) / close < low[t−1].
+      · اگر قیمت بدونِ چرخش به داخلِ کانال برگردد (close از سطحِ منجمد رد کند)،
+        آزمونِ شکست بدونِ ما تمام شده ⇒ خلعِ سلاح.
+
+    ⭐ `ext`/`pull` هم در **همان لحظهٔ ماشه** منجمد می‌شوند. اگر به‌جایش از زمینهٔ
+    بارِ ورود خوانده می‌شدند، همان تلهٔ قبلی از درِ دیگر برمی‌گشت: زمینه تا لحظهٔ
+    چرخش عوض شده و بریکتِ شناور صفر/نامعتبر می‌شد.
+    """
     n = len(trigger)
-    idx = np.arange(n)
-    seg_change = np.empty(n, dtype=bool)
-    seg_change[0] = True
-    seg_change[1:] = seg[1:] != seg[:-1]
-    last_start = np.maximum.accumulate(np.where(seg_change, idx, -1))
-    last_trig = np.maximum.accumulate(np.where(trigger, idx, -1))
-    armed = (last_trig >= last_start) & (last_trig < idx)
-    fire = armed & fire_cond
-    # فقط اولین شلیک در هر زمینه
-    prev_fire = np.maximum.accumulate(np.where(fire, idx, -1))
-    prev_before = np.concatenate(([-1], prev_fire[:-1]))
-    return fire & (prev_before < last_start)
+    out = np.zeros(n, dtype=bool)
+    ext_at = np.zeros(n)
+    pull_at = np.zeros(n)
+    armed = False
+    frozen = f_ext = f_pull = np.nan
+    for t in range(1, n):
+        if armed:
+            if (long_side and c[t] > opp[t - 1]) or ((not long_side) and c[t] < opp[t - 1]):
+                out[t] = True
+                ext_at[t] = f_ext
+                pull_at[t] = f_pull
+                armed = False
+            elif (long_side and c[t] > frozen) or ((not long_side) and c[t] < frozen):
+                armed = False
+        if trigger[t]:
+            armed = True
+            frozen = ref[t]
+            f_ext = ext[t]
+            f_pull = pull[t]
+    return out, ext_at, pull_at
 
 
 def member_signals(df, ctx, f, g, s, mode, asset):
@@ -304,29 +333,31 @@ def member_signals(df, ctx, f, g, s, mode, asset):
     bok = ctx["bear_ok"]
     btrig = bok & bear_bar & (c <= (ctx["bear_ref"] - f * ctx["bear_ext"]))
     btrig = np.nan_to_num(btrig, nan=False).astype(bool)
+    ext_l = np.nan_to_num(ctx["bear_ext"], nan=0.0)
+    pull_l = np.nan_to_num(ctx["bear_pull"], nan=0.0)
     if mode == "close":
         long_sig = _first_per_segment(btrig, ctx["bear_seg"])
     else:
-        prev_h = np.concatenate(([np.inf], h[:-1]))
-        long_sig = _armed_fire(btrig, ctx["bear_seg"], bok & (c > prev_h))
+        long_sig, ext_l, pull_l = _armed_fire(
+            btrig, np.nan_to_num(ctx["bear_ref"], nan=-np.inf),
+            ext_l, pull_l, c, h, True)
 
     # --- سمتِ SHORT (fade در کانالِ گاوی) ---
     uok = ctx["bull_ok"]
     utrig = uok & bull_bar & (c >= (ctx["bull_ref"] + f * ctx["bull_ext"]))
     utrig = np.nan_to_num(utrig, nan=False).astype(bool)
+    ext_s = np.nan_to_num(ctx["bull_ext"], nan=0.0)
+    pull_s = np.nan_to_num(ctx["bull_pull"], nan=0.0)
     if mode == "close":
         short_sig = _first_per_segment(utrig, ctx["bull_seg"])
     else:
-        prev_l = np.concatenate(([-np.inf], l[:-1]))
-        short_sig = _armed_fire(utrig, ctx["bull_seg"], uok & (c < prev_l))
+        short_sig, ext_s, pull_s = _armed_fire(
+            utrig, np.nan_to_num(ctx["bull_ref"], nan=np.inf),
+            ext_s, pull_s, c, l, False)
 
     # --- بریکتِ شناورِ per-trade ---
     sl_pip = np.zeros(n)
     tp_pip = np.zeros(n)
-    ext_l = np.nan_to_num(ctx["bear_ext"], nan=0.0)
-    pull_l = np.nan_to_num(ctx["bear_pull"], nan=0.0)
-    ext_s = np.nan_to_num(ctx["bull_ext"], nan=0.0)
-    pull_s = np.nan_to_num(ctx["bull_pull"], nan=0.0)
     sl_pip[long_sig] = (s * ext_l[long_sig]) / pip
     tp_pip[long_sig] = (g * pull_l[long_sig]) / pip
     sl_pip[short_sig] = (s * ext_s[short_sig]) / pip
