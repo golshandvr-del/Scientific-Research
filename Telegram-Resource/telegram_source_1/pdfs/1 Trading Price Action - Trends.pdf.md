@@ -1644,7 +1644,7 @@ pivotها: swing high/low با بازوی k کندل (k ∈ {2,3,5}) — تأی�
 زمینهٔ خرسیِ stairs (آینهٔ گاوی هم آزموده می‌شود):
     سه کفِ نزولی   L1 > L2 > L3           (≥۳ push)
     سقف‌های نزولی  H1 > H2                 (کانالِ رو به پایین)
-    قیدِ همپوشانی  H2 > L2                 ⇐ «pullback beyond the breakout point» (بندِ ۳)
+    قیدِ همپوشانی  H2 > L1   ⭐تصحیح‌شده    ⇐ «pullback beyond the breakout point» (بندِ ۳)
 اندازه‌گیری‌های شناور (واحد = قیمت، نه pipِ ثابت):
     ext   = L2 − L3                        (شکستِ آخر چقدر از swingِ قبل رد شد)
     pull  = H2 − L2                        (pullbackِ قبلی چقدر بود)
