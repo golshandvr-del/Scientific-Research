@@ -1,0 +1,38 @@
+{
+ "card": "EURUSD-M5",
+ "sl_pip": 5.5,
+ "tp_pip": 4.6,
+ "max_hold": 192,
+ "n_trials": 2568,
+ "zbar": 3.5143,
+ "long": {
+  "n": 159,
+  "wins": 78,
+  "wr": 49.06,
+  "uncond": 53.65,
+  "perm_mean": 53.65,
+  "ref": 53.65,
+  "z": -1.163,
+  "lift": -4.6
+ },
+ "short": {
+  "n": 158,
+  "wins": 87,
+  "wr": 55.06,
+  "uncond": 53.71,
+  "perm_mean": 54.77,
+  "ref": 54.77,
+  "z": 0.074,
+  "lift": 0.29
+ },
+ "combined": {
+  "n": 317,
+  "wins": 165,
+  "wr": 52.05,
+  "ref": 54.21,
+  "lift": -2.16,
+  "z": -0.771,
+  "h5_pass": false,
+  "h4_pass": false
+ }
+}

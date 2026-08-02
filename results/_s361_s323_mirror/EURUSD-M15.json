@@ -1,0 +1,38 @@
+{
+ "card": "EURUSD-M15",
+ "sl_pip": 10.8,
+ "tp_pip": 9.0,
+ "max_hold": 96,
+ "n_trials": 2568,
+ "zbar": 3.5143,
+ "long": {
+  "n": 153,
+  "wins": 89,
+  "wr": 58.17,
+  "uncond": 53.77,
+  "perm_mean": 53.97,
+  "ref": 53.97,
+  "z": 1.042,
+  "lift": 4.2
+ },
+ "short": {
+  "n": 175,
+  "wins": 89,
+  "wr": 50.86,
+  "uncond": 54.34,
+  "perm_mean": 54.68,
+  "ref": 54.68,
+  "z": -1.016,
+  "lift": -3.82
+ },
+ "combined": {
+  "n": 328,
+  "wins": 178,
+  "wr": 54.27,
+  "ref": 54.35,
+  "lift": -0.08,
+  "z": -0.029,
+  "h5_pass": false,
+  "h4_pass": false
+ }
+}

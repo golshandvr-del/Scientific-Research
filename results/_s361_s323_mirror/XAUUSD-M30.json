@@ -1,0 +1,38 @@
+{
+ "card": "XAUUSD-M30",
+ "sl_pip": 55.8,
+ "tp_pip": 34.5,
+ "max_hold": 48,
+ "n_trials": 2568,
+ "zbar": 3.5143,
+ "long": {
+  "n": 160,
+  "wins": 116,
+  "wr": 72.5,
+  "uncond": 58.29,
+  "perm_mean": 59.88,
+  "ref": 59.88,
+  "z": 3.258,
+  "lift": 12.62
+ },
+ "short": {
+  "n": 109,
+  "wins": 56,
+  "wr": 51.38,
+  "uncond": 57.9,
+  "perm_mean": 60.39,
+  "ref": 60.39,
+  "z": -1.924,
+  "lift": -9.01
+ },
+ "combined": {
+  "n": 269,
+  "wins": 172,
+  "wr": 63.94,
+  "ref": 60.09,
+  "lift": 3.85,
+  "z": 1.291,
+  "h5_pass": false,
+  "h4_pass": false
+ }
+}

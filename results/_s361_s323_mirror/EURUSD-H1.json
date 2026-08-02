@@ -1,0 +1,38 @@
+{
+ "card": "EURUSD-H1",
+ "sl_pip": 26.9,
+ "tp_pip": 25.4,
+ "max_hold": 36,
+ "n_trials": 2568,
+ "zbar": 3.5143,
+ "long": {
+  "n": 18,
+  "wins": 10,
+  "wr": 55.56,
+  "uncond": 50.81,
+  "perm_mean": 50.85,
+  "ref": 50.85,
+  "z": 0.399,
+  "lift": 4.7
+ },
+ "short": {
+  "n": 29,
+  "wins": 16,
+  "wr": 55.17,
+  "uncond": 50.58,
+  "perm_mean": 50.85,
+  "ref": 50.85,
+  "z": 0.466,
+  "lift": 4.32
+ },
+ "combined": {
+  "n": 47,
+  "wins": 26,
+  "wr": 55.32,
+  "ref": 50.85,
+  "lift": 4.47,
+  "z": 0.613,
+  "h5_pass": false,
+  "h4_pass": true
+ }
+}

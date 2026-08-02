@@ -1,0 +1,306 @@
+{
+ "XAUUSD-M5": {
+  "card": "XAUUSD-M5",
+  "sl_pip": 38.9,
+  "tp_pip": 32.4,
+  "max_hold": 192,
+  "n_trials": 2568,
+  "zbar": 3.5143,
+  "long": {
+   "n": 160,
+   "wins": 92,
+   "wr": 57.5,
+   "uncond": 52.19,
+   "perm_mean": 54.93,
+   "ref": 54.93,
+   "z": 0.653,
+   "lift": 2.57
+  },
+  "short": {
+   "n": 219,
+   "wins": 113,
+   "wr": 51.6,
+   "uncond": 51.21,
+   "perm_mean": 51.87,
+   "ref": 51.87,
+   "z": -0.081,
+   "lift": -0.27
+  },
+  "combined": {
+   "n": 379,
+   "wins": 205,
+   "wr": 54.09,
+   "ref": 53.16,
+   "lift": 0.93,
+   "z": 0.362,
+   "h5_pass": false,
+   "h4_pass": false
+  }
+ },
+ "XAUUSD-M15": {
+  "card": "XAUUSD-M15",
+  "sl_pip": 47.5,
+  "tp_pip": 39.6,
+  "max_hold": 96,
+  "n_trials": 2568,
+  "zbar": 3.5143,
+  "long": {
+   "n": 105,
+   "wins": 63,
+   "wr": 60.0,
+   "uncond": 51.75,
+   "perm_mean": 54.19,
+   "ref": 54.19,
+   "z": 1.194,
+   "lift": 5.81
+  },
+  "short": {
+   "n": 126,
+   "wins": 67,
+   "wr": 53.17,
+   "uncond": 51.14,
+   "perm_mean": 52.38,
+   "ref": 52.38,
+   "z": 0.179,
+   "lift": 0.8
+  },
+  "combined": {
+   "n": 231,
+   "wins": 130,
+   "wr": 56.28,
+   "ref": 53.2,
+   "lift": 3.07,
+   "z": 0.936,
+   "h5_pass": false,
+   "h4_pass": true
+  }
+ },
+ "XAUUSD-M30": {
+  "card": "XAUUSD-M30",
+  "sl_pip": 55.8,
+  "tp_pip": 34.5,
+  "max_hold": 48,
+  "n_trials": 2568,
+  "zbar": 3.5143,
+  "long": {
+   "n": 160,
+   "wins": 116,
+   "wr": 72.5,
+   "uncond": 58.29,
+   "perm_mean": 59.88,
+   "ref": 59.88,
+   "z": 3.258,
+   "lift": 12.62
+  },
+  "short": {
+   "n": 109,
+   "wins": 56,
+   "wr": 51.38,
+   "uncond": 57.9,
+   "perm_mean": 60.39,
+   "ref": 60.39,
+   "z": -1.924,
+   "lift": -9.01
+  },
+  "combined": {
+   "n": 269,
+   "wins": 172,
+   "wr": 63.94,
+   "ref": 60.09,
+   "lift": 3.85,
+   "z": 1.291,
+   "h5_pass": false,
+   "h4_pass": false
+  }
+ },
+ "XAUUSD-H1": {
+  "card": "XAUUSD-H1",
+  "sl_pip": 69.6,
+  "tp_pip": 65.7,
+  "max_hold": 36,
+  "n_trials": 2568,
+  "zbar": 3.5143,
+  "long": {
+   "n": 37,
+   "wins": 26,
+   "wr": 70.27,
+   "uncond": 48.98,
+   "perm_mean": 49.94,
+   "ref": 49.94,
+   "z": 2.473,
+   "lift": 20.33
+  },
+  "short": {
+   "n": 22,
+   "wins": 10,
+   "wr": 45.45,
+   "uncond": 48.35,
+   "perm_mean": 50.1,
+   "ref": 50.1,
+   "z": -0.436,
+   "lift": -4.65
+  },
+  "combined": {
+   "n": 59,
+   "wins": 36,
+   "wr": 61.02,
+   "ref": 50.0,
+   "lift": 11.02,
+   "z": 1.693,
+   "h5_pass": false,
+   "h4_pass": false
+  }
+ },
+ "EURUSD-M5": {
+  "card": "EURUSD-M5",
+  "sl_pip": 5.5,
+  "tp_pip": 4.6,
+  "max_hold": 192,
+  "n_trials": 2568,
+  "zbar": 3.5143,
+  "long": {
+   "n": 159,
+   "wins": 78,
+   "wr": 49.06,
+   "uncond": 53.65,
+   "perm_mean": 53.65,
+   "ref": 53.65,
+   "z": -1.163,
+   "lift": -4.6
+  },
+  "short": {
+   "n": 158,
+   "wins": 87,
+   "wr": 55.06,
+   "uncond": 53.71,
+   "perm_mean": 54.77,
+   "ref": 54.77,
+   "z": 0.074,
+   "lift": 0.29
+  },
+  "combined": {
+   "n": 317,
+   "wins": 165,
+   "wr": 52.05,
+   "ref": 54.21,
+   "lift": -2.16,
+   "z": -0.771,
+   "h5_pass": false,
+   "h4_pass": false
+  }
+ },
+ "EURUSD-M15": {
+  "card": "EURUSD-M15",
+  "sl_pip": 10.8,
+  "tp_pip": 9.0,
+  "max_hold": 96,
+  "n_trials": 2568,
+  "zbar": 3.5143,
+  "long": {
+   "n": 153,
+   "wins": 89,
+   "wr": 58.17,
+   "uncond": 53.77,
+   "perm_mean": 53.97,
+   "ref": 53.97,
+   "z": 1.042,
+   "lift": 4.2
+  },
+  "short": {
+   "n": 175,
+   "wins": 89,
+   "wr": 50.86,
+   "uncond": 54.34,
+   "perm_mean": 54.68,
+   "ref": 54.68,
+   "z": -1.016,
+   "lift": -3.82
+  },
+  "combined": {
+   "n": 328,
+   "wins": 178,
+   "wr": 54.27,
+   "ref": 54.35,
+   "lift": -0.08,
+   "z": -0.029,
+   "h5_pass": false,
+   "h4_pass": false
+  }
+ },
+ "EURUSD-M30": {
+  "card": "EURUSD-M30",
+  "sl_pip": 21.7,
+  "tp_pip": 13.4,
+  "max_hold": 48,
+  "n_trials": 2568,
+  "zbar": 3.5143,
+  "long": {
+   "n": 103,
+   "wins": 70,
+   "wr": 67.96,
+   "uncond": 61.06,
+   "perm_mean": 61.22,
+   "ref": 61.22,
+   "z": 1.405,
+   "lift": 6.75
+  },
+  "short": {
+   "n": 157,
+   "wins": 100,
+   "wr": 63.69,
+   "uncond": 60.86,
+   "perm_mean": 61.21,
+   "ref": 61.21,
+   "z": 0.639,
+   "lift": 2.48
+  },
+  "combined": {
+   "n": 260,
+   "wins": 170,
+   "wr": 65.38,
+   "ref": 61.21,
+   "lift": 4.17,
+   "z": 1.38,
+   "h5_pass": false,
+   "h4_pass": true
+  }
+ },
+ "EURUSD-H1": {
+  "card": "EURUSD-H1",
+  "sl_pip": 26.9,
+  "tp_pip": 25.4,
+  "max_hold": 36,
+  "n_trials": 2568,
+  "zbar": 3.5143,
+  "long": {
+   "n": 18,
+   "wins": 10,
+   "wr": 55.56,
+   "uncond": 50.81,
+   "perm_mean": 50.85,
+   "ref": 50.85,
+   "z": 0.399,
+   "lift": 4.7
+  },
+  "short": {
+   "n": 29,
+   "wins": 16,
+   "wr": 55.17,
+   "uncond": 50.58,
+   "perm_mean": 50.85,
+   "ref": 50.85,
+   "z": 0.466,
+   "lift": 4.32
+  },
+  "combined": {
+   "n": 47,
+   "wins": 26,
+   "wr": 55.32,
+   "ref": 50.85,
+   "lift": 4.47,
+   "z": 0.613,
+   "h5_pass": false,
+   "h4_pass": true
+  }
+ }
+}
