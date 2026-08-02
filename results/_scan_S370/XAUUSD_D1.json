@@ -1,0 +1,14 @@
+{
+ "asset": "XAUUSD",
+ "tf": "D1",
+ "bars": 3989,
+ "verdict": "TOO_FEW_TRADES",
+ "n_trades": 12,
+ "n_members": 24,
+ "n_union": 13,
+ "sum_signals": 104,
+ "mean_vote": 8.0,
+ "conflict": 0,
+ "max_hold": 8,
+ "warm": 260
+}
