@@ -1,0 +1,1072 @@
+{
+ "card": "XAUUSD-H4",
+ "asset": "XAUUSD",
+ "tf": "H4",
+ "cfg_source": "ARCHIVE",
+ "cfg": {
+  "k_body": 2.5,
+  "br_min": 0.6,
+  "streak_n": 0,
+  "rsi_lo": 35,
+  "regime": "trend",
+  "sl_m": 3.65,
+  "tp_m": 1.898,
+  "hold": 27
+ },
+ "bars": 23755,
+ "n_signals": 47,
+ "rr": 0.52,
+ "reachability": {
+  "hold": 27,
+  "tp_bars_needed": 3.6,
+  "sl_bars_needed": 13.32,
+  "tp_reachable": true,
+  "sl_reachable": true
+ },
+ "seeds": {
+  "23": {
+   "neff": {
+    "verdict": "REJECT",
+    "score": 18.8,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 62.92,
+     "skill_lift_pp": 0.97,
+     "skill_z": 0.12,
+     "skill_p_perm": 0.451997,
+     "perm_max": 87.23,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.97
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.526622,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.121,
+     "z_luck_bound": 3.686,
+     "z_margin": -3.565,
+     "n_trials": 4959,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "honest": {
+    "verdict": "REJECT",
+    "score": 18.8,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 62.92,
+     "skill_lift_pp": 0.97,
+     "skill_z": 0.12,
+     "skill_p_perm": 0.451997,
+     "perm_max": 87.23,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.97
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.526622,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.121,
+     "z_luck_bound": 3.753,
+     "z_margin": -3.633,
+     "n_trials": 6480,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "stress": {
+    "verdict": "REJECT",
+    "score": 18.8,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 62.92,
+     "skill_lift_pp": 0.97,
+     "skill_z": 0.12,
+     "skill_p_perm": 0.451997,
+     "perm_max": 87.23,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.97
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.526622,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.121,
+     "z_luck_bound": 4.246,
+     "z_margin": -4.125,
+     "n_trials": 51840,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "null": {
+    "uncond_wr": 62.52873563218391,
+    "perm_mean": 62.917863667453844,
+    "perm_sd": 6.896457455147234,
+    "perm_max": 87.23404255319149,
+    "perm_k": 2000
+   },
+   "p_empirical": 0.422789,
+   "n_draws_ge_obs": 845,
+   "p_parametric_engine": 0.451997,
+   "honest_accept": false
+  },
+  "101": {
+   "neff": {
+    "verdict": "REJECT",
+    "score": 18.7,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 63.18,
+     "skill_lift_pp": 0.71,
+     "skill_z": 0.09,
+     "skill_p_perm": 0.46464,
+     "perm_max": 84.78,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.71
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.539459,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.089,
+     "z_luck_bound": 3.686,
+     "z_margin": -3.597,
+     "n_trials": 4959,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "honest": {
+    "verdict": "REJECT",
+    "score": 18.7,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 63.18,
+     "skill_lift_pp": 0.71,
+     "skill_z": 0.09,
+     "skill_p_perm": 0.46464,
+     "perm_max": 84.78,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.71
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.539459,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.089,
+     "z_luck_bound": 3.753,
+     "z_margin": -3.664,
+     "n_trials": 6480,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "stress": {
+    "verdict": "REJECT",
+    "score": 18.7,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 63.18,
+     "skill_lift_pp": 0.71,
+     "skill_z": 0.09,
+     "skill_p_perm": 0.46464,
+     "perm_max": 84.78,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.71
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.539459,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.089,
+     "z_luck_bound": 4.246,
+     "z_margin": -4.157,
+     "n_trials": 51840,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "null": {
+    "uncond_wr": 62.52873563218391,
+    "perm_mean": 63.175437490066365,
+    "perm_sd": 6.933277484768811,
+    "perm_max": 84.78260869565217,
+    "perm_k": 2000
+   },
+   "p_empirical": 0.443278,
+   "n_draws_ge_obs": 886,
+   "p_parametric_engine": 0.46464,
+   "honest_accept": false
+  },
+  "777": {
+   "neff": {
+    "verdict": "REJECT",
+    "score": 18.7,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 63.25,
+     "skill_lift_pp": 0.63,
+     "skill_z": 0.08,
+     "skill_p_perm": 0.468531,
+     "perm_max": 82.98,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.63
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.543391,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.079,
+     "z_luck_bound": 3.686,
+     "z_margin": -3.607,
+     "n_trials": 4959,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "honest": {
+    "verdict": "REJECT",
+    "score": 18.7,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 63.25,
+     "skill_lift_pp": 0.63,
+     "skill_z": 0.08,
+     "skill_p_perm": 0.468531,
+     "perm_max": 82.98,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.63
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.543391,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.079,
+     "z_luck_bound": 3.753,
+     "z_margin": -3.674,
+     "n_trials": 6480,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "stress": {
+    "verdict": "REJECT",
+    "score": 18.7,
+    "rank": null,
+    "gates": {
+     "H0": true,
+     "H1": true,
+     "H2": false,
+     "H3": false,
+     "H4": false,
+     "H5": false,
+     "H6": true,
+     "H7": false,
+     "H8": false,
+     "H9": true,
+     "H10": true
+    },
+    "metrics": {
+     "n_trades": 36,
+     "win_rate": 63.89,
+     "net_profit": 361.5,
+     "profit_factor": 1.447,
+     "max_dd_pct": 1.9,
+     "max_consec_losses": 2,
+     "mcl_allowed": 8,
+     "n_wins": 23,
+     "top_win_share": 0.1539,
+     "recovery_factor": 1.83,
+     "expectancy_pip": 68.1705,
+     "expectancy_at_2x_cost": 64.8705,
+     "cost_pip": 3.3,
+     "spread_pip": 3.3,
+     "sl_pip": 373.553,
+     "tp_pip": 194.248,
+     "rr": 0.52,
+     "breakeven_wr_cost": 66.37,
+     "wr_excess_cost": -2.48,
+     "null_ref_wr": 63.25,
+     "skill_lift_pp": 0.63,
+     "skill_z": 0.08,
+     "skill_p_perm": 0.468531,
+     "perm_max": 82.98,
+     "perm_k": 2000,
+     "side_n": {
+      "long": 36,
+      "short": 0
+     },
+     "side_wr": {
+      "long": 63.89
+     },
+     "side_lift_pp": {
+      "long": 0.63
+     },
+     "prune_sides": [
+      "long"
+     ],
+     "p_emp": 0.543391,
+     "p_adj_bonferroni": 1.0,
+     "z_obs": 0.079,
+     "z_luck_bound": 4.246,
+     "z_margin": -4.167,
+     "n_trials": 51840,
+     "cal_nets": [
+      76.9,
+      41.7,
+      63.9,
+      179.0
+     ],
+     "cal_counts": [
+      8,
+      5,
+      11,
+      12
+     ],
+     "cal_positive": 4,
+     "cal_occupied": 4,
+     "half_nets": [
+      118.6,
+      242.9
+     ],
+     "oos": {
+      "n": 18,
+      "wr": 55.56,
+      "pf": 1.228,
+      "net": 97.0,
+      "wr_req": 66.37
+     },
+     "max_concurrency": 1,
+     "counter_drift": {
+      "n_judgeable": 31,
+      "n_unjudgeable": 5,
+      "n_counter": 9,
+      "n_aligned": 22,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 77.78,
+      "exp_counter": 41.159,
+      "wr_aligned": 59.09,
+      "exp_aligned": 81.713,
+      "h10_substitute": "small-counter-sample-nonnegative"
+     }
+    },
+    "notes": [
+     "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+41.159 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+    ]
+   },
+   "null": {
+    "uncond_wr": 62.52873563218391,
+    "perm_mean": 63.25440681133004,
+    "perm_sd": 7.087671256116566,
+    "perm_max": 82.97872340425532,
+    "perm_k": 2000
+   },
+   "p_empirical": 0.441279,
+   "n_draws_ge_obs": 882,
+   "p_parametric_engine": 0.468531,
+   "honest_accept": false
+  }
+ },
+ "status": "JUDGED",
+ "n_trades": 36,
+ "wr_obs": 63.889,
+ "sl_pip_median": 373.553,
+ "tp_pip_median": 194.248,
+ "rr_realised": 0.52,
+ "breakeven": {
+  "cost_pip": 3.3,
+  "be_true_pct": 66.371,
+  "be_archive_assumed_pct": 50.442,
+  "excess_true_pp": -2.482,
+  "excess_archive_pp": 13.447
+ },
+ "parity_table_vs_engine": {
+  "wr_engine": 63.889,
+  "wr_table": 63.889
+ },
+ "neff": {
+  "n_eff": 4959.0,
+  "m_eff_signal": 330.6,
+  "n_signal_columns": 432,
+  "m_with_variance": 432,
+  "method": "exact_phi_correlation",
+  "bracket_multiplier": 15
+ },
+ "honest": {
+  "seed_stable": true,
+  "verdicts_neff": {
+   "23": "REJECT",
+   "101": "REJECT",
+   "777": "REJECT"
+  },
+  "verdicts_honest": {
+   "23": "REJECT",
+   "101": "REJECT",
+   "777": "REJECT"
+  },
+  "verdicts_stress": {
+   "23": "REJECT",
+   "101": "REJECT",
+   "777": "REJECT"
+  },
+  "all_seeds_honest_accept": false,
+  "decision": "NOT_ALIVE_UNDER_FROZEN_CFG"
+ },
+ "protocol": "P3-B",
+ "prereg": "results/S363_ADDENDUM_P3B_DEPLOYMENT_JUDGEMENT_PREREG.md",
+ "geometry_source": "P1 §5 min-perturbation rule (commit adf818d)",
+ "archive_geometry": {
+  "sl_m": 3.5,
+  "tp_m": 1.3,
+  "hold": 24,
+  "rr": 0.3714
+ },
+ "bill": {
+  "used": 4959.0,
+  "used_label": "conservative P0 (bracket×15)",
+  "p3a_corrected_diagnostic_only": 2428.38924,
+  "note": "P3-A discount deliberately NOT spent — see prereg §1.1"
+ }
+}

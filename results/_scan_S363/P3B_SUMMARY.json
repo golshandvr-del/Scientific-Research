@@ -1,0 +1,97 @@
+{
+ "protocol": "P3-B",
+ "summary": [
+  {
+   "card": "XAUUSD-M15",
+   "status": "JUDGED",
+   "decision": "NOT_ALIVE_UNDER_FROZEN_CFG",
+   "score": 28.8,
+   "verdict": "REJECT",
+   "failing": [
+    "H5"
+   ],
+   "n": 133,
+   "wr": 75.188,
+   "z_obs": 3.326,
+   "z_bound": 3.691
+  },
+  {
+   "card": "XAUUSD-H1",
+   "status": "JUDGED",
+   "decision": "NOT_ALIVE_UNDER_FROZEN_CFG",
+   "score": 15.4,
+   "verdict": "REJECT",
+   "failing": [
+    "H1",
+    "H3",
+    "H5",
+    "H6",
+    "H8",
+    "H10"
+   ],
+   "n": 220,
+   "wr": 70.909,
+   "z_obs": 1.81,
+   "z_bound": 3.69
+  },
+  {
+   "card": "XAUUSD-H4",
+   "status": "JUDGED",
+   "decision": "NOT_ALIVE_UNDER_FROZEN_CFG",
+   "score": 18.8,
+   "verdict": "REJECT",
+   "failing": [
+    "H2",
+    "H3",
+    "H4",
+    "H5",
+    "H7",
+    "H8"
+   ],
+   "n": 36,
+   "wr": 63.889,
+   "z_obs": 0.121,
+   "z_bound": 3.686
+  },
+  {
+   "card": "EURUSD-M15",
+   "status": "JUDGED",
+   "decision": "NOT_ALIVE_UNDER_FROZEN_CFG",
+   "score": 20.2,
+   "verdict": "REJECT",
+   "failing": [
+    "H2",
+    "H3",
+    "H5",
+    "H6",
+    "H7",
+    "H8"
+   ],
+   "n": 59,
+   "wr": 72.881,
+   "z_obs": 2.488,
+   "z_bound": 3.696
+  },
+  {
+   "card": "EURUSD-M30",
+   "status": "JUDGED",
+   "decision": "NOT_ALIVE_UNDER_FROZEN_CFG",
+   "score": 14.3,
+   "verdict": "REJECT",
+   "failing": [
+    "H1",
+    "H2",
+    "H3",
+    "H5",
+    "H6",
+    "H8",
+    "H9"
+   ],
+   "n": 93,
+   "wr": 70.968,
+   "z_obs": 1.846,
+   "z_bound": 3.695
+  }
+ ],
+ "alive": []
+}
