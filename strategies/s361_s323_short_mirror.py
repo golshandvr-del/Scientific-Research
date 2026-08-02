@@ -99,9 +99,67 @@ from engine import scalp_engine as se           # noqa: E402
 from engine import indicators as ind            # noqa: E402
 from engine import rqs2 as R2                   # noqa: E402
 from s357_s323_v24_rejudge import (             # noqa: E402
-    cfg_for, signals_backtested, outcome_table, wr_of,
+    cfg_for, signals_backtested, wr_of,
 )
 from s358_s323_h5_rescue import binom_z, perm_mean_for   # noqa: E402
+
+
+def outcome_table_side(df, asset, sl_pip, tp_pip, mh, short):
+    """برآمدِ «همان براکت اگر روی کندلِ بعدِ هر کندل باز شود» — **آگاه از سمت**.
+
+    چرا این تابع لازم شد: `s357.outcome_table` فقط سمتِ لانگ را می‌سازد
+    (`low ≤ ent−SL` باخت، `high ≥ ent+TP` برد). برای شورت هر دو شرط باید
+    وارونه شوند (`high ≥ ent+SL` باخت، `low ≤ ent−TP` برد). استفاده از
+    جدولِ لانگ برای مبنای شورت یعنی سنجیدنِ شورت با مبنایی که رانشِ صعودیِ
+    تاریخیِ طلا را به سودش حساب می‌کند — دقیقاً همان تقلبی که مستنداتِ همین
+    فایل علیه‌اش هشدار داد.
+
+    قراردادِ اجرا بیت‌به‌بیت با `simulate_trades` یکی است، از جمله تقدمِ
+    بررسیِ SL بر TP در یک کندل (اگر هر دو لمس شوند ⇒ **باخت**). همین
+    قرارداد عیناً روی مبنا و روی لایه اعمال می‌شود تا مقایسه منصفانه بماند.
+    """
+    o = df['open'].values.astype(float)
+    h = df['high'].values.astype(float)
+    l = df['low'].values.astype(float)
+    c = df['close'].values.astype(float)
+    n = len(df)
+    cfg = se.ASSETS[asset]
+    pip = cfg['pip']
+    cost = cfg['spread_pip'] + 2 * cfg.get('slip_pip', 0.0)
+    sl_d, tp_d = sl_pip * pip, tp_pip * pip
+
+    eb = np.arange(n) + 1
+    live = eb < n
+    ent = np.where(live, o[np.minimum(eb, n - 1)], np.nan)
+    res = np.zeros(n, dtype=np.int8)
+    xbar = np.full(n, -1, dtype=np.int64)
+
+    for j in range(mh):
+        k = eb + j
+        slot = live & (res == 0) & (k < n)
+        if not slot.any():
+            break
+        kk = np.minimum(k, n - 1)
+        if short:
+            lose = slot & (h[kk] >= ent + sl_d)          # SL بالای ورود
+            win = slot & (~lose) & (l[kk] <= ent - tp_d)  # TP پایینِ ورود
+        else:
+            lose = slot & (l[kk] <= ent - sl_d)
+            win = slot & (~lose) & (h[kk] >= ent + tp_d)
+        res[lose] = -1
+        xbar[lose] = k[lose]
+        res[win] = 1
+        xbar[win] = k[win]
+
+    kend = np.minimum(eb + mh, n)
+    to = live & (res == 0) & (kend > eb)
+    if to.any():
+        last = c[np.maximum(kend - 1, 0)]
+        move = (ent - last) if short else (last - ent)   # جهتِ سودِ خروجِ زمانی
+        won = (move / pip - cost) > 0
+        res[to] = np.where(won[to], 1, -1)
+        xbar[to] = kend[to] - 1
+    return res, xbar
 
 CARDS = ['XAUUSD-M5', 'XAUUSD-M15', 'XAUUSD-M30', 'XAUUSD-H1',
          'EURUSD-M5', 'EURUSD-M15', 'EURUSD-M30', 'EURUSD-H1']
@@ -168,9 +226,7 @@ def side_stats(df, asset, sig, sl, tp, mh, is_short, k_perm, seeds):
         return dict(n=0)
     w = int((tr['pnl_pip'] > 0).sum())
 
-    res, xbar = outcome_table(df, asset, sl, tp, mh, short=is_short) \
-        if 'short' in outcome_table.__code__.co_varnames \
-        else outcome_table(df, asset, sl, tp, mh)
+    res, xbar = outcome_table_side(df, asset, sl, tp, mh, is_short)
     valid = np.arange(260, max(261, len(df) - mh - 2))
     valid = valid[res[valid] != 0]
     uncond = wr_of(valid, res, xbar)
