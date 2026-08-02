@@ -1,0 +1,3835 @@
+{
+ "protocol": "P2_STAGE1_DISCOVERY",
+ "prereg": "results/S363_ADDENDUM_P2_UNIVERSAL_FILTER_PREREG.md",
+ "split_frac": 0.6,
+ "cards": [
+  "XAUUSD-M5",
+  "XAUUSD-M15",
+  "XAUUSD-M30",
+  "XAUUSD-H1",
+  "XAUUSD-H4",
+  "EURUSD-M15",
+  "EURUSD-M30"
+ ],
+ "card_meta": {
+  "XAUUSD-M5": {
+   "n_bars": 200000,
+   "split_bar": 120000,
+   "n_sig_total": 112,
+   "n_sig_discovery": 75,
+   "wr_discovery": 78.6667,
+   "geom": {
+    "sl_m": 3.65,
+    "tp_m": 1.898,
+    "rr": 0.52,
+    "hold": 27,
+    "tp_bars_needed": 3.6
+   }
+  },
+  "XAUUSD-M15": {
+   "n_bars": 150000,
+   "split_bar": 90000,
+   "n_sig_total": 146,
+   "n_sig_discovery": 86,
+   "wr_discovery": 69.7674,
+   "geom": {
+    "sl_m": 2.85,
+    "tp_m": 1.482,
+    "rr": 0.52,
+    "hold": 18,
+    "tp_bars_needed": 2.2
+   }
+  },
+  "XAUUSD-M30": {
+   "n_bars": 181383,
+   "split_bar": 108829,
+   "n_sig_total": 301,
+   "n_sig_discovery": 182,
+   "wr_discovery": 69.2308,
+   "geom": {
+    "sl_m": 2.45,
+    "tp_m": 1.274,
+    "rr": 0.52,
+    "hold": 18,
+    "tp_bars_needed": 1.62
+   }
+  },
+  "XAUUSD-H1": {
+   "n_bars": 90950,
+   "split_bar": 54570,
+   "n_sig_total": 245,
+   "n_sig_discovery": 137,
+   "wr_discovery": 68.6131,
+   "geom": {
+    "sl_m": 2.85,
+    "tp_m": 1.482,
+    "rr": 0.52,
+    "hold": 41,
+    "tp_bars_needed": 2.2
+   }
+  },
+  "XAUUSD-H4": {
+   "n_bars": 23755,
+   "split_bar": 14253,
+   "n_sig_total": 47,
+   "n_sig_discovery": 24,
+   "wr_discovery": 70.8333,
+   "geom": {
+    "sl_m": 3.65,
+    "tp_m": 1.898,
+    "rr": 0.52,
+    "hold": 27,
+    "tp_bars_needed": 3.6
+   }
+  },
+  "EURUSD-M15": {
+   "n_bars": 200000,
+   "split_bar": 120000,
+   "n_sig_total": 63,
+   "n_sig_discovery": 37,
+   "wr_discovery": 75.6757,
+   "geom": {
+    "sl_m": 3.25,
+    "tp_m": 1.69,
+    "rr": 0.52,
+    "hold": 18,
+    "tp_bars_needed": 2.86
+   }
+  },
+  "EURUSD-M30": {
+   "n_bars": 200000,
+   "split_bar": 120000,
+   "n_sig_total": 100,
+   "n_sig_discovery": 61,
+   "wr_discovery": 70.4918,
+   "geom": {
+    "sl_m": 2.05,
+    "tp_m": 1.066,
+    "rr": 0.52,
+    "hold": 18,
+    "tp_bars_needed": 1.14
+   }
+  }
+ },
+ "grid": {
+  "n_indicators": 401,
+  "directions": [
+   "KEEP_HIGH",
+   "KEEP_LOW"
+  ],
+  "quantiles": [
+   0.2,
+   0.3,
+   0.4,
+   0.5,
+   0.6
+  ],
+  "retention_min": 0.4,
+  "retention_max": 0.8
+ },
+ "n_indicators_unusable": 36,
+ "n_viable_candidates": 2847,
+ "elapsed_s": 651.6,
+ "top50": [
+  {
+   "indicator": "fdi",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": 0.4789,
+   "z_mean": 0.9098,
+   "z_max": 1.3569,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 1.4063020391893408,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 83.3333,
+     "wr_drop": 75.5556,
+     "retention": 0.4,
+     "z": 0.8055
+    },
+    "XAUUSD-M15": {
+     "thr": 1.4332278994086352,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 74.2857,
+     "wr_drop": 66.6667,
+     "retention": 0.407,
+     "z": 0.7558
+    },
+    "XAUUSD-M30": {
+     "thr": 1.4410070066850362,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 71.2329,
+     "wr_drop": 67.8899,
+     "retention": 0.4011,
+     "z": 0.4789
+    },
+    "XAUUSD-H1": {
+     "thr": 1.458948819472902,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": 1.4556012778473542,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 80.0,
+     "wr_drop": 64.2857,
+     "retention": 0.4167,
+     "z": 0.835
+    },
+    "EURUSD-M15": {
+     "thr": 1.4106308901180653,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 86.6667,
+     "wr_drop": 68.1818,
+     "retention": 0.4054,
+     "z": 1.2867
+    },
+    "EURUSD-M30": {
+     "thr": 1.4048361398092917,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 80.0,
+     "wr_drop": 63.8889,
+     "retention": 0.4098,
+     "z": 1.3569
+    }
+   }
+  },
+  {
+   "indicator": "fisher",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": 0.4789,
+   "z_mean": 1.1089,
+   "z_max": 1.7459,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -7.545926873440704,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 86.6667,
+     "wr_drop": 73.3333,
+     "retention": 0.4,
+     "z": 1.3809
+    },
+    "XAUUSD-M15": {
+     "thr": -6.579976969367924,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 77.1429,
+     "wr_drop": 64.7059,
+     "retention": 0.407,
+     "z": 1.2337
+    },
+    "XAUUSD-M30": {
+     "thr": -6.7699625783679425,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 71.2329,
+     "wr_drop": 67.8899,
+     "retention": 0.4011,
+     "z": 0.4789
+    },
+    "XAUUSD-H1": {
+     "thr": -5.646116898777273,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": -7.106435147125549,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 90.0,
+     "wr_drop": 57.1429,
+     "retention": 0.4167,
+     "z": 1.7459
+    },
+    "EURUSD-M15": {
+     "thr": -7.471266931370611,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 86.6667,
+     "wr_drop": 68.1818,
+     "retention": 0.4054,
+     "z": 1.2867
+    },
+    "EURUSD-M30": {
+     "thr": -7.485908343120268,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 76.0,
+     "wr_drop": 66.6667,
+     "retention": 0.4098,
+     "z": 0.7861
+    }
+   }
+  },
+  {
+   "indicator": "corr_t_fib_8",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": 0.2152,
+   "z_mean": 0.7085,
+   "z_max": 1.7459,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -0.903136563584447,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": -0.8566095538908214,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 71.4286,
+     "wr_drop": 68.6275,
+     "retention": 0.407,
+     "z": 0.2779
+    },
+    "XAUUSD-M30": {
+     "thr": -0.7885387538086985,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 73.9726,
+     "wr_drop": 66.055,
+     "retention": 0.4011,
+     "z": 1.1343
+    },
+    "XAUUSD-H1": {
+     "thr": -0.8214632336929568,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": -0.8457529243507675,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 90.0,
+     "wr_drop": 57.1429,
+     "retention": 0.4167,
+     "z": 1.7459
+    },
+    "EURUSD-M15": {
+     "thr": -0.9119743491881573,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 80.0,
+     "wr_drop": 72.7273,
+     "retention": 0.4054,
+     "z": 0.5062
+    },
+    "EURUSD-M30": {
+     "thr": -0.8870153899286306,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 72.0,
+     "wr_drop": 69.4444,
+     "retention": 0.4098,
+     "z": 0.2152
+    }
+   }
+  },
+  {
+   "indicator": "r2_fib_8",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.6,
+   "z_min": 0.2152,
+   "z_mean": 0.7085,
+   "z_max": 1.7459,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 0.8156582757590531,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 0.733779927817032,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 71.4286,
+     "wr_drop": 68.6275,
+     "retention": 0.407,
+     "z": 0.2779
+    },
+    "XAUUSD-M30": {
+     "thr": 0.6217933670298952,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 73.9726,
+     "wr_drop": 66.055,
+     "retention": 0.4011,
+     "z": 1.1343
+    },
+    "XAUUSD-H1": {
+     "thr": 0.6748023757041466,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": 0.7153356857916926,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 90.0,
+     "wr_drop": 57.1429,
+     "retention": 0.4167,
+     "z": 1.7459
+    },
+    "EURUSD-M15": {
+     "thr": 0.8317173785838964,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 80.0,
+     "wr_drop": 72.7273,
+     "retention": 0.4054,
+     "z": 0.5062
+    },
+    "EURUSD-M30": {
+     "thr": 0.7867963019702406,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 72.0,
+     "wr_drop": 69.4444,
+     "retention": 0.4098,
+     "z": 0.2152
+    }
+   }
+  },
+  {
+   "indicator": "corr_t_fib_8",
+   "direction": "KEEP_LOW",
+   "quantile": 0.5,
+   "z_min": 0.0601,
+   "z_mean": 0.7631,
+   "z_max": 2.2454,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -0.8776173963440631,
+     "n_keep": 38,
+     "n_drop": 37,
+     "wr_keep": 78.9474,
+     "wr_drop": 78.3784,
+     "retention": 0.5067,
+     "z": 0.0601
+    },
+    "XAUUSD-M15": {
+     "thr": -0.8129766207698392,
+     "n_keep": 43,
+     "n_drop": 43,
+     "wr_keep": 72.093,
+     "wr_drop": 67.4419,
+     "retention": 0.5,
+     "z": 0.4696
+    },
+    "XAUUSD-M30": {
+     "thr": -0.7507991141124932,
+     "n_keep": 91,
+     "n_drop": 91,
+     "wr_keep": 71.4286,
+     "wr_drop": 67.033,
+     "retention": 0.5,
+     "z": 0.6424
+    },
+    "XAUUSD-H1": {
+     "thr": -0.7655031629548743,
+     "n_keep": 69,
+     "n_drop": 68,
+     "wr_keep": 69.5652,
+     "wr_drop": 67.6471,
+     "retention": 0.5036,
+     "z": 0.2419
+    },
+    "XAUUSD-H4": {
+     "thr": -0.7913193902274985,
+     "n_keep": 12,
+     "n_drop": 12,
+     "wr_keep": 91.6667,
+     "wr_drop": 50.0,
+     "retention": 0.5,
+     "z": 2.2454
+    },
+    "EURUSD-M15": {
+     "thr": -0.8851479809482189,
+     "n_keep": 19,
+     "n_drop": 18,
+     "wr_keep": 78.9474,
+     "wr_drop": 72.2222,
+     "retention": 0.5135,
+     "z": 0.4766
+    },
+    "EURUSD-M30": {
+     "thr": -0.8570596868415374,
+     "n_keep": 31,
+     "n_drop": 30,
+     "wr_keep": 77.4194,
+     "wr_drop": 63.3333,
+     "retention": 0.5082,
+     "z": 1.2059
+    }
+   }
+  },
+  {
+   "indicator": "r2_fib_8",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.5,
+   "z_min": 0.0601,
+   "z_mean": 0.7631,
+   "z_max": 2.2454,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 0.7702122943657324,
+     "n_keep": 38,
+     "n_drop": 37,
+     "wr_keep": 78.9474,
+     "wr_drop": 78.3784,
+     "retention": 0.5067,
+     "z": 0.0601
+    },
+    "XAUUSD-M15": {
+     "thr": 0.660931153846286,
+     "n_keep": 43,
+     "n_drop": 43,
+     "wr_keep": 72.093,
+     "wr_drop": 67.4419,
+     "retention": 0.5,
+     "z": 0.4696
+    },
+    "XAUUSD-M30": {
+     "thr": 0.5637215388057116,
+     "n_keep": 91,
+     "n_drop": 91,
+     "wr_keep": 71.4286,
+     "wr_drop": 67.033,
+     "retention": 0.5,
+     "z": 0.6424
+    },
+    "XAUUSD-H1": {
+     "thr": 0.5859950924939168,
+     "n_keep": 69,
+     "n_drop": 68,
+     "wr_keep": 69.5652,
+     "wr_drop": 67.6471,
+     "retention": 0.5036,
+     "z": 0.2419
+    },
+    "XAUUSD-H4": {
+     "thr": 0.626409777460271,
+     "n_keep": 12,
+     "n_drop": 12,
+     "wr_keep": 91.6667,
+     "wr_drop": 50.0,
+     "retention": 0.5,
+     "z": 2.2454
+    },
+    "EURUSD-M15": {
+     "thr": 0.7834869481767085,
+     "n_keep": 19,
+     "n_drop": 18,
+     "wr_keep": 78.9474,
+     "wr_drop": 72.2222,
+     "retention": 0.5135,
+     "z": 0.4766
+    },
+    "EURUSD-M30": {
+     "thr": 0.7345513068089142,
+     "n_keep": 31,
+     "n_drop": 30,
+     "wr_keep": 77.4194,
+     "wr_drop": 63.3333,
+     "retention": 0.5082,
+     "z": 1.2059
+    }
+   }
+  },
+  {
+   "indicator": "mom_fib_233",
+   "direction": "KEEP_LOW",
+   "quantile": 0.3,
+   "z_min": 0.0571,
+   "z_mean": 0.4944,
+   "z_max": 0.9469,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 24.652000000000044,
+     "n_keep": 52,
+     "n_drop": 23,
+     "wr_keep": 78.8462,
+     "wr_drop": 78.2609,
+     "retention": 0.6933,
+     "z": 0.0571
+    },
+    "XAUUSD-M15": {
+     "thr": 30.22799999999988,
+     "n_keep": 59,
+     "n_drop": 27,
+     "wr_keep": 72.8814,
+     "wr_drop": 62.963,
+     "retention": 0.686,
+     "z": 0.9295
+    },
+    "XAUUSD-M30": {
+     "thr": 32.98899999999987,
+     "n_keep": 127,
+     "n_drop": 55,
+     "wr_keep": 70.0787,
+     "wr_drop": 67.2727,
+     "retention": 0.6978,
+     "z": 0.3766
+    },
+    "XAUUSD-H1": {
+     "thr": 40.96800000000007,
+     "n_keep": 96,
+     "n_drop": 41,
+     "wr_keep": 69.7917,
+     "wr_drop": 65.8537,
+     "retention": 0.7007,
+     "z": 0.4548
+    },
+    "XAUUSD-H4": {
+     "thr": 93.93399999999995,
+     "n_keep": 17,
+     "n_drop": 7,
+     "wr_keep": 76.4706,
+     "wr_drop": 57.1429,
+     "retention": 0.7083,
+     "z": 0.9469
+    },
+    "EURUSD-M15": {
+     "thr": 0.00822200000000004,
+     "n_keep": 26,
+     "n_drop": 11,
+     "wr_keep": 76.9231,
+     "wr_drop": 72.7273,
+     "retention": 0.7027,
+     "z": 0.2719
+    },
+    "EURUSD-M30": {
+     "thr": 0.01831000000000005,
+     "n_keep": 43,
+     "n_drop": 18,
+     "wr_keep": 72.093,
+     "wr_drop": 66.6667,
+     "retention": 0.7049,
+     "z": 0.4238
+    }
+   }
+  },
+  {
+   "indicator": "rsi_lucas_11",
+   "direction": "KEEP_LOW",
+   "quantile": 0.3,
+   "z_min": 0.0571,
+   "z_mean": 0.5902,
+   "z_max": 1.0393,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 24.053058042514003,
+     "n_keep": 52,
+     "n_drop": 23,
+     "wr_keep": 78.8462,
+     "wr_drop": 78.2609,
+     "retention": 0.6933,
+     "z": 0.0571
+    },
+    "XAUUSD-M15": {
+     "thr": 28.71884345269337,
+     "n_keep": 60,
+     "n_drop": 26,
+     "wr_keep": 71.6667,
+     "wr_drop": 65.3846,
+     "retention": 0.6977,
+     "z": 0.5826
+    },
+    "XAUUSD-M30": {
+     "thr": 29.449193882926075,
+     "n_keep": 127,
+     "n_drop": 55,
+     "wr_keep": 70.0787,
+     "wr_drop": 67.2727,
+     "retention": 0.6978,
+     "z": 0.3766
+    },
+    "XAUUSD-H1": {
+     "thr": 33.906070532050016,
+     "n_keep": 96,
+     "n_drop": 41,
+     "wr_keep": 70.8333,
+     "wr_drop": 63.4146,
+     "retention": 0.7007,
+     "z": 0.8569
+    },
+    "XAUUSD-H4": {
+     "thr": 29.35262938052246,
+     "n_keep": 17,
+     "n_drop": 7,
+     "wr_keep": 76.4706,
+     "wr_drop": 57.1429,
+     "retention": 0.7083,
+     "z": 0.9469
+    },
+    "EURUSD-M15": {
+     "thr": 24.078934552114177,
+     "n_keep": 26,
+     "n_drop": 11,
+     "wr_keep": 76.9231,
+     "wr_drop": 72.7273,
+     "retention": 0.7027,
+     "z": 0.2719
+    },
+    "EURUSD-M30": {
+     "thr": 23.888416230258656,
+     "n_keep": 43,
+     "n_drop": 18,
+     "wr_keep": 74.4186,
+     "wr_drop": 61.1111,
+     "retention": 0.7049,
+     "z": 1.0393
+    }
+   }
+  },
+  {
+   "indicator": "er_lucas_11",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.3,
+   "z_min": 0.0269,
+   "z_mean": 0.7742,
+   "z_max": 1.9349,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 0.5697975850200778,
+     "n_keep": 52,
+     "n_drop": 23,
+     "wr_keep": 78.8462,
+     "wr_drop": 78.2609,
+     "retention": 0.6933,
+     "z": 0.0571
+    },
+    "XAUUSD-M15": {
+     "thr": 0.47415289811955014,
+     "n_keep": 60,
+     "n_drop": 26,
+     "wr_keep": 71.6667,
+     "wr_drop": 65.3846,
+     "retention": 0.6977,
+     "z": 0.5826
+    },
+    "XAUUSD-M30": {
+     "thr": 0.438030230158859,
+     "n_keep": 127,
+     "n_drop": 55,
+     "wr_keep": 69.2913,
+     "wr_drop": 69.0909,
+     "retention": 0.6978,
+     "z": 0.0269
+    },
+    "XAUUSD-H1": {
+     "thr": 0.3649028768947681,
+     "n_keep": 96,
+     "n_drop": 41,
+     "wr_keep": 68.75,
+     "wr_drop": 68.2927,
+     "retention": 0.7007,
+     "z": 0.0528
+    },
+    "XAUUSD-H4": {
+     "thr": 0.47424696894103574,
+     "n_keep": 17,
+     "n_drop": 7,
+     "wr_keep": 82.3529,
+     "wr_drop": 42.8571,
+     "retention": 0.7083,
+     "z": 1.9349
+    },
+    "EURUSD-M15": {
+     "thr": 0.5924556962025422,
+     "n_keep": 26,
+     "n_drop": 11,
+     "wr_keep": 80.7692,
+     "wr_drop": 63.6364,
+     "retention": 0.7027,
+     "z": 1.1102
+    },
+    "EURUSD-M30": {
+     "thr": 0.5923190546528695,
+     "n_keep": 43,
+     "n_drop": 18,
+     "wr_keep": 76.7442,
+     "wr_drop": 55.5556,
+     "retention": 0.7049,
+     "z": 1.6549
+    }
+   }
+  },
+  {
+   "indicator": "cmo_fib_5",
+   "direction": "KEEP_LOW",
+   "quantile": 0.3,
+   "z_min": -0.0412,
+   "z_mean": 0.4036,
+   "z_max": 1.0761,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -75.79908885974064,
+     "n_keep": 52,
+     "n_drop": 23,
+     "wr_keep": 78.8462,
+     "wr_drop": 78.2609,
+     "retention": 0.6933,
+     "z": 0.0571
+    },
+    "XAUUSD-M15": {
+     "thr": -76.83216082980063,
+     "n_keep": 60,
+     "n_drop": 26,
+     "wr_keep": 71.6667,
+     "wr_drop": 65.3846,
+     "retention": 0.6977,
+     "z": 0.5826
+    },
+    "XAUUSD-M30": {
+     "thr": -63.8713789263248,
+     "n_keep": 127,
+     "n_drop": 55,
+     "wr_keep": 71.6535,
+     "wr_drop": 63.6364,
+     "retention": 0.6978,
+     "z": 1.0761
+    },
+    "XAUUSD-H1": {
+     "thr": -68.87042099507762,
+     "n_keep": 96,
+     "n_drop": 41,
+     "wr_keep": 69.7917,
+     "wr_drop": 65.8537,
+     "retention": 0.7007,
+     "z": 0.4548
+    },
+    "XAUUSD-H4": {
+     "thr": -69.00736908556745,
+     "n_keep": 17,
+     "n_drop": 7,
+     "wr_keep": 70.5882,
+     "wr_drop": 71.4286,
+     "retention": 0.7083,
+     "z": -0.0412
+    },
+    "EURUSD-M15": {
+     "thr": -81.7682736630472,
+     "n_keep": 26,
+     "n_drop": 11,
+     "wr_keep": 76.9231,
+     "wr_drop": 72.7273,
+     "retention": 0.7027,
+     "z": 0.2719
+    },
+    "EURUSD-M30": {
+     "thr": -74.37499999999939,
+     "n_keep": 43,
+     "n_drop": 18,
+     "wr_keep": 72.093,
+     "wr_drop": 66.6667,
+     "retention": 0.7049,
+     "z": 0.4238
+    }
+   }
+  },
+  {
+   "indicator": "mom_fib_34",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.4,
+   "z_min": -0.0471,
+   "z_mean": 0.8223,
+   "z_max": 1.7792,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -6.712000000000034,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 80.0,
+     "wr_drop": 76.6667,
+     "retention": 0.6,
+     "z": 0.3452
+    },
+    "XAUUSD-M15": {
+     "thr": -5.980000000000018,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 73.0769,
+     "wr_drop": 64.7059,
+     "retention": 0.6047,
+     "z": 0.8264
+    },
+    "XAUUSD-M30": {
+     "thr": -8.039999999999964,
+     "n_keep": 110,
+     "n_drop": 72,
+     "wr_keep": 73.6364,
+     "wr_drop": 62.5,
+     "retention": 0.6044,
+     "z": 1.5917
+    },
+    "XAUUSD-H1": {
+     "thr": -5.525999999999977,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 74.3902,
+     "wr_drop": 60.0,
+     "retention": 0.5985,
+     "z": 1.7792
+    },
+    "XAUUSD-H4": {
+     "thr": -31.21800000000003,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 78.5714,
+     "wr_drop": 60.0,
+     "retention": 0.5833,
+     "z": 0.9868
+    },
+    "EURUSD-M15": {
+     "thr": -0.002701999999999938,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 77.2727,
+     "wr_drop": 73.3333,
+     "retention": 0.5946,
+     "z": 0.2742
+    },
+    "EURUSD-M30": {
+     "thr": -0.005859999999999976,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 70.2703,
+     "wr_drop": 70.8333,
+     "retention": 0.6066,
+     "z": -0.0471
+    }
+   }
+  },
+  {
+   "indicator": "chop_fib_13",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.0759,
+   "z_mean": 0.8127,
+   "z_max": 2.3521,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 34.49811951601741,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 39.58161314889721,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 74.2857,
+     "wr_drop": 66.6667,
+     "retention": 0.407,
+     "z": 0.7558
+    },
+    "XAUUSD-M30": {
+     "thr": 39.99361880510388,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 73.9726,
+     "wr_drop": 66.055,
+     "retention": 0.4011,
+     "z": 1.1343
+    },
+    "XAUUSD-H1": {
+     "thr": 41.94080550490024,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 80.0,
+     "wr_drop": 60.9756,
+     "retention": 0.4015,
+     "z": 2.3521
+    },
+    "XAUUSD-H4": {
+     "thr": 39.637951747866474,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 34.28744977123024,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 80.0,
+     "wr_drop": 72.7273,
+     "retention": 0.4054,
+     "z": 0.5062
+    },
+    "EURUSD-M30": {
+     "thr": 35.14660077606341,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 76.0,
+     "wr_drop": 66.6667,
+     "retention": 0.4098,
+     "z": 0.7861
+    }
+   }
+  },
+  {
+   "indicator": "mom_fib_55",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.6,
+   "z_min": -0.0759,
+   "z_mean": 0.4917,
+   "z_max": 2.0671,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -3.0580000000000838,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": -0.6200000000001182,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 74.2857,
+     "wr_drop": 66.6667,
+     "retention": 0.407,
+     "z": 0.7558
+    },
+    "XAUUSD-M30": {
+     "thr": -1.8080000000000382,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 4.727999999999929,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 69.0909,
+     "wr_drop": 68.2927,
+     "retention": 0.4015,
+     "z": 0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": -0.7700000000001193,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": -0.001194000000000051,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 93.3333,
+     "wr_drop": 63.6364,
+     "retention": 0.4054,
+     "z": 2.0671
+    },
+    "EURUSD-M30": {
+     "thr": -0.0014100000000001334,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 72.0,
+     "wr_drop": 69.4444,
+     "retention": 0.4098,
+     "z": 0.2152
+    }
+   }
+  },
+  {
+   "indicator": "rsi_lucas_29",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.6,
+   "z_min": -0.0759,
+   "z_mean": 0.4271,
+   "z_max": 1.2867,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 40.09042702137418,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 43.58097976710368,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 74.2857,
+     "wr_drop": 66.6667,
+     "retention": 0.407,
+     "z": 0.7558
+    },
+    "XAUUSD-M30": {
+     "thr": 43.0110089209801,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 71.2329,
+     "wr_drop": 67.8899,
+     "retention": 0.4011,
+     "z": 0.4789
+    },
+    "XAUUSD-H1": {
+     "thr": 46.518553283311824,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 69.0909,
+     "wr_drop": 68.2927,
+     "retention": 0.4015,
+     "z": 0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": 42.95748981420678,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 42.122354537629185,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 86.6667,
+     "wr_drop": 68.1818,
+     "retention": 0.4054,
+     "z": 1.2867
+    },
+    "EURUSD-M30": {
+     "thr": 40.73515763595882,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 72.0,
+     "wr_drop": 69.4444,
+     "retention": 0.4098,
+     "z": 0.2152
+    }
+   }
+  },
+  {
+   "indicator": "rsi_lucas_47",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.6,
+   "z_min": -0.0759,
+   "z_mean": 0.5744,
+   "z_max": 1.2867,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 46.17529064548518,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 48.83170423238569,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 74.2857,
+     "wr_drop": 66.6667,
+     "retention": 0.407,
+     "z": 0.7558
+    },
+    "XAUUSD-M30": {
+     "thr": 48.13348746899798,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 73.9726,
+     "wr_drop": 66.055,
+     "retention": 0.4011,
+     "z": 1.1343
+    },
+    "XAUUSD-H1": {
+     "thr": 50.00880000436809,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 47.68514596115462,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 48.165350470647304,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 86.6667,
+     "wr_drop": 68.1818,
+     "retention": 0.4054,
+     "z": 1.2867
+    },
+    "EURUSD-M30": {
+     "thr": 47.06699556474068,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 72.0,
+     "wr_drop": 69.4444,
+     "retention": 0.4098,
+     "z": 0.2152
+    }
+   }
+  },
+  {
+   "indicator": "corr_t_fib_3",
+   "direction": "KEEP_LOW",
+   "quantile": 0.4,
+   "z_min": -0.0987,
+   "z_mean": 0.6629,
+   "z_max": 1.8149,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -0.9645488121734098,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 80.0,
+     "wr_drop": 76.6667,
+     "retention": 0.6,
+     "z": 0.3452
+    },
+    "XAUUSD-M15": {
+     "thr": -0.9578313071012178,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 71.1538,
+     "wr_drop": 67.6471,
+     "retention": 0.6047,
+     "z": 0.3462
+    },
+    "XAUUSD-M30": {
+     "thr": -0.9439268357166701,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 74.3119,
+     "wr_drop": 61.6438,
+     "retention": 0.5989,
+     "z": 1.8149
+    },
+    "XAUUSD-H1": {
+     "thr": -0.9430545278320883,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 68.2927,
+     "wr_drop": 69.0909,
+     "retention": 0.5985,
+     "z": -0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": -0.9426637807850335,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 71.4286,
+     "wr_drop": 70.0,
+     "retention": 0.5833,
+     "z": 0.0759
+    },
+    "EURUSD-M15": {
+     "thr": -0.9225961064286607,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 81.8182,
+     "wr_drop": 66.6667,
+     "retention": 0.5946,
+     "z": 1.0547
+    },
+    "EURUSD-M30": {
+     "thr": -0.955403827365381,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 75.6757,
+     "wr_drop": 62.5,
+     "retention": 0.6066,
+     "z": 1.1022
+    }
+   }
+  },
+  {
+   "indicator": "r2_fib_3",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.4,
+   "z_min": -0.0987,
+   "z_mean": 0.6629,
+   "z_max": 1.8149,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 0.9303544818461545,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 80.0,
+     "wr_drop": 76.6667,
+     "retention": 0.6,
+     "z": 0.3452
+    },
+    "XAUUSD-M15": {
+     "thr": 0.9174408128632273,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 71.1538,
+     "wr_drop": 67.6471,
+     "retention": 0.6047,
+     "z": 0.3462
+    },
+    "XAUUSD-M30": {
+     "thr": 0.8909979165124632,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 74.3119,
+     "wr_drop": 61.6438,
+     "retention": 0.5989,
+     "z": 1.8149
+    },
+    "XAUUSD-H1": {
+     "thr": 0.8893525865362881,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 68.2927,
+     "wr_drop": 69.0909,
+     "retention": 0.5985,
+     "z": -0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": 0.8886255166150072,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 71.4286,
+     "wr_drop": 70.0,
+     "retention": 0.5833,
+     "z": 0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 0.8511845153372098,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 81.8182,
+     "wr_drop": 66.6667,
+     "retention": 0.5946,
+     "z": 1.0547
+    },
+    "EURUSD-M30": {
+     "thr": 0.9127964733444187,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 75.6757,
+     "wr_drop": 62.5,
+     "retention": 0.6066,
+     "z": 1.1022
+    }
+   }
+  },
+  {
+   "indicator": "zscore_fib_3",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.4,
+   "z_min": -0.0987,
+   "z_mean": 0.793,
+   "z_max": 1.8149,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -1.367933489774799,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 80.0,
+     "wr_drop": 76.6667,
+     "retention": 0.6,
+     "z": 0.3452
+    },
+    "XAUUSD-M15": {
+     "thr": -1.3762727820682141,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 71.1538,
+     "wr_drop": 67.6471,
+     "retention": 0.6047,
+     "z": 0.3462
+    },
+    "XAUUSD-M30": {
+     "thr": -1.3895237352709775,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 74.3119,
+     "wr_drop": 61.6438,
+     "retention": 0.5989,
+     "z": 1.8149
+    },
+    "XAUUSD-H1": {
+     "thr": -1.3902047384585554,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 68.2927,
+     "wr_drop": 69.0909,
+     "retention": 0.5985,
+     "z": -0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": -1.382436964042004,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 78.5714,
+     "wr_drop": 60.0,
+     "retention": 0.5833,
+     "z": 0.9868
+    },
+    "EURUSD-M15": {
+     "thr": -1.4027177403062479,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 81.8182,
+     "wr_drop": 66.6667,
+     "retention": 0.5946,
+     "z": 1.0547
+    },
+    "EURUSD-M30": {
+     "thr": -1.378936282874321,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 75.6757,
+     "wr_drop": 62.5,
+     "retention": 0.6066,
+     "z": 1.1022
+    }
+   }
+  },
+  {
+   "indicator": "ad",
+   "direction": "KEEP_LOW",
+   "quantile": 0.4,
+   "z_min": -0.134,
+   "z_mean": 0.7221,
+   "z_max": 1.7792,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 438731.9776280611,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 80.0,
+     "wr_drop": 76.6667,
+     "retention": 0.6,
+     "z": 0.3452
+    },
+    "XAUUSD-M15": {
+     "thr": 2237527.4503469463,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 69.2308,
+     "wr_drop": 70.5882,
+     "retention": 0.6047,
+     "z": -0.134
+    },
+    "XAUUSD-M30": {
+     "thr": 559901.8734363464,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 71.5596,
+     "wr_drop": 65.7534,
+     "retention": 0.5989,
+     "z": 0.8318
+    },
+    "XAUUSD-H1": {
+     "thr": 586121.6500542478,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 74.3902,
+     "wr_drop": 60.0,
+     "retention": 0.5985,
+     "z": 1.7792
+    },
+    "XAUUSD-H4": {
+     "thr": 544667.7837703279,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 71.4286,
+     "wr_drop": 70.0,
+     "retention": 0.5833,
+     "z": 0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 436615.12786149804,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 81.8182,
+     "wr_drop": 66.6667,
+     "retention": 0.5946,
+     "z": 1.0547
+    },
+    "EURUSD-M30": {
+     "thr": -195671.91830366588,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 75.6757,
+     "wr_drop": 62.5,
+     "retention": 0.6066,
+     "z": 1.1022
+    }
+   }
+  },
+  {
+   "indicator": "atr_fib_144",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.1764,
+   "z_mean": 0.3042,
+   "z_max": 0.8055,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 1.4912463533114255,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 83.3333,
+     "wr_drop": 75.5556,
+     "retention": 0.4,
+     "z": 0.8055
+    },
+    "XAUUSD-M15": {
+     "thr": 2.0969992566482367,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 74.2857,
+     "wr_drop": 66.6667,
+     "retention": 0.407,
+     "z": 0.7558
+    },
+    "XAUUSD-M30": {
+     "thr": 2.0060321594993162,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 68.4932,
+     "wr_drop": 69.7248,
+     "retention": 0.4011,
+     "z": -0.1764
+    },
+    "XAUUSD-H1": {
+     "thr": 2.883133915332039,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 69.0909,
+     "wr_drop": 68.2927,
+     "retention": 0.4015,
+     "z": 0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": 7.75640063980156,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 0.0006478739721141821,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 80.0,
+     "wr_drop": 72.7273,
+     "retention": 0.4054,
+     "z": 0.5062
+    },
+    "EURUSD-M30": {
+     "thr": 0.0010927647583648913,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 72.0,
+     "wr_drop": 69.4444,
+     "retention": 0.4098,
+     "z": 0.2152
+    }
+   }
+  },
+  {
+   "indicator": "atr_fib_233",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.1764,
+   "z_mean": 0.5165,
+   "z_max": 1.3809,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 1.5204551939786064,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 86.6667,
+     "wr_drop": 73.3333,
+     "retention": 0.4,
+     "z": 1.3809
+    },
+    "XAUUSD-M15": {
+     "thr": 2.0671286673852802,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 74.2857,
+     "wr_drop": 66.6667,
+     "retention": 0.407,
+     "z": 0.7558
+    },
+    "XAUUSD-M30": {
+     "thr": 2.005847564066261,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 68.4932,
+     "wr_drop": 69.7248,
+     "retention": 0.4011,
+     "z": -0.1764
+    },
+    "XAUUSD-H1": {
+     "thr": 2.940622117853202,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 69.0909,
+     "wr_drop": 68.2927,
+     "retention": 0.4015,
+     "z": 0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": 7.786471891121027,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 80.0,
+     "wr_drop": 64.2857,
+     "retention": 0.4167,
+     "z": 0.835
+    },
+    "EURUSD-M15": {
+     "thr": 0.0006149575838824536,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 80.0,
+     "wr_drop": 72.7273,
+     "retention": 0.4054,
+     "z": 0.5062
+    },
+    "EURUSD-M30": {
+     "thr": 0.0010743351278144863,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 72.0,
+     "wr_drop": 69.4444,
+     "retention": 0.4098,
+     "z": 0.2152
+    }
+   }
+  },
+  {
+   "indicator": "laguerre_rsi",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.1764,
+   "z_mean": 1.0899,
+   "z_max": 2.8917,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 0.0,
+     "n_keep": 43,
+     "n_drop": 32,
+     "wr_keep": 83.7209,
+     "wr_drop": 71.875,
+     "retention": 0.5733,
+     "z": 1.2386
+    },
+    "XAUUSD-M15": {
+     "thr": 2.14115349158764,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 71.4286,
+     "wr_drop": 68.6275,
+     "retention": 0.407,
+     "z": 0.2779
+    },
+    "XAUUSD-M30": {
+     "thr": 6.02274427844215,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 68.4932,
+     "wr_drop": 69.7248,
+     "retention": 0.4011,
+     "z": -0.1764
+    },
+    "XAUUSD-H1": {
+     "thr": 10.053389638187802,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": 0.0,
+     "n_keep": 11,
+     "n_drop": 13,
+     "wr_keep": 100.0,
+     "wr_drop": 46.1538,
+     "retention": 0.4583,
+     "z": 2.8917
+    },
+    "EURUSD-M15": {
+     "thr": 0.0,
+     "n_keep": 26,
+     "n_drop": 11,
+     "wr_keep": 80.7692,
+     "wr_drop": 63.6364,
+     "retention": 0.7027,
+     "z": 1.1102
+    },
+    "EURUSD-M30": {
+     "thr": 0.0,
+     "n_keep": 29,
+     "n_drop": 32,
+     "wr_keep": 79.3103,
+     "wr_drop": 62.5,
+     "retention": 0.4754,
+     "z": 1.4376
+    }
+   }
+  },
+  {
+   "indicator": "tema_fib_233",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.1764,
+   "z_mean": 0.7251,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2365.246937516007,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1873.6742352212118,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1303.3998804735804,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 68.4932,
+     "wr_drop": 69.7248,
+     "retention": 0.4011,
+     "z": -0.1764
+    },
+    "XAUUSD-H1": {
+     "thr": 1296.075157683211,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1448.227022848713,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1185992757473866,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 80.0,
+     "wr_drop": 72.7273,
+     "retention": 0.4054,
+     "z": 0.5062
+    },
+    "EURUSD-M30": {
+     "thr": 1.1890265019575117,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "zscore_fib_55",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.3,
+   "z_min": -0.1917,
+   "z_mean": 0.7252,
+   "z_max": 2.1253,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -2.8930910054905694,
+     "n_keep": 52,
+     "n_drop": 23,
+     "wr_keep": 80.7692,
+     "wr_drop": 73.913,
+     "retention": 0.6933,
+     "z": 0.6683
+    },
+    "XAUUSD-M15": {
+     "thr": -2.435397030846686,
+     "n_keep": 60,
+     "n_drop": 26,
+     "wr_keep": 71.6667,
+     "wr_drop": 65.3846,
+     "retention": 0.6977,
+     "z": 0.5826
+    },
+    "XAUUSD-M30": {
+     "thr": -2.5922627061555037,
+     "n_keep": 127,
+     "n_drop": 55,
+     "wr_keep": 74.0157,
+     "wr_drop": 58.1818,
+     "retention": 0.6978,
+     "z": 2.1253
+    },
+    "XAUUSD-H1": {
+     "thr": -1.6437425869168603,
+     "n_keep": 96,
+     "n_drop": 41,
+     "wr_keep": 72.9167,
+     "wr_drop": 58.5366,
+     "retention": 0.7007,
+     "z": 1.6609
+    },
+    "XAUUSD-H4": {
+     "thr": -2.2012885200118992,
+     "n_keep": 17,
+     "n_drop": 7,
+     "wr_keep": 70.5882,
+     "wr_drop": 71.4286,
+     "retention": 0.7083,
+     "z": -0.0412
+    },
+    "EURUSD-M15": {
+     "thr": -2.8506641676418436,
+     "n_keep": 26,
+     "n_drop": 11,
+     "wr_keep": 76.9231,
+     "wr_drop": 72.7273,
+     "retention": 0.7027,
+     "z": 0.2719
+    },
+    "EURUSD-M30": {
+     "thr": -2.8542955981282265,
+     "n_keep": 43,
+     "n_drop": 18,
+     "wr_keep": 69.7674,
+     "wr_drop": 72.2222,
+     "retention": 0.7049,
+     "z": -0.1917
+    }
+   }
+  },
+  {
+   "indicator": "cmo_fib_13",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2001,
+   "z_mean": 0.74,
+   "z_max": 2.6568,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -66.06944110474225,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 83.3333,
+     "wr_drop": 75.5556,
+     "retention": 0.4,
+     "z": 0.8055
+    },
+    "XAUUSD-M15": {
+     "thr": -55.825864276568254,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 68.5714,
+     "wr_drop": 70.5882,
+     "retention": 0.407,
+     "z": -0.2001
+    },
+    "XAUUSD-M30": {
+     "thr": -50.35052998948098,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": -42.457989204977345,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": -50.659003330341584,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 100.0,
+     "wr_drop": 50.0,
+     "retention": 0.4167,
+     "z": 2.6568
+    },
+    "EURUSD-M15": {
+     "thr": -65.48649528148613,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 80.0,
+     "wr_drop": 72.7273,
+     "retention": 0.4054,
+     "z": 0.5062
+    },
+    "EURUSD-M30": {
+     "thr": -63.421052631578064,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 76.0,
+     "wr_drop": 66.6667,
+     "retention": 0.4098,
+     "z": 0.7861
+    }
+   }
+  },
+  {
+   "indicator": "rsi_lucas_7",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2001,
+   "z_mean": 0.5676,
+   "z_max": 1.7459,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 14.365896674157195,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 16.579173962111952,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 68.5714,
+     "wr_drop": 70.5882,
+     "retention": 0.407,
+     "z": -0.2001
+    },
+    "XAUUSD-M30": {
+     "thr": 18.665350539704587,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 72.6027,
+     "wr_drop": 66.9725,
+     "retention": 0.4011,
+     "z": 0.8066
+    },
+    "XAUUSD-H1": {
+     "thr": 21.378218543381262,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 69.0909,
+     "wr_drop": 68.2927,
+     "retention": 0.4015,
+     "z": 0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": 18.917781818698476,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 90.0,
+     "wr_drop": 57.1429,
+     "retention": 0.4167,
+     "z": 1.7459
+    },
+    "EURUSD-M15": {
+     "thr": 13.379503541650422,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 80.0,
+     "wr_drop": 72.7273,
+     "retention": 0.4054,
+     "z": 0.5062
+    },
+    "EURUSD-M30": {
+     "thr": 13.482559752207933,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 76.0,
+     "wr_drop": 66.6667,
+     "retention": 0.4098,
+     "z": 0.7861
+    }
+   }
+  },
+  {
+   "indicator": "cmo_fib_144",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.4,
+   "z_min": -0.2301,
+   "z_mean": 0.91,
+   "z_max": 2.8262,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 6.638901328192216,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 77.7778,
+     "wr_drop": 80.0,
+     "retention": 0.6,
+     "z": -0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 7.162838009663483,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 73.0769,
+     "wr_drop": 64.7059,
+     "retention": 0.6047,
+     "z": 0.8264
+    },
+    "XAUUSD-M30": {
+     "thr": 8.047933210271873,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 68.8073,
+     "wr_drop": 69.863,
+     "retention": 0.5989,
+     "z": -0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 6.710168134507597,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 69.5122,
+     "wr_drop": 67.2727,
+     "retention": 0.5985,
+     "z": 0.2769
+    },
+    "XAUUSD-H4": {
+     "thr": 5.989285386322767,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 78.5714,
+     "wr_drop": 60.0,
+     "retention": 0.5833,
+     "z": 0.9868
+    },
+    "EURUSD-M15": {
+     "thr": 7.76456496093223,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 86.3636,
+     "wr_drop": 60.0,
+     "retention": 0.5946,
+     "z": 1.8351
+    },
+    "EURUSD-M30": {
+     "thr": 7.407856450048475,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 83.7838,
+     "wr_drop": 50.0,
+     "retention": 0.6066,
+     "z": 2.8262
+    }
+   }
+  },
+  {
+   "indicator": "cmo_fib_55",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.4,
+   "z_min": -0.2301,
+   "z_mean": 0.4515,
+   "z_max": 1.8351,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -13.734970250073355,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 77.7778,
+     "wr_drop": 80.0,
+     "retention": 0.6,
+     "z": -0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": -5.1845342706502295,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 73.0769,
+     "wr_drop": 64.7059,
+     "retention": 0.6047,
+     "z": 0.8264
+    },
+    "XAUUSD-M30": {
+     "thr": -7.916080665622496,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 68.8073,
+     "wr_drop": 69.863,
+     "retention": 0.5989,
+     "z": -0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": -0.9309271770233617,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 69.5122,
+     "wr_drop": 67.2727,
+     "retention": 0.5985,
+     "z": 0.2769
+    },
+    "XAUUSD-H4": {
+     "thr": -2.516899199659334,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 71.4286,
+     "wr_drop": 70.0,
+     "retention": 0.5833,
+     "z": 0.0759
+    },
+    "EURUSD-M15": {
+     "thr": -14.070964865986674,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 86.3636,
+     "wr_drop": 60.0,
+     "retention": 0.5946,
+     "z": 1.8351
+    },
+    "EURUSD-M30": {
+     "thr": -10.083194675540424,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 72.973,
+     "wr_drop": 66.6667,
+     "retention": 0.6066,
+     "z": 0.5276
+    }
+   }
+  },
+  {
+   "indicator": "mom_fib_144",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.4,
+   "z_min": -0.2301,
+   "z_mean": 0.7066,
+   "z_max": 2.6156,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 8.98600000000015,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 77.7778,
+     "wr_drop": 80.0,
+     "retention": 0.6,
+     "z": -0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 11.460000000000036,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 71.1538,
+     "wr_drop": 67.6471,
+     "retention": 0.6047,
+     "z": 0.3462
+    },
+    "XAUUSD-M30": {
+     "thr": 11.12399999999998,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 68.8073,
+     "wr_drop": 69.863,
+     "retention": 0.5989,
+     "z": -0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 14.162000000000036,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 69.5122,
+     "wr_drop": 67.2727,
+     "retention": 0.5985,
+     "z": 0.2769
+    },
+    "XAUUSD-H4": {
+     "thr": 36.259999999999856,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 78.5714,
+     "wr_drop": 60.0,
+     "retention": 0.5833,
+     "z": 0.9868
+    },
+    "EURUSD-M15": {
+     "thr": 0.0037479999999999515,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 90.9091,
+     "wr_drop": 53.3333,
+     "retention": 0.5946,
+     "z": 2.6156
+    },
+    "EURUSD-M30": {
+     "thr": 0.005430000000000046,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 75.6757,
+     "wr_drop": 62.5,
+     "retention": 0.6066,
+     "z": 1.1022
+    }
+   }
+  },
+  {
+   "indicator": "roc_fib_34",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.4,
+   "z_min": -0.2301,
+   "z_mean": 0.7252,
+   "z_max": 1.7792,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": -0.280690855451008,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 77.7778,
+     "wr_drop": 80.0,
+     "retention": 0.6,
+     "z": -0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": -0.31761841522797746,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 73.0769,
+     "wr_drop": 64.7059,
+     "retention": 0.6047,
+     "z": 0.8264
+    },
+    "XAUUSD-M30": {
+     "thr": -0.5926025713640718,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 73.3945,
+     "wr_drop": 63.0137,
+     "retention": 0.5989,
+     "z": 1.4872
+    },
+    "XAUUSD-H1": {
+     "thr": -0.428484443397595,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 74.3902,
+     "wr_drop": 60.0,
+     "retention": 0.5985,
+     "z": 1.7792
+    },
+    "XAUUSD-H4": {
+     "thr": -1.8853065473453345,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 78.5714,
+     "wr_drop": 60.0,
+     "retention": 0.5833,
+     "z": 0.9868
+    },
+    "EURUSD-M15": {
+     "thr": -0.24697004686589236,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 77.2727,
+     "wr_drop": 73.3333,
+     "retention": 0.5946,
+     "z": 0.2742
+    },
+    "EURUSD-M30": {
+     "thr": -0.47441885974935577,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 70.2703,
+     "wr_drop": 70.8333,
+     "retention": 0.6066,
+     "z": -0.0471
+    }
+   }
+  },
+  {
+   "indicator": "rsi_lucas_11",
+   "direction": "KEEP_LOW",
+   "quantile": 0.4,
+   "z_min": -0.2301,
+   "z_mean": 0.2535,
+   "z_max": 0.5276,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 23.666639835912964,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 77.7778,
+     "wr_drop": 80.0,
+     "retention": 0.6,
+     "z": -0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 27.861948395535876,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 71.1538,
+     "wr_drop": 67.6471,
+     "retention": 0.6047,
+     "z": 0.3462
+    },
+    "XAUUSD-M30": {
+     "thr": 28.971210265855365,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 70.6422,
+     "wr_drop": 67.1233,
+     "retention": 0.5989,
+     "z": 0.5041
+    },
+    "XAUUSD-H1": {
+     "thr": 32.855210790722424,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 69.5122,
+     "wr_drop": 67.2727,
+     "retention": 0.5985,
+     "z": 0.2769
+    },
+    "XAUUSD-H4": {
+     "thr": 28.951217430898765,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 71.4286,
+     "wr_drop": 70.0,
+     "retention": 0.5833,
+     "z": 0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 23.464263764547724,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 77.2727,
+     "wr_drop": 73.3333,
+     "retention": 0.5946,
+     "z": 0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 23.30935071955794,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 72.973,
+     "wr_drop": 66.6667,
+     "retention": 0.6066,
+     "z": 0.5276
+    }
+   }
+  },
+  {
+   "indicator": "rsi_lucas_47",
+   "direction": "KEEP_HIGH",
+   "quantile": 0.4,
+   "z_min": -0.2301,
+   "z_mean": 0.528,
+   "z_max": 1.8351,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 45.216731048156355,
+     "n_keep": 45,
+     "n_drop": 30,
+     "wr_keep": 77.7778,
+     "wr_drop": 80.0,
+     "retention": 0.6,
+     "z": -0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 47.72886697763414,
+     "n_keep": 52,
+     "n_drop": 34,
+     "wr_keep": 73.0769,
+     "wr_drop": 64.7059,
+     "retention": 0.6047,
+     "z": 0.8264
+    },
+    "XAUUSD-M30": {
+     "thr": 47.1029019369183,
+     "n_keep": 109,
+     "n_drop": 73,
+     "wr_keep": 68.8073,
+     "wr_drop": 69.863,
+     "retention": 0.5989,
+     "z": -0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 48.74002951932725,
+     "n_keep": 82,
+     "n_drop": 55,
+     "wr_keep": 68.2927,
+     "wr_drop": 69.0909,
+     "retention": 0.5985,
+     "z": -0.0987
+    },
+    "XAUUSD-H4": {
+     "thr": 46.76093490570004,
+     "n_keep": 14,
+     "n_drop": 10,
+     "wr_keep": 78.5714,
+     "wr_drop": 60.0,
+     "retention": 0.5833,
+     "z": 0.9868
+    },
+    "EURUSD-M15": {
+     "thr": 47.27997351937961,
+     "n_keep": 22,
+     "n_drop": 15,
+     "wr_keep": 86.3636,
+     "wr_drop": 60.0,
+     "retention": 0.5946,
+     "z": 1.8351
+    },
+    "EURUSD-M30": {
+     "thr": 46.073918792958125,
+     "n_keep": 37,
+     "n_drop": 24,
+     "wr_keep": 72.973,
+     "wr_drop": 66.6667,
+     "retention": 0.6066,
+     "z": 0.5276
+    }
+   }
+  },
+  {
+   "indicator": "alma",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2360.6305803248333,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1865.4566011224704,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1299.6242204301345,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1299.7050633393258,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1445.864371404029,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1164605769173386,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.187086835847018,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "bbi",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2360.470354166667,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1865.2422916666667,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1298.3731666666665,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1298.4493750000001,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1445.5583333333334,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1164072291666667,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1867982291666666,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "chandelier",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2361.773141163654,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1865.8743269096594,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1296.628720847584,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1298.300317571674,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1443.5571315770364,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.116472444926138,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1859540354680427,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "chop_fib_21",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.7192,
+   "z_max": 1.3809,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 37.93258211001534,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 86.6667,
+     "wr_drop": 73.3333,
+     "retention": 0.4,
+     "z": 1.3809
+    },
+    "XAUUSD-M15": {
+     "thr": 42.37877547741815,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 77.1429,
+     "wr_drop": 64.7059,
+     "retention": 0.407,
+     "z": 1.2337
+    },
+    "XAUUSD-M30": {
+     "thr": 43.50250828358485,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 73.9726,
+     "wr_drop": 66.055,
+     "retention": 0.4011,
+     "z": 1.1343
+    },
+    "XAUUSD-H1": {
+     "thr": 46.90014368997372,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": 46.117400909147186,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 36.85100352064901,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 39.23625058591039,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 76.0,
+     "wr_drop": 66.6667,
+     "retention": 0.4098,
+     "z": 0.7861
+    }
+   }
+  },
+  {
+   "indicator": "dema",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2360.599039656918,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1864.585017894071,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1299.1185590289588,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1299.6569372383437,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1445.52861898908,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1162349376596865,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1868194360920734,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_13",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2359.651533107453,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1863.335244656185,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1297.5822924781655,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1297.8766646613283,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1442.4055982204504,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1160498657058857,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1861724727171037,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_144",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6672,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2364.0069074931407,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1872.3432335488549,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1301.179027034478,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 68.4932,
+     "wr_drop": 69.7248,
+     "retention": 0.4011,
+     "z": -0.1764
+    },
+    "XAUUSD-H1": {
+     "thr": 1297.2107285176437,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": 1447.7703457637947,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1181795185414807,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.188758506541451,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_21",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2360.6977461101387,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1864.7499124890041,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1299.2820459607785,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1299.9034394125208,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1445.91608826269,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.11625833547404,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1868899885520392,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_233",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6672,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2363.448834905869,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1871.6004538148647,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1301.3533180456004,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 68.4932,
+     "wr_drop": 69.7248,
+     "retention": 0.4011,
+     "z": -0.1764
+    },
+    "XAUUSD-H1": {
+     "thr": 1290.6276030496485,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": 1432.4739830425845,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1172861841290247,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.188902419907652,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_3",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.714,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2357.744829198495,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1860.4186664790227,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1294.154434469371,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1291.4032809573841,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": 1434.4907372579617,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1156854918134493,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1838796824576583,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_34",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2361.48700741825,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1866.5593787407938,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1300.81823510408,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1301.8140392015498,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1450.177838134668,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1167714644830344,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1875133999191358,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_5",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.714,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2358.1394238882076,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1861.2584909351096,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1294.7876083248902,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1294.4772095832743,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 72.7273,
+     "wr_drop": 65.8537,
+     "retention": 0.4015,
+     "z": 0.8498
+    },
+    "XAUUSD-H4": {
+     "thr": 1437.0652356439975,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1157584454022456,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1846653341616178,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_55",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2362.1629152452974,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1868.6691272222638,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1301.9043754468814,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1301.6666958268413,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1454.7030090361643,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1175546611494862,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.187950652574176,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_8",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2358.706110193684,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1862.2236741730628,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1295.5879673214447,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1296.7408580287374,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1439.4937123182926,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.1158723637955787,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1854117442052705,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "dema_fib_89",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2363.1598623435843,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1871.0982996918458,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1302.0823917023656,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1299.684153107421,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1455.8676343219788,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.118120949662509,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1883315554923606,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "donchian_mid",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2361.149,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1865.605,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1296.975,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1297.775,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1448.001,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.116551,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1856849999999999,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "donchmid_fib_13",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6604,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2360.887,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1864.675,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1296.975,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 69.863,
+     "wr_drop": 68.8073,
+     "retention": 0.4011,
+     "z": 0.1512
+    },
+    "XAUUSD-H1": {
+     "thr": 1297.331,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1444.881,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.116441,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.1856849999999999,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  },
+  {
+   "indicator": "donchmid_fib_144",
+   "direction": "KEEP_LOW",
+   "quantile": 0.6,
+   "z_min": -0.2742,
+   "z_mean": 0.6136,
+   "z_max": 2.1896,
+   "n_cards": 7,
+   "per_card": {
+    "XAUUSD-M5": {
+     "thr": 2356.5480000000002,
+     "n_keep": 30,
+     "n_drop": 45,
+     "wr_keep": 80.0,
+     "wr_drop": 77.7778,
+     "retention": 0.4,
+     "z": 0.2301
+    },
+    "XAUUSD-M15": {
+     "thr": 1856.2,
+     "n_keep": 35,
+     "n_drop": 51,
+     "wr_keep": 82.8571,
+     "wr_drop": 60.7843,
+     "retention": 0.407,
+     "z": 2.1896
+    },
+    "XAUUSD-M30": {
+     "thr": 1292.754,
+     "n_keep": 73,
+     "n_drop": 109,
+     "wr_keep": 68.4932,
+     "wr_drop": 69.7248,
+     "retention": 0.4011,
+     "z": -0.1764
+    },
+    "XAUUSD-H1": {
+     "thr": 1284.926,
+     "n_keep": 55,
+     "n_drop": 82,
+     "wr_keep": 70.9091,
+     "wr_drop": 67.0732,
+     "retention": 0.4015,
+     "z": 0.4743
+    },
+    "XAUUSD-H4": {
+     "thr": 1413.9260000000002,
+     "n_keep": 10,
+     "n_drop": 14,
+     "wr_keep": 70.0,
+     "wr_drop": 71.4286,
+     "retention": 0.4167,
+     "z": -0.0759
+    },
+    "EURUSD-M15": {
+     "thr": 1.115378,
+     "n_keep": 15,
+     "n_drop": 22,
+     "wr_keep": 73.3333,
+     "wr_drop": 77.2727,
+     "retention": 0.4054,
+     "z": -0.2742
+    },
+    "EURUSD-M30": {
+     "thr": 1.184745,
+     "n_keep": 25,
+     "n_drop": 36,
+     "wr_keep": 84.0,
+     "wr_drop": 61.1111,
+     "retention": 0.4098,
+     "z": 1.9277
+    }
+   }
+  }
+ ]
+}
