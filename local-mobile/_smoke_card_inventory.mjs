@@ -21,7 +21,6 @@
 //  اجرا:  cd local-mobile && node _smoke_card_inventory.mjs
 // =============================================================================
 
-import { build } from 'esbuild'
 import { pathToFileURL } from 'node:url'
 import { readFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
@@ -29,6 +28,12 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
+
+// esbuild داخلِ web_tool/node_modules نصب است و پوشهٔ local-mobile اصلاً
+// node_modules ندارد (عمداً — تا گوشی به npm install نیاز نداشته باشد). پس
+// دقیقاً مثلِ build.mjs با مسیرِ مطلق import می‌شود، نه با نامِ بسته.
+const esbuildPath = join(ROOT, 'web_tool', 'node_modules', 'esbuild', 'lib', 'main.js')
+const { build } = await import(pathToFileURL(esbuildPath).href)
 
 // شمارشِ مرجع: وضعیتِ کارت‌ها **پیش از** حذفِ S323 (از تاریخچهٔ گیت استخراج
 // شده، نه از حافظه). سه کارتِ زیر باید دقیقاً یکی کم کنند و بقیه دست‌نخورده
