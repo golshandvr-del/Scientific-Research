@@ -356,7 +356,15 @@ def run_card(asset, tf, n_perm=N_PERM, seed=366, save=True, gate=True):
     h1 = float(np.nanmean([a for a, _ in halves]))
     h2 = float(np.nanmean([b for _, b in halves]))
     tot = int(sum(m_["n"] for m_ in members))
-    print(f"  OBSERVED family mean R = {fam:+.4f}   alive={n_alive}/12  Σn={tot:,}")
+    # ⚠️ اندازهٔ خانواده باید *محاسبه* شود، نه ثابتِ نوشته‌شده در کد. S367 همین
+    # فایل را با FAM_S سه‌تایی وارد می‌کند (۱۸ عضو، نه ۱۲)؛ عددِ ثابت باعث می‌شد
+    # گزارش «alive=18/12» بدهد و مهم‌تر، `n_members_total`ِ ذخیره‌شده — که همان
+    # عددی است که به‌عنوان مسیرِ چندگانگی به دروازهٔ H5 داده می‌شود — کمتر از
+    # فضای واقعیِ جست‌وجو ثبت شود. کم‌گزارشیِ چندگانگی دقیقاً همان کاری است که
+    # پیش‌ثبت برای جلوگیری از آن وجود دارد، پس این عدد نباید دستی نوشته شود.
+    n_total_fam = len(FAM_K) * len(FAM_M) * len(FAM_S)
+    print(f"  OBSERVED family mean R = {fam:+.4f}"
+          f"   alive={n_alive}/{n_total_fam}  Σn={tot:,}")
     print(f"           member range   = [{min(obsR):+.4f}, {max(obsR):+.4f}]")
     print(f"           halves         = ({h1:+.4f}, {h2:+.4f})")
     print(f"           mean burden b  = {np.mean(burdens):.4f}"
@@ -404,7 +412,7 @@ def run_card(asset, tf, n_perm=N_PERM, seed=366, save=True, gate=True):
           flush=True)
 
     res = dict(asset=asset, tf=tf, bars=n, gate=gate, max_hold=mh,
-               n_members_alive=n_alive, n_members_total=12, n_total_trades=tot,
+               n_members_alive=n_alive, n_members_total=n_total_fam, n_total_trades=tot,
                fam_meanR=round(fam, 4), null_meanR=round(nullm, 4),
                sd=round(sd, 4), lift=round(fam - nullm, 4), z=round(z, 3),
                p_perm=round(p, 4), burden_mean=round(float(np.mean(burdens)), 4),
