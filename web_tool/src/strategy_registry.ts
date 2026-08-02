@@ -310,7 +310,8 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s328Layer(S328_CFG['XAUUSD-M5']),
     s334Layer(S334_CFG['XAUUSD-M5']),    // احیای s122 — MR-fade فروش + گیتِ Hurst<0.5/Kurt<1.8 — RQS+=81.6 (WR 61.7% · PF 1.61)
     s335Layer(S335_CFG['XAUUSD-M5']),    // S335 — Reflex zero-up چرخهٔ اِهلرز، خریدِ کفِ چرخه — RQS+=92.2 (WR 62.7% · PF 2.22) · همپوشانیِ صفر با S333
-    s327Layer(SELL_CLIMAX_CFG['XAUUSD-M5']),
+    // ⚰️ S327 حذف شد (RQS2=21.5 · سد=70) — سند: results/S327_SellClimaxReversalRejudged_…_rqs2-29.md
+    //    معاوضهٔ هندسه‌–شواهد: RR=0.371 ⇒ WR 88.6% ولی H2 حسابیاً رد؛ RR=0.52 ⇒ WR 75.0% ولی z افت به 2.83.
     s326Layer(STREAK_REV_CFG['XAUUSD-M5']),
   ],
   'XAUUSD-M15': [
@@ -332,7 +333,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s313Layer(S313_M30),
     s324Layer(S324_CFG['XAUUSD-M30']),
     s321Layer(S321_CFG['XAUUSD-M30']),
-    s327Layer(SELL_CLIMAX_CFG['XAUUSD-M30']),
+    // ⚰️ S327 حذف شد (RQS2=22.2 · سد=70) — نزدیک‌ترین شکستِ H2 کلِ لایه: مازاد +2.90pp در برابرِ کفِ 3.00pp.
     s326Layer(STREAK_REV_CFG['XAUUSD-M30']),
     s323Layer(S323_CFG['XAUUSD-M30']),
     s312Layer(295, 295, 36),
@@ -347,7 +348,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s333Layer(S333_CFG['XAUUSD-H1']),    // احیای S79 — pullback (ورودِ مستقیم + ER) — RQS+=89.8 (WR 62.2% · PF 1.85)
     s313Layer(S313_H1),
     s328Layer(S328_CFG['XAUUSD-H1']),
-    s327Layer(SELL_CLIMAX_CFG['XAUUSD-H1']),
+    // ⚰️ S327 حذف شد (RQS2=15.4 · سد=70) — شش دروازه شکست؛ z=1.81 در هندسهٔ قانونی.
     s323Layer(S323_CFG['XAUUSD-H1']),
     s335Layer(S335_CFG['XAUUSD-H1']),   // S335 — Reflex dip-turn + گیتِ Chop<38.2 — RQS+=89.7 (WR 61.2% · PF 1.85) · همپوشانیِ صفر با S333
     s312Layer(395, 395, 24),
@@ -355,7 +356,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
   'XAUUSD-H4': [
     s340Layer(S340_CFG['XAUUSD-H4']),   // S340 — Brooks Micro-Channel، ادامهٔ روند/failed-pullback — RQS+=92.6 (WR 65.6% · PF 2.13) · همپوشانی S327=0%/S332=8.2%
     s332Layer(S332_CFG['XAUUSD-H4']),   // احیای squeeze با فیلترِ ADX/DI — RQS+=92.1
-    s327Layer(SELL_CLIMAX_CFG['XAUUSD-H4']),
+    // ⚰️ S327 حذف شد (RQS2=18.8 · سد=70) — بدترین کارت: z=0.12، یعنی از ورودِ تصادفی تفکیک‌ناپذیر.
   ],
   'EURUSD-M5': [
     s334Layer(S334_CFG['EURUSD-M5']),    // احیای s122 — MR-fade فروش + گیتِ Hurst<0.52/Kurt<2.2 — RQS+=84.1 (WR 66.7% · PF 1.62)
@@ -365,7 +366,7 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
   ],
   'EURUSD-M30': [
     s345Layer(S345_CFG['EURUSD-M30']),   // S345 — Brooks فصلِ ۲۴ reversal-day چرخشِ روندِ روز SHORT — RQS+=91.7 (WR 62.5% · PF 2.38 · +$2,281.6) · همپوشانی 30.6% · نخستین SHORT این کارت
-    s327Layer(SELL_CLIMAX_CFG['EURUSD-M30']),
+    // ⚰️ S327 حذف شد (RQS2=14.3 · سد=70) — هفت دروازه شکست؛ در خانوادهٔ قانونی لیفتِ **منفی**.
   ],
 }
 
