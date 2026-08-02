@@ -116,13 +116,18 @@ def pooled_trades(asset, tf):
                         if tr is None or len(tr) < MIN_TRADES:
                             continue
                         n_alive += 1
-                        eb = tr["entry_bar"].values.astype(int)
-                        sl_u = slv[eb - 1]
+                        # ⚠️ `sl_pip`ِ خودِ موتور استفاده می‌شود، نه `slv[eb-1]`:
+                        # موتور همان عددی را برمی‌گرداند که واقعاً با آن معامله را
+                        # بست، و در حالتِ stop بارِ ورود چند کندل پس از بارِ ماشه
+                        # است — پس ایندکس‌گذاریِ دستی می‌توانست بریکتِ اشتباه
+                        # (مالِ زمینهٔ بعدی) را بردارد. تکِ حقیقت باید یکی باشد.
+                        sl_u = tr["sl_pip"].values.astype(float)
                         ok = sl_u > 0
                         R.extend((tr["pnl_pip"].values[ok] / sl_u[ok]).tolist())
                         B.extend((c / sl_u[ok]).tolist())
                         MID.extend([f"k{k}f{f}g{g}s{s}{mode}"] * int(ok.sum()))
-                        SIGN.extend(np.where(tr["side"].values[ok] == "long", 1, -1).tolist())
+                        SIGN.extend(np.where(tr["direction"].values[ok] == "long",
+                                             1, -1).tolist())
     return (np.asarray(R), np.asarray(B), np.asarray(MID), np.asarray(SIGN),
             n_alive, c)
 
