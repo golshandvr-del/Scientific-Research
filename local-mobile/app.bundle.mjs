@@ -4585,115 +4585,6 @@ function decideS313(cfg, a, open, high, low, close, capital = 1e4, riskPct = 1) 
   };
 }
 
-// ../web_tool/src/sell_climax_s327.ts
-var SELL_CLIMAX_CFG = {
-  "XAUUSD-M5": { kBody: 1.6, brMin: 0.6, streakN: 2, rsiMax: 30, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 3.5, tpMult: 1.3, maxHold: 24 },
-  "XAUUSD-M15": { kBody: 2.5, brMin: 0.45, streakN: 3, rsiMax: 35, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 2.8, tpMult: 1, maxHold: 16 },
-  "XAUUSD-M30": { kBody: 2.5, brMin: 0.45, streakN: 2, rsiMax: 35, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 2.4, tpMult: 1, maxHold: 16 },
-  "XAUUSD-H1": { kBody: 1.6, brMin: 0.6, streakN: 3, rsiMax: 42, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 2.8, tpMult: 1, maxHold: 48 },
-  "XAUUSD-H4": { kBody: 2.5, brMin: 0.6, streakN: 0, rsiMax: 35, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 3.5, tpMult: 1.3, maxHold: 24 },
-  "EURUSD-M30": { kBody: 1.6, brMin: 0.6, streakN: 2, rsiMax: 30, emaTrend: 200, atrP: 14, bodyMaLen: 20, slMult: 2, tpMult: 0.7, maxHold: 16 }
-};
-function downStreak2(open, close) {
-  let run = 0;
-  for (let i = 0; i < close.length; i++) {
-    if (close[i] < open[i]) run++;
-    else run = 0;
-  }
-  return run;
-}
-function computeSellClimax(candles, cfg) {
-  const n = candles.length;
-  const need = Math.max(cfg.emaTrend, cfg.atrP, cfg.bodyMaLen) + cfg.streakN + 2;
-  const empty = {
-    active: false,
-    approaching: false,
-    streak: 0,
-    rsiVal: NaN,
-    atrVal: NaN,
-    aboveTrend: false,
-    bodyVal: NaN,
-    bodyMa: NaN,
-    bodyRatio: NaN,
-    isClimax: false,
-    reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC RSI/EMA200/ATR/\u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0628\u062F\u0646\u0647 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A."
-  };
-  if (n < need) return empty;
-  const open = candles.map((c) => c.open);
-  const close = candles.map((c) => c.close);
-  const high = candles.map((c) => c.high);
-  const low = candles.map((c) => c.low);
-  const rsiArr = rsi(close, 14);
-  const emaArr2 = ema(close, cfg.emaTrend);
-  const atrArr = atr(candles, cfg.atrP);
-  const i = n - 1;
-  if ([rsiArr[i], emaArr2[i], atrArr[i]].some((v) => Number.isNaN(v)) || !(atrArr[i] > 0)) return empty;
-  const pNow = close[i];
-  const bodyVal = Math.abs(close[i] - open[i]);
-  const rng = Math.max(high[i] - low[i], 1e-12);
-  const bodyRatio = bodyVal / rng;
-  const isBear2 = close[i] < open[i];
-  let bodyMa = NaN;
-  if (i - 1 >= cfg.bodyMaLen) {
-    let s = 0;
-    for (let k = i - cfg.bodyMaLen; k <= i - 1; k++) s += Math.abs(close[k] - open[k]);
-    bodyMa = s / cfg.bodyMaLen;
-  }
-  const streak = downStreak2(open, close);
-  const aboveTrend = pNow > emaArr2[i];
-  const rsiVal = rsiArr[i];
-  const atrVal = atrArr[i];
-  const bodyOk = Number.isFinite(bodyMa) && bodyMa > 0 && bodyVal >= cfg.kBody * bodyMa;
-  const brOk = cfg.brMin <= 0 || bodyRatio >= cfg.brMin;
-  const streakOk = cfg.streakN <= 0 || streak >= cfg.streakN;
-  const isClimax = isBear2 && bodyOk && brOk && streakOk;
-  const oversold = rsiVal <= cfg.rsiMax;
-  const active = isClimax && oversold && aboveTrend;
-  const approaching = !active && isClimax && aboveTrend && (rsiVal > cfg.rsiMax && rsiVal <= cfg.rsiMax + 8);
-  let entry, sl, tp;
-  let reason;
-  const trendTxt = aboveTrend ? `\u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC EMA${cfg.emaTrend} (\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 \u0635\u0639\u0648\u062F\u06CC)` : `\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 EMA${cfg.emaTrend}`;
-  const bodyTimes = Number.isFinite(bodyMa) && bodyMa > 0 ? (bodyVal / bodyMa).toFixed(1) : "\u2014";
-  if (active) {
-    entry = pNow;
-    sl = pNow - cfg.slMult * atrVal;
-    tp = pNow + cfg.tpMult * atrVal;
-    reason = `\u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633\u0650 \u0641\u0631\u0648\u0634 (\u062E\u0633\u062A\u06AF\u06CC\u0650 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC): \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0627\u0633\u062A\u062B\u0646\u0627\u06CC\u06CC-\u0628\u0632\u0631\u06AF \u0628\u0627 \u0628\u062F\u0646\u0647\u0654 ${bodyTimes}\xD7 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0627\u062E\u06CC\u0631 (\u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC/\u062E\u0627\u0644\u06CC\u200C\u0634\u062F\u0646\u0650 \u0641\u0631\u0648\u0634)\u060C RSI14 ${rsiVal.toFixed(1)} \u2264 ${cfg.rsiMax} (\u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634)\u060C \u0648 ${trendTxt}. \u0637\u0628\u0642\u0650 Al Brooks \u0627\u06CC\u0646 \xABsell vacuum\xBB \u0627\u0633\u062A: \u0641\u0631\u0648\u0634\u0646\u062F\u06AF\u0627\u0646 \u062E\u0633\u062A\u0647 \u0634\u062F\u0647\u200C\u0627\u0646\u062F \u0648 \u06A9\u0648\u0686\u06A9\u200C\u062A\u0631\u06CC\u0646 \u062E\u0631\u06CC\u062F\u0650 \u0642\u0648\u06CC\u060C \u0642\u06CC\u0645\u062A \u0631\u0627 \u0633\u0631\u06CC\u0639 \u0628\u0647 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646 \u0628\u0631\u0645\u06CC\u200C\u06AF\u0631\u062F\u0627\u0646\u062F. \u0648\u0631\u0648\u062F LONG \u0628\u0627 \u0647\u062F\u0641\u0650 \u06A9\u0648\u0686\u06A9\u0650 \u0633\u0631\u06CC\u0639 (TP=${cfg.tpMult}\xD7ATR) \u0648 \u062D\u062F\u0650 \u0636\u0631\u0631\u0650 \u0628\u0627\u0632\u062A\u0631\u0650 ${cfg.slMult}\xD7ATR \u21D2 WR \u0628\u0627\u0644\u0627. SL=${sl.toFixed(2)} \u060C TP=${tp.toFixed(2)}. \u0628\u0631\u06AF\u0631\u0641\u062A\u0647 \u0627\u0632 \u0644\u0627\u06CC\u0647\u0654 Sell-Climax Reversal (S327\u060C \u0627\u062D\u06CC\u0627\u06CC S174).`;
-  } else if (approaching) {
-    reason = `\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633\u0650 \u0646\u0632\u0648\u0644\u06CC (\u0628\u062F\u0646\u0647\u0654 ${bodyTimes}\xD7 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646) \u0634\u06A9\u0644 \u06AF\u0631\u0641\u062A \u0648 ${trendTxt}\u061B \u0627\u0645\u0627 RSI14 \u0647\u0646\u0648\u0632 ${rsiVal.toFixed(1)} \u0627\u0633\u062A (\u0647\u062F\u0641: \u2264 ${cfg.rsiMax}). \u0627\u06AF\u0631 \u0641\u0631\u0648\u0634 \u06A9\u0645\u06CC \u0627\u062F\u0627\u0645\u0647 \u06CC\u0627\u0628\u062F \u0648 RSI \u0628\u0647 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 \u0628\u0631\u0633\u062F\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC\u0650 LONG \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0645\u0646\u062A\u0638\u0631\u0650 \u062A\u0623\u06CC\u06CC\u062F \u0628\u0645\u0627\u0646. \u0628\u0631\u06AF\u0631\u0641\u062A\u0647 \u0627\u0632 \u0644\u0627\u06CC\u0647\u0654 Sell-Climax Reversal (S327).`;
-  } else if (!aboveTrend) {
-    reason = `${trendTxt} \u21D2 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0644\u0627\u0646 \xAB\u0686\u0627\u0642\u0648\u06CC \u062F\u0631 \u062D\u0627\u0644\u0650 \u0633\u0642\u0648\u0637\xBB \u0646\u0645\u06CC\u200C\u06AF\u06CC\u0631\u06CC\u0645\u061B \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u067E\u0633 \u0627\u0632 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0631\u0627 \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u06A9\u0644\u0627\u0646 \u0634\u06A9\u0627\u0631 \u0645\u06CC\u200C\u06A9\u0646\u062F. \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`;
-  } else if (!isClimax) {
-    if (!isBear2) {
-      reason = `\u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A\u061B \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633\u0650 \u0641\u0631\u0648\u0634 \u0646\u06CC\u0627\u0632 \u0628\u0647 \u06CC\u06A9 \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0627\u0633\u062A\u062B\u0646\u0627\u06CC\u06CC-\u0628\u0632\u0631\u06AF \u062F\u0627\u0631\u062F. \u0645\u0646\u062A\u0638\u0631\u0650 \u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
-    } else if (!bodyOk) {
-      reason = `\u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC \u0647\u0633\u062A \u0627\u0645\u0627 \u0628\u062F\u0646\u0647\u200C\u0627\u0634 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0632\u0631\u06AF \u0646\u06CC\u0633\u062A (${bodyTimes}\xD7 \u0627\u0632 ${cfg.kBody}\xD7 \u0644\u0627\u0632\u0645). \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0646\u06CC\u0627\u0632 \u0628\u0647 \u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC\u0650 \u0627\u0633\u062A\u062B\u0646\u0627\u06CC\u06CC \u062F\u0627\u0631\u062F\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
-    } else if (!streakOk) {
-      reason = `\u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0634\u06A9\u0644 \u06AF\u0631\u0641\u062A \u0627\u0645\u0627 \u0631\u06AF\u0647\u0654 \u0646\u0632\u0648\u0644\u06CC\u0650 \u0645\u0646\u062A\u0647\u06CC \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A (${streak} \u0627\u0632 ${cfg.streakN} \u06A9\u0646\u062F\u0644\u0650 \u0644\u0627\u0632\u0645). \u0645\u0646\u062A\u0638\u0631\u0650 \u0631\u0648\u0646\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u06A9\u0634\u06CC\u062F\u0647\u200C\u062A\u0631\u0650 \u06A9\u0648\u062A\u0627\u0647\u200C\u0645\u062F\u062A \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
-    } else {
-      reason = `\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0647\u0646\u0648\u0632 \u0628\u0647\u200C\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u06A9\u0627\u0641\u06CC \xAB\u067E\u0631\u0642\u062F\u0631\u062A\xBB \u0646\u06CC\u0633\u062A (body/range=${bodyRatio.toFixed(2)} \u0627\u0632 ${cfg.brMin} \u0644\u0627\u0632\u0645). \u0645\u0646\u062A\u0638\u0631\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC\u0650 \u062A\u0648\u067E\u064F\u0631\u062A\u0631 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
-    }
-  } else {
-    reason = `\u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 \u0648 \u0631\u0698\u06CC\u0645 \u0628\u0631\u0642\u0631\u0627\u0631\u0646\u062F \u0627\u0645\u0627 RSI14=${rsiVal.toFixed(1)} \u0647\u0646\u0648\u0632 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 \u0646\u06CC\u0633\u062A (\u0647\u062F\u0641 \u2264 ${cfg.rsiMax}). \u0645\u0646\u062A\u0638\u0631\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062A\u0627\u0632\u0647 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
-  }
-  return {
-    active,
-    approaching,
-    streak,
-    rsiVal,
-    atrVal,
-    aboveTrend,
-    bodyVal,
-    bodyMa,
-    bodyRatio,
-    isClimax,
-    reason,
-    entry,
-    sl,
-    tp
-  };
-}
-
 // ../web_tool/src/mid_month_drift.ts
 var MID_DOM_SET = [10, 13, 20];
 var MID_ENTRY_HOURS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
@@ -7246,36 +7137,6 @@ function s326Layer(cfg) {
     }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
   };
 }
-function s327Layer(cfg) {
-  return (ctx) => {
-    const sig = computeSellClimax(ctx.candles, cfg);
-    const price = ctx.a.price;
-    const raw2 = {
-      active: sig.active,
-      approaching: sig.approaching,
-      direction: "LONG",
-      slDist: cfg.slMult * sig.atrVal,
-      tpDist: cfg.tpMult * sig.atrVal,
-      maxHoldBars: cfg.maxHold,
-      reason: sig.reason,
-      approachReason: sig.approaching ? `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A (RSI\u2264${cfg.rsiMax} + \u06A9\u0646\u062F\u0644\u0650 \u0635\u0639\u0648\u062F\u06CC)` : void 0,
-      indicators: [
-        { name: `\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 (\u0628\u062F\u0646\u0647\u2265${cfg.kBody}\xD7MA)`, value: sig.isClimax ? "\u0628\u0644\u0647 \u2714" : "\u062E\u06CC\u0631", status: sig.isClimax ? "ok" : "neutral" },
-        { name: `RSI-14 \u0627\u0634\u0628\u0627\u0639\u0650 \u0641\u0631\u0648\u0634 (\u2264${cfg.rsiMax})`, value: isFinite(sig.rsiVal) ? sig.rsiVal.toFixed(0) : "\u2014", status: sig.rsiVal <= cfg.rsiMax ? "ok" : "warn" },
-        { name: `\u0631\u0648\u0646\u062F\u0650 \u06A9\u0644\u0627\u0646 (EMA${cfg.emaTrend})`, value: sig.aboveTrend ? "\u0635\u0639\u0648\u062F\u06CC \u2714" : "\u0646\u0632\u0648\u0644\u06CC \u2718", status: sig.aboveTrend ? "ok" : "bad" }
-      ]
-    };
-    const reg = lightRegime2(0, sig.aboveTrend, "s327_climax");
-    return rawToDecision(raw2, {
-      code: "S327",
-      name: "Sell-Climax \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC (Brooks)",
-      kind: "price-action",
-      manageStyle: "fixed-tp-sl",
-      manageNote: "\u062A\u062E\u0644\u06CC\u0647\u0654 \u0641\u0631\u0648\u0634 (Brooks exhaustion) \u0628\u0627 TP<SL\u061B \u0647\u062F\u0641\u0650 \u0646\u0632\u062F\u06CC\u06A9 \u0631\u0627 \u0628\u06AF\u06CC\u0631\u060C SL \u062C\u0627\u0628\u0647\u200C\u062C\u0627 \u0646\u0634\u0648\u062F.",
-      filters: [`\u06A9\u0644\u0627\u06CC\u0645\u06A9\u0633 kBody=${cfg.kBody}`, `body/range\u2265${cfg.brMin}`, `RSI\u2264${cfg.rsiMax}`, `EMA${cfg.emaTrend} \u0635\u0639\u0648\u062F\u06CC`]
-    }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
-  };
-}
 var s310Layer = (ctx) => {
   const sig = computeEndOfMonth(ctx.times, ctx.utcHour);
   const price = ctx.a.price;
@@ -7387,7 +7248,8 @@ var CARD_LAYERS = {
     // احیای s122 — MR-fade فروش + گیتِ Hurst<0.5/Kurt<1.8 — RQS+=81.6 (WR 61.7% · PF 1.61)
     s335Layer(S335_CFG["XAUUSD-M5"]),
     // S335 — Reflex zero-up چرخهٔ اِهلرز، خریدِ کفِ چرخه — RQS+=92.2 (WR 62.7% · PF 2.22) · همپوشانیِ صفر با S333
-    s327Layer(SELL_CLIMAX_CFG["XAUUSD-M5"]),
+    // ⚰️ S327 حذف شد (RQS2=21.5 · سد=70) — سند: results/S327_SellClimaxReversalRejudged_…_rqs2-29.md
+    //    معاوضهٔ هندسه‌–شواهد: RR=0.371 ⇒ WR 88.6% ولی H2 حسابیاً رد؛ RR=0.52 ⇒ WR 75.0% ولی z افت به 2.83.
     s326Layer(STREAK_REV_CFG["XAUUSD-M5"])
   ],
   "XAUUSD-M15": [
@@ -7415,7 +7277,7 @@ var CARD_LAYERS = {
     s313Layer(S313_M30),
     s324Layer(S324_CFG["XAUUSD-M30"]),
     s321Layer(S321_CFG["XAUUSD-M30"]),
-    s327Layer(SELL_CLIMAX_CFG["XAUUSD-M30"]),
+    // ⚰️ S327 حذف شد (RQS2=22.2 · سد=70) — نزدیک‌ترین شکستِ H2 کلِ لایه: مازاد +2.90pp در برابرِ کفِ 3.00pp.
     s326Layer(STREAK_REV_CFG["XAUUSD-M30"]),
     s323Layer(S323_CFG["XAUUSD-M30"]),
     s312Layer(295, 295, 36)
@@ -7432,7 +7294,7 @@ var CARD_LAYERS = {
     // احیای S79 — pullback (ورودِ مستقیم + ER) — RQS+=89.8 (WR 62.2% · PF 1.85)
     s313Layer(S313_H1),
     s328Layer(S328_CFG["XAUUSD-H1"]),
-    s327Layer(SELL_CLIMAX_CFG["XAUUSD-H1"]),
+    // ⚰️ S327 حذف شد (RQS2=15.4 · سد=70) — شش دروازه شکست؛ z=1.81 در هندسهٔ قانونی.
     s323Layer(S323_CFG["XAUUSD-H1"]),
     s335Layer(S335_CFG["XAUUSD-H1"]),
     // S335 — Reflex dip-turn + گیتِ Chop<38.2 — RQS+=89.7 (WR 61.2% · PF 1.85) · همپوشانیِ صفر با S333
@@ -7441,9 +7303,9 @@ var CARD_LAYERS = {
   "XAUUSD-H4": [
     s340Layer(S340_CFG["XAUUSD-H4"]),
     // S340 — Brooks Micro-Channel، ادامهٔ روند/failed-pullback — RQS+=92.6 (WR 65.6% · PF 2.13) · همپوشانی S327=0%/S332=8.2%
-    s332Layer(S332_CFG["XAUUSD-H4"]),
+    s332Layer(S332_CFG["XAUUSD-H4"])
     // احیای squeeze با فیلترِ ADX/DI — RQS+=92.1
-    s327Layer(SELL_CLIMAX_CFG["XAUUSD-H4"])
+    // ⚰️ S327 حذف شد (RQS2=18.8 · سد=70) — بدترین کارت: z=0.12، یعنی از ورودِ تصادفی تفکیک‌ناپذیر.
   ],
   "EURUSD-M5": [
     s334Layer(S334_CFG["EURUSD-M5"])
@@ -7453,9 +7315,9 @@ var CARD_LAYERS = {
     s326Layer(STREAK_REV_CFG["EURUSD-M15"])
   ],
   "EURUSD-M30": [
-    s345Layer(S345_CFG["EURUSD-M30"]),
+    s345Layer(S345_CFG["EURUSD-M30"])
     // S345 — Brooks فصلِ ۲۴ reversal-day چرخشِ روندِ روز SHORT — RQS+=91.7 (WR 62.5% · PF 2.38 · +$2,281.6) · همپوشانی 30.6% · نخستین SHORT این کارت
-    s327Layer(SELL_CLIMAX_CFG["EURUSD-M30"])
+    // ⚰️ S327 حذف شد (RQS2=14.3 · سد=70) — هفت دروازه شکست؛ در خانوادهٔ قانونی لیفتِ **منفی**.
   ]
 };
 var REGISTERED_CARDS = Object.keys(CARD_LAYERS);
