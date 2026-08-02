@@ -89,22 +89,22 @@
    "z_margin": -0.629,
    "n_trials": 61,
    "cal_nets": [
-    0.0,
-    0.0,
-    0.0,
-    1042.1
+    -402.8,
+    605.2,
+    525.7,
+    223.7
    ],
    "cal_counts": [
-    0,
-    0,
-    0,
-    110
+    28,
+    23,
+    29,
+    30
    ],
-   "cal_positive": 1,
-   "cal_occupied": 1,
+   "cal_positive": 3,
+   "cal_occupied": 4,
    "half_nets": [
-    0.0,
-    1042.1
+    168.6,
+    812.2
    ],
    "oos": {
     "n": 59,
@@ -115,20 +115,22 @@
    },
    "max_concurrency": 1,
    "counter_drift": {
-    "n_judgeable": 0,
-    "n_unjudgeable": 110,
-    "n_counter": 0,
-    "n_aligned": 0,
+    "n_judgeable": 97,
+    "n_unjudgeable": 13,
+    "n_counter": 48,
+    "n_aligned": 49,
     "regime_lookback_days": 280.0,
-    "h10_substitute": "no-counter-trades-selective"
+    "wr_counter": 60.42,
+    "exp_counter": 14.429,
+    "wr_aligned": 55.1,
+    "exp_aligned": 24.671
    }
   },
   "notes": [
-   "PF=1.222<1.3",
-   "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   "PF=1.222<1.3"
   ],
   "passed": false,
-  "rqs2_score": 10.8,
+  "rqs2_score": 18.8,
   "verdict": "REJECT",
   "n_fail": 5,
   "n_unknown": 0,
