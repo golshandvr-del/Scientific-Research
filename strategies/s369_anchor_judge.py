@@ -101,7 +101,11 @@ def run(asset="XAUUSD", tf="H1", seed=369):
     res = rqs2.compute_rqs2(
         trades, asset,
         sl_pip=mean_sl, tp_pip=mean_tp,
-        bar_time=bar_time[eb] if bar_time is not None else None,
+        # ⚠️ باید آرایهٔ **کاملِ زمانِ کندل‌ها** باشد، نه زمانِ هر معامله.
+        #    `calendar_windows` داخلاً `bt[clip(exit_bar, 0, len(bt)-1)]` می‌زند؛
+        #    اگر آرایهٔ ۱۱۰-تایی بدهیم، exit_barهای ~۹۰٬۰۰۰ همگی به ۱۰۹ کلیپ
+        #    می‌شوند و هر ۱۱۰ معامله در یک سطلِ تقویمی می‌افتند ⇒ H6/H10 دروغین.
+        bar_time=bar_time,
         null=null, n_trials=N_TRIALS,
         holdout_mask=holdout_mask, split_bar=split,
         close=df["close"].values.astype(float),
