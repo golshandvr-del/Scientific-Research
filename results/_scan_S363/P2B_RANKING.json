@@ -1,0 +1,23 @@
+{
+ "protocol": "P2B",
+ "decision": "SELF_ABORTED_UNDERPOWERED",
+ "power": {
+  "reference": "fdi|KEEP_LOW|0.6",
+  "deltas": {
+   "XAUUSD-M5": 0.8055,
+   "XAUUSD-M15": 0.7558,
+   "XAUUSD-M30": 0.4789,
+   "XAUUSD-H1": 0.8498,
+   "XAUUSD-H4": 0.835,
+   "EURUSD-M15": 1.2867,
+   "EURUSD-M30": 1.3569
+  },
+  "mu_pool": 2.1563,
+  "p_pool_term": 0.335907,
+  "p_sign_term": 0.220425,
+  "power": 0.074042,
+  "power_p2_reference": 0.0039,
+  "abort_threshold": 0.2,
+  "aborted": true
+ }
+}
