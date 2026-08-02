@@ -1,0 +1,51 @@
+{
+ "per_card_grid": 3888,
+ "session_cost": {
+  "s358_filter": 88,
+  "s359_hold": 32,
+  "s360_dense": 47,
+  "s361_mirror": 1
+ },
+ "session_total": 168,
+ "n_trials_prev": 2568,
+ "n_trials_in_card": 4056,
+ "n_trials_global": 31272,
+ "zbar_prev": 3.5143,
+ "zbar_in_card": 3.634,
+ "zbar_global": 4.1309,
+ "observed": [
+  {
+   "name": "پایه (بدونِ بهبود، mh=48)",
+   "z": 3.258,
+   "note": "s361 long-only، ref با ۱۵۰۰ قرعه × ۳ بذر",
+   "pass_prev": false,
+   "pass_in": false,
+   "pass_global": false
+  },
+  {
+   "name": "بهترین فیلتر (chop≥q، n=63)",
+   "z": 3.423,
+   "note": "s358 — n از ۱۶۰ به ۶۳ ریخت",
+   "pass_prev": false,
+   "pass_in": false,
+   "pass_global": false
+  },
+  {
+   "name": "بهترین افق (mh=28)",
+   "z": 3.821,
+   "note": "s360 — قلهٔ تیز؛ همسایهٔ mh=30 برابرِ 3.115 ⇒ over-fit طبقِ variants.md",
+   "pass_prev": true,
+   "pass_in": true,
+   "pass_global": false
+  },
+  {
+   "name": "آینهٔ دوسویه (n=269)",
+   "z": 1.291,
+   "note": "s361 — سمتِ شورت لیفتِ منفی دارد",
+   "pass_prev": false,
+   "pass_in": false,
+   "pass_global": false
+  }
+ ],
+ "valid_passes": 0
+}
