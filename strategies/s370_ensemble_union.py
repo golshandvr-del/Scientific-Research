@@ -182,11 +182,14 @@ def run_card(asset, tf, n_perm=N_PERM, seed=370, save=True):
         print(f"   >>> TOO_FEW_TRADES (n={0 if tr is None else len(tr)})")
         return res
 
+    # `simulate_trades` ستونِ TP برنمی‌گرداند؛ مثلِ هارنسِ داوریِ S364، TPِ واقعیِ
+    # هر معامله از آرایهٔ سیگنال با ایندکسِ بارِ سیگنال بازسازی می‌شود.
     sl_pip = tr["sl_pip"].values.astype(float)
     ok = sl_pip > 0
-    tr = tr[ok]
+    tr = tr[ok].reset_index(drop=True)
     sl_pip = sl_pip[ok]
-    tp_pip = tr["tp_pip"].values.astype(float)
+    sb = tr["signal_bar"].values.astype(int)
+    tp_pip = np.asarray(tpv, dtype=float)[sb]
     R = tr["pnl_pip"].values.astype(float) / sl_pip
     obs = float(R.mean())
     burden = float(np.mean(cost / sl_pip))
