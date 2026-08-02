@@ -1,0 +1,199 @@
+{
+ "asset": "EURUSD",
+ "tf": "M1",
+ "bars": 200000,
+ "split": 100000,
+ "picked": {
+  "k": 2,
+  "f": 0.7,
+  "g": 0.75,
+  "s": 1.618,
+  "mode": "close",
+  "disc_n": 23,
+  "disc_pf": 1.711,
+  "disc_wr": 73.91,
+  "disc_net": 27.3,
+  "proxy": 3.408
+ },
+ "n_candidates": 64,
+ "n_trades": 32,
+ "mean_sl": 5.299,
+ "mean_tp": 4.901,
+ "rr": 0.925,
+ "frac_tp_lt_sl": 0.4688,
+ "n_trials": 72,
+ "null_diag": {
+  "long": {
+   "chosen": "free",
+   "wrs": {
+    "free": 46.56,
+    "gated": 45.51
+   },
+   "n_side": 18
+  },
+  "short": {
+   "chosen": "gated",
+   "wrs": {
+    "free": 51.6,
+    "gated": 52.32
+   },
+   "n_side": 14
+  }
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 2.6,
+ "gates": {
+  "H0": false,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": null
+ },
+ "metrics": {
+  "n_trades": 32,
+  "win_rate": 62.5,
+  "net_profit": -211.7,
+  "profit_factor": 0.872,
+  "max_dd_pct": 7.82,
+  "max_consec_losses": 4,
+  "mcl_allowed": 8,
+  "n_wins": 20,
+  "top_win_share": 0.0999,
+  "recovery_factor": -0.25,
+  "expectancy_pip": -0.0589,
+  "expectancy_at_2x_cost": -1.6589,
+  "cost_pip": 1.6,
+  "spread_pip": 1.0,
+  "sl_pip": 5.299,
+  "tp_pip": 4.901,
+  "rr": 0.925,
+  "breakeven_wr_cost": 67.64,
+  "wr_excess_cost": -5.14,
+  "null_ref_wr": 49.08,
+  "skill_lift_pp": 13.42,
+  "skill_z": 1.12,
+  "skill_p_perm": 0.131466,
+  "perm_max": 86.95,
+  "perm_k": 500,
+  "side_n": {
+   "long": 18,
+   "short": 14
+  },
+  "side_wr": {
+   "long": 66.67,
+   "short": 57.14
+  },
+  "side_lift_pp": {
+   "long": 20.11,
+   "short": 4.83
+  },
+  "prune_sides": [
+   "short"
+  ],
+  "p_emp": 0.089502,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 1.519,
+  "z_luck_bound": 2.413,
+  "z_margin": -0.894,
+  "n_trials": 72,
+  "cal_nets": [
+   -27.0,
+   429.0,
+   -449.6,
+   -146.1
+  ],
+  "cal_counts": [
+   5,
+   18,
+   5,
+   4
+  ],
+  "cal_positive": 1,
+  "cal_occupied": 4,
+  "half_nets": [
+   400.2,
+   -588.6
+  ],
+  "oos": {
+   "n": 9,
+   "wr": 33.33,
+   "pf": 0.252,
+   "net": -588.6,
+   "wr_req": 67.64
+  },
+  "max_concurrency": 1,
+  "counter_drift": {}
+ },
+ "notes": [
+  "PF=0.872<1.3",
+  "H10 UNKNOWN: the card's history spans 197 calendar days, which is shorter than the canonical regime horizon of 280 days (200 trading days) ⇒ the prevailing drift at entry cannot be established. ACTION: obtain longer history for this card; do NOT fall back to a bar-count window, which is what made H10 incomparable"
+ ],
+ "top5_discovery": [
+  {
+   "k": 2,
+   "f": 0.7,
+   "g": 0.75,
+   "s": 1.618,
+   "mode": "close",
+   "disc_n": 23,
+   "disc_pf": 1.711,
+   "disc_wr": 73.91,
+   "disc_net": 27.3,
+   "proxy": 3.408
+  },
+  {
+   "k": 2,
+   "f": 1.0,
+   "g": 0.75,
+   "s": 1.618,
+   "mode": "close",
+   "disc_n": 16,
+   "disc_pf": 1.809,
+   "disc_wr": 75.0,
+   "disc_net": 21.1,
+   "proxy": 3.238
+  },
+  {
+   "k": 3,
+   "f": 1.0,
+   "g": 0.75,
+   "s": 1.618,
+   "mode": "close",
+   "disc_n": 20,
+   "disc_pf": 1.602,
+   "disc_wr": 65.0,
+   "disc_net": 16.9,
+   "proxy": 2.691
+  },
+  {
+   "k": 2,
+   "f": 0.7,
+   "g": 0.67,
+   "s": 1.618,
+   "mode": "close",
+   "disc_n": 20,
+   "disc_pf": 1.522,
+   "disc_wr": 75.0,
+   "disc_net": 18.1,
+   "proxy": 2.332
+  },
+  {
+   "k": 3,
+   "f": 1.0,
+   "g": 0.67,
+   "s": 1.618,
+   "mode": "close",
+   "disc_n": 17,
+   "disc_pf": 1.463,
+   "disc_wr": 64.71,
+   "disc_net": 11.1,
+   "proxy": 1.908
+  }
+ ]
+}
