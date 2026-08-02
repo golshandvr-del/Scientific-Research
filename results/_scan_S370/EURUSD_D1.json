@@ -1,0 +1,14 @@
+{
+ "asset": "EURUSD",
+ "tf": "D1",
+ "bars": 4195,
+ "verdict": "TOO_FEW_TRADES",
+ "n_trades": 11,
+ "n_members": 24,
+ "n_union": 14,
+ "sum_signals": 100,
+ "mean_vote": 7.14,
+ "conflict": 0,
+ "max_hold": 8,
+ "warm": 260
+}
