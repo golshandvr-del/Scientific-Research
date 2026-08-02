@@ -202,8 +202,8 @@ def run_card(asset, tf, n_perm=N_PERM, seed=370, save=True):
     o_ = df["open"].values.astype(float)
     h_ = df["high"].values.astype(float)
     l_ = df["low"].values.astype(float)
-    isL = (tr["side"].values == "long") if "side" in tr.columns else \
-          (tr["dir"].values > 0)
+    # موتور جهت را با رشتهٔ 'long'/'short' در ستونِ `direction` برمی‌گرداند.
+    isL = (tr["direction"].values == "long")
     rr = tp_pip / np.maximum(sl_pip, 1e-9)
 
     perm = []
