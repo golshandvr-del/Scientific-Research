@@ -159,7 +159,7 @@ def run_card(asset, tf, n_perm=N_PERM, seed=370, save=True):
         return None
     df = se.load_data(path)
     n = len(df)
-    cfg = se.INSTRUMENTS[asset]
+    cfg = se.ASSETS[asset]
     pip = float(cfg["pip"])
     cost = float(cfg["spread_pip"]) + 2.0 * float(cfg.get("slip_pip", 0.0))
 
