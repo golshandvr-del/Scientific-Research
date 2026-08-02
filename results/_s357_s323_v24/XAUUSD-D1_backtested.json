@@ -1,0 +1,28 @@
+{
+ "card": "XAUUSD-D1",
+ "asset": "XAUUSD",
+ "tf": "D1",
+ "variant": "backtested",
+ "cfg": {
+  "nearMax": 0.55,
+  "roomMin": 1.3,
+  "rsiMax": 55,
+  "slopeMin": 0.0,
+  "adxMin": 30,
+  "golden": true,
+  "hLo": 19,
+  "hHi": 23,
+  "slMult": 1.8,
+  "tpMult": 1.7,
+  "maxHold": 8,
+  "pivotLen": 20,
+  "_source": "inherited:XAUUSD-H1"
+ },
+ "sl_pip": 391.6,
+ "tp_pip": 369.9,
+ "rr": 0.9446,
+ "maxhold": 8,
+ "bars": 3989,
+ "n_signals": 0,
+ "status": "NO_SIGNAL"
+}
