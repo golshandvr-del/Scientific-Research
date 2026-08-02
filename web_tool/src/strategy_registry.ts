@@ -320,7 +320,9 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s332Layer(S332_CFG['XAUUSD-M15']),   // احیای squeeze با فیلترِ آماری r2+hurst — RQS+=91.2
     s324Layer(S324_CFG['XAUUSD-M15']),
     s322Layer(S322_CFG['XAUUSD-M15']),
-    s323Layer(S323_CFG['XAUUSD-M15']),
+    // ⚰️ S323 حذف شد (بازداوریِ RQS2 v2.4). این کارت z=1.19 داشت — لیفتِ +5.86pp
+    //    روی n=105؛ بسیار دورتر از سدِ 3.634. نسخهٔ مستقر حتی ضعیف‌تر: n=83، WR=55.42٪.
+    //    جزئیات: results/S323_SRPullbackGolden_Xauusd_M5M15M30H1_rqs2-24_DEAD.md
     s335Layer(S335_CFG['XAUUSD-M15']),  // S335 — Reflex dip-turn + گیتِ r2>0.55 — RQS+=89.7 (WR 60.0% · PF 2.08) · همپوشانیِ صفر با S333
     s344Layer(S344_CFG['XAUUSD-M15']),  // S344 — Brooks فصلِ ۲۳ trend-from-open first-pullback SHORT — RQS+=91.4 (WR 64.1% · PF 2.08 · +$1,571) · مستقل=92.9 · نخستین SHORT این کارت
     s345Layer(S345_CFG['XAUUSD-M15']),  // S345 — Brooks فصلِ ۲۴ reversal-day چرخشِ روندِ روز LONG — RQS+=90.7 (WR 62.4% · PF 2.30 · +$2,422.8) · همپوشانی 48.5% ولی بخشِ مستقل قوی‌تر (WR 65.0/PF 2.56)
@@ -335,7 +337,10 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s321Layer(S321_CFG['XAUUSD-M30']),
     // ⚰️ S327 حذف شد (RQS2=22.2 · سد=70) — نزدیک‌ترین شکستِ H2 کلِ لایه: مازاد +2.90pp در برابرِ کفِ 3.00pp.
     s326Layer(STREAK_REV_CFG['XAUUSD-M30']),
-    s323Layer(S323_CFG['XAUUSD-M30']),
+    // ⚰️ S323 حذف شد (RQS2=24.7 · بهترین کارتِ کلِ لایه). ۱۰ دروازه پاس، تنها H5
+    //    افتاد: z=3.266 در برابرِ سدِ 3.634 (درون‌کارتی) و 4.131 (سراسری). چهار
+    //    مسیرِ نجات با ۱۶۸ آزمون شکست خورد ⇒ قانونِ مرگِ ابدی محقق شد.
+    //    نسخهٔ مستقر لیفتِ **منفی** −4.25pp داشت (n=104، WR=55.77٪ در برابرِ مبنای 58.29٪).
     s312Layer(295, 295, 36),
   ],
   'XAUUSD-H1': [
@@ -349,7 +354,9 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     s313Layer(S313_H1),
     s328Layer(S328_CFG['XAUUSD-H1']),
     // ⚰️ S327 حذف شد (RQS2=15.4 · سد=70) — شش دروازه شکست؛ z=1.81 در هندسهٔ قانونی.
-    s323Layer(S323_CFG['XAUUSD-H1']),
+    // ⚰️ S323 حذف شد. نسخهٔ مستقر بدترین کارتِ کلِ ممیزی بود: n=17، WR=35.29٪،
+    //    لیفتِ −14.91pp ⇒ ۹۶٪ از قرعه‌های تصادفی از سیگنالِ سایت بهتر عمل می‌کردند.
+    //    نسخهٔ بک‌تست‌شده هم z=2.40 روی n=37 داشت — زیرِ هر سه سد.
     s335Layer(S335_CFG['XAUUSD-H1']),   // S335 — Reflex dip-turn + گیتِ Chop<38.2 — RQS+=89.7 (WR 61.2% · PF 1.85) · همپوشانیِ صفر با S333
     s312Layer(395, 395, 24),
   ],
