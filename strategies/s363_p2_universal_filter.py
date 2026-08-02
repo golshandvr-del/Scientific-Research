@@ -227,26 +227,63 @@ def main():
           f"{len(names)*len(DIRECTIONS)*len(QUANTILES)} candidates per card\n",
           flush=True)
 
-    results = []
+    # ── حافظهٔ نهانِ ازسرگیری‌پذیر (شاردِ هر-اندیکاتور) ──────────────────────
+    # چرا: بانک چند اندیکاتورِ **بسیار کند** دارد (`cmo_fib_233` روی ۲۰۰ هزار
+    # کندل ≈ ۲۲ ثانیه × ۷ کارت). کلِ جاروب ده‌ها دقیقه طول می‌کشد و سندباکسِ ما
+    # در همین نشست **دوبار** ریست شده و هر بار یک اجرای ناتمام را نابود کرده
+    # است. با نوشتنِ یک خطِ JSON پس از **هر** اندیکاتور و `flush`+`fsync`،
+    # بیشترین چیزی که یک ریست می‌تواند ببلعد **یک اندیکاتور** است، نه کلِ جاروب.
+    # این دقیقاً همان «قانونِ سوم — اندک اندک» است، در سطحِ درون-اسکریپت.
+    partial = os.path.join(OUT, 'P2_PARTIAL.jsonl')
+    done = {}
+    if os.path.exists(partial):
+        with open(partial) as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = json.loads(line)
+                except json.JSONDecodeError:
+                    continue            # خطِ نیمه‌نوشته از یک ریست ⇒ نادیده
+                done[rec['indicator']] = rec
+        print(f"  resume: {len(done)} indicators already cached in "
+              f"{partial} — they will be skipped\n", flush=True)
+
     t0 = time.time()
-    n_fail = 0
+    fh = open(partial, 'a')
     for i, name in enumerate(names, 1):
-        r = eval_indicator(name, cards)
-        if r is None:
-            n_fail += 1
-        else:
-            for (direction, q), rows in r.items():
-                zs = [rows[c['card']]['z'] for c in cards]
-                results.append(dict(
-                    indicator=name, direction=direction, quantile=q,
-                    z_min=round(float(min(zs)), 4),
-                    z_mean=round(float(np.mean(zs)), 4),
-                    z_max=round(float(max(zs)), 4),
-                    n_cards=len(zs), per_card=rows))
+        if name not in done:
+            r = eval_indicator(name, cards)
+            if r is None:
+                rec = dict(indicator=name, usable=False, cands=[])
+            else:
+                cands = []
+                for (direction, q), rows in r.items():
+                    zs = [rows[c['card']]['z'] for c in cards]
+                    cands.append(dict(
+                        indicator=name, direction=direction, quantile=q,
+                        z_min=round(float(min(zs)), 4),
+                        z_mean=round(float(np.mean(zs)), 4),
+                        z_max=round(float(max(zs)), 4),
+                        n_cards=len(zs), per_card=rows))
+                rec = dict(indicator=name, usable=True, cands=cands)
+            fh.write(json.dumps(rec, ensure_ascii=False) + "\n")
+            fh.flush()
+            os.fsync(fh.fileno())       # دوامِ واقعی روی دیسک، نه فقط بافر
+            done[name] = rec
         if i % 40 == 0:
+            nv = sum(len(d['cands']) for d in done.values())
+            nf = sum(1 for d in done.values() if not d['usable'])
             print(f"  ...{i}/{len(names)} indicators  "
-                  f"({time.time()-t0:.0f}s, {len(results)} viable candidates, "
-                  f"{n_fail} indicators unusable)", flush=True)
+                  f"({time.time()-t0:.0f}s, {nv} viable candidates, "
+                  f"{nf} indicators unusable)", flush=True)
+    fh.close()
+
+    results = [c for name in names if name in done
+               for c in done[name]['cands']]
+    n_fail = sum(1 for name in names
+                 if name in done and not done[name]['usable'])
 
     results.sort(key=lambda d: -d['z_min'])
     payload = dict(
