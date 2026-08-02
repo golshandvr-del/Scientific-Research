@@ -5457,98 +5457,6 @@ function decideS321(cfg, a, candles, capital = 1e4, riskPct = 1) {
     filters: [`\u062A\u0631\u062A\u06CC\u0628\u0650 ribbon\u2265${cfg.ordThr}`, `\u0639\u0631\u0636 z\u2265${cfg.wzGate}`, `\u0634\u06CC\u0628\u2265${cfg.slopeMin}`, `pullback [${cfg.pullMin},${cfg.pullMax}]`]
   }, cfg.id, a.price, reg, capital, riskPct);
 }
-var S323_CFG = {
-  "XAUUSD-M15": { id: "XAUUSD-M15", nearMax: 0.85, roomMin: 1.3, rsiMax: 55, slopeMin: 0, adxMin: 22, golden: true, hLo: 19, hHi: 23, slMult: 1.8, tpMult: 1.5, maxHold: 96, pivotLen: 20 },
-  "XAUUSD-M30": { id: "XAUUSD-M30", nearMax: 0.85, roomMin: 1.3, rsiMax: 55, slopeMin: 0, adxMin: 22, golden: true, hLo: 19, hHi: 23, slMult: 2.1, tpMult: 1.3, maxHold: 48, pivotLen: 20 },
-  "XAUUSD-H1": { id: "XAUUSD-H1", nearMax: 0.55, roomMin: 1.3, rsiMax: 55, slopeMin: 0, adxMin: 30, golden: true, hLo: 19, hHi: 23, slMult: 1.8, tpMult: 1.7, maxHold: 36, pivotLen: 20 }
-};
-function computeS323(candles, cfg, utcHour) {
-  const high = candles.map((c) => c.high), low = candles.map((c) => c.low), close = candles.map((c) => c.close);
-  const atr14 = atr(candles, 14);
-  const e200 = ema(close, 200);
-  const { adx: adxArr } = adx(candles, 14);
-  const r = rsi(close, 14);
-  const i = close.length - 1;
-  const atrVal = atr14[i];
-  const empty = (reason, ind2) => ({
-    active: false,
-    approaching: false,
-    direction: "LONG",
-    slDist: 0,
-    tpDist: 0,
-    maxHoldBars: cfg.maxHold,
-    reason,
-    indicators: ind2
-  });
-  if (!(atrVal > 0) || i < 200 || !Number.isFinite(r[i])) return empty("\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC S323 \u0646\u06CC\u0633\u062A.", []);
-  const price = close[i];
-  const trendUp = price > e200[i];
-  const adxVal = adxArr[i];
-  const adxOk = Number.isFinite(adxVal) && adxVal >= cfg.adxMin;
-  let support = -Infinity, resistance = Infinity;
-  const L = cfg.pivotLen;
-  for (let k = i - 1; k >= Math.max(0, i - 120); k--) {
-    if (k - L < 0 || k + L > i) continue;
-    const isLow = low.slice(k - L, k + L + 1).every((v) => v >= low[k]);
-    const isHigh = high.slice(k - L, k + L + 1).every((v) => v <= high[k]);
-    if (isLow && low[k] < price && low[k] > support) support = low[k];
-    if (isHigh && high[k] > price && high[k] < resistance) resistance = high[k];
-  }
-  const goldenOk = !cfg.golden || utcHour >= cfg.hLo && utcHour <= cfg.hHi;
-  const rsiNow = r[i];
-  const rsiOk = rsiNow <= cfg.rsiMax;
-  const nearSupport = isFinite(support) ? (price - support) / atrVal : Infinity;
-  const room = isFinite(resistance) ? (resistance - price) / atrVal : Infinity;
-  const nearOk = nearSupport <= cfg.nearMax;
-  const roomOk = room >= cfg.roomMin;
-  const ind = [
-    { name: `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (close>EMA200\u060C ADX\u2265${cfg.adxMin})`, value: (trendUp ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC") + ` / ADX ${Number.isFinite(adxVal) ? adxVal.toFixed(0) : "\u2014"}`, status: trendUp && adxOk ? "ok" : "bad" },
-    { name: `pullback \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A (\u2264${cfg.nearMax}\xD7ATR)`, value: isFinite(nearSupport) ? nearSupport.toFixed(2) + (nearOk ? " \u2714" : " \u2718") : "\u2014", status: nearOk ? "ok" : "neutral" },
-    { name: `\u0641\u0636\u0627 \u062A\u0627 \u0645\u0642\u0627\u0648\u0645\u062A (\u2265${cfg.roomMin}\xD7ATR)`, value: isFinite(room) ? room.toFixed(2) + (roomOk ? " \u2714" : " \u2718") : "\u2014", status: roomOk ? "ok" : "warn" },
-    { name: `RSI-14 \u2264 ${cfg.rsiMax}`, value: rsiNow.toFixed(0) + (rsiOk ? " \u2714" : " \u2718"), status: rsiOk ? "ok" : "warn" },
-    ...cfg.golden ? [{ name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC (${cfg.hLo}:00\u2013${cfg.hHi}:00 UTC)`, value: `${utcHour}:00 UTC` + (goldenOk ? " \u2714" : " \u2718 \u062E\u0627\u0631\u062C"), status: goldenOk ? "ok" : "neutral" }] : []
-  ];
-  const slDist = cfg.slMult * atrVal;
-  const tpDist = cfg.tpMult * atrVal;
-  const trendCtx = trendUp && adxOk;
-  const active = trendCtx && nearOk && roomOk && rsiOk && goldenOk;
-  const approaching = !active && trendCtx && roomOk && rsiOk && (goldenOk || nearOk);
-  return {
-    active,
-    approaching,
-    direction: "LONG",
-    slDist,
-    tpDist,
-    maxHoldBars: cfg.maxHold,
-    reason: active ? "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0634\u062F\u0647 + pullback \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A \u0628\u0627 \u0641\u0636\u0627\u06CC \u06A9\u0627\u0641\u06CC \u062A\u0627 \u0645\u0642\u0627\u0648\u0645\u062A + RSI \u063A\u06CC\u0631\u0650 \u0627\u0634\u0628\u0627\u0639 \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC \u21D2 \u062E\u0631\u06CC\u062F." : approaching ? "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 pullback \u06A9\u0627\u0645\u0644\u0650 \u0642\u06CC\u0645\u062A \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A (\u06CC\u0627 \u0648\u0631\u0648\u062F \u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC) \u0628\u0631\u0627\u06CC \u0645\u0627\u0634\u0647\u0654 \u062E\u0631\u06CC\u062F." : trendCtx ? "\u0631\u0648\u0646\u062F \u0635\u0639\u0648\u062F\u06CC \u0627\u0633\u062A \u0627\u0645\u0627 \u0633\u062A\u0627\u067E\u0650 pullback/\u0637\u0644\u0627\u06CC\u06CC \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A." : "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0644\u0627\u0632\u0645 (EMA200/ADX) \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A\u061B \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 S323 \u0646\u062F\u0627\u0631\u06CC\u0645.",
-    approachReason: approaching ? "\u06A9\u0627\u0645\u0644\u200C\u0634\u062F\u0646\u0650 pullback \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC" : void 0,
-    indicators: ind,
-    // 🕒 باگِ User Note #۳: اگر پنجرهٔ طلایی فعال است، دروازهٔ زمانی برای countdown.
-    ...cfg.golden ? {
-      timeGate: {
-        layerCode: "S323",
-        label: "\u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC (S/R Pullback)",
-        entryHoursUtc: Array.from({ length: cfg.hHi - cfg.hLo + 1 }, (_, k) => cfg.hLo + k),
-        windowOpen: goldenOk,
-        endHourUtc: cfg.hHi + 1
-      }
-    } : {}
-  };
-}
-function decideS323(cfg, a, candles, utcHour, capital = 1e4, riskPct = 1) {
-  const raw2 = computeS323(candles, cfg, utcHour);
-  const { adx: adxArr } = adx(candles, 14);
-  const reg = lightRegime(candles.map((c) => c.close), nz(last(adxArr)), raw2.active || raw2.approaching, "s323_sr_pullback");
-  return rawToDecision(raw2, {
-    code: "S323",
-    name: "S/R Pullback \u0637\u0644\u0627\u06CC\u06CC",
-    kind: "price-action",
-    manageStyle: "structural-trail",
-    beTriggerR: 1,
-    manageNote: "\u067E\u0633 \u0627\u0632 \u06F1R\u060C SL \u0628\u0647 \u0628\u0631\u06CC\u06A9\u200C\u0627\u06CC\u0648\u0646\u061B \u0633\u067E\u0633 \u0632\u06CC\u0631\u0650 \u0622\u062E\u0631\u06CC\u0646 swing-low \u062A\u0631\u06CC\u0644 \u06A9\u0646. \u0628\u0627 \u0646\u0632\u062F\u06CC\u06A9\u200C\u0634\u062F\u0646 \u0628\u0647 \u0645\u0642\u0627\u0648\u0645\u062A\u060C TP \u0631\u0627 \u067E\u06CC\u0634\u200C\u062F\u0633\u062A\u0627\u0646\u0647 \u0628\u06AF\u06CC\u0631.",
-    filters: [`\u0631\u0648\u0646\u062F EMA200 + ADX\u2265${cfg.adxMin}`, `pullback \u062D\u0645\u0627\u06CC\u062A \u2264${cfg.nearMax}\xD7ATR`, `\u0641\u0636\u0627 \u2265${cfg.roomMin}\xD7ATR`, `RSI\u2264${cfg.rsiMax}`, cfg.golden ? `\u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC ${cfg.hLo}-${cfg.hHi} UTC` : "\u0628\u062F\u0648\u0646\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0632\u0645\u0627\u0646"]
-  }, cfg.id, a.price, reg, capital, riskPct);
-}
 var S334_CFG = {
   // منبعِ اعداد: results/_s334_XAUUSD_M5.json  (RQS+ 81.6 · WR 61.7% · PF 1.61 · DD 1.87%)
   "XAUUSD-M5": { id: "XAUUSD-M5", pip: 0.1, zWin: 34, zThr: 2.4, rsiThr: 70, hurstMax: 0.5, kurtMax: 1.8, slPip: 110, tpPip: 125, maxHold: 20 },
@@ -7223,7 +7131,6 @@ var s313Layer = (cfg) => (ctx) => {
 };
 var s321Layer = (cfg) => (ctx) => decideS321(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s322Layer = (cfg) => (ctx) => decideS322(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
-var s323Layer = (cfg) => (ctx) => decideS323(cfg, ctx.a, ctx.candles, ctx.utcHour, ctx.capital, ctx.riskPct);
 var s324Layer = (cfg) => (ctx) => decideS324(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s328Layer = (cfg) => (ctx) => decideS328(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s330Layer = (cfg) => (ctx) => decideS330(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
@@ -7260,7 +7167,9 @@ var CARD_LAYERS = {
     // احیای squeeze با فیلترِ آماری r2+hurst — RQS+=91.2
     s324Layer(S324_CFG["XAUUSD-M15"]),
     s322Layer(S322_CFG["XAUUSD-M15"]),
-    s323Layer(S323_CFG["XAUUSD-M15"]),
+    // ⚰️ S323 حذف شد (بازداوریِ RQS2 v2.4). این کارت z=1.19 داشت — لیفتِ +5.86pp
+    //    روی n=105؛ بسیار دورتر از سدِ 3.634. نسخهٔ مستقر حتی ضعیف‌تر: n=83، WR=55.42٪.
+    //    جزئیات: results/S323_SRPullbackGolden_Xauusd_M5M15M30H1_rqs2-24_DEAD.md
     s335Layer(S335_CFG["XAUUSD-M15"]),
     // S335 — Reflex dip-turn + گیتِ r2>0.55 — RQS+=89.7 (WR 60.0% · PF 2.08) · همپوشانیِ صفر با S333
     s344Layer(S344_CFG["XAUUSD-M15"]),
@@ -7279,7 +7188,10 @@ var CARD_LAYERS = {
     s321Layer(S321_CFG["XAUUSD-M30"]),
     // ⚰️ S327 حذف شد (RQS2=22.2 · سد=70) — نزدیک‌ترین شکستِ H2 کلِ لایه: مازاد +2.90pp در برابرِ کفِ 3.00pp.
     s326Layer(STREAK_REV_CFG["XAUUSD-M30"]),
-    s323Layer(S323_CFG["XAUUSD-M30"]),
+    // ⚰️ S323 حذف شد (RQS2=24.7 · بهترین کارتِ کلِ لایه). ۱۰ دروازه پاس، تنها H5
+    //    افتاد: z=3.266 در برابرِ سدِ 3.634 (درون‌کارتی) و 4.131 (سراسری). چهار
+    //    مسیرِ نجات با ۱۶۸ آزمون شکست خورد ⇒ قانونِ مرگِ ابدی محقق شد.
+    //    نسخهٔ مستقر لیفتِ **منفی** −4.25pp داشت (n=104، WR=55.77٪ در برابرِ مبنای 58.29٪).
     s312Layer(295, 295, 36)
   ],
   "XAUUSD-H1": [
@@ -7295,7 +7207,9 @@ var CARD_LAYERS = {
     s313Layer(S313_H1),
     s328Layer(S328_CFG["XAUUSD-H1"]),
     // ⚰️ S327 حذف شد (RQS2=15.4 · سد=70) — شش دروازه شکست؛ z=1.81 در هندسهٔ قانونی.
-    s323Layer(S323_CFG["XAUUSD-H1"]),
+    // ⚰️ S323 حذف شد. نسخهٔ مستقر بدترین کارتِ کلِ ممیزی بود: n=17، WR=35.29٪،
+    //    لیفتِ −14.91pp ⇒ ۹۶٪ از قرعه‌های تصادفی از سیگنالِ سایت بهتر عمل می‌کردند.
+    //    نسخهٔ بک‌تست‌شده هم z=2.40 روی n=37 داشت — زیرِ هر سه سد.
     s335Layer(S335_CFG["XAUUSD-H1"]),
     // S335 — Reflex dip-turn + گیتِ Chop<38.2 — RQS+=89.7 (WR 61.2% · PF 1.85) · همپوشانیِ صفر با S333
     s312Layer(395, 395, 24)
