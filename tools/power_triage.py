@@ -161,12 +161,14 @@ def main():
         return
 
     order = {"CLEARS_BAR_UNJUDGED": 0, "RESCUABLE": 1,
-             "JUDGED_REJECTED": 2, "HARD": 3, "NEGATIVE": 4}
+             "JUDGED_REJECTED": 2, "SKILL_BUT_BELOW_COST": 3,
+             "HARD": 4, "NEGATIVE": 5}
     rows.sort(key=lambda r: (order[r["category"]],
                              -(r["z"] if r["z"] else 0)))
 
     ICON = {"CLEARS_BAR_UNJUDGED": "⭐", "RESCUABLE": "🟢",
-            "JUDGED_REJECTED": "⚖️", "HARD": "🟡", "NEGATIVE": "🔴"}
+            "JUDGED_REJECTED": "⚖️", "SKILL_BUT_BELOW_COST": "💸",
+            "HARD": "🟡", "NEGATIVE": "🔴"}
 
     if a.md:
         print("| اسکن | کارت | n | z | کران | n لازم | ضریب | دسته |")
