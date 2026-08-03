@@ -1,0 +1,98 @@
+{
+ "pair": "XAUUSD",
+ "test": "parameter_coherence_and_sign_test",
+ "cards": {
+  "M5": {
+   "n_base": 64,
+   "wr_base": 65.625,
+   "net_base": 2887.9,
+   "best": {
+    "K": 7,
+    "depth": 3,
+    "q": 0.3,
+    "n": 20,
+    "wr": 85.0,
+    "d_wr": 19.375,
+    "retention": 0.3125,
+    "d_net": -1437.5
+   },
+   "cells_pos": 23,
+   "cells_neg": 12,
+   "cells_total": 36,
+   "cells_net_pos": 0
+  },
+  "M15": {
+   "n_base": 51,
+   "wr_base": 62.745,
+   "net_base": 3282.8,
+   "best": {
+    "K": 3,
+    "depth": 2,
+    "q": 0.45,
+    "n": 25,
+    "wr": 76.0,
+    "d_wr": 13.255,
+    "retention": 0.4902,
+    "d_net": -998.9
+   },
+   "cells_pos": 11,
+   "cells_neg": 16,
+   "cells_total": 27,
+   "cells_net_pos": 0
+  },
+  "M30": {
+   "n_base": 42,
+   "wr_base": 66.667,
+   "net_base": 2991.6,
+   "best": {
+    "K": 4,
+    "depth": 2,
+    "q": 0.75,
+    "n": 31,
+    "wr": 70.968,
+    "d_wr": 4.301,
+    "retention": 0.7381,
+    "d_net": -447.0
+   },
+   "cells_pos": 7,
+   "cells_neg": 10,
+   "cells_total": 22,
+   "cells_net_pos": 3
+  },
+  "H1": {
+   "n_base": 74,
+   "wr_base": 62.162,
+   "net_base": 4251.3,
+   "best": {
+    "K": 7,
+    "depth": 2,
+    "q": 0.75,
+    "n": 58,
+    "wr": 67.241,
+    "d_wr": 5.079,
+    "retention": 0.7838,
+    "d_net": -509.5
+   },
+   "cells_pos": 7,
+   "cells_neg": 29,
+   "cells_total": 36,
+   "cells_net_pos": 0
+  }
+ },
+ "pooled": {
+  "cells_total": 121,
+  "d_wr_positive": 48,
+  "d_wr_negative": 67,
+  "d_wr_zero": 6,
+  "mean_d_wr": -0.5452,
+  "cells_improving_net": 3
+ },
+ "best_params_by_card": {
+  "M5": "K=7 depth=3 q=0.3",
+  "M15": "K=3 depth=2 q=0.45",
+  "M30": "K=4 depth=2 q=0.75",
+  "H1": "K=7 depth=2 q=0.75"
+ },
+ "verdict": "INCOHERENT_NOISE_FITTING",
+ "note": "the optimal cell differs on every card with the quantile jumping 0.30, 0.45, 0.75, 0.75 and the confirmation window jumping 7, 3, 4, 7, so there is no parameter region that works across cards, which is the signature of fitting noise rather than of a real effect. pooled across all 121 reportable cells the majority is negative at 67 versus 48 positive with a mean win-rate change of -0.545 points, and only 3 of 121 cells raise net profit at all. every card best cell loses money in absolute terms despite raising the win rate, the extreme being five minute where a headline 85 percent win rate is produced by discarding 69 percent of the sample and costs 1437.5 pips."
+}
