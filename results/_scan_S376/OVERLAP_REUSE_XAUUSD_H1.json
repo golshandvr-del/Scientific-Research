@@ -1,0 +1,83 @@
+{
+ "pair": "XAUUSD",
+ "tf": "H1",
+ "host": "S333",
+ "n_base": 74,
+ "geometry": {
+  "sl": 450,
+  "tp": 520,
+  "mh": 64,
+  "inherited": false
+ },
+ "overlap_with_host_pct": 100.0,
+ "overlap_note": "a filter cannot create a trade the host did not generate, so trade-space overlap is 100 percent by construction and confirms the filter is a pure subset rather than a new layer. the meaningful question is therefore not how much it overlaps but whether the quantity it measures separates wins from losses at all.",
+ "separation_S333": {
+  "K3_d1": {
+   "auc": 0.3843,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 793.0,
+   "z_mw": -1.6607
+  },
+  "K3_d2": {
+   "auc": 0.3533,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 833.0,
+   "z_mw": -2.1065
+  },
+  "K3_d3": {
+   "auc": 0.4193,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 748.0,
+   "z_mw": -1.1591
+  },
+  "K4_d1": {
+   "auc": 0.337,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 854.0,
+   "z_mw": -2.3406
+  },
+  "K4_d2": {
+   "auc": 0.3727,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 808.0,
+   "z_mw": -1.8279
+  },
+  "K4_d3": {
+   "auc": 0.4363,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 726.0,
+   "z_mw": -0.9139
+  },
+  "K7_d1": {
+   "auc": 0.4441,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 716.0,
+   "z_mw": -0.8025
+  },
+  "K7_d2": {
+   "auc": 0.4464,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 713.0,
+   "z_mw": -0.769
+  },
+  "K7_d3": {
+   "auc": 0.4107,
+   "n_win": 46,
+   "n_loss": 28,
+   "U": 759.0,
+   "z_mw": -1.2817
+  }
+ },
+ "auc_S333_mean": 0.4005,
+ "auc_S333_max": 0.4464,
+ "auc_S333_min": 0.337,
+ "diagnosis": "INVERTED_OR_NEGLIGIBLE"
+}
