@@ -173,14 +173,24 @@ def main():
     import collections
     c = collections.Counter(r["category"] for r in rows)
     print(f"\nخلاصه ({len(rows)} نتیجه):  "
-          f"✅ {c['ALREADY_CLEARS']}   🟢 {c['RESCUABLE']}   "
-          f"🟡 {c['HARD']}   🔴 {c['NEGATIVE']}")
-    resc = [r for r in rows if r["category"] == "RESCUABLE"]
-    if resc:
-        print("\n🟢 نامزدهای احیا (به ترتیبِ کم‌هزینه‌ترین):")
-        for r in sorted(resc, key=lambda x: x["ratio"])[:15]:
-            print(f"   {r['scan']:8} {r['card']:13} n={r['n']:>6,} → "
-                  f"{r['n_needed']:>7,.0f}  (کمبود {r['n_needed']-r['n']:>7,.0f})")
+          f"⭐ {c['CLEARS_BAR_UNJUDGED']}   🟢 {c['RESCUABLE']}   "
+          f"⚖️ {c['JUDGED_REJECTED']}   🟡 {c['HARD']}   🔴 {c['NEGATIVE']}")
+
+    act = [r for r in rows
+           if r["category"] in ("CLEARS_BAR_UNJUDGED", "RESCUABLE")]
+    if act:
+        print("\n📌 نامزدهای اقدام (شرطِ لازم را دارند؛ داوریِ ۱۱ دروازه هنوز لازم است):")
+        for r in sorted(act, key=lambda x: (x["ratio"] or 0)):
+            gap = (f"کمبود {r['n_needed']-r['n']:>8,.0f}"
+                   if r["n_needed"] and r["n_needed"] > r["n"] else "نمونه کافی")
+            print(f"   {ICON[r['category']]} {r['scan']:8} {r['card']:14} "
+                  f"n={r['n']:>7,}  z={r['z']:+.2f}  {gap}")
+    else:
+        print("\n📌 هیچ نامزدِ اقدامی نیست — همهٔ نتایج یا منفی‌اند، یا داوری‌شده، "
+              "یا نمونهٔ لازمشان دور از دسترس است.")
+
+    print("\n⚠️ یادآوری: عبور از کرانِ شانس **شرطِ لازم** است، نه کافی. "
+          "هر نامزد باید داوریِ کاملِ ۱۱ دروازه را جداگانه پاس کند.")
 
 
 if __name__ == "__main__":
