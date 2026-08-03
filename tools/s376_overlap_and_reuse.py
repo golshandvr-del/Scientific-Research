@@ -145,7 +145,12 @@ def main():
     if not os.path.exists(path):
         print(f"   ⊘ {pair}_{tf}: فایلِ داده نیست"); return
     df = pd.read_csv(path)
-    pip = se.pip_size(pair)
+    df.columns = [c.lower() for c in df.columns]
+    # pip از رجیستریِ داراییِ موتور می‌آید (نه از تابعِ pip_size که وجود ندارد) —
+    # و ثبتِ دارایی پیش از آن لازم است، عیناً مثلِ `run_card`.
+    key = f"{pair}_{tf}"
+    _reg_asset(key, path, pair)
+    pip = se.ASSETS[key]['pip']
     cfg, inherited = load_cfg(pair, tf, df)
     sl, tp, mh = cfg['sl'], cfg['tp'], cfg['mh']
 
