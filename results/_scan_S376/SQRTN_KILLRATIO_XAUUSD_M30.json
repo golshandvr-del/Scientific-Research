@@ -1,0 +1,470 @@
+{
+ "pair": "XAUUSD",
+ "tf": "M30",
+ "bound_H5": 2.6768,
+ "n_trials": 153,
+ "base": {
+  "n": 42,
+  "wr": 66.667,
+  "wins": 28,
+  "losses": 14,
+  "net": 2991.6,
+  "base_kill_ratio": 0.5,
+  "z_by_ref": {
+   "50": 2.1603,
+   "55": 1.5198,
+   "58": 1.138,
+   "60": 0.882
+  }
+ },
+ "cells": [
+  {
+   "K": 4,
+   "depth": 2,
+   "q": 0.75,
+   "n": 31,
+   "wr": 70.968,
+   "d_wr": 4.301,
+   "retention": 0.7381,
+   "d_net": -447.0,
+   "killed_losses": 5,
+   "killed_wins": 6,
+   "kill_ratio": 0.8333,
+   "kill_ratio_rel": 1.6667,
+   "z_by_ref": {
+    "50": 2.3349,
+    "55": 1.7871,
+    "58": 1.4629,
+    "60": 1.2465
+   }
+  },
+  {
+   "K": 3,
+   "depth": 1,
+   "q": 0.6,
+   "n": 26,
+   "wr": 69.231,
+   "d_wr": 2.564,
+   "retention": 0.619,
+   "d_net": 22.9,
+   "killed_losses": 6,
+   "killed_wins": 10,
+   "kill_ratio": 0.6,
+   "kill_ratio_rel": 1.2,
+   "z_by_ref": {
+    "50": 1.9612,
+    "55": 1.4586,
+    "58": 1.1603,
+    "60": 0.9608
+   }
+  },
+  {
+   "K": 3,
+   "depth": 1,
+   "q": 0.75,
+   "n": 32,
+   "wr": 68.75,
+   "d_wr": 2.083,
+   "retention": 0.7619,
+   "d_net": 174.3,
+   "killed_losses": 4,
+   "killed_wins": 6,
+   "kill_ratio": 0.6667,
+   "kill_ratio_rel": 1.3333,
+   "z_by_ref": {
+    "50": 2.1213,
+    "55": 1.5635,
+    "58": 1.2321,
+    "60": 1.0104
+   }
+  },
+  {
+   "K": 7,
+   "depth": 3,
+   "q": 0.75,
+   "n": 32,
+   "wr": 68.75,
+   "d_wr": 2.083,
+   "retention": 0.7619,
+   "d_net": 199.9,
+   "killed_losses": 4,
+   "killed_wins": 6,
+   "kill_ratio": 0.6667,
+   "kill_ratio_rel": 1.3333,
+   "z_by_ref": {
+    "50": 2.1213,
+    "55": 1.5635,
+    "58": 1.2321,
+    "60": 1.0104
+   }
+  },
+  {
+   "K": 3,
+   "depth": 3,
+   "q": 0.6,
+   "n": 25,
+   "wr": 68.0,
+   "d_wr": 1.333,
+   "retention": 0.5952,
+   "d_net": -2547.0,
+   "killed_losses": 6,
+   "killed_wins": 11,
+   "kill_ratio": 0.5455,
+   "kill_ratio_rel": 1.0909,
+   "z_by_ref": {
+    "50": 1.8,
+    "55": 1.3065,
+    "58": 1.0131,
+    "60": 0.8165
+   }
+  },
+  {
+   "K": 4,
+   "depth": 2,
+   "q": 0.6,
+   "n": 25,
+   "wr": 68.0,
+   "d_wr": 1.333,
+   "retention": 0.5952,
+   "d_net": -1547.9,
+   "killed_losses": 6,
+   "killed_wins": 11,
+   "kill_ratio": 0.5455,
+   "kill_ratio_rel": 1.0909,
+   "z_by_ref": {
+    "50": 1.8,
+    "55": 1.3065,
+    "58": 1.0131,
+    "60": 0.8165
+   }
+  },
+  {
+   "K": 7,
+   "depth": 1,
+   "q": 0.75,
+   "n": 31,
+   "wr": 67.742,
+   "d_wr": 1.075,
+   "retention": 0.7381,
+   "d_net": -755.1,
+   "killed_losses": 4,
+   "killed_wins": 7,
+   "kill_ratio": 0.5714,
+   "kill_ratio_rel": 1.1429,
+   "z_by_ref": {
+    "50": 1.9757,
+    "55": 1.426,
+    "58": 1.099,
+    "60": 0.8799
+   }
+  },
+  {
+   "K": 4,
+   "depth": 1,
+   "q": 0.6,
+   "n": 27,
+   "wr": 66.667,
+   "d_wr": 0.0,
+   "retention": 0.6429,
+   "d_net": -104.1,
+   "killed_losses": 5,
+   "killed_wins": 10,
+   "kill_ratio": 0.5,
+   "kill_ratio_rel": 1.0,
+   "z_by_ref": {
+    "50": 1.7321,
+    "55": 1.2186,
+    "58": 0.9125,
+    "60": 0.7071
+   }
+  },
+  {
+   "K": 4,
+   "depth": 3,
+   "q": 0.75,
+   "n": 30,
+   "wr": 66.667,
+   "d_wr": 0.0,
+   "retention": 0.7143,
+   "d_net": -1130.4,
+   "killed_losses": 4,
+   "killed_wins": 8,
+   "kill_ratio": 0.5,
+   "kill_ratio_rel": 1.0,
+   "z_by_ref": {
+    "50": 1.8258,
+    "55": 1.2845,
+    "58": 0.9618,
+    "60": 0.7454
+   }
+  },
+  {
+   "K": 7,
+   "depth": 2,
+   "q": 0.6,
+   "n": 27,
+   "wr": 66.667,
+   "d_wr": 0.0,
+   "retention": 0.6429,
+   "d_net": -167.0,
+   "killed_losses": 5,
+   "killed_wins": 10,
+   "kill_ratio": 0.5,
+   "kill_ratio_rel": 1.0,
+   "z_by_ref": {
+    "50": 1.7321,
+    "55": 1.2186,
+    "58": 0.9125,
+    "60": 0.7071
+   }
+  },
+  {
+   "K": 7,
+   "depth": 2,
+   "q": 0.75,
+   "n": 33,
+   "wr": 66.667,
+   "d_wr": 0.0,
+   "retention": 0.7857,
+   "d_net": -240.7,
+   "killed_losses": 3,
+   "killed_wins": 6,
+   "kill_ratio": 0.5,
+   "kill_ratio_rel": 1.0,
+   "z_by_ref": {
+    "50": 1.9149,
+    "55": 1.3472,
+    "58": 1.0088,
+    "60": 0.7818
+   }
+  },
+  {
+   "K": 7,
+   "depth": 3,
+   "q": 0.6,
+   "n": 27,
+   "wr": 66.667,
+   "d_wr": 0.0,
+   "retention": 0.6429,
+   "d_net": -291.6,
+   "killed_losses": 5,
+   "killed_wins": 10,
+   "kill_ratio": 0.5,
+   "kill_ratio_rel": 1.0,
+   "z_by_ref": {
+    "50": 1.7321,
+    "55": 1.2186,
+    "58": 0.9125,
+    "60": 0.7071
+   }
+  },
+  {
+   "K": 3,
+   "depth": 2,
+   "q": 0.75,
+   "n": 32,
+   "wr": 65.625,
+   "d_wr": -1.042,
+   "retention": 0.7619,
+   "d_net": -594.6,
+   "killed_losses": 3,
+   "killed_wins": 7,
+   "kill_ratio": 0.4286,
+   "kill_ratio_rel": 0.8571,
+   "z_by_ref": {
+    "50": 1.7678,
+    "55": 1.2081,
+    "58": 0.8739,
+    "60": 0.6495
+   }
+  },
+  {
+   "K": 4,
+   "depth": 1,
+   "q": 0.75,
+   "n": 32,
+   "wr": 65.625,
+   "d_wr": -1.042,
+   "retention": 0.7619,
+   "d_net": -383.1,
+   "killed_losses": 3,
+   "killed_wins": 7,
+   "kill_ratio": 0.4286,
+   "kill_ratio_rel": 0.8571,
+   "z_by_ref": {
+    "50": 1.7678,
+    "55": 1.2081,
+    "58": 0.8739,
+    "60": 0.6495
+   }
+  },
+  {
+   "K": 3,
+   "depth": 2,
+   "q": 0.6,
+   "n": 26,
+   "wr": 65.385,
+   "d_wr": -1.282,
+   "retention": 0.619,
+   "d_net": -751.9,
+   "killed_losses": 5,
+   "killed_wins": 11,
+   "kill_ratio": 0.4545,
+   "kill_ratio_rel": 0.9091,
+   "z_by_ref": {
+    "50": 1.569,
+    "55": 1.0644,
+    "58": 0.763,
+    "60": 0.5605
+   }
+  },
+  {
+   "K": 7,
+   "depth": 1,
+   "q": 0.6,
+   "n": 26,
+   "wr": 65.385,
+   "d_wr": -1.282,
+   "retention": 0.619,
+   "d_net": -980.9,
+   "killed_losses": 5,
+   "killed_wins": 11,
+   "kill_ratio": 0.4545,
+   "kill_ratio_rel": 0.9091,
+   "z_by_ref": {
+    "50": 1.569,
+    "55": 1.0644,
+    "58": 0.763,
+    "60": 0.5605
+   }
+  },
+  {
+   "K": 3,
+   "depth": 1,
+   "q": 0.45,
+   "n": 20,
+   "wr": 65.0,
+   "d_wr": -1.667,
+   "retention": 0.4762,
+   "d_net": -866.8,
+   "killed_losses": 7,
+   "killed_wins": 15,
+   "kill_ratio": 0.4667,
+   "kill_ratio_rel": 0.9333,
+   "z_by_ref": {
+    "50": 1.3416,
+    "55": 0.8989,
+    "58": 0.6343,
+    "60": 0.4564
+   }
+  },
+  {
+   "K": 7,
+   "depth": 2,
+   "q": 0.45,
+   "n": 20,
+   "wr": 65.0,
+   "d_wr": -1.667,
+   "retention": 0.4762,
+   "d_net": -640.3,
+   "killed_losses": 7,
+   "killed_wins": 15,
+   "kill_ratio": 0.4667,
+   "kill_ratio_rel": 0.9333,
+   "z_by_ref": {
+    "50": 1.3416,
+    "55": 0.8989,
+    "58": 0.6343,
+    "60": 0.4564
+   }
+  },
+  {
+   "K": 3,
+   "depth": 3,
+   "q": 0.75,
+   "n": 30,
+   "wr": 63.333,
+   "d_wr": -3.333,
+   "retention": 0.7143,
+   "d_net": -1843.5,
+   "killed_losses": 3,
+   "killed_wins": 9,
+   "kill_ratio": 0.3333,
+   "kill_ratio_rel": 0.6667,
+   "z_by_ref": {
+    "50": 1.4606,
+    "55": 0.9174,
+    "58": 0.5918,
+    "60": 0.3726
+   }
+  },
+  {
+   "K": 4,
+   "depth": 3,
+   "q": 0.6,
+   "n": 24,
+   "wr": 62.5,
+   "d_wr": -4.167,
+   "retention": 0.5714,
+   "d_net": -2411.6,
+   "killed_losses": 5,
+   "killed_wins": 13,
+   "kill_ratio": 0.3846,
+   "kill_ratio_rel": 0.7692,
+   "z_by_ref": {
+    "50": 1.2247,
+    "55": 0.7385,
+    "58": 0.4467,
+    "60": 0.25
+   }
+  },
+  {
+   "K": 4,
+   "depth": 1,
+   "q": 0.45,
+   "n": 20,
+   "wr": 60.0,
+   "d_wr": -6.667,
+   "retention": 0.4762,
+   "d_net": -1427.4,
+   "killed_losses": 6,
+   "killed_wins": 16,
+   "kill_ratio": 0.375,
+   "kill_ratio_rel": 0.75,
+   "z_by_ref": {
+    "50": 0.8944,
+    "55": 0.4495,
+    "58": 0.1812,
+    "60": 0.0
+   }
+  },
+  {
+   "K": 7,
+   "depth": 3,
+   "q": 0.45,
+   "n": 20,
+   "wr": 60.0,
+   "d_wr": -6.667,
+   "retention": 0.4762,
+   "d_net": -1317.3,
+   "killed_losses": 6,
+   "killed_wins": 16,
+   "kill_ratio": 0.375,
+   "kill_ratio_rel": 0.75,
+   "z_by_ref": {
+    "50": 0.8944,
+    "55": 0.4495,
+    "58": 0.1812,
+    "60": 0.0
+   }
+  }
+ ],
+ "best_filtered_z_by_ref": {
+  "50": 2.3349,
+  "55": 1.7871,
+  "58": 1.4629,
+  "60": 1.2465
+ },
+ "verdict": "SCREEN_FAIL_H5_UNREACHABLE",
+ "note": "best achievable z under the most generous reference of 50 percent is 2.3349 against the pre-frozen bound of 2.6768, a shortfall of -0.3419; under the realistic reference of 58 percent the shortfall is -1.2139. the unfiltered base arm already scores 2.1603 at ref 50, so the entire 36-cell grid buys only 0.1746 of z while raising the bound by 0.0914 from 2.5854 to 2.6768."
+}
