@@ -68,7 +68,13 @@ from strategies.s366_stairs_channel_breakout import (                    # noqa:
 from strategies.s374_kennedy_break_gate import member_signals_mode       # noqa: E402
 
 OUT = "results/_scan_S375"
-N_PERM = 400
+# ⚠️ ۵۰۰ و نه ۴۰۰: موتورِ RQS2 در اجرای اولِ داوری صریحاً `H3 UNKNOWN` صادر کرد
+#    با این متن: «only 400 permutations (<500) — the permutation standard
+#    deviation has not converged, so the skill z is still seed-dependent».
+#    یعنی با ۴۰۰ جای‌گشت، `sd` هنوز همگرا نشده و `z` به بذر وابسته است ⇒ حکم
+#    معتبر نیست. این تذکرِ خودِ موتور است، نه سلیقهٔ من، و اطاعت از آن سخت‌گیرانه‌تر
+#    است نه آسان‌تر (sd همگرا معمولاً کمی بزرگ‌تر ⇒ z کمی کوچک‌تر).
+N_PERM = 500
 
 # ⛔ شمارشِ چندگانگی و سد — پیش‌ثبت §۵، تثبیت‌شده پیش از وجودِ نتیجه.
 N_TRIALS = 117
