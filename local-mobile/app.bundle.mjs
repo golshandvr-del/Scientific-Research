@@ -7010,6 +7010,253 @@ function decideS354(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
 }
 
+// ../web_tool/src/kennedy_break_s374.ts
+var KENNEDY_CFG = {
+  "XAUUSD-H4": {
+    id: "XAUUSD-H4",
+    tfFa: "H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)",
+    k: 3,
+    m: 1,
+    s: 0.5,
+    gate: false,
+    maxHoldBars: 59,
+    meanR: 0.6082,
+    nTrades: 20
+  },
+  "EURUSD-H4": {
+    id: "EURUSD-H4",
+    tfFa: "H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)",
+    k: 2,
+    m: 1,
+    s: 0.5,
+    gate: true,
+    maxHoldBars: 50,
+    meanR: 0.2362,
+    nTrades: 88
+  }
+};
+var HORIZON_MULT = 2;
+var EMPTY = {
+  state: "NEUTRAL",
+  side: null,
+  hasChannel: false,
+  isBear: false,
+  lowerLine: NaN,
+  upperLine: NaN,
+  chanHeight: NaN,
+  shrink: false,
+  kennedyBreak: false,
+  closeBreak: false,
+  distToKennedy: NaN,
+  slDist: NaN,
+  tpDist: NaN,
+  feasible: false,
+  reason: "\u0632\u0645\u06CC\u0646\u0647\u0654 \u06A9\u0627\u0646\u0627\u0644\u0650 \u0645\u0639\u062A\u0628\u0631\u06CC \u0631\u0648\u06CC \u0627\u06CC\u0646 \u0627\u0641\u0642 \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u0647 \u0627\u0633\u062A."
+};
+function pivotFlags(high, low, k) {
+  const n = high.length;
+  const ph = new Array(n).fill(false);
+  const pl = new Array(n).fill(false);
+  for (let i = k; i < n - k; i++) {
+    let lmax = -Infinity, rmax = -Infinity, lmin = Infinity, rmin = Infinity;
+    for (let j = 1; j <= k; j++) {
+      lmax = Math.max(lmax, high[i - j]);
+      rmax = Math.max(rmax, high[i + j]);
+      lmin = Math.min(lmin, low[i - j]);
+      rmin = Math.min(rmin, low[i + j]);
+    }
+    ph[i] = high[i] > lmax && high[i] >= rmax;
+    pl[i] = low[i] < lmin && low[i] <= rmin;
+  }
+  return { ph, pl };
+}
+function buildChannel(piv) {
+  if (piv.length < 5) return null;
+  const last5 = piv.slice(-5);
+  const tps = last5.map((p) => p.typ).join("");
+  const ix = last5.map((p) => p.idx);
+  const px = last5.map((p) => p.px);
+  if (tps === "LHLHL") {
+    const [L1, H1, L2, H2, L3] = px;
+    const [iL1, , iL2, iH2, iL3] = ix;
+    if (!(L1 > L2 && L2 > L3 && H1 > H2 && H2 > L1)) return null;
+    if (iL3 <= iL2) return null;
+    const b = (L3 - L2) / (iL3 - iL2);
+    const hgt = H2 - (L3 + b * (iH2 - iL3));
+    if (!(hgt > 0)) return null;
+    return { bear: true, a: L3, b, tRef: iL3, h: hgt, shrink: L2 - L3 < L1 - L2, t0: iL1, tLast: iL3 };
+  }
+  if (tps === "HLHLH") {
+    const [H1, L1, H2, L2, H3] = px;
+    const [iH1, , iH2, iL2, iH3] = ix;
+    if (!(H1 < H2 && H2 < H3 && L1 < L2 && L2 < H1)) return null;
+    if (iH3 <= iH2) return null;
+    const b = (H3 - H2) / (iH3 - iH2);
+    const hgt = H3 + b * (iL2 - iH3) - L2;
+    if (!(hgt > 0)) return null;
+    return { bear: false, a: H3 - hgt, b, tRef: iH3, h: hgt, shrink: H3 - H2 < H2 - H1, t0: iH1, tLast: iH3 };
+  }
+  return null;
+}
+function liveChannel(high, low, k, gate, t) {
+  const NONE = { ch: null, alreadyBroke: false };
+  const { ph, pl } = pivotFlags(high, low, k);
+  const ev = [];
+  for (let i = 0; i < high.length; i++) {
+    if (ph[i]) ev.push({ conf: i + k, idx: i, typ: "H", px: high[i] });
+    if (pl[i]) ev.push({ conf: i + k, idx: i, typ: "L", px: low[i] });
+  }
+  ev.sort((a, b) => a.conf - b.conf || a.idx - b.idx);
+  const piv = [];
+  let cur = null;
+  let curKey = "null";
+  let ptr = 0;
+  let alreadyBroke = false;
+  for (let bar = 0; bar <= t; bar++) {
+    let changed = false;
+    while (ptr < ev.length && ev[ptr].conf <= bar) {
+      const e = ev[ptr++];
+      const tail = piv[piv.length - 1];
+      if (tail && tail.typ === e.typ) {
+        if (e.typ === "H" && e.px > tail.px || e.typ === "L" && e.px < tail.px) {
+          piv[piv.length - 1] = { typ: e.typ, idx: e.idx, px: e.px };
+          changed = true;
+        }
+      } else {
+        piv.push({ typ: e.typ, idx: e.idx, px: e.px });
+        changed = true;
+        if (piv.length > 8) piv.shift();
+      }
+    }
+    if (changed) {
+      const nw = buildChannel(piv);
+      const nwKey = JSON.stringify(nw);
+      if (nwKey !== curKey) {
+        cur = nw;
+        curKey = nwKey;
+        alreadyBroke = false;
+      }
+    }
+    if (bar < t && cur !== null) {
+      const alive = bar <= cur.tLast + HORIZON_MULT * Math.max(1, cur.tLast - cur.t0);
+      if (alive) {
+        const lo = cur.a + cur.b * (bar - cur.tRef);
+        const up = lo + cur.h;
+        const shr = gate ? cur.shrink : false;
+        const kB = high[bar] < lo;
+        const kA = low[bar] > up;
+        const sK = cur.bear && !shr && kB || !cur.bear && shr && kB;
+        const lK = !cur.bear && !shr && kA || cur.bear && shr && kA;
+        if (sK || lK) alreadyBroke = true;
+      }
+    }
+  }
+  if (cur === null) return NONE;
+  if (t > cur.tLast + HORIZON_MULT * Math.max(1, cur.tLast - cur.t0)) return NONE;
+  return { ch: cur, alreadyBroke };
+}
+function computeKennedy(open, high, low, close, cfg, pip, costPip) {
+  const n = close.length;
+  if (n < 4 * cfg.k + 12) return { ...EMPTY, reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0633\u0627\u062E\u062A\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0631\u0648\u06CC \u0627\u06CC\u0646 \u0627\u0641\u0642 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A." };
+  const t = n - 1;
+  const { ch, alreadyBroke } = liveChannel(high, low, cfg.k, cfg.gate, t);
+  if (ch === null) return EMPTY;
+  const lower = ch.a + ch.b * (t - ch.tRef);
+  const upper = lower + ch.h;
+  const shrink = cfg.gate ? ch.shrink : false;
+  const kBelow = high[t] < lower;
+  const kAbove = low[t] > upper;
+  const cBelow = close[t] < lower;
+  const cAbove = close[t] > upper;
+  const shortK = ch.bear && !shrink && kBelow || !ch.bear && shrink && kBelow;
+  const longK = !ch.bear && !shrink && kAbove || ch.bear && shrink && kAbove;
+  const shortC = ch.bear && !shrink && cBelow || !ch.bear && shrink && cBelow;
+  const longC = !ch.bear && !shrink && cAbove || ch.bear && shrink && cAbove;
+  const kennedyBreak = (shortK || longK) && !alreadyBroke;
+  const closeBreak = shortC || longC;
+  const slDist = cfg.s * ch.h;
+  const tpDist = cfg.m * ch.h;
+  const feasible = tpDist / pip >= 2 * costPip && slDist / pip >= costPip;
+  let distToKennedy = NaN;
+  const wantDown = ch.bear && !shrink || !ch.bear && shrink;
+  if (wantDown) distToKennedy = Math.max(0, high[t] - lower);
+  else distToKennedy = Math.max(0, upper - low[t]);
+  const side = !kennedyBreak ? null : longK ? "LONG" : "SHORT";
+  if (kennedyBreak && feasible) {
+    return {
+      state: "ENTRY",
+      side,
+      hasChannel: true,
+      isBear: ch.bear,
+      lowerLine: lower,
+      upperLine: upper,
+      chanHeight: ch.h,
+      shrink,
+      kennedyBreak: true,
+      closeBreak,
+      distToKennedy: 0,
+      slDist,
+      tpDist,
+      feasible,
+      reason: side === "SHORT" ? `\u0634\u06A9\u0633\u062A\u0650 \u0645\u0634\u0631\u0648\u0639\u0650 \u0646\u0632\u0648\u0644\u06CC: \u06A9\u0644\u0650 \u06A9\u0646\u062F\u0644 \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u067E\u0627\u06CC\u06CC\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0628\u0633\u062A\u0647 \u0634\u062F (high=${high[t].toFixed(2)} < line=${lower.toFixed(2)}).` : `\u0634\u06A9\u0633\u062A\u0650 \u0645\u0634\u0631\u0648\u0639\u0650 \u0635\u0639\u0648\u062F\u06CC: \u06A9\u0644\u0650 \u06A9\u0646\u062F\u0644 \u0628\u0627\u0644\u0627\u06CC \u062E\u0637\u0650 \u0628\u0627\u0644\u0627\u06CC \u06A9\u0627\u0646\u0627\u0644 \u0628\u0633\u062A\u0647 \u0634\u062F (low=${low[t].toFixed(2)} > line=${upper.toFixed(2)}).`
+    };
+  }
+  if (closeBreak && !kennedyBreak) {
+    return {
+      state: "APPROACHING",
+      side: shortC ? "SHORT" : "LONG",
+      hasChannel: true,
+      isBear: ch.bear,
+      lowerLine: lower,
+      upperLine: upper,
+      chanHeight: ch.h,
+      shrink,
+      kennedyBreak: false,
+      closeBreak: true,
+      distToKennedy,
+      slDist,
+      tpDist,
+      feasible,
+      reason: wantDown ? `\u0642\u06CC\u0645\u062A \u0632\u06CC\u0631\u0650 \u062E\u0637\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0628\u0633\u062A\u0647 \u0634\u062F \u0648\u0644\u06CC \u0633\u0627\u06CC\u0647\u0654 \u0628\u0627\u0644\u0627 \u0647\u0646\u0648\u0632 \u062F\u0627\u062E\u0644\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0627\u0633\u062A (high=${high[t].toFixed(2)} \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u062E\u0637=${lower.toFixed(2)}). \u0637\u0628\u0642\u0650 \u0642\u0627\u0639\u062F\u0647\u0654 Kennedy \u0627\u06CC\u0646 \u0634\u06A9\u0633\u062A\u0650 \u0648\u0627\u0642\u0639\u06CC \u0646\u06CC\u0633\u062A\u061B \u0628\u0627\u06CC\u062F \u0645\u0646\u062A\u0638\u0631 \u06A9\u0646\u062F\u0644\u06CC \u0628\u0627\u0634\u06CC\u0645 \u06A9\u0647 **\u06A9\u0644\u0650 \u062F\u0627\u0645\u0646\u0647\u200C\u0627\u0634** \u0632\u06CC\u0631\u0650 \u062E\u0637 \u0628\u0627\u0634\u062F.` : `\u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC \u062E\u0637\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0628\u0633\u062A\u0647 \u0634\u062F \u0648\u0644\u06CC \u0633\u0627\u06CC\u0647\u0654 \u067E\u0627\u06CC\u06CC\u0646 \u0647\u0646\u0648\u0632 \u062F\u0627\u062E\u0644\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0627\u0633\u062A (low=${low[t].toFixed(2)} \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u062E\u0637=${upper.toFixed(2)}). \u0637\u0628\u0642\u0650 \u0642\u0627\u0639\u062F\u0647\u0654 Kennedy \u0628\u0627\u06CC\u062F \u0645\u0646\u062A\u0638\u0631 \u06A9\u0646\u062F\u0644\u06CC \u0628\u0627\u0634\u06CC\u0645 \u06A9\u0647 **\u06A9\u0644\u0650 \u062F\u0627\u0645\u0646\u0647\u200C\u0627\u0634** \u0628\u0627\u0644\u0627\u06CC \u062E\u0637 \u0628\u0627\u0634\u062F.`
+    };
+  }
+  if (kennedyBreak && !feasible) {
+    return {
+      ...EMPTY,
+      hasChannel: true,
+      isBear: ch.bear,
+      lowerLine: lower,
+      upperLine: upper,
+      chanHeight: ch.h,
+      shrink,
+      kennedyBreak: true,
+      closeBreak,
+      distToKennedy: 0,
+      slDist,
+      tpDist,
+      feasible: false,
+      reason: `\u0634\u06A9\u0633\u062A\u0650 \u0645\u0634\u0631\u0648\u0639 \u0631\u062E \u062F\u0627\u062F \u0648\u0644\u06CC \u06A9\u0627\u0646\u0627\u0644 \u0622\u0646\u200C\u0642\u062F\u0631 \u06A9\u0645\u200C\u0627\u0631\u062A\u0641\u0627\u0639 \u0627\u0633\u062A \u06A9\u0647 \u0647\u062F\u0641\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0647\u0632\u06CC\u0646\u0647\u0654 \u0631\u0641\u062A\u200C\u0648\u0628\u0631\u06AF\u0634\u062A \u0631\u0627 \u067E\u0648\u0634\u0634 \u0646\u0645\u06CC\u200C\u062F\u0647\u062F (\u0642\u06CC\u062F\u0650 \u0631\u06CC\u0632\u0633\u0627\u062E\u062A\u0627\u0631\u06CC) \u21D2 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u06A9\u0646\u06CC\u0645.`
+    };
+  }
+  return {
+    state: "NEUTRAL",
+    side: null,
+    hasChannel: true,
+    isBear: ch.bear,
+    lowerLine: lower,
+    upperLine: upper,
+    chanHeight: ch.h,
+    shrink,
+    kennedyBreak: false,
+    closeBreak: false,
+    distToKennedy,
+    slDist,
+    tpDist,
+    feasible,
+    reason: `\u06A9\u0627\u0646\u0627\u0644\u0650 ${ch.bear ? "\u0646\u0632\u0648\u0644\u06CC" : "\u0635\u0639\u0648\u062F\u06CC"} \u0632\u0646\u062F\u0647 \u0627\u0633\u062A \u0648 \u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 **\u062F\u0627\u062E\u0644\u0650** \u0622\u0646 \u0642\u0631\u0627\u0631 \u062F\u0627\u0631\u062F (\u062E\u0637\u0650 \u067E\u0627\u06CC\u06CC\u0646=${lower.toFixed(2)} \xB7 \u062E\u0637\u0650 \u0628\u0627\u0644\u0627=${upper.toFixed(2)}). \u062A\u0627 \u0648\u0642\u062A\u06CC \u06A9\u0644\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 \u06CC\u06A9 \u06A9\u0646\u062F\u0644 \u0627\u0632 \u06CC\u06A9\u06CC \u0627\u0632 \u062F\u0648 \u062E\u0637 \u0639\u0628\u0648\u0631 \u0646\u06A9\u0646\u062F\u060C \u0634\u06A9\u0633\u062A\u0650 \u0645\u0634\u0631\u0648\u0639\u06CC \u0648\u062C\u0648\u062F \u0646\u062F\u0627\u0631\u062F.`
+  };
+}
+
 // ../web_tool/src/strategy_registry.ts
 var GOLD_PIP6 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
@@ -7137,6 +7384,69 @@ var s330Layer = (cfg) => (ctx) => decideS330(cfg, ctx.a, ctx.candles, ctx.capita
 var s332Layer = (cfg) => (ctx) => decideS332(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s333Layer = (cfg) => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s334Layer = (cfg) => (ctx) => decideS334(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s374Layer = (cfg) => (ctx) => {
+  const o = ctx.candles.map((c) => c.open), h = ctx.candles.map((c) => c.high);
+  const l = ctx.candles.map((c) => c.low), c2 = ctx.candles.map((c) => c.close);
+  const isEur = cfg.id.startsWith("EUR");
+  const pip = isEur ? 1e-4 : GOLD_PIP6;
+  const costPip = isEur ? 1.6 : 3.3;
+  const r = computeKennedy(o, h, l, c2, cfg, pip, costPip);
+  if (!r.hasChannel) return null;
+  if (r.state === "NEUTRAL" && !r.closeBreak) return null;
+  const price = ctx.a.price;
+  const dirFa = r.side === "SHORT" ? "\u0646\u0632\u0648\u0644\u06CC" : "\u0635\u0639\u0648\u062F\u06CC";
+  const raw2 = {
+    active: r.state === "ENTRY",
+    approaching: r.state === "APPROACHING",
+    direction: r.side ?? (r.isBear ? "SHORT" : "LONG"),
+    slDist: r.slDist,
+    tpDist: r.tpDist,
+    maxHoldBars: cfg.maxHoldBars,
+    reason: r.reason,
+    approachReason: r.state === "APPROACHING" ? `\u0642\u06CC\u0645\u062A \u0628\u0627 close \u0627\u0632 \u062E\u0637\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0639\u0628\u0648\u0631 \u06A9\u0631\u062F\u0647 \u0648\u0644\u06CC **\u06A9\u0644\u0650 \u062F\u0627\u0645\u0646\u0647\u0654** \u06A9\u0646\u062F\u0644 \u0646\u0647 \u2014 \u0637\u0628\u0642\u0650 \u0642\u0627\u0639\u062F\u0647\u0654 Kennedy \u0627\u06CC\u0646 \u0634\u06A9\u0633\u062A\u0650 \u0645\u0634\u0631\u0648\u0639 \u0646\u06CC\u0633\u062A. \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0644\u0627\u0632\u0645: \u06A9\u0646\u062F\u0644\u06CC \u06A9\u0647 \u062A\u0645\u0627\u0645\u0650 \u062F\u0627\u0645\u0646\u0647\u200C\u0627\u0634 \u0622\u0646\u200C\u0633\u0648\u06CC\u0650 \u062E\u0637 \u0628\u0633\u062A\u0647 \u0634\u0648\u062F (\u0641\u0627\u0635\u0644\u0647\u0654 \u0628\u0627\u0642\u06CC\u200C\u0645\u0627\u0646\u062F\u0647: ${isFinite(r.distToKennedy) ? r.distToKennedy.toFixed(isEur ? 5 : 2) : "\u2014"}).` : void 0,
+    indicators: [
+      {
+        name: `\u06A9\u0627\u0646\u0627\u0644\u0650 ${r.isBear ? "\u0646\u0632\u0648\u0644\u06CC" : "\u0635\u0639\u0648\u062F\u06CC"} (Stairs \xB7 k=${cfg.k})`,
+        value: `${r.lowerLine.toFixed(isEur ? 5 : 2)} \u2026 ${r.upperLine.toFixed(isEur ? 5 : 2)}`,
+        status: "ok"
+      },
+      {
+        name: "\u0634\u06A9\u0633\u062A\u0650 \u0645\u0634\u0631\u0648\u0639 (\u06A9\u0644\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 \u06A9\u0646\u062F\u0644 \u0622\u0646\u200C\u0633\u0648\u06CC\u0650 \u062E\u0637)",
+        value: r.kennedyBreak ? `\u0628\u0644\u0647 \u2714 (${dirFa})` : "\u062E\u06CC\u0631",
+        status: r.kennedyBreak ? "ok" : "neutral"
+      },
+      {
+        name: "\u0634\u06A9\u0633\u062A\u0650 close (\u062A\u0639\u0631\u06CC\u0641\u0650 \u0631\u0627\u06CC\u062C \u2014 \u0628\u0647\u200C\u062A\u0646\u0647\u0627\u06CC\u06CC \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A)",
+        value: r.closeBreak ? "\u0628\u0644\u0647" : "\u062E\u06CC\u0631",
+        status: r.closeBreak && !r.kennedyBreak ? "warn" : "neutral"
+      },
+      {
+        name: `\u067E\u0644\u0647\u0654 \u0622\u062E\u0631 \u06A9\u0648\u0686\u06A9\u200C\u0634\u0648\u0646\u062F\u0647${cfg.gate ? "" : " (\u0631\u0648\u06CC \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0628\u06CC\u200C\u0627\u062B\u0631)"}`,
+        value: r.shrink ? "\u0628\u0644\u0647 (\u0628\u0631\u06AF\u0634\u062A\u06CC)" : "\u062E\u06CC\u0631 (\u0647\u0645\u200C\u062C\u0647\u062A)",
+        status: "neutral"
+      },
+      {
+        name: "\u0647\u062F\u0641 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0647\u0632\u06CC\u0646\u0647\u0654 \u0631\u0641\u062A\u200C\u0648\u0628\u0631\u06AF\u0634\u062A",
+        value: r.feasible ? `\u06A9\u0627\u0641\u06CC \u2714 (${(r.tpDist / pip).toFixed(1)} \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 ${costPip} pip)` : "\u0646\u0627\u06A9\u0627\u0641\u06CC \u2718",
+        status: r.feasible ? "ok" : "bad"
+      }
+    ]
+  };
+  const reg = lightRegime2(0, !r.isBear, "s374_kennedy");
+  return rawToDecision(raw2, {
+    code: "S374",
+    name: "\u062F\u0631\u0648\u0627\u0632\u0647\u0654 \u0634\u06A9\u0633\u062A\u0650 Kennedy (\u062E\u0637\u0650 \u06A9\u0627\u0646\u0627\u0644)",
+    kind: "breakout",
+    manageStyle: "structural-trail",
+    manageNote: `\u0647\u062F\u0641 = \u06CC\u06A9 \u0627\u0631\u062A\u0641\u0627\u0639\u0650 \u06A9\u0627\u0646\u0627\u0644 (measured-move) \u0648 \u062D\u062F\u0650 \u0636\u0631\u0631 = \u0646\u06CC\u0645\u0650 \u0627\u0631\u062A\u0641\u0627\u0639. \u062E\u0637\u0650 \u0634\u06A9\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u062D\u0627\u0644\u0627 \u0646\u0642\u0634\u0650 \u062D\u0645\u0627\u06CC\u062A/\u0645\u0642\u0627\u0648\u0645\u062A \u062F\u0627\u0631\u062F \u21D2 \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u06CC \u0628\u0627 **\u06A9\u0644\u0650 \u062F\u0627\u0645\u0646\u0647\u200C\u0627\u0634** \u0628\u0647 \u062F\u0627\u062E\u0644\u0650 \u06A9\u0627\u0646\u0627\u0644 \u0628\u0631\u06AF\u0634\u062A\u060C \u0634\u06A9\u0633\u062A \u0628\u0627\u0637\u0644 \u0634\u062F\u0647 \u0648 \u0628\u0647\u062A\u0631 \u0627\u0633\u062A \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0634\u0648\u062F. \u26A0\uFE0F \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0648 \u0631\u062A\u0628\u0647\u0654 \u0645\u062D\u0627\u0641\u0638\u0647\u200C\u06A9\u0627\u0631\u0627\u0646\u0647 (\u0637\u0644\u0627 ~\u06F4 \u0631\u0648\u06CC\u062F\u0627\u062F \u062F\u0631 \u0633\u0627\u0644) \u21D2 \u062F\u0631 \u062D\u062C\u0645 \u062E\u0648\u06CC\u0634\u062A\u0646\u200C\u062F\u0627\u0631 \u0628\u0627\u0634.`,
+    filters: [
+      "\u0634\u06A9\u0633\u062A \u0641\u0642\u0637 \u0628\u0627 \u0639\u0628\u0648\u0631\u0650 \u06A9\u0644\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 \u06A9\u0646\u062F\u0644 (\u0646\u0647 close)",
+      "\u062A\u0646\u0647\u0627 \u0646\u062E\u0633\u062A\u06CC\u0646 \u0634\u06A9\u0633\u062A\u0650 \u0647\u0631 \u06A9\u0627\u0646\u0627\u0644",
+      "\u0647\u062F\u0641\u0650 measured-move \u0628\u0627\u06CC\u062F \u2265 \u06F2\xD7 \u0647\u0632\u06CC\u0646\u0647\u0654 \u0631\u0641\u062A\u200C\u0648\u0628\u0631\u06AF\u0634\u062A \u0628\u0627\u0634\u062F",
+      "\u0641\u0642\u0637 H4 (\u062F\u0631 M5..H1 \u0627\u062B\u0631 \u0645\u0639\u06A9\u0648\u0633 \u06CC\u0627 \u0632\u06CC\u0631\u0650 \u0647\u0632\u06CC\u0646\u0647 \u0627\u0633\u062A)"
+    ]
+  }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
+};
 var s335Layer = (cfg) => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s344Layer = (cfg) => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
@@ -7215,6 +7525,11 @@ var CARD_LAYERS = {
     s312Layer(395, 395, 24)
   ],
   "XAUUSD-H4": [
+    // ⭐ S374 — «دروازهٔ شکستِ Kennedy»: نخستین لایهٔ این فصل که RQS2 را پاس کرد.
+    //    z=+4.100 (سد 2.570) · n=1,062 · e_pip طلا ۱۱.۶۷→۳۲.۹۷ · h1/h2 هر دو مثبت.
+    //    اولویتِ نخست چون کم‌بسامدترین و بالاترین لبه است؛ وقتی سیگنال بدهد باید
+    //    شنیده شود. طلا ~۴ رویدادِ مستقل در سال ⇒ رتبهٔ محافظه‌کارانه/کم‌بسامد.
+    s374Layer(KENNEDY_CFG["XAUUSD-H4"]),
     s340Layer(S340_CFG["XAUUSD-H4"]),
     // S340 — Brooks Micro-Channel، ادامهٔ روند/failed-pullback — RQS+=92.6 (WR 65.6% · PF 2.13) · همپوشانی S327=0%/S332=8.2%
     s332Layer(S332_CFG["XAUUSD-H4"])
@@ -7232,6 +7547,17 @@ var CARD_LAYERS = {
     s345Layer(S345_CFG["EURUSD-M30"])
     // S345 — Brooks فصلِ ۲۴ reversal-day چرخشِ روندِ روز SHORT — RQS+=91.7 (WR 62.5% · PF 2.38 · +$2,281.6) · همپوشانی 30.6% · نخستین SHORT این کارت
     // ⚰️ S327 حذف شد (RQS2=14.3 · سد=70) — هفت دروازه شکست؛ در خانوادهٔ قانونی لیفتِ **منفی**.
+  ],
+  // ⭐ کارتِ **نوساز** این نشست. پیش‌تر هیچ کارتِ EURUSD-H4 وجود نداشت چون هیچ لایه‌ای
+  //    روی آن افق حقِ اتصال نگرفته بود. S374 نخستین لایه‌ای است که گرفت ⇒ کارت متولد شد.
+  //    قانونِ MTF پروژه: «اگر لایه‌ای در چند تایم‌فریم پاس شد، منطقش باید در سایت برای
+  //    **همهٔ** تایم‌فریم‌های تاییدشده اعمال شود». پذیرشِ S374 روی هر دو ارزِ H4 **باهم**
+  //    اندازه‌گیری شد، پس وصل‌کردنش فقط به طلا نیمی از شواهد را دور می‌ریخت ⇒ نقضِ قانون.
+  //    یورو e_pip ۱.۵۷→۶.۴۴ در برابرِ هزینهٔ ۱.۶ ⇒ **مستقلاً** بالای هزینه (یارانه از طلا نگرفته).
+  //    یورو بسامدِ بهترِ این جفت را دارد: ۸۹ سیگنال در برابرِ ۲۰ سیگنالِ طلا (k=2 · gate=true)
+  //    ⇒ همان‌جا که ضعفِ اصلیِ لایه (کم‌بودنِ رویدادِ مستقل) کم‌ترین شدت را دارد.
+  "EURUSD-H4": [
+    s374Layer(KENNEDY_CFG["EURUSD-H4"])
   ]
 };
 var REGISTERED_CARDS = Object.keys(CARD_LAYERS);
@@ -10120,7 +10446,9 @@ var ASSETS = [
   { id: "XAUUSD-H1", card: "XAUUSD-H1", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H1 (\u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
   { id: "XAUUSD-H4", card: "XAUUSD-H4", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
   { id: "EURUSD-M15", card: "EURUSD-M15", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 M15 (\u067E\u0627\u0646\u0632\u062F\u0647\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "scalp", tf: "15m" },
-  { id: "EURUSD-M30", card: "EURUSD-M30", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "scalp", tf: "30m" }
+  { id: "EURUSD-M30", card: "EURUSD-M30", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "scalp", tf: "30m" },
+  // ⭐ کارتِ نوسازِ این نشست — تنها لایه‌اش S374 است (نخستین لایهٔ پذیرفته‌شدهٔ یوروی H4).
+  { id: "EURUSD-H4", card: "EURUSD-H4", name: "\u06CC\u0648\u0631\u0648 / \u062F\u0644\u0627\u0631 \u2014 H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)", symbol: "EURUSD=X", isGold: false, decimals: 5, layer: "htf", tf: "4h" }
 ];
 function tfLabelForGold(id) {
   switch (id) {
@@ -10218,9 +10546,18 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     };
   }
   const tf = a.tf || "15m";
-  const gapForTf = (t) => t === "5m" ? 300 : t === "30m" ? 1800 : 900;
-  const { candles } = await yahooCandles(a.symbol, tf, "1mo");
-  const minBars = 220;
+  const EUR_TF = {
+    "5m": { interval: "5m", range: "5d", gap: 300, agg: 1, minBars: 220 },
+    "15m": { interval: "15m", range: "1mo", gap: 900, agg: 1, minBars: 220 },
+    "30m": { interval: "30m", range: "1mo", gap: 1800, agg: 1, minBars: 220 },
+    "1h": { interval: "1h", range: "3mo", gap: 3600, agg: 1, minBars: 220 },
+    "4h": { interval: "1h", range: "1y", gap: 14400, agg: 4, minBars: 60 }
+  };
+  const etf = EUR_TF[tf] || EUR_TF["15m"];
+  const gapForTf = (_t) => etf.gap;
+  const { candles: rawEur } = await yahooCandles(a.symbol, etf.interval, etf.range);
+  const candles = etf.agg > 1 ? aggregateCandles(rawEur, etf.agg) : rawEur;
+  const minBars = etf.minBars;
   if (candles.length < minBars) throw new Error("\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A");
   let live = null, liveAge = 0, liveSrc = "";
   try {
