@@ -43,10 +43,31 @@ import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from engine import scalp_engine as se                                    # noqa: E402
+from engine import indicator_bank as ib                                  # noqa: E402
+# نام‌های واقعیِ ثابت‌ها در هارنس `K_GRID`/`DEPTH_GRID` است (نه K_VALUES/DEPTHS)
+# و تابعِ `load_cfg` وجود ندارد — منطقِ پیکربندی درونِ `run_card` است. پس همان
+# منطق را اینجا **عیناً** بازتولید می‌کنیم تا هندسهٔ دو ابزار یکی بماند.
 from strategies.s376_fractal_sr_proximity import (                       # noqa: E402
     causal_pivot_stack, structural_distance, build_s333_layer,
-    load_cfg, OUT, K_VALUES, DEPTHS,
+    OUT, K_GRID as K_VALUES, DEPTH_GRID as DEPTHS,
 )
+from strategies.s333_s79_pullback_revival import BEST_CFG, _reg_asset    # noqa: E402
+
+
+def load_cfg(pair, tf, df):
+    """همان منطقِ `run_card` — هندسهٔ مستقرِ S333، یا مقیاسِ ATR-محور اگر رسمی نبود."""
+    key = f"{pair}_{tf}"
+    cfg = BEST_CFG.get(key)
+    inherited = cfg is None
+    if inherited:
+        ref = BEST_CFG.get(f"{pair}_M30") or BEST_CFG['XAUUSD_M30']
+        cfg = dict(ref)
+        atr_med = float(np.nanmedian(ib.compute('atr_fib_21', df).values))
+        ref_atr = 3.8
+        k = max(0.15, min(8.0, atr_med / ref_atr)) if np.isfinite(atr_med) else 1.0
+        cfg['sl'] = max(5, int(round(cfg['sl'] * k)))
+        cfg['tp'] = max(5, int(round(cfg['tp'] * k)))
+    return cfg, inherited
 
 MIN_SIDE = 8      # کفِ هر گروه (برد/باخت) برای اینکه AUC معنا داشته باشد
 
