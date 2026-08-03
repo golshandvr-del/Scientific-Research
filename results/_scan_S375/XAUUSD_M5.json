@@ -1,0 +1,309 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M5",
+ "verdict": "DEAD_BELOW_COST",
+ "conds": {
+  "luck": false,
+  "sample": false,
+  "econ": false,
+  "replication": false
+ },
+ "retention_pct": 39.9,
+ "d_e_pip": -0.878,
+ "d_z": -1.843,
+ "d_trade_pooled": -0.0313,
+ "base": {
+  "asset": "XAUUSD",
+  "tf": "M5",
+  "mode": "close",
+  "n_trials": 117,
+  "z_luck": 2.5854,
+  "n_members": 12,
+  "n_trades": 3491,
+  "fam_pooled": -0.1229,
+  "trade_pooled": -0.1263,
+  "weighting_effect": 0.0035,
+  "null_meanR": -0.1624,
+  "sd": 0.0189,
+  "lift": 0.0361,
+  "z": 1.907,
+  "p_perm": 0.0299,
+  "half1": -0.2753,
+  "half2": 0.026,
+  "share_tp_lt_sl": 0.25,
+  "n_needed": 6417,
+  "econ": {
+   "n": 3491,
+   "n_raw_sig": 3536,
+   "fam_meanR": -0.1229,
+   "trade_meanR": -0.1263,
+   "burden": 0.129,
+   "sl_eff": 25.58,
+   "cost": 3.3,
+   "e_pip": 0.067,
+   "surplus": -3.233,
+   "e_pip_fam": 0.156,
+   "gate": false,
+   "max_hold": 52
+  },
+  "n_perm": 400,
+  "max_hold": 52,
+  "members": [
+   {
+    "asset": "XAUUSD",
+    "k": 2,
+    "m": 0.618,
+    "s": 0.5,
+    "n": 352,
+    "meanR": -0.1629,
+    "burden": 0.169
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 2,
+    "m": 0.618,
+    "s": 0.786,
+    "n": 351,
+    "meanR": -0.0773,
+    "burden": 0.1072
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 2,
+    "m": 1.0,
+    "s": 0.5,
+    "n": 361,
+    "meanR": -0.1444,
+    "burden": 0.1862
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 2,
+    "m": 1.0,
+    "s": 0.786,
+    "n": 360,
+    "meanR": -0.1162,
+    "burden": 0.1182
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 3,
+    "m": 0.618,
+    "s": 0.5,
+    "n": 297,
+    "meanR": -0.1832,
+    "burden": 0.1587
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 3,
+    "m": 0.618,
+    "s": 0.786,
+    "n": 295,
+    "meanR": -0.1205,
+    "burden": 0.1005
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 3,
+    "m": 1.0,
+    "s": 0.5,
+    "n": 301,
+    "meanR": -0.1769,
+    "burden": 0.17
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 3,
+    "m": 1.0,
+    "s": 0.786,
+    "n": 297,
+    "meanR": -0.1455,
+    "burden": 0.108
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 5,
+    "m": 0.618,
+    "s": 0.5,
+    "n": 220,
+    "meanR": -0.0952,
+    "burden": 0.132
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 5,
+    "m": 0.618,
+    "s": 0.786,
+    "n": 220,
+    "meanR": -0.0655,
+    "burden": 0.084
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 5,
+    "m": 1.0,
+    "s": 0.5,
+    "n": 219,
+    "meanR": -0.1106,
+    "burden": 0.1305
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 5,
+    "m": 1.0,
+    "s": 0.786,
+    "n": 218,
+    "meanR": -0.0765,
+    "burden": 0.0834
+   }
+  ]
+ },
+ "kennedy": {
+  "asset": "XAUUSD",
+  "tf": "M5",
+  "mode": "kennedy",
+  "n_trials": 117,
+  "z_luck": 2.5854,
+  "n_members": 12,
+  "n_trades": 1392,
+  "fam_pooled": -0.16,
+  "trade_pooled": -0.1576,
+  "weighting_effect": -0.0024,
+  "null_meanR": -0.1594,
+  "sd": 0.0283,
+  "lift": 0.0018,
+  "z": 0.064,
+  "p_perm": 0.4888,
+  "half1": -0.2361,
+  "half2": -0.0805,
+  "share_tp_lt_sl": 0.25,
+  "n_needed": 2245430,
+  "econ": {
+   "n": 1392,
+   "n_raw_sig": 1394,
+   "fam_meanR": -0.16,
+   "trade_meanR": -0.1576,
+   "burden": 0.1265,
+   "sl_eff": 26.09,
+   "cost": 3.3,
+   "e_pip": -0.811,
+   "surplus": -4.111,
+   "e_pip_fam": -0.873,
+   "gate": false,
+   "max_hold": 52
+  },
+  "n_perm": 400,
+  "max_hold": 52,
+  "members": [
+   {
+    "asset": "XAUUSD",
+    "k": 2,
+    "m": 0.618,
+    "s": 0.5,
+    "n": 121,
+    "meanR": -0.1572,
+    "burden": 0.1579
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 2,
+    "m": 0.618,
+    "s": 0.786,
+    "n": 121,
+    "meanR": -0.0918,
+    "burden": 0.1004
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 2,
+    "m": 1.0,
+    "s": 0.5,
+    "n": 124,
+    "meanR": -0.2009,
+    "burden": 0.1714
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 2,
+    "m": 1.0,
+    "s": 0.786,
+    "n": 124,
+    "meanR": -0.0852,
+    "burden": 0.109
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 3,
+    "m": 0.618,
+    "s": 0.5,
+    "n": 116,
+    "meanR": -0.1376,
+    "burden": 0.1474
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 3,
+    "m": 0.618,
+    "s": 0.786,
+    "n": 116,
+    "meanR": -0.0762,
+    "burden": 0.0938
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 3,
+    "m": 1.0,
+    "s": 0.5,
+    "n": 117,
+    "meanR": -0.1242,
+    "burden": 0.1584
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 3,
+    "m": 1.0,
+    "s": 0.786,
+    "n": 117,
+    "meanR": -0.0457,
+    "burden": 0.1007
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 5,
+    "m": 0.618,
+    "s": 0.5,
+    "n": 109,
+    "meanR": -0.1996,
+    "burden": 0.1464
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 5,
+    "m": 0.618,
+    "s": 0.786,
+    "n": 109,
+    "meanR": -0.2001,
+    "burden": 0.0931
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 5,
+    "m": 1.0,
+    "s": 0.5,
+    "n": 109,
+    "meanR": -0.3592,
+    "burden": 0.1464
+   },
+   {
+    "asset": "XAUUSD",
+    "k": 5,
+    "m": 1.0,
+    "s": 0.786,
+    "n": 109,
+    "meanR": -0.2419,
+    "burden": 0.0931
+   }
+  ]
+ }
+}
