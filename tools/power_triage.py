@@ -88,8 +88,19 @@ def triage_one(path):
     scan = os.path.basename(os.path.dirname(path)).replace("_scan_", "")
     card = os.path.basename(path)[:-5]
 
-    # شمارشِ آزمون: تعدادِ کارت‌های همان اسکن (محافظه‌کارانه‌ترین عددِ در دسترس).
-    n_trials = _first(d, "n_trials")
+    kind = "scan"
+    if card.startswith(JUDGE_PREFIXES):
+        kind = "JUDGED"
+    elif card.startswith(AUX_PREFIXES):
+        kind = "aux"
+
+    # ⚠️ شمارشِ آزمون. ترتیبِ اولویت:
+    #   ۱) جدولِ تصحیح (تاریخچهٔ واقعیِ جست‌وجوی آن خطِ کاری)
+    #   ۲) عددِ ثبت‌شده در خودِ فایل
+    #   ۳) تعدادِ کارت‌های همان پوشه — این فقط **کف** است، نه عددِ درست.
+    n_trials = TRIALS_OVERRIDE.get(scan)
+    if not n_trials:
+        n_trials = _first(d, "n_trials")
     if not n_trials:
         n_trials = len(glob.glob(os.path.join(os.path.dirname(path), "*.json")))
     z_luck = expected_max_z(max(int(n_trials), 1))
