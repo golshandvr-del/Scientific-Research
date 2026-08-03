@@ -143,12 +143,13 @@ def main():
         print("هیچ نتیجهٔ قابلِ تریاژی یافت نشد.")
         return
 
-    order = {"ALREADY_CLEARS": 0, "RESCUABLE": 1, "HARD": 2, "NEGATIVE": 3}
+    order = {"CLEARS_BAR_UNJUDGED": 0, "RESCUABLE": 1,
+             "JUDGED_REJECTED": 2, "HARD": 3, "NEGATIVE": 4}
     rows.sort(key=lambda r: (order[r["category"]],
                              -(r["z"] if r["z"] else 0)))
 
-    ICON = {"ALREADY_CLEARS": "✅", "RESCUABLE": "🟢",
-            "HARD": "🟡", "NEGATIVE": "🔴"}
+    ICON = {"CLEARS_BAR_UNJUDGED": "⭐", "RESCUABLE": "🟢",
+            "JUDGED_REJECTED": "⚖️", "HARD": "🟡", "NEGATIVE": "🔴"}
 
     if a.md:
         print("| اسکن | کارت | n | z | کران | n لازم | ضریب | دسته |")
