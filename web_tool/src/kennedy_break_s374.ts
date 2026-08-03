@@ -217,7 +217,12 @@ function buildChannel(piv: Piv[]): Chan | null {
     const b = (H3 - H2) / (iH3 - iH2)
     const hgt = (H3 + b * (iL2 - iH3)) - L2
     if (!(hgt > 0)) return null
-    return { bear: false, a: H3, b, tRef: iH3, h: hgt, shrink: (H3 - H2) < (H2 - H1), t0: iH1, tLast: iH3 }
+    // ⚠️ `a`/`tRef` همیشه خطِ **پایین** را توصیف می‌کند تا پایین‌دست یکنواخت بماند.
+    // در کانالِ گاوی خطِ ساخته‌شده از پیوت‌های سقف، خطِ **بالا** است ⇒ باید یک
+    // ارتفاعِ کانال پایین آورده شود. (منبعِ باگی که آزمونِ برابری کشف کرد: پورتِ
+    // نخست `a = H3` گذاشته بود ⇒ کلِ کانال یک ارتفاع بالاتر می‌افتاد و هیچ‌یک از
+    // ۱۳ سیگنالِ لانگِ طلا تولید نمی‌شد.)
+    return { bear: false, a: H3 - hgt, b, tRef: iH3, h: hgt, shrink: (H3 - H2) < (H2 - H1), t0: iH1, tLast: iH3 }
   }
 
   return null
