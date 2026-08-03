@@ -240,7 +240,10 @@ function buildChannel(piv: Piv[]): Chan | null {
  * پیوتِ بارِ i فقط در بارِ i+k **تأییدشده** تلقی می‌شود ⇒ بدونِ نشتِ آینده
  * (عیناً همان `ev = (i+k, i, …)` پایتون).
  */
-function liveChannel(high: number[], low: number[], k: number, t: number): Chan | null {
+function liveChannel(
+  high: number[], low: number[], k: number, gate: boolean, t: number,
+): { ch: Chan | null; alreadyBroke: boolean } {
+  const NONE = { ch: null as Chan | null, alreadyBroke: false }
   const { ph, pl } = pivotFlags(high, low, k)
   const ev: Array<{ conf: number; idx: number; typ: 'H' | 'L'; px: number }> = []
   for (let i = 0; i < high.length; i++) {
@@ -251,7 +254,11 @@ function liveChannel(high: number[], low: number[], k: number, t: number): Chan 
 
   const piv: Piv[] = []
   let cur: Chan | null = null
+  let curKey = 'null'            // نمایندهٔ هندسه؛ تغییرش ⇒ سگمنتِ نو
   let ptr = 0
+  // ⭐ معادلِ `_first_per_seg` پایتون: آیا در **سگمنتِ جاری** و پیش از بارِ t
+  //    شکستی (با تعریفِ Kennedy) رخ داده؟ اگر بله، بارِ t «اولین» نیست.
+  let alreadyBroke = false
 
   for (let bar = 0; bar <= t; bar++) {
     let changed = false
@@ -272,15 +279,32 @@ function liveChannel(high: number[], low: number[], k: number, t: number): Chan 
     }
     if (changed) {
       const nw = buildChannel(piv)
-      // مقایسهٔ ساختاری (معادلِ `new != cur` پایتون)
-      if (JSON.stringify(nw) !== JSON.stringify(cur)) cur = nw
+      const nwKey = JSON.stringify(nw)
+      // مقایسهٔ ساختاری (معادلِ `new != cur` پایتون). هر تغییرِ هندسه ⇒ سگمنتِ نو
+      // ⇒ تاریخِ شکستِ سگمنتِ پیشین باید پاک شود.
+      if (nwKey !== curKey) { cur = nw; curKey = nwKey; alreadyBroke = false }
+    }
+
+    // بارهای **پیش از** t: فقط ثبت می‌کنیم که آیا شکست رخ داده (first-per-seg).
+    if (bar < t && cur !== null) {
+      const alive = bar <= cur.tLast + HORIZON_MULT * Math.max(1, cur.tLast - cur.t0)
+      if (alive) {
+        const lo = cur.a + cur.b * (bar - cur.tRef)
+        const up = lo + cur.h
+        const shr = gate ? cur.shrink : false
+        const kB = high[bar] < lo
+        const kA = low[bar] > up
+        const sK = (cur.bear && !shr && kB) || (!cur.bear && shr && kB)
+        const lK = (!cur.bear && !shr && kA) || (cur.bear && shr && kA)
+        if (sK || lK) alreadyBroke = true
+      }
     }
   }
 
-  if (cur === null) return null
+  if (cur === null) return NONE
   // افقِ زندگیِ زمینه: خطوط تا ابد برون‌یابی نمی‌شوند
-  if (t > cur.tLast + HORIZON_MULT * Math.max(1, cur.tLast - cur.t0)) return null
-  return cur
+  if (t > cur.tLast + HORIZON_MULT * Math.max(1, cur.tLast - cur.t0)) return NONE
+  return { ch: cur, alreadyBroke }
 }
 
 // ---------------------------------------------------------------------------
@@ -296,7 +320,7 @@ export function computeKennedy(
   if (n < 4 * cfg.k + 12) return { ...EMPTY, reason: 'دادهٔ کافی برای ساختِ کانال روی این افق موجود نیست.' }
 
   const t = n - 1
-  const ch = liveChannel(high, low, cfg.k, t)
+  const { ch, alreadyBroke } = liveChannel(high, low, cfg.k, cfg.gate, t)
   if (ch === null) return EMPTY
 
   const lower = ch.a + ch.b * (t - ch.tRef)
@@ -317,7 +341,10 @@ export function computeKennedy(
   const shortC = (ch.bear && !shrink && cBelow) || (!ch.bear && shrink && cBelow)
   const longC  = (!ch.bear && !shrink && cAbove) || (ch.bear && shrink && cAbove)
 
-  const kennedyBreak = shortK || longK
+  // ⭐ قاعدهٔ «اولین شکستِ هر کانال» (`_first_per_seg`): اگر همین زمینهٔ کانال پیش‌تر
+  //    شکسته شده، بارِ جاری دیگر «اولین» نیست ⇒ الگو نباید دوباره سیگنال بدهد.
+  //    (بدونِ این قید، آزمونِ برابری ۱۹ سیگنالِ اضافیِ یورو نشان داد.)
+  const kennedyBreak = (shortK || longK) && !alreadyBroke
   const closeBreak = shortC || longC
 
   const slDist = cfg.s * ch.h
@@ -330,7 +357,8 @@ export function computeKennedy(
   if (wantDown) distToKennedy = Math.max(0, high[t] - lower)
   else distToKennedy = Math.max(0, upper - low[t])
 
-  const side: 'LONG' | 'SHORT' | null = longK ? 'LONG' : shortK ? 'SHORT' : null
+  const side: 'LONG' | 'SHORT' | null =
+    !kennedyBreak ? null : longK ? 'LONG' : 'SHORT'
 
   if (kennedyBreak && feasible) {
     return {
