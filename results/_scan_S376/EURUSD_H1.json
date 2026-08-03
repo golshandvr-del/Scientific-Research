@@ -1,0 +1,9 @@
+{
+ "pair": "EURUSD",
+ "tf": "H1",
+ "verdict": "NO_CELL",
+ "base": {
+  "n": 22,
+  "wr": 36.364
+ }
+}
