@@ -1,0 +1,25 @@
+{
+ "asset": "XAUUSD",
+ "tf": "H1",
+ "anchor": {
+  "k": 3,
+  "m": 1.0,
+  "s": 0.786
+ },
+ "max_hold": 56,
+ "n_close": 129,
+ "meanR_close": 0.1358,
+ "n_filter_anytime": 63,
+ "meanR_filter_anytime": 0.4178,
+ "n_filter_causal": 3,
+ "meanR_filter_causal": -0.286,
+ "lag_n": 63,
+ "lag_min": 0,
+ "lag_median": 1.0,
+ "lag_max": 5,
+ "lag_mean": 1.476,
+ "n_lag_neg": 0,
+ "n_lag_zero": 3,
+ "n_lag_pos": 60,
+ "verdict": "CAUSAL_FILTER_HAS_SAMPLE"
+}
