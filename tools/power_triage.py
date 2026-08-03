@@ -112,8 +112,25 @@ def triage_one(path):
             judged = True
             break
 
+    # ⚠️ سودِ مطلق. مهارتِ مثبت (`z>0`) به‌تنهایی بی‌معناست: ممکن است لایه از مدلِ
+    #    صفر بهتر باشد ولی همچنان **زیرِ هزینهٔ اسپرد**. طبقِ قانونِ لبهٔ پیپی
+    #    (`E[R] = (e_pip − c)/SL`) چنین لایه‌ای با هیچ مقدار نمونه‌ای سودده نمی‌شود.
+    #    نشانگرِ در دسترس: `verdict` حاویِ NEGATIVE_ABSOLUTE، یا هر دو نیمه منفی.
+    vd = str(_first(d, "verdict", "decision", default="") or "")
+    h1 = _first(d, "half1_meanR")
+    h2 = _first(d, "half2_meanR")
+    neg_abs = "NEGATIVE_ABSOLUTE" in vd
+    if not neg_abs and h1 is not None and h2 is not None:
+        try:
+            neg_abs = (float(h1) < 0) and (float(h2) < 0)
+        except Exception:
+            pass
+
     if z <= 0:
         cat, need = "NEGATIVE", None
+    elif neg_abs:
+        # مهارت هست ولی سود نیست ⇒ زیرِ هزینه. نمونهٔ بیشتر کمکی نمی‌کند.
+        cat, need = "SKILL_BUT_BELOW_COST", None
     else:
         need = n * (z_luck / z) ** 2
         if z >= z_luck:
