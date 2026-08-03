@@ -105,19 +105,28 @@ def triage_one(path):
         n_trials = len(glob.glob(os.path.join(os.path.dirname(path), "*.json")))
     z_luck = expected_max_z(max(int(n_trials), 1))
 
+    # آیا این کارت قبلاً به داوریِ ۱۱ دروازه رفته؟ (فایلِ داوریِ هم‌نام در همان پوشه)
+    judged = False
+    for pref in JUDGE_PREFIXES:
+        if os.path.exists(os.path.join(os.path.dirname(path), pref + card + ".json")):
+            judged = True
+            break
+
     if z <= 0:
         cat, need = "NEGATIVE", None
     else:
         need = n * (z_luck / z) ** 2
         if z >= z_luck:
-            cat = "ALREADY_CLEARS"
+            # ⚠️ عبور از کرانِ شانس **شرطِ لازم** است نه کافی. اگر این کارت قبلاً
+            #    به داوریِ ۱۱ دروازه رفته و رد شده، «نامزدِ احیا» نیست.
+            cat = "JUDGED_REJECTED" if judged else "CLEARS_BAR_UNJUDGED"
         elif need <= HARD_RATIO * n:
             cat = "RESCUABLE"
         else:
             cat = "HARD"
 
     return dict(scan=scan, card=card, z=z, n=n, n_trials=int(n_trials),
-                z_luck=z_luck, n_needed=need,
+                z_luck=z_luck, n_needed=need, kind=kind, judged=judged,
                 ratio=(need / n if need else None), category=cat)
 
 
