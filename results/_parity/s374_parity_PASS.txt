@@ -1,0 +1,19 @@
+==============================================================================
+S374 PARITY  —  TS module  vs  Python reference (mode=kennedy)
+==============================================================================
+
+[XAUUSD]  k=3 m=1 s=0.5 gate=false
+  python signals : long=13 short=7 total=20
+  probed bars    : 620 (all py signals + 600 controls)
+  agree          : 620
+  MISMATCH       : 0   (ts_extra=0 ts_missing=0 side_wrong=0)
+
+[EURUSD]  k=2 m=1 s=0.5 gate=true
+  python signals : long=44 short=45 total=89
+  probed bars    : 689 (all py signals + 600 controls)
+  agree          : 689
+  MISMATCH       : 0   (ts_extra=0 ts_missing=0 side_wrong=0)
+
+==============================================================================
+✅ PARITY PASS — the site runs exactly the layer that was adjudicated.
+==============================================================================
