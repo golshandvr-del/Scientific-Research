@@ -1,0 +1,271 @@
+{
+ "tf": "M30",
+ "pair": [
+  "XAUUSD",
+  "EURUSD"
+ ],
+ "gate_map": {
+  "XAUUSD": false,
+  "EURUSD": true
+ },
+ "n_trials": 107,
+ "z_luck": 2.554,
+ "n_members": 24,
+ "n_trades": 11483,
+ "fam_pooled": -0.1146,
+ "trade_pooled": -0.1494,
+ "weighting_effect": 0.0348,
+ "null_meanR": -0.1372,
+ "sd": 0.0121,
+ "lift": 0.0226,
+ "z": 1.872,
+ "p_perm": 0.02,
+ "half1": -0.1273,
+ "half2": -0.1713,
+ "share_tp_lt_sl": 0.25,
+ "n_needed": 21384,
+ "econ": {
+  "XAUUSD": {
+   "n": 3074,
+   "fam_meanR": -0.0665,
+   "burden": 0.0976,
+   "sl_eff": 33.81,
+   "cost": 3.3,
+   "e_pip": 1.052,
+   "surplus": -2.248,
+   "gate": false,
+   "max_hold": 52
+  },
+  "EURUSD": {
+   "n": 8409,
+   "fam_meanR": -0.1627,
+   "burden": 0.1277,
+   "sl_eff": 12.53,
+   "cost": 1.6,
+   "e_pip": -0.439,
+   "surplus": -2.039,
+   "gate": true,
+   "max_hold": 48
+  }
+ },
+ "n_perm": 400,
+ "members": [
+  {
+   "asset": "XAUUSD",
+   "k": 2,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 339,
+   "meanR": -0.1228,
+   "burden": 0.1452
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 2,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 339,
+   "meanR": -0.0965,
+   "burden": 0.0924
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 2,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 339,
+   "meanR": -0.2304,
+   "burden": 0.1474
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 2,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 338,
+   "meanR": -0.171,
+   "burden": 0.0938
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 3,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 255,
+   "meanR": -0.1159,
+   "burden": 0.1256
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 3,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 254,
+   "meanR": 0.0,
+   "burden": 0.0801
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 3,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 255,
+   "meanR": -0.1073,
+   "burden": 0.1256
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 3,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 253,
+   "meanR": 0.0357,
+   "burden": 0.0802
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 5,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 177,
+   "meanR": -0.0361,
+   "burden": 0.0858
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 5,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 177,
+   "meanR": -0.0629,
+   "burden": 0.0546
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 5,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 174,
+   "meanR": 0.1023,
+   "burden": 0.0859
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 5,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 174,
+   "meanR": 0.0068,
+   "burden": 0.0547
+  },
+  {
+   "asset": "EURUSD",
+   "k": 2,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 967,
+   "meanR": -0.2427,
+   "burden": 0.1911
+  },
+  {
+   "asset": "EURUSD",
+   "k": 2,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 955,
+   "meanR": -0.1746,
+   "burden": 0.1212
+  },
+  {
+   "asset": "EURUSD",
+   "k": 2,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 969,
+   "meanR": -0.2459,
+   "burden": 0.1971
+  },
+  {
+   "asset": "EURUSD",
+   "k": 2,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 949,
+   "meanR": -0.1715,
+   "burden": 0.1243
+  },
+  {
+   "asset": "EURUSD",
+   "k": 3,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 742,
+   "meanR": -0.1607,
+   "burden": 0.1581
+  },
+  {
+   "asset": "EURUSD",
+   "k": 3,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 733,
+   "meanR": -0.1083,
+   "burden": 0.1006
+  },
+  {
+   "asset": "EURUSD",
+   "k": 3,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 734,
+   "meanR": -0.2084,
+   "burden": 0.1583
+  },
+  {
+   "asset": "EURUSD",
+   "k": 3,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 721,
+   "meanR": -0.1353,
+   "burden": 0.1006
+  },
+  {
+   "asset": "EURUSD",
+   "k": 5,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 414,
+   "meanR": -0.1534,
+   "burden": 0.1159
+  },
+  {
+   "asset": "EURUSD",
+   "k": 5,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 410,
+   "meanR": -0.1328,
+   "burden": 0.073
+  },
+  {
+   "asset": "EURUSD",
+   "k": 5,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 410,
+   "meanR": -0.1202,
+   "burden": 0.1175
+  },
+  {
+   "asset": "EURUSD",
+   "k": 5,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 405,
+   "meanR": -0.0985,
+   "burden": 0.0741
+  }
+ ],
+ "verdict": "DEAD_BELOW_COST"
+}
