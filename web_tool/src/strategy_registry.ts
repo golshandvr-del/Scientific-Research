@@ -297,6 +297,78 @@ const s332Layer = (cfg: typeof S332_CFG[string]): LayerFn => (ctx) => decideS332
 const s333Layer = (cfg: typeof S333_CFG[string]): LayerFn => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ نوِ این نشست: S334 Mean-Reversion Fade فروش (احیای s122 با گیتِ Hurst/Kurtosis)
 const s334Layer = (cfg: typeof S334_CFG[string]): LayerFn => (ctx) => decideS334(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ آداپترِ S374 «دروازهٔ شکستِ Kennedy» — لایهٔ پذیرفته‌شدهٔ H4 (طلا + یورو)
+//   ماژول `decide*` ندارد (موتورِ خالص است) ⇒ آداپتر خودش RawSignal می‌سازد.
+//   ⚠️ حالتِ APPROACHING اینجا **ذاتیِ قاعده** است، نه تزئین: وقتی close از خط عبور
+//      کرده ولی کلِ دامنه نه، همان وضعیتی است که Kennedy آموزش می‌دهد ⇒ کارت صریحاً
+//      می‌گوید منتظرِ چه تأییدی هستیم (کندلی که کلِ دامنه‌اش آن‌سویِ خط باشد).
+const s374Layer = (cfg: typeof KENNEDY_CFG[string]): LayerFn => (ctx) => {
+  const o = ctx.candles.map(c => c.open), h = ctx.candles.map(c => c.high)
+  const l = ctx.candles.map(c => c.low), c2 = ctx.candles.map(c => c.close)
+  const isEur = cfg.id.startsWith('EUR')
+  const pip = isEur ? 0.0001 : GOLD_PIP
+  const costPip = isEur ? 1.6 : 3.3            // اسپردِ حسابِ دمو (سندِ پروژه)
+  const r = computeKennedy(o, h, l, c2, cfg, pip, costPip)
+  if (!r.hasChannel) return null
+  if (r.state === 'NEUTRAL' && !r.closeBreak) return null   // کارتِ خنثی را شلوغ نکن
+
+  const price = ctx.a.price
+  const dirFa = r.side === 'SHORT' ? 'نزولی' : 'صعودی'
+  const raw: RawSignal = {
+    active: r.state === 'ENTRY',
+    approaching: r.state === 'APPROACHING',
+    direction: (r.side ?? (r.isBear ? 'SHORT' : 'LONG')) as 'LONG' | 'SHORT',
+    slDist: r.slDist, tpDist: r.tpDist, maxHoldBars: cfg.maxHoldBars,
+    reason: r.reason,
+    approachReason: r.state === 'APPROACHING'
+      ? `قیمت با close از خطِ کانال عبور کرده ولی **کلِ دامنهٔ** کندل نه — طبقِ قاعدهٔ `
+        + `Kennedy این شکستِ مشروع نیست. تأییدِ لازم: کندلی که تمامِ دامنه‌اش آن‌سویِ `
+        + `خط بسته شود (فاصلهٔ باقی‌مانده: ${isFinite(r.distToKennedy) ? r.distToKennedy.toFixed(isEur ? 5 : 2) : '—'}).`
+      : undefined,
+    indicators: [
+      {
+        name: `کانالِ ${r.isBear ? 'نزولی' : 'صعودی'} (Stairs · k=${cfg.k})`,
+        value: `${r.lowerLine.toFixed(isEur ? 5 : 2)} … ${r.upperLine.toFixed(isEur ? 5 : 2)}`,
+        status: 'ok',
+      },
+      {
+        name: 'شکستِ مشروع (کلِ دامنهٔ کندل آن‌سویِ خط)',
+        value: r.kennedyBreak ? `بله ✔ (${dirFa})` : 'خیر',
+        status: r.kennedyBreak ? 'ok' : 'neutral',
+      },
+      {
+        name: 'شکستِ close (تعریفِ رایج — به‌تنهایی کافی نیست)',
+        value: r.closeBreak ? 'بله' : 'خیر',
+        status: r.closeBreak && !r.kennedyBreak ? 'warn' : 'neutral',
+      },
+      {
+        name: `پلهٔ آخر کوچک‌شونده${cfg.gate ? '' : ' (روی این کارت بی‌اثر)'}`,
+        value: r.shrink ? 'بله (برگشتی)' : 'خیر (هم‌جهت)',
+        status: 'neutral',
+      },
+      {
+        name: 'هدف در برابرِ هزینهٔ رفت‌وبرگشت',
+        value: r.feasible ? `کافی ✔ (${(r.tpDist / pip).toFixed(1)} در برابرِ ${costPip} pip)` : 'ناکافی ✘',
+        status: r.feasible ? 'ok' : 'bad',
+      },
+    ],
+  }
+  const reg = lightRegime(0, !r.isBear, 's374_kennedy')
+  return rawToDecision(raw, {
+    code: 'S374', name: 'دروازهٔ شکستِ Kennedy (خطِ کانال)', kind: 'breakout' as any,
+    manageStyle: 'structural-trail',
+    manageNote: `هدف = یک ارتفاعِ کانال (measured-move) و حدِ ضرر = نیمِ ارتفاع. `
+      + `خطِ شکسته‌شده حالا نقشِ حمایت/مقاومت دارد ⇒ اگر کندلی با **کلِ دامنه‌اش** به `
+      + `داخلِ کانال برگشت، شکست باطل شده و بهتر است معامله بسته شود. `
+      + `⚠️ کم‌بسامد و رتبهٔ محافظه‌کارانه (طلا ~۴ رویداد در سال) ⇒ در حجم خویشتن‌دار باش.`,
+    filters: [
+      'شکست فقط با عبورِ کلِ دامنهٔ کندل (نه close)',
+      'تنها نخستین شکستِ هر کانال',
+      'هدفِ measured-move باید ≥ ۲× هزینهٔ رفت‌وبرگشت باشد',
+      'فقط H4 (در M5..H1 اثر معکوس یا زیرِ هزینه است)',
+    ],
+  }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct)
+}
 // لایهٔ نوِ این نشست: S335 Reflex-TrendFlex Cycle-Turn (خریدِ کفِ چرخهٔ اِهلرز درونِ روند)
 const s335Layer = (cfg: typeof S335_CFG[string]): LayerFn => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 const s340Layer = (cfg: typeof S340_CFG[string]): LayerFn => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
