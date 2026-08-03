@@ -428,9 +428,16 @@ app.get('/api/context', async (c) => {
 //   XAUUSD-M15   S324·S322·S323·S335·S344·S310·S312   (S344 = نخستین لایهٔ SHORT — Brooks فصلِ ۲۳)
 //   XAUUSD-M30   S313·S324·S321·S327·S326·S323·S312
 //   XAUUSD-H1    S313·S328·S327·S323·S312
-//   XAUUSD-H4    S327
+//   XAUUSD-H4    S374·S340·S332   (S374 = «دروازهٔ شکستِ Kennedy» — لایهٔ نوِ این نشست)
 //   EURUSD-M15   S326
-//   EURUSD-M30   S327
+//   EURUSD-M30   S345
+//   EURUSD-H4    S374            ⭐ کارتِ **نوساز**: نخستین کارتِ یوروی H4 پروژه
+//
+//   ⭐ افزودنِ کارتِ EURUSD-H4 در این نشست الزامِ **قانونِ MTF** بود: پذیرشِ S374 روی
+//     `XAUUSD+EURUSD-H4` **باهم** اندازه‌گیری شد (z=+4.100 · n=1,062)، و یورو مستقلاً
+//     بالای هزینه بود (e_pip ۱.۵۷→۶.۴۴ در برابرِ c=1.6). وصل‌کردنِ لایه فقط به طلا
+//     نیمی از شواهدِ پذیرش را دور می‌ریخت. یورو بسامدِ بهتر را هم دارد: ۸۹ سیگنال
+//     در برابرِ ۲۰ سیگنالِ طلا ⇒ همان‌جا که ضعفِ «کم‌بودنِ رویدادِ مستقل» کم‌ترین شدت را دارد.
 // ---------------------------------------------------------------------------
 const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' | 'placeholder' | 'htf'; tf?: string }[] = [
   { id: 'XAUUSD-M5',  card: 'XAUUSD-M5',  name: 'طلا / دلار — M5 (پنج‌دقیقه‌ای)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
@@ -440,6 +447,8 @@ const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: 
   { id: 'XAUUSD-H4',  card: 'XAUUSD-H4',  name: 'طلا / دلار — H4 (چهارساعته)',     symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
   { id: 'EURUSD-M15', card: 'EURUSD-M15', name: 'یورو / دلار — M15 (پانزده‌دقیقه‌ای)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '15m' },
   { id: 'EURUSD-M30', card: 'EURUSD-M30', name: 'یورو / دلار — M30 (سی‌دقیقه‌ای)',  symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '30m' },
+  // ⭐ کارتِ نوسازِ این نشست — تنها لایه‌اش S374 است (نخستین لایهٔ پذیرفته‌شدهٔ یوروی H4).
+  { id: 'EURUSD-H4',  card: 'EURUSD-H4',  name: 'یورو / دلار — H4 (چهارساعته)',    symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'htf',   tf: '4h'  },
 ]
 
 // یادداشت: پیوستِ لایه‌های ثانویه اکنون درونِ runCard (strategy_registry) انجام
@@ -541,9 +550,24 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   // EURUSD: کندلِ Yahoo + به‌روزرسانیِ کندلِ جاری با قیمتِ زنده (رفعِ اختلافِ لحظه‌ای).
   // تایم‌فریم از فیلدِ `tf` (M15/M30). منطقِ تصمیم = رجیستریِ ماژولار (S326/S327).
   const tf = a.tf || '15m'
-  const gapForTf = (t: string) => t === '5m' ? 300 : t === '30m' ? 1800 : 900
-  const { candles } = await yahooCandles(a.symbol, tf, '1mo')
-  const minBars = 220
+  // --- نگاشتِ ماژولارِ تایم‌فریمِ یورو → (interval, range, gapSec, aggregate, minBars) ---
+  // ⭐ افزوده در این نشست برای کارتِ نوسازِ EURUSD-H4. پیش‌تر این مسیر فقط
+  //   M15/M30 را می‌شناخت و `range` ثابتِ '1mo' بود.
+  //   Yahoo تایم‌فریمِ ۴ساعته را **مستقیم نمی‌دهد** ⇒ عیناً همان راه‌حلِ کارتِ طلای H4:
+  //   کندلِ H1 با بازهٔ ۱ساله گرفته و با aggregateCandles(·,4) به H4 تجمیع می‌شود.
+  //   minBars برای H4 پایین‌تر است چون هر کندل ۴ ساعت است (همان ۶۰ کندلِ کارتِ طلا).
+  const EUR_TF: Record<string, { interval: string; range: string; gap: number; agg: number; minBars: number }> = {
+    '5m':  { interval: '5m',  range: '5d',  gap: 300,   agg: 1, minBars: 220 },
+    '15m': { interval: '15m', range: '1mo', gap: 900,   agg: 1, minBars: 220 },
+    '30m': { interval: '30m', range: '1mo', gap: 1800,  agg: 1, minBars: 220 },
+    '1h':  { interval: '1h',  range: '3mo', gap: 3600,  agg: 1, minBars: 220 },
+    '4h':  { interval: '1h',  range: '1y',  gap: 14400, agg: 4, minBars: 60  },
+  }
+  const etf = EUR_TF[tf] || EUR_TF['15m']
+  const gapForTf = (_t: string) => etf.gap
+  const { candles: rawEur } = await yahooCandles(a.symbol, etf.interval, etf.range)
+  const candles = etf.agg > 1 ? aggregateCandles(rawEur, etf.agg) : rawEur
+  const minBars = etf.minBars
   if (candles.length < minBars) throw new Error('داده کافی برای تحلیل نیست')
   let live: number | null = null, liveAge = 0, liveSrc = ''
   try { const q = await getLiveQuote(a.symbol); live = q.price; liveAge = q.ageSec; liveSrc = q.source } catch {}
