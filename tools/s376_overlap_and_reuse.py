@@ -198,9 +198,11 @@ def main():
             r, nn = separation_on_host(df, sig, sl, tp, mh, key, K, depth, pip)
             if r is None:
                 continue
-            key = f"K{K}_d{depth}"
-            sep[key] = r
-            print(f"     {key:>8}: AUC={r['auc']:.4f}  z_MW={r['z_mw']:+.3f}  "
+            # ⚠️ نامِ `cell` و نه `key`: در نسخهٔ قبل برچسبِ سلول، **کلیدِ داراییِ**
+            #    موتور را overwrite می‌کرد و از تکرارِ دوم به بعد `KeyError` می‌داد.
+            cell = f"K{K}_d{depth}"
+            sep[cell] = r
+            print(f"     {cell:>8}: AUC={r['auc']:.4f}  z_MW={r['z_mw']:+.3f}  "
                   f"(برد={r['n_win']} باخت={r['n_loss']})")
     res['separation_S333'] = sep
     if sep:
