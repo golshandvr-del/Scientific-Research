@@ -173,7 +173,10 @@ def structural_distance(df, K, depth, pip):
     c = df['close'].values.astype(float)
     lo = df['low'].values.astype(float)
     piv = causal_pivot_stack(lo, K, depth)
-    atr = ib.compute('atr', df).values.astype(float)
+    # `atr_fib_21` و نه `atr`: بانکِ ۴۰۱-اندیکاتوریِ پروژه عمداً هیچ ATRِ با دورهٔ
+    # رند ندارد؛ همه دوره‌های فیبوناچی‌اند (اشتباهِ رایج #۷). ۲۱ نزدیک‌ترین دورهٔ
+    # فیبوناچی به ATR کلاسیکِ ۱۴ است و در کلِ پروژه همین خانواده استفاده شده.
+    atr = ib.compute('atr_fib_21', df).values.astype(float)
     atr = np.where(np.isfinite(atr) & (atr > 0), atr, np.nan)
     with np.errstate(invalid='ignore', divide='ignore'):
         d = (c - piv) / atr
@@ -279,7 +282,7 @@ def run_card(pair, tf, save=True, seed=20260803):
     sl, tp, mh = cfg['sl'], cfg['tp'], cfg['mh']
     if inherited:
         # SL/TP را با ATRِ همین کارت مقیاس می‌کنیم (نه عددِ ثابت — اشتباهِ #۶)
-        atr_med = float(np.nanmedian(ib.compute('atr', df).values))
+        atr_med = float(np.nanmedian(ib.compute('atr_fib_21', df).values))
         ref_atr = 3.8   # ATR تقریبیِ M30 طلا در واحدِ قیمت
         k = max(0.15, min(8.0, atr_med / ref_atr)) if np.isfinite(atr_med) else 1.0
         sl = max(5, int(round(sl * k)))
