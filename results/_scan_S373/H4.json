@@ -1,0 +1,271 @@
+{
+ "tf": "H4",
+ "pair": [
+  "XAUUSD",
+  "EURUSD"
+ ],
+ "gate_map": {
+  "XAUUSD": false,
+  "EURUSD": true
+ },
+ "n_trials": 107,
+ "z_luck": 2.554,
+ "n_members": 24,
+ "n_trades": 1704,
+ "fam_pooled": 0.0486,
+ "trade_pooled": 0.0176,
+ "weighting_effect": 0.031,
+ "null_meanR": -0.0443,
+ "sd": 0.0349,
+ "lift": 0.0929,
+ "z": 2.666,
+ "p_perm": 0.0075,
+ "half1": -0.0134,
+ "half2": 0.0537,
+ "share_tp_lt_sl": 0.25,
+ "n_needed": 1565,
+ "econ": {
+  "XAUUSD": {
+   "n": 412,
+   "fam_meanR": 0.0763,
+   "burden": 0.0295,
+   "sl_eff": 111.87,
+   "cost": 3.3,
+   "e_pip": 11.831,
+   "surplus": 8.531,
+   "gate": false,
+   "max_hold": 59
+  },
+  "EURUSD": {
+   "n": 1292,
+   "fam_meanR": 0.021,
+   "burden": 0.0351,
+   "sl_eff": 45.59,
+   "cost": 1.6,
+   "e_pip": 2.558,
+   "surplus": 0.958,
+   "gate": true,
+   "max_hold": 50
+  }
+ },
+ "n_perm": 400,
+ "members": [
+  {
+   "asset": "XAUUSD",
+   "k": 2,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 32,
+   "meanR": 0.1477,
+   "burden": 0.0402
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 2,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 32,
+   "meanR": 0.035,
+   "burden": 0.0256
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 2,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 32,
+   "meanR": 0.3661,
+   "burden": 0.0402
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 2,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 32,
+   "meanR": 0.1816,
+   "burden": 0.0256
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 3,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 42,
+   "meanR": 0.0228,
+   "burden": 0.042
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 3,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 42,
+   "meanR": 0.0791,
+   "burden": 0.0267
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 3,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 42,
+   "meanR": 0.0295,
+   "burden": 0.042
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 3,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 42,
+   "meanR": 0.0313,
+   "burden": 0.0267
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 5,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 29,
+   "meanR": 0.102,
+   "burden": 0.026
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 5,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 29,
+   "meanR": -0.0016,
+   "burden": 0.0165
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 5,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 29,
+   "meanR": 0.0571,
+   "burden": 0.026
+  },
+  {
+   "asset": "XAUUSD",
+   "k": 5,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 29,
+   "meanR": -0.1353,
+   "burden": 0.0165
+  },
+  {
+   "asset": "EURUSD",
+   "k": 2,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 140,
+   "meanR": -0.1799,
+   "burden": 0.0521
+  },
+  {
+   "asset": "EURUSD",
+   "k": 2,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 140,
+   "meanR": -0.1083,
+   "burden": 0.0331
+  },
+  {
+   "asset": "EURUSD",
+   "k": 2,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 137,
+   "meanR": -0.1055,
+   "burden": 0.0522
+  },
+  {
+   "asset": "EURUSD",
+   "k": 2,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 137,
+   "meanR": -0.122,
+   "burden": 0.0332
+  },
+  {
+   "asset": "EURUSD",
+   "k": 3,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 107,
+   "meanR": 0.0731,
+   "burden": 0.0424
+  },
+  {
+   "asset": "EURUSD",
+   "k": 3,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 107,
+   "meanR": 0.1217,
+   "burden": 0.027
+  },
+  {
+   "asset": "EURUSD",
+   "k": 3,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 104,
+   "meanR": 0.0842,
+   "burden": 0.0426
+  },
+  {
+   "asset": "EURUSD",
+   "k": 3,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 104,
+   "meanR": 0.0909,
+   "burden": 0.0271
+  },
+  {
+   "asset": "EURUSD",
+   "k": 5,
+   "m": 0.618,
+   "s": 0.5,
+   "n": 81,
+   "meanR": 0.1511,
+   "burden": 0.0342
+  },
+  {
+   "asset": "EURUSD",
+   "k": 5,
+   "m": 0.618,
+   "s": 0.786,
+   "n": 79,
+   "meanR": 0.0701,
+   "burden": 0.0217
+  },
+  {
+   "asset": "EURUSD",
+   "k": 5,
+   "m": 1.0,
+   "s": 0.5,
+   "n": 79,
+   "meanR": 0.1437,
+   "burden": 0.0339
+  },
+  {
+   "asset": "EURUSD",
+   "k": 5,
+   "m": 1.0,
+   "s": 0.786,
+   "n": 77,
+   "meanR": 0.0331,
+   "burden": 0.0215
+  }
+ ],
+ "verdict": "DEAD_NO_REPLICATION"
+}
