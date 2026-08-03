@@ -193,7 +193,11 @@ def main():
     c = collections.Counter(r["category"] for r in rows)
     print(f"\nخلاصه ({len(rows)} نتیجه):  "
           f"⭐ {c['CLEARS_BAR_UNJUDGED']}   🟢 {c['RESCUABLE']}   "
-          f"⚖️ {c['JUDGED_REJECTED']}   🟡 {c['HARD']}   🔴 {c['NEGATIVE']}")
+          f"⚖️ {c['JUDGED_REJECTED']}   💸 {c['SKILL_BUT_BELOW_COST']}   "
+          f"🟡 {c['HARD']}   🔴 {c['NEGATIVE']}")
+    if c["SKILL_BUT_BELOW_COST"]:
+        print(f"   💸 = مهارتِ واقعی دارند ولی زیرِ هزینهٔ اسپرد ⇒ "
+              f"نمونهٔ بیشتر نجاتشان نمی‌دهد (قانونِ لبهٔ پیپی).")
 
     act = [r for r in rows
            if r["category"] in ("CLEARS_BAR_UNJUDGED", "RESCUABLE")]
