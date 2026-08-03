@@ -116,10 +116,16 @@ def auc_mannwhitney(x_pos, x_neg):
 
 
 # ═══════════════════════════════════════════════════════════════════════════
-def separation_on_host(df, sig, sl, tp, mh, pip, K, depth):
-    """AUC معیارِ ساختاری روی معاملاتِ یک میزبان — بدونِ هیچ آستانه‌ای."""
-    tr = se.simulate(df, sig, sl_pip=sl, tp_pip=tp, max_hold_bars=mh,
-                     pip=pip, allow_overlap=False)
+def separation_on_host(df, sig, sl, tp, mh, key, K, depth, pip):
+    """AUC معیارِ ساختاری روی معاملاتِ یک میزبان — بدونِ هیچ آستانه‌ای.
+
+    امضای شبیه‌ساز **عیناً** همان است که هارنس استفاده می‌کند
+    (`simulate_trades` با کلیدِ دارایی و `allow_overlap=False`)، تا مجموعهٔ
+    معاملات دقیقاً همان جمعیتی باشد که حکم بر آن بنا شده.
+    """
+    n = len(df)
+    tr = se.simulate_trades(df, sig, np.zeros(n, bool), sl, tp, key,
+                            max_hold=mh, allow_overlap=False)
     if tr is None or len(tr) < 2 * MIN_SIDE:
         return None, 0
     d = structural_distance(df, K, depth, pip)
@@ -158,8 +164,8 @@ def main():
     print(f"    geometry: SL={sl} TP={tp} mh={mh}")
 
     sig = build_s333_layer(df, cfg)
-    tr = se.simulate(df, sig, sl_pip=sl, tp_pip=tp, max_hold_bars=mh,
-                     pip=pip, allow_overlap=False)
+    tr = se.simulate_trades(df, sig, np.zeros(len(df), bool), sl, tp, key,
+                            max_hold=mh, allow_overlap=False)
     n_base = 0 if tr is None else len(tr)
     print(f"    base trades = {n_base}")
 
@@ -187,7 +193,7 @@ def main():
     sep = {}
     for K in K_VALUES:
         for depth in DEPTHS:
-            r, nn = separation_on_host(df, sig, sl, tp, mh, pip, K, depth)
+            r, nn = separation_on_host(df, sig, sl, tp, mh, key, K, depth, pip)
             if r is None:
                 continue
             key = f"K{K}_d{depth}"
