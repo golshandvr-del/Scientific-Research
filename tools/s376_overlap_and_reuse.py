@@ -128,7 +128,9 @@ def separation_on_host(df, sig, sl, tp, mh, key, K, depth, pip):
                             max_hold=mh, allow_overlap=False)
     if tr is None or len(tr) < 2 * MIN_SIDE:
         return None, 0
-    d = structural_distance(df, K, depth, pip)
+    # `structural_distance` یک tuple برمی‌گرداند `(dist, pivot_level)` —
+    # فقط مؤلفهٔ اولش (فاصلهٔ نرمال‌شده با ATR) معیارِ آزمون است.
+    d, _piv = structural_distance(df, K, depth, pip)
     eb = tr['entry_bar'].values.astype(int)
     dv = d[eb]
     okm = np.isfinite(dv)
@@ -173,7 +175,7 @@ def main():
                geometry=dict(sl=sl, tp=tp, mh=mh, inherited=inherited))
 
     # ── فضای ۱: همپوشانی با میزبان — باید ۱۰۰٪ باشد (زیرمجموعهٔ محض)
-    d0 = structural_distance(df, K_VALUES[0], DEPTHS[0], pip)
+    d0, _piv0 = structural_distance(df, K_VALUES[0], DEPTHS[0], pip)
     eb = tr['entry_bar'].values.astype(int)
     dv = d0[eb]
     thr = np.nanquantile(dv[np.isfinite(dv)], 0.60)
