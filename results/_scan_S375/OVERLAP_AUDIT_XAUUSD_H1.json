@@ -1,0 +1,26 @@
+{
+ "asset": "XAUUSD",
+ "tf": "H1",
+ "anchor": {
+  "k": 3,
+  "m": 1.0,
+  "s": 0.786
+ },
+ "max_hold": 56,
+ "space1_channel_overlap_pct": 96.88,
+ "space2_entrybar_overlap_pct": 4.69,
+ "n_close": 129,
+ "n_kennedy": 64,
+ "n_filtered": 62,
+ "meanR_close": 0.1358,
+ "meanR_filtered": 0.4408,
+ "meanR_rejected": -0.1464,
+ "meanR_kennedy": 0.0251,
+ "d_filter_effect": 0.305,
+ "d_price_effect": -0.4157,
+ "d_total": -0.1108,
+ "pnl_close": 3278.1,
+ "pnl_kennedy": -125.7,
+ "exp_close": 25.411,
+ "exp_kennedy": -1.964
+}
