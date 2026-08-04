@@ -188,7 +188,8 @@ def harvest(path, node, card_hint, out, depth=0):
         for pk in PROFIT_KEYS:
             for k, v in node.items():
                 if str(k) == pk or str(k).lower() == pk.lower():
-                    if isinstance(v, (int, float)):
+                    # NaN/Inf نه مثبت است نه منفی ⇒ نباید دروازه را دور بزند.
+                    if isinstance(v, (int, float)) and -1e12 < v < 1e12:
                         prof_val, prof_key = float(v), str(k)
                         break
             if prof_val is not None:
