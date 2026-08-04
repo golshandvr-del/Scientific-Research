@@ -143,6 +143,10 @@ def interp_power(curve, wr, n):
 
 N_KEYS = ('n', 'n_trades', 'trades', 'ntrades')
 WR_KEYS = ('wr', 'win_rate', 'winrate', 'wr_pct')
+# ── مرجعِ خنثای ثبت‌شدهٔ خودِ آزمون. ترتیب اهمیت دارد: `ref` صریح‌ترین است،
+#    `perm_mean` میانگینِ توزیعِ جایگشتیِ همان آزمون، `uncond` نرخِ بی‌قیدِ
+#    همان هندسه. هر سه از خودِ آزمون می‌آیند و هندسهٔ آن را می‌شناسند.
+REF_KEYS = ('ref', 'perm_mean', 'uncond', 'ref_wr', 'baseline_wr')
 CARD_RE = re.compile(r'(XAUUSD|EURUSD|GBPUSD|USDJPY|AUDUSD)[_\-]?(M1|M5|M15|M30|H1|H4|D1|W1)',
                      re.I)
 
