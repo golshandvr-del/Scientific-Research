@@ -57,7 +57,31 @@ import re
 
 OUT = 'results/_audit_retro_power'
 CALIB_DIR = 'results/_calib_power'
+LM_DIR = 'local-mobile'
 os.makedirs(OUT, exist_ok=True)
+
+
+def deployed_layers():
+    """لایه‌هایی که **همین حالا در `local-mobile` مستقرند**.
+
+    چرا لازم است: صفِ اولویت باید «سرنخِ کشف‌نشده» بدهد. اگر مشاهده‌ای به
+    لایه‌ای تعلق دارد که هم‌اکنون فعال است، آن مشاهده کشفِ نو نیست —
+    بازتابِ چیزی است که پروژه قبلاً پذیرفته و به کار گرفته. بی‌برچسب
+    گذاشتنش باعث می‌شود پرتفویِ موجود به‌شکلِ فرصتِ جدید دیده شود.
+    """
+    ids = set()
+    if not os.path.isdir(LM_DIR):
+        return ids
+    for fn in os.listdir(LM_DIR):
+        p = os.path.join(LM_DIR, fn)
+        if not os.path.isfile(p):
+            continue
+        try:
+            txt = open(p, encoding='utf-8', errors='ignore').read()
+        except Exception:
+            continue
+        ids.update(m.upper() for m in re.findall(r'\bS(\d{2,3})\b', txt))
+    return {f'S{i}' for i in ids}
 
 
 # ═══════════════════════════════════════════════════════════════════════════
