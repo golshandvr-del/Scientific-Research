@@ -301,6 +301,27 @@ def main():
 
     results = {}
     for n_t in N_GRID_EXT:
+        # ── توزیعِ جای‌گشتی **یک بار برای هر `n`**، نه یک بار برای هر تکرار.
+        #
+        #  چرا این بازآرایی مجاز است (و نه یک میان‌بُرِ آماری):
+        #  قیدِ قرعه‌کشیِ جای‌گشت فقط `base_win_pool` و `n_t` است — به `wr_t`
+        #  و به نمونهٔ کاشته‌شده **هیچ وابستگی‌ای ندارد** (خطوطِ بالا را ببینید).
+        #  پس نسخهٔ قبلی همان توزیع را ۶ × ۵۰۰ = ۳۰۰۰ بار برای هر `n` از نو
+        #  می‌ساخت و هر ۳۰۰۰ نسخه هم‌توزیع بودند. مدلِ صفر عوض نمی‌شود.
+        #
+        #  ⚠️ چیزی که این کار **تغییر** می‌دهد و باید صریح گفته شود: تکرارهای
+        #  یک سلول اکنون یک توزیعِ صفرِ مشترک دارند، پس خطای مونت‌کارلوی
+        #  `p` بینِ تکرارها همبسته می‌شود. با `N_PERM=12239` نوسانِ آن توزیع
+        #  ناچیز است، ولی این یعنی عددِ توان یک تخمینِ کم‌واریانس‌تر و نه یک
+        #  تخمینِ متفاوت. هزینهٔ آن پذیرفتنی است چون بدون آن کلِ شبکه
+        #  ۱.۸ ساعت طول می‌کشد و در سندباکسِ ناپایدار عملاً غیرقابلِ اتمام است.
+        #
+        #  قرعه‌کشی هم برداری شد: به‌جای ۱۲٬۲۳۹ فراخوانیِ `rng.choice`، یک
+        #  ماتریسِ `argsort` روی نویزِ تصادفی ⇒ همان نمونه‌گیریِ بی‌جایگذاری.
+        _pool = base_win_pool.astype(np.float64)
+        _draw = rng.random((N_PERM, _pool.size)).argsort(axis=1)[:, :n_t]
+        perm_shared = _pool[_draw].mean(axis=1) * 100.0
+
         for wr_t in WR_GRID:
             passes = 0
             gate_fail = {k: 0 for k in ['H0', 'H1', 'H2', 'H3', 'H5', 'H6', 'H7']}
@@ -309,13 +330,7 @@ def main():
                 base = base_win_pool[idx]
                 win = seed_edge(base, wr_t, rng)
 
-                # توزیعِ جای‌گشتی: نمونه‌های هم‌اندازه از استخرِ خنثی
-                perm = np.array([
-                    base_win_pool[rng.choice(base_win_pool.size, size=n_t, replace=False)].mean() * 100.0
-                    for _ in range(N_PERM)
-                ], float)
-
-                g = run_gates(win, ref_wr, perm, cfg, spread_pip)
+                g = run_gates(win, ref_wr, perm_shared, cfg, spread_pip)
                 if g['ALL']:
                     passes += 1
                 for k in gate_fail:
