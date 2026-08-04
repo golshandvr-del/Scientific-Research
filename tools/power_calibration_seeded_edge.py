@@ -207,6 +207,37 @@ def run_gates(win, ref_wr, perm_dist, cfg, spread_pip, times=None):
     return g
 
 
+def _flush(card, wr_base, cfg, spread_pip, results, partial):
+    """نوشتنِ اتمیکِ نتایج روی دیسک — پس از **هر سلول**، نه در پایانِ اجرا.
+
+    `partial=True` یعنی اجرا هنوز تمام نشده؛ پرچمِ `complete` در فایل ثبت
+    می‌شود تا هیچ تحلیلی به‌اشتباه یک اجرای نیمه‌کاره را کامل نپندارد.
+    `n_cells_done` شمارشِ صریحِ سلول‌های تمام‌شده است (از ۳۶).
+
+    نوشتن ابتدا در فایلِ موقت و سپس `os.replace` انجام می‌شود؛ اگر ریست
+    دقیقاً در میانهٔ نوشتن رخ دهد، فایلِ قبلی سالم می‌ماند و JSONِ نیمه‌نوشته
+    (که غیرقابلِ خواندن است) جای دادهٔ درست را نمی‌گیرد.
+    """
+    payload = dict(
+        spec='consultant_Q10_seeded_edge_power_calibration',
+        card=card, geometry=cfg, spread_pip=spread_pip,
+        base_wr=round(wr_base, 3), ref_wr=round(wr_base, 3),
+        n_rep=N_REP, n_perm=N_PERM, n_trials_h5=N_TRIALS_H5, seed=SEED,
+        gates_run=['H0', 'H1', 'H2(partial)', 'H3', 'H5', 'H6', 'H7'],
+        gates_omitted=['H4', 'H8', 'H9', 'H10'],
+        note='reported power is an UPPER BOUND (omitted gates can only lower it)',
+        complete=(not partial),
+        n_cells_done=len(results),
+        n_cells_total=len(WR_GRID) * len(N_GRID_EXT),
+        cells=results,
+    )
+    dst = os.path.join(OUT, f'power_{card}.json')
+    tmp = dst + '.tmp'
+    with open(tmp, 'w') as fh:
+        json.dump(payload, fh, indent=1, ensure_ascii=False)
+    os.replace(tmp, dst)
+
+
 def main():
     card = sys.argv[1] if len(sys.argv) > 1 else 'XAUUSD_M30'
     rng = np.random.default_rng(SEED)
@@ -266,18 +297,15 @@ def main():
                           gate_fail.items(), key=lambda x: -x[1])[:3] if v > 0),
                   flush=True)
 
-    payload = dict(
-        spec='consultant_Q10_seeded_edge_power_calibration',
-        card=card, geometry=cfg, spread_pip=spread_pip,
-        base_wr=round(wr_base, 3), ref_wr=round(ref_wr, 3),
-        n_rep=N_REP, n_perm=N_PERM, n_trials_h5=N_TRIALS_H5, seed=SEED,
-        gates_run=['H0', 'H1', 'H2(partial)', 'H3', 'H5', 'H6', 'H7'],
-        gates_omitted=['H4', 'H8', 'H9', 'H10'],
-        note='reported power is an UPPER BOUND (omitted gates can only lower it)',
-        cells=results,
-    )
-    with open(os.path.join(OUT, f'power_{card}.json'), 'w') as fh:
-        json.dump(payload, fh, indent=1, ensure_ascii=False)
+            # ── قانونِ «اندک اندک»: ذخیرهٔ **هر سلول** به‌محضِ اتمام.
+            #
+            #  نسخهٔ اول فقط در پایانِ هر ۳۶ سلول می‌نوشت. سندباکس در میانهٔ
+            #  اجرا ریست شد و کلِ نتایجِ کاملِ ۱۴ سلول از دست رفت — دقیقاً همان
+            #  حالتی که قانونِ سومِ پروژه («اندک اندک») برای جلوگیری از آن
+            #  نوشته شده است. اکنون هر سلول بی‌درنگ روی دیسک می‌نشیند.
+            _flush(card, wr_base, cfg, spread_pip, results, partial=True)
+
+    _flush(card, wr_base, cfg, spread_pip, results, partial=False)
     print(f'\nsaved → {OUT}/power_{card}.json')
 
 
