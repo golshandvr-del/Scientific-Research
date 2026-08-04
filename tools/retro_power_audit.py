@@ -237,6 +237,9 @@ def harvest(path, node, card_hint, out, depth=0):
 
 def main():
     curves, baselines = load_power_curves()
+    dep = deployed_layers()
+    print(f'deployed layers in local-mobile: {len(dep)} '
+          f'→ {sorted(dep, key=lambda s: int(s[1:]))}')
     if not curves:
         print('no calibrated power curves found — run power_calibration first')
         return
@@ -284,12 +287,18 @@ def main():
         prof = r.get('profit')
         prof_known = prof is not None
         losing = bool(prof_known and prof < 0)
-        prio = 0.0 if losing else round((1.0 - pw) * max(lift, 0.0), 3)
+        # ── لایهٔ مستقر: کشفِ نو نیست، پرتفویِ فعلیِ خودمان است.
+        m = re.search(r'\bs(\d{2,3})\b', r['file'], re.I)
+        lid = f'S{m.group(1)}' if m else None
+        is_dep = lid in dep if lid else False
+        prio = 0.0 if (losing or is_dep) \
+            else round((1.0 - pw) * max(lift, 0.0), 3)
         judged.append(dict(**r, base_wr=round(base, 3), ref_src=ref_src,
                            lift=round(lift, 3),
                            power=round(pw, 4),
                            blindness=round(1.0 - pw, 4),
                            profit_known=prof_known, losing=losing,
+                           layer=lid, deployed=is_dep,
                            priority=prio))
 
     print(f'judgeable (calibrated card): {len(judged):,}')
@@ -308,7 +317,9 @@ def main():
     judged.sort(key=lambda r: -r['priority'])
     n_losing = sum(1 for r in judged if r['losing'])
     n_prof_unk = sum(1 for r in judged if not r['profit_known'])
+    n_dep = sum(1 for r in judged if r['deployed'])
     print(f'  losing (profit<0) → priority forced to 0 : {n_losing:,}')
+    print(f'  already-deployed layer → priority 0      : {n_dep:,}')
     print(f'  profit not recorded (status unknown)     : {n_prof_unk:,}  '
           f'({100*n_prof_unk/max(len(judged),1):.1f}%)')
     print()
