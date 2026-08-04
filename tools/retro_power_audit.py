@@ -288,7 +288,12 @@ def main():
         prof_known = prof is not None
         losing = bool(prof_known and prof < 0)
         # ── لایهٔ مستقر: کشفِ نو نیست، پرتفویِ فعلیِ خودمان است.
-        m = re.search(r'\bs(\d{2,3})\b', r['file'], re.I)
+        # هیچ‌کدام از دو مرزِ `\b` اینجا کار نمی‌کند: مرزِ چپ بینِ `_` و `s`
+        # برقرار نیست (underscore خودش کاراکترِ کلمه است) و مرزِ راست بینِ
+        # رقم و حرفِ نسخه (`_s313e_`) برقرار نیست. پس `\bs(\d+)\b` روی
+        # نامِ فایل‌های واقعیِ پروژه **هیچ‌گاه** تطبیق نمی‌کرد.
+        # مرزِ چپ = «رقم یا حرف نباشد»، مرزِ راست = «رقم نباشد».
+        m = re.search(r'(?:^|[^0-9a-z])s(\d{2,3})(?![0-9])', r['file'], re.I)
         lid = f'S{m.group(1)}' if m else None
         is_dep = lid in dep if lid else False
         prio = 0.0 if (losing or is_dep) \
