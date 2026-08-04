@@ -183,6 +183,16 @@ def harvest(path, node, card_hint, out, depth=0):
                     break
             if ref_val is not None:
                 break
+        # ── نشانگرِ سودآوریِ هم‌سطح (اگر ثبت شده باشد)
+        prof_val = prof_key = None
+        for pk in PROFIT_KEYS:
+            for k, v in node.items():
+                if str(k) == pk or str(k).lower() == pk.lower():
+                    if isinstance(v, (int, float)):
+                        prof_val, prof_key = float(v), str(k)
+                        break
+            if prof_val is not None:
+                break
         # کارت را از خودِ گره یا از نامِ فایل برمی‌داریم
         card = card_hint
         p = node.get('pair')
@@ -191,7 +201,8 @@ def harvest(path, node, card_hint, out, depth=0):
             card = f'{p.upper()}_{t.upper()}'
         if n_val is not None and wr_val is not None:
             out.append(dict(file=path, card=card, n=n_val, wr=wr_val,
-                            own_ref=ref_val))
+                            own_ref=ref_val,
+                            profit=prof_val, profit_key=prof_key))
         for v in node.values():
             harvest(path, v, card, out, depth + 1)
     elif isinstance(node, list):
@@ -241,11 +252,20 @@ def main():
             base, ref_src = baselines[card], 'calib'
         pw = interp_power(curves[card], r['wr'], r['n'])
         lift = r['wr'] - base
+        # ── دروازهٔ سودآوری: یک مشاهدهٔ ضررده «سرنخِ لبه» نیست. اگر نشانگرِ
+        #    سود هم‌سطح ثبت شده و منفی است، اولویتش صفر می‌شود — از صف حذف،
+        #    نه در صدرِ آن. (اگر ثبت نشده باشد، وضعیتش نامعلوم است و همان
+        #    lift ملاک می‌ماند، ولی با پرچمِ profit_known=False.)
+        prof = r.get('profit')
+        prof_known = prof is not None
+        losing = bool(prof_known and prof < 0)
+        prio = 0.0 if losing else round((1.0 - pw) * max(lift, 0.0), 3)
         judged.append(dict(**r, base_wr=round(base, 3), ref_src=ref_src,
                            lift=round(lift, 3),
                            power=round(pw, 4),
                            blindness=round(1.0 - pw, 4),
-                           priority=round((1.0 - pw) * max(lift, 0.0), 3)))
+                           profit_known=prof_known, losing=losing,
+                           priority=prio))
 
     print(f'judgeable (calibrated card): {len(judged):,}')
     print()
@@ -261,9 +281,15 @@ def main():
 
     # ── صفِ اولویتِ بازآزمایی
     judged.sort(key=lambda r: -r['priority'])
-    print('TOP RETEST PRIORITY  (blind AND showing edge signal)')
+    n_losing = sum(1 for r in judged if r['losing'])
+    n_prof_unk = sum(1 for r in judged if not r['profit_known'])
+    print(f'  losing (profit<0) → priority forced to 0 : {n_losing:,}')
+    print(f'  profit not recorded (status unknown)     : {n_prof_unk:,}  '
+          f'({100*n_prof_unk/max(len(judged),1):.1f}%)')
+    print()
+    print('TOP RETEST PRIORITY  (blind AND showing edge signal AND not losing)')
     hdr = (f"{'card':14s} {'n':>6s} {'wr':>7s} {'base':>7s} {'lift':>7s} "
-           f"{'power':>7s} {'prio':>7s}  file")
+           f"{'power':>7s} {'profit':>10s} {'prio':>7s}  file")
     print(hdr)
     print('-' * len(hdr))
     seen_files = set()
@@ -273,9 +299,12 @@ def main():
         if r['file'] in seen_files:
             continue
         seen_files.add(r['file'])
+        pstr = ('n/a' if not r['profit_known']
+                else f"{r['profit']:+.4f}")
         print(f"{r['card']:14s} {r['n']:6d} {r['wr']:7.2f} {r['base_wr']:7.2f} "
-              f"{r['lift']:+7.2f} {100*r['power']:6.1f}% {r['priority']:7.2f}  "
-              f"{os.path.basename(r['file'])[:48]}")
+              f"{r['lift']:+7.2f} {100*r['power']:6.1f}% {pstr:>10s} "
+              f"{r['priority']:7.2f}  "
+              f"{os.path.basename(r['file'])[:40]}")
         shown += 1
         if shown >= 25:
             break
