@@ -147,6 +147,12 @@ WR_KEYS = ('wr', 'win_rate', 'winrate', 'wr_pct')
 #    `perm_mean` میانگینِ توزیعِ جایگشتیِ همان آزمون، `uncond` نرخِ بی‌قیدِ
 #    همان هندسه. هر سه از خودِ آزمون می‌آیند و هندسهٔ آن را می‌شناسند.
 REF_KEYS = ('ref', 'perm_mean', 'uncond', 'ref_wr', 'baseline_wr')
+# ── نشانگرِ سودآوریِ هم‌سطح. یک مشاهده با WR بالا اما سودِ منفی، «سرنخِ لبه»
+#    نیست — امضای اشتباهِ رایجِ #۸ است (TP<SL ⇒ بردِ پرتکرارِ کوچک، باختِ
+#    نادرِ بزرگ). چنین مشاهده‌ای باید از صفِ اولویت **حذف** شود، نه اینکه
+#    به صدرش برود.
+PROFIT_KEYS = ('meanr', 'mean_r', 'sumr', 'sum_r', 'net', 'net_pips',
+               'pnl', 'expectancy', 'e_pip', 'sharpe', 'profit', 'meanR')
 CARD_RE = re.compile(r'(XAUUSD|EURUSD|GBPUSD|USDJPY|AUDUSD)[_\-]?(M1|M5|M15|M30|H1|H4|D1|W1)',
                      re.I)
 
