@@ -224,15 +224,24 @@ def breakeven_of(node):
     return None, None
 
 
-def harvest(path, node, card_hint, out, depth=0):
+def harvest(path, node, card_hint, out, depth=0, be_inh=None):
     """پیمایشِ بازگشتی برای یافتنِ جفت‌های `(n, wr)` هم‌سطح.
 
     شرطِ پذیرش: `n` و `wr` **در همان دیکشنری** باشند — تا `n` یک آزمون با
     `wr` آزمونِ دیگری اشتباه جفت نشود.
+
+    `be_inh` = هندسهٔ **به‌ارث‌رسیده از بالا**. قاعدهٔ هم‌سطحی برای هندسه کار
+    نمی‌کند: آرشیو `sl_pip_median`/`tp_pip_median` را در سطحِ بالای فایل ثبت
+    می‌کند، ولی `(n, wr)` در گره‌های تودرتو است. پس هندسه باید در پیمایش
+    نزول کند — و اگر گرهِ عمیق‌تر هندسهٔ خودش را داشت، آن **خاص‌تر** است و
+    ارث را کنار می‌زند (مثلِ گریدی که هر عضو براکتِ خودش را دارد).
     """
     if depth > 5:
         return
     if isinstance(node, dict):
+        # هندسهٔ همین گره (اگر باشد) بر ارث اولویت دارد
+        be_here = breakeven_of(node)
+        be_cur = be_here if be_here[0] is not None else (be_inh or (None, None))
         n_val = wr_val = ref_val = None
         for k, v in node.items():
             kl = str(k).lower()
@@ -270,12 +279,13 @@ def harvest(path, node, card_hint, out, depth=0):
         if n_val is not None and wr_val is not None:
             out.append(dict(file=path, card=card, n=n_val, wr=wr_val,
                             own_ref=ref_val,
+                            be=be_cur[0], be_src=be_cur[1],
                             profit=prof_val, profit_key=prof_key))
         for v in node.values():
-            harvest(path, v, card, out, depth + 1)
+            harvest(path, v, card, out, depth + 1, be_cur)
     elif isinstance(node, list):
         for v in node[:400]:
-            harvest(path, v, card_hint, out, depth + 1)
+            harvest(path, v, card_hint, out, depth + 1, be_inh)
 
 
 def main():
