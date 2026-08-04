@@ -1,118 +1,354 @@
 [
  {
-  "card": "XAUUSD_M30",
-  "bars": 181383,
+  "card": "XAUUSD_M15",
+  "bars": 150000,
   "cfg": {
    "ef": 20,
    "es": 100,
    "rp": 21,
-   "rth": 35,
-   "confirm": "price_turn",
-   "hurst": 0.53,
-   "sl": 380,
-   "tp": 420,
-   "mh": 80
+   "rth": 32,
+   "confirm": "none",
+   "hurst": 0.57,
+   "sl": 200,
+   "tp": 240,
+   "mh": 96
   },
   "rows": [
    {
     "candidate": "near_VAL (vpos<0.25)",
     "existing": "trend(ema20>ema100)",
-    "p_a": 0.52458,
-    "p_b": 0.33558,
-    "p_ab": 0.012884,
-    "indep": 0.176035,
-    "ratio": 0.0732,
+    "p_a": 0.54108,
+    "p_b": 0.32079,
+    "p_ab": 0.01312,
+    "indep": 0.173575,
+    "ratio": 0.0756,
     "verdict": "CONFLICT"
    },
    {
     "candidate": "near_VAL (vpos<0.25)",
-    "existing": "rsi<35",
-    "p_a": 0.06848,
-    "p_b": 0.33558,
-    "p_ab": 0.064642,
-    "indep": 0.02298,
-    "ratio": 2.813,
+    "existing": "rsi<32",
+    "p_a": 0.03131,
+    "p_b": 0.32079,
+    "p_ab": 0.030573,
+    "indep": 0.010045,
+    "ratio": 3.0436,
     "verdict": "ok"
    },
    {
     "candidate": "below_VAL (vpos<0)",
     "existing": "trend(ema20>ema100)",
-    "p_a": 0.52458,
-    "p_b": 0.21453,
-    "p_ab": 0.002205,
-    "indep": 0.11254,
-    "ratio": 0.0196,
+    "p_a": 0.54108,
+    "p_b": 0.20003,
+    "p_ab": 0.002753,
+    "indep": 0.10823,
+    "ratio": 0.0254,
     "verdict": "CONFLICT"
    },
    {
     "candidate": "below_VAL (vpos<0)",
-    "existing": "rsi<35",
-    "p_a": 0.06848,
-    "p_b": 0.21453,
-    "p_ab": 0.058837,
-    "indep": 0.014691,
-    "ratio": 4.0049,
+    "existing": "rsi<32",
+    "p_a": 0.03131,
+    "p_b": 0.20003,
+    "p_ab": 0.02862,
+    "indep": 0.006264,
+    "ratio": 4.5693,
     "verdict": "REDUNDANT"
    },
    {
     "candidate": "near_VAH (vpos>0.75)",
     "existing": "trend(ema20>ema100)",
-    "p_a": 0.52458,
-    "p_b": 0.38628,
-    "p_ab": 0.373618,
-    "indep": 0.202634,
-    "ratio": 1.8438,
+    "p_a": 0.54108,
+    "p_b": 0.39883,
+    "p_ab": 0.385447,
+    "indep": 0.215797,
+    "ratio": 1.7862,
     "verdict": "ok"
    },
    {
     "candidate": "near_VAH (vpos>0.75)",
-    "existing": "rsi<35",
-    "p_a": 0.06848,
-    "p_b": 0.38628,
-    "p_ab": 0.000127,
-    "indep": 0.026452,
-    "ratio": 0.0048,
+    "existing": "rsi<32",
+    "p_a": 0.03131,
+    "p_b": 0.39883,
+    "p_ab": 2.7e-05,
+    "indep": 0.012489,
+    "ratio": 0.0021,
     "verdict": "CONFLICT"
    },
    {
     "candidate": "below_POC (c<poc)",
     "existing": "trend(ema20>ema100)",
-    "p_a": 0.52458,
-    "p_b": 0.48203,
-    "p_ab": 0.093085,
-    "indep": 0.252861,
-    "ratio": 0.3681,
+    "p_a": 0.54108,
+    "p_b": 0.47001,
+    "p_ab": 0.095153,
+    "indep": 0.254311,
+    "ratio": 0.3742,
     "verdict": "ok"
    },
    {
     "candidate": "below_POC (c<poc)",
-    "existing": "rsi<35",
-    "p_a": 0.06848,
-    "p_b": 0.48203,
-    "p_ab": 0.06655,
-    "indep": 0.033009,
-    "ratio": 2.0161,
+    "existing": "rsi<32",
+    "p_a": 0.03131,
+    "p_b": 0.47001,
+    "p_ab": 0.030787,
+    "indep": 0.014717,
+    "ratio": 2.0918,
     "verdict": "ok"
    },
    {
     "candidate": "inside_VA (0<vpos<1)",
     "existing": "trend(ema20>ema100)",
-    "p_a": 0.52458,
-    "p_b": 0.54074,
-    "p_ab": 0.280445,
-    "indep": 0.283659,
-    "ratio": 0.9887,
+    "p_a": 0.54108,
+    "p_b": 0.54595,
+    "p_ab": 0.287087,
+    "indep": 0.295404,
+    "ratio": 0.9718,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "inside_VA (0<vpos<1)",
+    "existing": "rsi<32",
+    "p_a": 0.03131,
+    "p_b": 0.54595,
+    "p_ab": 0.00266,
+    "indep": 0.017096,
+    "ratio": 0.1556,
+    "verdict": "CONFLICT"
+   }
+  ]
+ },
+ {
+  "card": "XAUUSD_H1",
+  "bars": 90950,
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 32,
+   "confirm": "none",
+   "hurst": 0.5,
+   "er": 0.25,
+   "sl": 450,
+   "tp": 520,
+   "mh": 64
+  },
+  "rows": [
+   {
+    "candidate": "near_VAL (vpos<0.25)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.53412,
+    "p_b": 0.33037,
+    "p_ab": 0.011281,
+    "indep": 0.176456,
+    "ratio": 0.0639,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "near_VAL (vpos<0.25)",
+    "existing": "rsi<32",
+    "p_a": 0.04278,
+    "p_b": 0.33037,
+    "p_ab": 0.04122,
+    "indep": 0.014134,
+    "ratio": 2.9165,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "below_VAL (vpos<0)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.53412,
+    "p_b": 0.20903,
+    "p_ab": 0.0021,
+    "indep": 0.111645,
+    "ratio": 0.0188,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "below_VAL (vpos<0)",
+    "existing": "rsi<32",
+    "p_a": 0.04278,
+    "p_b": 0.20903,
+    "p_ab": 0.037702,
+    "indep": 0.008943,
+    "ratio": 4.216,
+    "verdict": "REDUNDANT"
+   },
+   {
+    "candidate": "near_VAH (vpos>0.75)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.53412,
+    "p_b": 0.39395,
+    "p_ab": 0.381968,
+    "indep": 0.210417,
+    "ratio": 1.8153,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "near_VAH (vpos>0.75)",
+    "existing": "rsi<32",
+    "p_a": 0.04278,
+    "p_b": 0.39395,
+    "p_ab": 0.0,
+    "indep": 0.016854,
+    "ratio": 0.0,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "below_POC (c<poc)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.53412,
+    "p_b": 0.47306,
+    "p_ab": 0.091611,
+    "indep": 0.252671,
+    "ratio": 0.3626,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "below_POC (c<poc)",
+    "existing": "rsi<32",
+    "p_a": 0.04278,
+    "p_b": 0.47306,
+    "p_ab": 0.041682,
+    "indep": 0.020238,
+    "ratio": 2.0596,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "inside_VA (0<vpos<1)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.53412,
+    "p_b": 0.53667,
+    "p_ab": 0.281242,
+    "indep": 0.286644,
+    "ratio": 0.9812,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "inside_VA (0<vpos<1)",
+    "existing": "rsi<32",
+    "p_a": 0.04278,
+    "p_b": 0.53667,
+    "p_ab": 0.004783,
+    "indep": 0.02296,
+    "ratio": 0.2083,
+    "verdict": "CONFLICT"
+   }
+  ]
+ },
+ {
+  "card": "XAUUSD_M5",
+  "bars": 200000,
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 35,
+   "confirm": "rsi_turn",
+   "hurst": 0.57,
+   "er": 0.25,
+   "sl": 120,
+   "tp": 120,
+   "mh": 96
+  },
+  "rows": [
+   {
+    "candidate": "near_VAL (vpos<0.25)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.55143,
+    "p_b": 0.32148,
+    "p_ab": 0.01447,
+    "indep": 0.177274,
+    "ratio": 0.0816,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "near_VAL (vpos<0.25)",
+    "existing": "rsi<35",
+    "p_a": 0.05032,
+    "p_b": 0.32148,
+    "p_ab": 0.04786,
+    "indep": 0.016178,
+    "ratio": 2.9583,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "below_VAL (vpos<0)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.55143,
+    "p_b": 0.20052,
+    "p_ab": 0.002905,
+    "indep": 0.110573,
+    "ratio": 0.0263,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "below_VAL (vpos<0)",
+    "existing": "rsi<35",
+    "p_a": 0.05032,
+    "p_b": 0.20052,
+    "p_ab": 0.043885,
+    "indep": 0.010091,
+    "ratio": 4.3489,
+    "verdict": "REDUNDANT"
+   },
+   {
+    "candidate": "near_VAH (vpos>0.75)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.55143,
+    "p_b": 0.40207,
+    "p_ab": 0.390095,
+    "indep": 0.221713,
+    "ratio": 1.7595,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "near_VAH (vpos>0.75)",
+    "existing": "rsi<35",
+    "p_a": 0.05032,
+    "p_b": 0.40207,
+    "p_ab": 6.5e-05,
+    "indep": 0.020234,
+    "ratio": 0.0032,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "below_POC (c<poc)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.55143,
+    "p_b": 0.4703,
+    "p_ab": 0.100655,
+    "indep": 0.25934,
+    "ratio": 0.3881,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "below_POC (c<poc)",
+    "existing": "rsi<35",
+    "p_a": 0.05032,
+    "p_b": 0.4703,
+    "p_ab": 0.0492,
+    "indep": 0.023668,
+    "ratio": 2.0787,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "inside_VA (0<vpos<1)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.55143,
+    "p_b": 0.54334,
+    "p_ab": 0.29531,
+    "indep": 0.299611,
+    "ratio": 0.9856,
     "verdict": "ok"
    },
    {
     "candidate": "inside_VA (0<vpos<1)",
     "existing": "rsi<35",
-    "p_a": 0.06848,
-    "p_b": 0.54074,
-    "p_ab": 0.009378,
-    "indep": 0.03703,
-    "ratio": 0.2533,
-    "verdict": "ok"
+    "p_a": 0.05032,
+    "p_b": 0.54334,
+    "p_ab": 0.00639,
+    "indep": 0.027343,
+    "ratio": 0.2337,
+    "verdict": "CONFLICT"
    }
   ]
  }
