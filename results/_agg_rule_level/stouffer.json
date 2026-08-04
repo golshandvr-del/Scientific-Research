@@ -1,0 +1,122 @@
+{
+ "spec": "consultant_section_2_1_rule_level_stouffer",
+ "host_layer": "S333 (BEST_CFG locked, zero free parameters)",
+ "n_perm": 2000,
+ "seed": 20260804,
+ "cards": [
+  {
+   "card": "XAUUSD_M5",
+   "pair": "XAUUSD",
+   "tf": "M5",
+   "n": 64,
+   "wr": 65.625,
+   "net": NaN,
+   "ref_wr": 50.5,
+   "lift": 15.125,
+   "pool": "uncond",
+   "perm_k": 2000,
+   "perm_mean": 51.869,
+   "perm_sd": 6.022,
+   "p": 0.012993503248375811,
+   "z": 2.2264
+  },
+  {
+   "card": "XAUUSD_M15",
+   "pair": "XAUUSD",
+   "tf": "M15",
+   "n": 51,
+   "wr": 62.745,
+   "net": NaN,
+   "ref_wr": 51.15,
+   "lift": 11.595,
+   "pool": "uncond",
+   "perm_k": 2000,
+   "perm_mean": 50.862,
+   "perm_sd": 6.874,
+   "p": 0.04597701149425287,
+   "z": 1.6852
+  },
+  {
+   "card": "XAUUSD_M30",
+   "pair": "XAUUSD",
+   "tf": "M30",
+   "n": 42,
+   "wr": 66.667,
+   "net": NaN,
+   "ref_wr": 51.9,
+   "lift": 14.767,
+   "pool": "uncond",
+   "perm_k": 2000,
+   "perm_mean": 51.249,
+   "perm_sd": 7.845,
+   "p": 0.02498750624687656,
+   "z": 1.9602
+  },
+  {
+   "card": "XAUUSD_H1",
+   "pair": "XAUUSD",
+   "tf": "H1",
+   "n": 74,
+   "wr": 62.162,
+   "net": NaN,
+   "ref_wr": 51.65,
+   "lift": 10.512,
+   "pool": "uncond",
+   "perm_k": 2000,
+   "perm_mean": 51.348,
+   "perm_sd": 5.893,
+   "p": 0.030984507746126936,
+   "z": 1.8665
+  }
+ ],
+ "R": [
+  [
+   1.0,
+   0.0173,
+   -0.0007,
+   -0.0009
+  ],
+  [
+   0.0173,
+   1.0,
+   -0.0004,
+   -0.0006
+  ],
+  [
+   -0.0007,
+   -0.0004,
+   1.0,
+   -0.0003
+  ],
+  [
+   -0.0009,
+   -0.0006,
+   -0.0003,
+   1.0
+  ]
+ ],
+ "R_labels": [
+  "XAUUSD_M5",
+  "XAUUSD_M15",
+  "XAUUSD_M30",
+  "XAUUSD_H1"
+ ],
+ "aggregation": {
+  "ALL": {
+   "Z_indep": 3.856,
+   "sum_n": 231,
+   "k_cards": 4,
+   "Z_corr": 3.8424,
+   "inflation_factor": 1.0035,
+   "M_eff": 4.0
+  },
+  "XAUUSD": {
+   "Z_indep": 3.856,
+   "sum_n": 231,
+   "k_cards": 4,
+   "Z_corr": 3.8424,
+   "inflation_factor": 1.0035,
+   "M_eff": 4.0
+  }
+ }
+}
