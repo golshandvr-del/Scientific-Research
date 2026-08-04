@@ -160,13 +160,23 @@ def harvest(path, node, card_hint, out, depth=0):
     if depth > 5:
         return
     if isinstance(node, dict):
-        n_val = wr_val = None
+        n_val = wr_val = ref_val = None
         for k, v in node.items():
             kl = str(k).lower()
             if kl in N_KEYS and isinstance(v, (int, float)) and 0 < v < 1e6:
                 n_val = int(v)
             if kl in WR_KEYS and isinstance(v, (int, float)) and 0 <= v <= 100:
                 wr_val = float(v)
+        # ── مرجعِ خنثای خودِ همین آزمون، به ترتیبِ اولویتِ REF_KEYS.
+        #    باید هم‌سطحِ (n, wr) باشد تا مرجعِ آزمونِ دیگری قرض گرفته نشود.
+        for rk in REF_KEYS:
+            for k, v in node.items():
+                if str(k).lower() == rk and isinstance(v, (int, float)) \
+                        and 0 < v < 100:
+                    ref_val = float(v)
+                    break
+            if ref_val is not None:
+                break
         # کارت را از خودِ گره یا از نامِ فایل برمی‌داریم
         card = card_hint
         p = node.get('pair')
@@ -174,7 +184,8 @@ def harvest(path, node, card_hint, out, depth=0):
         if isinstance(p, str) and isinstance(t, str):
             card = f'{p.upper()}_{t.upper()}'
         if n_val is not None and wr_val is not None:
-            out.append(dict(file=path, card=card, n=n_val, wr=wr_val))
+            out.append(dict(file=path, card=card, n=n_val, wr=wr_val,
+                            own_ref=ref_val))
         for v in node.values():
             harvest(path, v, card, out, depth + 1)
     elif isinstance(node, list):
@@ -214,10 +225,18 @@ def main():
         card = r['card']
         if card not in curves:
             continue
-        base = baselines[card]
+        # ── مرجعِ درست = مرجعِ ثبت‌شدهٔ خودِ آزمون (هندسه‌اش را می‌شناسد).
+        #    فقط در نبودش به بیس‌لاینِ کالیبراسیون برمی‌گردیم، و آن مشاهده
+        #    را علامت می‌زنیم تا در تفسیر با بقیه یکسان شمرده نشود.
+        own = r.get('own_ref')
+        if own is not None:
+            base, ref_src = own, 'own'
+        else:
+            base, ref_src = baselines[card], 'calib'
         pw = interp_power(curves[card], r['wr'], r['n'])
         lift = r['wr'] - base
-        judged.append(dict(**r, base_wr=round(base, 3), lift=round(lift, 3),
+        judged.append(dict(**r, base_wr=round(base, 3), ref_src=ref_src,
+                           lift=round(lift, 3),
                            power=round(pw, 4),
                            blindness=round(1.0 - pw, 4),
                            priority=round((1.0 - pw) * max(lift, 0.0), 3)))
