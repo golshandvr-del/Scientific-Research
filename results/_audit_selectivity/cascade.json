@@ -1,0 +1,216 @@
+[
+ {
+  "card": "XAUUSD_M5",
+  "bars": 200000,
+  "span_years": 2.82,
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 35,
+   "confirm": "rsi_turn",
+   "hurst": 0.57,
+   "er": 0.25,
+   "sl": 120,
+   "tp": 120,
+   "mh": 96
+  },
+  "cascade": [
+   {
+    "constraint": "all_bars",
+    "bars": 200000,
+    "pct_of_all": 100.0,
+    "kept_pct_of_prev": 100.0
+   },
+   {
+    "constraint": "+ up_trend (ema20>ema100)",
+    "bars": 110286,
+    "pct_of_all": 55.143,
+    "kept_pct_of_prev": 55.14
+   },
+   {
+    "constraint": "+ rsi_prev<35 (dip)",
+    "bars": 438,
+    "pct_of_all": 0.219,
+    "kept_pct_of_prev": 0.4
+   },
+   {
+    "constraint": "+ rsi_turn (bounce off low)",
+    "bars": 266,
+    "pct_of_all": 0.133,
+    "kept_pct_of_prev": 60.73
+   },
+   {
+    "constraint": "+ hurst>0.57",
+    "bars": 123,
+    "pct_of_all": 0.0615,
+    "kept_pct_of_prev": 46.24
+   },
+   {
+    "constraint": "+ er>0.25",
+    "bars": 81,
+    "pct_of_all": 0.0405,
+    "kept_pct_of_prev": 65.85
+   }
+  ],
+  "raw_signal_bars": 81,
+  "executed_no_overlap": 64,
+  "executed_with_overlap": 81,
+  "overlap_discard_pct": 20.99,
+  "days_per_trade": 16.1
+ },
+ {
+  "card": "XAUUSD_M15",
+  "bars": 150000,
+  "span_years": 6.38,
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 32,
+   "confirm": "none",
+   "hurst": 0.57,
+   "sl": 200,
+   "tp": 240,
+   "mh": 96
+  },
+  "cascade": [
+   {
+    "constraint": "all_bars",
+    "bars": 150000,
+    "pct_of_all": 100.0,
+    "kept_pct_of_prev": 100.0
+   },
+   {
+    "constraint": "+ up_trend (ema20>ema100)",
+    "bars": 81162,
+    "pct_of_all": 54.108,
+    "kept_pct_of_prev": 54.11
+   },
+   {
+    "constraint": "+ rsi<32 [confirm=none]",
+    "bars": 165,
+    "pct_of_all": 0.11,
+    "kept_pct_of_prev": 0.2
+   },
+   {
+    "constraint": "+ hurst>0.57",
+    "bars": 87,
+    "pct_of_all": 0.058,
+    "kept_pct_of_prev": 52.73
+   }
+  ],
+  "raw_signal_bars": 87,
+  "executed_no_overlap": 51,
+  "executed_with_overlap": 87,
+  "overlap_discard_pct": 41.38,
+  "days_per_trade": 45.7
+ },
+ {
+  "card": "XAUUSD_M30",
+  "bars": 181383,
+  "span_years": 15.53,
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 35,
+   "confirm": "price_turn",
+   "hurst": 0.53,
+   "sl": 380,
+   "tp": 420,
+   "mh": 80
+  },
+  "cascade": [
+   {
+    "constraint": "all_bars",
+    "bars": 181383,
+    "pct_of_all": 100.0,
+    "kept_pct_of_prev": 100.0
+   },
+   {
+    "constraint": "+ up_trend (ema20>ema100)",
+    "bars": 95149,
+    "pct_of_all": 52.4575,
+    "kept_pct_of_prev": 52.46
+   },
+   {
+    "constraint": "+ rsi dipped<35",
+    "bars": 859,
+    "pct_of_all": 0.4736,
+    "kept_pct_of_prev": 0.9
+   },
+   {
+    "constraint": "+ price_turn (close>prev high)",
+    "bars": 71,
+    "pct_of_all": 0.0391,
+    "kept_pct_of_prev": 8.27
+   },
+   {
+    "constraint": "+ hurst>0.53",
+    "bars": 46,
+    "pct_of_all": 0.0254,
+    "kept_pct_of_prev": 64.79
+   }
+  ],
+  "raw_signal_bars": 46,
+  "executed_no_overlap": 42,
+  "executed_with_overlap": 46,
+  "overlap_discard_pct": 8.7,
+  "days_per_trade": 135.1
+ },
+ {
+  "card": "XAUUSD_H1",
+  "bars": 90950,
+  "span_years": 15.53,
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 32,
+   "confirm": "none",
+   "hurst": 0.5,
+   "er": 0.25,
+   "sl": 450,
+   "tp": 520,
+   "mh": 64
+  },
+  "cascade": [
+   {
+    "constraint": "all_bars",
+    "bars": 90950,
+    "pct_of_all": 100.0,
+    "kept_pct_of_prev": 100.0
+   },
+   {
+    "constraint": "+ up_trend (ema20>ema100)",
+    "bars": 48578,
+    "pct_of_all": 53.4118,
+    "kept_pct_of_prev": 53.41
+   },
+   {
+    "constraint": "+ rsi<32 [confirm=none]",
+    "bars": 159,
+    "pct_of_all": 0.1748,
+    "kept_pct_of_prev": 0.33
+   },
+   {
+    "constraint": "+ hurst>0.50",
+    "bars": 145,
+    "pct_of_all": 0.1594,
+    "kept_pct_of_prev": 91.19
+   },
+   {
+    "constraint": "+ er>0.25",
+    "bars": 126,
+    "pct_of_all": 0.1385,
+    "kept_pct_of_prev": 86.9
+   }
+  ],
+  "raw_signal_bars": 126,
+  "executed_no_overlap": 74,
+  "executed_with_overlap": 126,
+  "overlap_discard_pct": 41.27,
+  "days_per_trade": 76.7
+ }
+]
