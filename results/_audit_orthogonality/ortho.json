@@ -1,0 +1,119 @@
+[
+ {
+  "card": "XAUUSD_M30",
+  "bars": 181383,
+  "cfg": {
+   "ef": 20,
+   "es": 100,
+   "rp": 21,
+   "rth": 35,
+   "confirm": "price_turn",
+   "hurst": 0.53,
+   "sl": 380,
+   "tp": 420,
+   "mh": 80
+  },
+  "rows": [
+   {
+    "candidate": "near_VAL (vpos<0.25)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.52458,
+    "p_b": 0.33558,
+    "p_ab": 0.012884,
+    "indep": 0.176035,
+    "ratio": 0.0732,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "near_VAL (vpos<0.25)",
+    "existing": "rsi<35",
+    "p_a": 0.06848,
+    "p_b": 0.33558,
+    "p_ab": 0.064642,
+    "indep": 0.02298,
+    "ratio": 2.813,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "below_VAL (vpos<0)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.52458,
+    "p_b": 0.21453,
+    "p_ab": 0.002205,
+    "indep": 0.11254,
+    "ratio": 0.0196,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "below_VAL (vpos<0)",
+    "existing": "rsi<35",
+    "p_a": 0.06848,
+    "p_b": 0.21453,
+    "p_ab": 0.058837,
+    "indep": 0.014691,
+    "ratio": 4.0049,
+    "verdict": "REDUNDANT"
+   },
+   {
+    "candidate": "near_VAH (vpos>0.75)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.52458,
+    "p_b": 0.38628,
+    "p_ab": 0.373618,
+    "indep": 0.202634,
+    "ratio": 1.8438,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "near_VAH (vpos>0.75)",
+    "existing": "rsi<35",
+    "p_a": 0.06848,
+    "p_b": 0.38628,
+    "p_ab": 0.000127,
+    "indep": 0.026452,
+    "ratio": 0.0048,
+    "verdict": "CONFLICT"
+   },
+   {
+    "candidate": "below_POC (c<poc)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.52458,
+    "p_b": 0.48203,
+    "p_ab": 0.093085,
+    "indep": 0.252861,
+    "ratio": 0.3681,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "below_POC (c<poc)",
+    "existing": "rsi<35",
+    "p_a": 0.06848,
+    "p_b": 0.48203,
+    "p_ab": 0.06655,
+    "indep": 0.033009,
+    "ratio": 2.0161,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "inside_VA (0<vpos<1)",
+    "existing": "trend(ema20>ema100)",
+    "p_a": 0.52458,
+    "p_b": 0.54074,
+    "p_ab": 0.280445,
+    "indep": 0.283659,
+    "ratio": 0.9887,
+    "verdict": "ok"
+   },
+   {
+    "candidate": "inside_VA (0<vpos<1)",
+    "existing": "rsi<35",
+    "p_a": 0.06848,
+    "p_b": 0.54074,
+    "p_ab": 0.009378,
+    "indep": 0.03703,
+    "ratio": 0.2533,
+    "verdict": "ok"
+   }
+  ]
+ }
+]
