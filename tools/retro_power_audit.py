@@ -191,6 +191,39 @@ CARD_RE = re.compile(r'(XAUUSD|EURUSD|GBPUSD|USDJPY|AUDUSD)[_\-]?(M1|M5|M15|M30|
                      re.I)
 
 
+def _num(node, keys, lo, hi):
+    """اولین کلیدِ عددیِ معتبر از `keys` در همین دیکشنری."""
+    for want in keys:
+        for k, v in node.items():
+            if str(k).lower() == want.lower() and isinstance(v, (int, float)) \
+                    and lo < float(v) < hi:
+                return float(v)
+    return None
+
+
+def breakeven_of(node):
+    """نقطهٔ سربه‌سرِ همین گره (درصد)، یا `None`.
+
+    چهار سطحِ اولویت (سندِ S375):
+      ۱) `be_true_pct` ثبت‌شده — معتبرترین، سازندهٔ فایل هندسه‌اش را می‌دانست.
+      ۲) از pipِ SL/TP: ``BE = (SL + cost) / (TP + SL)`` — بازتولیدِ دقیقِ #۱.
+      ۳) از نسبتِ RR: ``BE ≈ 1/(1+rr)`` — ضعیف‌تر، چون مقیاسِ مطلق را از دست
+         می‌دهد و هزینه را نمی‌توان دقیق شارژ کرد.
+      ۴) هیچ ⇒ `None` (مرجع نامعلوم؛ نباید مرجعِ غلط جانشین شود).
+    """
+    be = _num(node, BE_KEYS, 0.0, 100.0)
+    if be is not None:
+        return be, 'recorded'
+    sl = _num(node, SL_KEYS, 0.0, 1e6)
+    tp = _num(node, TP_KEYS, 0.0, 1e6)
+    if sl and tp:
+        return 100.0 * (sl + COST_PIP) / (tp + sl), 'pips'
+    rr = _num(node, RR_KEYS, 0.0, 1e3)
+    if rr:
+        return 100.0 / (1.0 + rr), 'rr'
+    return None, None
+
+
 def harvest(path, node, card_hint, out, depth=0):
     """پیمایشِ بازگشتی برای یافتنِ جفت‌های `(n, wr)` هم‌سطح.
 
