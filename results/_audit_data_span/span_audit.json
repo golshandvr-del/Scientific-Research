@@ -1,0 +1,246 @@
+[
+ {
+  "card": "AUDUSD_M1",
+  "bars": 200000,
+  "start": "2025-12-31",
+  "end": "2026-07-16",
+  "span_years": 0.54,
+  "trades": null
+ },
+ {
+  "card": "AUDUSD_M15",
+  "bars": 200000,
+  "start": "2018-06-14",
+  "end": "2026-07-16",
+  "span_years": 8.09,
+  "trades": null
+ },
+ {
+  "card": "AUDUSD_M5",
+  "bars": 200000,
+  "start": "2023-11-07",
+  "end": "2026-07-16",
+  "span_years": 2.69,
+  "trades": null
+ },
+ {
+  "card": "DXY_D1",
+  "bars": 1692,
+  "start": "2019-12-13",
+  "end": "2026-07-16",
+  "span_years": 6.59,
+  "trades": null
+ },
+ {
+  "card": "DXY_H1",
+  "bars": 35007,
+  "start": "2019-12-13",
+  "end": "2026-07-16",
+  "span_years": 6.59,
+  "trades": null
+ },
+ {
+  "card": "DXY_H4",
+  "bars": 10113,
+  "start": "2019-12-13",
+  "end": "2026-07-16",
+  "span_years": 6.59,
+  "trades": null
+ },
+ {
+  "card": "DXY_M15",
+  "bars": 130994,
+  "start": "2019-12-13",
+  "end": "2026-07-16",
+  "span_years": 6.59,
+  "trades": null
+ },
+ {
+  "card": "DXY_M30",
+  "bars": 67005,
+  "start": "2019-12-13",
+  "end": "2026-07-16",
+  "span_years": 6.59,
+  "trades": null
+ },
+ {
+  "card": "DXY_M5",
+  "bars": 200000,
+  "start": "2023-01-12",
+  "end": "2026-07-16",
+  "span_years": 3.51,
+  "trades": null
+ },
+ {
+  "card": "DXY_W1",
+  "bars": 344,
+  "start": "2019-12-08",
+  "end": "2026-07-12",
+  "span_years": 6.59,
+  "trades": null
+ },
+ {
+  "card": "EURUSD_D1",
+  "bars": 4195,
+  "start": "2010-05-19",
+  "end": "2026-07-15",
+  "span_years": 16.16,
+  "trades": null
+ },
+ {
+  "card": "EURUSD_H1",
+  "bars": 100070,
+  "start": "2010-05-19",
+  "end": "2026-07-16",
+  "span_years": 16.16,
+  "trades": 22,
+  "bars_per_trade": 4548.6,
+  "days_per_trade": 268.3,
+  "need_x_for_356": 16.18,
+  "years_needed_at_same_rate": 261.5
+ },
+ {
+  "card": "EURUSD_H4",
+  "bars": 25133,
+  "start": "2010-05-19",
+  "end": "2026-07-16",
+  "span_years": 16.16,
+  "trades": null
+ },
+ {
+  "card": "EURUSD_M1",
+  "bars": 200000,
+  "start": "2025-12-31",
+  "end": "2026-07-16",
+  "span_years": 0.54,
+  "trades": 41,
+  "bars_per_trade": 4878.0,
+  "days_per_trade": 4.8,
+  "need_x_for_356": 8.68,
+  "years_needed_at_same_rate": 4.7
+ },
+ {
+  "card": "EURUSD_M15",
+  "bars": 200000,
+  "start": "2018-06-14",
+  "end": "2026-07-16",
+  "span_years": 8.09,
+  "trades": 52,
+  "bars_per_trade": 3846.2,
+  "days_per_trade": 56.8,
+  "need_x_for_356": 6.85,
+  "years_needed_at_same_rate": 55.4
+ },
+ {
+  "card": "EURUSD_M30",
+  "bars": 200000,
+  "start": "2010-05-19",
+  "end": "2026-07-16",
+  "span_years": 16.16,
+  "trades": 43,
+  "bars_per_trade": 4651.2,
+  "days_per_trade": 137.3,
+  "need_x_for_356": 8.28,
+  "years_needed_at_same_rate": 133.8
+ },
+ {
+  "card": "EURUSD_M5",
+  "bars": 200000,
+  "start": "2023-11-07",
+  "end": "2026-07-16",
+  "span_years": 2.69,
+  "trades": 39,
+  "bars_per_trade": 5128.2,
+  "days_per_trade": 25.2,
+  "need_x_for_356": 9.13,
+  "years_needed_at_same_rate": 24.6
+ },
+ {
+  "card": "EURUSD_W1",
+  "bars": 843,
+  "start": "2010-05-16",
+  "end": "2026-07-05",
+  "span_years": 16.14,
+  "trades": null
+ },
+ {
+  "card": "USDCHF_M15",
+  "bars": 200000,
+  "start": "2018-06-13",
+  "end": "2026-07-16",
+  "span_years": 8.09,
+  "trades": null
+ },
+ {
+  "card": "XAUUSD_D1",
+  "bars": 3989,
+  "start": "2011-01-03",
+  "end": "2026-07-16",
+  "span_years": 15.53,
+  "trades": null
+ },
+ {
+  "card": "XAUUSD_H1",
+  "bars": 90950,
+  "start": "2011-01-03",
+  "end": "2026-07-16",
+  "span_years": 15.53,
+  "trades": 74,
+  "bars_per_trade": 1229.1,
+  "days_per_trade": 76.7,
+  "need_x_for_356": 4.81,
+  "years_needed_at_same_rate": 74.7
+ },
+ {
+  "card": "XAUUSD_H4",
+  "bars": 23755,
+  "start": "2011-01-03",
+  "end": "2026-07-16",
+  "span_years": 15.53,
+  "trades": null
+ },
+ {
+  "card": "XAUUSD_M15",
+  "bars": 150000,
+  "start": "2020-02-20",
+  "end": "2026-07-07",
+  "span_years": 6.38,
+  "trades": 51,
+  "bars_per_trade": 2941.2,
+  "days_per_trade": 45.7,
+  "need_x_for_356": 6.98,
+  "years_needed_at_same_rate": 44.5
+ },
+ {
+  "card": "XAUUSD_M30",
+  "bars": 181383,
+  "start": "2011-01-03",
+  "end": "2026-07-16",
+  "span_years": 15.53,
+  "trades": 42,
+  "bars_per_trade": 4318.6,
+  "days_per_trade": 135.1,
+  "need_x_for_356": 8.48,
+  "years_needed_at_same_rate": 131.6
+ },
+ {
+  "card": "XAUUSD_M5",
+  "bars": 200000,
+  "start": "2023-09-18",
+  "end": "2026-07-16",
+  "span_years": 2.82,
+  "trades": 64,
+  "bars_per_trade": 3125.0,
+  "days_per_trade": 16.1,
+  "need_x_for_356": 5.56,
+  "years_needed_at_same_rate": 15.7
+ },
+ {
+  "card": "XAUUSD_W1",
+  "bars": 810,
+  "start": "2011-01-02",
+  "end": "2026-07-12",
+  "span_years": 15.52,
+  "trades": null
+ }
+]
