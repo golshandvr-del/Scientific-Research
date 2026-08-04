@@ -177,6 +177,16 @@ REF_KEYS = ('ref', 'perm_mean', 'uncond', 'ref_wr', 'baseline_wr')
 #    به صدرش برود.
 PROFIT_KEYS = ('meanr', 'mean_r', 'sumr', 'sum_r', 'net', 'net_pips',
                'pnl', 'expectancy', 'e_pip', 'sharpe', 'profit', 'meanR')
+# ── نقطهٔ سربه‌سرِ هندسهٔ براکت. **مرجعِ درستِ لیفت همین است**، نه نرخِ بردِ
+#    بی‌قید. با TP<SL یک ورودِ بی‌مهارت هم نرخِ بردِ بالا می‌دهد؛ اگر مرجع را
+#    ~۵۲٪ بگیریم، لیفت به‌طورِ سیستماتیک روی همان هندسه‌ها متورم می‌شود که
+#    اشتباهِ رایجِ #۸ در آن‌ها زندگی می‌کند. (سندِ S375)
+BE_KEYS = ('be_true_pct', 'be_pct', 'breakeven_pct', 'be_true')
+SL_KEYS = ('sl_pip_median', 'sl_pip', 'sl_pips', 'med_sl', 'sl')
+TP_KEYS = ('tp_pip_median', 'tp_pip', 'tp_pips', 'med_tp', 'tp')
+RR_KEYS = ('rr_realised', 'rr', 'rr_ratio', 's')
+# اسپردِ واقعیِ حسابِ دمو: 0.33 $/oz = 3.3 pip. کمیسیونِ جداگانه ندارد.
+COST_PIP = 3.3
 CARD_RE = re.compile(r'(XAUUSD|EURUSD|GBPUSD|USDJPY|AUDUSD)[_\-]?(M1|M5|M15|M30|H1|H4|D1|W1)',
                      re.I)
 
