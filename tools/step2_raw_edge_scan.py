@@ -120,3 +120,70 @@ def atr(df, p=ATR_P):
 def breakeven_wr(sl_pip, tp_pip, cost=COST_PIP):
     """نرخِ سربه‌سرِ هزینه‌دار. تنها معیارِ درستِ سنجشِ WR."""
     return 100.0 * (sl_pip + cost) / (tp_pip + sl_pip)
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# شبیه‌سازیِ بریسکت — با **قیدِ عدمِ هم‌پوشانی**
+#
+# چرا قیدِ هم‌پوشانی حیاتی است (یافتهٔ S381):
+#   اگر معاملات هم‌پوشان مجاز باشند، `n` مصنوعاً بزرگ می‌شود و هر
+#   آزمونِ معناداری فریب می‌خورد، چون معاملاتِ هم‌پوشان روی همان حرکتِ
+#   قیمت سوار‌ند و مستقل نیستند. S381 نشان داد مدتِ اشغال کانالِ سومِ
+#   خرجِ بودجه است — پس همین قید، آن کانال را **می‌سنجد** نه پنهان می‌کند.
+#
+# منطق: از هر سیگنال، فقط اگر معاملهٔ قبلی بسته شده باشد وارد می‌شویم.
+# دقیقاً همان کاری که یک معامله‌گرِ واقعی با یک حسابِ واحد می‌کند.
+#
+# ترتیبِ داخلِ کندل: اگر هم SL و هم TP در یک کندل لمس شوند، **SL**
+# برنده اعلام می‌شود. این محافظه‌کارانه‌ترین فرض است و از خوش‌بینیِ
+# دروغین جلوگیری می‌کند — همان جنسِ خطایی که هفت باگِ ابزار همه به سودِ
+# ما داشتند.
+# ═══════════════════════════════════════════════════════════════════════════
+
+def simulate_brackets(high, low, close, entries, sl_pts, tp_pts, is_long):
+    """بریسکتِ ثابت با قیدِ تک‌معامله. برمی‌گرداند (wins, losses, bars_held)."""
+    n = len(close)
+    wins = 0
+    losses = 0
+    held = 0
+    i = 0
+    idx = np.flatnonzero(entries)
+    ptr = 0
+    while ptr < len(idx):
+        e = idx[ptr]
+        if e < i or e + 1 >= n:
+            ptr += 1
+            continue
+        entry = close[e]
+        if is_long:
+            sl_px, tp_px = entry - sl_pts, entry + tp_pts
+        else:
+            sl_px, tp_px = entry + sl_pts, entry - tp_pts
+        # از کندلِ بعدی به جلو
+        j = e + 1
+        out = None
+        while j < n:
+            if is_long:
+                hit_sl = low[j] <= sl_px
+                hit_tp = high[j] >= tp_px
+            else:
+                hit_sl = high[j] >= sl_px
+                hit_tp = low[j] <= tp_px
+            if hit_sl:            # SL اولویت دارد — محافظه‌کارانه
+                out = ('L', j)
+                break
+            if hit_tp:
+                out = ('W', j)
+                break
+            j += 1
+        if out is None:
+            break                 # پایانِ داده؛ معاملهٔ باز شمرده نمی‌شود
+        if out[0] == 'W':
+            wins += 1
+        else:
+            losses += 1
+        held += out[1] - e
+        i = out[1] + 1            # قیدِ عدمِ هم‌پوشانی
+        while ptr < len(idx) and idx[ptr] < i:
+            ptr += 1
+    return wins, losses, held
