@@ -83,3 +83,105 @@ sys.path.insert(0, ROOT)
 OUT = 'results/_s382'
 SEED = 20260805
 K = 2000
+
+
+def load_layer():
+    """بارگذاریِ ماژولِ S382 — تا **همان** شبیه‌ساز استفاده شود."""
+    spec = importlib.util.spec_from_file_location(
+        '_s382', os.path.join(ROOT, 'strategies', 's382_williamsr_momentum.py'))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m
+
+
+def uncond_baseline(L, df, sl_abs, ps, stride):
+    """خطِ مبنای ①: ورود در **هر کندل** (بدون هیچ سیگنالی).
+
+    `stride` برای کارآمدی: به‌جای هر کندل، هر n-اُمین کندل. چون قیدِ
+    عدمِ هم‌پوشانی به‌هرحال بیشترِ سیگنال‌ها را حذف می‌کند، stride=1 و
+    stride=3 نتیجهٔ تقریباً یکسان می‌دهند — ولی برای شفافیت گزارش می‌شود.
+    """
+    sig = pd.Series(False, index=df.index)
+    sig.iloc[::stride] = True
+    tr = L.simulate_trades(df, sig, sl_abs, L.RR, True, ps)
+    if len(tr) == 0:
+        return None, 0
+    return 100.0 * float((tr['outcome'] == 'win').mean()), len(tr)
+
+
+def perm_baseline(L, df, sl_abs, ps, n_sig, k=K, seed=SEED):
+    """خطِ مبنای ②: جای‌گشتِ **زمان‌بندیِ** سیگنال‌ها.
+
+    همان `n_sig` سیگنال، ولی در موقعیت‌های تصادفی. تعدادِ سیگنالِ خام
+    حفظ می‌شود (نه تعدادِ معامله)، چون قیدِ عدمِ هم‌پوشانی باید **به همان
+    شکلِ لایه** روی مدلِ صفر هم اثر بگذارد تا مقایسه عادلانه بماند.
+    """
+    rng = np.random.default_rng(seed)
+    n = len(df)
+    lo, hi = 200, n - 2          # حاشیه: ATR(100) و کندلِ خروج
+    wrs = []
+    for _ in range(k):
+        pos = rng.choice(np.arange(lo, hi), size=n_sig, replace=False)
+        sig = pd.Series(False, index=df.index)
+        sig.iloc[np.sort(pos)] = True
+        tr = L.simulate_trades(df, sig, sl_abs, L.RR, True, ps)
+        if len(tr) >= 30:
+            wrs.append(100.0 * float((tr['outcome'] == 'win').mean()))
+    a = np.asarray(wrs, float)
+    return dict(mean=float(a.mean()), sd=float(a.std(ddof=1)),
+                max=float(a.max()), min=float(a.min()),
+                p95=float(np.percentile(a, 95)), k=int(len(a)))
+
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    L = load_layer()
+    df = L.load(L.CARD)
+    ps = L.pip_size(L.ASSET)
+    sl_abs = float(np.nanmedian(L.atr(df).to_numpy())) * L.SL_K
+    sig = L.signals(df)
+    n_sig = int(sig.fillna(False).sum())
+    tr = L.simulate_trades(df, sig, sl_abs, L.RR, True, ps)
+    obs_wr = 100.0 * float((tr['outcome'] == 'win').mean())
+    be = 100.0 * (sl_abs / ps + 3.3) / (sl_abs * L.RR / ps + sl_abs / ps)
+
+    print(f'layer: n_sig={n_sig}  n_trades={len(tr)}  '
+          f'wr={obs_wr:.2f}%  be={be:.2f}%  lift={obs_wr-be:+.2f}')
+    print()
+
+    print('=== baseline (1): unconditional entry, zero signal ===')
+    rows = []
+    for stride in (1, 3, 7):
+        wr, n = uncond_baseline(L, df, sl_abs, ps, stride)
+        rows.append((stride, wr, n))
+        print(f'  stride={stride}: n={n:5d}  wr={wr:6.2f}%  '
+              f'vs be={be:.2f} -> {wr-be:+6.2f}  '
+              f'vs layer={obs_wr:.2f} -> {obs_wr-wr:+6.2f}')
+    uncond_wr = max(r[1] for r in rows)   # سخت‌ترین مبنا
+    print(f'  => hardest unconditional baseline = {uncond_wr:.2f}%')
+    print()
+
+    print(f'=== baseline (2): timing permutation, k={K} ===')
+    p = perm_baseline(L, df, sl_abs, ps, n_sig)
+    print(f'  mean={p["mean"]:.2f}%  sd={p["sd"]:.2f}  '
+          f'min={p["min"]:.2f}  p95={p["p95"]:.2f}  max={p["max"]:.2f}  '
+          f'(k={p["k"]})')
+    z = (obs_wr - p['mean']) / p['sd'] if p['sd'] > 0 else float('nan')
+    print(f'  observed {obs_wr:.2f}% -> z = {z:.2f}')
+    print(f'  exceeds perm_max? {"YES" if obs_wr > p["max"] else "NO"}')
+    print()
+
+    null = {'long': dict(uncond_wr=uncond_wr, perm_mean=p['mean'],
+                         perm_sd=p['sd'], perm_max=p['max'], perm_k=p['k']),
+            'short': dict(uncond_wr=None, perm_mean=None, perm_sd=None,
+                          perm_max=None, perm_k=None)}
+    payload = dict(card=L.CARD, obs_wr=obs_wr, be=be, n_trades=len(tr),
+                   n_signals=n_sig, uncond=rows, perm=p, null=null,
+                   seed=SEED, k=K)
+    with open(f'{OUT}/null_model.json', 'w') as f:
+        json.dump(payload, f, ensure_ascii=False)
+    print(f'saved -> {OUT}/null_model.json')
+
+
+if __name__ == '__main__':
+    main()
