@@ -243,6 +243,17 @@ export function computeS382(candles: Candle[], cfg: S382Config): RawSignal {
       value: `${slPipShow} / ${tpPipShow} pip (نسبت ${cfg.rr})`,
       status: 'ok',
     },
+    // ⚠️ شاخصِ صداقتِ هندسه — اگر نوسانِ جاری از بازهٔ آزموده‌شده بیرون باشد،
+    //    کاربر باید بداند که براکتِ پیشنهادی دیگر عیناً براکتِ آزموده‌شده نیست.
+    {
+      name: 'تطابقِ نوسانِ جاری با بازهٔ آزموده‌شده',
+      value: geomClamp === 'in-band'
+        ? `داخلِ بازه (${atrRatio.toFixed(2)}× هندسهٔ آزموده‌شده) ✔`
+        : (geomClamp === 'clamped-high'
+          ? `نوسان ${atrRatio.toFixed(2)}× بالاتر از آزموده‌شده — استاپ روی سقفِ مجاز بسته شد ⚠`
+          : `نوسان ${atrRatio.toFixed(2)}× پایین‌ترِ آزموده‌شده — استاپ روی کفِ مجاز بسته شد ⚠`),
+      status: geomClamp === 'in-band' ? 'ok' : 'bad',
+    },
   ]
 
   let reason: string
