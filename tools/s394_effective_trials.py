@@ -164,70 +164,117 @@ def comp_C(L, df):
     return XC, names
 
 
+def _load(name):
+    """نتیجهٔ مؤلفهٔ ذخیره‌شده — مقاومت به ریستِ سندباکس."""
+    fn = os.path.join(OUT, f'{name}.json')
+    return json.load(open(fn)) if os.path.exists(fn) else None
+
+
+def _save(name, obj):
+    json.dump(obj, open(os.path.join(OUT, f'{name}.json'), 'w'), indent=1)
+
+
 def main():
-    print('S394 effective independent trials | card=%s' % CARD)
+    """اجرای مرحله‌ای: `python3 tools/s394_effective_trials.py [step]`
+
+    ⚠️ حافظهٔ سندباکس ۹۸۵MB است و مؤلفهٔ B هشت کارت را لود می‌کند ⇒ اجرای
+    یکجا پروسه را می‌کُشد (دو بار رخ داد). پس هر مؤلفه در **پروسهٔ جدا**
+    اجرا و نتیجه‌اش روی دیسک ذخیره می‌شود. این فقط تفکیکِ اجراست؛ هیچ
+    کمیتِ آماری، آستانه یا فضایِ جست‌وجویی تغییر نمی‌کند.
+
+    گام‌ها: `sanity` | `A` | `B` | `C` | `combine` | `all`
+    """
+    step = sys.argv[1] if len(sys.argv) > 1 else 'all'
+    print('S394 effective independent trials | card=%s | step=%s'
+          % (CARD, step))
     print('z_obs=%.3f  BREAK_N=%d (pre-registered)  FLOOR=%.0f'
           % (Z_OBS, BREAK_N, FLOOR))
     print()
-    print('=== step 0: estimator sanity (pre-registered gate) ===')
-    ok, m_same, m_indep = sanity_check()
-    if not ok:
-        print('ABORT — estimator failed its sanity test.')
+
+    if step in ('sanity', 'all'):
+        print('=== step 0: estimator sanity (pre-registered gate) ===')
+        ok, m_same, m_indep = sanity_check()
+        _save('sanity', {'ok': bool(ok),
+                         'identical': round(m_same, 3),
+                         'independent': round(m_indep, 3)})
+        if not ok:
+            print('ABORT — estimator failed its sanity test.')
+            return
+        print()
+
+    if _load('sanity') is None:
+        print('ABORT — run the sanity step first (pre-registered gate).')
         return
-    print()
 
-    L = _mod('strategies/s382_williamsr_momentum.py', '_s382')
-    RB = _mod('tools/step1_rule_bank.py', '_rb')
-    df = L.load(CARD)
+    if step in ('A', 'all'):
+        print('=== component A: entry rules ===')
+        L = _mod('strategies/s382_williamsr_momentum.py', '_s382')
+        RB = _mod('tools/step1_rule_bank.py', '_rb')
+        XA, nA = comp_A(L, RB, L.load(CARD))
+        mA = R.effective_trials(XA)
+        print('  raw M=%d  ->  M_eff=%.2f  (ratio %.3f)  rows=%d'
+              % (XA.shape[1], mA, mA / XA.shape[1], XA.shape[0]))
+        _save('compA', {'raw': int(XA.shape[1]), 'eff': round(float(mA), 3),
+                        'rows': int(XA.shape[0])})
+        print()
 
-    res = {'z_obs': Z_OBS, 'break_n': BREAK_N, 'floor': FLOOR,
-           'sanity_identical': round(m_same, 3),
-           'sanity_independent': round(m_indep, 3)}
+    if step in ('B', 'all'):
+        print('=== component B: geometries ===')
+        L = _mod('strategies/s382_williamsr_momentum.py', '_s382')
+        XB, nB = comp_B(L)
+        mB = R.effective_trials(XB)
+        print('  raw M=%d  ->  M_eff=%.2f  (ratio %.3f)  rows=%d'
+              % (XB.shape[1], mB, mB / XB.shape[1], XB.shape[0]))
+        _save('compB', {'raw': int(XB.shape[1]), 'eff': round(float(mB), 3),
+                        'rows': int(XB.shape[0]), 'names': nB})
+        print()
 
-    print('=== component A: entry rules ===')
-    XA, nA = comp_A(L, RB, df)
-    mA = R.effective_trials(XA)
-    print('  raw M=%d  ->  M_eff=%.2f  (ratio %.3f)'
-          % (XA.shape[1], mA, mA / XA.shape[1]))
-    res.update(A_raw=XA.shape[1], A_eff=round(mA, 3))
-    json.dump(res, open(os.path.join(OUT, 'meff.json'), 'w'), indent=1)
+    if step in ('C', 'all'):
+        print('=== component C: filters ===')
+        L = _mod('strategies/s382_williamsr_momentum.py', '_s382')
+        XC, nC = comp_C(L, L.load(CARD))
+        mC = R.effective_trials(XC)
+        print('  raw M=%d  ->  M_eff=%.2f  (ratio %.3f)  rows=%d'
+              % (XC.shape[1], mC, mC / XC.shape[1], XC.shape[0]))
+        _save('compC', {'raw': int(XC.shape[1]), 'eff': round(float(mC), 3),
+                        'rows': int(XC.shape[0])})
+        print()
 
-    print('=== component B: geometries ===')
-    XB, nB = comp_B(L)
-    mB = R.effective_trials(XB)
-    print('  raw M=%d  ->  M_eff=%.2f  (ratio %.3f)'
-          % (XB.shape[1], mB, mB / XB.shape[1]))
-    res.update(B_raw=XB.shape[1], B_eff=round(mB, 3))
-    json.dump(res, open(os.path.join(OUT, 'meff.json'), 'w'), indent=1)
-
-    print('=== component C: filters ===')
-    XC, nC = comp_C(L, df)
-    mC = R.effective_trials(XC)
-    print('  raw M=%d  ->  M_eff=%.2f  (ratio %.3f)'
-          % (XC.shape[1], mC, mC / XC.shape[1]))
-    res.update(C_raw=XC.shape[1], C_eff=round(mC, 3))
-
-    total = mA * mB * mC
-    total_floored = max(total, FLOOR)
-    zbar = R.expected_max_z(total_floored)
-    res.update(m_eff_product=round(total, 2),
-               m_eff_final=round(total_floored, 2),
-               z_bar_effective=round(zbar, 4),
-               gap=round(Z_OBS - zbar, 4),
-               h5_pass=bool(Z_OBS > zbar))
-    print()
-    print('=== combination (locked: multiplicative) ===')
-    print('  M_eff = %.2f x %.2f x %.2f = %.2f' % (mA, mB, mC, total))
-    print('  after conservative floor(%.0f): %.2f' % (FLOOR, total_floored))
-    print('  z_bar(M_eff) = %.4f   vs   z_obs = %.3f   gap = %+.4f'
-          % (zbar, Z_OBS, Z_OBS - zbar))
-    print('  H5 verdict: %s' % ('PASS' if Z_OBS > zbar else 'FAIL'))
-    print()
-    print('  raw-count bound for reference: z_bar(23913) = %.4f'
-          % R.expected_max_z(23913))
-    json.dump(res, open(os.path.join(OUT, 'meff.json'), 'w'), indent=1)
-    print()
-    print('written -> results/_s394/meff.json')
+    if step in ('combine', 'all'):
+        A, B, C = _load('compA'), _load('compB'), _load('compC')
+        if not (A and B and C):
+            print('ABORT — missing component(s): A=%s B=%s C=%s'
+                  % (bool(A), bool(B), bool(C)))
+            return
+        sn = _load('sanity')
+        mA, mB, mC = A['eff'], B['eff'], C['eff']
+        total = mA * mB * mC
+        total_floored = max(total, FLOOR)
+        zbar = R.expected_max_z(total_floored)
+        res = {'z_obs': Z_OBS, 'break_n': BREAK_N, 'floor': FLOOR,
+               'sanity_identical': sn['identical'],
+               'sanity_independent': sn['independent'],
+               'A_raw': A['raw'], 'A_eff': mA,
+               'B_raw': B['raw'], 'B_eff': mB,
+               'C_raw': C['raw'], 'C_eff': mC,
+               'm_eff_product': round(total, 2),
+               'm_eff_final': round(total_floored, 2),
+               'z_bar_effective': round(zbar, 4),
+               'z_bar_raw_23913': round(R.expected_max_z(23913), 4),
+               'gap': round(Z_OBS - zbar, 4),
+               'h5_pass': bool(Z_OBS > zbar)}
+        print('=== combination (locked: multiplicative) ===')
+        print('  M_eff = %.2f x %.2f x %.2f = %.2f' % (mA, mB, mC, total))
+        print('  after conservative floor(%.0f): %.2f'
+              % (FLOOR, total_floored))
+        print('  z_bar(M_eff) = %.4f   vs   z_obs = %.3f   gap = %+.4f'
+              % (zbar, Z_OBS, Z_OBS - zbar))
+        print('  H5 verdict: %s' % ('PASS' if Z_OBS > zbar else 'FAIL'))
+        print('  raw-count bound for reference: z_bar(23913) = %.4f'
+              % R.expected_max_z(23913))
+        _save('meff', res)
+        print()
+        print('written -> results/_s394/meff.json')
 
 
 if __name__ == '__main__':
