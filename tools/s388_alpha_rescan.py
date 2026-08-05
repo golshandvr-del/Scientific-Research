@@ -123,18 +123,20 @@ def main():
                     continue
 
                 if df is None:
+                    import numpy as np
                     df = L.load(card)
-                    atr = L.atr(df, L.ATR_LEN)
-                    ps = L.pip_size(card)
+                    # ⚠️ **عیناً** مسیرِ S384: میانهٔ ATR، نه سریِ ATR.
+                    # `L.atr(df)` دورهٔ خود را از `L.ATR_P` می‌گیرد.
+                    atr_med = float(np.nanmedian(L.atr(df).to_numpy()))
+                    ps = L.pip_size(card.split('_')[0])
 
-                sl_abs = (atr * sl_k).to_numpy()
-                # سهمِ هزینه از حدِ‌ضرر (برایِ زمینه — قانونِ S383)
-                import numpy as np
-                sl_pip = float(np.nanmean(sl_abs)) / ps
-                cost_pip = L.SPREAD_ABS.get(card.split('_')[0], 0.0) / ps \
-                    if hasattr(L, 'SPREAD_ABS') else None
+                sl_abs = atr_med * sl_k
+                # سهمِ هزینه از حدِ‌ضرر (زمینه — قانونِ S383)
+                sl_pip = sl_abs / ps
+                cost_pip = L.cost_abs(card.split('_')[0]) / ps \
+                    if hasattr(L, 'cost_abs') else float('nan')
                 cost_share = (cost_pip / sl_pip * 100.0) \
-                    if cost_pip else float('nan')
+                    if cost_pip == cost_pip else float('nan')
 
                 # ⚠️ هندسهٔ خطِ مبنا باید عیناً هندسهٔ ردیف باشد (باگِ S386)
                 _bk = L.RR
