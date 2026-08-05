@@ -169,7 +169,9 @@ def main():
     L = _mod('strategies/s382_williamsr_momentum.py', '_s382')
     NM = _mod('tools/s382_null_model.py', '_nm')
     RB = _mod('tools/step1_rule_bank.py', '_rb')
-    bank = RB.build_rules()
+    # `build_rules()` لیستی از تاپل‌های (نام، تابع) برمی‌گرداند — به نگاشت
+    # تبدیل می‌شود تا نامزدها با **نامِ دقیقِ آرشیو** آدرس‌دهی شوند.
+    bank = dict(RB.build_rules())
     print(f'S386 candidate rqs2 | n_trials={N_TRIALS} | K={K} | seed={SEED}')
     print(f'rule bank: {len(bank)} rules available')
     print()
