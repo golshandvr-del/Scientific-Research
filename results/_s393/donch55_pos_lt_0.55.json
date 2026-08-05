@@ -1,0 +1,16 @@
+{
+ "card": "XAUUSD_H1",
+ "rule": "cci20_xup_135",
+ "filt": "donch55_pos_lt_0.55",
+ "sl_k": 1.5,
+ "rr": 2.2,
+ "hour_lo": 7,
+ "hour_hi": 17,
+ "span_years": 15.53,
+ "n_signals": 100,
+ "n_trades": 94,
+ "retention": 0.1092,
+ "sl_pip": 59.63,
+ "tp_pip": 131.18,
+ "verdict": "TOO_FEW_TRADES"
+}
