@@ -230,11 +230,39 @@ chk('TP > SL (اشتباهِ رایجِ ۸ ساختاراً ناممکن)', CFG.
 // ---------------------------------------------------------------------------
 // ۶) تصمیمِ زنده — لایه باید بدونِ استثنا یک حالتِ معتبر برگرداند.
 // ---------------------------------------------------------------------------
+// ⚠️ اصلاحِ خودِ آزمون: قرارداد `RawSignal` در این پروژه میدان‌های
+//    `active` / `approaching` دارد، **نه** `state`. نسخهٔ اولِ این آزمون
+//    `raw.state` را می‌خواند و به‌غلط FAIL می‌داد — یعنی آزمون خراب بود نه لایه.
+//    این را عیناً ثبت می‌کنم چون «آزمونِ خراب که لایهٔ سالم را رد کند» همان
+//    خانوادهٔ خطاییست که در S386 پنج نامزدِ سالم را سوزانده بود؛ آنجا به ضررِ
+//    پذیرش خطا می‌کرد و اینجا هم همان جهت. تشخیص با خواندنِ قراردادِ ماژول.
 const raw = M.computeS382(candles, CFG)
+const liveState = !raw ? '(null)'
+  : (raw.active ? 'ENTRY' : (raw.approaching ? 'APPROACHING' : 'NEUTRAL'))
 console.log()
-console.log('  ▸ تصمیمِ زندهٔ آخرین کندل: state=%s', raw && raw.state ? raw.state : '(null)')
-chk('لایه حالتِ معتبر برمی‌گرداند', !!(raw && raw.state),
-  raw && raw.reasons ? `${raw.reasons.length} دلیل ثبت شد` : '')
+console.log('  ▸ تصمیمِ زندهٔ آخرین کندل: %s', liveState)
+console.log('    دلیل: %s', raw && raw.reason ? String(raw.reason).slice(0, 110) : '—')
+chk('لایه ساختارِ معتبرِ RawSignal برمی‌گرداند',
+  !!raw && typeof raw.active === 'boolean' && typeof raw.approaching === 'boolean'
+    && isFinite(raw.slDist) && raw.slDist > 0 && isFinite(raw.tpDist) && raw.tpDist > 0,
+  `active=${raw && raw.active} approaching=${raw && raw.approaching} ` +
+  `SL=${raw ? (raw.slDist / PIP).toFixed(1) : '?'}pip TP=${raw ? (raw.tpDist / PIP).toFixed(1) : '?'}pip`)
+
+// هر سه حالتِ ممکن باید در تاریخ رخ داده باشد — وگرنه یک شاخه مرده است و
+// کاربر هرگز آن را نمی‌بیند. روی ۴۰۰ کندلِ آخرِ پراکنده بررسی می‌شود.
+let cEntry = 0, cAppr = 0, cNeut = 0
+for (let i = candles.length - 400; i < candles.length; i += 4) {
+  if (i < need + 2) continue
+  const r = M.computeS382(candles.slice(0, i + 1), CFG)
+  if (!r) continue
+  if (r.active) cEntry++
+  else if (r.approaching) cAppr++
+  else cNeut++
+}
+console.log('  ▸ توزیعِ حالت روی ۱۰۰ نمونهٔ اخیر: ENTRY=%d APPROACHING=%d NEUTRAL=%d',
+  cEntry, cAppr, cNeut)
+chk('شاخهٔ «نزدیک‌شدن» مرده نیست', cAppr > 0 || cEntry > 0,
+  'اگر هر دو صفر بودند، کارت همیشه خنثی می‌ماند و لایه بی‌اثر بود')
 
 console.log()
 if (fail === 0) {
