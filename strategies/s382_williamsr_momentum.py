@@ -108,3 +108,117 @@ def signals(df):
     """
     w = willr(df)
     return (w.shift(1) <= WILLR_THR) & (w > WILLR_THR)
+
+
+def pip_size(asset):
+    return 0.1 if asset.startswith('XAU') else 0.0001
+
+
+def simulate_trades(df, sig, sl_px, tp_px_mult, is_long, ps):
+    """شبیه‌سازِ رویدادمحور با قیدِ تک‌معامله. خروجی: DataFrameِ سازگار با rqs2.
+
+    سه انتخابِ محافظه‌کارانه، هر یک بر ضدِ یک خطای شناخته‌شده:
+
+    ۱) **قیدِ عدمِ هم‌پوشانی.** معاملاتِ هم‌پوشان روی همان حرکتِ قیمت سوارند
+       و مستقل نیستند؛ اگر مجاز باشند `n` متورم می‌شود و آزمونِ جایگشت و
+       دوجمله‌ای فریب می‌خورند. همچنین S381 نشان داد مدتِ اشغال، کانالِ
+       سومِ خرجِ بودجه است — این قید آن را **می‌سنجد**، پنهان نمی‌کند.
+
+    ۲) **اولویتِ SL در کندلِ مبهم.** اگر یک کندل هم SL و هم TP را لمس کند،
+       SL برنده است. بدبینانه‌ترین فرضِ ممکن. علتِ انتخاب: حسابرسیِ پیشین
+       هفت نقصِ ابزار یافت و **هر هفت** به سودِ ما خطا می‌کردند. شبیه‌سازی
+       که کندلِ مبهم را خوش‌بینانه حل کند، همان کلاسِ خطا را بازتولید می‌کند.
+
+    ۳) **حذفِ معاملهٔ بازِ پایانِ داده.** نه برد، نه باخت. نسبت‌دادنِ هر
+       نتیجه‌ای به آن، یک فرضِ اندازه‌گیری‌نشده است.
+    """
+    n = len(df)
+    high = df['high'].to_numpy(float)
+    low = df['low'].to_numpy(float)
+    close = df['close'].to_numpy(float)
+    idx = np.flatnonzero(np.asarray(sig.fillna(False), dtype=bool))
+    rows = []
+    i = 0
+    ptr = 0
+    while ptr < len(idx):
+        e = int(idx[ptr])
+        if e < i or e + 1 >= n:
+            ptr += 1
+            continue
+        entry = close[e]
+        sl_abs = sl_px
+        tp_abs = sl_px * tp_px_mult
+        if is_long:
+            sl_lvl, tp_lvl = entry - sl_abs, entry + tp_abs
+        else:
+            sl_lvl, tp_lvl = entry + sl_abs, entry - tp_abs
+        j = e + 1
+        out = None
+        while j < n:
+            if is_long:
+                hit_sl = low[j] <= sl_lvl
+                hit_tp = high[j] >= tp_lvl
+            else:
+                hit_sl = high[j] >= sl_lvl
+                hit_tp = low[j] <= tp_lvl
+            if hit_sl:
+                out = ('loss', j, -sl_abs / ps)
+                break
+            if hit_tp:
+                out = ('win', j, tp_abs / ps)
+                break
+            j += 1
+        if out is None:
+            break
+        rows.append(dict(entry_bar=e, exit_bar=out[1], outcome=out[0],
+                         pnl_pip=out[2], sl_pip=sl_abs / ps,
+                         tp_pip=tp_abs / ps,
+                         direction='long' if is_long else 'short'))
+        i = out[1] + 1
+        while ptr < len(idx) and idx[ptr] < i:
+            ptr += 1
+    return pd.DataFrame(rows)
+
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    df = load(CARD)
+    ps = pip_size(ASSET)
+    a = atr(df)
+    sl_abs = float(np.nanmedian(a.to_numpy())) * SL_K
+    sl_pip = sl_abs / ps
+    tp_pip = sl_pip * RR
+    sig = signals(df)
+
+    print(f'card={CARD}  bars={len(df)}  '
+          f'span={(df["dt"].iloc[-1]-df["dt"].iloc[0]).days/365.25:.2f}y')
+    print(f'signals={int(sig.fillna(False).sum())}  '
+          f'SL={sl_pip:.2f}pip  TP={tp_pip:.2f}pip  rr={RR}')
+
+    tr = simulate_trades(df, sig, sl_abs, RR, SIDE == 'long', ps)
+    print(f'trades={len(tr)}  wins={(tr["outcome"]=="win").sum()}  '
+          f'wr={100*(tr["outcome"]=="win").mean():.2f}%')
+
+    bar_time = df['time'].to_numpy()
+    close = df['close'].to_numpy(float)
+
+    # تقسیمِ اکتشاف/خارج‌ازنمونه برای H7 — ۷۰٪ اول اکتشاف، ۳۰٪ آخر OOS.
+    # چرا بر حسبِ **کندل** و نه معامله: تقسیمِ معامله‌محور اجازه می‌دهد
+    # نشتِ زمانی رخ دهد، چون معاملاتِ نزدیکِ مرز از هر دو سو داده می‌بینند.
+    split_bar = int(0.70 * len(df))
+
+    res = R.compute_rqs2(tr, ASSET, sl_pip=sl_pip, tp_pip=tp_pip,
+                         bar_time=bar_time, close=close,
+                         n_trials=N_TRIALS, split_bar=split_bar)
+
+    print()
+    print(R.format_rqs2(f'S382_WilliamsR_{CARD}', res))
+
+    with open(f'{OUT}/{CARD}_rqs2.json', 'w') as f:
+        json.dump(res, f, ensure_ascii=False, default=str)
+    tr.to_csv(f'{OUT}/{CARD}_trades.csv', index=False)
+    print(f'\nsaved -> {OUT}/{CARD}_rqs2.json  +  {CARD}_trades.csv')
+
+
+if __name__ == '__main__':
+    main()
