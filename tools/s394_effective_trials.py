@@ -85,7 +85,13 @@ def comp_A(L, RB, df):
             continue          # قاعدهٔ همیشه-خاموش، آزمونِ واقعی نیست
         cols.append(np.nan_to_num(s, nan=0.0))
         names.append(nm)
-    X = np.column_stack(cols)
+    X = np.column_stack(cols).astype('float32')
+    # ⚠️ حافظه: ۹۰٬۹۵۰×۲۴۸ در float64 ⇒ OOM. برآوردگر فقط به ماتریسِ
+    # همبستگی نیاز دارد، و همبستگی تحتِ نمونه‌برداریِ **نظام‌مند** (هر
+    # کندلِ k-ام) ناوَرا است چون سیگنال‌ها ایستا (stationary) هستند.
+    # نمونه‌برداری نظام‌مند است نه تصادفی ⇒ هیچ درجهٔ آزادیِ انتخابی.
+    if X.shape[0] > 40000:
+        X = X[::2]
     return X, names
 
 
@@ -150,9 +156,12 @@ def comp_C(L, df):
             a = np.asarray(mask).astype(float)
             if np.nanvar(a) <= 1e-12:
                 continue
-            cols.append(a)
+            cols.append(a.astype('float32'))
             names.append(f'{tag}:{nm}')
-    return np.column_stack(cols), names
+    XC = np.column_stack(cols)
+    if XC.shape[0] > 40000:
+        XC = XC[::2]
+    return XC, names
 
 
 def main():
