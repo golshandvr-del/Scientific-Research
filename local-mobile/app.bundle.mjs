@@ -7257,8 +7257,192 @@ function computeKennedy(open, high, low, close, cfg, pip, costPip) {
   };
 }
 
-// ../web_tool/src/strategy_registry.ts
+// ../web_tool/src/williams_momentum_s382.ts
 var GOLD_PIP6 = 0.1;
+var S382_CFG = {
+  "XAUUSD-H4": {
+    id: "XAUUSD-H4",
+    tfFa: "H4",
+    willrP: 14,
+    willrThr: -13,
+    atrP: 100,
+    slK: 1.5,
+    rr: 1.5,
+    slPip: 122.854,
+    tpPip: 184.281,
+    maxHold: 30,
+    rqs2: 83.5,
+    approachBand: 8
+  }
+};
+function williamsR(candles, p) {
+  const n = candles.length;
+  const out = new Array(n).fill(NaN);
+  for (let i = p - 1; i < n; i++) {
+    let hh = -Infinity;
+    let ll = Infinity;
+    for (let j = i - p + 1; j <= i; j++) {
+      if (candles[j].high > hh) hh = candles[j].high;
+      if (candles[j].low < ll) ll = candles[j].low;
+    }
+    const rng = hh - ll;
+    out[i] = rng === 0 ? NaN : -100 * (hh - candles[i].close) / rng;
+  }
+  return out;
+}
+function atrWilder(candles, p) {
+  const n = candles.length;
+  const out = new Array(n).fill(NaN);
+  if (n === 0) return out;
+  const alpha = 1 / p;
+  let acc = NaN;
+  for (let i = 0; i < n; i++) {
+    const h = candles[i].high;
+    const l = candles[i].low;
+    let tr = h - l;
+    if (i > 0) {
+      const pc = candles[i - 1].close;
+      tr = Math.max(tr, Math.abs(h - pc), Math.abs(l - pc));
+    }
+    acc = i === 0 ? tr : acc + alpha * (tr - acc);
+    out[i] = acc;
+  }
+  return out;
+}
+function computeS382(candles, cfg) {
+  const n = candles.length;
+  let slDist = cfg.slPip * GOLD_PIP6;
+  let tpDist = cfg.tpPip * GOLD_PIP6;
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  const need = Math.max(cfg.willrP, cfg.atrP) + 2;
+  if (n < need) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC Williams %R(${cfg.willrP}) \u0648 ATR(${cfg.atrP}) \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A.`,
+      indicators: emptyInd
+    };
+  }
+  const w = williamsR(candles, cfg.willrP);
+  const a = atrWilder(candles, cfg.atrP);
+  const i = n - 1;
+  const wNow = w[i];
+  const wPrev = w[i - 1];
+  let geomClamp = "in-band";
+  let atrRatio = 1;
+  if (isFinite(a[i]) && a[i] > 0) {
+    const live = cfg.slK * a[i] / GOLD_PIP6;
+    const lo = cfg.slPip * 0.6;
+    const hi = cfg.slPip * 1.6;
+    atrRatio = live / cfg.slPip;
+    if (live > hi) geomClamp = "clamped-high";
+    else if (live < lo) geomClamp = "clamped-low";
+    const slPipUsed = Math.min(hi, Math.max(lo, live));
+    slDist = slPipUsed * GOLD_PIP6;
+    tpDist = slPipUsed * cfg.rr * GOLD_PIP6;
+  }
+  const haveW = isFinite(wNow) && isFinite(wPrev);
+  const crossedUp = haveW && wPrev <= cfg.willrThr && wNow > cfg.willrThr;
+  const dist = haveW ? cfg.willrThr - wNow : NaN;
+  const rising = haveW && wNow > wPrev;
+  const approaching = !crossedUp && haveW && wNow <= cfg.willrThr && dist <= cfg.approachBand && rising;
+  const slPipShow = Math.round(slDist / GOLD_PIP6 * 10) / 10;
+  const tpPipShow = Math.round(tpDist / GOLD_PIP6 * 10) / 10;
+  const indicators = [
+    {
+      name: `Williams %R(${cfg.willrP}) \u2014 \u06A9\u0646\u062F\u0644\u0650 \u0641\u0639\u0644\u06CC`,
+      value: haveW ? wNow.toFixed(2) : "\u2014",
+      status: crossedUp ? "ok" : approaching ? "neutral" : "neutral"
+    },
+    {
+      name: `Williams %R(${cfg.willrP}) \u2014 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644`,
+      value: haveW ? wPrev.toFixed(2) : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: `\u06AF\u0630\u0631 \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.willrThr}`,
+      value: crossedUp ? "\u0631\u062E \u062F\u0627\u062F \u2714" : haveW ? wNow > cfg.willrThr ? "\u0642\u0628\u0644\u0627\u064B \u0639\u0628\u0648\u0631 \u06A9\u0631\u062F\u0647 (\u0641\u0631\u0635\u062A\u0650 \u0647\u0645\u06CC\u0646 \u06AF\u0630\u0631 \u0645\u0635\u0631\u0641 \u0634\u062F) \u2718" : `\u0641\u0627\u0635\u0644\u0647 ${dist.toFixed(2)} \u0648\u0627\u062D\u062F \u2718` : "\u2014",
+      status: crossedUp ? "ok" : "bad"
+    },
+    {
+      name: `ATR(${cfg.atrP}) \u2014 \u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631`,
+      value: isFinite(a[i]) ? `${(a[i] / GOLD_PIP6).toFixed(1)} pip` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A)",
+      value: `${slPipShow} / ${tpPipShow} pip (\u0646\u0633\u0628\u062A ${cfg.rr})`,
+      status: "ok"
+    },
+    // ⚠️ شاخصِ صداقتِ هندسه — اگر نوسانِ جاری از بازهٔ آزموده‌شده بیرون باشد،
+    //    کاربر باید بداند که براکتِ پیشنهادی دیگر عیناً براکتِ آزموده‌شده نیست.
+    {
+      name: "\u062A\u0637\u0627\u0628\u0642\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u062C\u0627\u0631\u06CC \u0628\u0627 \u0628\u0627\u0632\u0647\u0654 \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647",
+      value: geomClamp === "in-band" ? `\u062F\u0627\u062E\u0644\u0650 \u0628\u0627\u0632\u0647 (${atrRatio.toFixed(2)}\xD7 \u0647\u0646\u062F\u0633\u0647\u0654 \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647) \u2714` : geomClamp === "clamped-high" ? `\u0646\u0648\u0633\u0627\u0646 ${atrRatio.toFixed(2)}\xD7 \u0628\u0627\u0644\u0627\u062A\u0631 \u0627\u0632 \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647 \u2014 \u0627\u0633\u062A\u0627\u067E \u0631\u0648\u06CC \u0633\u0642\u0641\u0650 \u0645\u062C\u0627\u0632 \u0628\u0633\u062A\u0647 \u0634\u062F \u26A0` : `\u0646\u0648\u0633\u0627\u0646 ${atrRatio.toFixed(2)}\xD7 \u067E\u0627\u06CC\u06CC\u0646\u200C\u062A\u0631\u0650 \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647 \u2014 \u0627\u0633\u062A\u0627\u067E \u0631\u0648\u06CC \u06A9\u0641\u0650 \u0645\u062C\u0627\u0632 \u0628\u0633\u062A\u0647 \u0634\u062F \u26A0`,
+      status: geomClamp === "in-band" ? "ok" : "bad"
+    }
+  ];
+  let reason;
+  if (crossedUp) {
+    reason = `Williams %R(${cfg.willrP}) \u0627\u0632 ${wPrev.toFixed(2)} \u0628\u0647 ${wNow.toFixed(2)} \u0631\u0641\u062A \u0648 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.willrThr} \u0631\u0627 \u0628\u0647 \u0628\u0627\u0644\u0627 **\u0642\u0637\u0639 \u06A9\u0631\u062F** \u21D2 \u0642\u06CC\u0645\u062A \u0648\u0627\u0631\u062F\u0650 \u06F1\u06F3\u066A \u0628\u0627\u0644\u0627\u06CC\u06CC\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 ${cfg.willrP}-\u06A9\u0646\u062F\u0644\u06CC \u0634\u062F. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 **\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u06CC** \u0627\u0633\u062A: \u0642\u062F\u0631\u062A \u0631\u0627 \u0645\u06CC\u200C\u062E\u0631\u06CC\u0645\u060C \u0646\u0647 \u0627\u06CC\u0646\u06A9\u0647 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F \u0631\u0627 \u0628\u0641\u0631\u0648\u0634\u06CC\u0645. (\u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0631\u0648\u06CC \u06F8\u06F6\u06F9 \u0645\u0639\u0627\u0645\u0644\u0647 \u0648 \u06F1\u06F5.\u06F5\u06F3 \u0633\u0627\u0644\u061B \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 RQS2 \u067E\u0627\u0633\u060C z=\u06F4.\u06F7\u06F5 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u06A9\u0631\u0627\u0646\u0650 \u0634\u0627\u0646\u0633\u0650 \u06F4.\u06F0\u06F7.)` + (geomClamp === "clamped-high" ? ` \u26A0\uFE0F \u062A\u0648\u062C\u0647: \u0646\u0648\u0633\u0627\u0646\u0650 \u062C\u0627\u0631\u06CC ${atrRatio.toFixed(2)}\xD7 \u0628\u0627\u0644\u0627\u062A\u0631 \u0627\u0632 \u0646\u0648\u0633\u0627\u0646\u06CC \u0627\u0633\u062A \u06A9\u0647 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0622\u0646 \u0622\u0632\u0645\u0648\u062F\u0647 \u0634\u062F. \u062D\u062F \u0636\u0631\u0631 \u0631\u0648\u06CC \u0633\u0642\u0641\u0650 \u0645\u062C\u0627\u0632 (${slPipShow} pip) \u0628\u0633\u062A\u0647 \u0634\u062F\u060C \u06A9\u0647 \u0627\u0632 \u0646\u0648\u0633\u0627\u0646\u0650 \u0641\u0639\u0644\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631 **\u062A\u0646\u06AF\u200C\u062A\u0631** \u0627\u0633\u062A \u21D2 \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u062E\u0631\u0648\u062C\u0650 \u062A\u0635\u0627\u062F\u0641\u06CC \u0628\u0627\u0644\u0627\u062A\u0631 \u0627\u0632 \u0622\u0646\u0686\u0647 \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A \u062F\u06CC\u062F\u0647 \u0634\u062F. \u062D\u062C\u0645 \u0631\u0627 \u06A9\u0648\u0686\u06A9\u200C\u062A\u0631 \u0628\u06AF\u06CC\u0631\u06CC\u062F \u06CC\u0627 \u0645\u0646\u062A\u0638\u0631\u0650 \u0622\u0631\u0627\u0645\u200C\u0634\u062F\u0646\u0650 \u0628\u0627\u0632\u0627\u0631 \u0628\u0645\u0627\u0646\u06CC\u062F.` : geomClamp === "clamped-low" ? ` \u26A0\uFE0F \u062A\u0648\u062C\u0647: \u0646\u0648\u0633\u0627\u0646\u0650 \u062C\u0627\u0631\u06CC ${atrRatio.toFixed(2)}\xD7 \u067E\u0627\u06CC\u06CC\u0646\u200C\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647 \u0627\u0633\u062A. \u062D\u062F \u0636\u0631\u0631 \u0631\u0648\u06CC \u06A9\u0641\u0650 \u0645\u062C\u0627\u0632 (${slPipShow} pip) \u0628\u0633\u062A\u0647 \u0634\u062F\u060C \u06A9\u0647 \u0627\u0632 \u0646\u0648\u0633\u0627\u0646\u0650 \u0641\u0639\u0644\u06CC **\u067E\u0647\u0646\u200C\u062A\u0631** \u0627\u0633\u062A \u21D2 \u0631\u06CC\u0633\u06A9\u0650 \u062F\u0644\u0627\u0631\u06CC\u0650 \u0647\u0631 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u06CC\u0634 \u0627\u0632 \u062D\u0627\u0644\u062A\u0650 \u0622\u0632\u0645\u0648\u062F\u0647\u200C\u0634\u062F\u0647.` : "");
+  } else if (approaching) {
+    reason = `Williams %R(${cfg.willrP}) \u0631\u0648\u06CC ${wNow.toFixed(2)} \u0627\u0633\u062A \u0648 \u062F\u0631 \u062D\u0627\u0644\u0650 \u0635\u0639\u0648\u062F (\u0627\u0632 ${wPrev.toFixed(2)}) \u2014 \u0641\u0642\u0637 ${dist.toFixed(2)} \u0648\u0627\u062D\u062F \u062A\u0627 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.willrThr}. \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u0622\u0633\u062A\u0627\u0646\u0647 \u0631\u0627 **\u0628\u0647 \u0628\u0627\u0644\u0627 \u0642\u0637\u0639 \u06A9\u0646\u062F**\u060C \u0648\u0631\u0648\u062F\u0650 \u062E\u0631\u06CC\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
+  } else if (!haveW) {
+    reason = "Williams %R \u0642\u0627\u0628\u0644\u0650 \u0645\u062D\u0627\u0633\u0628\u0647 \u0646\u06CC\u0633\u062A (\u062F\u0627\u0645\u0646\u0647\u0654 \u067E\u0646\u062C\u0631\u0647 \u0635\u0641\u0631 \u06CC\u0627 \u062F\u0627\u062F\u0647\u0654 \u0646\u0627\u06A9\u0627\u0641\u06CC).";
+  } else if (wNow > cfg.willrThr) {
+    reason = `Williams %R \u0631\u0648\u06CC ${wNow.toFixed(2)} \u0627\u0633\u062A\u060C \u06CC\u0639\u0646\u06CC **\u067E\u06CC\u0634 \u0627\u0632 \u0627\u06CC\u0646** \u0627\u0632 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.willrThr} \u0639\u0628\u0648\u0631 \u06A9\u0631\u062F\u0647. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u0644\u062D\u0638\u0647\u0654 **\u06AF\u0630\u0631** \u0631\u0627 \u0645\u06CC\u200C\u06AF\u06CC\u0631\u062F \u0646\u0647 \u0645\u0627\u0646\u062F\u0646 \u062F\u0631 \u0646\u0627\u062D\u06CC\u0647\u061B \u06CC\u06A9 \u06AF\u0631\u062F\u0634\u0650 \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647 **\u06CC\u06A9** \u0641\u0631\u0635\u062A \u0627\u0633\u062A \u0646\u0647 \u0686\u0646\u062F \u0641\u0631\u0635\u062A. \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647 \u0648 \u06AF\u0630\u0631\u0650 \u062A\u0627\u0632\u0647 \u0645\u06CC\u200C\u0645\u0627\u0646\u06CC\u0645.`;
+  } else {
+    reason = `Williams %R \u0631\u0648\u06CC ${wNow.toFixed(2)} \u0627\u0633\u062A \u0648 ${dist.toFixed(2)} \u0648\u0627\u062D\u062F \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.willrThr} \u2014 \u0642\u06CC\u0645\u062A \u0647\u0646\u0648\u0632 \u0628\u0647 \u06F1\u06F3\u066A \u0628\u0627\u0644\u0627\u06CC\u06CC\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 ${cfg.willrP}-\u06A9\u0646\u062F\u0644\u06CC \u0646\u0631\u0633\u06CC\u062F\u0647. \u0634\u0631\u0637\u0650 \u0648\u0631\u0648\u062F \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A.`;
+  }
+  return {
+    active: crossedUp,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0642\u0637\u0639\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.willrThr} \u0628\u0647 \u0628\u0627\u0644\u0627 \u062A\u0648\u0633\u0637\u0650 Williams %R(${cfg.willrP})` : void 0,
+    indicators
+  };
+}
+function decideS382(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS382(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s382_${cfg.tfFa.toLowerCase()}`
+  };
+  const slPipShow = Math.round(raw2.slDist / GOLD_PIP6 * 10) / 10;
+  const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP6 * 10) / 10;
+  const meta = {
+    code: "S382",
+    name: `\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 Williams %R \u2014 \u062E\u0631\u06CC\u062F\u0650 \u0642\u062F\u0631\u062A (${cfg.tfFa})`,
+    kind: "williams_momentum",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631\u0650 ATR-\u0645\u062D\u0648\u0631: SL=${slPipShow} pip \xB7 TP=${tpPipShow} pip (\u0646\u0633\u0628\u062A ${cfg.rr}). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0628\u0627 **\u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647** \u0622\u0632\u0645\u0648\u062F\u0647 \u0634\u062F (\u0628\u06CC\u0634\u06CC\u0646\u0647 \u0647\u0645\u0632\u0645\u0627\u0646\u06CC = \u06F1): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u06AF\u0630\u0631\u0650 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F \u2014 \u0648\u06AF\u0631\u0646\u0647 \u0646\u062A\u06CC\u062C\u0647\u0654 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u062F\u06CC\u06AF\u0631 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A. \u0627\u06AF\u0631 Williams %R \u0628\u0647 \u0632\u06CC\u0631\u0650 ${cfg.willrThr} \u0628\u0631\u06AF\u0634\u062A \u0648 \u0645\u0648\u0645\u0646\u062A\u0648\u0645 \u0627\u0632 \u062F\u0633\u062A \u0631\u0641\u062A\u060C \u062E\u0631\u0648\u062C\u0650 \u0632\u0648\u062F\u0647\u0646\u06AF\u0627\u0645 \u0631\u0627 \u0628\u0633\u0646\u062C. \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u0645\u062F\u062A\u0650 \u0627\u0634\u063A\u0627\u0644\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u06F8.\u06F5 \u06A9\u0646\u062F\u0644 \u0627\u0633\u062A.`,
+    filters: [
+      `Williams %R(${cfg.willrP}) \u06AF\u0630\u0631 \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC ${cfg.willrThr} (\u0631\u0648\u06CC\u062F\u0627\u062F\u060C \u0646\u0647 \u062D\u0627\u0644\u062A)`,
+      "\u0635\u0641\u0631 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0627\u0636\u0627\u0641\u0647 \u2014 \u0628\u0648\u062F\u062C\u0647\u0654 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0633\u062A\u200C\u0646\u062E\u0648\u0631\u062F\u0647",
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u062E\u0648\u062F\u06A9\u0627\u0644\u06CC\u0628\u0631\u0647: SL=${cfg.slK}\xD7ATR(${cfg.atrP}) \xB7 TP=${cfg.rr}\xD7SL`,
+      "\u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (\u0628\u06CC\u0634\u06CC\u0646\u0647 \u0647\u0645\u0632\u0645\u0627\u0646\u06CC = \u06F1)"
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/strategy_registry.ts
+var GOLD_PIP7 = 0.1;
 function lightRegime2(adxVal, trendy, bucket) {
   return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
 }
@@ -7301,8 +7485,8 @@ var s310Layer = (ctx) => {
     active,
     approaching,
     direction: "LONG",
-    slDist: EOM_SL_PIP * GOLD_PIP6,
-    tpDist: EOM_TP_PIP * GOLD_PIP6,
+    slDist: EOM_SL_PIP * GOLD_PIP7,
+    tpDist: EOM_TP_PIP * GOLD_PIP7,
     maxHoldBars: EOM_MAX_HOLD,
     reason: sig.reason,
     approachReason: approaching ? `\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 ${EOM_ENTRY_HOURS.join("/")} UTC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0645\u0627\u0647` : void 0,
@@ -7340,8 +7524,8 @@ function s312Layer(slPip, tpPip, maxHold) {
       active,
       approaching,
       direction: "LONG",
-      slDist: slPip * GOLD_PIP6,
-      tpDist: tpPip * GOLD_PIP6,
+      slDist: slPip * GOLD_PIP7,
+      tpDist: tpPip * GOLD_PIP7,
       maxHoldBars: maxHold,
       reason: sig.reason,
       approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
@@ -7388,7 +7572,7 @@ var s374Layer = (cfg) => (ctx) => {
   const o = ctx.candles.map((c) => c.open), h = ctx.candles.map((c) => c.high);
   const l = ctx.candles.map((c) => c.low), c2 = ctx.candles.map((c) => c.close);
   const isEur = cfg.id.startsWith("EUR");
-  const pip = isEur ? 1e-4 : GOLD_PIP6;
+  const pip = isEur ? 1e-4 : GOLD_PIP7;
   const costPip = isEur ? 1.6 : 3.3;
   const r = computeKennedy(o, h, l, c2, cfg, pip, costPip);
   if (!r.hasChannel) return null;
@@ -7449,6 +7633,7 @@ var s374Layer = (cfg) => (ctx) => {
 };
 var s335Layer = (cfg) => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s340Layer = (cfg) => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s382Layer = (cfg) => (ctx) => decideS382(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s344Layer = (cfg) => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s345Layer = (cfg) => (ctx) => decideS345(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s354Layer = (cfg) => (ctx) => decideS354(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
@@ -7525,6 +7710,19 @@ var CARD_LAYERS = {
     s312Layer(395, 395, 24)
   ],
   "XAUUSD-H4": [
+    // ⭐⭐ S382 — «مومنتومِ Williams %R»: تنها لایهٔ پروژه با **۱۱/۱۱ دروازهٔ RQS2 و صفر فیلتر**.
+    //    اولویتِ نخستِ این کارت، به سه دلیلِ اندازه‌گیری‌شده:
+    //      ۱) بالاترین توانِ آماریِ تاریخِ پروژه: n=۸۶۹ (نیاز برای لبهٔ ۵ واحدی = ۷۸۴).
+    //         S374 با n=۱٬۰۶۲ ولی ~۴ رویدادِ **مستقل** در سال، کم‌بسامدتر و
+    //         خوشه‌ای‌تر است؛ اینجا ۵۵.۹ معاملهٔ مستقل در سال داریم.
+    //      ۲) تنها لایه‌ای که زیرِ کرانِ سخت‌گیرانهٔ نو (M_eff=۲۷۸٬۴۴۷ ⇒ سد=۴.۶۰۸۶)
+    //         هم بازداوری و **تأیید** شد: z=۵.۰۲۳۶ ⇒ حاشیهٔ +۰.۴۱۵۰ (سند S395).
+    //      ۳) صفر فیلتر ⇒ بودجهٔ معامله دست‌نخورده (قانونِ هزینهٔ فیلترِ S379).
+    //    RQS2=۸۳.۵ · WR=۴۸.۹۱٪ · lift=+۷.۸۳ · PF=۱.۴۶۷ · $۵۴٬۰۹۸.۸ · maxDD=۵.۶٪
+    //    انتظار ۲۷.۳۶ pip و در ۲× هزینه هم ۲۴.۰۶ pip ⇒ حاشیهٔ ایمنیِ اسپرد.
+    //    همپوشانی با سه لایهٔ دیگرِ این کارت: قاعدهٔ پایه متفاوت («گذر»ِ %R در برابرِ
+    //    ساختار/کانال/فشردگی) ⇒ لبهٔ نو، نه فیلترِ تأیید.
+    s382Layer(S382_CFG["XAUUSD-H4"]),
     // ⭐ S374 — «دروازهٔ شکستِ Kennedy»: نخستین لایهٔ این فصل که RQS2 را پاس کرد.
     //    z=+4.100 (سد 2.570) · n=1,062 · e_pip طلا ۱۱.۶۷→۳۲.۹۷ · h1/h2 هر دو مثبت.
     //    اولویتِ نخست چون کم‌بسامدترین و بالاترین لبه است؛ وقتی سیگنال بدهد باید
