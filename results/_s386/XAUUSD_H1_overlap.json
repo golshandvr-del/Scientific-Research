@@ -1,0 +1,45 @@
+{
+ "card": "XAUUSD_H1",
+ "span_years": 15.53,
+ "tol": 1,
+ "min_n": 300,
+ "min_lift": 5.0,
+ "n_candidate_rows": 2,
+ "n_distinct_rules": 2,
+ "rules": {
+  "bb_up_55_2.618": {
+   "n_sig": 772,
+   "per_year": 49.7
+  },
+  "rsi27_xup_70": {
+   "n_sig": 508,
+   "per_year": 32.7
+  }
+ },
+ "pairs": [
+  {
+   "a": "bb_up_55_2.618",
+   "b": "rsi27_xup_70",
+   "jaccard": 0.0676,
+   "inter": 81,
+   "cover_a": 0.1049,
+   "cover_b": 0.1594,
+   "jaccard_tol": 0.1127,
+   "cover_a_tol": 0.1681,
+   "cover_b_tol": 0.2549
+  }
+ ],
+ "summary": {
+  "n_pairs": 1,
+  "jaccard_mean": 0.0676,
+  "jaccard_max": 0.0676,
+  "jaccard_median": 0.0676,
+  "cover_max_mean": 0.1594,
+  "cover_max_max": 0.1594,
+  "jaccard_tol_mean": 0.1127,
+  "pairs_j_over_50": 0,
+  "pairs_cover_over_50": 0,
+  "pairs_cover_over_70": 0,
+  "pairs_j_under_10": 1
+ }
+}
