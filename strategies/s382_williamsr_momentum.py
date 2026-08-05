@@ -207,8 +207,25 @@ def main():
     # نشتِ زمانی رخ دهد، چون معاملاتِ نزدیکِ مرز از هر دو سو داده می‌بینند.
     split_bar = int(0.70 * len(df))
 
+    # مدلِ صفرِ اندازه‌گیری‌شده — برای دروازه‌های H3/H4/H5.
+    #
+    # چرا از فایل خوانده می‌شود و در همین‌جا محاسبه نمی‌شود: مدلِ صفر
+    # ۲۰۰۰ جای‌گشت است و باید **یک‌بار** و با بذرِ ثابت ساخته شود. اگر
+    # هر اجرای این ماژول آن را از نو می‌ساخت، حکم به بذرِ آن اجرا وابسته
+    # می‌شد و بازتولیدپذیری از دست می‌رفت.
+    #
+    # اگر فایل نبود، `null=None` می‌ماند و معیار صادقانه `UNKNOWN`
+    # می‌گذارد — که درست است. هرگز نباید یک مبنایِ حدسی جایگزین شود:
+    # «نبودِ کنترل، شاهدِ مهارت نیست» و یک کنترلِ **جعلی** بدتر از نبودنش
+    # است، چون دروازه را به تأییدِ چیزی می‌کشاند که ندیده است.
+    null = None
+    nm_path = f'{OUT}/null_model.json'
+    if os.path.exists(nm_path):
+        with open(nm_path) as f:
+            null = json.load(f).get('null')
+
     res = R.compute_rqs2(tr, ASSET, sl_pip=sl_pip, tp_pip=tp_pip,
-                         bar_time=bar_time, close=close,
+                         bar_time=bar_time, close=close, null=null,
                          n_trials=N_TRIALS, split_bar=split_bar)
 
     print()
