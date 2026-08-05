@@ -251,8 +251,9 @@ chk('لایه ساختارِ معتبرِ RawSignal برمی‌گرداند',
 // هر سه حالتِ ممکن باید در تاریخ رخ داده باشد — وگرنه یک شاخه مرده است و
 // کاربر هرگز آن را نمی‌بیند. روی ۴۰۰ کندلِ آخرِ پراکنده بررسی می‌شود.
 let cEntry = 0, cAppr = 0, cNeut = 0
+const warmup = Math.max(CFG.willrP, CFG.atrP) + 4   // همان قیدِ گرم‌شدنِ ماژول
 for (let i = candles.length - 400; i < candles.length; i += 4) {
-  if (i < need + 2) continue
+  if (i < warmup) continue
   const r = M.computeS382(candles.slice(0, i + 1), CFG)
   if (!r) continue
   if (r.active) cEntry++
