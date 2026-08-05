@@ -1,0 +1,15 @@
+{
+ "card": "XAUUSD_H1",
+ "rule": "cci20_xup_135",
+ "filt": "adx17_gt_31",
+ "sl_k": 1.5,
+ "rr": 2.2,
+ "span_years": 15.53,
+ "n_signals": 185,
+ "n_trades": 161,
+ "retention": 0.1253,
+ "sl_pip": 59.63,
+ "tp_pip": 131.18,
+ "cost_share_pct": 5.53,
+ "verdict": "TOO_FEW_TRADES"
+}
