@@ -75,6 +75,61 @@ def _cross_series_up(a, b):
     return (a.shift(1) <= b.shift(1)) & (a > b)
 
 
+# ═══════════════════════════════════════════════════════════════════════════
+# اندیکاتورهای محلی — **با دورهٔ آزاد**
+#
+# چرا محلی و نه از `indicator_bank`: بانکِ ۴۰۱-تایی دوره‌هایش را **فقط** از
+# فیبوناچی و لوکاس می‌گیرد (`sma_fib_34`، `rsi_lucas_29`). هیچ `sma_50` یا
+# `sma_200` ندارد — که در برابرِ اشتباهِ رایجِ #۷ خوب است — ولی `sma_135` و
+# `sma_170` هم ندارد. یعنی بانک از شبکهٔ اعدادِ رند فرار کرده و در شبکهٔ
+# اعدادِ «خاصِ» دیگری افتاده. برای اندازه‌گیریِ نرخِ سیگنال به دورهٔ **آزاد**
+# نیاز داریم تا برشِ خاص سرنوشتِ قاعده را تعیین نکند.
+# ═══════════════════════════════════════════════════════════════════════════
+
+def _sma(s, p):
+    return pd.Series(s).astype(float).rolling(p).mean()
+
+
+def _ema(s, p):
+    return pd.Series(s).astype(float).ewm(span=p, adjust=False).mean()
+
+
+def _rsi(close, p=14):
+    c = pd.Series(close).astype(float)
+    d = c.diff()
+    up = d.clip(lower=0.0).ewm(alpha=1.0 / p, adjust=False).mean()
+    dn = (-d.clip(upper=0.0)).ewm(alpha=1.0 / p, adjust=False).mean()
+    rs = up / dn.replace(0.0, np.nan)
+    return 100.0 - 100.0 / (1.0 + rs)
+
+
+def _cci(df, p=20):
+    tp = (df['high'] + df['low'] + df['close']).astype(float) / 3.0
+    ma = tp.rolling(p).mean()
+    md = (tp - ma).abs().rolling(p).mean()
+    return (tp - ma) / (0.015 * md.replace(0.0, np.nan))
+
+
+def _willr(df, p=14):
+    hh = df['high'].astype(float).rolling(p).max()
+    ll = df['low'].astype(float).rolling(p).min()
+    return -100.0 * (hh - df['close'].astype(float)) / (hh - ll).replace(0.0, np.nan)
+
+
+def _cmo(close, p=14):
+    c = pd.Series(close).astype(float)
+    d = c.diff()
+    up = d.clip(lower=0.0).rolling(p).sum()
+    dn = (-d.clip(upper=0.0)).rolling(p).sum()
+    return 100.0 * (up - dn) / (up + dn).replace(0.0, np.nan)
+
+
+def _stoch_k(df, p=14):
+    hh = df['high'].astype(float).rolling(p).max()
+    ll = df['low'].astype(float).rolling(p).min()
+    return 100.0 * (df['close'].astype(float) - ll) / (hh - ll).replace(0.0, np.nan)
+
+
 def build_rules():
     """فهرستِ (نام, تابعِ سیگنال). هر قاعده **یک شرط**، صفر فیلتر."""
     rules = []
