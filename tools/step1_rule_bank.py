@@ -135,31 +135,39 @@ def build_rules():
     rules = []
 
     # ── ① گذرِ آستانه‌ایِ نوسان‌سنج‌ها ───────────────────────────────────
-    # آستانه‌ها: رند (مرسوم) + نارند (ضدِ اشتباهِ #۷)
+    # دوره‌ها و آستانه‌ها: رندِ مرسوم + نارند + خارج از شبکهٔ فیبوناچی/لوکاس
+    # (ضدِ اشتباهِ رایجِ #۷ در هر دو شکلش)
     osc_specs = [
-        ('rsi_14', [30, 35, 27, 63, 70, 73]),
-        ('cci_20', [-100, -135, -87, 100, 135, 87]),
-        ('willr_14', [-80, -73, -87, -20, -27, -13]),
-        ('mfi_14', [20, 27, 35, 65, 73, 80]),
-        ('cmo_14', [-50, -37, 37, 50]),
+        ('rsi', lambda df, p: _rsi(df['close'], p), [14, 9, 21, 27],
+         [30, 35, 27, 63, 70, 73]),
+        ('cci', lambda df, p: _cci(df, p), [20, 14, 33, 47],
+         [-100, -135, -87, 100, 135, 87]),
+        ('willr', lambda df, p: _willr(df, p), [14, 9, 27],
+         [-80, -73, -87, -20, -27, -13]),
+        ('cmo', lambda df, p: _cmo(df['close'], p), [14, 21, 33],
+         [-50, -37, 37, 50]),
+        ('stoch', lambda df, p: _stoch_k(df, p), [14, 21, 33],
+         [20, 27, 35, 65, 73, 80]),
     ]
-    for ind, thrs in osc_specs:
-        for t in thrs:
-            for side, fn in (('up', _cross_up), ('dn', _cross_dn)):
-                rules.append((f'{ind}_x{side}_{t}',
-                              lambda df, i=ind, t=t, f=fn: f(IB.compute(i, df), t)))
+    for nm, calc, periods, thrs in osc_specs:
+        for p in periods:
+            for t in thrs:
+                for side, xf in (('up', _cross_up), ('dn', _cross_dn)):
+                    rules.append((
+                        f'{nm}{p}_x{side}_{t}',
+                        lambda df, c=calc, p=p, t=t, f=xf: f(c(df, p), t)))
 
     # ── ② گذرِ قیمت از رویِ میانگین‌ها ─────────────────────────────────
-    # دوره‌های نارند در کنارِ رند (۵۰/۲۰۰ در برابرِ ۱۳۵/۱۷۰)
-    for ma in ('sma', 'ema'):
-        for p in (34, 50, 89, 135, 170, 200):
-            nm = f'{ma}_{p}'
-            if not IB.has_indicator(nm):
-                continue
-            rules.append((f'close_x_up_{nm}',
-                          lambda df, n=nm: _cross_series_up(df['close'], IB.compute(n, df))))
-            rules.append((f'close_x_dn_{nm}',
-                          lambda df, n=nm: _cross_series_up(IB.compute(n, df), df['close'])))
+    # دوره‌ها **آزاد**: رند (۵۰/۲۰۰) + نارند (۱۳۵/۱۷۰) + بینِ شکاف‌های
+    # فیبوناچی (۶۷/۱۱۲) که در بانکِ ۴۰۱-تایی دست‌نیافتنی بودند
+    for ma, fn in (('sma', _sma), ('ema', _ema)):
+        for p in (34, 50, 67, 89, 112, 135, 170, 200):
+            rules.append((
+                f'close_x_up_{ma}{p}',
+                lambda df, f=fn, p=p: _cross_series_up(df['close'], f(df['close'], p))))
+            rules.append((
+                f'close_x_dn_{ma}{p}',
+                lambda df, f=fn, p=p: _cross_series_up(f(df['close'], p), df['close'])))
 
     # ── ③ شکستِ کانالِ دونچیان (breakout خالص) ────────────────────────
     for p in (20, 34, 55, 89, 135):
