@@ -397,6 +397,8 @@ const s374Layer = (cfg: typeof KENNEDY_CFG[string]): LayerFn => (ctx) => {
 // لایهٔ نوِ این نشست: S335 Reflex-TrendFlex Cycle-Turn (خریدِ کفِ چرخهٔ اِهلرز درونِ روند)
 const s335Layer = (cfg: typeof S335_CFG[string]): LayerFn => (ctx) => decideS335(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 const s340Layer = (cfg: typeof S340_CFG[string]): LayerFn => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S382 — مومنتومِ Williams %R (گذر به بالای −۱۳): تنها لایهٔ ۱۱/۱۱ دروازه با **صفر فیلتر**
+const s382Layer = (cfg: typeof S382_CFG[string]): LayerFn => (ctx) => decideS382(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⚰️ s341Layer حذف شد — S341 زیرِ RQS2 v2.4 مرده است (بالا را ببینید).
 // لایهٔ نوِ این نشست: S344 Brooks Trend-from-Open first-pullback continuation (فصلِ ۲۳) — نخستین SHORT روی XAUUSD-M15
 const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
