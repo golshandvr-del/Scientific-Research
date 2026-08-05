@@ -44,31 +44,39 @@ z تخمینی                   ۴.۹۳                **۴.۷۶**
 from __future__ import annotations
 import importlib.util
 import json
-import math
 import os
+import sys
 
 import numpy as np
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+from engine import rqs2 as R                                    # noqa: E402
+
 OUTDIR = os.path.join(ROOT, 'results', '_s389')
 os.makedirs(OUTDIR, exist_ok=True)
 
 # ── نامزدِ قفل‌شده از S388 ─────────────────────────────────────────────
 CARD = 'XAUUSD_H1'
 RULE = 'cci20_xup_135'
+ASSET = 'XAUUSD'
 SIDE = 'long'
 SL_K = 1.5
 RR = 1.5
 
+# ── ثابت‌های حساب — عیناً از S384 (هرگز بازتعریف نمی‌شوند) ────────────
+COST_PIP = 3.3            # اسپردِ ۰.۳۳ $/oz = ۳.۳ pip روی طلا
+SEED = 20260805
+K_PERM = 2000
+STRIDES = (1, 3, 7)
+SITE_TARGET = 252.0
+RQS2_FLOOR = 50.0
+
 # ── بارِ چندگانگیِ صادقانه ─────────────────────────────────────────────
-N_TRIALS = 23847      # 23846 (تا S388) + 1 (این نامزد)
+N_TRIALS = 23847          # ۲۳٬۸۴۶ (تا S388) + ۱ (این نامزد)
 Z_LUCK = 4.07
 
-K_PERM = 2000
-SEED = 20260805
-STRIDES = (1, 3, 7)
-
-# لایهٔ مرجع برای آزمونِ همپوشانی
+# لایهٔ مرجع برای آزمونِ همپوشانیِ زمانی
 REF_CARD = 'XAUUSD_H4'
 REF_RULE = 'willr14_xup_-13'
 
@@ -79,6 +87,34 @@ def _mod(path, name):
     m = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(m)
     return m
+
+
+def temporal_overlap(L, bank, df_cand, sig_cand):
+    """همپوشانیِ **زمانی** با لایهٔ مرجع روی کارتِ دیگر.
+
+    دو کارت قیدِ عدم‌همپوشانیِ مشترک ندارند (هر کارت جداگانه اعمال
+    می‌شود)، پس تصادمِ مکانیکی ممکن نیست. ولی اگر سیگنال‌های دو لایه
+    همیشه در همان **ساعت‌های تقویمی** بیفتند، عملاً یک لایه‌اند و راهِ
+    پرتفوی هیچ نمی‌گیرد. پس همپوشانی روی مُهرِ زمانیِ ساعتِ ورود سنجیده
+    می‌شود، نه روی شمارهٔ کندل.
+    """
+    df_ref = L.load(REF_CARD)
+    sig_ref = np.asarray(bank[REF_RULE](df_ref)).astype(bool)
+
+    def hours(df, sig):
+        t = df['dt'].to_numpy()[sig]
+        return set(np.asarray(t, dtype='datetime64[h]').tolist())
+
+    a = hours(df_cand, sig_cand)
+    b = hours(df_ref, sig_ref)
+    inter = len(a & b)
+    union = len(a | b)
+    return dict(
+        n_hours_cand=len(a), n_hours_ref=len(b),
+        n_shared_hours=inter,
+        jaccard=round(inter / union, 4) if union else None,
+        cover_cand=round(inter / len(a), 4) if a else None,
+        cover_ref=round(inter / len(b), 4) if b else None)
 
 
 def main():
@@ -92,70 +128,101 @@ def main():
     print()
 
     df = L.load(CARD)
-    ps = L.pip_size(CARD.split('_')[0])
+    ps = L.pip_size(ASSET)
     atr_med = float(np.nanmedian(L.atr(df).to_numpy()))
     sl_abs = atr_med * SL_K
-    print(f'bars={len(df)} sl={sl_abs/ps:.1f}pip atr_med={atr_med:.4f}')
-
-    sig = np.asarray(bank[RULE](df)).astype(bool)
-    print(f'raw signals={int(sig.sum())} '
-          f'({sig.sum()/ (len(df)/ (365.25*24/1)) if False else 0:.0f})')
-
-    # ── شبیه‌سازِ رویدادمحور ──────────────────────────────────────────
-    tr = L.simulate(df, sig, sl_abs, ps, side=SIDE, rr=RR)
-    n = len(tr)
-    wins = int((tr['pnl_pip'] > 0).sum())
-    wr = 100.0 * wins / n
-    span = L.span_years(df)
-    per_year = n / span
-    held = float((tr['exit_bar'] - tr['entry_bar']).mean())
-    cost_pip = L.cost_pip(CARD.split('_')[0])
     sl_pip = sl_abs / ps
-    be = 100.0 / (1.0 + RR) * (1 + cost_pip / sl_pip) if False else None
-    # سربه‌سر را از خودِ ماژول می‌گیریم تا با S382/S384 یکسان باشد
-    be = L.breakeven_wr(sl_pip, RR, cost_pip)
-    lift = wr - be
-    print(f'n={n} wr={wr:.2f} be={be:.2f} lift={lift:+.2f} '
-          f'/yr={per_year:.1f} held={held:.1f} span={span:.2f}')
+    tp_pip = sl_pip * RR
+    cost_share = 100.0 * COST_PIP / sl_pip
+    span = (df['dt'].iloc[-1] - df['dt'].iloc[0]).days / 365.25
+    print(f'bars={len(df)} span={span:.2f}y sl={sl_pip:.1f}pip '
+          f'tp={tp_pip:.1f}pip cost/SL={cost_share:.2f}%')
 
-    # ── مدلِ صفر ──────────────────────────────────────────────────────
+    sig = bank[RULE](df)
+    n_sig = int(np.asarray(sig).astype(bool).sum())
+    print(f'raw signals={n_sig} ({n_sig/span:.1f}/yr)')
+
+    # ── شبیه‌سازِ رویدادمحور — عیناً مسیرِ S384 ────────────────────────
+    tr = L.simulate_trades(df, sig, sl_abs, RR, True, ps)
+    n = len(tr)
+    if n < 30:
+        print('TOO_FEW_TRADES')
+        return
+    wr = 100.0 * float((tr['outcome'] == 'win').mean())
+    be = 100.0 * (sl_pip + COST_PIP) / (tp_pip + sl_pip)
+    held = float((tr['exit_bar'] - tr['entry_bar']).mean())
+    per_year = n / span
+    print(f'n={n} wr={wr:.2f} be={be:.2f} lift={wr-be:+.2f} '
+          f'/yr={per_year:.1f} held={held:.1f}')
+
+    # ── مدلِ صفرِ **همین** نامزد — هندسه جایگزین می‌شود (باگِ S386) ────
     _bk = L.RR
     try:
         L.RR = RR
         unc = max(NM.uncond_baseline(L, df, sl_abs, ps, s)[0] or -1e9
                   for s in STRIDES)
-        perm = NM.perm_baseline(L, df, sl_abs, ps, int(sig.sum()),
+        perm = NM.perm_baseline(L, df, sl_abs, ps, n_sig,
                                 k=K_PERM, seed=SEED)
     finally:
         L.RR = _bk
 
     alpha = wr - unc
-    p = wr / 100.0
-    se = 100.0 * math.sqrt(max(p * (1 - p), 1e-12) / n)
-    z_vs_unc = alpha / se
-    z_vs_perm = (wr - perm['mean']) / perm['sd'] if perm['sd'] > 0 else None
-    p_emp = sum(1 for _ in range(0)) or None
-
     print()
-    print(f'unc={unc:.2f} alpha={alpha:+.2f} z_vs_unc={z_vs_unc:.3f}')
+    print(f'unc={unc:.2f} alpha={alpha:+.2f}')
     print(f'perm mean={perm["mean"]:.2f} sd={perm["sd"]:.2f} '
           f'max={perm["max"]:.2f} p95={perm["p95"]:.2f} k={perm["k"]}')
-    print(f'z_vs_perm={z_vs_perm:.3f} gap_to_max={wr-perm["max"]:+.2f}')
+    print(f'gap_to_perm_max={wr-perm["max"]:+.2f}')
 
-    out = dict(card=CARD, rule=RULE, side=SIDE, sl_k=SL_K, rr=RR,
-               n_trials=N_TRIALS, z_luck=Z_LUCK,
-               span_years=round(span, 2), sl_pip=round(sl_pip, 2),
-               cost_pip=round(cost_pip, 3),
-               n_signals=int(sig.sum()), n_trades=n,
-               wr=round(wr, 2), be=round(be, 2), lift=round(lift, 2),
-               per_year=round(per_year, 1), avg_held_bars=round(held, 1),
-               uncond_wr=round(unc, 2), alpha=round(alpha, 2),
-               z_vs_uncond=round(z_vs_unc, 3),
-               perm_mean=round(perm['mean'], 2), perm_sd=round(perm['sd'], 2),
-               perm_max=round(perm['max'], 2), perm_p95=round(perm['p95'], 2),
-               perm_k=perm['k'],
-               z_vs_perm=round(z_vs_perm, 3) if z_vs_perm else None,
-               gap_to_perm_max=round(wr - perm['max'], 2))
+    null = {'long': dict(uncond_wr=unc, perm_mean=perm['mean'],
+                         perm_sd=perm['sd'], perm_max=perm['max'],
+                         perm_k=perm['k']),
+            'short': dict(uncond_wr=None, perm_mean=None, perm_sd=None,
+                          perm_max=None, perm_k=None)}
+
+    res = R.compute_rqs2(tr, ASSET, sl_pip=sl_pip, tp_pip=tp_pip,
+                         bar_time=df['time'].to_numpy(),
+                         close=df['close'].to_numpy(float), null=null,
+                         n_trials=N_TRIALS, split_bar=int(0.70 * len(df)))
+    m = res.get('metrics') or {}
+    g = res.get('gates') or {}
+    print()
+    print(f'rqs2={res.get("rqs2_score")} verdict={res.get("verdict")}')
+    print('gates: ' + ' '.join(
+        f'{k}:{"OK" if v is True else ("no" if v is False else "?")}'
+        for k, v in sorted(g.items())))
+    print(f'PF={m.get("profit_factor")} net={m.get("net_profit")} '
+          f'z={m.get("skill_z")} maxdd={m.get("max_dd_pct")}')
+
+    ov = temporal_overlap(L, bank, df, np.asarray(sig).astype(bool))
+    print()
+    print(f'temporal overlap vs {REF_RULE}@{REF_CARD}: '
+          f'jaccard={ov["jaccard"]} cover_cand={ov["cover_cand"]} '
+          f'cover_ref={ov["cover_ref"]}')
+
+    out = dict(
+        card=CARD, rule=RULE, side=SIDE, sl_k=SL_K, rr=RR,
+        n_trials=N_TRIALS, z_luck=Z_LUCK, span_years=round(span, 2),
+        sl_pip=round(sl_pip, 2), tp_pip=round(tp_pip, 2),
+        cost_pip=COST_PIP, cost_share_pct=round(cost_share, 2),
+        n_signals=n_sig, n_trades=n,
+        wr=round(wr, 2), be=round(be, 2), lift=round(wr - be, 2),
+        per_year=round(per_year, 1), avg_held_bars=round(held, 1),
+        uncond_wr=round(unc, 2), alpha=round(alpha, 2),
+        perm_mean=round(perm['mean'], 2), perm_sd=round(perm['sd'], 2),
+        perm_max=round(perm['max'], 2), perm_p95=round(perm['p95'], 2),
+        perm_k=perm['k'], gap_to_perm_max=round(wr - perm['max'], 2),
+        pf=m.get('profit_factor'), net=m.get('net_profit'),
+        z=m.get('skill_z'), max_dd_pct=m.get('max_dd_pct'),
+        rqs2=res.get('rqs2_score'), verdict=res.get('verdict'),
+        gates=g, metrics=m, temporal_overlap=ov,
+        c1_lift_pos=bool(wr - be > 0),
+        c2_beats_uncond=bool(wr > unc),
+        c3_beats_perm_max=bool(wr > perm['max']),
+        c4_site_rate=bool(per_year >= SITE_TARGET),
+        c5_accept=bool(res.get('verdict') == 'ACCEPT'))
+    out['all_five'] = bool(out['c1_lift_pos'] and out['c2_beats_uncond']
+                           and out['c3_beats_perm_max']
+                           and out['c4_site_rate'] and out['c5_accept'])
     json.dump(out, open(os.path.join(OUTDIR, 'core.json'), 'w'), indent=1)
     print()
     print(f'saved -> {OUTDIR}/core.json')
