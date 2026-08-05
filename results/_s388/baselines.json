@@ -1,0 +1,386 @@
+{
+ "EURUSD_H1|1.5|1.0": {
+  "card": "EURUSD_H1",
+  "sl_k": 1.5,
+  "rr": 1.0,
+  "unc_wr": 49.4872,
+  "sl_pip": 22.75,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H1|1.5|1.5": {
+  "card": "EURUSD_H1",
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "unc_wr": 39.3536,
+  "sl_pip": 22.75,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H1|1.5|2.0": {
+  "card": "EURUSD_H1",
+  "sl_k": 1.5,
+  "rr": 2.0,
+  "unc_wr": 33.1856,
+  "sl_pip": 22.75,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H1|2.0|1.0": {
+  "card": "EURUSD_H1",
+  "sl_k": 2.0,
+  "rr": 1.0,
+  "unc_wr": 49.8583,
+  "sl_pip": 30.33,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H1|2.0|1.5": {
+  "card": "EURUSD_H1",
+  "sl_k": 2.0,
+  "rr": 1.5,
+  "unc_wr": 40.2567,
+  "sl_pip": 30.33,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H1|2.0|2.0": {
+  "card": "EURUSD_H1",
+  "sl_k": 2.0,
+  "rr": 2.0,
+  "unc_wr": 33.453,
+  "sl_pip": 30.33,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H4|1.5|1.0": {
+  "card": "EURUSD_H4",
+  "sl_k": 1.5,
+  "rr": 1.0,
+  "unc_wr": 49.7761,
+  "sl_pip": 47.7,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H4|1.5|1.5": {
+  "card": "EURUSD_H4",
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "unc_wr": 39.9664,
+  "sl_pip": 47.7,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H4|1.5|2.0": {
+  "card": "EURUSD_H4",
+  "sl_k": 1.5,
+  "rr": 2.0,
+  "unc_wr": 33.5573,
+  "sl_pip": 47.7,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H4|2.0|1.0": {
+  "card": "EURUSD_H4",
+  "sl_k": 2.0,
+  "rr": 1.0,
+  "unc_wr": 49.9371,
+  "sl_pip": 63.6,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H4|2.0|1.5": {
+  "card": "EURUSD_H4",
+  "sl_k": 2.0,
+  "rr": 1.5,
+  "unc_wr": 39.9671,
+  "sl_pip": 63.6,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_H4|2.0|2.0": {
+  "card": "EURUSD_H4",
+  "sl_k": 2.0,
+  "rr": 2.0,
+  "unc_wr": 33.428,
+  "sl_pip": 63.6,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M15|1.5|1.0": {
+  "card": "EURUSD_M15",
+  "sl_k": 1.5,
+  "rr": 1.0,
+  "unc_wr": 49.3592,
+  "sl_pip": 9.37,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M15|1.5|1.5": {
+  "card": "EURUSD_M15",
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "unc_wr": 39.5429,
+  "sl_pip": 9.37,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M15|1.5|2.0": {
+  "card": "EURUSD_M15",
+  "sl_k": 1.5,
+  "rr": 2.0,
+  "unc_wr": 33.1663,
+  "sl_pip": 9.37,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M15|2.0|1.0": {
+  "card": "EURUSD_M15",
+  "sl_k": 2.0,
+  "rr": 1.0,
+  "unc_wr": 49.8907,
+  "sl_pip": 12.49,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M15|2.0|1.5": {
+  "card": "EURUSD_M15",
+  "sl_k": 2.0,
+  "rr": 1.5,
+  "unc_wr": 39.9173,
+  "sl_pip": 12.49,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M15|2.0|2.0": {
+  "card": "EURUSD_M15",
+  "sl_k": 2.0,
+  "rr": 2.0,
+  "unc_wr": 33.2627,
+  "sl_pip": 12.49,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M30|1.5|1.0": {
+  "card": "EURUSD_M30",
+  "sl_k": 1.5,
+  "rr": 1.0,
+  "unc_wr": 49.7042,
+  "sl_pip": 15.8,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M30|1.5|1.5": {
+  "card": "EURUSD_M30",
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "unc_wr": 39.7395,
+  "sl_pip": 15.8,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M30|1.5|2.0": {
+  "card": "EURUSD_M30",
+  "sl_k": 1.5,
+  "rr": 2.0,
+  "unc_wr": 33.2093,
+  "sl_pip": 15.8,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M30|2.0|1.0": {
+  "card": "EURUSD_M30",
+  "sl_k": 2.0,
+  "rr": 1.0,
+  "unc_wr": 49.6658,
+  "sl_pip": 21.06,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M30|2.0|1.5": {
+  "card": "EURUSD_M30",
+  "sl_k": 2.0,
+  "rr": 1.5,
+  "unc_wr": 39.9204,
+  "sl_pip": 21.06,
+  "cost_share_pct": NaN
+ },
+ "EURUSD_M30|2.0|2.0": {
+  "card": "EURUSD_M30",
+  "sl_k": 2.0,
+  "rr": 2.0,
+  "unc_wr": 33.4082,
+  "sl_pip": 21.06,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H1|1.5|1.0": {
+  "card": "XAUUSD_H1",
+  "sl_k": 1.5,
+  "rr": 1.0,
+  "unc_wr": 47.9679,
+  "sl_pip": 59.63,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H1|1.5|1.5": {
+  "card": "XAUUSD_H1",
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "unc_wr": 39.1606,
+  "sl_pip": 59.63,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H1|1.5|2.0": {
+  "card": "XAUUSD_H1",
+  "sl_k": 1.5,
+  "rr": 2.0,
+  "unc_wr": 33.5134,
+  "sl_pip": 59.63,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H1|2.0|1.0": {
+  "card": "XAUUSD_H1",
+  "sl_k": 2.0,
+  "rr": 1.0,
+  "unc_wr": 49.1097,
+  "sl_pip": 79.51,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H1|2.0|1.5": {
+  "card": "XAUUSD_H1",
+  "sl_k": 2.0,
+  "rr": 1.5,
+  "unc_wr": 39.8549,
+  "sl_pip": 79.51,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H1|2.0|2.0": {
+  "card": "XAUUSD_H1",
+  "sl_k": 2.0,
+  "rr": 2.0,
+  "unc_wr": 33.7539,
+  "sl_pip": 79.51,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H4|1.5|1.0": {
+  "card": "XAUUSD_H4",
+  "sl_k": 1.5,
+  "rr": 1.0,
+  "unc_wr": 49.4751,
+  "sl_pip": 122.85,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H4|1.5|1.5": {
+  "card": "XAUUSD_H4",
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "unc_wr": 40.5391,
+  "sl_pip": 122.85,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H4|1.5|2.0": {
+  "card": "XAUUSD_H4",
+  "sl_k": 1.5,
+  "rr": 2.0,
+  "unc_wr": 34.6635,
+  "sl_pip": 122.85,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H4|2.0|1.0": {
+  "card": "XAUUSD_H4",
+  "sl_k": 2.0,
+  "rr": 1.0,
+  "unc_wr": 50.2769,
+  "sl_pip": 163.81,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H4|2.0|1.5": {
+  "card": "XAUUSD_H4",
+  "sl_k": 2.0,
+  "rr": 1.5,
+  "unc_wr": 41.8676,
+  "sl_pip": 163.81,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_H4|2.0|2.0": {
+  "card": "XAUUSD_H4",
+  "sl_k": 2.0,
+  "rr": 2.0,
+  "unc_wr": 36.1355,
+  "sl_pip": 163.81,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M15|1.5|1.0": {
+  "card": "XAUUSD_M15",
+  "sl_k": 1.5,
+  "rr": 1.0,
+  "unc_wr": 48.3637,
+  "sl_pip": 39.55,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M15|1.5|1.5": {
+  "card": "XAUUSD_M15",
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "unc_wr": 39.7537,
+  "sl_pip": 39.55,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M15|1.5|2.0": {
+  "card": "XAUUSD_M15",
+  "sl_k": 1.5,
+  "rr": 2.0,
+  "unc_wr": 33.3429,
+  "sl_pip": 39.55,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M15|2.0|1.0": {
+  "card": "XAUUSD_M15",
+  "sl_k": 2.0,
+  "rr": 1.0,
+  "unc_wr": 49.2315,
+  "sl_pip": 52.73,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M15|2.0|1.5": {
+  "card": "XAUUSD_M15",
+  "sl_k": 2.0,
+  "rr": 1.5,
+  "unc_wr": 39.8204,
+  "sl_pip": 52.73,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M15|2.0|2.0": {
+  "card": "XAUUSD_M15",
+  "sl_k": 2.0,
+  "rr": 2.0,
+  "unc_wr": 33.8956,
+  "sl_pip": 52.73,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M30|1.5|1.0": {
+  "card": "XAUUSD_M30",
+  "sl_k": 1.5,
+  "rr": 1.0,
+  "unc_wr": 48.329,
+  "sl_pip": 41.27,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M30|1.5|1.5": {
+  "card": "XAUUSD_M30",
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "unc_wr": 39.1124,
+  "sl_pip": 41.27,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M30|1.5|2.0": {
+  "card": "XAUUSD_M30",
+  "sl_k": 1.5,
+  "rr": 2.0,
+  "unc_wr": 33.1091,
+  "sl_pip": 41.27,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M30|2.0|1.0": {
+  "card": "XAUUSD_M30",
+  "sl_k": 2.0,
+  "rr": 1.0,
+  "unc_wr": 49.1994,
+  "sl_pip": 55.03,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M30|2.0|1.5": {
+  "card": "XAUUSD_M30",
+  "sl_k": 2.0,
+  "rr": 1.5,
+  "unc_wr": 39.902,
+  "sl_pip": 55.03,
+  "cost_share_pct": NaN
+ },
+ "XAUUSD_M30|2.0|2.0": {
+  "card": "XAUUSD_M30",
+  "sl_k": 2.0,
+  "rr": 2.0,
+  "unc_wr": 33.8283,
+  "sl_pip": 55.03,
+  "cost_share_pct": NaN
+ }
+}
