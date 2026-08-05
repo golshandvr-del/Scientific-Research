@@ -187,3 +187,122 @@ def simulate_brackets(high, low, close, entries, sl_pts, tp_pts, is_long):
         while ptr < len(idx) and idx[ptr] < i:
             ptr += 1
     return wins, losses, held
+
+
+def load_rule_bank():
+    """بازاستفاده از بانکِ قواعدِ گامِ ۱ — نه بازنویسیِ آن.
+
+    چرا بازاستفاده: بانکِ گامِ ۱ روی هر ۱۵ کارت اجرا شده و نتایجش
+    بازتولیدپذیریِ دقیق نشان داده (اعدادِ یکسان پس از ریستِ سندباکس).
+    بازنویسی‌اش یعنی معرفیِ یک نسخهٔ دومِ ناهمگام — همان جنسِ خطایی که
+    باعث شد دانشِ سربه‌سر در `rqs2_site_triage` باشد ولی در ابزارِ
+    حسابرسی نباشد.
+    """
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        '_rb', os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            'step1_rule_bank.py'))
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    return m.build_rules()
+
+
+def side_of(rule_name):
+    """جهتِ اقتصادیِ قاعده را از نامش استنتاج می‌کند.
+
+    این تابع مستقیماً از یافتهٔ S379 می‌آید: تضادِ **جهتی** علتِ اصلیِ
+    قحطی بود، نه تعدادِ فیلترها. پس جهت باید صریح و ماشین‌خوان باشد.
+
+    قاعده‌ها دو دسته‌اند:
+      • صعودی (long): گذر به **بالا** از یک آستانه/میانگین، شکستِ سقف
+      • نزولی (short): گذر به **پایین**، شکستِ کف
+
+    اما یک نکتهٔ ظریف: `rsi_xdn_30` (ورود به ناحیهٔ اشباعِ فروش) در
+    سبکِ بازگشتی یک سیگنالِ **خرید** است، و در سبکِ مومنتومی یک سیگنالِ
+    **فروش**. چون نمی‌دانیم کدام درست است، **هر دو** جهت آزموده می‌شود
+    و داده تصمیم می‌گیرد. این عمداً است: پیش‌داوریِ سبک، همان اشتباهی
+    است که باعث شد پروژه فیلترِ جهت‌متضاد را یک ماه نبیند.
+    """
+    return ('long', 'short')      # هر دو جهت — داده تصمیم می‌گیرد
+
+
+def scan_card(card, rules):
+    asset = card.split('_')[0]
+    ps = pip_size(asset)
+    df = load(card)
+    a = atr(df).to_numpy()
+    high = df['high'].to_numpy(float)
+    low = df['low'].to_numpy(float)
+    close = df['close'].to_numpy(float)
+    span = (df['dt'].iloc[-1] - df['dt'].iloc[0]).days / 365.25
+
+    rows = []
+    for rname, rfn in rules:
+        try:
+            sig = np.asarray(rfn(df).fillna(False), dtype=bool)
+        except Exception:
+            continue
+        nsig = int(sig.sum())
+        if nsig < 30:
+            continue
+        for k in SL_K:
+            # SL از ATRِ **همان کارت** ⇒ عددِ متفاوت در هر تایم‌فریم (ضدِ #۶)
+            sl_med = float(np.nanmedian(a)) * k
+            if not np.isfinite(sl_med) or sl_med <= 0:
+                continue
+            sl_pip = sl_med / ps
+            for rr in RR:
+                tp_med = sl_med * rr
+                tp_pip = sl_pip * rr
+                be = breakeven_wr(sl_pip, tp_pip)
+                for side in ('long', 'short'):
+                    w, l, held = simulate_brackets(
+                        high, low, close, sig, sl_med, tp_med, side == 'long')
+                    n = w + l
+                    if n < 30:
+                        continue
+                    wr = 100.0 * w / n
+                    rows.append(dict(
+                        rule=rname, side=side, sl_k=k, rr=rr,
+                        sl_pip=round(sl_pip, 2), tp_pip=round(tp_pip, 2),
+                        n=n, wr=round(wr, 3), be=round(be, 3),
+                        lift=round(wr - be, 3),
+                        per_year=round(n / span, 1),
+                        avg_held=round(held / n, 1) if n else None,
+                    ))
+    rows.sort(key=lambda r: -r['lift'])
+    return dict(card=card, span_years=round(span, 2), n_rules=len(rules),
+                n_tests=len(rows), rows=rows)
+
+
+def main():
+    cards = sys.argv[1:] or CARDS
+    os.makedirs(OUT, exist_ok=True)
+    rules = load_rule_bank()
+    print(f'rule bank: {len(rules)} bare rules  |  '
+          f'grid: sl_k={SL_K} rr={RR} sides=2  '
+          f'=> {len(rules)*len(SL_K)*len(RR)*2} tests/card')
+    print()
+    for card in cards:
+        try:
+            res = scan_card(card, rules)
+        except Exception as e:
+            print(f'{card:14s} ERROR {str(e)[:60]}')
+            continue
+        pos = [r for r in res['rows'] if r['lift'] > 0]
+        strong = [r for r in res['rows']
+                  if r['lift'] >= 5.0 and r['per_year'] >= RQS2_FLOOR]
+        site = [r for r in res['rows']
+                if r['lift'] >= 5.0 and r['per_year'] >= SITE_TARGET]
+        res['n_positive'] = len(pos)
+        res['n_strong'] = len(strong)
+        res['n_site'] = len(site)
+        with open(f'{OUT}/{card}.json', 'w') as f:
+            json.dump(res, f, ensure_ascii=False)
+        print(f'{card:14s} span={res["span_years"]:6.2f}y  tests={res["n_tests"]:5d}  '
+              f'lift>0={len(pos):5d}  lift>=5&rate>=50={len(strong):4d}  '
+              f'&rate>=252={len(site):3d}  -> {card}.json')
+
+
+if __name__ == '__main__':
+    main()
