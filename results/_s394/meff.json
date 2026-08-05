@@ -1,0 +1,19 @@
+{
+ "z_obs": 3.739,
+ "break_n": 2700,
+ "floor": 1000.0,
+ "sanity_identical": 1.958,
+ "sanity_independent": 23.995,
+ "A_raw": 248,
+ "A_eff": 245.194,
+ "B_raw": 48,
+ "B_eff": 44.863,
+ "C_raw": 27,
+ "C_eff": 25.313,
+ "m_eff_product": 278446.5,
+ "m_eff_final": 278446.5,
+ "z_bar_effective": 4.6086,
+ "z_bar_raw_23913": 4.0688,
+ "gap": -0.8696,
+ "h5_pass": false
+}
