@@ -571,5 +571,50 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S199": {
+  "done": true,
+  "old": "S199_S201_H1_Overnight_Overlap_MTFfilter_NetProfit_252471.md",
+  "new": "S199_S201H1OvernightOverlapMTFfilter_Xauusd_M15H1_rqs2_25_REJECT.md",
+  "verdict": "REJECT",
+  "score": 24.7,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 22.4,
+    "n": 1491
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.0,
+    "n": 2012
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 20.7,
+    "n": 1877
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 24.1,
+    "n": 1578
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 24.7,
+    "n": 1549
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 23.4,
+    "n": 1433
+   }
+  ]
  }
 }
