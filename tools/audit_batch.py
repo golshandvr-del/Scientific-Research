@@ -196,6 +196,11 @@ def process(rec: dict, ledger: dict) -> str:
     print(f'\n════ {sid}  {cur.name[:60]}', flush=True)
     print(f'  scripts={scripts[:2]} n_trials={n_trials}', flush=True)
 
+    # قبل از هر لایه منتظرِ رمِ کافی می‌مانیم (سندباکسِ ۹۸۵MB)
+    if not wait_for_memory():
+        print(f'  ⚠️ low memory ({free_mb()}MB) — proceeding cautiously',
+              flush=True)
+
     vj = None
     # ── ① capture ────────────────────────────────────────────────────────────
     cap_file = None
