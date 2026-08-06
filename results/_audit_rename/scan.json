@@ -19,7 +19,10 @@
    "EURUSD"
   ],
   "tfs": [],
-  "lines": 85
+  "lines": 85,
+  "scripts": [
+   "s165_liquidity_sweep_reversal.py"
+  ]
  },
  {
   "file": "S166_HalfTrendHeikenAshi_NetProfit_-8482.md",
@@ -43,7 +46,12 @@
   "tfs": [
    "M15"
   ],
-  "lines": 52
+  "lines": 52,
+  "scripts": [
+   "s166_mtf_rescue.py",
+   "s166_halftrend_heikenashi.py",
+   "s166_gatecheck.py"
+  ]
  },
  {
   "file": "S167_RSI21_MeanReversion_NetProfit_1337_REJECTED.md",
@@ -65,7 +73,11 @@
   "tfs": [
    "W1"
   ],
-  "lines": 55
+  "lines": 55,
+  "scripts": [
+   "s167_rsi21_walkforward_validate.py",
+   "s167_rsi21_mean_reversion.py"
+  ]
  },
  {
   "file": "S168_BrooksHigh2_NetProfit_+1351_ACCEPTED.md",
@@ -86,7 +98,13 @@
    "M15",
    "W1"
   ],
-  "lines": 69
+  "lines": 69,
+  "scripts": [
+   "s168_independent_edge_test.py",
+   "s168_brooks_walkforward_validate.py",
+   "s168_overlap_check.py",
+   "s168_brooks_high2_low2.py"
+  ]
  },
  {
   "file": "S169_BrooksSpikeChannel_NetProfit_223246_REJECTED.md",
@@ -111,7 +129,13 @@
   "tfs": [
    "W1"
   ],
-  "lines": 111
+  "lines": 111,
+  "scripts": [
+   "s169_mm_walkforward.py",
+   "s169_spike_channel_validate.py",
+   "s169_spike_channel_measured_move.py",
+   "s169_brooks_spike_channel.py"
+  ]
  },
  {
   "file": "S170_BrooksHigh2Filter_on_S143_NetProfit_225130_ACCEPTED.md",
@@ -129,7 +153,11 @@
    "H1",
    "W1"
   ],
-  "lines": 149
+  "lines": 149,
+  "scripts": [
+   "s170_walkforward_validate.py",
+   "s170_brooks_high2_filter_on_timedrift.py"
+  ]
  },
  {
   "file": "S171_BrooksSignsOfStrength_NetProfit_233260_ACCEPTED.md",
@@ -152,7 +180,11 @@
    "M15",
    "W1"
   ],
-  "lines": 131
+  "lines": 131,
+  "scripts": [
+   "s171_sos_standalone_validate.py",
+   "s171_brooks_signs_of_strength_filter.py"
+  ]
  },
  {
   "file": "S172_BrooksTwoLegs_NetProfit_235400_ACCEPTED.md",
@@ -165,7 +197,12 @@
    "M15",
    "W1"
   ],
-  "lines": 96
+  "lines": 96,
+  "scripts": [
+   "s172_brooks_two_legs.py",
+   "s172_finalize.py",
+   "s172_validate.py"
+  ]
  },
  {
   "file": "S173_BrooksMarketInertia_NetProfit_237181_ACCEPTED.md",
@@ -190,7 +227,11 @@
    "M15",
    "W1"
   ],
-  "lines": 121
+  "lines": 121,
+  "scripts": [
+   "s173_brooks_market_inertia.py",
+   "s173_finalize.py"
+  ]
  },
  {
   "file": "S174_BrooksSellClimaxReversal_NetProfit_237181_REJECTED.md",
@@ -210,7 +251,12 @@
    "EURUSD"
   ],
   "tfs": [],
-  "lines": 116
+  "lines": 116,
+  "scripts": [
+   "s174_brooks_sell_climax_reversal.py",
+   "s174_climax_filter.py",
+   "s174_finalize.py"
+  ]
  },
  {
   "file": "S175_BrooksFailedBreakout_NetProfit_237181_REJECTED.md",
@@ -232,7 +278,12 @@
   "tfs": [
    "W1"
   ],
-  "lines": 101
+  "lines": 101,
+  "scripts": [
+   "s175_finalize.py",
+   "s175_fbo_filter.py",
+   "s175_brooks_failed_breakout.py"
+  ]
  },
  {
   "file": "S176_BrooksSignalBarStopEntry_NetProfit_237181_REJECTED.md",
@@ -247,7 +298,13 @@
   "tfs": [
    "W1"
   ],
-  "lines": 168
+  "lines": 168,
+  "scripts": [
+   "s176_brooks_signal_bar_stopentry.py",
+   "s176_finalize.py",
+   "s176_record_impact.py",
+   "s176_high2_stopentry.py"
+  ]
  },
  {
   "file": "S177_BrooksReversalBar_NetProfit_237181_REJECTED.md",
@@ -263,7 +320,12 @@
    "EURUSD"
   ],
   "tfs": [],
-  "lines": 127
+  "lines": 127,
+  "scripts": [
+   "s177_finalize.py",
+   "s177_brooks_reversal_bar.py",
+   "s177_filter.py"
+  ]
  },
  {
   "file": "S178_BrooksTwoBarReversal_NetProfit_237181_INVALIDATED.md",
@@ -279,7 +341,14 @@
    "EURUSD"
   ],
   "tfs": [],
-  "lines": 71
+  "lines": 71,
+  "scripts": [
+   "s178_agreement_filter.py",
+   "s178_brooks_two_bar_reversal.py",
+   "s178_indep_scan.py",
+   "s178_finalize.py",
+   "s178_agree_on_s168.py"
+  ]
  },
  {
   "file": "S179_AgreementFilterMechanism_NetProfit_238714_REJECTED.md",
@@ -297,7 +366,10 @@
    "EURUSD"
   ],
   "tfs": [],
-  "lines": 80
+  "lines": 80,
+  "scripts": [
+   "s179_revive_s169_with_s178_agreement.py"
+  ]
  },
  {
   "file": "S180_ReviveS169_FullOverlap_NetProfit_237181_REJECTED.md",
@@ -323,7 +395,10 @@
   "tfs": [
    "M15"
   ],
-  "lines": 93
+  "lines": 93,
+  "scripts": [
+   "s180_revive_s169_standalone.py"
+  ]
  },
  {
   "file": "S185_123Patterns_1-2-3_NetProfit_243109_ACCEPTED.md",
@@ -341,7 +416,10 @@
   "tfs": [
    "M15"
   ],
-  "lines": 93
+  "lines": 93,
+  "scripts": [
+   "s185_123patterns_tracer.py"
+  ]
  },
  {
   "file": "S186_BrooksCloseStrength_NetProfit_246231_ACCEPTED.md",
@@ -365,7 +443,10 @@
    "EURUSD"
   ],
   "tfs": [],
-  "lines": 98
+  "lines": 98,
+  "scripts": [
+   "s186_brooks_close_strength.py"
+  ]
  },
  {
   "file": "S187_S73_M5_TimeframeUpgrade_NetProfit_250918_ACCEPTED.md",
@@ -381,7 +462,10 @@
    "M5",
    "M15"
   ],
-  "lines": 138
+  "lines": 138,
+  "scripts": [
+   "s187_m5_timeframe_audit.py"
+  ]
  },
  {
   "file": "S190_S195_XAU_M5_TimeframeReopt_NetProfit_252471_ACCEPTED.md",
@@ -406,7 +490,10 @@
    "M5",
    "M15"
   ],
-  "lines": 217
+  "lines": 217,
+  "scripts": [
+   "s190_m5_data_explore.py"
+  ]
  },
  {
   "file": "S196_SiteStabilization_EURUSD_TF_Split_NetProfit_252471.md",
@@ -421,7 +508,10 @@
    "M15",
    "M30"
   ],
-  "lines": 102
+  "lines": 102,
+  "scripts": [
+   "s196_h1_data_explore.py"
+  ]
  },
  {
   "file": "S196_XAUUSD_H1_DataExplore.md",
@@ -438,7 +528,10 @@
    "M15",
    "H1"
   ],
-  "lines": 60
+  "lines": 60,
+  "scripts": [
+   "s199_h1_overlap_check.py"
+  ]
  },
  {
   "file": "S200_Overnight_AddHour21_REJECTED_NetProfit_252471.md",
@@ -451,7 +544,10 @@
    "M15",
    "H1"
   ],
-  "lines": 49
+  "lines": 49,
+  "scripts": [
+   "s200_overnight_add_hour21.py"
+  ]
  },
  {
   "file": "S202_H1_PriceAction_SoS_Inertia_NetProfit_252471.md",
@@ -474,7 +570,10 @@
    "M15",
    "H1"
   ],
-  "lines": 44
+  "lines": 44,
+  "scripts": [
+   "s202_h1_priceaction_battery.py"
+  ]
  },
  {
   "file": "S203_SoS_H1_vs_M15_Overlap_NetProfit_252471.md",
@@ -491,7 +590,10 @@
    "M15",
    "H1"
   ],
-  "lines": 36
+  "lines": 36,
+  "scripts": [
+   "s203_sos_h1_vs_m15_overlap.py"
+  ]
  },
  {
   "file": "S204_S205_SoS_H1_ATRfilter_NotIncremental_NetProfit_252471.md",
@@ -510,7 +612,10 @@
    "M15",
    "H1"
   ],
-  "lines": 40
+  "lines": 40,
+  "scripts": [
+   "s204_sos_h1_independent_filtered.py"
+  ]
  },
  {
   "file": "S206_H1contextFilter_on_M15_NoImprove_NetProfit_252471.md",
@@ -525,7 +630,10 @@
    "H1",
    "W1"
   ],
-  "lines": 57
+  "lines": 57,
+  "scripts": [
+   "s206_h1context_filter_on_m15.py"
+  ]
  },
  {
   "file": "S207_XAUUSD_H4_DataExplore.md",
@@ -547,7 +655,10 @@
    "H1",
    "H4"
   ],
-  "lines": 57
+  "lines": 57,
+  "scripts": [
+   "s208_h4_layer_battery.py"
+  ]
  },
  {
   "file": "S211_TripleSMA_Vortex_ER_Xauusd_M15_258809_52.md",
@@ -567,7 +678,11 @@
    "H1",
    "H4"
   ],
-  "lines": 171
+  "lines": 171,
+  "scripts": [
+   "s211_final_triple_sma_all_tf.py",
+   "s211_triple_sma_reaction_test.py"
+  ]
  },
  {
   "file": "S212_BrooksInverseView_Xauusd_M5_261375_46.md",
@@ -588,7 +703,11 @@
    "M15",
    "H1"
   ],
-  "lines": 140
+  "lines": 140,
+  "scripts": [
+   "s212_diag_parity.py",
+   "s212_brooks_inverse_view.py"
+  ]
  },
  {
   "file": "S213_BrooksSecondEntry_Eurusd_M15_261793_60.md",
@@ -613,7 +732,11 @@
    "M30",
    "H1"
   ],
-  "lines": 117
+  "lines": 117,
+  "scripts": [
+   "s213_brooks_second_entry.py",
+   "s213_finalize.py"
+  ]
  },
  {
   "file": "S214_BrooksLateEntry_Xauusd_M5_262519_51.md",
@@ -632,7 +755,11 @@
    "M5",
    "H1"
   ],
-  "lines": 103
+  "lines": 103,
+  "scripts": [
+   "s214_brooks_late_entry.py",
+   "s214_finalize.py"
+  ]
  },
  {
   "file": "S215_BrooksTrendLine_Xauusd_M5M15M30H1H4_16306_53.md",
@@ -650,7 +777,12 @@
    "H4",
    "D1"
   ],
-  "lines": 129
+  "lines": 129,
+  "scripts": [
+   "s215_runner.py",
+   "s215_brooks_trend_line.py",
+   "s215_finalize.py"
+  ]
  },
  {
   "file": "S216_BrooksTrendChannelLine_Xauusd_M5M15H1H4_REJECTED_0_56.md",
@@ -672,7 +804,12 @@
    "H1",
    "H4"
   ],
-  "lines": 143
+  "lines": 143,
+  "scripts": [
+   "s216_brooks_trend_channel_line.py",
+   "s216_filter_probe.py",
+   "s216_finalize.py"
+  ]
  },
  {
   "file": "S218_FridayMorningContinuation_Xauusd_H1M30_REJECTED_262519_50.md",
@@ -694,7 +831,10 @@
    "H1",
    "H4"
   ],
-  "lines": 94
+  "lines": 94,
+  "scripts": [
+   "s218_friday_continuation_layer.py"
+  ]
  },
  {
   "file": "S219_BrooksChannels_Xauusd_M5M15M30H4_293236_46.md",
@@ -711,7 +851,11 @@
    "H1",
    "H4"
   ],
-  "lines": 84
+  "lines": 84,
+  "scripts": [
+   "s219_brooks_channels.py",
+   "s219_finalize.py"
+  ]
  },
  {
   "file": "S221_MidMonthWR60_Xauusd_M5M15M30H1_9483_87.md",
@@ -730,7 +874,10 @@
    "M30",
    "H1"
   ],
-  "lines": 59
+  "lines": 59,
+  "scripts": [
+   "s221_s142_midmonth_wr60.py"
+  ]
  },
  {
   "file": "S222a_OvernightWR60_Xauusd_M5M15M30H1_17416_84.md",
@@ -744,7 +891,8 @@
    "M30",
    "H1"
   ],
-  "lines": 44
+  "lines": 44,
+  "scripts": []
  },
  {
   "file": "S222b_MondayWR60_Xauusd_M5M15M30H1_7482_88.md",
@@ -758,7 +906,8 @@
    "M30",
    "H1"
   ],
-  "lines": 36
+  "lines": 36,
+  "scripts": []
  },
  {
   "file": "S222c_TurnOfMonthWR60_Xauusd_M5M15M30H1_4830_89.md",
@@ -772,7 +921,8 @@
    "M30",
    "H1"
   ],
-  "lines": 37
+  "lines": 37,
+  "scripts": []
  },
  {
   "file": "S222d_EndOfMonthWR60_Xauusd_M5M15_998_85.md",
@@ -786,7 +936,8 @@
    "M30",
    "H1"
   ],
-  "lines": 38
+  "lines": 38,
+  "scripts": []
  },
  {
   "file": "S222e_EurMidMonthWR60_Eurusd_M1M5M15M30_3202_62.md",
@@ -803,7 +954,8 @@
    "M15",
    "M30"
   ],
-  "lines": 39
+  "lines": 39,
+  "scripts": []
  },
  {
   "file": "S223a_ShortMAConfluenceWR60_Xauusd_M15M30H1_1465_85.md",
@@ -822,7 +974,8 @@
    "M30",
    "H1"
   ],
-  "lines": 51
+  "lines": 51,
+  "scripts": []
  },
  {
   "file": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
@@ -839,7 +992,8 @@
    "M30",
    "H1"
   ],
-  "lines": 54
+  "lines": 54,
+  "scripts": []
  },
  {
   "file": "S223c_BrooksLow2WR60_Xauusd_M5M30H1_1298_87.md",
@@ -859,7 +1013,8 @@
    "M30",
    "H1"
   ],
-  "lines": 51
+  "lines": 51,
+  "scripts": []
  },
  {
   "file": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
@@ -879,7 +1034,10 @@
    "M30",
    "H1"
   ],
-  "lines": 53
+  "lines": 53,
+  "scripts": [
+   "s224_s81_swing_wr60.py"
+  ]
  },
  {
   "file": "S225_S91SqueezeRevivedWR60_Xauusd_M5M15M30H1_2584_85.md",
@@ -896,7 +1054,10 @@
    "M30",
    "H1"
   ],
-  "lines": 58
+  "lines": 58,
+  "scripts": [
+   "s225_s91_squeeze_wr60.py"
+  ]
  },
  {
   "file": "S226_RQS_MethodologyAudit_Xauusd_M15M5_ByGate.md",
@@ -914,7 +1075,10 @@
    "M5",
    "M15"
   ],
-  "lines": 88
+  "lines": 88,
+  "scripts": [
+   "s226_rqs_audit.py"
+  ]
  },
  {
   "file": "S300_RQS_Audit_AllActiveLayers_Xauusd_Eurusd_MultiTF_AUDIT.md",
@@ -950,7 +1114,8 @@
   "tfs": [
    "M15"
   ],
-  "lines": 81
+  "lines": 81,
+  "scripts": []
  },
  {
   "file": "S303_MarketInertiaShortFiltered_Xauusd_M15_62295_60_ACCEPTED.md",
@@ -982,7 +1147,8 @@
   "tfs": [
    "M15"
   ],
-  "lines": 84
+  "lines": 84,
+  "scripts": []
  },
  {
   "file": "S304_S171SignsOfStrengthRevival_Xauusd_M15_145504_52_REJECTED.md",
@@ -993,7 +1159,8 @@
   "tfs": [
    "M15"
   ],
-  "lines": 56
+  "lines": 56,
+  "scripts": []
  },
  {
   "file": "S305_S172TwoLegsRevival_Xauusd_M15_0_53_REJECTED.md",
@@ -1004,7 +1171,8 @@
   "tfs": [
    "M15"
   ],
-  "lines": 42
+  "lines": 42,
+  "scripts": []
  },
  {
   "file": "S306_TurnOfMonthDriftLong_Xauusd_M15_39969_61_ACCEPTED.md",
@@ -1033,7 +1201,8 @@
   "tfs": [
    "M15"
   ],
-  "lines": 83
+  "lines": 83,
+  "scripts": []
  },
  {
   "file": "S307_S139OvernightDriftRevival_Xauusd_M15_82546_57_REJECTED.md",
@@ -1055,7 +1224,8 @@
   "tfs": [
    "M15"
   ],
-  "lines": 48
+  "lines": 48,
+  "scripts": []
  },
  {
   "file": "S308_S144EndOfMonthDriftRevival_Xauusd_M15_20482_61_REJECTED.md",
@@ -1076,7 +1246,8 @@
   "tfs": [
    "M15"
   ],
-  "lines": 57
+  "lines": 57,
+  "scripts": []
  },
  {
   "file": "S310_EndOfMonthDriftRevival_Xauusd_M15_87.md",
@@ -1112,7 +1283,10 @@
    "M30",
    "H1"
   ],
-  "lines": 160
+  "lines": 160,
+  "scripts": [
+   "s310_eom_drift_revival.py"
+  ]
  },
  {
   "file": "S311_NFPFirstFridayDrift_Xauusd_M5M15_0_DEAD.md",
@@ -1127,7 +1301,10 @@
    "M5",
    "M15"
   ],
-  "lines": 81
+  "lines": 81,
+  "scripts": [
+   "s311_nfp_explore.py"
+  ]
  },
  {
   "file": "S312_MidMonthDrift_Xauusd_M15M30H1_89_ACCEPTED.md",
@@ -1158,7 +1335,13 @@
    "M30",
    "H1"
   ],
-  "lines": 138
+  "lines": 138,
+  "scripts": [
+   "s312_oos_check.py",
+   "s312_midmonth_revival.py",
+   "s312_overlap_audit.py",
+   "s312_finalize.py"
+  ]
  },
  {
   "file": "S313_SqueezeBreakout_Xauusd_H1M30_92.md",
@@ -1187,7 +1370,10 @@
    "M30",
    "H1"
   ],
-  "lines": 179
+  "lines": 179,
+  "scripts": [
+   "s313_squeeze_revival.py"
+  ]
  },
  {
   "file": "S320_BB_RSI_RegimeMR_Revival_XauEur_M5M15M30H1_16_DEAD.md",
@@ -1223,7 +1409,13 @@
    "M30",
    "H1"
   ],
-  "lines": 152
+  "lines": 152,
+  "scripts": [
+   "s320_bb_rsi_regime_revival.py",
+   "s320_scan_alltf.py",
+   "s320_fast_mtf.py",
+   "s320_bb_rsi_meanrev_revival.py"
+  ]
  },
  {
   "file": "S321_MARibbonRevival_Xauusd_M30_88_ACCEPTED.md",
@@ -1248,7 +1440,10 @@
    "H1",
    "H4"
   ],
-  "lines": 125
+  "lines": 125,
+  "scripts": [
+   "s321_ma_ribbon_revival.py"
+  ]
  },
  {
   "file": "S322_IchimokuKumo_Xauusd_M15_86.md",
@@ -1275,7 +1470,10 @@
    "H1",
    "H4"
   ],
-  "lines": 121
+  "lines": 121,
+  "scripts": [
+   "s322_ichimoku_kumo.py"
+  ]
  },
  {
   "file": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md",
@@ -1291,7 +1489,10 @@
    "H1",
    "H4"
   ],
-  "lines": 213
+  "lines": 213,
+  "scripts": [
+   "s323_s11_sr_pullback_revival.py"
+  ]
  },
  {
   "file": "S323_SRPullbackGolden_Xauusd_M5M15M30H1_rqs2-24_DEAD.md",
@@ -1320,7 +1521,10 @@
    "H4",
    "D1"
   ],
-  "lines": 280
+  "lines": 280,
+  "scripts": [
+   "s323_s11_sr_pullback_revival.py"
+  ]
  },
  {
   "file": "S324_LiquiditySweepReversal_Xauusd_M15M30_93_ACCEPTED.md",
@@ -1339,7 +1543,10 @@
    "H1",
    "H4"
   ],
-  "lines": 151
+  "lines": 151,
+  "scripts": [
+   "s324_liquidity_sweep_revival.py"
+  ]
  },
  {
   "file": "S325_ChannelPosition_Xauusd_M5M15M30H4_RQSrevival_DEAD.md",
@@ -1361,7 +1568,10 @@
    "H1",
    "H4"
   ],
-  "lines": 142
+  "lines": 142,
+  "scripts": [
+   "s325_channels_rqs_revival.py"
+  ]
  },
  {
   "file": "S326_StreakReversal_XauEur_XauM5M30_EurM15_92_ACCEPTED.md",
@@ -1380,7 +1590,11 @@
    "H1",
    "H4"
   ],
-  "lines": 153
+  "lines": 153,
+  "scripts": [
+   "s326_streak_reversal_revival.py",
+   "s326_overlap_audit.py"
+  ]
  },
  {
   "file": "S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md",
@@ -1400,7 +1614,13 @@
    "H1",
    "H4"
   ],
-  "lines": 258
+  "lines": 258,
+  "scripts": [
+   "s327_sell_climax_reversal_rqs.py",
+   "s327_overlap_audit.py",
+   "s327_verify_save.py",
+   "s327_independence_test.py"
+  ]
  },
  {
   "file": "S327_SellClimaxReversal_XauEur_M5M15M30H1H4_98.md",
@@ -1428,7 +1648,13 @@
    "H1",
    "H4"
   ],
-  "lines": 214
+  "lines": 214,
+  "scripts": [
+   "s327_sell_climax_reversal_rqs.py",
+   "s327_overlap_audit.py",
+   "s327_verify_save.py",
+   "s327_independence_test.py"
+  ]
  },
  {
   "file": "S328_RSI21FadeShort_Xauusd_M5H1_94.md",
@@ -1458,7 +1684,12 @@
    "H1",
    "H4"
   ],
-  "lines": 186
+  "lines": 186,
+  "scripts": [
+   "s328_rsi21_mr_regime_revival.py",
+   "s328_overlap_audit.py",
+   "s328_mr_dynamic_exit.py"
+  ]
  },
  {
   "file": "S329_MarketInertiaShortMTF_Eurusd_M15_29_DEAD.md",
@@ -1495,7 +1726,10 @@
    "H1",
    "H4"
   ],
-  "lines": 190
+  "lines": 190,
+  "scripts": [
+   "s329_market_inertia_mtf.py"
+  ]
  },
  {
   "file": "S330_SessionORBFade_Xauusd_M5_90.md",
@@ -1516,7 +1750,11 @@
    "H1",
    "H4"
   ],
-  "lines": 184
+  "lines": 184,
+  "scripts": [
+   "s330_orb_baseline.py",
+   "s330_final_verify.py"
+  ]
  },
  {
   "file": "S332_SqueezeBankFilters_Xauusd_H4M15_91.md",
@@ -1550,7 +1788,23 @@
    "H1",
    "H4"
   ],
-  "lines": 267
+  "lines": 267,
+  "scripts": [
+   "s332_squeeze_rqs_revival.py",
+   "s332_overlap_audit.py",
+   "s332_fastscan.py",
+   "s332_cache_signals.py",
+   "s332_scan_m15.py",
+   "s332_scan_mtf.py",
+   "s332_m15_probe.py",
+   "s332_finetune_m15.py",
+   "s332_cachedscan.py",
+   "s332_m15_overlap_audit.py",
+   "s332_m15_validate.py",
+   "s332_bank_scan.py",
+   "s332_confirm.py",
+   "s332_deepscan_lowtf.py"
+  ]
  },
  {
   "file": "S334_MeanReversionShort_XauusdEurusd_M5_84.md",
@@ -1587,7 +1841,11 @@
    "H1",
    "H4"
   ],
-  "lines": 194
+  "lines": 194,
+  "scripts": [
+   "s334_overlap_audit.py",
+   "s334_mr_short_revival.py"
+  ]
  },
  {
   "file": "S336_HighFreqShortScalp_Xauusd_M5_DEAD.md",
@@ -1604,7 +1862,17 @@
   "tfs": [
    "M5"
   ],
-  "lines": 77
+  "lines": 77,
+  "scripts": [
+   "s336_diag_direction.py",
+   "s336_scan_allbank.py",
+   "s336_scan_pair_filters.py",
+   "s336_explore_scalp_oscillators.py",
+   "s336_diag_regime.py",
+   "s336_diag_triggers.py",
+   "s336_test_trail.py",
+   "s336_scan_tpsl_adaptive.py"
+  ]
  },
  {
   "file": "S337_WR_Floor_Discovery_Xauusd_AllTF_DIAG.md",
@@ -1622,7 +1890,13 @@
    "H1",
    "H4"
   ],
-  "lines": 135
+  "lines": 135,
+  "scripts": [
+   "s337_archetype_scan.py",
+   "s337_exit_asymmetry.py",
+   "s337_tf_ladder.py",
+   "s337_precision_diag.py"
+  ]
  },
  {
   "file": "S338_ConditionalWR_Mining_Xauusd_M5_DIAG.md",
@@ -1643,7 +1917,10 @@
    "M5",
    "H4"
   ],
-  "lines": 83
+  "lines": 83,
+  "scripts": [
+   "s338_conditional_wr.py"
+  ]
  },
  {
   "file": "S339_R2xZscore_MeanRevert_Xauusd_M5_WIP.md",
@@ -1657,7 +1934,10 @@
    "M30",
    "H1"
   ],
-  "lines": 71
+  "lines": 71,
+  "scripts": [
+   "s339_rqs_eval.py"
+  ]
  },
  {
   "file": "S340_BrooksMicroChannel_Xauusd_H4_rqs93.md",
@@ -1687,7 +1967,10 @@
    "H4",
    "D1"
   ],
-  "lines": 134
+  "lines": 134,
+  "scripts": [
+   "s340_brooks_micro_channel.py"
+  ]
  },
  {
   "file": "S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md",
@@ -1704,7 +1987,14 @@
    "H1",
    "H4"
   ],
-  "lines": 389
+  "lines": 389,
+  "scripts": [
+   "s341_brooks_swing_levels.py",
+   "s341_parity_export.py",
+   "s341_swing_fade_h1_revived.py",
+   "s341_independent_test.py",
+   "s341_multitf_overlap_audit.py"
+  ]
  },
  {
   "file": "S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md",
@@ -1729,7 +2019,14 @@
    "H1",
    "H4"
   ],
-  "lines": 166
+  "lines": 166,
+  "scripts": [
+   "s341_brooks_swing_levels.py",
+   "s341_parity_export.py",
+   "s341_swing_fade_h1_revived.py",
+   "s341_independent_test.py",
+   "s341_multitf_overlap_audit.py"
+  ]
  },
  {
   "file": "S342_BrooksMAReturn_XauusdEurusd_AllTF_rqs32.md",
@@ -1748,7 +2045,12 @@
    "H1",
    "H4"
   ],
-  "lines": 122
+  "lines": 122,
+  "scripts": [
+   "s342_brooks_ma_return.py",
+   "s342_scan.py",
+   "s342_feature_probe.py"
+  ]
  },
  {
   "file": "S344_BrooksTrendFromOpen_Xauusd_M15_rqs91.md",
@@ -1780,7 +2082,14 @@
    "D1",
    "W1"
   ],
-  "lines": 115
+  "lines": 115,
+  "scripts": [
+   "s344_parity_export.py",
+   "s344_overlap_validate.py",
+   "s344_scan.py",
+   "s344_brooks_trend_from_open.py",
+   "s344_deep_probe.py"
+  ]
  },
  {
   "file": "S345_BrooksReversalDay_XauEur_M15M30_rqs90.md",
@@ -1832,7 +2141,17 @@
    "D1",
    "W1"
   ],
-  "lines": 288
+  "lines": 288,
+  "scripts": [
+   "s345_brooks_reversal_day.py",
+   "s345_scan.py",
+   "s345_robustness_adjudicate.py",
+   "s345_verify_h1_eur.py",
+   "s345_overlap_validate.py",
+   "s345_parity_export.py",
+   "s345_improve_probe.py",
+   "s345_stack_filters.py"
+  ]
  },
  {
   "file": "S346_AdaptiveATRChannelBreakout_Xauusd_D1_rqs84.md",
@@ -1883,7 +2202,33 @@
    "D1",
    "W1"
   ],
-  "lines": 248
+  "lines": 248,
+  "scripts": [
+   "s346_oos_transfer.py",
+   "s346_fast.py",
+   "s346_diag.py",
+   "s346_holdout_c.py",
+   "s346_family.py",
+   "s346_joint.py",
+   "s346_adjudicate.py",
+   "s346_stack.py",
+   "s346_rqs2_validate.py",
+   "s346_parity_fast.py",
+   "s346_verdict.py",
+   "s346_filter_generalize.py",
+   "s346_mtf_sweep.py",
+   "s346_transfer.py",
+   "s346_holdout_c_test.py",
+   "s346_scan.py",
+   "s346_bare.py",
+   "s346_null.py",
+   "s346_neff.py",
+   "s346_geom.py",
+   "s346_stack2.py",
+   "s346_adaptive_channel.py",
+   "s346_bank401.py",
+   "s346_edge_probe.py"
+  ]
  },
  {
   "file": "S346_LAW4_TRADEABILITY.md",
@@ -1928,7 +2273,11 @@
    "D1",
    "W1"
   ],
-  "lines": 215
+  "lines": 215,
+  "scripts": [
+   "s347_ensemble.py",
+   "s347_verdict.py"
+  ]
  },
  {
   "file": "S348_RRGeometrySweep_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
@@ -1964,7 +2313,10 @@
    "D1",
    "W1"
   ],
-  "lines": 229
+  "lines": 229,
+  "scripts": [
+   "s348_rr_sweep.py"
+  ]
  },
  {
   "file": "S350_TripleLockDerivedHold_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
@@ -1986,7 +2338,10 @@
    "D1",
    "W1"
   ],
-  "lines": 193
+  "lines": 193,
+  "scripts": [
+   "s350_triplelock_sweep.py"
+  ]
  },
  {
   "file": "S351_LPSBStructureFilter_Xauusd_M5M15M30H1_rqs2-29.md",
@@ -2015,7 +2370,17 @@
    "D1",
    "W1"
   ],
-  "lines": 222
+  "lines": 222,
+  "scripts": [
+   "s351_lpsb.py",
+   "s351_overlap_filter.py",
+   "s351_filter_rqs2.py",
+   "s351_scan.py",
+   "s351_verdict.py",
+   "s351_pool_rescue.py",
+   "s351_filter.py",
+   "s351_vote.py"
+  ]
  },
  {
   "file": "S353_HalfTrendRegimeGate_XauusdEurusd_D1_rqs2-PL.md",
@@ -2044,7 +2409,10 @@
    "D1",
    "W1"
   ],
-  "lines": 129
+  "lines": 129,
+  "scripts": [
+   "s353_halftrend_regime.py"
+  ]
  },
  {
   "file": "S354_BrooksTrendResumption_Xauusd_H1_rqs2-80.md",
@@ -2069,7 +2437,16 @@
    "H1",
    "H4"
   ],
-  "lines": 187
+  "lines": 187,
+  "scripts": [
+   "s354_causal_check.py",
+   "s354_brooks_trend_resumption.py",
+   "s354_improve_mtf.py",
+   "s354_rqs2_finalize.py",
+   "s354_improve_long.py",
+   "s354_overlap_validate.py",
+   "s354_family.py"
+  ]
  },
  {
   "file": "S355_LPSBStateFilterRevival_Xauusd_M5_rqs2-84.md",
@@ -2108,7 +2485,8 @@
    "D1",
    "W1"
   ],
-  "lines": 278
+  "lines": 278,
+  "scripts": []
  },
  {
   "file": "S355_PREREGISTRATION_15Layer_Revisit_v24.md",
@@ -2147,7 +2525,10 @@
    "D1",
    "W1"
   ],
-  "lines": 457
+  "lines": 457,
+  "scripts": [
+   "s356_v24_rejudge.py"
+  ]
  },
  {
   "file": "S356_PREREGISTRATION_S354_CAUSAL_V24_REJUDGE.md",
@@ -2280,7 +2661,11 @@
    "D1",
    "W1"
   ],
-  "lines": 255
+  "lines": 255,
+  "scripts": [
+   "s369_stair_continuation.py",
+   "s369_anchor_judge.py"
+  ]
  },
  {
   "file": "S370_EnsembleUnion_XauEur_ALL_rqs2-00_DEAD.md",
@@ -2299,7 +2684,10 @@
    "D1",
    "W1"
   ],
-  "lines": 254
+  "lines": 254,
+  "scripts": [
+   "s370_ensemble_union.py"
+  ]
  },
  {
   "file": "S370_PREREG_ensemble_union.md",
@@ -2328,7 +2716,8 @@
    "D1",
    "W1"
   ],
-  "lines": 217
+  "lines": 217,
+  "scripts": []
  },
  {
   "file": "S371_PREREG_directional_breakout_eur.md",
@@ -2358,7 +2747,10 @@
    "H1",
    "H4"
   ],
-  "lines": 238
+  "lines": 238,
+  "scripts": [
+   "s373_instrument_native_channel.py"
+  ]
  },
  {
   "file": "S373_PREREG_instrument_native_channel.md",
@@ -2382,7 +2774,10 @@
    "H1",
    "H4"
   ],
-  "lines": 241
+  "lines": 241,
+  "scripts": [
+   "s374_kennedy_break_gate.py"
+  ]
  },
  {
   "file": "S374_PREREG_kennedy_break_gate.md",
@@ -2417,7 +2812,10 @@
    "D1",
    "W1"
   ],
-  "lines": 173
+  "lines": 173,
+  "scripts": [
+   "s375_kennedy_single_instrument.py"
+  ]
  },
  {
   "file": "S375_PREREG_kennedy_single_instrument_h1.md",
@@ -2448,7 +2846,10 @@
    "D1",
    "W1"
   ],
-  "lines": 334
+  "lines": 334,
+  "scripts": [
+   "s376_fractal_sr_proximity.py"
+  ]
  },
  {
   "file": "S376_PREREG_fractal_sr_proximity_filter.md",
@@ -2501,7 +2902,10 @@
    "H1",
    "H4"
   ],
-  "lines": 328
+  "lines": 328,
+  "scripts": [
+   "s382_williamsr_momentum.py"
+  ]
  },
  {
   "file": "S383_LAW_COST_TO_STOP_RATIO.md",
@@ -2521,7 +2925,8 @@
   "tfs": [
    "M30"
   ],
-  "lines": 208
+  "lines": 208,
+  "scripts": []
  },
  {
   "file": "S385_FINDING_WIDENING_LIFTS_EVERYONE.md",
@@ -2563,7 +2968,8 @@
    "H1",
    "H4"
   ],
-  "lines": 221
+  "lines": 221,
+  "scripts": []
  },
  {
   "file": "S390_PREREG_CCI_H1_IMPROVEMENT.md",
@@ -2590,7 +2996,8 @@
    "XAUUSD"
   ],
   "tfs": [],
-  "lines": 180
+  "lines": 180,
+  "scripts": []
  },
  {
   "file": "S393_ALPHA_FILTER_RESULT.md",
@@ -2603,7 +3010,8 @@
   ],
   "pairs": [],
   "tfs": [],
-  "lines": 217
+  "lines": 217,
+  "scripts": []
  },
  {
   "file": "S393_PREREG_ALPHA_FILTER.md",
@@ -2622,7 +3030,8 @@
    "H1",
    "H4"
   ],
-  "lines": 258
+  "lines": 258,
+  "scripts": []
  },
  {
   "file": "S394_PREREG_EFFECTIVE_TRIALS.md",
@@ -2644,7 +3053,10 @@
   "tfs": [
    "M15"
   ],
-  "lines": 74
+  "lines": 74,
+  "scripts": [
+   "s69_multiasset_capital_portfolio.py"
+  ]
  },
  {
   "file": "S70_PerAsset_ProfitabilityGate_NetProfit_13436.md",
@@ -2658,7 +3070,10 @@
   "tfs": [
    "H1"
   ],
-  "lines": 49
+  "lines": 49,
+  "scripts": [
+   "s70_perasset_profitability_gate.py"
+  ]
  },
  {
   "file": "S71_Forex_MeanReversion_NetProfit_-20147.md",
@@ -2673,7 +3088,10 @@
    "M15",
    "H1"
   ],
-  "lines": 33
+  "lines": 33,
+  "scripts": [
+   "s71_forex_meanreversion.py"
+  ]
  },
  {
   "file": "S72_Forex_Breakout_NetProfit_-20153.md",
@@ -2685,7 +3103,10 @@
    "DXY"
   ],
   "tfs": [],
-  "lines": 40
+  "lines": 40,
+  "scripts": [
+   "s72_forex_breakout.py"
+  ]
  },
  {
   "file": "S73_EURUSD_SessionDrift_NetProfit_44458.md",
@@ -2716,7 +3137,10 @@
    "M15",
    "H1"
   ],
-  "lines": 176
+  "lines": 176,
+  "scripts": [
+   "s73_eurusd_session_drift.py"
+  ]
  },
  {
   "file": "S79_Gold_M5_TrendPullback_NetProfit_4256.md",
@@ -2742,7 +3166,10 @@
    "M5",
    "M15"
   ],
-  "lines": 162
+  "lines": 162,
+  "scripts": [
+   "s79_gold_m5_trend_pullback.py"
+  ]
  },
  {
   "file": "S81_Gold_M30_SwingPullback_NetProfit_14327.md",
@@ -2770,6 +3197,9 @@
    "H1",
    "H4"
   ],
-  "lines": 156
+  "lines": 156,
+  "scripts": [
+   "s81_gold_m30_swing_pullback.py"
+  ]
  }
 ]
