@@ -1882,10 +1882,127 @@
   ]
  },
  "S222e": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S222e_EurMidMonthWR60_Eurusd_M1M5M15M30_3202_62.md",
-  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
+  "new": "S222e_EurMidMonthWR60EurusdM1M5M15M30_Xauusd_M5_rqs2_22_REJECT.md",
+  "verdict": "REJECT",
+  "score": 22.0,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 12.3,
+    "n": 777
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.7,
+    "n": 837
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 15.3,
+    "n": 770
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.7,
+    "n": 1281
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 20.0,
+    "n": 1112
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 22.0,
+    "n": 1025
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 12.8,
+    "n": 1041
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 15.2,
+    "n": 1448
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.7,
+    "n": 1275
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 19.0,
+    "n": 1009
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 20.6,
+    "n": 926
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 12.7,
+    "n": 978
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.9,
+    "n": 1116
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.8,
+    "n": 712
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 18.0,
+    "n": 834
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 15.4,
+    "n": 1102
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 16.0,
+    "n": 1179
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.5,
+    "n": 1353
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 14.5,
+    "n": 902
+   }
+  ]
  },
  "S223a": {
   "done": false,
