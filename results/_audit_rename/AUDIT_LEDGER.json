@@ -436,5 +436,26 @@
     "n": 589
    }
   ]
+ },
+ "S179": {
+  "done": true,
+  "old": "S179_AgreementFilterMechanism_NetProfit_238714_REJECTED.md",
+  "new": "S179_AgreementFilterMechanism_Xauusd_M15_rqs2_11_REJECT.md",
+  "verdict": "REJECT",
+  "score": 10.9,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 10.9,
+    "n": 1059
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 6.6,
+    "n": 364
+   }
+  ]
  }
 }
