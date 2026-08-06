@@ -214,6 +214,25 @@ def process(rec: dict, ledger: dict) -> str:
         ledger[sid] = {'done': True, 'status': 'FILE_MISSING', 'old': old}
         return 'missing'
 
+    # ── سند ≠ لایه ───────────────────────────────────────────────────────────
+    # ⚠️ چرا لازم شد (اندازه‌گیری‌شده): از ۱۳۱ موردِ باقی‌ماندهٔ صف، **۶۰**
+    #   مورد `kind=DOC` است — پیش‌ثبتِ پروتکل (`PREREGISTRATION`)، پیوست
+    #   (`ADDENDUM`)، یافتهٔ منفی (`NEGATIVE_FINDING`)، خودـممیزی
+    #   (`SELF_AUDIT_PROTOCOL`). این‌ها **لایهٔ استراتژی نیستند**.
+    #   مأموریتِ ممیزی «آزمونِ لایه‌ها» است؛ چسباندنِ نمره و برچسبِ وضعیتِ
+    #   RQS2 به یک سندِ پیش‌ثبت، هم بی‌معناست و هم آرشیو را فاسد می‌کند
+    #   (سند وضعیتِ «REJECT» می‌گیرد در حالی که هیچ ادعای معاملاتی ندارد).
+    #   پس اسناد **دست‌نخورده** می‌مانند و از صف خارج می‌شوند تا موتور وقتش
+    #   را روی لایه‌های واقعی بگذارد.
+    if rec.get('kind') == 'DOC':
+        print(f'\n════ {sid}  {cur.name[:60]}', flush=True)
+        print('  ⏭  DOC (preregistration/addendum/finding) — not a strategy '
+              'layer; left untouched', flush=True)
+        ledger[sid] = {'done': True, 'status': 'NOT_A_LAYER', 'old': old,
+                       'note': 'documentation artefact, not a tradeable layer; '
+                               'no RQS2 name/score applies'}
+        return 'ok'
+
     scripts = [s for s in (rec.get('scripts') or [])
                if (ROOT / 'strategies' / s).exists()]
     n_trials = pick_n_trials(rec)
