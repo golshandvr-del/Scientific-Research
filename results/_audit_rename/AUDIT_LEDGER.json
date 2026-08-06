@@ -1002,5 +1002,26 @@
     "n": 760
    }
   ]
+ },
+ "S213": {
+  "done": true,
+  "old": "S213_BrooksSecondEntry_Eurusd_M15_261793_60.md",
+  "new": "S213_BrooksSecondEntryEurusdM15_Xauusd_M5_rqs2_24_REJECT.md",
+  "verdict": "REJECT",
+  "score": 24.5,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 23.0,
+    "n": 94
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 24.5,
+    "n": 19
+   }
+  ]
  }
 }
