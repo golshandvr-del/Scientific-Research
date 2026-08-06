@@ -2092,10 +2092,25 @@
   "cards": []
  },
  "S305": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S305_S172TwoLegsRevival_Xauusd_M15_0_53_REJECTED.md",
-  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
+  "new": "S305_S172TwoLegsRevivalXauusdM15_Xauusd_M15_rqs2_20_REJECT.md",
+  "verdict": "REJECT",
+  "score": 20.3,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 20.3,
+    "n": 2361
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 14.9,
+    "n": 1160
+   }
+  ]
  },
  "S306": {
   "done": true,
@@ -2131,6 +2146,18 @@
   "done": true,
   "status": "NOT_A_LAYER",
   "old": "S207_XAUUSD_H4_DataExplore.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S300#doc:S300_RQS_Audit_AllActiveLayers_Xauusd_Eurusd_MultiTF_AUDIT.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S300_RQS_Audit_AllActiveLayers_Xauusd_Eurusd_MultiTF_AUDIT.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S301#doc:S301_EventDriven_Calibration_Xauusd_Eurusd_MultiTF_DISCOVERY.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S301_EventDriven_Calibration_Xauusd_Eurusd_MultiTF_DISCOVERY.md",
   "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
  }
 }
