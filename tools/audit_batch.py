@@ -27,11 +27,13 @@
 """
 from __future__ import annotations
 
+import gc
 import json
 import os
 import re
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -53,6 +55,36 @@ def sh(cmd: str, timeout: int = 600):
     p = subprocess.run(cmd, shell=True, cwd=str(ROOT), capture_output=True,
                        text=True, timeout=timeout)
     return p.returncode, p.stdout, p.stderr
+
+
+def free_mb() -> int:
+    """رمِ آزادِ فعلی (MB). صفر یعنی نامعلوم."""
+    try:
+        with open('/proc/meminfo') as fh:
+            info = {}
+            for line in fh:
+                k, _, v = line.partition(':')
+                info[k.strip()] = v.strip()
+        return int(info.get('MemAvailable', '0 kB').split()[0]) // 1024
+    except Exception:
+        return 0
+
+
+def wait_for_memory(need_mb: int = 320, tries: int = 30) -> bool:
+    """
+    قبل از شروعِ لایهٔ بعد، منتظرِ آزاد شدنِ رم می‌ماند.
+
+    ⚠️ چرا لازم است: سندباکس فقط ~۹۸۵MB رم دارد. اندازه‌گیری‌شده: راننده
+    بلافاصله بعد از یک ضبطِ سنگین `Killed` شد چون پروسهٔ قبلی هنوز رم را
+    آزاد نکرده بود. بدونِ این محافظ، **کلِ صف** با یک لایهٔ سنگین می‌مُرد و
+    پیشرفت از دست می‌رفت (همان چیزی که قانونِ «اندک اندک» علیه‌اش هست).
+    """
+    for _ in range(tries):
+        if free_mb() >= need_mb:
+            return True
+        gc.collect()
+        time.sleep(4)
+    return free_mb() >= need_mb // 2
 
 
 def load_ledger() -> dict:
