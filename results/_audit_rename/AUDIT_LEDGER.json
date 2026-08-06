@@ -2359,5 +2359,74 @@
     "n": 16
    }
   ]
+ },
+ "S322": {
+  "done": true,
+  "old": "S322_IchimokuKumo_Xauusd_M15_86.md",
+  "new": "S322_IchimokuKumoXauusdM15_Xauusd_M15_rqs2_20_REJECT.md",
+  "verdict": "REJECT",
+  "score": 19.9,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 17.6,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.4,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.1,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.8,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 17.4,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.9,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.4,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 17.4,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.1,
+    "n": 124
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.0,
+    "n": 124
+   }
+  ]
  }
 }
