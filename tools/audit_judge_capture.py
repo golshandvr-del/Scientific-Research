@@ -153,15 +153,32 @@ def geom_to_pip(g: dict, pair: str, n_bars: int, idx: np.ndarray):
 # ════════════════════════════════════════════════════════════════════════════
 #  ③ ادغامِ دو سمت و داوری
 # ════════════════════════════════════════════════════════════════════════════
-def geom_sig(g: dict) -> str:
-    """اثرِانگشتِ هندسه برای ادغامِ long/short همان لایه روی همان کارت."""
-    if g is None:
-        return 'none'
-    if g.get('kind') == 'scalar':
-        return f"s{g['value']:.6f}"
-    if g.get('kind') == 'series':
-        return f"v{g.get('median')}"
-    return 'none'
+def geom_shape(call: dict) -> str:
+    """
+    اثرِانگشتِ **شکلِ** هندسه (نه مقدارِ آن) برای ادغامِ دو سمتِ یک لایه.
+
+    چرا نه مقدار: در لایه‌های ATR-محور، میانهٔ SL سمتِ long و short طبعاً
+    متفاوت است (نمونهٔ کندل‌های متفاوت). اگر مقدار را کلید کنیم، یک لایه
+    مصنوعاً به دو «نیم‌لایه»ی کم‌معامله می‌شکند و این هم `H9` (کفِ نمونه) را
+    ناعادلانه می‌شکند و هم نمرهٔ نهایی را خراب می‌کند.
+
+    آنچه واقعاً باید همسان باشد، *سازوکار* است: اسکالر بودن/سری بودن، و
+    نسبتِ RR. اگر دو فراخوانی RR متفاوت داشته باشند، واقعاً دو هندسهٔ
+    متفاوت‌اند و باید جدا داوری شوند.
+    """
+    sl, tp = call.get('sl') or {}, call.get('tp') or {}
+    ks, kt = sl.get('kind', 'none'), tp.get('kind', 'none')
+
+    def rep(g):
+        if g.get('kind') == 'scalar':
+            return g.get('value')
+        return g.get('median')
+
+    vs, vt = rep(sl), rep(tp)
+    rr = None
+    if vs and vt:
+        rr = round(float(vt) / float(vs), 3)
+    return f'{ks}/{kt}/rr={rr}'
 
 
 def judge_capture(cap: dict, n_trials: int, layer_name: str) -> dict:
@@ -178,14 +195,17 @@ def judge_capture(cap: dict, n_trials: int, layer_name: str) -> dict:
             continue
         pair, tf, offset = ident
         # افق و همپوشانی و هندسه باید همسان باشند تا ادغام مجاز باشد
+        # ادغام باید **دو سمتِ یک لایه روی یک کارت** را در یک داوری بگذارد.
+        # پس هندسه با «شکل» (اسکالر/سری) و نسبتِ RR کلید می‌شود، نه با مقدارِ
+        # میانهٔ آن سمت — چون long و short طبعاً میانهٔ ATR متفاوتی دارند و
+        # کلید کردن روی میانه، لایه را مصنوعاً به دو نیم‌لایه می‌شکست.
         key = (pair, tf, offset, call.get('max_hold'),
-               bool(call.get('allow_overlap')),
-               geom_sig(call.get('sl')), geom_sig(call.get('tp')))
+               bool(call.get('allow_overlap')), geom_shape(call))
         groups.setdefault(key, []).append(call)
 
     per_card = []
     for key, calls in sorted(groups.items(), key=lambda kv: (kv[0][0], kv[0][1])):
-        pair, tf, offset, mh_raw, ao, _gs, _gt = key
+        pair, tf, offset, mh_raw, ao, _shape = key
         df_full = load_card(pair, tf)
         if df_full is None:
             per_card.append({'card': f'{pair}-{tf}', 'verdict': 'INCOMPLETE',
@@ -273,12 +293,22 @@ def judge_capture(cap: dict, n_trials: int, layer_name: str) -> dict:
             }
 
         split_bar = int(n * 0.70)
+        # ── `tp_pip` برای هندسهٔ متغیر ────────────────────────────────────────
+        # اسپک می‌گوید نبودِ `tp_pip` ⇒ `H2 = UNKNOWN`، و هدفش جلوگیری از
+        # فرضِ خودکارِ `tp = sl` است (که سپرِ ضدِتقلبِ TP<SL را خاموش می‌کرد).
+        # اینجا `tp` **حدس زده نمی‌شود**: از خودِ ضبط اندازه‌گیری شده است.
+        # در لایه‌های ATR-محور، RR ثابت است و فقط مقیاس با نوسان تغییر می‌کند،
+        # پس میانه نمایندهٔ درستِ هندسه است و H2 قابلِ داوری می‌ماند.
+        # ⚠️ این به نفعِ لایه **نیست**: با تحویلِ `tp`، سپرِ TP<SL روشن می‌شود
+        # و اگر لایه WR را با براکتِ کج خریده باشد، همین‌جا لو می‌رود.
+        rr_ratio = (tp_med / sl_med) if sl_med else None
         r = R.compute_rqs2(
             tr, pair,
             sl_pip=sl_med,
-            tp_pip=(tp_med if np.isscalar(tp_arr) else None),
+            tp_pip=tp_med,
             bar_time=bar_time_of(df), null=nul, n_trials=n_trials,
             split_bar=split_bar, close=df['close'].to_numpy(float))
+        r['geometry_kind'] = ('scalar' if np.isscalar(tp_arr) else 'variable/ATR')
         r['card'] = f'{pair}-{tf}'
         r['n_signals'] = n_sig
         r['geometry'] = {'sl_pip_med': round(sl_med, 4),
