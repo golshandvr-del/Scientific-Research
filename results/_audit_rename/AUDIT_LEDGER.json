@@ -2161,12 +2161,10 @@
   "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
  },
  "S310": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S310_EndOfMonthDriftRevival_Xauusd_M15_87.md",
-  "new": "S310_EndOfMonthDriftRevivalXauusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE was caused by the interceptor not patching engine.trade_simulator.simulate (third archive engine); fix verified on S310: 0 calls -> 40 calls in 467s"
  },
  "S311": {
   "done": true,
@@ -2177,20 +2175,16 @@
   "cards": []
  },
  "S312": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S312_MidMonthDrift_Xauusd_M15M30H1_89_ACCEPTED.md",
-  "new": "S312_MidMonthDriftXauusdM15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE was caused by the interceptor not patching engine.trade_simulator.simulate (third archive engine); fix verified on S310: 0 calls -> 40 calls in 467s"
  },
  "S313": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S313_SqueezeBreakout_Xauusd_H1M30_92.md",
-  "new": "S313_SqueezeBreakoutXauusdH1M30_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE was caused by the interceptor not patching engine.trade_simulator.simulate (third archive engine); fix verified on S310: 0 calls -> 40 calls in 467s"
  },
  "S320": {
   "done": true,
