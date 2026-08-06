@@ -492,5 +492,68 @@
   "status": "DEFERRED",
   "old": "S186_BrooksCloseStrength_NetProfit_246231_ACCEPTED.md",
   "reason": "capture > 300s"
+ },
+ "S187": {
+  "done": true,
+  "old": "S187_S73_M5_TimeframeUpgrade_NetProfit_250918_ACCEPTED.md",
+  "new": "S187_S73M5TimeframeUpgrade_EurusdXauusd_M15_rqs2_21_REJECT.md",
+  "verdict": "REJECT",
+  "score": 20.6,
+  "cards": [
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 20.5,
+    "n": 599
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 17.0,
+    "n": 129
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 20.3,
+    "n": 683
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 13.1,
+    "n": 240
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.0,
+    "n": 68
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 20.6,
+    "n": 175
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 11.3,
+    "n": 153
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 1.9,
+    "n": 1427
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 14.8,
+    "n": 325
+   }
+  ]
  }
 }
