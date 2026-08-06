@@ -93,6 +93,8 @@
   },
   "_portfolio": {
     "total_net": 12844.113959935548,
+    "total_net_comp": 100130.53811631528,
+    "total_n": 2667,
     "tradable_net_no_dxy": 12844.113959935548
   }
 }
