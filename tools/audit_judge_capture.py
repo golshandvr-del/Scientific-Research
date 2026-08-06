@@ -53,6 +53,7 @@ from tools.audit_rqs2_rejudge import (                     # noqa: E402
 )
 from engine import rqs2 as R                               # noqa: E402
 from tools.audit_fast_null import build_null_fast          # noqa: E402
+from tools.audit_capture import unpack_idx                 # noqa: E402
 
 CAP = ROOT / 'results' / '_audit_rename' / 'captures'
 VER = ROOT / 'results' / '_audit_rename' / 'verdicts'
@@ -219,8 +220,10 @@ def judge_capture(cap: dict, n_trials: int, layer_name: str) -> dict:
         ss = np.zeros(n, bool)
         sl_arr = tp_arr = None
         for call in calls:
-            li = np.asarray(call.get('long_idx') or [], int)
-            si = np.asarray(call.get('short_idx') or [], int)
+            # ایندکس‌ها با کدگذاریِ اختلافیِ **بی‌اتلاف** ذخیره شده‌اند
+            # (`pack_idx`). `unpack_idx` فرمتِ خامِ قدیمی را هم می‌پذیرد.
+            li = unpack_idx(call.get('long_idx'))
+            si = unpack_idx(call.get('short_idx'))
             li = li[li < n]; si = si[si < n]
             ls[li] = True
             ss[si] = True
