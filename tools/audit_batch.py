@@ -111,6 +111,27 @@ def sort_key(fname: str):
     return (0, int(m.group(1)), m.group(2)) if m else (1, 0, fname)
 
 
+def queue_key(rec: dict, ledger: dict):
+    """
+    ترتیبِ صفِ اجرا — با **عقب‌اندازیِ لایه‌های معوق**.
+
+    ⚠️ چرا لازم شد (اندازه‌گیری‌شده): `S223a` سرِ صف است و دو بار `DEFERRED`
+    شد (جاروبی که در ۹۰۰ ثانیه تمام نمی‌شود). با ترتیبِ خالصِ SID، موتور در
+    هر راه‌اندازی **دوباره** ساعت‌ها روی همان لایه می‌سوزاند و ۵۷ لایهٔ دیگر
+    منتظر می‌مانند — همان قفلی که قبلاً با `S186` داشتیم.
+
+    طبق «قانونِ اندک اندک» پیشرفتِ **قطعیِ** بقیه بر پیشرفتِ **نامعلومِ** یکی
+    اولویت دارد. پس لایه‌های معوق به انتهای صف می‌روند و بعد از تمام‌شدنِ
+    لایه‌های سبک‌تر، با بودجه/حالتِ مناسب دوباره آزموده می‌شوند.
+
+    این ترتیبِ اجراست، نه حکم — هیچ لایه‌ای حذف نمی‌شود.
+    """
+    sid, _ = clean_name(rec['file'])
+    st = (ledger.get(sid) or {}).get('status')
+    deferred = 1 if st == 'DEFERRED' else 0
+    return (deferred,) + sort_key(rec['file'])
+
+
 def pick_n_trials(rec: dict) -> int:
     v = rec.get('n_candidates')
     if isinstance(v, list) and v:
@@ -394,8 +415,16 @@ def main():
     limit = int(sys.argv[1]) if len(sys.argv) > 1 else 9999
     repair_parked_caches()
     scan = json.loads((AUD / 'scan.json').read_text(encoding='utf-8'))
-    scan.sort(key=lambda r: sort_key(r['file']))
     ledger = load_ledger()
+    # مرتب‌سازی **بعد** از خواندنِ دفتر، چون عقب‌اندازیِ معوق‌ها به دفتر نگاه
+    # می‌کند (لایهٔ `DEFERRED` باید به انتهای صف برود، نه سرِ آن).
+    scan.sort(key=lambda r: queue_key(r, ledger))
+    defer_n = sum(1 for r in scan
+                  if (ledger.get(clean_name(r['file'])[0]) or {}
+                      ).get('status') == 'DEFERRED')
+    if defer_n:
+        print(f'  ↩️  {defer_n} deferred layer(s) moved to the END of the queue '
+              f'so the light layers make certain progress first', flush=True)
     n = 0
     for rec in scan:
         if n >= limit:
