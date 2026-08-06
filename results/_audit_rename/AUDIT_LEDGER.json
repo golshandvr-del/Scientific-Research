@@ -1504,5 +1504,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S303": {
+  "done": true,
+  "old": "S303_MarketInertiaShortFiltered_Xauusd_M15_62295_60_ACCEPTED.md",
+  "new": "S303_MarketInertiaShortFilteredXauusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
