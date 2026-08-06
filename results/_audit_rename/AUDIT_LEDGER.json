@@ -246,9 +246,48 @@
   "note": "judged after two harness fixes (sys.path + tail-slice card id); filename repaired from NA corruption"
  },
  "S173": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S173_BrooksMarketInertia_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "two independent harness bugs (sys.path for sibling imports; non-standard tail-slice card id) — both fixed and verified"
+  "done": true,
+  "old": "S173_BrooksMarketInertia_NetProfit_237181_ACCEPTED.md",
+  "new": "S173_BrooksMarketInertia_Xauusd_M15_rqs2_8_REJECT.md",
+  "verdict": "REJECT",
+  "score": 7.6,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 6.5,
+    "n": 664
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 1.5,
+    "n": 162
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 7.6,
+    "n": 616
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 0.3,
+    "n": 155
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 5.8,
+    "n": 509
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 146
+   }
+  ]
  }
 }
