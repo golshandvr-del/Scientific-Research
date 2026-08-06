@@ -775,5 +775,26 @@
     "n": 920
    }
   ]
+ },
+ "S204": {
+  "done": true,
+  "old": "S204_S205_SoS_H1_ATRfilter_NotIncremental_NetProfit_252471.md",
+  "new": "S204_S205SoSH1ATRfilterNotIncremental_Xauusd_M15H1_rqs2_27_REJECT.md",
+  "verdict": "REJECT",
+  "score": 26.6,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 26.6,
+    "n": 267
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.1,
+    "n": 920
+   }
+  ]
  }
 }
