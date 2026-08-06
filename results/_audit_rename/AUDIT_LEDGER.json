@@ -1424,5 +1424,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S222e": {
+  "done": true,
+  "old": "S222e_EurMidMonthWR60_Eurusd_M1M5M15M30_3202_62.md",
+  "new": "S222e_EurMidMonthWR60EurusdM1M5M15M30_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
