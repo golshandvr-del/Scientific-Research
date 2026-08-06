@@ -2022,10 +2022,12 @@
   "cards": []
  },
  "S223c": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S223c_BrooksLow2WR60_Xauusd_M5M30H1_1298_87.md",
-  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
+  "new": "S223c_BrooksLow2WR60XauusdM5M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S224": {
   "done": false,
