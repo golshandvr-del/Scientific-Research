@@ -48,3 +48,8 @@ results/_scan_S346/*.npy
 #      `results/_audit_rename/verdicts/*.json` (کوچک) چک‌پوینت می‌شود.
 #   ۳) نامِ نهاییِ فایلِ لایه و `AUDIT_LEDGER.json` هر دو ردیابی می‌شوند.
 results/_audit_rename/captures/*.json
+
+# لاگِ اجراییِ موتورِ ممیزی — خروجیِ کنسول است، نه یافتهٔ علمی. اگر ردیابی
+# شود، `git add -A results/` داخلِ خودِ موتور آن را وسطِ نوشتن کامیت می‌کند
+# و کامیت‌های چک‌پوینت را آلوده و غیرقابلِ بازخوانی می‌سازد.
+results/_audit_rename/batch.log
