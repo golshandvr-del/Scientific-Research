@@ -1140,5 +1140,26 @@
     "n": 480
    }
   ]
+ },
+ "S216": {
+  "done": true,
+  "old": "S216_BrooksTrendChannelLine_Xauusd_M5M15H1H4_REJECTED_0_56.md",
+  "new": "S216_BrooksTrendChannelLineXauusdM5M15H1H4REJECTED_Xauusd_M5_rqs2_2_REJECT.md",
+  "verdict": "REJECT",
+  "score": 1.6,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 1.6,
+    "n": 1063
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.3,
+    "n": 1121
+   }
+  ]
  }
 }
