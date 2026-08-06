@@ -918,5 +918,68 @@
     "n": 991
    }
   ]
+ },
+ "S211": {
+  "done": true,
+  "old": "S211_TripleSMA_Vortex_ER_Xauusd_M15_258809_52.md",
+  "new": "S211_TripleSMAVortexERXauusdM15_EurusdXauusd_M1M5M15M30H1H4_rqs2_19_REJECT.md",
+  "verdict": "REJECT",
+  "score": 19.0,
+  "cards": [
+   {
+    "card": "EURUSD-M1",
+    "verdict": "REJECT",
+    "score": 0.9,
+    "n": 1723
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 2.0,
+    "n": 2567
+   },
+   {
+    "card": "EURUSD-M30",
+    "verdict": "REJECT",
+    "score": 2.0,
+    "n": 2999
+   },
+   {
+    "card": "EURUSD-M5",
+    "verdict": "REJECT",
+    "score": 1.7,
+    "n": 2030
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 12.6,
+    "n": 1611
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 19.0,
+    "n": 454
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 9.1,
+    "n": 2105
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 6.4,
+    "n": 2858
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 1.9,
+    "n": 2518
+   }
+  ]
  }
 }
