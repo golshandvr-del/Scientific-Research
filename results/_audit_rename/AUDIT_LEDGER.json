@@ -819,5 +819,104 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S208": {
+  "done": true,
+  "old": "S208_XAUUSD_H4_LayerBattery_NetProfit_252471.md",
+  "new": "S208_XAUUSDH4LayerBattery_Xauusd_H4_rqs2_17_REJECT.md",
+  "verdict": "REJECT",
+  "score": 16.8,
+  "cards": [
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 3.1,
+    "n": 3964
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 10.2,
+    "n": 1983
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 12.5,
+    "n": 991
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 9.0,
+    "n": 3891
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 16.8,
+    "n": 1959
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 12.9,
+    "n": 988
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 9.1,
+    "n": 3889
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 16.1,
+    "n": 1959
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 11.2,
+    "n": 988
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 8.5,
+    "n": 3890
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 15.5,
+    "n": 1959
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 11.6,
+    "n": 988
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 2.9,
+    "n": 3964
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 7.6,
+    "n": 1983
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 11.2,
+    "n": 991
+   }
+  ]
  }
 }
