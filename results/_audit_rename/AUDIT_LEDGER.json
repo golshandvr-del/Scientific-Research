@@ -1,0 +1,23 @@
+{
+ "S69": {
+  "done": true,
+  "old": "S69_MultiAsset_Portfolio_NetProfit_12844.md",
+  "new": "S69_MultiAsset_Portfolio_XauusdEurusdAudusd_M15_rqs2_17_REJECT.md",
+  "verdict": "REJECT",
+  "score": 17.0
+ },
+ "S70": {
+  "done": true,
+  "old": "S70_PerAsset_ProfitabilityGate_NetProfit_13436.md",
+  "new": "S70_PerAssetProfitabilityGate_XauusdEurusdAudusd_M15_rqs2_14_REJECT.md",
+  "verdict": "REJECT",
+  "score": 14.5
+ },
+ "S71": {
+  "done": true,
+  "old": "S71_Forex_MeanReversion_NetProfit_-20147.md",
+  "new": "S71_ForexMeanReversion_XauusdEurusdAudusd_M15_rqs2_3_REJECT.md",
+  "verdict": "REJECT",
+  "score": 2.6
+ }
+}
