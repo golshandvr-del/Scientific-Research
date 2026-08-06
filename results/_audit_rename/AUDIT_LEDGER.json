@@ -1448,5 +1448,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S223c": {
+  "done": true,
+  "old": "S223c_BrooksLow2WR60_Xauusd_M5M30H1_1298_87.md",
+  "new": "S223c_BrooksLow2WR60XauusdM5M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
