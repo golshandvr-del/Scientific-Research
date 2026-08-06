@@ -1416,5 +1416,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S222d": {
+  "done": true,
+  "old": "S222d_EndOfMonthWR60_Xauusd_M5M15_998_85.md",
+  "new": "S222d_EndOfMonthWR60XauusdM5M15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
