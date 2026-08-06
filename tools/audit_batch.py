@@ -206,12 +206,29 @@ def find_current(old: str) -> Path | None:
 def process(rec: dict, ledger: dict) -> str:
     old = rec['file']
     sid, _ = clean_name(old)
-    if sid in ledger and ledger[sid].get('done'):
+
+    # ── کلیدِ دفترِ ثبت باید یکتا باشد، و `SID` یکتا نیست ────────────────────
+    # ⚠️ چرا لازم شد (اندازه‌گیری‌شده): **۱۵ عدد** SID هم ردیفِ `LAYER` دارند
+    #   و هم `DOC` — مثلاً:
+    #       S355  LAYER  S355_LPSBStateFilterRevival_Xauusd_M5_rqs2-84.md
+    #       S355  DOC    S355_PREREGISTRATION_15Layer_Revisit_v24.md
+    #   دفتر با کلیدِ `SID` کار می‌کرد، پس هرکدام **اول** پردازش می‌شد کلید را
+    #   می‌قاپید و `done=True` می‌زد، و دیگری برای همیشه از صف حذف می‌شد.
+    #   قربانی‌ها دقیقاً مدعی‌ترین لایه‌های آرشیو بودند: `S355` (ادعای ۱۱/۱۱
+    #   دروازه، نمرهٔ ۸۳.۹)، `S346` (rqs84)، `S356` (rqs2-81)، `S374`
+    #   (ACCEPTED). یعنی چهار لایهٔ مدعیِ ACCEPT بدون هیچ آزمونی دفن می‌شدند.
+    #
+    #   درمان: اسناد با کلیدِ **مبتنی بر نامِ فایل** ثبت می‌شوند تا کلیدِ
+    #   `SID` دست‌نخورده برای لایهٔ واقعی بماند. برای لایه‌ها کلید همان `SID`
+    #   می‌ماند (سازگاریِ عقب‌رو با ۵۸ حکمِ ثبت‌شده).
+    key = sid if rec.get('kind') != 'DOC' else f'{sid}#doc:{old}'
+
+    if key in ledger and ledger[key].get('done'):
         return 'skip'
 
     cur = find_current(old)
     if cur is None:
-        ledger[sid] = {'done': True, 'status': 'FILE_MISSING', 'old': old}
+        ledger[key] = {'done': True, 'status': 'FILE_MISSING', 'old': old}
         return 'missing'
 
     # ── سند ≠ لایه ───────────────────────────────────────────────────────────
@@ -228,7 +245,7 @@ def process(rec: dict, ledger: dict) -> str:
         print(f'\n════ {sid}  {cur.name[:60]}', flush=True)
         print('  ⏭  DOC (preregistration/addendum/finding) — not a strategy '
               'layer; left untouched', flush=True)
-        ledger[sid] = {'done': True, 'status': 'NOT_A_LAYER', 'old': old,
+        ledger[key] = {'done': True, 'status': 'NOT_A_LAYER', 'old': old,
                        'note': 'documentation artefact, not a tradeable layer; '
                                'no RQS2 name/score applies'}
         return 'ok'
@@ -294,7 +311,7 @@ def process(rec: dict, ledger: dict) -> str:
         if cap_file is None and timed_out:
             print(f'  ⏳ DEFERRED (capture exceeded {CAP_BUDGET}s budget) — '
                   f'name unchanged, will retry with larger budget', flush=True)
-            ledger[sid] = {'done': False, 'status': 'DEFERRED', 'old': old,
+            ledger[key] = {'done': False, 'status': 'DEFERRED', 'old': old,
                            'reason': f'capture > {CAP_BUDGET}s'}
             save_ledger(ledger)
             sh('git add -A results/')
@@ -323,7 +340,7 @@ def process(rec: dict, ledger: dict) -> str:
             print('  git mv FAILED:', se_[:200], flush=True)
 
     # ── ④ commit + push (چرخهٔ اجباریِ checkpoint) ───────────────────────────
-    ledger[sid] = {'done': True, 'old': old, 'new': new,
+    ledger[key] = {'done': True, 'old': old, 'new': new,
                    'verdict': verdict, 'score': score,
                    'cards': [{'card': c.get('card'), 'verdict': c.get('verdict'),
                               'score': c.get('rqs2_score'),
@@ -352,7 +369,10 @@ def main():
         if n >= limit:
             break
         sid, _ = clean_name(rec['file'])
-        if sid in ledger and ledger[sid].get('done'):
+        # همان قاعدهٔ کلیدِ `process` — وگرنه ردیفِ `DOC` که کلیدِ `SID` لایه را
+        # می‌بیند بی‌دلیل رد می‌شود (و برعکس).
+        k = sid if rec.get('kind') != 'DOC' else f"{sid}#doc:{rec['file']}"
+        if k in ledger and ledger[k].get('done'):
             continue
         r = process(rec, ledger)
         if r == 'push_failed':
