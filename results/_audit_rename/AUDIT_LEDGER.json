@@ -1520,5 +1520,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S305": {
+  "done": true,
+  "old": "S305_S172TwoLegsRevival_Xauusd_M15_0_53_REJECTED.md",
+  "new": "S305_S172TwoLegsRevivalXauusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
