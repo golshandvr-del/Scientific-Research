@@ -80,6 +80,10 @@ DEFAULT_TIMEOUT = 900
 # کامل است نه روی مشاهده؛ شمارشِ کلِ فراخوانی‌ها حفظ می‌شود تا در حکم
 # دیده شود که لایه چند ترکیب را جست‌وجو کرده (وردیِ `H5` چندگانگی).
 MAX_FULL_CALLS = 40
+# سقفِ سختِ «چند فراخوانی **بررسی** شود» (نه چند تا نگه داشته شود). بعد از این
+# عدد، ساختنِ رکورد متوقف می‌شود تا هزینهٔ CPU در جاروب‌های چند-ده-هزارتایی
+# منفجر نشود؛ `n_calls_total` همچنان کاملاً شمرده می‌شود.
+MAX_SCANNED_CALLS = 4000
 MAX_SIG_IDX = 60000
 MAX_GEOM_VALS = 20000
 
@@ -144,12 +148,68 @@ class Recorder:
         self.truncated = False
 
     def _budget_ok(self) -> bool:
-        """آیا اجازهٔ ضبطِ کاملِ یک فراخوانیِ دیگر هست؟"""
+        """
+        آیا اجازهٔ ساختنِ رکوردِ کاملِ یک فراخوانیِ دیگر هست؟
+
+        بعد از پرشدنِ سقف هم `True` برمی‌گردد، ولی رکورد از طریقِ `_add`
+        فقط در صورتی **نگه** می‌شود که از ضعیف‌ترینِ موجود بهتر باشد. سقفِ
+        حافظه شکسته نمی‌شود (طولِ `self.calls` هرگز از `MAX_FULL_CALLS`
+        بیشتر نمی‌شود)، ولی محتوایش به‌سمتِ پیکربندی‌های برنده می‌رود.
+
+        برای اجرای‌های **بسیار** بزرگ یک سقفِ سختِ اضافی هم داریم تا هزینهٔ
+        CPUِ ساختنِ رکورد از کنترل خارج نشود.
+        """
         self.n_calls_total += 1
         if len(self.calls) < MAX_FULL_CALLS:
             return True
         self.truncated = True
-        return False
+        return self.n_calls_total <= MAX_SCANNED_CALLS
+
+    def _keep_best(self, rec_new: dict) -> None:
+        """
+        جایگزینیِ **هوشمند** وقتی سقفِ حافظه پر شده.
+
+        ⚠️ چرا لازم شد (اندازه‌گیری‌شده): `s222_all_timedrift_wr60.py`
+        در یک اجرا `۳۰٬۸۴۰` فراخوانی زد — این یک **جاروبِ بهینه‌سازی**
+        است (`SL_GRID × TP_GRID × FILTER_POOL`)، نه یک لایهٔ واحد. با
+        نگه‌داشتنِ «۴۰ فراخوانیِ **اول**»، آنچه داوری می‌شد فقط
+        نخستین ترکیب‌های شبکه بود — یعنی پیکربندی‌هایی که خودِ لایه
+        هرگز ادعا نکرده. حکم عملاً روی لایهٔ اشتباهی صادر می‌شد.
+
+        درمان: بعد از پرشدنِ سقف، اگر فراخوانیِ تازه از **ضعیف‌ترین**
+        ضبطِ موجود بهتر باشد، جایش را می‌گیرد. معیارِ «بهتر» مجموعِ
+        pip است — همان چیزی که خودِ جاروب برایش بهینه می‌کند. پس در
+        پایان، ضبط شاملِ **پیکربندیِ برندهٔ جاروب** است، نه چند
+        ترکیبِ تصادفیِ ابتدای شبکه.
+
+        این کار **رفتارِ اسکریپت را تغییر نمی‌دهد** — فقط انتخاب
+        می‌کند کدام فراخوانی‌ها در فایلِ ضبط بمانند.
+        """
+        try:
+            key_new = rec_new.get('result_sum_pip')
+            if key_new is None:
+                return
+            worst_i, worst_v = None, None
+            for i, c in enumerate(self.calls):
+                v = c.get('result_sum_pip')
+                if v is None:
+                    worst_i, worst_v = i, None
+                    break
+                if worst_v is None or v < worst_v:
+                    worst_i, worst_v = i, v
+            if worst_i is None:
+                return
+            if worst_v is None or float(key_new) > float(worst_v):
+                self.calls[worst_i] = rec_new
+        except Exception:
+            pass
+
+    def _add(self, rec_new: dict) -> None:
+        """ثبتِ رکورد: افزودن اگر سقف پر نشده، وگرنه جایگزینیِ بهترین."""
+        if len(self.calls) < MAX_FULL_CALLS:
+            self.calls.append(rec_new)
+        else:
+            self._keep_best(rec_new)
 
     def __call__(self, orig, df, long_sig, short_sig, sl_pip, tp_pip, asset,
                  *args, **kw):
@@ -211,7 +271,7 @@ class Recorder:
                 if 'pnl_pip' in res:
                     npip = float(np.asarray(res['pnl_pip'], float).sum())
 
-            self.calls.append({
+            self._add({
                 'asset': str(asset),
                 'n_bars': int(len(df)),
                 't_first': t0, 't_last': t1,
@@ -234,7 +294,9 @@ class Recorder:
                 'result_sum_pip': npip,
             })
         except Exception:
-            self.calls.append({'capture_error': traceback.format_exc()[-1500:]})
+            if len(self.calls) < MAX_FULL_CALLS:
+                self.calls.append({'capture_error':
+                                   traceback.format_exc()[-1500:]})
 
         return res
 
@@ -286,7 +348,7 @@ class Recorder:
                              else (res, None))
             ntr = int(len(trades)) if trades is not None else None
 
-            self.calls.append({
+            self._add({
                 'engine': 'run_backtest',
                 'asset': None,                     # run_backtest دارایی نمی‌گیرد
                 'spread_dollar': kw.get('spread', args[0] if args else None),
@@ -311,7 +373,9 @@ class Recorder:
                                  if isinstance(stats, dict) else None),
             })
         except Exception:
-            self.calls.append({'capture_error': traceback.format_exc()[-1500:]})
+            if len(self.calls) < MAX_FULL_CALLS:
+                self.calls.append({'capture_error':
+                                   traceback.format_exc()[-1500:]})
         return res
 
 
