@@ -222,35 +222,27 @@
   ]
  },
  "S170": {
-  "done": true,
-  "old": "S170_BrooksHigh2Filter_on_S143_NetProfit_225130_ACCEPTED.md",
-  "new": "S170_BrooksHigh2FilterOnS143_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S170_BrooksHigh2FilterOnS143_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was a harness sys.path bug (sibling-module imports), not a property of the layer; fix verified (S172: ERR calls=0 -> OK calls=40)"
  },
  "S171": {
-  "done": true,
-  "old": "S171_BrooksSignsOfStrength_NetProfit_233260_ACCEPTED.md",
-  "new": "S171_BrooksSignsOfStrength_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S171_BrooksSignsOfStrength_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was a harness sys.path bug (sibling-module imports), not a property of the layer; fix verified (S172: ERR calls=0 -> OK calls=40)"
  },
  "S172": {
-  "done": true,
-  "old": "S172_BrooksTwoLegs_NetProfit_235400_ACCEPTED.md",
-  "new": "S172_BrooksTwoLegs_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S172_BrooksTwoLegs_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was a harness sys.path bug (sibling-module imports), not a property of the layer; fix verified (S172: ERR calls=0 -> OK calls=40)"
  },
  "S173": {
-  "done": true,
-  "old": "S173_BrooksMarketInertia_NetProfit_237181_ACCEPTED.md",
-  "new": "S173_BrooksMarketInertia_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S173_BrooksMarketInertia_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was a harness sys.path bug (sibling-module imports), not a property of the layer; fix verified (S172: ERR calls=0 -> OK calls=40)"
  }
 }
