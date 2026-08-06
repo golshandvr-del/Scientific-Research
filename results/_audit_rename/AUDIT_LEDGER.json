@@ -2272,5 +2272,92 @@
     "n": 203
    }
   ]
+ },
+ "S321": {
+  "done": true,
+  "old": "S321_MARibbonRevival_Xauusd_M30_88_ACCEPTED.md",
+  "new": "S321_MARibbonRevivalXauusdM30_Xauusd_M5_rqs2_16_REJECT.md",
+  "verdict": "REJECT",
+  "score": 16.5,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 16.5,
+    "n": 28
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 11.5,
+    "n": 127
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 14.9,
+    "n": 49
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 16.1,
+    "n": 28
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 14.7,
+    "n": 28
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 1.4,
+    "n": 180
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.0,
+    "n": 127
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 3.1,
+    "n": 179
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 14.7,
+    "n": 20
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 11.3,
+    "n": 20
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 14.1,
+    "n": 20
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 11.0,
+    "n": 20
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 16.4,
+    "n": 16
+   }
+  ]
  }
 }
