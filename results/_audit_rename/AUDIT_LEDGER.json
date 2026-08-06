@@ -46,5 +46,20 @@
     "n": 6625
    }
   ]
+ },
+ "S73": {
+  "done": true,
+  "old": "S73_EURUSD_SessionDrift_NetProfit_44458.md",
+  "new": "S73_EURUSDSessionDrift_Eurusd_M15_rqs2_29_REJECT.md",
+  "verdict": "REJECT",
+  "score": 29.1,
+  "cards": [
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 29.1,
+    "n": 1007
+   }
+  ]
  }
 }
