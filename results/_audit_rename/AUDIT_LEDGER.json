@@ -2428,5 +2428,122 @@
     "n": 124
    }
   ]
+ },
+ "S323": {
+  "done": true,
+  "old": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md",
+  "new": "S323_SRPullbackGoldenXauusdM15M30H1_Xauusd_M15_rqs2_24_REJECT.md",
+  "verdict": "REJECT",
+  "score": 23.8,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 17.5,
+    "n": 162
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 23.7,
+    "n": 188
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 8.3,
+    "n": 374
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 5.0,
+    "n": 494
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.7,
+    "n": 186
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 21.7,
+    "n": 167
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 5.2,
+    "n": 500
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 5.1,
+    "n": 494
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 4.9,
+    "n": 500
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.9,
+    "n": 186
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 17.6,
+    "n": 162
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 4.2,
+    "n": 493
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 23.8,
+    "n": 188
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 12.1,
+    "n": 382
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 17.6,
+    "n": 162
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 4.6,
+    "n": 500
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.9,
+    "n": 186
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 23.7,
+    "n": 188
+   }
+  ]
  }
 }
