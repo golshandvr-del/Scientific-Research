@@ -2175,5 +2175,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S312": {
+  "done": true,
+  "old": "S312_MidMonthDrift_Xauusd_M15M30H1_89_ACCEPTED.md",
+  "new": "S312_MidMonthDriftXauusdM15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }

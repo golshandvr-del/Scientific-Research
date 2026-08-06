@@ -1,0 +1,8 @@
+{
+ "layer": "S312_MidMonthDrift_Xauusd_M15M30H1_89_ACCEPTED.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 149
+}
