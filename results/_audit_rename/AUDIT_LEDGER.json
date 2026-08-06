@@ -244,5 +244,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S173": {
+  "done": true,
+  "old": "S173_BrooksMarketInertia_NetProfit_237181_ACCEPTED.md",
+  "new": "S173_BrooksMarketInertia_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
