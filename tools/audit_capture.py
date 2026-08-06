@@ -343,6 +343,17 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     eng_dir = str(ROOT / 'engine')
     if eng_dir not in sys.path:
         sys.path.insert(0, eng_dir)
+
+    # ── `strategies/` هم باید در مسیر باشد ───────────────────────────────────
+    # بخشی از لایه‌ها روی لایه‌های قبلی بنا شده‌اند و ماژولِ خواهر را با نامِ
+    # **تخت** ایمپورت می‌کنند (`from s168_brooks_high2_low2 import ...`).
+    # اندازه‌گیری‌شده: بدونِ این خط، `S170` و `S171` با
+    # `ModuleNotFoundError` می‌مردند و ناعادلانه `INCOMPLETE` می‌گرفتند —
+    # درحالی‌که هر دو کاملاً بازتولیدپذیرند و موتورِ مشترک را صدا می‌زنند
+    # (`sim()` در `s171_..._filter.py` خودش `se.simulate_trades` است).
+    str_dir = str(ROOT / 'strategies')
+    if str_dir not in sys.path:
+        sys.path.insert(0, str_dir)
     for _m in ('backtest', 'scalp_engine', 'dynamic_backtest',
                'capital_engine', 'trade_simulator'):
         try:
