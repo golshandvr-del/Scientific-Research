@@ -1,0 +1,2775 @@
+[
+ {
+  "file": "S165_LiquiditySweepReversal_NetProfit_-1048.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   39.2,
+   49.0,
+   49.4
+  ],
+  "n_candidates": [
+   10
+  ],
+  "pf_candidates": [
+   0.72,
+   0.92
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [],
+  "lines": 85
+ },
+ {
+  "file": "S166_HalfTrendHeikenAshi_NetProfit_-8482.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   38.8,
+   46.3
+  ],
+  "n_candidates": [
+   7899,
+   8131
+  ],
+  "pf_candidates": [
+   0.85,
+   0.87
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 52
+ },
+ {
+  "file": "S167_RSI21_MeanReversion_NetProfit_1337_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   53.1
+  ],
+  "n_candidates": [
+   243
+  ],
+  "pf_candidates": [
+   0.73,
+   1.18
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "W1"
+  ],
+  "lines": 55
+ },
+ {
+  "file": "S168_BrooksHigh2_NetProfit_+1351_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   10.0,
+   47.3,
+   50.1
+  ],
+  "pf_candidates": [
+   1.07
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "W1"
+  ],
+  "lines": 69
+ },
+ {
+  "file": "S169_BrooksSpikeChannel_NetProfit_223246_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   33.9,
+   41.4,
+   48.5
+  ],
+  "n_candidates": [
+   874
+  ],
+  "pf_candidates": [
+   0.93,
+   0.97,
+   0.99
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "W1"
+  ],
+  "lines": 111
+ },
+ {
+  "file": "S170_BrooksHigh2Filter_on_S143_NetProfit_225130_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   43.6,
+   50.0,
+   50.1
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "H1",
+   "W1"
+  ],
+  "lines": 149
+ },
+ {
+  "file": "S171_BrooksSignsOfStrength_NetProfit_233260_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   43.0,
+   53.9
+  ],
+  "n_candidates": [
+   408
+  ],
+  "pf_candidates": [
+   1.36
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "W1"
+  ],
+  "lines": 131
+ },
+ {
+  "file": "S172_BrooksTwoLegs_NetProfit_235400_ACCEPTED.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "W1"
+  ],
+  "lines": 96
+ },
+ {
+  "file": "S173_BrooksMarketInertia_NetProfit_237181_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   48.94,
+   50.0
+  ],
+  "n_candidates": [
+   188,
+   196
+  ],
+  "pf_candidates": [
+   1.333,
+   1.36
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "W1"
+  ],
+  "lines": 121
+ },
+ {
+  "file": "S174_BrooksSellClimaxReversal_NetProfit_237181_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   45.7
+  ],
+  "n_candidates": [
+   778
+  ],
+  "pf_candidates": [
+   1.03,
+   1.07
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [],
+  "lines": 116
+ },
+ {
+  "file": "S175_BrooksFailedBreakout_NetProfit_237181_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   44.75
+  ],
+  "n_candidates": [
+   1116
+  ],
+  "pf_candidates": [
+   1.03,
+   1.1
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "W1"
+  ],
+  "lines": 101
+ },
+ {
+  "file": "S176_BrooksSignalBarStopEntry_NetProfit_237181_REJECTED.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   218
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "W1"
+  ],
+  "lines": 168
+ },
+ {
+  "file": "S177_BrooksReversalBar_NetProfit_237181_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   53.0
+  ],
+  "n_candidates": [
+   28
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [],
+  "lines": 127
+ },
+ {
+  "file": "S178_BrooksTwoBarReversal_NetProfit_237181_INVALIDATED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   52.83
+  ],
+  "pf_candidates": [
+   1.249
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [],
+  "lines": 71
+ },
+ {
+  "file": "S179_AgreementFilterMechanism_NetProfit_238714_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   27.0,
+   33.9,
+   36.0,
+   36.7,
+   49.0,
+   49.7
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [],
+  "lines": 80
+ },
+ {
+  "file": "S180_ReviveS169_FullOverlap_NetProfit_237181_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   43.6,
+   48.5,
+   49.7
+  ],
+  "n_candidates": [
+   211,
+   234,
+   259,
+   1059
+  ],
+  "pf_candidates": [
+   1.11
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 93
+ },
+ {
+  "file": "S185_123Patterns_1-2-3_NetProfit_243109_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   53.6
+  ],
+  "pf_candidates": [
+   1.205
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 93
+ },
+ {
+  "file": "S186_BrooksCloseStrength_NetProfit_246231_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   43.6,
+   45.5,
+   47.06,
+   47.73
+  ],
+  "n_candidates": [
+   510,
+   1387
+  ],
+  "pf_candidates": [
+   1.099,
+   1.103
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [],
+  "lines": 98
+ },
+ {
+  "file": "S187_S73_M5_TimeframeUpgrade_NetProfit_250918_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   51.4
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15"
+  ],
+  "lines": 138
+ },
+ {
+  "file": "S190_S195_XAU_M5_TimeframeReopt_NetProfit_252471_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   39.0,
+   41.4,
+   41.6,
+   42.9,
+   44.5,
+   55.0,
+   55.1
+  ],
+  "n_candidates": [
+   69
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15"
+  ],
+  "lines": 217
+ },
+ {
+  "file": "S196_SiteStabilization_EURUSD_TF_Split_NetProfit_252471.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30"
+  ],
+  "lines": 102
+ },
+ {
+  "file": "S196_XAUUSD_H1_DataExplore.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S199_S201_H1_Overnight_Overlap_MTFfilter_NetProfit_252471.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "H1"
+  ],
+  "lines": 60
+ },
+ {
+  "file": "S200_Overnight_AddHour21_REJECTED_NetProfit_252471.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "H1"
+  ],
+  "lines": 49
+ },
+ {
+  "file": "S202_H1_PriceAction_SoS_Inertia_NetProfit_252471.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   48.3,
+   50.3
+  ],
+  "n_candidates": [
+   267
+  ],
+  "pf_candidates": [
+   1.69
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "H1"
+  ],
+  "lines": 44
+ },
+ {
+  "file": "S203_SoS_H1_vs_M15_Overlap_NetProfit_252471.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   41.4,
+   51.8
+  ],
+  "n_candidates": [
+   87
+  ],
+  "pairs": [],
+  "tfs": [
+   "M15",
+   "H1"
+  ],
+  "lines": 36
+ },
+ {
+  "file": "S204_S205_SoS_H1_ATRfilter_NotIncremental_NetProfit_252471.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   20.0,
+   48.7
+  ],
+  "pf_candidates": [
+   1.84
+  ],
+  "pairs": [
+   "DXY"
+  ],
+  "tfs": [
+   "M15",
+   "H1"
+  ],
+  "lines": 40
+ },
+ {
+  "file": "S206_H1contextFilter_on_M15_NoImprove_NetProfit_252471.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   48.3,
+   51.8
+  ],
+  "pairs": [],
+  "tfs": [
+   "M15",
+   "H1",
+   "W1"
+  ],
+  "lines": 57
+ },
+ {
+  "file": "S207_XAUUSD_H4_DataExplore.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S208_XAUUSD_H4_LayerBattery_NetProfit_252471.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   51.2,
+   52.3
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "H1",
+   "H4"
+  ],
+  "lines": 57
+ },
+ {
+  "file": "S211_TripleSMA_Vortex_ER_Xauusd_M15_258809_52.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   51.7
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 171
+ },
+ {
+  "file": "S212_BrooksInverseView_Xauusd_M5_261375_46.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   262,
+   275
+  ],
+  "pf_candidates": [
+   1.35
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "H1"
+  ],
+  "lines": 140
+ },
+ {
+  "file": "S213_BrooksSecondEntry_Eurusd_M15_261793_60.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   57.1
+  ],
+  "n_candidates": [
+   31
+  ],
+  "pf_candidates": [
+   2.0
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 117
+ },
+ {
+  "file": "S214_BrooksLateEntry_Xauusd_M5_262519_51.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   14
+  ],
+  "pf_candidates": [
+   1.352
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "H1"
+  ],
+  "lines": 103
+ },
+ {
+  "file": "S215_BrooksTrendLine_Xauusd_M5M15M30H1H4_16306_53.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1"
+  ],
+  "lines": 129
+ },
+ {
+  "file": "S216_BrooksTrendChannelLine_Xauusd_M5M15H1H4_REJECTED_0_56.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   17,
+   36,
+   99
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 143
+ },
+ {
+  "file": "S218_FridayMorningContinuation_Xauusd_H1M30_REJECTED_262519_50.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   50.0
+  ],
+  "n_candidates": [
+   44
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 94
+ },
+ {
+  "file": "S219_BrooksChannels_Xauusd_M5M15M30H4_293236_46.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 84
+ },
+ {
+  "file": "S221_MidMonthWR60_Xauusd_M5M15M30H1_9483_87.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   35.5,
+   60.0
+  ],
+  "pairs": [
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 59
+ },
+ {
+  "file": "S222a_OvernightWR60_Xauusd_M5M15M30H1_17416_84.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 44
+ },
+ {
+  "file": "S222b_MondayWR60_Xauusd_M5M15M30H1_7482_88.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 36
+ },
+ {
+  "file": "S222c_TurnOfMonthWR60_Xauusd_M5M15M30H1_4830_89.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 37
+ },
+ {
+  "file": "S222d_EndOfMonthWR60_Xauusd_M5M15_998_85.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 38
+ },
+ {
+  "file": "S222e_EurMidMonthWR60_Eurusd_M1M5M15M30_3202_62.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   32
+  ],
+  "pairs": [
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30"
+  ],
+  "lines": 39
+ },
+ {
+  "file": "S223a_ShortMAConfluenceWR60_Xauusd_M15M30H1_1465_85.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   48.7,
+   90.2
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 51
+ },
+ {
+  "file": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   2397
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 54
+ },
+ {
+  "file": "S223c_BrooksLow2WR60_Xauusd_M5M30H1_1298_87.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   90.0
+  ],
+  "n_candidates": [
+   38
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 51
+ },
+ {
+  "file": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   28.2
+  ],
+  "n_candidates": [
+   747
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 53
+ },
+ {
+  "file": "S225_S91SqueezeRevivedWR60_Xauusd_M5M15M30H1_2584_85.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   27.0
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 58
+ },
+ {
+  "file": "S226_RQS_MethodologyAudit_Xauusd_M15M5_ByGate.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   83.4
+  ],
+  "pf_candidates": [
+   0.98,
+   1.26,
+   2.78
+  ],
+  "pairs": [],
+  "tfs": [
+   "M5",
+   "M15"
+  ],
+  "lines": 88
+ },
+ {
+  "file": "S300_RQS_Audit_AllActiveLayers_Xauusd_Eurusd_MultiTF_AUDIT.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S301_EventDriven_Calibration_Xauusd_Eurusd_MultiTF_DISCOVERY.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S302_PreEOMShortWedThu_Eurusd_M15_3683_70_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   59.5,
+   70.0
+  ],
+  "n_candidates": [
+   70
+  ],
+  "sl_pip_candidates": [
+   15.0
+  ],
+  "tp_pip_candidates": [
+   20.0
+  ],
+  "pf_candidates": [
+   2.5
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 81
+ },
+ {
+  "file": "S303_MarketInertiaShortFiltered_Xauusd_M15_62295_60_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   38.0,
+   40.0,
+   42.0,
+   49.7,
+   60.9
+  ],
+  "n_candidates": [
+   42
+  ],
+  "sl_pip_candidates": [
+   250.0
+  ],
+  "tp_pip_candidates": [
+   250.0
+  ],
+  "pf_candidates": [
+   1.35,
+   1.88
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 84
+ },
+ {
+  "file": "S304_S171SignsOfStrengthRevival_Xauusd_M15_145504_52_REJECTED.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 56
+ },
+ {
+  "file": "S305_S172TwoLegsRevival_Xauusd_M15_0_53_REJECTED.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 42
+ },
+ {
+  "file": "S306_TurnOfMonthDriftLong_Xauusd_M15_39969_61_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   49.0,
+   50.0,
+   61.3
+  ],
+  "n_candidates": [
+   93
+  ],
+  "sl_pip_candidates": [
+   250.0
+  ],
+  "tp_pip_candidates": [
+   250.0
+  ],
+  "pf_candidates": [
+   1.93
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 83
+ },
+ {
+  "file": "S307_S139OvernightDriftRevival_Xauusd_M15_82546_57_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   50.4,
+   56.7,
+   61.7
+  ],
+  "n_candidates": [
+   60
+  ],
+  "pf_candidates": [
+   1.45
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 48
+ },
+ {
+  "file": "S308_S144EndOfMonthDriftRevival_Xauusd_M15_20482_61_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   57.4,
+   61.5,
+   61.7
+  ],
+  "pf_candidates": [
+   1.19,
+   1.36
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 57
+ },
+ {
+  "file": "S310_EndOfMonthDriftRevival_Xauusd_M15_87.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   43.6,
+   44.1,
+   44.8,
+   46.5,
+   56.9,
+   57.1,
+   60.0
+  ],
+  "n_candidates": [
+   40,
+   45
+  ],
+  "pf_candidates": [
+   0.75,
+   0.8,
+   0.85,
+   0.92,
+   1.1,
+   1.15,
+   1.29
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 160
+ },
+ {
+  "file": "S311_NFPFirstFridayDrift_Xauusd_M5M15_0_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   60.0
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15"
+  ],
+  "lines": 81
+ },
+ {
+  "file": "S312_MidMonthDrift_Xauusd_M15M30H1_89_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   35.0,
+   41.8,
+   60.0,
+   84.0
+  ],
+  "n_candidates": [
+   68,
+   70,
+   125,
+   141,
+   148,
+   149
+  ],
+  "pf_candidates": [
+   1.81
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 138
+ },
+ {
+  "file": "S313_SqueezeBreakout_Xauusd_H1M30_92.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   40.0,
+   67.6,
+   67.8
+  ],
+  "n_candidates": [
+   30,
+   275,
+   807
+  ],
+  "pf_candidates": [
+   3.27,
+   3.34
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 179
+ },
+ {
+  "file": "S320_BB_RSI_RegimeMR_Revival_XauEur_M5M15M30H1_16_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   38.5,
+   38.9,
+   52.6,
+   55.0,
+   55.1,
+   61.8
+  ],
+  "n_candidates": [
+   13,
+   40,
+   49,
+   62
+  ],
+  "pf_candidates": [
+   0.9,
+   1.04,
+   1.16,
+   1.2,
+   1.32
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 152
+ },
+ {
+  "file": "S321_MARibbonRevival_Xauusd_M30_88_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   55.0,
+   60.0,
+   65.4
+  ],
+  "pf_candidates": [
+   1.22,
+   1.3
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 125
+ },
+ {
+  "file": "S322_IchimokuKumo_Xauusd_M15_86.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   60.0,
+   60.8
+  ],
+  "n_candidates": [
+   45
+  ],
+  "pf_candidates": [
+   0.61,
+   2.2
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 121
+ },
+ {
+  "file": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 213
+ },
+ {
+  "file": "S323_SRPullbackGolden_Xauusd_M5M15M30H1_rqs2-24_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   72.5,
+   77.0
+  ],
+  "n_candidates": [
+   37,
+   41,
+   160,
+   184
+  ],
+  "pf_candidates": [
+   1.415
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1"
+  ],
+  "lines": 280
+ },
+ {
+  "file": "S324_LiquiditySweepReversal_Xauusd_M15M30_93_ACCEPTED.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   16
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 151
+ },
+ {
+  "file": "S325_ChannelPosition_Xauusd_M5M15M30H4_RQSrevival_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   46.0,
+   73.0
+  ],
+  "pf_candidates": [
+   1.03
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 142
+ },
+ {
+  "file": "S326_StreakReversal_XauEur_XauM5M30_EurM15_92_ACCEPTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   59.5
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 153
+ },
+ {
+  "file": "S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   75.0,
+   88.57
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 258
+ },
+ {
+  "file": "S327_SellClimaxReversal_XauEur_M5M15M30H1H4_98.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   50.0
+  ],
+  "n_candidates": [
+   14
+  ],
+  "pf_candidates": [
+   1.17,
+   1.36,
+   1.65,
+   4.36
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 214
+ },
+ {
+  "file": "S328_RSI21FadeShort_Xauusd_M5H1_94.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   53.1
+  ],
+  "sl_pip_candidates": [
+   62.0,
+   195.0
+  ],
+  "tp_pip_candidates": [
+   43.0,
+   210.0
+  ],
+  "pf_candidates": [
+   0.73
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 186
+ },
+ {
+  "file": "S329_MarketInertiaShortMTF_Eurusd_M15_29_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   47.0,
+   48.0,
+   49.0,
+   55.9,
+   56.2,
+   62.0,
+   64.3,
+   70.6
+  ],
+  "sl_pip_candidates": [
+   56.9
+  ],
+  "pf_candidates": [
+   1.07,
+   1.14,
+   1.58,
+   1.8,
+   1.92
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD",
+   "DXY"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 190
+ },
+ {
+  "file": "S330_SessionORBFade_Xauusd_M5_90.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   46.0,
+   69.4,
+   74.6
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 184
+ },
+ {
+  "file": "S332_SqueezeBankFilters_Xauusd_H4M15_91.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   40.0,
+   60.0,
+   88.0
+  ],
+  "n_candidates": [
+   20
+  ],
+  "sl_pip_candidates": [
+   90.0,
+   190.0,
+   350.0
+  ],
+  "tp_pip_candidates": [
+   285.0,
+   300.0,
+   500.0
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 267
+ },
+ {
+  "file": "S334_MeanReversionShort_XauusdEurusd_M5_84.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   40.0,
+   60.3,
+   61.7
+  ],
+  "n_candidates": [
+   34
+  ],
+  "sl_pip_candidates": [
+   12.2,
+   110.0
+  ],
+  "tp_pip_candidates": [
+   13.7,
+   125.0
+  ],
+  "pf_candidates": [
+   0.75,
+   1.61,
+   1.62
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 194
+ },
+ {
+  "file": "S336_HighFreqShortScalp_Xauusd_M5_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   46.0
+  ],
+  "pf_candidates": [
+   0.92
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5"
+  ],
+  "lines": 77
+ },
+ {
+  "file": "S337_WR_Floor_Discovery_Xauusd_AllTF_DIAG.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   46.0
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 135
+ },
+ {
+  "file": "S338_ConditionalWR_Mining_Xauusd_M5_DIAG.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   26.0
+  ],
+  "n_candidates": [
+   199
+  ],
+  "sl_pip_candidates": [
+   32.3
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "H4"
+  ],
+  "lines": 83
+ },
+ {
+  "file": "S339_R2xZscore_MeanRevert_Xauusd_M5_WIP.md",
+  "kind": "LAYER",
+  "sl_pip_candidates": [
+   32.3
+  ],
+  "pairs": [],
+  "tfs": [
+   "M15",
+   "M30",
+   "H1"
+  ],
+  "lines": 71
+ },
+ {
+  "file": "S340_BrooksMicroChannel_Xauusd_H4_rqs93.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   60.0,
+   65.6
+  ],
+  "n_candidates": [
+   170
+  ],
+  "sl_pip_candidates": [
+   520.0
+  ],
+  "tp_pip_candidates": [
+   780.0
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1"
+  ],
+  "lines": 134
+ },
+ {
+  "file": "S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 389
+ },
+ {
+  "file": "S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   56.1,
+   70.8
+  ],
+  "pf_candidates": [
+   2.22,
+   4.1,
+   5.4
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 166
+ },
+ {
+  "file": "S342_BrooksMAReturn_XauusdEurusd_AllTF_rqs32.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   59.0
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 122
+ },
+ {
+  "file": "S344_BrooksTrendFromOpen_Xauusd_M15_rqs91.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   43.0,
+   55.0,
+   64.9
+  ],
+  "n_candidates": [
+   55,
+   57,
+   77
+  ],
+  "pf_candidates": [
+   2.04
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 115
+ },
+ {
+  "file": "S345_BrooksReversalDay_XauEur_M15M30_rqs90.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   51.5,
+   52.4,
+   59.26,
+   60.0,
+   61.7,
+   62.0,
+   62.38,
+   62.5,
+   63.64,
+   65.0
+  ],
+  "n_candidates": [
+   12,
+   18,
+   26,
+   30,
+   37,
+   40,
+   47,
+   50,
+   60,
+   101
+  ],
+  "pf_candidates": [
+   0.8,
+   1.13,
+   1.68,
+   2.26,
+   2.299,
+   2.382,
+   2.404
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 288
+ },
+ {
+  "file": "S346_AdaptiveATRChannelBreakout_Xauusd_D1_rqs84.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   44.4,
+   46.8,
+   47.32,
+   47.5,
+   48.7,
+   53.52,
+   53.78,
+   53.89,
+   61.6,
+   62.32,
+   63.1
+  ],
+  "n_candidates": [
+   29,
+   71,
+   167,
+   238,
+   284
+  ],
+  "pf_candidates": [
+   0.75,
+   0.77,
+   0.78,
+   0.796,
+   0.83,
+   0.86,
+   0.955,
+   1.53,
+   1.6,
+   1.61
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 248
+ },
+ {
+  "file": "S346_LAW4_TRADEABILITY.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S346_PREREGISTRATION_OOS.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S347_PREREGISTRATION_ENSEMBLE.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   52.3,
+   54.43,
+   60.32,
+   65.56
+  ],
+  "n_candidates": [
+   49,
+   79,
+   90
+  ],
+  "pf_candidates": [
+   1.53
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 215
+ },
+ {
+  "file": "S348_RRGeometrySweep_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   60.42
+  ],
+  "n_candidates": [
+   48,
+   58,
+   121
+  ],
+  "sl_pip_candidates": [
+   320.6
+  ],
+  "tp_pip_candidates": [
+   1037.4
+  ],
+  "pf_candidates": [
+   2.71
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 229
+ },
+ {
+  "file": "S350_TripleLockDerivedHold_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
+  "kind": "LAYER",
+  "pf_candidates": [
+   0.88
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 193
+ },
+ {
+  "file": "S351_LPSBStructureFilter_Xauusd_M5M15M30H1_rqs2-29.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   37.5,
+   81.3
+  ],
+  "n_candidates": [
+   28,
+   74
+  ],
+  "pf_candidates": [
+   3.78
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 222
+ },
+ {
+  "file": "S353_HalfTrendRegimeGate_XauusdEurusd_D1_rqs2-PL.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   33,
+   71,
+   86
+  ],
+  "pf_candidates": [
+   0.99,
+   1.52,
+   1.91,
+   1.94
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 129
+ },
+ {
+  "file": "S354_BrooksTrendResumption_Xauusd_H1_rqs2-80.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   48.0,
+   50.5
+  ],
+  "n_candidates": [
+   50
+  ],
+  "pf_candidates": [
+   1.356
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 187
+ },
+ {
+  "file": "S355_LPSBStateFilterRevival_Xauusd_M5_rqs2-84.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   65.62,
+   72.34,
+   81.25,
+   84.0,
+   84.21
+  ],
+  "n_candidates": [
+   16,
+   19,
+   30,
+   47,
+   4372
+  ],
+  "pf_candidates": [
+   0.96,
+   1.0,
+   2.85,
+   3.78,
+   3.951
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 278
+ },
+ {
+  "file": "S355_PREREGISTRATION_15Layer_Revisit_v24.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S356_BrooksTrendResumptionCausal_Xauusd_H1_rqs2-81.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   45.76,
+   51.28
+  ],
+  "n_candidates": [
+   30,
+   50,
+   56,
+   59,
+   117,
+   1134,
+   1164
+  ],
+  "pf_candidates": [
+   1.354,
+   1.636
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 457
+ },
+ {
+  "file": "S356_PREREGISTRATION_S354_CAUSAL_V24_REJUDGE.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S356_PREREG_ADDENDUM_HIRES_NULL.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S356_PREREG_OVERLAP_SPLIT.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S357_PREREGISTRATION_S341_V24_REJUDGE.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S358_PREREGISTRATION_S341_VOTE_ENSEMBLE.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S359_PREREGISTRATION_S341_REVERSION_FILTER.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S360_PREREGISTRATION_S341_FLOATING_GEOMETRY.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S361_SELF_AUDIT_PROTOCOL_DEVIATIONS.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S362_PREREGISTRATION_S341_OVERLAP_AS_FILTER.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S363_ADDENDUM_P1_LEGAL_GEOMETRY_PREREG.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S363_ADDENDUM_P2B_POOLED_STATISTIC_PREREG.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S363_ADDENDUM_P2_UNIVERSAL_FILTER_PREREG.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S363_ADDENDUM_P3B_DEPLOYMENT_JUDGEMENT_PREREG.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S363_ADDENDUM_P3C_AMIHUD_FILTER_PREREG.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S363_ADDENDUM_P3_BRACKET_MULTIPLICITY_PREREG.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S363_P2_NEGATIVE_FINDING_UNIVERSAL_FILTER.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S363_PREREGISTRATION_S327_V24_REJUDGE.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S364_PREREG_multiplicity_route.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S365_PREREG_swing_scaled_bracket.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S366_PREREG_stairs_channel_breakout.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S367_PREREG_channel_far_side_stop.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S368_PREREG_hurst_persistence_gate.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S369_PREREG_anchor_judgement.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S369_PREREG_stair_continuation.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S369_StairContinuation_Xauusd_H1_rqs2-19_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   55.1,
+   56.36,
+   59.32
+  ],
+  "n_candidates": [
+   59
+  ],
+  "sl_pip_candidates": [
+   128.15
+  ],
+  "tp_pip_candidates": [
+   128.15
+  ],
+  "pf_candidates": [
+   1.222,
+   1.33
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 255
+ },
+ {
+  "file": "S370_EnsembleUnion_XauEur_ALL_rqs2-00_DEAD.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 254
+ },
+ {
+  "file": "S370_PREREG_ensemble_union.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S371_DirectionalBreakout_XauEur_ALL_rqs2-00_DEAD.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   412
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD",
+   "AUDUSD",
+   "USDCHF",
+   "DXY"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 217
+ },
+ {
+  "file": "S371_PREREG_directional_breakout_eur.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S372_GateConditionality_4Instruments_CONFIRMED.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S372_PREREG_gate_conditionality_third_instrument.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S373_InstrumentNativeChannel_XauEur_H4_rqs2-00_DEAD.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD",
+   "AUDUSD",
+   "USDCHF"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 238
+ },
+ {
+  "file": "S373_PREREG_instrument_native_channel.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S374_FINDING_not_subset_but_delay.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S374_KennedyBreakGate_XauEur_H4_rqs2-ACCEPTED.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 241
+ },
+ {
+  "file": "S374_PREREG_kennedy_break_gate.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S375_FINDING_BREAKEVEN_AWARE_LIFT.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S375_KennedySingleInstrument_Xauusd_H1_rqs2-07_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   46.88
+  ],
+  "n_candidates": [
+   1637
+  ],
+  "pf_candidates": [
+   1.268
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 173
+ },
+ {
+  "file": "S375_PREREG_kennedy_single_instrument_h1.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S376_FINDING_S353_EDGE_SURVIVES_BREAKEVEN.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S376_FractalSRProximity_XauEur_ALL_rqs2-00_DEAD.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   36.0,
+   85.0
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4",
+   "D1",
+   "W1"
+  ],
+  "lines": 334
+ },
+ {
+  "file": "S376_PREREG_fractal_sr_proximity_filter.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S377_FINDING_STEP1_DATA_CENSUS.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S378_FINDING_STEP1_TRADE_BUDGET_IS_ABUNDANT.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S379_FINDING_STEP1_FILTER_COST_LAW.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S380_FINDING_REJECTION_CARRIES_NO_INFORMATION.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S381_PREREG_GEOMETRY_LIFT_TRADE.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S381_RESULT_GEOMETRY_LIFT_TRADE_REFUTED.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S382_WilliamsR_Xauusd_H4_rqs2-83.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   48.91,
+   49.73
+  ],
+  "n_candidates": [
+   364,
+   869
+  ],
+  "pf_candidates": [
+   1.467
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 328
+ },
+ {
+  "file": "S383_LAW_COST_TO_STOP_RATIO.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S384_PREREG_WIDE_STOP_ON_FAST_CARDS.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S384_WideStop_XAUUSD_EURUSD_M30M15M5_rqs2-0.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M30"
+  ],
+  "lines": 208
+ },
+ {
+  "file": "S385_FINDING_WIDENING_LIFTS_EVERYONE.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S386_PREREG_PORTFOLIO_AGGREGATION.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S386_STEP1_OVERLAP_VS_S382.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S387_LAW_UNION_DILUTION.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S388_PREREG_ALPHA_RESCAN.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S389_CCIBreakoutHourGated_Xauusd_H1_rqs2-25_DEAD.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   59,
+   861
+  ],
+  "sl_pip_candidates": [
+   131.18
+  ],
+  "pf_candidates": [
+   1.243
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "H1",
+   "H4"
+  ],
+  "lines": 221
+ },
+ {
+  "file": "S390_PREREG_CCI_H1_IMPROVEMENT.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S391_PREREG_DRAWDOWN_FILTER.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S391_STEP1_FILTER_RESULT.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S392_JOINT_GRID_RESULT.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   38.21
+  ],
+  "n_candidates": [
+   861
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [],
+  "lines": 180
+ },
+ {
+  "file": "S393_ALPHA_FILTER_RESULT.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   38.21
+  ],
+  "pf_candidates": [
+   1.41
+  ],
+  "pairs": [],
+  "tfs": [],
+  "lines": 217
+ },
+ {
+  "file": "S393_PREREG_ALPHA_FILTER.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S394_EFFECTIVE_TRIALS_RESULT.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   861
+  ],
+  "pairs": [
+   "XAUUSD"
+  ],
+  "tfs": [
+   "H1",
+   "H4"
+  ],
+  "lines": 258
+ },
+ {
+  "file": "S394_PREREG_EFFECTIVE_TRIALS.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S395_AUDIT_S382_UNDER_NEW_BOUND.md",
+  "kind": "DOC"
+ },
+ {
+  "file": "S69_MultiAsset_Portfolio_NetProfit_12844.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD",
+   "AUDUSD",
+   "DXY"
+  ],
+  "tfs": [
+   "M15"
+  ],
+  "lines": 74
+ },
+ {
+  "file": "S70_PerAsset_ProfitabilityGate_NetProfit_13436.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD",
+   "AUDUSD",
+   "DXY"
+  ],
+  "tfs": [
+   "H1"
+  ],
+  "lines": 49
+ },
+ {
+  "file": "S71_Forex_MeanReversion_NetProfit_-20147.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD",
+   "AUDUSD",
+   "DXY"
+  ],
+  "tfs": [
+   "M15",
+   "H1"
+  ],
+  "lines": 33
+ },
+ {
+  "file": "S72_Forex_Breakout_NetProfit_-20153.md",
+  "kind": "LAYER",
+  "pairs": [
+   "XAUUSD",
+   "EURUSD",
+   "AUDUSD",
+   "DXY"
+  ],
+  "tfs": [],
+  "lines": 40
+ },
+ {
+  "file": "S73_EURUSD_SessionDrift_NetProfit_44458.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   67.5,
+   72.0
+  ],
+  "n_candidates": [
+   717,
+   1007
+  ],
+  "sl_pip_candidates": [
+   12.0
+  ],
+  "tp_pip_candidates": [
+   12.0
+  ],
+  "pf_candidates": [
+   1.57,
+   1.62
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M15",
+   "H1"
+  ],
+  "lines": 176
+ },
+ {
+  "file": "S79_Gold_M5_TrendPullback_NetProfit_4256.md",
+  "kind": "LAYER",
+  "wr_candidates": [
+   39.0
+  ],
+  "n_candidates": [
+   360
+  ],
+  "sl_pip_candidates": [
+   50.0
+  ],
+  "tp_pip_candidates": [
+   120.0
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M1",
+   "M5",
+   "M15"
+  ],
+  "lines": 162
+ },
+ {
+  "file": "S81_Gold_M30_SwingPullback_NetProfit_14327.md",
+  "kind": "LAYER",
+  "n_candidates": [
+   316
+  ],
+  "sl_pip_candidates": [
+   120.0
+  ],
+  "tp_pip_candidates": [
+   1200.0
+  ],
+  "pf_candidates": [
+   1.31
+  ],
+  "pairs": [
+   "XAUUSD",
+   "EURUSD"
+  ],
+  "tfs": [
+   "M5",
+   "M15",
+   "M30",
+   "H1",
+   "H4"
+  ],
+  "lines": 156
+ }
+]
