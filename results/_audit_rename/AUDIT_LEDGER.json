@@ -337,5 +337,62 @@
     "n": 1333
    }
   ]
+ },
+ "S176": {
+  "done": true,
+  "old": "S176_BrooksSignalBarStopEntry_NetProfit_237181_REJECTED.md",
+  "new": "S176_BrooksSignalBarStopEntry_Xauusd_M15_rqs2_20_REJECT.md",
+  "verdict": "REJECT",
+  "score": 20.5,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 16.7,
+    "n": 1961
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 12.2,
+    "n": 811
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.6,
+    "n": 1582
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 10.9,
+    "n": 782
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 16.3,
+    "n": 1563
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 13.5,
+    "n": 578
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 20.5,
+    "n": 1194
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 12.6,
+    "n": 517
+   }
+  ]
  }
 }
