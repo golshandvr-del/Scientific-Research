@@ -104,7 +104,19 @@ def load_card(pair: str, tf: str):
             break
     df = df.rename(columns=ren)
     if 'dt' in df.columns:
-        df['dt'] = pd.to_datetime(df['dt'], errors='coerce', format='mixed')
+        # ⚠️ اصلاحِ صحت (باگی که در نسخهٔ اولِ همین فایل بود):
+        # ستونِ `time` در کلِ `data/` **اپاکِ ثانیه**ای عددی است
+        # (نمونه: `1294012800` = 2011-01-03). اگر با `format='mixed'`
+        # به‌عنوان رشته تفسیر شود، pandas عددِ ۱۰-رقمی را تاریخِ بی‌معنا
+        # می‌کند ⇒ محورِ زمان خراب ⇒ `H6` (پایداریِ تقویمی) و `H10`
+        # (افقِ نگه‌داری) روی زمانِ جعلی داوری می‌شوند. این جنسِ خطا
+        # ساکت است: هیچ استثنایی پرتاب نمی‌شود، فقط حکم غلط می‌شود.
+        s = df['dt']
+        if pd.api.types.is_numeric_dtype(s):
+            unit = 's' if float(s.iloc[0]) < 1e11 else 'ms'
+            df['dt'] = pd.to_datetime(s, unit=unit, errors='coerce')
+        else:
+            df['dt'] = pd.to_datetime(s, errors='coerce', format='mixed')
         df = df.dropna(subset=['dt']).reset_index(drop=True)
     _CACHE[key] = df
     return df
