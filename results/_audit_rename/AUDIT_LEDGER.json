@@ -2046,10 +2046,12 @@
   "cards": []
  },
  "S226": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S226_RQS_MethodologyAudit_Xauusd_M15M5_ByGate.md",
-  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
+  "new": "S226_RQSMethodologyAuditXauusdM15M5ByGate_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S300": {
   "done": true,
