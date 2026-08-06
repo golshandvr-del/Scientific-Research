@@ -1,0 +1,334 @@
+# -*- coding: utf-8 -*-
+"""
+داورِ **جهانیِ** ممیزی — از فایلِ ضبط تا حکمِ RQS2
+================================================================================
+
+ورودی: `results/_audit_rename/captures/<script>.capture.json` که
+`tools/audit_capture.py` ساخته (سیگنالِ *اندازه‌گیری‌شدهٔ* لایه، نه حدس‌زده).
+
+خروجی: `results/_audit_rename/verdicts/<layer>.json` با حکمِ هر کارت.
+
+════════════════════════════════════════════════════════════════════════════
+سه مسئلهٔ فنی که این ابزار حل می‌کند
+════════════════════════════════════════════════════════════════════════════
+
+① **شناساییِ کارت.** فایلِ ضبط دارایی را همیشه نمی‌داند (`run_backtest`
+   پارامترِ `asset` ندارد). پس کارت از **اثرِانگشتِ داده** پیدا می‌شود:
+   `(n_bars, close_first, close_last)` با همهٔ CSVهای `data/` مقایسه می‌شود.
+   این تطبیق قطعی است، حدس نیست. اگر تطبیق پیدا نشود ⇒ `INCOMPLETE`.
+
+② **واحدِ هندسه.** `simulate_trades` هندسه را pip می‌گیرد ولی `run_backtest`
+   دلار. تبدیل با `pip_size` همان دارایی از مدلِ هزینهٔ رسمی انجام می‌شود
+   (`engine.scalp_engine.ASSETS`)، نه با ضریبِ دستی.
+
+③ **جمعِ دو سمت.** `run_backtest` یک‌سمته است، پس یک لایه روی یک کارت دو
+   فراخوانی دارد (long و short). این‌ها باید در **یک** داوری جمع شوند، چون
+   لایه در واقعیت هر دو را با هم معامله می‌کند. کلیدِ ادغام:
+   `(دارایی، تایم‌فریم، هندسهٔ همسان، افقِ همسان)`.
+
+════════════════════════════════════════════════════════════════════════════
+مرزِ صداقت
+════════════════════════════════════════════════════════════════════════════
+هیچ پارامتری اینجا بهینه نمی‌شود. هیچ سیگنالی ساخته نمی‌شود. اگر ضبط ناقص
+باشد، حکم `INCOMPLETE` است — **نه** ACCEPT. سیاستِ اسپک: «نبودِ آزمونِ کنترل،
+شاهدِ وجودِ مهارت نیست.»
+"""
+from __future__ import annotations
+
+import json
+import os
+import sys
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from engine import scalp_engine as se                      # noqa: E402
+from tools.audit_rqs2_rejudge import (                     # noqa: E402
+    load_card, bar_time_of, resolve_max_hold, PERM_K, SEED,
+    N_TRIALS_FALLBACK, VERDICT_RANK, pick_headline,
+)
+from engine import rqs2 as R                               # noqa: E402
+from tools.audit_fast_null import build_null_fast          # noqa: E402
+
+CAP = ROOT / 'results' / '_audit_rename' / 'captures'
+VER = ROOT / 'results' / '_audit_rename' / 'verdicts'
+VER.mkdir(parents=True, exist_ok=True)
+DATA = ROOT / 'data'
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  ① شناساییِ کارت از اثرِانگشتِ داده
+# ════════════════════════════════════════════════════════════════════════════
+_FP: dict | None = None
+
+
+def data_fingerprints() -> dict:
+    """
+    اثرِانگشتِ همهٔ CSVهای `data/` را می‌سازد.
+
+    کلید: `(n_bars, round(close_first,6), round(close_last,6))`
+    این سه‌گانه در عمل یکتاست (هر ترکیبِ جفت‌ارز-تایم‌فریم طول و لنگرهای
+    قیمتیِ متفاوت دارد)، پس تطبیق **قطعی** است نه احتمالی.
+
+    نکته: اسکریپت‌های آرشیو بعضاً دادهٔ **بریده** می‌دهند (مثلاً آخرین ۲۰۰هزار
+    کندل). پس علاوه بر کلِ فایل، دنبالهٔ آخرِ آن هم اثرِانگشت می‌گیرد.
+    """
+    global _FP
+    if _FP is not None:
+        return _FP
+    fp: dict = {}
+    for csv in sorted(DATA.glob('*.csv')):
+        stem = csv.stem                     # e.g. XAUUSD_M15
+        if '_' not in stem:
+            continue
+        pair, tf = stem.rsplit('_', 1)
+        try:
+            df = pd.read_csv(csv, usecols=['close'])
+        except Exception:
+            continue
+        c = df['close'].to_numpy(float)
+        n = len(c)
+        # کلِ فایل
+        fp[(n, round(float(c[0]), 6), round(float(c[-1]), 6))] = (pair, tf, 0)
+        # برش‌های رایجِ آرشیو (last-N)
+        for cut in (200000, 150000, 130994, 120000, 100000, 60000, 50000, 40000):
+            if cut < n:
+                fp[(cut, round(float(c[n - cut]), 6),
+                    round(float(c[-1]), 6))] = (pair, tf, n - cut)
+    _FP = fp
+    return fp
+
+
+def identify_card(call: dict):
+    """کارتِ یک فراخوانیِ ضبط‌شده را برمی‌گرداند یا None."""
+    key = (int(call['n_bars']), round(float(call['close_first']), 6),
+           round(float(call['close_last']), 6))
+    hit = data_fingerprints().get(key)
+    if hit:
+        return hit
+    # فالبک: اگر دارایی صریح ضبط شده، فقط تایم‌فریم را از طول حدس نمی‌زنیم
+    return None
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  ② هندسه: دلار → pip
+# ════════════════════════════════════════════════════════════════════════════
+def geom_to_pip(g: dict, pair: str, n_bars: int, idx: np.ndarray):
+    """
+    هندسهٔ ضبط‌شده را به آرایهٔ pip هم‌طولِ داده تبدیل می‌کند.
+
+    · `simulate_trades` ⇒ واحد از قبل pip است.
+    · `run_backtest`    ⇒ واحد دلار است ⇒ تقسیم بر `pip_size` دارایی.
+    """
+    if g is None or g.get('kind') == 'none':
+        return None
+    unit = g.get('unit', 'pip')
+    div = 1.0
+    if unit == 'dollar':
+        cfg = se.ASSETS.get(pair)
+        if cfg is None:
+            return None
+        div = float(cfg['pip'])
+
+    if g['kind'] == 'scalar':
+        return float(g['value']) / div
+
+    vals = g.get('at_signals') or []
+    if not vals:
+        m = g.get('median')
+        return None if m is None else float(m) / div
+    arr = np.full(int(n_bars), np.nan)
+    k = min(len(vals), len(idx))
+    for j in range(k):
+        v = vals[j]
+        if v is not None:
+            arr[int(idx[j])] = float(v) / div
+    return arr
+
+
+# ════════════════════════════════════════════════════════════════════════════
+#  ③ ادغامِ دو سمت و داوری
+# ════════════════════════════════════════════════════════════════════════════
+def geom_sig(g: dict) -> str:
+    """اثرِانگشتِ هندسه برای ادغامِ long/short همان لایه روی همان کارت."""
+    if g is None:
+        return 'none'
+    if g.get('kind') == 'scalar':
+        return f"s{g['value']:.6f}"
+    if g.get('kind') == 'series':
+        return f"v{g.get('median')}"
+    return 'none'
+
+
+def judge_capture(cap: dict, n_trials: int, layer_name: str) -> dict:
+    """همهٔ فراخوانی‌های یک ضبط را به کارت‌ها نگاشت و داوری می‌کند."""
+    groups: dict = {}
+    unmatched = 0
+
+    for call in cap.get('calls', []):
+        if 'capture_error' in call:
+            continue
+        ident = identify_card(call)
+        if ident is None:
+            unmatched += 1
+            continue
+        pair, tf, offset = ident
+        # افق و همپوشانی و هندسه باید همسان باشند تا ادغام مجاز باشد
+        key = (pair, tf, offset, call.get('max_hold'),
+               bool(call.get('allow_overlap')),
+               geom_sig(call.get('sl')), geom_sig(call.get('tp')))
+        groups.setdefault(key, []).append(call)
+
+    per_card = []
+    for key, calls in sorted(groups.items(), key=lambda kv: (kv[0][0], kv[0][1])):
+        pair, tf, offset, mh_raw, ao, _gs, _gt = key
+        df_full = load_card(pair, tf)
+        if df_full is None:
+            per_card.append({'card': f'{pair}-{tf}', 'verdict': 'INCOMPLETE',
+                             'rqs2_score': 0.0, 'reason': 'card data missing'})
+            continue
+        df = (df_full.iloc[offset:].reset_index(drop=True)
+              if offset else df_full)
+        n = len(df)
+
+        ls = np.zeros(n, bool)
+        ss = np.zeros(n, bool)
+        sl_arr = tp_arr = None
+        for call in calls:
+            li = np.asarray(call.get('long_idx') or [], int)
+            si = np.asarray(call.get('short_idx') or [], int)
+            li = li[li < n]; si = si[si < n]
+            ls[li] = True
+            ss[si] = True
+            idx_all = np.union1d(li, si).astype(int)
+            g_sl = geom_to_pip(call.get('sl'), pair, n, idx_all)
+            g_tp = geom_to_pip(call.get('tp'), pair, n, idx_all)
+            # ادغامِ هندسهٔ دو سمت
+            for name, g in (('sl', g_sl), ('tp', g_tp)):
+                cur = sl_arr if name == 'sl' else tp_arr
+                if g is None:
+                    continue
+                if np.isscalar(g):
+                    newv = g
+                else:
+                    if cur is None or np.isscalar(cur):
+                        newv = g
+                    else:
+                        newv = np.where(np.isfinite(g), g, cur)
+                if name == 'sl':
+                    sl_arr = newv
+                else:
+                    tp_arr = newv
+
+        if sl_arr is None or tp_arr is None:
+            per_card.append({'card': f'{pair}-{tf}', 'verdict': 'INCOMPLETE',
+                             'rqs2_score': 0.0,
+                             'reason': 'geometry not recoverable (H2 unjudgeable)'})
+            continue
+
+        mh = resolve_max_hold(mh_raw if mh_raw not in (None, 'series') else None, n)
+
+        tr = se.simulate_trades(df, ls, ss, sl_arr, tp_arr, pair,
+                                max_hold=mh, allow_overlap=bool(ao))
+        if tr is None or len(tr) == 0:
+            per_card.append({'card': f'{pair}-{tf}', 'verdict': 'REJECT',
+                             'rqs2_score': 0.0, 'reason': 'zero trades',
+                             'n_trades': 0})
+            continue
+
+        n_by_side = {s: int((tr['direction'] == s).sum())
+                     for s in ('long', 'short')}
+        sides = tuple(s for s in ('long', 'short') if n_by_side[s] > 0)
+        n_sig = {'long': int(ls.sum()), 'short': int(ss.sum())}
+
+        # مدلِ صفر: به تفکیکِ سمت، هندسه و افقِ **یکسان** با لایه
+        sl_med = (float(sl_arr) if np.isscalar(sl_arr)
+                  else float(np.nanmedian(sl_arr[np.union1d(np.flatnonzero(ls),
+                                                            np.flatnonzero(ss))])))
+        tp_med = (float(tp_arr) if np.isscalar(tp_arr)
+                  else float(np.nanmedian(tp_arr[np.union1d(np.flatnonzero(ls),
+                                                            np.flatnonzero(ss))])))
+        parts = {}
+        for side in sides:
+            parts[side] = build_null_fast(
+                df, pair, sl_med, tp_med, mh, side,
+                max(n_sig[side], n_by_side[side]), k=PERM_K, seed=SEED)
+        if len(parts) == 1:
+            nul = list(parts.values())[0]
+        else:
+            w = {s: n_by_side[s] for s in parts}
+            tot = sum(w.values()) or 1
+            nul = {
+                'uncond_wr': sum(parts[s]['uncond_wr'] * w[s] for s in parts) / tot,
+                'perm_mean': sum(parts[s]['perm_mean'] * w[s] for s in parts) / tot,
+                'perm_sd': float(np.sqrt(sum((w[s] / tot) ** 2 * parts[s]['perm_sd'] ** 2
+                                             for s in parts))),
+                'perm_max': max(parts[s]['perm_max'] for s in parts),
+                'perm_k': min(parts[s]['perm_k'] for s in parts),
+                'side': 'both',
+            }
+
+        split_bar = int(n * 0.70)
+        r = R.compute_rqs2(
+            tr, pair,
+            sl_pip=sl_med,
+            tp_pip=(tp_med if np.isscalar(tp_arr) else None),
+            bar_time=bar_time_of(df), null=nul, n_trials=n_trials,
+            split_bar=split_bar, close=df['close'].to_numpy(float))
+        r['card'] = f'{pair}-{tf}'
+        r['n_signals'] = n_sig
+        r['geometry'] = {'sl_pip_med': round(sl_med, 4),
+                         'tp_pip_med': round(tp_med, 4),
+                         'rr': round(tp_med / sl_med, 4) if sl_med else None,
+                         'max_hold': mh, 'allow_overlap': bool(ao)}
+        per_card.append(r)
+
+        g = r.get('gates', {})
+        fails = [k for k, v in g.items() if v is False]
+        unk = [k for k, v in g.items() if v is None]
+        print(f'  {r["card"]:<14} {r.get("verdict","?"):<14} '
+              f'score={r.get("rqs2_score",0):>5.1f} n={len(tr):>5} '
+              f'rr={r["geometry"]["rr"]} '
+              f'fail={",".join(fails) or "-"} unk={",".join(unk) or "-"}',
+              flush=True)
+
+    verdict, score = pick_headline(per_card)
+    return {'layer': layer_name, 'script': cap.get('script'),
+            'n_trials': n_trials, 'perm_k': PERM_K, 'seed': SEED,
+            'unmatched_calls': unmatched,
+            'reproduction': [{'engine': c.get('engine', 'simulate_trades'),
+                              'n_trades': c.get('result_n_trades')}
+                             for c in cap.get('calls', [])
+                             if 'capture_error' not in c],
+            'cards': per_card,
+            'headline_verdict': verdict, 'headline_score': round(score, 1)}
+
+
+def main():
+    if len(sys.argv) < 3:
+        print('usage: audit_judge_capture.py <capture.json> <layer_md_name> '
+              '[n_trials]')
+        return 2
+    cap_path = Path(sys.argv[1])
+    layer = sys.argv[2]
+    n_trials = int(sys.argv[3]) if len(sys.argv) > 3 else N_TRIALS_FALLBACK
+
+    with open(cap_path, encoding='utf-8') as fh:
+        cap = json.load(fh)
+
+    print(f'══ judging {layer}  (n_trials={n_trials}) ══', flush=True)
+    out = judge_capture(cap, n_trials, layer)
+    dest = VER / (layer.replace('.md', '') + '.json')
+    with open(dest, 'w', encoding='utf-8') as fh:
+        json.dump(out, fh, ensure_ascii=False, indent=1, default=float)
+    print(f'HEADLINE: {out["headline_verdict"]} {out["headline_score"]}')
+    print(f'  -> {dest}')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
