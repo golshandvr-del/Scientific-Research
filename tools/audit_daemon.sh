@@ -28,6 +28,12 @@ case "$cmd" in
       exit 0
     fi
     cd "$ROOT"
+    # ⚠️ بودجهٔ ضبط باید از بیرون قابلِ تنظیم باشد (اندازه‌گیری‌شده):
+    #   `S186` با بودجهٔ ۳۰۰ ثانیه `DEFERRED` شد. اگر راه‌انداز این متغیر را
+    #   عبور ندهد، هر بار که موتور از سرِ صف شروع کند دوباره همان ۳۰۰ ثانیه
+    #   را روی همان لایه می‌سوزاند و صف عملاً قفل می‌شود.
+    #   AUDIT_CAP_BUDGET=1200 bash tools/audit_daemon.sh start 200
+    export AUDIT_CAP_BUDGET="${AUDIT_CAP_BUDGET:-300}"
     setsid python tools/audit_batch.py "$n" >> "$LOG" 2>&1 < /dev/null &
     echo $! > "$PIDF"
     disown 2>/dev/null || true
