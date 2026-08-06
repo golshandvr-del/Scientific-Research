@@ -1400,5 +1400,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S222b": {
+  "done": true,
+  "old": "S222b_MondayWR60_Xauusd_M5M15M30H1_7482_88.md",
+  "new": "S222b_MondayWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
