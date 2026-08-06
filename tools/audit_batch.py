@@ -46,6 +46,11 @@ VER = AUD / 'verdicts'
 LOG = AUD / 'AUDIT_LEDGER.json'
 N_TRIALS_FALLBACK = 2000
 
+# بودجهٔ زمانیِ ضبط (ثانیه). از محیط قابلِ تنظیم است تا پاسِ دومِ صف
+# بتواند لایه‌های `DEFERRED` را با بودجهٔ بزرگ‌تر دوباره بیازماید:
+#     AUDIT_CAP_BUDGET=1800 python tools/audit_batch.py 200
+CAP_BUDGET = int(os.environ.get('AUDIT_CAP_BUDGET', '300'))
+
 VERDICT_TAG = {'ACCEPT': 'ACCEPT', 'POWER-LIMITED': 'POWER-LIMITED',
                'UNPROVEN': 'UNPROVEN', 'REJECT': 'REJECT',
                'INCOMPLETE': 'INCOMPLETE'}
@@ -203,12 +208,20 @@ def process(rec: dict, ledger: dict) -> str:
 
     vj = None
     # ── ① capture ────────────────────────────────────────────────────────────
+    # ⚠️ بودجهٔ زمانیِ کوتاه‌ترِ عمدی (`CAP_BUDGET`): لایه‌هایی مثلِ
+    # `s166_mtf_rescue` یک جاروبِ MTF با صدها فراخوانی‌اند و به‌تنهایی
+    # می‌توانند کلِ صفِ ۱۶۴ لایه‌ای را بخوابانند. اگر لایه‌ای در این بودجه
+    # ضبط نشود، **رد نمی‌شود**؛ به `DEFERRED` می‌رود تا در پاسِ دومِ صف با
+    # بودجهٔ بزرگ‌تر آزموده شود. این مستقیماً در خدمتِ قانونِ «اندک اندک»
+    # است: پیشرفتِ قطعیِ بسیاری از لایه‌ها بر پیشرفتِ نامعلومِ یک لایه اولویت
+    # دارد، چون سندباکس هر لحظه ممکن است ریست شود.
     cap_file = None
     for scr in scripts[:2]:
         dest = CAP / (scr.replace('/', '_') + '.capture.json')
         if not dest.exists():
-            rc, so, se_ = sh(f'timeout 900 python tools/audit_capture.py {scr}',
-                             timeout=960)
+            rc, so, se_ = sh(f'timeout {CAP_BUDGET} python '
+                             f'tools/audit_capture.py {scr}',
+                             timeout=CAP_BUDGET + 60)
             print('  capture:', (so or se_).strip().splitlines()[-1][:120]
                   if (so or se_).strip() else 'no output', flush=True)
         if dest.exists():
