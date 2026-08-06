@@ -1,0 +1,8 @@
+{
+ "layer": "S185_123Patterns_1-2-3_NetProfit_243109_ACCEPTED.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 2000
+}
