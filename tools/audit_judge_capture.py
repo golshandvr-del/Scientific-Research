@@ -277,20 +277,23 @@ def judge_capture(cap: dict, n_trials: int, layer_name: str) -> dict:
             parts[side] = build_null_fast(
                 df, pair, sl_med, tp_med, mh, side,
                 max(n_sig[side], n_by_side[side]), k=PERM_K, seed=SEED)
-        if len(parts) == 1:
-            nul = list(parts.values())[0]
-        else:
-            w = {s: n_by_side[s] for s in parts}
-            tot = sum(w.values()) or 1
-            nul = {
-                'uncond_wr': sum(parts[s]['uncond_wr'] * w[s] for s in parts) / tot,
-                'perm_mean': sum(parts[s]['perm_mean'] * w[s] for s in parts) / tot,
-                'perm_sd': float(np.sqrt(sum((w[s] / tot) ** 2 * parts[s]['perm_sd'] ** 2
-                                             for s in parts))),
-                'perm_max': max(parts[s]['perm_max'] for s in parts),
-                'perm_k': min(parts[s]['perm_k'] for s in parts),
-                'side': 'both',
-            }
+        # ── ساختارِ **کانونیِ** نول: تودرتو به تفکیکِ سمت ────────────────────
+        # اسپک (`null_from_s346`) شکلِ زیر را می‌خواهد:
+        #     {'long': {uncond_wr, perm_mean, perm_sd, perm_max, perm_k},
+        #      'short': {...}}
+        # اگر تختِ (flat) پاس شود، `_side_null_ref` هیچ سمتی پیدا نمی‌کند و
+        # H3/H4/H5 خاموش می‌شوند (`UNKNOWN`) — همان چیزی که در اجرای اولِ S71
+        # دیدم. پس ادغامِ دستیِ دو سمت **غلط** بود؛ خودِ موتور باید سمت‌ها را
+        # با منطقِ خودش ترکیب کند.
+        nul = {}
+        for side in ('long', 'short'):
+            if side in parts:
+                p = parts[side]
+                nul[side] = {'uncond_wr': p['uncond_wr'],
+                             'perm_mean': p['perm_mean'],
+                             'perm_sd': p['perm_sd'],
+                             'perm_max': p['perm_max'],
+                             'perm_k': p['perm_k']}
 
         split_bar = int(n * 0.70)
         # ── `tp_pip` برای هندسهٔ متغیر ────────────────────────────────────────
