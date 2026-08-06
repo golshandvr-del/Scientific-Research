@@ -2183,5 +2183,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S313": {
+  "done": true,
+  "old": "S313_SqueezeBreakout_Xauusd_H1M30_92.md",
+  "new": "S313_SqueezeBreakoutXauusdH1M30_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }

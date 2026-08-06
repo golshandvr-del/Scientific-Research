@@ -1,0 +1,8 @@
+{
+ "layer": "S313_SqueezeBreakout_Xauusd_H1M30_92.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 807
+}

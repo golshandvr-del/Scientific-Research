@@ -1,0 +1,46 @@
+{
+  "top-wr": {
+    "kw": {
+      "sl_atr": 1.35,
+      "tp_atr": 1.35,
+      "max_hold": 20,
+      "sqz_pct": 0.2,
+      "adx_min": 0.0
+    },
+    "rqs": 0.0,
+    "verdict": "REJECT",
+    "gates": {
+      "G0": false,
+      "G1": false,
+      "G2": 0.0,
+      "G3": 0.0,
+      "G4": false,
+      "G5": false
+    },
+    "metrics": {
+      "n_trades": 1883,
+      "win_rate": 50.4,
+      "net_profit": -9725.0,
+      "profit_factor": 0.594,
+      "max_dd_pct": 97.26,
+      "max_consec_losses": 9,
+      "expectancy_pip": -2.7775,
+      "spread_cost_pip": 3.3,
+      "wr_breakeven": 49.92,
+      "wr_excess": 0.47,
+      "p_value": 0.34867,
+      "sl_pip": 23.3379030943388,
+      "tp_pip": 23.409321605277,
+      "wf_nets": [
+        -7611.7,
+        -7439.1,
+        -2916.3,
+        -3469.2
+      ],
+      "half_nets": [
+        -9393.6,
+        -5387.9
+      ]
+    }
+  }
+}
