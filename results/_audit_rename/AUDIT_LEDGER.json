@@ -616,5 +616,32 @@
     "n": 1433
    }
   ]
+ },
+ "S200": {
+  "done": true,
+  "old": "S200_Overnight_AddHour21_REJECTED_NetProfit_252471.md",
+  "new": "S200_OvernightAddHour21_Xauusd_M15_rqs2_25_REJECT.md",
+  "verdict": "REJECT",
+  "score": 24.7,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 24.7,
+    "n": 1549
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 24.0,
+    "n": 870
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 15.2,
+    "n": 527
+   }
+  ]
  }
 }
