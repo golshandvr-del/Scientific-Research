@@ -617,8 +617,11 @@
  },
  "S196": {
   "done": true,
-  "status": "FILE_MISSING",
-  "old": "S196_SiteStabilization_EURUSD_TF_Split_NetProfit_252471.md"
+  "status": "INCOMPLETE",
+  "old": "S196_SiteStabilization_EURUSD_TF_Split_NetProfit_252471.md",
+  "new": "S196_SiteStabilizationEURUSDTFSplit_NA_NA_rqs2_0_INCOMPLETE.md",
+  "score": 0.0,
+  "note": "was wrongly logged FILE_MISSING: the file exists but had already been renamed to the new RQS2 format, so lookup by the OLD name failed. Its runner (s196_h1_data_explore.py) makes zero engine calls, so INCOMPLETE is the honest verdict"
  },
  "S199": {
   "done": true,
