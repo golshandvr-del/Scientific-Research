@@ -1,0 +1,8 @@
+{
+ "layer": "S190_S195_XAU_M5_TimeframeReopt_NetProfit_252471_ACCEPTED.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 69
+}

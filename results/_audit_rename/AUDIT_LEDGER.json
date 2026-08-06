@@ -555,5 +555,13 @@
     "n": 325
    }
   ]
+ },
+ "S190": {
+  "done": true,
+  "old": "S190_S195_XAU_M5_TimeframeReopt_NetProfit_252471_ACCEPTED.md",
+  "new": "S190_S195XAUM5TimeframeReopt_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
