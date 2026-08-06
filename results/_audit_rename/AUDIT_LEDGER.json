@@ -76,5 +76,20 @@
     "n": 358
    }
   ]
+ },
+ "S81": {
+  "done": true,
+  "old": "S81_Gold_M30_SwingPullback_NetProfit_14327.md",
+  "new": "S81_GoldM30SwingPullback_Xauusd_M30_rqs2_21_REJECT.md",
+  "verdict": "REJECT",
+  "score": 21.4,
+  "cards": [
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 21.4,
+    "n": 765
+   }
+  ]
  }
 }
