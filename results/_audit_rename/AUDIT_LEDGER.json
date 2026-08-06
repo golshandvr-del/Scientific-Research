@@ -1408,5 +1408,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S222c": {
+  "done": true,
+  "old": "S222c_TurnOfMonthWR60_Xauusd_M5M15M30H1_4830_89.md",
+  "new": "S222c_TurnOfMonthWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
