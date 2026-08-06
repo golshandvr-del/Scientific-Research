@@ -230,10 +230,12 @@
   "cards": []
  },
  "S171": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S171_BrooksSignsOfStrength_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "INCOMPLETE was a harness sys.path bug (sibling-module imports), not a property of the layer; fix verified (S172: ERR calls=0 -> OK calls=40)"
+  "done": true,
+  "old": "S171_BrooksSignsOfStrength_NetProfit_233260_ACCEPTED.md",
+  "new": "S171_BrooksSignsOfStrengthNANA_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S172": {
   "done": false,
