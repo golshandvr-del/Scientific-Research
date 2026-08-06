@@ -1512,5 +1512,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S304": {
+  "done": true,
+  "old": "S304_S171SignsOfStrengthRevival_Xauusd_M15_145504_52_REJECTED.md",
+  "new": "S304_S171SignsOfStrengthRevivalXauusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
