@@ -210,6 +210,8 @@ class Recorder:
         همان دارایی انجام می‌شود (اینجا خامش ذخیره می‌شود تا چیزی گم نشود).
         """
         res = orig(df, entries, sl_points, tp_points, direction, *args, **kw)
+        if not self._budget_ok():
+            return res
         try:
             ent = np.asarray(entries, bool)
             idx = np.flatnonzero(ent)
