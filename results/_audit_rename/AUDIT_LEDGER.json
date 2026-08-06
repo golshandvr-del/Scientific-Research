@@ -1496,5 +1496,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S302": {
+  "done": true,
+  "old": "S302_PreEOMShortWedThu_Eurusd_M15_3683_70_ACCEPTED.md",
+  "new": "S302_PreEOMShortWedThuEurusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
