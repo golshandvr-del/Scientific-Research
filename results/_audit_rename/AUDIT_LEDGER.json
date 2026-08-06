@@ -61,5 +61,20 @@
     "n": 1007
    }
   ]
+ },
+ "S79": {
+  "done": true,
+  "old": "S79_Gold_M5_TrendPullback_NetProfit_4256.md",
+  "new": "S79_GoldM5TrendPullback_Xauusd_M5_rqs2_14_REJECT.md",
+  "verdict": "REJECT",
+  "score": 13.8,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.8,
+    "n": 358
+   }
+  ]
  }
 }
