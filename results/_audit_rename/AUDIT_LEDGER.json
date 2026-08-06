@@ -1528,5 +1528,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S306": {
+  "done": true,
+  "old": "S306_TurnOfMonthDriftLong_Xauusd_M15_39969_61_ACCEPTED.md",
+  "new": "S306_TurnOfMonthDriftLongXauusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }

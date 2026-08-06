@@ -1,0 +1,8 @@
+{
+ "layer": "S306_TurnOfMonthDriftLong_Xauusd_M15_39969_61_ACCEPTED.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 93
+}
