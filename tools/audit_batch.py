@@ -130,6 +130,20 @@ def clean_name(fname: str) -> tuple:
     if not m:
         return None, stem
     sid, rest = m.group(1), m.group(2)
+
+    # ── ابتدا دمِ فرمتِ **جدید** حذف می‌شود ─────────────────────────────────
+    # ⚠️ چرا لازم شد (اندازه‌گیری‌شده): وقتی لایه‌ای برای ممیزیِ مجدد به صف
+    # برمی‌گردد، نامش **قبلاً** فرمتِ جدید را دارد
+    # (`..._NA_NA_rqs2_0_INCOMPLETE`). اگر این دم شناسایی نشود، `NA`ها به
+    # اسمِ استراتژی می‌چسبند و در هر پاس تکرار می‌شوند:
+    #     BrooksTwoLegs → BrooksTwoLegsNANA → BrooksTwoLegsNANANANA
+    # این یک فسادِ تجمعیِ نام است و باید **قبل** از هر پاک‌سازیِ دیگری
+    # خنثی شود.
+    rest = re.sub(
+        r'_(?:[A-Za-z]+|NA)_(?:[A-Z0-9]+|NA)_rqs2_-?\d+_'
+        r'(?:ACCEPT|POWER-LIMITED|UNPROVEN|REJECT|INCOMPLETE)$',
+        '', rest, flags=re.I)
+
     # دمِ نامِ قدیمی (NetProfit_123 / _82 / _REJECTED / ...) حذف می‌شود
     rest = re.sub(r'_?NetProfit_-?\+?\d+', '', rest)
     rest = re.sub(r'_(REJECTED|ACCEPTED|DEAD|PL|UNPROVEN)$', '', rest, flags=re.I)
@@ -137,6 +151,11 @@ def clean_name(fname: str) -> tuple:
     rest = re.sub(r'_rqs2?-?\S*$', '', rest, flags=re.I)
     parts = [p for p in re.split(r'[_\s]+', rest) if p]
     name = ''.join(w[:1].upper() + w[1:] for w in parts) or 'Layer'
+
+    # ترمیمِ فسادِ تجمعیِ پاس‌های قبلی: دنبالهٔ `NA` که به انتهای اسم چسبیده
+    # (`BrooksTwoLegsNANA`) معنایی ندارد و باید پاک شود. فقط دنبالهٔ **آخر**
+    # حذف می‌شود تا اسم‌های واقعیِ حاوی `NA` (مثلِ `Nasdaq`) آسیب نبینند.
+    name = re.sub(r'(?:NA){2,}$', '', name) or 'Layer'
     return sid, name
 
 
