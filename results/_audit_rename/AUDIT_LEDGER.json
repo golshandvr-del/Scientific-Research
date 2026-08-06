@@ -19,5 +19,32 @@
   "new": "S71_ForexMeanReversion_XauusdEurusdAudusd_M15_rqs2_3_REJECT.md",
   "verdict": "REJECT",
   "score": 2.6
+ },
+ "S72": {
+  "done": true,
+  "old": "S72_Forex_Breakout_NetProfit_-20153.md",
+  "new": "S72_ForexBreakout_AudusdDxyEurusd_M15_rqs2_0_REJECT.md",
+  "verdict": "REJECT",
+  "score": 0.0,
+  "cards": [
+   {
+    "card": "AUDUSD-M15",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 6601
+   },
+   {
+    "card": "DXY-M15",
+    "verdict": "INCOMPLETE",
+    "score": 0.0,
+    "n": null
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 6625
+   }
+  ]
  }
 }
