@@ -415,5 +415,26 @@
     "n": 36
    }
   ]
+ },
+ "S178": {
+  "done": true,
+  "old": "S178_BrooksTwoBarReversal_NetProfit_237181_INVALIDATED.md",
+  "new": "S178_BrooksTwoBarReversalINVALIDATED_Xauusd_M15_rqs2_19_REJECT.md",
+  "verdict": "REJECT",
+  "score": 19.1,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.1,
+    "n": 1332
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 11.6,
+    "n": 589
+   }
+  ]
  }
 }
