@@ -457,5 +457,26 @@
     "n": 364
    }
   ]
+ },
+ "S180": {
+  "done": true,
+  "old": "S180_ReviveS169_FullOverlap_NetProfit_237181_REJECTED.md",
+  "new": "S180_ReviveS169FullOverlap_Xauusd_M15_rqs2_11_REJECT.md",
+  "verdict": "REJECT",
+  "score": 10.9,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 10.9,
+    "n": 1059
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 6.6,
+    "n": 364
+   }
+  ]
  }
 }
