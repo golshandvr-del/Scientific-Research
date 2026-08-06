@@ -796,5 +796,20 @@
     "n": 920
    }
   ]
+ },
+ "S206": {
+  "done": true,
+  "old": "S206_H1contextFilter_on_M15_NoImprove_NetProfit_252471.md",
+  "new": "S206_H1contextFilterOnM15NoImprove_Xauusd_M15_rqs2_19_REJECT.md",
+  "verdict": "REJECT",
+  "score": 19.1,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.1,
+    "n": 920
+   }
+  ]
  }
 }
