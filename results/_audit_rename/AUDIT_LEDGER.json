@@ -1456,5 +1456,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S224": {
+  "done": true,
+  "old": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
+  "new": "S224_S81SwingRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }

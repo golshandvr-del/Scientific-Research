@@ -1,0 +1,8 @@
+{
+ "layer": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 747
+}
