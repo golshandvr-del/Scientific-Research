@@ -1392,5 +1392,13 @@
     "n": 282
    }
   ]
+ },
+ "S222a": {
+  "done": true,
+  "old": "S222a_OvernightWR60_Xauusd_M5M15M30H1_17416_84.md",
+  "new": "S222a_OvernightWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
