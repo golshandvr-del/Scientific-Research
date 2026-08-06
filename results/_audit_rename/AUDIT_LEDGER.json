@@ -1536,5 +1536,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S307": {
+  "done": true,
+  "old": "S307_S139OvernightDriftRevival_Xauusd_M15_82546_57_REJECTED.md",
+  "new": "S307_S139OvernightDriftRevivalXauusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
