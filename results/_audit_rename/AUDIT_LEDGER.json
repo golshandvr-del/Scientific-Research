@@ -289,5 +289,32 @@
     "n": 146
    }
   ]
+ },
+ "S174": {
+  "done": true,
+  "old": "S174_BrooksSellClimaxReversal_NetProfit_237181_REJECTED.md",
+  "new": "S174_BrooksSellClimaxReversal_Xauusd_M15_rqs2_8_REJECT.md",
+  "verdict": "REJECT",
+  "score": 8.2,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 8.2,
+    "n": 1386
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 2.9,
+    "n": 1106
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 4.9,
+    "n": 892
+   }
+  ]
  }
 }
