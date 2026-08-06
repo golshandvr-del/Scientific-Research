@@ -1023,5 +1023,38 @@
     "n": 19
    }
   ]
+ },
+ "S214": {
+  "done": true,
+  "old": "S214_BrooksLateEntry_Xauusd_M5_262519_51.md",
+  "new": "S214_BrooksLateEntryXauusdM5_Xauusd_M5_rqs2_15_REJECT.md",
+  "verdict": "REJECT",
+  "score": 14.8,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 10.5,
+    "n": 313
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 7.3,
+    "n": 79
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 14.8,
+    "n": 275
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 12.7,
+    "n": 63
+   }
+  ]
  }
 }
