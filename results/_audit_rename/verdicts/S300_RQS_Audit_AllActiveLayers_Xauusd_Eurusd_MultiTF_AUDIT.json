@@ -1,0 +1,8 @@
+{
+ "layer": "S300_RQS_Audit_AllActiveLayers_Xauusd_Eurusd_MultiTF_AUDIT.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 2000
+}

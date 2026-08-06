@@ -1480,5 +1480,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S300": {
+  "done": true,
+  "old": "S300_RQS_Audit_AllActiveLayers_Xauusd_Eurusd_MultiTF_AUDIT.md",
+  "new": "S300_RQSAuditAllActiveLayersXauusdEurusdMultiTFAUDIT_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
