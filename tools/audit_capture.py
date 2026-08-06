@@ -294,8 +294,10 @@ class Recorder:
                 't_first': t0, 't_last': t1,
                 'close_sum': float(np.nansum(close)),
                 'close_first': float(close[0]), 'close_last': float(close[-1]),
-                'long_idx': [int(x) for x in idx[:60000]] if direction == 'long' else [],
-                'short_idx': [int(x) for x in idx[:60000]] if direction == 'short' else [],
+                'long_idx': (pack_idx(idx[:MAX_SIG_IDX]) if direction == 'long'
+                             else pack_idx([])),
+                'short_idx': (pack_idx(idx[:MAX_SIG_IDX]) if direction == 'short'
+                              else pack_idx([])),
                 'n_long_sig': int(ent.sum()) if direction == 'long' else 0,
                 'n_short_sig': int(ent.sum()) if direction == 'short' else 0,
                 'sl': geom_dollar(sl_points, sl_ser),
