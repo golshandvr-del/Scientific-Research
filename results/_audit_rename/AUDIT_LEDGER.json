@@ -91,5 +91,62 @@
     "n": 765
    }
   ]
+ },
+ "S165": {
+  "done": true,
+  "old": "S165_LiquiditySweepReversal_NetProfit_-1048.md",
+  "new": "S165_LiquiditySweepReversal_EurusdXauusd_M15_rqs2_9_REJECT.md",
+  "verdict": "REJECT",
+  "score": 9.3,
+  "cards": [
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 8.4,
+    "n": 4569
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 9.1,
+    "n": 2298
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 8.8,
+    "n": 1161
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 8.7,
+    "n": 4714
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 7.8,
+    "n": 2385
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 9.3,
+    "n": 1196
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 4550
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 4881
+   }
+  ]
  }
 }
