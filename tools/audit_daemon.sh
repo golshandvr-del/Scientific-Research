@@ -34,6 +34,11 @@ case "$cmd" in
     #   را روی همان لایه می‌سوزاند و صف عملاً قفل می‌شود.
     #   AUDIT_CAP_BUDGET=1200 bash tools/audit_daemon.sh start 200
     export AUDIT_CAP_BUDGET="${AUDIT_CAP_BUDGET:-300}"
+    # ⚠️ حالتِ «ادامه بده» هم باید عبور کند (اندازه‌گیری‌شده): بدونِ این
+    #   `export`، مقدارِ `AUDIT_KEEP_CACHE` در محیطِ راه‌انداز می‌ماند و به
+    #   زیرپروسهٔ ضبط **نمی‌رسد** — لاگ صفر موردِ «resume cache KEPT» نشان
+    #   داد، یعنی جاروب‌های بزرگ باز از صفر شروع می‌شدند.
+    export AUDIT_KEEP_CACHE="${AUDIT_KEEP_CACHE:-}"
     setsid python tools/audit_batch.py "$n" >> "$LOG" 2>&1 < /dev/null &
     echo $! > "$PIDF"
     disown 2>/dev/null || true
