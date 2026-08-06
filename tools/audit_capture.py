@@ -258,6 +258,26 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     rec = Recorder()
     restore = []          # (module, attr, original)
 
+    # ── نکتهٔ حیاتی: هویتِ دوگانهٔ ماژول ─────────────────────────────────────
+    # بخشی از اسکریپت‌های آرشیو `engine/` را خودشان به `sys.path` اضافه می‌کنند
+    # و بعد `from backtest import run_backtest` می‌زنند. پایتون این را یک
+    # ماژولِ **جدا** از `engine.backtest` می‌سازد (نامِ متفاوت ⇒ شیءِ متفاوت)،
+    # پس وصلهٔ ما را نمی‌بیند و ضبط صفر می‌شود.
+    #
+    # درمان: `engine/` را **قبل** از نصبِ وصله در `sys.path` می‌گذاریم و
+    # ماژول‌های تختِ (`backtest`, `scalp_engine`, ...) را خودمان ایمپورت
+    # می‌کنیم تا در `sys.modules` کش شوند. آن‌وقت ایمپورتِ بعدیِ اسکریپت
+    # همان شیءِ **وصله‌خوردهٔ** ما را می‌گیرد.
+    eng_dir = str(ROOT / 'engine')
+    if eng_dir not in sys.path:
+        sys.path.insert(0, eng_dir)
+    for _m in ('backtest', 'scalp_engine', 'dynamic_backtest',
+               'capital_engine', 'trade_simulator'):
+        try:
+            __import__(_m)
+        except Exception:
+            pass
+
     def install(mod_names, fn_name, wrapper_factory):
         """تابع را در ماژولِ اصلی و همهٔ کپی‌های ایمپورت‌شده وصله می‌کند."""
         origs = set()
