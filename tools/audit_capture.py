@@ -48,6 +48,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import runpy
 import sys
 import time
@@ -410,6 +411,51 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     t0 = time.time()
     old_argv = list(sys.argv)
     old_cwd = os.getcwd()
+
+    # ── کشِ resume باید موقتاً کنار برود ────────────────────────────────────
+    # ⚠️ چرا لازم شد (اندازه‌گیری‌شده): `s224_s81_swing_wr60.py` در **۰.۰
+    #   ثانیه** و **بدون خطا** تمام شد و `n_calls=۰` ضبط کرد. علت باگِ ما
+    #   نبود: خودِ اسکریپت قابلیتِ resume دارد —
+    #       if os.path.exists(out):  ...  print('⏩ رد شد (قبلاً)')
+    #   یعنی نتیجهٔ اجرای قبلی را از `results/_<sid>*.json` می‌خواند و
+    #   محاسبه را **کاملاً** رد می‌کند. پس هیچ فراخوانیِ شبیه‌سازی رخ
+    #   نمی‌دهد، شنودگر چیزی نمی‌بیند، و لایه ناعادلانه `INCOMPLETE`
+    #   می‌گیرد در حالی که کدش کاملاً بازتولیدپذیر است.
+    #
+    #   درمان: کشِ **مربوط به همین اسکریپت** موقتاً به نامِ دیگری منتقل
+    #   می‌شود تا اسکریپت مجبور به محاسبهٔ واقعی شود، و در `finally`
+    #   بی‌قید‌و‌شرط برمی‌گردد. پس آرشیو دست‌نخورده می‌ماند حتی اگر اجرا
+    #   با خطا یا تایم‌اوت بمیرد.
+    stem = path.stem                      # s224_s81_swing_wr60
+    parked: list[tuple[Path, Path]] = []
+    try:
+        res_dir = ROOT / 'results'
+        cands = set()
+        # ① الگویِ رایج: results/_<stem>.json
+        cands.add(res_dir / f'_{stem}.json')
+        # ② هر مسیرِ json که خودِ اسکریپت در متنش نام برده باشد
+        try:
+            src = path.read_text(encoding='utf-8', errors='replace')
+            for m in re.finditer(r"'(_[A-Za-z0-9_\-]+\.json)'", src):
+                cands.add(res_dir / m.group(1))
+            for m in re.finditer(r'"(_[A-Za-z0-9_\-]+\.json)"', src):
+                cands.add(res_dir / m.group(1))
+        except Exception:
+            pass
+        for c in sorted(cands):
+            if c.exists() and c.is_file():
+                park = c.with_suffix(c.suffix + '.audit-parked')
+                try:
+                    c.rename(park)
+                    parked.append((c, park))
+                except Exception:
+                    pass
+        if parked:
+            print(f'   (parked {len(parked)} resume-cache file(s) so the '
+                  f'script recomputes)', flush=True)
+    except Exception:
+        pass
+
     try:
         sys.argv = [str(path)]
         os.chdir(ROOT)
@@ -432,6 +478,15 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
         for mod, attr, fn in reversed(restore):
             try:
                 setattr(mod, attr, fn)
+            except Exception:
+                pass
+        # بازگرداندنِ بی‌قید‌و‌شرطِ کشِ resume — آرشیو نباید هیچ تغییری ببیند
+        for orig, park in parked:
+            try:
+                if orig.exists():
+                    # اسکریپت خودش فایلِ تازه نوشته؛ نسخهٔ آرشیو مقدم است
+                    orig.unlink()
+                park.rename(orig)
             except Exception:
                 pass
 
