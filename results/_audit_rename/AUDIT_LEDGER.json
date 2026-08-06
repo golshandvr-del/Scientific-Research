@@ -480,10 +480,12 @@
   ]
  },
  "S185": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S185_123Patterns_1-2-3_NetProfit_243109_ACCEPTED.md",
-  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
+  "new": "S185_123Patterns1-2-3_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S186": {
   "done": true,
