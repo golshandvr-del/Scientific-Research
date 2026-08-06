@@ -1472,5 +1472,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S226": {
+  "done": true,
+  "old": "S226_RQS_MethodologyAudit_Xauusd_M15M5_ByGate.md",
+  "new": "S226_RQSMethodologyAuditXauusdM15M5ByGate_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }

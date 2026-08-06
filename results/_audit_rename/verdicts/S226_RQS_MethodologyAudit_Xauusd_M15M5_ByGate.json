@@ -1,0 +1,8 @@
+{
+ "layer": "S226_RQS_MethodologyAudit_Xauusd_M15M5_ByGate.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 2000
+}
