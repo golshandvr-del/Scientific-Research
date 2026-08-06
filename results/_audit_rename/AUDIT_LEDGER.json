@@ -2030,10 +2030,12 @@
   "cards": []
  },
  "S224": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
-  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
+  "new": "S224_S81SwingRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S225": {
   "done": false,
