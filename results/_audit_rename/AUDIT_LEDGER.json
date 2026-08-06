@@ -316,5 +316,26 @@
     "n": 892
    }
   ]
+ },
+ "S175": {
+  "done": true,
+  "old": "S175_BrooksFailedBreakout_NetProfit_237181_REJECTED.md",
+  "new": "S175_BrooksFailedBreakout_Xauusd_M15_rqs2_15_REJECT.md",
+  "verdict": "REJECT",
+  "score": 14.6,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 14.6,
+    "n": 2315
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 2.4,
+    "n": 1333
+   }
+  ]
  }
 }
