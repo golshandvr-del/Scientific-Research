@@ -224,77 +224,26 @@
  "S170": {
   "done": true,
   "old": "S170_BrooksHigh2Filter_on_S143_NetProfit_225130_ACCEPTED.md",
-  "new": "S170_BrooksHigh2FilterOnS143NANANANA_Eurusd_M15_rqs2_19_REJECT.md",
+  "new": "S170_BrooksHigh2FilterOnS143_Eurusd_M15_rqs2_19_REJECT.md",
   "verdict": "REJECT",
-  "score": 19.4,
-  "cards": [
-   {
-    "card": "EURUSD-M15",
-    "verdict": "REJECT",
-    "score": 19.4,
-    "n": 234
-   },
-   {
-    "card": "EURUSD-M15",
-    "verdict": "REJECT",
-    "score": 14.7,
-    "n": 120
-   },
-   {
-    "card": "EURUSD-M15",
-    "verdict": "REJECT",
-    "score": 13.4,
-    "n": 50
-   }
-  ]
+  "score": 19.0,
+  "note": "judged after two harness fixes (sys.path + tail-slice card id); filename repaired from NA corruption"
  },
  "S171": {
   "done": true,
   "old": "S171_BrooksSignsOfStrength_NetProfit_233260_ACCEPTED.md",
-  "new": "S171_BrooksSignsOfStrengthNANANANA_Xauusd_M15_rqs2_22_REJECT.md",
+  "new": "S171_BrooksSignsOfStrength_Xauusd_M15_rqs2_22_REJECT.md",
   "verdict": "REJECT",
-  "score": 22.5,
-  "cards": [
-   {
-    "card": "XAUUSD-M15",
-    "verdict": "REJECT",
-    "score": 22.5,
-    "n": 610
-   },
-   {
-    "card": "XAUUSD-M15",
-    "verdict": "REJECT",
-    "score": 15.6,
-    "n": 188
-   }
-  ]
+  "score": 22.0,
+  "note": "judged after two harness fixes (sys.path + tail-slice card id); filename repaired from NA corruption"
  },
  "S172": {
   "done": true,
   "old": "S172_BrooksTwoLegs_NetProfit_235400_ACCEPTED.md",
-  "new": "S172_BrooksTwoLegsNANANANA_Xauusd_M15_rqs2_14_REJECT.md",
+  "new": "S172_BrooksTwoLegs_Xauusd_M15_rqs2_14_REJECT.md",
   "verdict": "REJECT",
   "score": 14.0,
-  "cards": [
-   {
-    "card": "XAUUSD-M15",
-    "verdict": "REJECT",
-    "score": 6.7,
-    "n": 1131
-   },
-   {
-    "card": "XAUUSD-M15",
-    "verdict": "REJECT",
-    "score": 14.0,
-    "n": 910
-   },
-   {
-    "card": "XAUUSD-M15",
-    "verdict": "REJECT",
-    "score": 13.5,
-    "n": 823
-   }
-  ]
+  "note": "judged after two harness fixes (sys.path + tail-slice card id); filename repaired from NA corruption"
  },
  "S173": {
   "done": false,
