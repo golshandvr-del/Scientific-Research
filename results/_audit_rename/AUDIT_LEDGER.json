@@ -480,12 +480,10 @@
   ]
  },
  "S185": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S185_123Patterns_1-2-3_NetProfit_243109_ACCEPTED.md",
-  "new": "S185_123Patterns1-2-3_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S186": {
   "done": true,
@@ -608,20 +606,16 @@
   ]
  },
  "S190": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S190_S195_XAU_M5_TimeframeReopt_NetProfit_252471_ACCEPTED.md",
-  "new": "S190_S195XAUM5TimeframeReopt_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S196": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S196_SiteStabilization_EURUSD_TF_Split_NetProfit_252471.md",
-  "new": "S196_SiteStabilizationEURUSDTFSplit_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S199": {
   "done": true,
@@ -865,11 +859,10 @@
  },
  "S207": {
   "done": true,
+  "status": "NOT_A_LAYER",
   "old": "S207_XAUUSD_H4_DataExplore.md",
   "new": "S207_XAUUSDH4DataExplore_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "note": "documentation artefact (preregistration/audit/explore), not a tradeable layer; RQS2 name/score does not apply"
  },
  "S208": {
   "done": true,
@@ -1394,108 +1387,84 @@
   ]
  },
  "S222a": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S222a_OvernightWR60_Xauusd_M5M15M30H1_17416_84.md",
-  "new": "S222a_OvernightWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S222b": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S222b_MondayWR60_Xauusd_M5M15M30H1_7482_88.md",
-  "new": "S222b_MondayWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S222c": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S222c_TurnOfMonthWR60_Xauusd_M5M15M30H1_4830_89.md",
-  "new": "S222c_TurnOfMonthWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S222d": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S222d_EndOfMonthWR60_Xauusd_M5M15_998_85.md",
-  "new": "S222d_EndOfMonthWR60XauusdM5M15_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S222e": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S222e_EurMidMonthWR60_Eurusd_M1M5M15M30_3202_62.md",
-  "new": "S222e_EurMidMonthWR60EurusdM1M5M15M30_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S223a": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S223a_ShortMAConfluenceWR60_Xauusd_M15M30H1_1465_85.md",
-  "new": "S223a_ShortMAConfluenceWR60XauusdM15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S223b": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
-  "new": "S223b_BrooksHigh2WR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S223c": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S223c_BrooksLow2WR60_Xauusd_M5M30H1_1298_87.md",
-  "new": "S223c_BrooksLow2WR60XauusdM5M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S224": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
-  "new": "S224_S81SwingRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S225": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S225_S91SqueezeRevivedWR60_Xauusd_M5M15M30H1_2584_85.md",
-  "new": "S225_S91SqueezeRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S226": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S226_RQS_MethodologyAudit_Xauusd_M15M5_ByGate.md",
-  "new": "S226_RQSMethodologyAuditXauusdM15M5ByGate_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S300": {
   "done": true,
+  "status": "NOT_A_LAYER",
   "old": "S300_RQS_Audit_AllActiveLayers_Xauusd_Eurusd_MultiTF_AUDIT.md",
   "new": "S300_RQSAuditAllActiveLayersXauusdEurusdMultiTFAUDIT_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "note": "documentation artefact (preregistration/audit/explore), not a tradeable layer; RQS2 name/score does not apply"
  },
  "S301": {
   "done": true,
+  "status": "NOT_A_LAYER",
   "old": "S301_EventDriven_Calibration_Xauusd_Eurusd_MultiTF_DISCOVERY.md",
   "new": "S301_EventDrivenCalibrationXauusdEurusdMultiTFDISCOVERY_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "note": "documentation artefact (preregistration/audit/explore), not a tradeable layer; RQS2 name/score does not apply"
  },
  "S302": {
   "done": true,
@@ -1522,12 +1491,10 @@
   "cards": []
  },
  "S305": {
-  "done": true,
+  "done": false,
+  "status": "REQUEUED",
   "old": "S305_S172TwoLegsRevival_Xauusd_M15_0_53_REJECTED.md",
-  "new": "S305_S172TwoLegsRevivalXauusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
  },
  "S306": {
   "done": true,
