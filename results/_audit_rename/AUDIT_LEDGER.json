@@ -249,10 +249,25 @@
   ]
  },
  "S171": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S171_BrooksSignsOfStrengthNANA_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "two independent harness bugs (sys.path for sibling imports; non-standard tail-slice card id) — both fixed and verified"
+  "done": true,
+  "old": "S171_BrooksSignsOfStrength_NetProfit_233260_ACCEPTED.md",
+  "new": "S171_BrooksSignsOfStrengthNANANANA_Xauusd_M15_rqs2_22_REJECT.md",
+  "verdict": "REJECT",
+  "score": 22.5,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 22.5,
+    "n": 610
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 15.6,
+    "n": 188
+   }
+  ]
  },
  "S172": {
   "done": false,
