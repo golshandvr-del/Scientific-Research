@@ -65,6 +65,7 @@ DATA = ROOT / 'data'
 #  ① شناساییِ کارت از اثرِانگشتِ داده
 # ════════════════════════════════════════════════════════════════════════════
 _FP: dict | None = None
+_TAIL: dict | None = None
 
 
 def data_fingerprints() -> dict:
@@ -104,14 +105,72 @@ def data_fingerprints() -> dict:
     return fp
 
 
+def _tail_index() -> dict:
+    """
+    نمایهٔ **عمومیِ** برش‌های دنبالهٔ آخر، به تفکیکِ جفت‌ارز.
+
+    کلید: `(pair, close_last_rounded)` → لیستِ `(tf, close_array)`
+    با این نمایه می‌توان **هر** طولِ برشی را حل کرد، نه فقط چند برشِ
+    از پیش‌حدس‌زده‌شده.
+    """
+    global _TAIL
+    if _TAIL is not None:
+        return _TAIL
+    idx: dict = {}
+    for csv in sorted(DATA.glob('*.csv')):
+        stem = csv.stem
+        if '_' not in stem:
+            continue
+        pair, tf = stem.rsplit('_', 1)
+        try:
+            c = pd.read_csv(csv, usecols=['close'])['close'].to_numpy(float)
+        except Exception:
+            continue
+        idx.setdefault(pair, []).append((tf, c))
+    _TAIL = idx
+    return idx
+
+
 def identify_card(call: dict):
-    """کارتِ یک فراخوانیِ ضبط‌شده را برمی‌گرداند یا None."""
-    key = (int(call['n_bars']), round(float(call['close_first']), 6),
-           round(float(call['close_last']), 6))
-    hit = data_fingerprints().get(key)
+    """
+    کارتِ یک فراخوانیِ ضبط‌شده را برمی‌گرداند یا `None`.
+
+    مرحلهٔ ①: تطبیقِ دقیقِ سه‌گانهٔ اثرِانگشت (سریع، برای کلِ فایل و
+    برش‌های رایج).
+
+    مرحلهٔ ②: **تطبیقِ عمومیِ برش** ⚠️ چرا لازم شد (اندازه‌گیری‌شده):
+    `S172` دادهٔ خود را به `۹۴٬۲۱۹` کندل بریده بود — طولی که در فهرستِ
+    برش‌های رایج نبود. نتیجه: کارت شناسایی نمی‌شد و لایه `INCOMPLETE`
+    می‌گرفت، **در حالی که ضبطش کاملاً موفق بود** (۴۰ فراخوانی، ۱۲۶۵
+    سیگنال). این یک نقصِ ابزار بود که به‌اشتباه به پای لایه نوشته می‌شد.
+
+    تطبیق با «دارایی + طول + لنگرهای قیمتی» انجام می‌شود و بعد با
+    `close_sum` **تأیید** می‌شود، پس همچنان قطعی است نه احتمالی.
+    """
+    n = int(call['n_bars'])
+    c0 = round(float(call['close_first']), 6)
+    c1 = round(float(call['close_last']), 6)
+
+    hit = data_fingerprints().get((n, c0, c1))
     if hit:
         return hit
-    # فالبک: اگر دارایی صریح ضبط شده، فقط تایم‌فریم را از طول حدس نمی‌زنیم
+
+    # ── مرحلهٔ ②: برشِ دلخواه از دنبالهٔ آخر ──────────────────────────────
+    want_sum = call.get('close_sum')
+    asset = call.get('asset')
+    pairs = ([asset] if asset in _tail_index() else list(_tail_index()))
+    for pair in pairs:
+        for tf, c in _tail_index()[pair]:
+            if n > len(c):
+                continue
+            off = len(c) - n                      # برشِ last-N
+            if (round(float(c[off]), 6) == c0
+                    and round(float(c[-1]), 6) == c1):
+                if want_sum is not None:
+                    got = float(np.nansum(c[off:]))
+                    if abs(got - float(want_sum)) > max(1e-3, abs(got) * 1e-9):
+                        continue
+                return (pair, tf, off)
     return None
 
 
