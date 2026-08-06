@@ -563,5 +563,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S196": {
+  "done": true,
+  "old": "S196_SiteStabilization_EURUSD_TF_Split_NetProfit_252471.md",
+  "new": "S196_SiteStabilizationEURUSDTFSplit_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
