@@ -199,5 +199,26 @@
     "n": 2595
    }
   ]
+ },
+ "S169": {
+  "done": true,
+  "old": "S169_BrooksSpikeChannel_NetProfit_223246_REJECTED.md",
+  "new": "S169_BrooksSpikeChannel_Xauusd_M15_rqs2_10_REJECT.md",
+  "verdict": "REJECT",
+  "score": 9.6,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 9.6,
+    "n": 915
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 7.9,
+    "n": 1030
+   }
+  ]
  }
 }
