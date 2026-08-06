@@ -981,5 +981,26 @@
     "n": 2518
    }
   ]
+ },
+ "S212": {
+  "done": true,
+  "old": "S212_BrooksInverseView_Xauusd_M5_261375_46.md",
+  "new": "S212_BrooksInverseViewXauusdM5_Xauusd_M5_rqs2_13_REJECT.md",
+  "verdict": "REJECT",
+  "score": 12.7,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 12.7,
+    "n": 2046
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 760
+   }
+  ]
  }
 }
