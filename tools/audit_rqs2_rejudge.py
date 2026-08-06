@@ -238,6 +238,25 @@ def canonical_null(df, asset, sl_pip, tp_pip, max_hold, sides,
 # ═══════════════════════════════════════════════════════════════════════════
 #  داوریِ یک کارت
 # ═══════════════════════════════════════════════════════════════════════════
+def resolve_max_hold(max_hold, n_bars: int) -> int:
+    """
+    ترجمهٔ «بی‌سقف» به عددی که شبیه‌ساز می‌فهمد.
+
+    چرا لازم است: بسیاری از لایه‌های آرشیو (از جمله S382) **هیچ سقفِ
+    نگه‌داری ندارند** — معامله تا برخوردِ SL یا TP باز می‌ماند. اما امضای
+    `se.simulate_trades` عددِ صحیح می‌خواهد و `None` استثنا می‌دهد.
+
+    ⚠️ حساس‌ترین نکته: این تابع در **یک** نقطه صدا زده می‌شود و مقدارش هم به
+    لایه و هم به مدلِ صفر داده می‌شود. اگر افقِ لایه و افقِ نول یکی نباشند،
+    `H3` بی‌معنا می‌شود: WRِ لایه با براکتِ بی‌سقف و WRِ مبنا با براکتِ
+    ۱۶-کندلی سنجیده می‌شود، و لیفتِ حاصل تفاوتِ **افق** است نه مهارت.
+    این همان جنسِ ناهم‌ترازیِ مبناست که §۰ اسپک آن را قاتلِ RQS+ می‌نامد.
+    """
+    if max_hold is None:
+        return int(n_bars) + 1          # عملاً بی‌سقف
+    return int(max_hold)
+
+
 def judge_card(pair, tf, long_sig, short_sig, sl_pip, tp_pip, max_hold,
                n_trials, k=PERM_K, seed=SEED, holdout_frac=0.30):
     """
@@ -268,8 +287,10 @@ def judge_card(pair, tf, long_sig, short_sig, sl_pip, tp_pip, max_hold,
 
     ls = np.asarray(long_sig, bool)
     ss = np.asarray(short_sig, bool)
+    # افق **یک‌بار** حل می‌شود و همین مقدار به نول هم می‌رود (هم‌ترازیِ مبنا)
+    mh = resolve_max_hold(max_hold, len(df))
     tr = se.simulate_trades(df, ls, ss, sl_pip, tp_pip, asset,
-                            max_hold=max_hold, allow_overlap=False)
+                            max_hold=mh, allow_overlap=False)
     if tr is None or len(tr) == 0:
         return {'card': f'{pair}-{tf}', 'verdict': 'REJECT', 'rqs2_score': 0.0,
                 'reason': 'zero trades', 'n_trades': 0}
@@ -279,7 +300,7 @@ def judge_card(pair, tf, long_sig, short_sig, sl_pip, tp_pip, max_hold,
     sides = tuple(s for s in ('long', 'short') if n_by_side[s] > 0)
     n_sig_by_side = {'long': int(ls.sum()), 'short': int(ss.sum())}
 
-    nul = canonical_null(df, asset, sl_pip, tp_pip, max_hold, sides,
+    nul = canonical_null(df, asset, sl_pip, tp_pip, mh, sides,
                          n_sig_by_side, k=k, seed=seed)
 
     # holdout تقویمی: مرزِ زمانی روی (1-holdout_frac) از دهانهٔ داده
