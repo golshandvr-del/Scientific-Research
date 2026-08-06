@@ -79,6 +79,10 @@ DEFAULT_TIMEOUT = 900
 # **بهترین** ترکیبِ گزارش‌شده در سند است، نه هر ۷۲ ترکیب. سقف روی ضبطِ
 # کامل است نه روی مشاهده؛ شمارشِ کلِ فراخوانی‌ها حفظ می‌شود تا در حکم
 # دیده شود که لایه چند ترکیب را جست‌وجو کرده (وردیِ `H5` چندگانگی).
+class _SkipParking(Exception):
+    """سیگنالِ درونی: از بلوکِ کنارگذاریِ کشِ resume صرف‌نظر شود."""
+
+
 MAX_FULL_CALLS = 40
 # سقفِ سختِ «چند فراخوانی **بررسی** شود» (نه چند تا نگه داشته شود). بعد از این
 # عدد، ساختنِ رکورد متوقف می‌شود تا هزینهٔ CPU در جاروب‌های چند-ده-هزارتایی
@@ -517,7 +521,27 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     except Exception:
         pass
 
+    # ── حالتِ «ادامه بده» برای جاروب‌های بسیار بزرگ ─────────────────────────
+    # ⚠️ چرا لازم شد (اندازه‌گیری‌شده): `s223_structural_wr60.py` یک جاروبِ
+    #   `۵ SL × ۶ TP × ترکیب‌های تا ۳ فیلتر × ۳ لایه × چند تایم‌فریم` است و
+    #   حتی در بودجهٔ ۹۰۰ ثانیه تمام نمی‌شود (`S223a` دو بار `DEFERRED` شد).
+    #   ولی خودِ اسکریپت **ذخیرهٔ افزایشی** دارد و کامنتش صریح است:
+    #       save()  # ذخیرهٔ افزایشی: مقاوم در برابر ریستِ سندباکس
+    #   یعنی بعد از هر لایه چک‌پوینت می‌زند. اگر کش را **نگه** داریم، هر
+    #   اجرا یک لایهٔ ناتمام را تکمیل می‌کند و ضبط تدریجاً کامل می‌شود.
+    #   بدونِ این حالت، کنارگذاشتنِ کش هر بار همه‌چیز را از صفر شروع می‌کند
+    #   و لایه برای همیشه `DEFERRED` می‌ماند — یعنی نقصِ ابزار به‌جای حکم.
+    #   AUDIT_KEEP_CACHE=1 python tools/audit_capture.py s223_structural_wr60.py
+    keep_cache = os.environ.get('AUDIT_KEEP_CACHE', '').strip() not in ('', '0')
+    if keep_cache:
+        print('   (AUDIT_KEEP_CACHE=1 — resume cache KEPT so the script '
+              'continues its incremental sweep instead of restarting)',
+              flush=True)
+
     try:
+        if keep_cache:
+            cands = set()                 # کنارگذاری کاملاً غیرفعال می‌شود
+            raise _SkipParking
         res_dir = ROOT / 'results'
         cands = set()
         # ① الگویِ رایج: results/_<stem>.json
@@ -542,6 +566,8 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
         if parked:
             print(f'   (parked {len(parked)} resume-cache file(s) so the '
                   f'script recomputes)', flush=True)
+    except _SkipParking:
+        pass
     except Exception:
         pass
 
