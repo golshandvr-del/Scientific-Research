@@ -2009,9 +2009,9 @@
  },
  "S223a": {
   "done": false,
-  "status": "REQUEUED",
+  "status": "DEFERRED",
   "old": "S223a_ShortMAConfluenceWR60_Xauusd_M15M30H1_1465_85.md",
-  "reason": "INCOMPLETE came from harness limits (SID-vs-filename mismatch, shared builder script, or resume-cache short-circuit) — code exists and is reproducible"
+  "reason": "capture > 900s"
  },
  "S223b": {
   "done": false,
@@ -2110,5 +2110,17 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S196#doc:S196_XAUUSD_H1_DataExplore.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S196_XAUUSD_H1_DataExplore.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S207#doc:S207_XAUUSD_H4_DataExplore.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S207_XAUUSD_H4_DataExplore.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
  }
 }
