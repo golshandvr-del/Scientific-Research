@@ -2159,5 +2159,13 @@
   "status": "NOT_A_LAYER",
   "old": "S301_EventDriven_Calibration_Xauusd_Eurusd_MultiTF_DISCOVERY.md",
   "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S310": {
+  "done": true,
+  "old": "S310_EndOfMonthDriftRevival_Xauusd_M15_87.md",
+  "new": "S310_EndOfMonthDriftRevivalXauusdM15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
