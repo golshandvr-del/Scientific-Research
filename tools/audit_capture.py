@@ -382,6 +382,98 @@ class Recorder:
                                    traceback.format_exc()[-1500:]})
         return res
 
+    # ── آداپتورِ `trade_simulator.simulate` (موتورِ سومِ آرشیو، ۳۷ اسکریپت) ──
+    def record_simulate(self, orig, df, strategy, asset, *args, **kw):
+        """
+        موتورِ سومِ آرشیو: `engine.trade_simulator.simulate`.
+
+        ⚠️ چرا لازم شد (اندازه‌گیری‌شده): `S310`–`S313` پشتِ‌سرهم `INCOMPLETE`
+        گرفتند. شمارشِ سورس گفت «صفر فراخوانیِ موتور»، ولی این **دروغِ
+        ابزار** بود: این اسکریپت‌ها `from engine import trade_simulator as TS`
+        می‌کنند و `TS.simulate(...)` صدا می‌زنند — موتوری که شنودگرِ ما
+        **اصلاً وصله نمی‌زد**. `۳۷` اسکریپتِ آرشیو از آن استفاده می‌کنند،
+        یعنی ۳۷ لایه محکوم بودند به حکمِ ناعادلانهٔ «قابل اثبات نیست».
+
+        تفاوتِ بنیادیِ این موتور: سیگنال **پیشاپیش** به‌صورت آرایه داده
+        نمی‌شود؛ `strategy` شیئی با متدِ `advise(ctx)` است و سیگنال‌ها
+        **جریانی** تولید می‌شوند. پس ایندکسِ سیگنال را نمی‌توان از ورودی
+        خواند — ولی می‌توان از **خروجی** بازسازی کرد: هر رکوردِ معامله
+        `entry_bar` و `side` دارد، و هندسه‌اش `sl_pip`/`tp_pip` است.
+
+        این بازسازی **محافظه‌کارانه** است: فقط سیگنال‌هایی دیده می‌شوند که
+        به معاملهٔ واقعی تبدیل شدند (سیگنالِ نادیده‌گرفته‌شده در زمانِ
+        پوزیشنِ باز ثبت نمی‌شود). این با نگاهِ داور سازگار است، چون داور هم
+        دربارهٔ معاملاتِ **انجام‌شده** حکم می‌دهد.
+        """
+        res = orig(df, strategy, asset, *args, **kw)
+        if not self._budget_ok():
+            return res
+        try:
+            trades = res[0] if isinstance(res, tuple) else res
+            close = np.asarray(df['close'], float)
+            li: list = []
+            si: list = []
+            sl_vals: list = []
+            tp_vals: list = []
+            npip = None
+            ntr = 0
+            if trades is not None and len(trades) > 0:
+                ntr = int(len(trades))
+                sides = np.asarray(trades['side']).astype(str)
+                ebar = np.asarray(trades['entry_bar'], int)
+                for s, b in zip(sides, ebar):
+                    (li if s.upper().startswith('L') else si).append(int(b))
+                if 'sl_pip' in trades:
+                    sl_vals = [float(x) for x in
+                               np.asarray(trades['sl_pip'], float)]
+                if 'tp_pip' in trades:
+                    tp_vals = [float(x) for x in
+                               np.asarray(trades['tp_pip'], float)]
+                if 'pnl_pip' in trades:
+                    npip = float(np.asarray(trades['pnl_pip'], float).sum())
+
+            def geom_list(vals):
+                """هندسه به همان شکلِ آداپتورهای دیگر (pip)."""
+                if not vals:
+                    return {'kind': 'scalar', 'value': None}
+                arr = np.asarray(vals, float)
+                if float(arr.max() - arr.min()) < 1e-9:
+                    return {'kind': 'scalar', 'value': float(arr[0])}
+                return {'kind': 'series',
+                        'median': float(np.nanmedian(arr)),
+                        'min': float(np.nanmin(arr)),
+                        'max': float(np.nanmax(arr)),
+                        'values': [float(x) for x in arr[:MAX_GEOM_VALS]]}
+
+            t = df['time'] if 'time' in df.columns else None
+            self._add({
+                'engine': 'trade_simulator.simulate',
+                'asset': str(asset),
+                'n_bars': int(len(df)),
+                't_first': (str(t.iloc[0]) if t is not None else None),
+                't_last': (str(t.iloc[-1]) if t is not None else None),
+                'close_sum': float(np.nansum(close)),
+                'close_first': float(close[0]),
+                'close_last': float(close[-1]),
+                'long_idx': pack_idx(np.asarray(sorted(li)[:MAX_SIG_IDX])),
+                'short_idx': pack_idx(np.asarray(sorted(si)[:MAX_SIG_IDX])),
+                'n_long_sig': len(li),
+                'n_short_sig': len(si),
+                'sl': geom_list(sl_vals),
+                'tp': geom_list(tp_vals),
+                'max_hold': kw.get('max_bars_hold'),
+                'allow_overlap': bool(kw.get('allow_pyramiding', False)),
+                'be_trigger_pip': None,
+                'trail_pip': None,
+                'result_n_trades': ntr,
+                'result_sum_pip': npip,
+            })
+        except Exception:
+            if len(self.calls) < MAX_FULL_CALLS:
+                self.calls.append({'capture_error':
+                                   traceback.format_exc()[-1500:]})
+        return res
+
 
 def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     """
@@ -468,6 +560,13 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
                           *a, **kw: rec.record_run_backtest(
                               orig, df, entries, sl_points, tp_points,
                               direction, *a, **kw)))
+
+    # موتورِ سوم — `۳۷` اسکریپتِ آرشیو از این استفاده می‌کنند و تا امروز
+    # وصله نمی‌شد، پس همه‌شان محکوم به `INCOMPLETE`ِ ناعادلانه بودند.
+    install(['engine.trade_simulator', 'trade_simulator'], 'simulate',
+            lambda orig: (lambda df, strategy, asset, *a, **kw:
+                          rec.record_simulate(orig, df, strategy, asset,
+                                              *a, **kw)))
 
     path = ROOT / 'strategies' / script
     out = {'script': script, 'ok': False, 'calls': [], 'stdout_tail': '',
