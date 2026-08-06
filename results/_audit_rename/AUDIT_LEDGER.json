@@ -148,5 +148,26 @@
     "n": 4881
    }
   ]
+ },
+ "S166": {
+  "done": true,
+  "old": "S166_HalfTrendHeikenAshi_NetProfit_-8482.md",
+  "new": "S166_HalfTrendHeikenAshi_Xauusd_M15_rqs2_0_REJECT.md",
+  "verdict": "REJECT",
+  "score": 0.3,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 19991
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 0.3,
+    "n": 14828
+   }
+  ]
  }
 }
