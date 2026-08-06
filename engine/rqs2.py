@@ -238,6 +238,63 @@ ADMISSION_RULE = 'gates_only'      # v2.3 — سندِ حاکم: docs/RQS2_SPEC.
 ECONOMIC_GATES = ('H0', 'H1', 'H2', 'H8', 'H9')
 POWER_GATES    = ('H3', 'H7', 'H10')
 
+# ----------------------------------------------------------------------------
+#  v2.6 — حکمِ پنجم: UNPROVEN (اثبات‌نشده)   ← رفعِ باگِ «سقفِ شیشه‌ایِ H3»
+# ----------------------------------------------------------------------------
+# باگی که کاربر افشا کرد: لایه‌های **کم‌سیگنالِ صحیح** مستقیم REJECT می‌شدند.
+# اثباتِ ریاضی (دفترچهٔ results/RESEARCH_NOTEBOOK_RQS2_UNPROVEN_AUDIT.md):
+#   H3 شرطِ z≥3.09 دارد و z = lift/sd با sd ≥ √(p₀(1−p₀)/n)·100. پس حتی یک
+#   لبهٔ ۱۰۰٪ واقعی با lift=+10pp به n≥239 نیاز دارد (≈۱۳ سال برای لایهٔ
+#   ماهی-۱-۲-سیگنال) و با lift=+4pp به n≥1490 (≈۸۳ سال!). REJECTِ این لایه‌ها
+#   خطای منطقیِ «absence of evidence = evidence of absence» است.
+# چرا POWER-LIMITED (v2.5) کافی نبود: کمبودِ نمونه H0 (n<30) و H1 (n_wins<10)
+#   را هم می‌شکند که در خانوادهٔ ECONOMIC نشسته‌اند ⇒ econ_ok=False ⇒ مسیرِ
+#   POWER-LIMITED هم بسته می‌ماند. لایهٔ نادرِ سالم در هر دو مسیر دیوار می‌خورد.
+#
+# راهِ حل — قرنطینهٔ نگهبان‌دار، نه شل‌کردنِ معیار:
+#   UNPROVEN یعنی «شواهدِ امیدوارکننده، اثباتِ ناکافی». به سایت می‌رود ولی با
+#   نشانِ هشدارِ «⚠ Unproven»؛ در سودِ خالصِ رسمی حساب نمی‌شود؛ و با رشدِ n
+#   خودکار بازمحاکمه می‌شود (ارتقا به ACCEPT یا سقوط به REJECT — خودتصحیح‌گر).
+#
+# نگهبانِ شش‌شرطی (کالیبره‌شده با ۸۰۰۰+ شبیه‌سازیِ مونت-کارلو در دفترچه):
+#   G1) کفِ لبه: lift ≥ 4pp (همان کفِ خانوادهٔ H3 — سخت‌گیری کم نمی‌شود)
+#   G2) شواهدِ آماری: p_emp(binomial, one-sided) ≤ 0.10
+#   G3) کنترلِ EFDR ضدِ mass-search: p_emp × n_trials ≤ 1.0
+#       (با T=100 واریانتِ آزموده، شواهد باید ۱۰× قوی‌تر باشد؛ نفوذِ جستجوی
+#        انبوهِ شانسی از ~۶۴٪ به ~۲۳٪ سقوط می‌کند و بازمحاکمه بقیه را می‌کشد)
+#   G4) سلامتِ اقتصادی: PF ≥ PF_MIN و expectancy > 0 (پس از هزینهٔ کامل)
+#   G5) سقفِ شیشه‌ای: n < n_required(lift, p₀) = (3.09·100·√(p₀(1−p₀))/lift)²
+#       ⇒ UNPROVEN فقط به لایه‌ای می‌رسد که شکستِ H3اش **ریاضیاً ناشی از
+#       کمبودِ n** است. لایهٔ پرنمونه‌ای که با n کافی هم رد شده، REJECT قطعی
+#       است و هیچ راهِ فراری ندارد.
+#   G6) ساختاری — «فقط شکستِ توانی بخشیده می‌شود»:
+#       بخشودنی (جنسِ کمبودِ n): H0 فقط-به‌دلیلِ کفِ نمونه، H1 فقط-به‌دلیلِ کفِ
+#       برنده، H3، H5، H7. نابخشودنی (ربطی به n ندارند): H2 (ضدتقلبِ هندسی)،
+#       H4/H6 (ضدِ over-fit)، H8 (ریسکِ دنباله)، H9 (استحکامِ هزینه)، H10
+#       (رژیم)، H0 به‌دلیلِ هم‌پوشانی/ورشکستگی، H1 به‌دلیلِ PF یا تمرکزِ سود.
+#       هرکدام False باشد ⇒ REJECT، بدونِ بحث. (None مجاز: کمبودِ داده است.)
+#
+# FPR پذیرفته‌شده ≈۷-۸٪ روی لایهٔ شانسی — و چرا قابلِ قبول است:
+#   UNPROVEN حکمِ پذیرش نیست، حکمِ **قرنطینه** است: (۱) هزینهٔ مالیِ مثبتِ
+#   کاذب ≈ صفر چون در سودِ رسمی نیست، (۲) کاربر نشانِ هشدار را می‌بیند،
+#   (۳) رگرسیون-به-میانگین لایهٔ شانسی را در بازمحاکمه قطعاً می‌کشد.
+#   دروازهٔ ACCEPT دست‌نخورده در p≤0.001 می‌ماند — سخت‌گیریِ اصلی صفر ریزش دارد.
+UNPROVEN_LIFT_MIN = 4.0     # G1 — همان کفِ لیفتِ خانوادهٔ H3
+UNPROVEN_P_MAX    = 0.10    # G2 — شواهدِ ملایم ولی واقعی
+UNPROVEN_EFDR_MAX = 1.0     # G3 — بودجهٔ کشفِ کاذبِ مؤثر: p_emp×n_trials
+UNPROVEN_Z_H3     = 3.09    # G5 — همان zِ لازمِ H3 (p≤0.001 یک‌طرفه)
+
+
+def n_required_for_h3(lift_pp, p0_frac):
+    """حداقل n که در آن یک لبهٔ **پایدار** با این lift اصلاً *می‌تواند* H3 را
+    پاس کند (کرانِ پایینِ سقفِ شیشه‌ای). sd ≥ se_binom ⇒ این کران خوش‌بینانه
+    است؛ n واقعیِ لازم معمولاً بزرگ‌تر است — پس G5 محافظه‌کارانه به نفعِ REJECT
+    خطا می‌کند، نه به نفعِ UNPROVEN."""
+    if lift_pp is None or lift_pp <= 0:
+        return float('inf')
+    p0 = min(max(float(p0_frac), 1e-9), 1 - 1e-9)
+    return (UNPROVEN_Z_H3 * 100.0 * sqrt(p0 * (1.0 - p0)) / float(lift_pp)) ** 2
+
 # آستانه‌های **رتبه‌بندی** (هیچ اثری در پذیرش ندارند؛ فقط برچسبِ اولویت)
 RANK_TIERS = ((80.0, 'A'), (65.0, 'B'), (50.0, 'C'), (0.0, 'D'))
 
@@ -872,16 +929,23 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     # ---------------------------- H0 نمونه و استقلال ----------------------------
     conc = max_concurrency(tr)
     h0_reasons = []
+    # v2.6: تفکیکِ جنسِ شکستِ H0 — «نمونه‌ای» (بخشودنی برای UNPROVEN) از
+    # «ساختاری» (نابخشودنی: هم‌پوشانی p-value را نامعتبر می‌کند و ورشکستگی
+    # مرگِ اقتصادی است — هیچ‌کدام با n بیشتر خوب نمی‌شوند).
+    h0_hard_reasons = []
     if n < N_FLOOR:
         h0_reasons.append(f"n={n}<{N_FLOOR}")
     if conc > MAX_CONCURRENCY and not allow_overlap:
         h0_reasons.append(f"concurrency={conc}>{MAX_CONCURRENCY}")
+        h0_hard_reasons.append('concurrency')
     for s in active_sides:
         if len(active_sides) > 1 and n_by_side[s] < N_SIDE_FLOOR:
             h0_reasons.append(f"n_{s}={n_by_side[s]}<{N_SIDE_FLOOR}")
     if ruined:
         h0_reasons.append("account ruined")
+        h0_hard_reasons.append('ruined')
     h0 = (len(h0_reasons) == 0)
+    h0_sample_only = (not h0) and (len(h0_hard_reasons) == 0)
 
     # ------------------------------ H1 کیفیتِ خام ------------------------------
     # RR-خنثی: `PF` هر دو سمتِ معادله را می‌بیند، پس بُعدش درست است. اما دو خطرِ
@@ -897,19 +961,26 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     top_win_share = (float(win_pnl.max()) / gross_win_pip
                      if (win_pnl.size and gross_win_pip > 0) else None)
     h1_reasons = []
+    # v2.6: تفکیکِ جنسِ شکستِ H1 — کفِ برنده «نمونه‌ای» است (با n بیشتر
+    # خودبه‌خود حل می‌شود)، ولی PF پایین، تمرکزِ سود و کفِ WR ارثی «ساختاری»اند.
+    h1_hard_reasons = []
     if pf < PF_MIN:
         h1_reasons.append(f"PF={pf:.3f}<{PF_MIN}")
+        h1_hard_reasons.append('pf')
     if wins < WIN_FLOOR:
         h1_reasons.append(f"n_wins={wins}<{WIN_FLOOR} (winning tail unsampled)")
     if top_win_share is not None and wins >= 5 and top_win_share > TOP_WIN_SHARE_MAX:
         h1_reasons.append(f"top_win_share={top_win_share:.2f}>{TOP_WIN_SHARE_MAX}")
+        h1_hard_reasons.append('top_win_share')
     if tp_pip is None or float(tp_pip) <= 0:
         # بدونِ `tp_pip`، دروازهٔ H2 خاموش است و هیچ سنجهٔ RR-آگاهی وجود ندارد؛
         # پس کفِ ارثیِ محافظه‌کارانه برمی‌گردد تا حذفِ آن به یک **حفره** بدل نشود.
         if wr < WR_FLOOR_NO_RR:
             h1_reasons.append(f"WR={wr:.2f}<{WR_FLOOR_NO_RR} (no tp_pip ⇒ "
                               f"RR-aware breakeven unavailable, legacy floor applies)")
+            h1_hard_reasons.append('wr_floor_no_rr')
     h1 = (len(h1_reasons) == 0)
+    h1_sample_only = (not h1) and (len(h1_hard_reasons) == 0)
     res['notes'].extend(h1_reasons)
 
     # -------------------- H2 لبهٔ هندسیِ هزینه‌دار (ضدِ تقلب) --------------------
@@ -1192,6 +1263,38 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     power_limited = ((not all_pass) and econ_ok and power_defect
                      and antioverfit_ok and edge_positive)
 
+    # --------------------- v2.6: طبقه‌بندیِ UNPROVEN ---------------------
+    # منطق و کالیبراسیون در بلوکِ ثابت‌های UNPROVEN_* شرح داده شد.
+    # G6 — شرطِ ساختاری: هر شکستِ غیرتوانی ⇒ نابخشودنی ⇒ مسیر بسته.
+    forgivable_structure = (
+        (h0 is True or h0_sample_only) and
+        (h1 is True or h1_sample_only) and
+        all(gates[g] is not False for g in ('H2', 'H4', 'H6', 'H8', 'H9', 'H10'))
+    )
+    p0_frac = (nb['ref_wr'] / 100.0) if nb else None
+    n_req_h3 = (n_required_for_h3(lift, p0_frac)
+                if (lift is not None and p0_frac is not None) else float('inf'))
+    _T = max(1, int(n_trials)) if n_trials else None
+    unproven_checks = {
+        'G1_lift_floor':    (lift is not None and lift >= UNPROVEN_LIFT_MIN),
+        'G2_evidence':      (p_emp is not None and p_emp <= UNPROVEN_P_MAX),
+        'G3_efdr':          (p_emp is not None and _T is not None and
+                             p_emp * _T <= UNPROVEN_EFDR_MAX),
+        'G4_economics':     (np.isfinite(pf) and pf >= PF_MIN and exp_pip > 0),
+        'G5_glass_ceiling': (np.isfinite(n_req_h3) and n < n_req_h3),
+        'G6_structure':     bool(forgivable_structure),
+    }
+    unproven = ((not all_pass) and (not power_limited)
+                and all(unproven_checks.values()))
+    if unproven:
+        res['notes'].append(
+            f"UNPROVEN: edge economically alive (lift={lift:+.2f}pp, "
+            f"p_emp={p_emp:.4f}, EFDR={p_emp*_T:.3f}) but "
+            f"n={n} < n_required(H3)={n_req_h3:.0f} — statistical proof is "
+            f"mathematically impossible at this sample size. Quarantined, "
+            f"not accepted: excluded from official net profit, badge-flagged "
+            f"on site, auto-retried as n grows.")
+
     # ------------------------------ نمرهٔ پیوسته ------------------------------
     # ⚠️ برخلافِ RQS+، هیچ مؤلفه‌ای به **WR خام** پاداش نمی‌دهد؛ مؤلفهٔ کیفیتِ
     #    ورود «مازادِ هزینه‌دار» است تا تقلبِ TP<SL خودبه‌خود بی‌اثر شود.
@@ -1222,6 +1325,9 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     elif power_limited:
         # لبهٔ اقتصاداً-سالم که فقط توانِ آماری کم دارد — نه ACCEPT، نه BURNED.
         verdict = 'POWER-LIMITED'
+    elif unproven:
+        # v2.6: لبهٔ زنده که اثباتش در این n ریاضیاً ناممکن است — قرنطینه.
+        verdict = 'UNPROVEN'
     elif n_fail > 0:
         verdict = 'REJECT'
     else:
@@ -1282,6 +1388,12 @@ def compute_rqs2(trades, asset, *, sl_pip=None, tp_pip=None, bar_time=None,
     res['accepted'] = bool(all_pass)
     # v2.5: طبقهٔ توان‌محدود — نه پذیرفته، نه سوخته؛ اتاقِ انتظار.
     res['power_limited'] = bool(power_limited)
+    # v2.6: قرنطینهٔ نگهبان‌دار — به سایت با نشانِ «⚠ Unproven» می‌رود،
+    # در سودِ رسمی حساب نمی‌شود، با رشدِ n بازمحاکمه می‌شود.
+    res['unproven'] = bool(unproven)
+    res['unproven_checks'] = {k: bool(v) for k, v in unproven_checks.items()}
+    res['metrics']['n_required_h3'] = (round(float(n_req_h3), 1)
+                                       if np.isfinite(n_req_h3) else None)
     res['gate_families'] = {
         'economic': {g: gates[g] for g in ECONOMIC_GATES},
         'power': {g: gates[g] for g in POWER_GATES},
