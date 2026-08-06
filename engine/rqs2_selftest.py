@@ -191,7 +191,7 @@ def make_trades_pnl(win_pnls, loss_pnls, sl_pip, *, step=10, hold=5):
     return pd.DataFrame(rows)
 
 
-def mk_null(long_wr, short_wr=None, sd=1.5, k=20, gap=4.0):
+def mk_null(long_wr, short_wr=None, sd=1.5, k=1000, gap=4.0):
     """مدلِ صفرِ مصنوعی. `gap` = فاصلهٔ perm_max از perm_mean."""
     d = {}
     for s, v in (('long', long_wr), ('short', short_wr)):
