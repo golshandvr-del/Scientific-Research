@@ -189,23 +189,35 @@ def build_null(df, asset, sl_pip, tp_pip, max_hold, side, n_sig,
     }
 
 
-def null_struct(nb, wr_obs):
+def canonical_null(df, asset, sl_pip, tp_pip, max_hold, sides,
+                   n_sig_by_side, k=PERM_K, seed=SEED):
     """
-    ترجمهٔ مبناها به ساختارِ کانونیِ نولی که `compute_rqs2` می‌خواهد.
-    `ref_wr` = بدترین (سخت‌ترین) مبنا، چون اسپک می‌گوید مهارت باید نسبت به
-    **قوی‌ترین** توضیحِ بی‌مهارت سنجیده شود، نه ضعیف‌ترینش.
+    ساختارِ کانونیِ نول **به تفکیکِ سمت** — دقیقاً همان شکلی که
+    `rqs2.blend_null` انتظار دارد:
+
+        {'long':  {'uncond_wr','perm_mean','perm_sd','perm_max','perm_k'},
+         'short': {...}}
+
+    ⚠️ چرا per-side و نه یکجا (این یک اصلاحِ صحت است، نه سلیقه):
+    `blend_null` مبنا را با **وزنِ تعدادِ معاملهٔ همان سمت** ترکیب می‌کند، چون
+    هدیهٔ رانش برای long و short **قرینه** است: در داراییِ صعودی، لانگِ بی‌مهارت
+    مبنای بالا و شورتِ بی‌مهارت مبنای پایین دارد. اگر یک مبنای مخلوط بدهم:
+      · لایهٔ لانگ‌محور مبنای مصنوعاً **پایین** می‌گیرد ⇒ لیفتِ جعلیِ مثبت ⇒
+        پذیرشِ کاذب. این دقیقاً همان باگی است که کلِ RQS+ را زمین زد (§۰ اسپک:
+        «عددِ ۸۴.۲ تماماً رانشِ صعودیِ هفتگیِ طلا بود، نه مهارتِ سیگنال»).
+    پس مبنای هر سمت با **همان سمت** ساخته می‌شود و ترکیب را خودِ موتور می‌کند.
     """
-    if nb is None:
-        return None
-    refs = [x for x in (nb['uncond_wr'], nb['perm_mean']) if x is not None]
-    ref = max(refs) if refs else None
-    if ref is None:
-        return None
-    sd = nb['perm_sd']
-    lift = wr_obs - ref
-    return {
-        'ref_wr': ref, 'perm_mean': nb['perm_mean'], 'perm_sd': sd,
-        'perm_max': nb['perm_max'], 'perm_k': nb['perm_k'],
-        'uncond_wr': nb['uncond_wr'], 'lift': lift,
-        'z': (lift / sd) if sd and sd > 0 else None,
-    }
+    out = {}
+    for s in ('long', 'short'):
+        if s not in sides or n_sig_by_side.get(s, 0) <= 0:
+            out[s] = {}
+            continue
+        nb = build_null(df, asset, sl_pip, tp_pip, max_hold, s,
+                        n_sig_by_side[s], k=k, seed=seed)
+        if nb is None:
+            out[s] = {}
+            continue
+        out[s] = dict(uncond_wr=nb['uncond_wr'], perm_mean=nb['perm_mean'],
+                      perm_sd=nb['perm_sd'], perm_max=nb['perm_max'],
+                      perm_k=nb['perm_k'])
+    return out
