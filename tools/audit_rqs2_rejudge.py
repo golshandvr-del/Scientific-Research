@@ -221,3 +221,119 @@ def canonical_null(df, asset, sl_pip, tp_pip, max_hold, sides,
                       perm_sd=nb['perm_sd'], perm_max=nb['perm_max'],
                       perm_k=nb['perm_k'])
     return out
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+#  داوریِ یک کارت
+# ═══════════════════════════════════════════════════════════════════════════
+def judge_card(pair, tf, long_sig, short_sig, sl_pip, tp_pip, max_hold,
+               n_trials, k=PERM_K, seed=SEED, holdout_frac=0.30):
+    """
+    یک (لایه × کارت) را کاملاً می‌آزماید و حکمِ رسمیِ RQS2 را برمی‌گرداند.
+
+    چهار ورودیِ اجباریِ اسپک که **هیچ‌کدام حدس زده نمی‌شوند**:
+      · `tp_pip` صریح  ⇒ وگرنه `H2 = UNKNOWN` (اسپک §نقصِ ۳: RQS+ به‌غلط
+        `tp = sl` فرض می‌کرد و سپرِ ضدِتقلبِ TP<SL خودبه‌خود خاموش می‌شد).
+      · `null`         ⇒ وگرنه `H3/H4/H5 = UNKNOWN`.
+      · `n_trials`     ⇒ وگرنه `H5 = UNKNOWN`.
+      · `holdout`      ⇒ وگرنه `H7 = UNKNOWN`.
+    نبودِ هرکدام ⇒ `INCOMPLETE`، **نه** ACCEPT. این خودِ سیاستِ اسپک است:
+    «نبودِ آزمونِ کنترل، شاهدِ وجودِ مهارت نیست.»
+
+    تقسیمِ holdout **تقویمی** است (۷۰٪ اولِ *زمان*، نه ۷۰٪ اولِ معاملات)، چون
+    تقسیم بر تعدادِ معامله می‌تواند کلِ holdout را در یک بازهٔ کوتاهِ پرسیگنال
+    بچپاند — همان نقصِ ۶ که اسپک برای `H6` رفعش کرد.
+    """
+    df = load_card(pair, tf)
+    if df is None or len(df) < 500:
+        return {'card': f'{pair}-{tf}', 'verdict': 'INCOMPLETE',
+                'rqs2_score': 0.0, 'reason': 'no data / too short'}
+
+    asset = pair
+    if asset not in se.ASSETS:
+        return {'card': f'{pair}-{tf}', 'verdict': 'INCOMPLETE',
+                'rqs2_score': 0.0, 'reason': f'asset {asset} not in cost model'}
+
+    ls = np.asarray(long_sig, bool)
+    ss = np.asarray(short_sig, bool)
+    tr = se.simulate_trades(df, ls, ss, sl_pip, tp_pip, asset,
+                            max_hold=max_hold, allow_overlap=False)
+    if tr is None or len(tr) == 0:
+        return {'card': f'{pair}-{tf}', 'verdict': 'REJECT', 'rqs2_score': 0.0,
+                'reason': 'zero trades', 'n_trades': 0}
+
+    bt = bar_time_of(df)
+    n_by_side = {s: int((tr['direction'] == s).sum()) for s in ('long', 'short')}
+    sides = tuple(s for s in ('long', 'short') if n_by_side[s] > 0)
+    n_sig_by_side = {'long': int(ls.sum()), 'short': int(ss.sum())}
+
+    nul = canonical_null(df, asset, sl_pip, tp_pip, max_hold, sides,
+                         n_sig_by_side, k=k, seed=seed)
+
+    # holdout تقویمی: مرزِ زمانی روی (1-holdout_frac) از دهانهٔ داده
+    split_bar = int(len(df) * (1.0 - holdout_frac))
+
+    tp_arr = tp_pip if np.isscalar(tp_pip) else None
+    r = R.compute_rqs2(
+        tr, asset,
+        sl_pip=(sl_pip if np.isscalar(sl_pip) else float(np.median(tr['sl_pip']))),
+        tp_pip=(tp_arr if tp_arr is not None else None),
+        bar_time=bt, null=nul, n_trials=n_trials,
+        split_bar=split_bar, close=df['close'].to_numpy(float))
+    r['card'] = f'{pair}-{tf}'
+    r['n_signals'] = n_sig_by_side
+    return r
+
+
+def pick_headline(per_card: list) -> tuple:
+    """
+    از چند حکمِ کارتی، حکم و نمرهٔ **سرتیترِ** فایل را انتخاب می‌کند.
+
+    قاعده: بهترین حکم روی *هر* کارت (ACCEPT>POWER-LIMITED>UNPROVEN>REJECT>
+    INCOMPLETE)، و نمرهٔ همان کارت. منطقش: قانونِ MTF می‌گوید هر کارت منطقِ
+    خودش را دارد، پس «لایه مرده است» فقط وقتی درست است که روی **هیچ** کارتی
+    زنده نباشد (قانونِ مرگِ ابدی). اگر روی یک کارت زنده باشد، همان کارت
+    شخصیتِ لایه را تعیین می‌کند.
+    """
+    if not per_card:
+        return 'INCOMPLETE', 0.0
+    best = max(per_card, key=lambda x: (VERDICT_RANK.get(x.get('verdict', 'INCOMPLETE'), 0),
+                                        x.get('rqs2_score', 0.0)))
+    return best.get('verdict', 'INCOMPLETE'), float(best.get('rqs2_score', 0.0))
+
+
+def new_filename(old: str, tfs_tested: list, verdict: str, score: float) -> str:
+    """
+    نامِ نو طبقِ فرمتِ صریحِ User Note:
+        استراتژی_جفت‌ارز_تایم‌فریم(ها)_rqs2_score_status.md
+        مثال: S20_MovingAverage_Xauusd_M15M5H1_rqs2_80_UNPROVEN.md
+
+    شمارهٔ لایه و نامِ توصیفی از نامِ قدیم **حفظ** می‌شوند (هویتِ تاریخیِ لایه
+    نباید گم شود؛ ارجاعاتِ فراوانی در مستنداتِ پروژه به آنها هست). فقط دنبالهٔ
+    «جفت‌ارز_تایم‌فریم_rqs2_نمره_حکم» بازنویسی می‌شود.
+    """
+    stem = old[:-3] if old.endswith('.md') else old
+    m = re.match(r'^(S\d+[a-z]?)_(.+)$', stem)
+    if not m:
+        return old
+    sid, rest = m.group(1), m.group(2)
+
+    # حذفِ دنبالهٔ قدیم: هرچیزی از اولین نشانگرِ جفت‌ارز/عدد/حکم به بعد
+    tokens = rest.split('_')
+    keep = []
+    stop = re.compile(r'^(?:[Xx]au|XAU|[Ee]ur|EUR|Xauusd|Eurusd|XauEur|XAUUSD|EURUSD|'
+                      r'NetProfit|rqs2?|rqs|ALL|[MHDW]\d|\d+|ACCEPTED|REJECTED|DEAD|'
+                      r'INVALIDATED|UNPROVEN|INCOMPLETE|PL|neg\d+|\+?\d+)', )
+    for t in tokens:
+        if stop.match(t):
+            break
+        keep.append(t)
+    name = '_'.join(keep) if keep else rest.split('_')[0]
+
+    pairs = sorted({t.split('-')[0] for t in tfs_tested}) if tfs_tested else []
+    pair_tag = ''.join(p.capitalize() if len(p) > 4 else p for p in
+                       [('Xauusd' if p == 'XAUUSD' else
+                         'Eurusd' if p == 'EURUSD' else p.capitalize())
+                        for p in pairs]) or 'NA'
+    tf_tag = ''.join(t.split('-')[1] for t in tfs_tested) or 'NA'
+    return f'{sid}_{name}_{pair_tag}_{tf_tag}_rqs2_{int(round(score))}_{verdict}.md'
