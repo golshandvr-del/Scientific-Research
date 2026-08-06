@@ -492,6 +492,31 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     #   با خطا یا تایم‌اوت بمیرد.
     stem = path.stem                      # s224_s81_swing_wr60
     parked: list[tuple[Path, Path]] = []
+
+    # ── ترمیمِ جاماندهٔ اجرای کشته‌شده ───────────────────────────────────────
+    # ⚠️ چرا لازم شد (اندازه‌گیری‌شده): بازگردانیِ `finally` وقتی پروسه با
+    #   `SIGKILL` (تایم‌اوتِ سختِ موتور، یا `pkill -9`) می‌میرد **اجرا
+    #   نمی‌شود**. نتیجهٔ واقعی: بعد از کشتنِ ضبطِ `s223`، فایلِ
+    #   `results/_s223_structural_wr60.json` در حالتِ `.audit-parked` ماند و
+    #   `git status` آن را «حذف‌شده» نشان داد — یعنی ابزارِ ممیزی آرشیو را
+    #   دستکاری کرده بود، که مطلقاً غیرقابل‌قبول است.
+    #   درمان: در **شروعِ** هر اجرا، هر جاماندهٔ `.audit-parked` بی‌قید‌و‌شرط
+    #   به جای اصلش برمی‌گردد. پس حتی مرگِ ناگهانی هم آرشیو را آلوده
+    #   نمی‌گذارد؛ ترمیم در اجرای بعدی قطعی است.
+    try:
+        for leftover in (ROOT / 'results').glob('*.audit-parked'):
+            target = leftover.with_suffix('')          # حذفِ .audit-parked
+            try:
+                if target.exists():
+                    target.unlink()
+                leftover.rename(target)
+                print(f'   (repaired leftover parked cache: {target.name})',
+                      flush=True)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
     try:
         res_dir = ROOT / 'results'
         cands = set()
