@@ -1488,5 +1488,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S301": {
+  "done": true,
+  "old": "S301_EventDriven_Calibration_Xauusd_Eurusd_MultiTF_DISCOVERY.md",
+  "new": "S301_EventDrivenCalibrationXauusdEurusdMultiTFDISCOVERY_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
