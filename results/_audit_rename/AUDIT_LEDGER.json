@@ -754,5 +754,26 @@
     "n": 445
    }
   ]
+ },
+ "S203": {
+  "done": true,
+  "old": "S203_SoS_H1_vs_M15_Overlap_NetProfit_252471.md",
+  "new": "S203_SoSH1VsM15Overlap_Xauusd_M15H1_rqs2_27_REJECT.md",
+  "verdict": "REJECT",
+  "score": 26.6,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 26.6,
+    "n": 267
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.1,
+    "n": 920
+   }
+  ]
  }
 }
