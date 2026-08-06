@@ -169,5 +169,20 @@
     "n": 14828
    }
   ]
+ },
+ "S167": {
+  "done": true,
+  "old": "S167_RSI21_MeanReversion_NetProfit_1337_REJECTED.md",
+  "new": "S167_RSI21MeanReversion_Xauusd_M15_rqs2_15_REJECT.md",
+  "verdict": "REJECT",
+  "score": 14.7,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 14.7,
+    "n": 243
+   }
+  ]
  }
 }
