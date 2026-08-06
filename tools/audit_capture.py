@@ -83,6 +83,44 @@ MAX_SIG_IDX = 60000
 MAX_GEOM_VALS = 20000
 
 
+def pack_idx(a) -> dict:
+    """
+    فشرده‌سازیِ **بی‌اتلافِ** ایندکسِ سیگنال‌ها با کدگذاریِ اختلافی (delta).
+
+    ⚠️ چرا لازم است (اندازه‌گیری‌شده، نه حدس): ذخیرهٔ خامِ ایندکس‌ها به‌صورت
+    لیستِ پایتون در `s166_mtf_rescue` فایلی **۱۰۵MB** ساخت که (الف) سقفِ
+    ۱۰۰MB گیت‌هاب را شکست و پوش رد شد، و (ب) هنگامِ `json.load` در مرحلهٔ
+    داوری، رمِ ۹۸۵MB سندباکس را پر کرد و **دو بار** موتور را `Killed` کرد.
+
+    ایده: سیگنال‌ها مرتب‌اند، پس `diff` آن‌ها اعدادِ کوچکی است که در JSON
+    جای بسیار کمتری می‌گیرد. این **بی‌اتلاف** است: `unpack_idx` عیناً همان
+    آرایه را برمی‌گرداند، پس هیچ سیگنالی گم نمی‌شود و حکمِ RQS2 دقیقاً همان
+    حکمی است که با ایندکسِ خام صادر می‌شد.
+    """
+    a = np.asarray(a, np.int64).ravel()
+    if a.size == 0:
+        return {'enc': 'delta', 'first': None, 'd': [], 'n': 0}
+    d = np.diff(a)
+    return {'enc': 'delta', 'first': int(a[0]),
+            'd': [int(x) for x in d], 'n': int(a.size)}
+
+
+def unpack_idx(p) -> np.ndarray:
+    """بازگشاییِ `pack_idx` — و پشتیبانی از فرمتِ خامِ قدیمی (لیستِ ساده)."""
+    if p is None:
+        return np.zeros(0, np.int64)
+    if isinstance(p, list):                       # فرمتِ قدیمی
+        return np.asarray(p, np.int64)
+    if not isinstance(p, dict) or p.get('first') is None:
+        return np.zeros(0, np.int64)
+    d = np.asarray(p.get('d') or [], np.int64)
+    out = np.empty(d.size + 1, np.int64)
+    out[0] = p['first']
+    if d.size:
+        out[1:] = p['first'] + np.cumsum(d)
+    return out
+
+
 # ════════════════════════════════════════════════════════════════════════════
 #  ضبط‌کننده
 # ════════════════════════════════════════════════════════════════════════════
