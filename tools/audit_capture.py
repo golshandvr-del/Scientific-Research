@@ -217,8 +217,8 @@ class Recorder:
                 'close_sum': float(np.nansum(close)),      # اثرِانگشتِ داده
                 'close_first': float(close[0]),
                 'close_last': float(close[-1]),
-                'long_idx': [int(x) for x in li[:60000]],
-                'short_idx': [int(x) for x in si[:60000]],
+                'long_idx': pack_idx(li[:MAX_SIG_IDX]),
+                'short_idx': pack_idx(si[:MAX_SIG_IDX]),
                 'n_long_sig': int(ls.sum()),
                 'n_short_sig': int(ss.sum()),
                 'sl': geom(sl_pip, idx_all),
