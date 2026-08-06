@@ -892,7 +892,10 @@
    "H1"
   ],
   "lines": 44,
-  "scripts": []
+  "scripts": [
+   "s222_all_timedrift_wr60.py"
+  ],
+  "script_note": "lettered variant: archive documented S222* as separate layers but the code is ONE shared builder script"
  },
  {
   "file": "S222b_MondayWR60_Xauusd_M5M15M30H1_7482_88.md",
@@ -907,7 +910,10 @@
    "H1"
   ],
   "lines": 36,
-  "scripts": []
+  "scripts": [
+   "s222_all_timedrift_wr60.py"
+  ],
+  "script_note": "lettered variant: archive documented S222* as separate layers but the code is ONE shared builder script"
  },
  {
   "file": "S222c_TurnOfMonthWR60_Xauusd_M5M15M30H1_4830_89.md",
@@ -922,7 +928,10 @@
    "H1"
   ],
   "lines": 37,
-  "scripts": []
+  "scripts": [
+   "s222_all_timedrift_wr60.py"
+  ],
+  "script_note": "lettered variant: archive documented S222* as separate layers but the code is ONE shared builder script"
  },
  {
   "file": "S222d_EndOfMonthWR60_Xauusd_M5M15_998_85.md",
@@ -937,7 +946,10 @@
    "H1"
   ],
   "lines": 38,
-  "scripts": []
+  "scripts": [
+   "s222_all_timedrift_wr60.py"
+  ],
+  "script_note": "lettered variant: archive documented S222* as separate layers but the code is ONE shared builder script"
  },
  {
   "file": "S222e_EurMidMonthWR60_Eurusd_M1M5M15M30_3202_62.md",
@@ -955,7 +967,10 @@
    "M30"
   ],
   "lines": 39,
-  "scripts": []
+  "scripts": [
+   "s222_all_timedrift_wr60.py"
+  ],
+  "script_note": "lettered variant: archive documented S222* as separate layers but the code is ONE shared builder script"
  },
  {
   "file": "S223a_ShortMAConfluenceWR60_Xauusd_M15M30H1_1465_85.md",
@@ -975,7 +990,10 @@
    "H1"
   ],
   "lines": 51,
-  "scripts": []
+  "scripts": [
+   "s223_structural_wr60.py"
+  ],
+  "script_note": "lettered variant: archive documented S223* as separate layers but the code is ONE shared builder script"
  },
  {
   "file": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
@@ -993,7 +1011,10 @@
    "H1"
   ],
   "lines": 54,
-  "scripts": []
+  "scripts": [
+   "s223_structural_wr60.py"
+  ],
+  "script_note": "lettered variant: archive documented S223* as separate layers but the code is ONE shared builder script"
  },
  {
   "file": "S223c_BrooksLow2WR60_Xauusd_M5M30H1_1298_87.md",
@@ -1014,7 +1035,10 @@
    "H1"
   ],
   "lines": 51,
-  "scripts": []
+  "scripts": [
+   "s223_structural_wr60.py"
+  ],
+  "script_note": "lettered variant: archive documented S223* as separate layers but the code is ONE shared builder script"
  },
  {
   "file": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
