@@ -216,12 +216,15 @@ def process(rec: dict, ledger: dict) -> str:
     # است: پیشرفتِ قطعیِ بسیاری از لایه‌ها بر پیشرفتِ نامعلومِ یک لایه اولویت
     # دارد، چون سندباکس هر لحظه ممکن است ریست شود.
     cap_file = None
+    timed_out = False
     for scr in scripts[:2]:
         dest = CAP / (scr.replace('/', '_') + '.capture.json')
         if not dest.exists():
             rc, so, se_ = sh(f'timeout {CAP_BUDGET} python '
                              f'tools/audit_capture.py {scr}',
                              timeout=CAP_BUDGET + 60)
+            if rc == 124:                      # کدِ خروجِ `timeout`
+                timed_out = True
             print('  capture:', (so or se_).strip().splitlines()[-1][:120]
                   if (so or se_).strip() else 'no output', flush=True)
         if dest.exists():
@@ -245,7 +248,23 @@ def process(rec: dict, ledger: dict) -> str:
             except Exception:
                 vj = None
 
+    # ── تفکیکِ «کندِ قابلِ تلاشِ مجدد» از «واقعاً بازتولیدناپذیر» ─────────────
+    # اگر ضبط فقط به‌خاطرِ بودجهٔ زمانی نیمه‌کاره ماند، این **یافتهٔ علمی
+    # نیست** و نباید حکمِ نهایی بگیرد. لایه `DEFERRED` می‌شود، نامش دست
+    # نمی‌خورد، و در پاسِ بعدی با بودجهٔ بزرگ‌تر دوباره می‌آید.
     if vj is None or not (vj.get('cards')):
+        if cap_file is None and timed_out:
+            print(f'  ⏳ DEFERRED (capture exceeded {CAP_BUDGET}s budget) — '
+                  f'name unchanged, will retry with larger budget', flush=True)
+            ledger[sid] = {'done': False, 'status': 'DEFERRED', 'old': old,
+                           'reason': f'capture > {CAP_BUDGET}s'}
+            save_ledger(ledger)
+            sh('git add -A results/')
+            sh(f'git commit -q -m "Audit {sid}: DEFERRED — capture exceeded '
+               f'{CAP_BUDGET}s budget, queued for a larger-budget pass"')
+            sh('git push -q origin main', timeout=180)
+            return
+
         vj = {'layer': cur.name, 'headline_verdict': 'INCOMPLETE',
               'headline_score': 0.0, 'cards': [],
               'reason': ('no engine call captured / script failed — not '
