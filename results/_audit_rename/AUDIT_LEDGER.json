@@ -270,10 +270,31 @@
   ]
  },
  "S172": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S172_BrooksTwoLegsNANA_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "two independent harness bugs (sys.path for sibling imports; non-standard tail-slice card id) — both fixed and verified"
+  "done": true,
+  "old": "S172_BrooksTwoLegs_NetProfit_235400_ACCEPTED.md",
+  "new": "S172_BrooksTwoLegsNANANANA_Xauusd_M15_rqs2_14_REJECT.md",
+  "verdict": "REJECT",
+  "score": 14.0,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 6.7,
+    "n": 1131
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 14.0,
+    "n": 910
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 13.5,
+    "n": 823
+   }
+  ]
  },
  "S173": {
   "done": false,
