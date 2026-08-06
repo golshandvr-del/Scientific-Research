@@ -2167,5 +2167,13 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S311": {
+  "done": true,
+  "old": "S311_NFPFirstFridayDrift_Xauusd_M5M15_0_DEAD.md",
+  "new": "S311_NFPFirstFridayDriftXauusdM5M15_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
