@@ -486,5 +486,11 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S186": {
+  "done": false,
+  "status": "DEFERRED",
+  "old": "S186_BrooksCloseStrength_NetProfit_246231_ACCEPTED.md",
+  "reason": "capture > 300s"
  }
 }
