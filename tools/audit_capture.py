@@ -388,6 +388,11 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     out['stdout_tail'] = txt[-4000:]
     out['calls'] = rec.calls
     out['n_calls'] = len(rec.calls)
+    # شمارشِ **کلِ** فراخوانی‌ها (حتی آن‌هایی که بخاطر سقفِ حافظه کامل ضبط
+    # نشدند). این عدد شاهدِ مستقیمِ «چند ترکیب جست‌وجو شد» است و در داوریِ
+    # `H5` (تصحیحِ چندگانگی) استفاده می‌شود.
+    out['n_calls_total'] = rec.n_calls_total
+    out['capture_truncated'] = bool(rec.truncated)
     return out
 
 
