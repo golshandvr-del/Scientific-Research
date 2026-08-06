@@ -170,33 +170,132 @@ class Recorder:
         return res
 
 
+    # ── آداپتورِ `run_backtest` (موتورِ دومِ آرشیو، ۸۶ اسکریپت) ──────────────
+    def record_run_backtest(self, orig, df, entries, sl_points, tp_points,
+                            direction, *args, **kw):
+        """
+        `run_backtest` یک‌سمته است (`direction`) و هندسه‌اش **دلاری** است نه pip.
+        به شکلِ یکسان با `simulate_trades` ضبط می‌شود تا داورِ واحد بتواند
+        هر دو را بخواند. تبدیلِ دلار→pip در مرحلهٔ داوری و با `pip_size`
+        همان دارایی انجام می‌شود (اینجا خامش ذخیره می‌شود تا چیزی گم نشود).
+        """
+        res = orig(df, entries, sl_points, tp_points, direction, *args, **kw)
+        try:
+            ent = np.asarray(entries, bool)
+            idx = np.flatnonzero(ent)
+            close = np.asarray(df['close'], float)
+            sl_ser = kw.get('sl_series')
+            tp_ser = kw.get('tp_series')
+
+            def geom_dollar(scalar, series):
+                if series is not None:
+                    arr = np.asarray(series, float)
+                    vals = arr[idx] if len(idx) else np.array([])
+                    fin = vals[np.isfinite(vals)]
+                    return {'kind': 'series', 'unit': 'dollar',
+                            'median': float(np.median(fin)) if fin.size else None,
+                            'min': float(fin.min()) if fin.size else None,
+                            'max': float(fin.max()) if fin.size else None,
+                            'at_signals': [None if not np.isfinite(v) else round(float(v), 8)
+                                           for v in vals[:20000]]}
+                if scalar is None:
+                    return {'kind': 'none', 'unit': 'dollar'}
+                return {'kind': 'scalar', 'unit': 'dollar', 'value': float(scalar)}
+
+            t0 = t1 = None
+            for tcol in ('dt', 'time', 'Date', 'datetime'):
+                if tcol in df.columns:
+                    try:
+                        t0 = str(df[tcol].iloc[0]); t1 = str(df[tcol].iloc[-1])
+                    except Exception:
+                        pass
+                    break
+
+            stats, trades = (res if isinstance(res, tuple) and len(res) == 2
+                             else (res, None))
+            ntr = int(len(trades)) if trades is not None else None
+
+            self.calls.append({
+                'engine': 'run_backtest',
+                'asset': None,                     # run_backtest دارایی نمی‌گیرد
+                'spread_dollar': kw.get('spread', args[0] if args else None),
+                'direction': str(direction),
+                'n_bars': int(len(df)),
+                't_first': t0, 't_last': t1,
+                'close_sum': float(np.nansum(close)),
+                'close_first': float(close[0]), 'close_last': float(close[-1]),
+                'long_idx': [int(x) for x in idx[:60000]] if direction == 'long' else [],
+                'short_idx': [int(x) for x in idx[:60000]] if direction == 'short' else [],
+                'n_long_sig': int(ent.sum()) if direction == 'long' else 0,
+                'n_short_sig': int(ent.sum()) if direction == 'short' else 0,
+                'sl': geom_dollar(sl_points, sl_ser),
+                'tp': geom_dollar(tp_points, tp_ser),
+                'max_hold': kw.get('max_hold'),
+                'allow_overlap': kw.get('allow_overlap', False),
+                'result_n_trades': ntr,
+                'result_stats': ({k: (float(v) if isinstance(v, (int, float, np.floating)) else str(v))
+                                  for k, v in stats.items()}
+                                 if isinstance(stats, dict) else None),
+            })
+        except Exception:
+            self.calls.append({'capture_error': traceback.format_exc()[-1500:]})
+        return res
+
+
 def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     """
     یک اسکریپتِ آرشیو را با وصلهٔ ضبط اجرا می‌کند.
 
     اجرا با `runpy` انجام می‌شود تا `__name__ == '__main__'` درست باشد و
     اسکریپت مثلِ اجرای معمولی رفتار کند.
+
+    **هر دو** موتورِ آرشیو وصله می‌شوند (`simulate_trades` ۲۶۷ اسکریپت،
+    `run_backtest` ۸۶ اسکریپت). چون اسکریپت‌ها موتور را با سبک‌های مختلف
+    ایمپورت می‌کنند (`from engine.scalp_engine import ...` یا
+    `sys.path`+`from backtest import ...`)، وصله هم روی ماژولِ اصلی و هم روی
+    **همهٔ** ماژول‌هایی که ارجاعِ تابع را کپی کرده‌اند اعمال می‌شود.
     """
-    import engine.scalp_engine as se
-
     rec = Recorder()
-    orig = se.simulate_trades
+    restore = []          # (module, attr, original)
 
-    def patched(df, long_sig, short_sig, sl_pip, tp_pip, asset, *a, **kw):
-        return rec(orig, df, long_sig, short_sig, sl_pip, tp_pip, asset, *a, **kw)
+    def install(mod_names, fn_name, wrapper_factory):
+        """تابع را در ماژولِ اصلی و همهٔ کپی‌های ایمپورت‌شده وصله می‌کند."""
+        origs = set()
+        for mn in mod_names:
+            try:
+                mod = __import__(mn, fromlist=['*'])
+            except Exception:
+                continue
+            fn = getattr(mod, fn_name, None)
+            if fn is None:
+                continue
+            origs.add(fn)
+            wrapped = wrapper_factory(fn)
+            setattr(mod, fn_name, wrapped)
+            restore.append((mod, fn_name, fn))
+        # کپی‌های موجود در ماژول‌های دیگر
+        for name, mod in list(sys.modules.items()):
+            if mod is None:
+                continue
+            try:
+                cur = getattr(mod, fn_name, None)
+                if cur is not None and cur in origs:
+                    setattr(mod, fn_name, wrapper_factory(cur))
+                    restore.append((mod, fn_name, cur))
+            except Exception:
+                pass
+        return origs
 
-    # وصله در هر جایی که ماژول را ایمپورت کرده باشد
-    se.simulate_trades = patched
-    patched_mods = []
-    for name, mod in list(sys.modules.items()):
-        if mod is None or name.startswith('engine.'):
-            continue
-        try:
-            if getattr(mod, 'simulate_trades', None) is orig:
-                setattr(mod, 'simulate_trades', patched)
-                patched_mods.append(name)
-        except Exception:
-            pass
+    install(['engine.scalp_engine', 'scalp_engine'], 'simulate_trades',
+            lambda orig: (lambda df, long_sig, short_sig, sl_pip, tp_pip, asset,
+                          *a, **kw: rec(orig, df, long_sig, short_sig, sl_pip,
+                                        tp_pip, asset, *a, **kw)))
+
+    install(['engine.backtest', 'backtest'], 'run_backtest',
+            lambda orig: (lambda df, entries, sl_points, tp_points, direction,
+                          *a, **kw: rec.record_run_backtest(
+                              orig, df, entries, sl_points, tp_points,
+                              direction, *a, **kw)))
 
     path = ROOT / 'strategies' / script
     out = {'script': script, 'ok': False, 'calls': [], 'stdout_tail': '',
@@ -226,10 +325,10 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
             os.chdir(old_cwd)
         except Exception:
             pass
-        se.simulate_trades = orig
-        for name in patched_mods:
+        # بازگرداندنِ همهٔ وصله‌ها (برعکسِ ترتیبِ نصب)
+        for mod, attr, fn in reversed(restore):
             try:
-                setattr(sys.modules[name], 'simulate_trades', orig)
+                setattr(mod, attr, fn)
             except Exception:
                 pass
 
