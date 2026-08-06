@@ -101,11 +101,25 @@ class Recorder:
 
     def __init__(self):
         self.calls = []
+        self.n_calls_total = 0        # شمارشِ کل (حتی وقتی سقف رد شده)
+        self.truncated = False
+
+    def _budget_ok(self) -> bool:
+        """آیا اجازهٔ ضبطِ کاملِ یک فراخوانیِ دیگر هست؟"""
+        self.n_calls_total += 1
+        if len(self.calls) < MAX_FULL_CALLS:
+            return True
+        self.truncated = True
+        return False
 
     def __call__(self, orig, df, long_sig, short_sig, sl_pip, tp_pip, asset,
                  *args, **kw):
         # ۱) اجرای واقعی — هیچ رفتاری تغییر نمی‌کند
         res = orig(df, long_sig, short_sig, sl_pip, tp_pip, asset, *args, **kw)
+
+        # ۱.۵) سقفِ حافظه — بعد از سقف فقط شمارش، بدونِ نگه‌داشتنِ ایندکس‌ها
+        if not self._budget_ok():
+            return res
 
         # ۲) ضبط
         try:
