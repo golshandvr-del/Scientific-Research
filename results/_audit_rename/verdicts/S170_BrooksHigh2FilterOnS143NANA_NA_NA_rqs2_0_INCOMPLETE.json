@@ -1,0 +1,528 @@
+{
+ "layer": "S170_BrooksHigh2FilterOnS143NANA_NA_NA_rqs2_0_INCOMPLETE.md",
+ "script": "s170_walkforward_validate.py",
+ "n_trials": 2000,
+ "perm_k": 600,
+ "seed": 20260806,
+ "unmatched_calls": 8,
+ "reproduction": [
+  {
+   "engine": "simulate_trades",
+   "n_trades": 234
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 213
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 114
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 112
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 120
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 101
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 72
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 71
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 42
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 40
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 70
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 63
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 50
+  },
+  {
+   "engine": "simulate_trades",
+   "n_trades": 38
+  }
+ ],
+ "cards": [
+  {
+   "asset": "EURUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": true,
+    "H7": false,
+    "H8": false,
+    "H9": true,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 234,
+    "win_rate": 43.59,
+    "net_profit": 4604.7,
+    "profit_factor": 1.269,
+    "max_dd_pct": 12.7,
+    "max_consec_losses": 11,
+    "mcl_allowed": 16,
+    "n_wins": 102,
+    "top_win_share": 0.011,
+    "recovery_factor": 2.38,
+    "expectancy_pip": 3.4474,
+    "expectancy_at_2x_cost": 1.8474,
+    "cost_pip": 1.6,
+    "spread_pip": 1.0,
+    "sl_pip": 20.0,
+    "tp_pip": 40.0,
+    "rr": 2.0,
+    "breakeven_wr_cost": 36.0,
+    "wr_excess_cost": 7.59,
+    "null_ref_wr": 35.14,
+    "skill_lift_pp": 8.45,
+    "skill_z": 2.71,
+    "skill_p_perm": 0.003398,
+    "perm_max": 37.52,
+    "perm_k": 600,
+    "side_n": {
+     "long": 234,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 43.59
+    },
+    "side_lift_pp": {
+     "long": 8.45
+    },
+    "prune_sides": [],
+    "p_emp": 0.004597,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": 2.707,
+    "z_luck_bound": 3.447,
+    "z_margin": -0.741,
+    "n_trials": 2000,
+    "cal_nets": [
+     1972.6,
+     644.8,
+     1917.6,
+     -388.2
+    ],
+    "cal_counts": [
+     72,
+     42,
+     70,
+     50
+    ],
+    "cal_positive": 3,
+    "cal_occupied": 4,
+    "half_nets": [
+     2739.3,
+     1451.8
+    ],
+    "oos": {
+     "n": 68,
+     "wr": 39.71,
+     "pf": 0.919,
+     "net": -325.1,
+     "wr_req": 36.0
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 171,
+     "n_unjudgeable": 63,
+     "n_counter": 54,
+     "n_aligned": 117,
+     "regime_lookback_days": 280.0,
+     "wr_counter": 48.15,
+     "exp_counter": 5.246,
+     "wr_aligned": 40.17,
+     "exp_aligned": 1.146
+    },
+    "n_required_h3": 305.0
+   },
+   "notes": [
+    "PF=1.269<1.3"
+   ],
+   "passed": false,
+   "rqs2_score": 19.4,
+   "verdict": "REJECT",
+   "n_fail": 5,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": true,
+    "G2_evidence": true,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": true,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": true,
+     "H8": false,
+     "H9": true
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "EURUSD-M15",
+   "n_signals": {
+    "long": 3562,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 20.0,
+    "tp_pip_med": 40.0,
+    "rr": 2.0,
+    "max_hold": 96,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "EURUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": false,
+    "H7": true,
+    "H8": false,
+    "H9": true,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 120,
+    "win_rate": 43.33,
+    "net_profit": 1451.8,
+    "profit_factor": 1.193,
+    "max_dd_pct": 12.8,
+    "max_consec_losses": 11,
+    "mcl_allowed": 15,
+    "n_wins": 52,
+    "top_win_share": 0.0229,
+    "recovery_factor": 0.95,
+    "expectancy_pip": 2.4642,
+    "expectancy_at_2x_cost": 0.8642,
+    "cost_pip": 1.6,
+    "spread_pip": 1.0,
+    "sl_pip": 20.0,
+    "tp_pip": 40.0,
+    "rr": 2.0,
+    "breakeven_wr_cost": 36.0,
+    "wr_excess_cost": 7.33,
+    "null_ref_wr": 36.05,
+    "skill_lift_pp": 7.28,
+    "skill_z": 1.66,
+    "skill_p_perm": 0.048262,
+    "perm_max": 38.61,
+    "perm_k": 600,
+    "side_n": {
+     "long": 120,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 43.33
+    },
+    "side_lift_pp": {
+     "long": 7.28
+    },
+    "prune_sides": [],
+    "p_emp": 0.059846,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": 1.662,
+    "z_luck_bound": 3.447,
+    "z_margin": -1.785,
+    "n_trials": 2000,
+    "cal_nets": [
+     -740.4,
+     2872.6,
+     -1236.1,
+     967.3
+    ],
+    "cal_counts": [
+     22,
+     48,
+     21,
+     29
+    ],
+    "cal_positive": 2,
+    "cal_occupied": 4,
+    "half_nets": [
+     1917.6,
+     -388.2
+    ],
+    "oos": {
+     "n": 32,
+     "wr": 50.0,
+     "pf": 1.351,
+     "net": 616.8,
+     "wr_req": 36.0
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 68,
+     "n_unjudgeable": 52,
+     "n_counter": 10,
+     "n_aligned": 58,
+     "regime_lookback_days": 280.0,
+     "wr_counter": 50.0,
+     "exp_counter": 2.27,
+     "wr_aligned": 37.93,
+     "exp_aligned": -1.331,
+     "h10_substitute": "small-counter-sample-nonnegative"
+    },
+    "n_required_h3": 414.8
+   },
+   "notes": [
+    "PF=1.193<1.3",
+    "H10 WARN (substitute PASS): only 10 counter-drift trades (<20) but their expectancy is non-negative (+2.270 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+   ],
+   "passed": false,
+   "rqs2_score": 14.7,
+   "verdict": "REJECT",
+   "n_fail": 5,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": true,
+    "G2_evidence": true,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": true,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": true,
+     "H8": false,
+     "H9": true
+    },
+    "power": {
+     "H3": false,
+     "H7": true,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "EURUSD-M15",
+   "n_signals": {
+    "long": 1697,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 20.0,
+    "tp_pip_med": 40.0,
+    "rr": 2.0,
+    "max_hold": 96,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "EURUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 50,
+    "win_rate": 40.0,
+    "net_profit": -388.2,
+    "profit_factor": 0.863,
+    "max_dd_pct": 12.36,
+    "max_consec_losses": 11,
+    "mcl_allowed": 15,
+    "n_wins": 20,
+    "top_win_share": 0.0728,
+    "recovery_factor": -0.31,
+    "expectancy_pip": -1.416,
+    "expectancy_at_2x_cost": -3.016,
+    "cost_pip": 1.6,
+    "spread_pip": 1.0,
+    "sl_pip": 20.0,
+    "tp_pip": 40.0,
+    "rr": 2.0,
+    "breakeven_wr_cost": 36.0,
+    "wr_excess_cost": 4.0,
+    "null_ref_wr": 35.02,
+    "skill_lift_pp": 4.98,
+    "skill_z": 0.74,
+    "skill_p_perm": 0.230376,
+    "perm_max": 39.04,
+    "perm_k": 600,
+    "side_n": {
+     "long": 50,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 40.0
+    },
+    "side_lift_pp": {
+     "long": 4.98
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.274754,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": 0.738,
+    "z_luck_bound": 3.447,
+    "z_margin": -2.71,
+    "n_trials": 2000,
+    "cal_nets": [
+     -582.3,
+     -698.3,
+     594.8,
+     351.2
+    ],
+    "cal_counts": [
+     9,
+     12,
+     20,
+     9
+    ],
+    "cal_positive": 2,
+    "cal_occupied": 4,
+    "half_nets": [
+     -1236.1,
+     967.3
+    ],
+    "oos": {
+     "n": 11,
+     "wr": 63.64,
+     "pf": 2.002,
+     "net": 437.4,
+     "wr_req": 36.0
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 8,
+     "n_unjudgeable": 42,
+     "n_counter": 7,
+     "n_aligned": 1,
+     "regime_lookback_days": 280.0,
+     "wr_counter": 57.14,
+     "exp_counter": 3.8,
+     "wr_aligned": 100.0,
+     "exp_aligned": 5.5,
+     "h10_substitute": "small-counter-sample-nonnegative"
+    },
+    "n_required_h3": 877.5
+   },
+   "notes": [
+    "PF=0.863<1.3",
+    "H10 WARN (substitute PASS): only 7 counter-drift trades (<20) but their expectancy is non-negative (+3.800 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+   ],
+   "passed": false,
+   "rqs2_score": 13.4,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": true,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": true,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "EURUSD-M15",
+   "n_signals": {
+    "long": 830,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 20.0,
+    "tp_pip_med": 40.0,
+    "rr": 2.0,
+    "max_hold": 96,
+    "allow_overlap": false
+   }
+  }
+ ],
+ "headline_verdict": "REJECT",
+ "headline_score": 19.4
+}

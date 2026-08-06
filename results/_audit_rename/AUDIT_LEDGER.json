@@ -222,10 +222,31 @@
   ]
  },
  "S170": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S170_BrooksHigh2FilterOnS143NANA_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "two independent harness bugs (sys.path for sibling imports; non-standard tail-slice card id) — both fixed and verified"
+  "done": true,
+  "old": "S170_BrooksHigh2Filter_on_S143_NetProfit_225130_ACCEPTED.md",
+  "new": "S170_BrooksHigh2FilterOnS143NANANANA_Eurusd_M15_rqs2_19_REJECT.md",
+  "verdict": "REJECT",
+  "score": 19.4,
+  "cards": [
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 19.4,
+    "n": 234
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 14.7,
+    "n": 120
+   },
+   {
+    "card": "EURUSD-M15",
+    "verdict": "REJECT",
+    "score": 13.4,
+    "n": 50
+   }
+  ]
  },
  "S171": {
   "done": false,
