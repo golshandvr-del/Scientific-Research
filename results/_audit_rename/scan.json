@@ -1196,7 +1196,10 @@
    "M15"
   ],
   "lines": 42,
-  "scripts": []
+  "scripts": [
+   "s172_brooks_two_legs.py"
+  ],
+  "script_note": "runner extracted from the layer doc itself (its SID prefix differs from the code filename); reproduction command quoted in the doc takes precedence"
  },
  {
   "file": "S306_TurnOfMonthDriftLong_Xauusd_M15_39969_61_ACCEPTED.md",
@@ -2510,7 +2513,11 @@
    "W1"
   ],
   "lines": 278,
-  "scripts": []
+  "scripts": [
+   "s351_filter_rqs2.py",
+   "s346_holdout_c_test.py"
+  ],
+  "script_note": "runner extracted from the layer doc itself (its SID prefix differs from the code filename); reproduction command quoted in the doc takes precedence"
  },
  {
   "file": "S355_PREREGISTRATION_15Layer_Revisit_v24.md",
@@ -2741,7 +2748,10 @@
    "W1"
   ],
   "lines": 217,
-  "scripts": []
+  "scripts": [
+   "s366_stairs_channel_breakout.py"
+  ],
+  "script_note": "runner extracted from the layer doc itself (its SID prefix differs from the code filename); reproduction command quoted in the doc takes precedence"
  },
  {
   "file": "S371_PREREG_directional_breakout_eur.md",
