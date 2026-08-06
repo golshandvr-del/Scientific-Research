@@ -359,8 +359,40 @@ def process(rec: dict, ledger: dict) -> str:
     return 'ok'
 
 
+def repair_parked_caches() -> int:
+    """
+    ترمیمِ کشِ آرشیوِ جاماندهٔ اجرای کشته‌شده — **قبل** از هر کاری.
+
+    ⚠️ چرا لازم شد (اندازه‌گیری‌شده): بعد از `DEFERRED` شدنِ `S223a`، آرشیو
+    در این حالت ماند:
+        _s223_structural_wr60.json               =  ۸۷۲ بایت  (ناقص، وسطِ اجرا)
+        _s223_structural_wr60.json.audit-parked  = ۲۹۵۸ بایت  (نسخهٔ اصلی)
+    یعنی دو لایه از سه لایهٔ کش (`BROOKS_HIGH2`, `BROOKS_LOW2`) **گم شده
+    بود**، و `git status` تمیز بود چون این فایل‌ها در `.gitignore` هستند —
+    پس آلودگی **بی‌صدا** بود.
+
+    محافظِ درونِ `audit_capture` فقط در شروعِ *اجرای بعدیِ ضبط* ترمیم می‌کند،
+    پس بینِ دو اجرا (یا وقتی سندباکس ریست می‌شود) آرشیو آلوده می‌ماند. این
+    تابع همان ترمیم را در شروعِ **موتور** هم انجام می‌دهد تا پنجرهٔ آلودگی
+    بسته شود.
+    """
+    n = 0
+    for leftover in sorted((ROOT / 'results').glob('*.audit-parked')):
+        target = leftover.with_suffix('')
+        try:
+            if target.exists():
+                target.unlink()        # نسخهٔ ناقصِ وسط‌اجرا دور ریخته می‌شود
+            leftover.rename(target)
+            print(f'  🛠  repaired archive cache: {target.name}', flush=True)
+            n += 1
+        except Exception as exc:
+            print(f'  ⚠️  could not repair {leftover.name}: {exc}', flush=True)
+    return n
+
+
 def main():
     limit = int(sys.argv[1]) if len(sys.argv) > 1 else 9999
+    repair_parked_caches()
     scan = json.loads((AUD / 'scan.json').read_text(encoding='utf-8'))
     scan.sort(key=lambda r: sort_key(r['file']))
     ledger = load_ledger()
