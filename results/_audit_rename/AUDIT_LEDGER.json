@@ -184,5 +184,20 @@
     "n": 243
    }
   ]
+ },
+ "S168": {
+  "done": true,
+  "old": "S168_BrooksHigh2_NetProfit_+1351_ACCEPTED.md",
+  "new": "S168_BrooksHigh2_Xauusd_M15_rqs2_11_REJECT.md",
+  "verdict": "REJECT",
+  "score": 10.7,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 10.7,
+    "n": 2595
+   }
+  ]
  }
 }
