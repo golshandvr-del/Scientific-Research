@@ -2493,10 +2493,61 @@
   "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
  },
  "S310": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S310_EndOfMonthDriftRevival_Xauusd_M15_87.md",
-  "reason": "INCOMPLETE was caused by the interceptor not patching engine.trade_simulator.simulate (third archive engine); fix verified on S310: 0 calls -> 40 calls in 467s"
+  "new": "S310_EndOfMonthDriftRevivalXauusdM15_Xauusd_M5M15_rqs2_24_REJECT.md",
+  "verdict": "REJECT",
+  "score": 23.6,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 10.5,
+    "n": 85
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 23.2,
+    "n": 48
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 2.8,
+    "n": 84
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 23.6,
+    "n": 53
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.8,
+    "n": 47
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 11.2,
+    "n": 22
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 9.2,
+    "n": 24
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 21.9,
+    "n": 22
+   }
+  ]
  },
  "S311": {
   "done": true,
