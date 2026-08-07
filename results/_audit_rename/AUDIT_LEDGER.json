@@ -3143,5 +3143,62 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S326": {
+  "done": true,
+  "old": "S326_StreakReversal_XauEur_XauM5M30_EurM15_92_ACCEPTED.md",
+  "new": "S326_StreakReversalXauEurXauM5M30EurM15_Xauusd_M5M15_rqs2_17_REJECT.md",
+  "verdict": "REJECT",
+  "score": 17.4,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 14.2,
+    "n": 2571
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 10.7,
+    "n": 3528
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 14.7,
+    "n": 2588
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 11.1,
+    "n": 3615
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 14.7,
+    "n": 1009
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.3,
+    "n": 3596
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.4,
+    "n": 2558
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 14.0,
+    "n": 1008
+   }
+  ]
  }
 }
