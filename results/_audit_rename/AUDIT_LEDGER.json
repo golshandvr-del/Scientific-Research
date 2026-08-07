@@ -4340,5 +4340,140 @@
     "n": 86
    }
   ]
+ },
+ "S373#doc:S373_PREREG_instrument_native_channel.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S373_PREREG_instrument_native_channel.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S374#doc:S374_FINDING_not_subset_but_delay.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S374_FINDING_not_subset_but_delay.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S374": {
+  "done": true,
+  "old": "S374_KennedyBreakGate_XauEur_H4_rqs2-ACCEPTED.md",
+  "new": "S374_KennedyBreakGateXauEurH4_EurusdXauusd_M5M15M30H1H4_rqs2_27_REJECT.md",
+  "verdict": "REJECT",
+  "score": 27.2,
+  "cards": [
+   {
+    "card": "EURUSD-H4",
+    "verdict": "REJECT",
+    "score": 15.7,
+    "n": 88
+   },
+   {
+    "card": "EURUSD-H4",
+    "verdict": "REJECT",
+    "score": 21.8,
+    "n": 81
+   },
+   {
+    "card": "EURUSD-H4",
+    "verdict": "REJECT",
+    "score": 18.8,
+    "n": 107
+   },
+   {
+    "card": "EURUSD-H4",
+    "verdict": "REJECT",
+    "score": 19.7,
+    "n": 158
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 17.1,
+    "n": 290
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 18.3,
+    "n": 283
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 7.4,
+    "n": 256
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 11.5,
+    "n": 166
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 27.2,
+    "n": 62
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 19.0,
+    "n": 79
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 23.9,
+    "n": 66
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 11.9,
+    "n": 158
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 10.4,
+    "n": 173
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 13.1,
+    "n": 73
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 16.3,
+    "n": 174
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 6.8,
+    "n": 404
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 11.6,
+    "n": 394
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 8.7,
+    "n": 392
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 6.8,
+    "n": 382
+   }
+  ]
  }
 }
