@@ -124,7 +124,8 @@
     "exp_counter": 14.429,
     "wr_aligned": 55.1,
     "exp_aligned": 24.671
-   }
+   },
+   "n_required_h3": 353.9
   },
   "notes": [
    "PF=1.222<1.3"
@@ -136,6 +137,15 @@
   "n_unknown": 0,
   "accepted": false,
   "power_limited": false,
+  "unproven": false,
+  "unproven_checks": {
+   "G1_lift_floor": true,
+   "G2_evidence": true,
+   "G3_efdr": false,
+   "G4_economics": false,
+   "G5_glass_ceiling": true,
+   "G6_structure": false
+  },
   "gate_families": {
    "economic": {
     "H0": true,
