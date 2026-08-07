@@ -3544,5 +3544,20 @@
     "n": 86
    }
   ]
+ },
+ "S341": {
+  "done": true,
+  "old": "S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md",
+  "new": "S341_BrooksSwingFadeRejudgedXauusdM5M15M30H1_Xauusd_M5_rqs2_5_REJECT.md",
+  "verdict": "REJECT",
+  "score": 5.0,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 5.0,
+    "n": 1354
+   }
+  ]
  }
 }
