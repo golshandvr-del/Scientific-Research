@@ -4118,5 +4118,44 @@
     "n": 292
    }
   ]
+ },
+ "S370#doc:S370_PREREG_ensemble_union.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S370_PREREG_ensemble_union.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S371": {
+  "done": true,
+  "old": "S371_DirectionalBreakout_XauEur_ALL_rqs2-00_DEAD.md",
+  "new": "S371_DirectionalBreakoutXauEurALL_Xauusd_H1_rqs2_5_REJECT.md",
+  "verdict": "REJECT",
+  "score": 4.7,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 651
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.1,
+    "n": 641
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 4.7,
+    "n": 628
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 615
+   }
+  ]
  }
 }
