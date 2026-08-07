@@ -3496,63 +3496,17 @@
  },
  "S337": {
   "done": true,
+  "status": "NOT_A_LAYER",
   "old": "S337_WR_Floor_Discovery_Xauusd_AllTF_DIAG.md",
-  "new": "S337_WRFloorDiscoveryXauusdAllTFDIAG_Xauusd_M5_rqs2_4_REJECT.md",
-  "verdict": "REJECT",
-  "score": 4.1,
-  "cards": [
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 0.7,
-    "n": 2659
-   },
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 0.0,
-    "n": 2077
-   },
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 3.7,
-    "n": 4458
-   },
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 0.7,
-    "n": 2059
-   },
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 4.1,
-    "n": 4120
-   },
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 0.9,
-    "n": 1276
-   }
-  ]
+  "new": "S337_WR_Floor_Discovery_Xauusd_AllTF_DIAG.md",
+  "note": "BUG-18 victim, reverted: the document declares itself a measurement result / diagnostic finding and is not an attachable trading layer, so no RQS2 name or score applies. Verified the file is back under its original name on disk."
  },
  "S338": {
   "done": true,
+  "status": "NOT_A_LAYER",
   "old": "S338_ConditionalWR_Mining_Xauusd_M5_DIAG.md",
-  "new": "S338_ConditionalWRMiningXauusdM5DIAG_Xauusd_M5_rqs2_11_REJECT.md",
-  "verdict": "REJECT",
-  "score": 11.1,
-  "cards": [
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 11.1,
-    "n": 60000
-   }
-  ]
+  "new": "S338_ConditionalWR_Mining_Xauusd_M5_DIAG.md",
+  "note": "BUG-18 victim, reverted: the document declares itself a measurement result / diagnostic finding and is not an attachable trading layer, so no RQS2 name or score applies. Verified the file is back under its original name on disk."
  },
  "S339": {
   "done": true,
@@ -4714,19 +4668,17 @@
  },
  "S392": {
   "done": true,
+  "status": "NOT_A_LAYER",
   "old": "S392_JOINT_GRID_RESULT.md",
-  "new": "S392_JOINTGRIDRESULT_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "new": "S392_JOINT_GRID_RESULT.md",
+  "note": "BUG-18 victim, reverted: the document declares itself a measurement result / diagnostic finding and is not an attachable trading layer, so no RQS2 name or score applies. Verified the file is back under its original name on disk."
  },
  "S393": {
   "done": true,
+  "status": "NOT_A_LAYER",
   "old": "S393_ALPHA_FILTER_RESULT.md",
-  "new": "S393_ALPHAFILTERRESULT_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "new": "S393_ALPHA_FILTER_RESULT.md",
+  "note": "BUG-18 victim, reverted: the document declares itself a measurement result / diagnostic finding and is not an attachable trading layer, so no RQS2 name or score applies. Verified the file is back under its original name on disk."
  },
  "S393#doc:S393_PREREG_ALPHA_FILTER.md": {
   "done": true,
@@ -4736,11 +4688,10 @@
  },
  "S394": {
   "done": true,
+  "status": "NOT_A_LAYER",
   "old": "S394_EFFECTIVE_TRIALS_RESULT.md",
-  "new": "S394_EFFECTIVETRIALSRESULT_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "new": "S394_EFFECTIVE_TRIALS_RESULT.md",
+  "note": "BUG-18 victim, reverted: the document declares itself a measurement result / diagnostic finding and is not an attachable trading layer, so no RQS2 name or score applies. Verified the file is back under its original name on disk."
  },
  "S394#doc:S394_PREREG_EFFECTIVE_TRIALS.md": {
   "done": true,
