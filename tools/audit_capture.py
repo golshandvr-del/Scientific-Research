@@ -475,7 +475,8 @@ class Recorder:
         return res
 
 
-def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
+def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
+                   _force_park: bool = False) -> dict:
     """
     یک اسکریپتِ آرشیو را با وصلهٔ ضبط اجرا می‌کند.
 
@@ -631,7 +632,23 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT) -> dict:
     #   بدونِ این حالت، کنارگذاشتنِ کش هر بار همه‌چیز را از صفر شروع می‌کند
     #   و لایه برای همیشه `DEFERRED` می‌ماند — یعنی نقصِ ابزار به‌جای حکم.
     #   AUDIT_KEEP_CACHE=1 python tools/audit_capture.py s223_structural_wr60.py
+    #
+    # ⚠️ تعارضِ کشف‌شده (اندازه‌گیری‌شده) — و چرا حالا **هوشمند** است:
+    #   دو وصلهٔ ما با هم می‌جنگیدند. `AUDIT_KEEP_CACHE=1` برای جاروبِ
+    #   **ناتمام** حیاتی است (تا ادامه دهد)، ولی برای کشِ **کامل** فاجعه
+    #   است. مدرک: `_s224_s81_swing_wr60.json` هر ۴ تایم‌فریم را کامل دارد
+    #   (`M5,M15,M30,H1`)، پس اسکریپت همه‌چیز را `⏩ رد شد (قبلاً)` کرد،
+    #   `n_calls=0` شد، و لایه در تاریخِ ۲۰:۵۳ **دوباره** `INCOMPLETE` گرفت
+    #   — یعنی *بعد* از رفعِ باگِ کش در ۱۹:۵۲. همان اتفاق برای
+    #   `S225/S226/S223b/S223c`.
+    #
+    #   درمانِ درست انتخابِ دستی نیست (نمی‌دانیم کدام کش کامل است): اگر
+    #   `keep_cache` روشن باشد و اجرا **صفر فراخوانی** بدهد، خودِ هارنس
+    #   بی‌درنگ با کشِ **کنارگذاشته** یک‌بار دیگر اجرا می‌کند. پس هر دو
+    #   حالت پوشش داده می‌شود و هیچ لایه‌ای قربانیِ انتخابِ حالت نمی‌شود.
     keep_cache = os.environ.get('AUDIT_KEEP_CACHE', '').strip() not in ('', '0')
+    if _force_park:                       # پاسِ دومِ خودکار
+        keep_cache = False
     if keep_cache:
         print('   (AUDIT_KEEP_CACHE=1 — resume cache KEPT so the script '
               'continues its incremental sweep instead of restarting)',
@@ -723,6 +740,25 @@ def main():
     for script in sys.argv[1:]:
         print(f'── capturing {script} ...', flush=True)
         r = capture_script(script)
+
+        # ── پاسِ دومِ خودکار: صفر فراخوانی + کشِ نگه‌داشته = کشِ **کامل** ──
+        # ⚠️ اندازه‌گیری‌شده: `S224/S225/S226/S223b/S223c` همه با
+        #   `AUDIT_KEEP_CACHE=1` صفر فراخوانی دادند، چون کششان کامل بود
+        #   (`_s224...json` هر ۴ تایم‌فریم را داشت) و اسکریپت همه‌چیز را
+        #   `⏩ رد شد (قبلاً)` کرد. یک تلاشِ دومِ **خودکار** با کشِ
+        #   کنارگذاشته این پنج لایه را از حکمِ ناعادلانه نجات می‌دهد،
+        #   بدونِ اینکه مزیتِ حالتِ «ادامه بده» برای جاروب‌های ناتمام
+        #   از دست برود.
+        if (r.get('n_calls') == 0
+                and os.environ.get('AUDIT_KEEP_CACHE', '').strip()
+                not in ('', '0')):
+            print('   ↻ zero calls with the cache kept ⇒ the cache is '
+                  'COMPLETE; retrying once with it parked so the script '
+                  'must recompute', flush=True)
+            r2 = capture_script(script, _force_park=True)
+            if (r2.get('n_calls') or 0) > 0:
+                r = r2
+
         dest = OUT / (script.replace('/', '_') + '.capture.json')
         with open(dest, 'w', encoding='utf-8') as fh:
             json.dump(r, fh, ensure_ascii=False, default=float)
