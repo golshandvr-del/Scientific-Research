@@ -2015,9 +2015,9 @@
  },
  "S223b": {
   "done": false,
-  "status": "REQUEUED",
-  "old": "S223b_BrooksHigh2WR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "INCOMPLETE was caused by AUDIT_KEEP_CACHE keeping an ALREADY-COMPLETE resume cache, so the script skipped all computation and recorded zero engine calls; harness now auto-retries once with the cache parked"
+  "status": "DEFERRED",
+  "old": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
+  "reason": "capture > 900s"
  },
  "S223c": {
   "done": false,
