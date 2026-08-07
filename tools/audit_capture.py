@@ -564,6 +564,102 @@ class Recorder:
                                    traceback.format_exc()[-1500:]})
         return res
 
+    # ── آداپتورِ `barrier_outcomes` (موتورِ چهارمِ آرشیو، ۹ اسکریپت) ─────────
+    def record_barrier(self, orig, df, sig_idx, is_long, sl_dist, tp_dist,
+                       max_hold, pip, spread_pip, slip_pip, *a, **kw):
+        """
+        موتورِ چهارمِ آرشیو: `strategies.s346_fast.barrier_outcomes`.
+
+        ⚠️ چرا لازم شد (اندازه‌گیری‌شده): `S346/S347/S348/S350` پشتِ سرِ هم
+        `INCOMPLETE/0.0` گرفتند و شمارشِ سورس می‌گفت «از `scalp_engine`
+        استفاده می‌کنند» — ولی آن **دروغِ ابزار** بود: این خانواده از
+        `scalp_engine` فقط `load_data` را می‌گیرد و شبیه‌سازی را با
+        `barrier_outcomes` انجام می‌دهد. مدرکِ اجرا (`s347_ensemble.py` خام):
+            n=863  WR=52.61%  PF=1.113  exp=+14.80pip
+        یعنی لایه کامل کار می‌کرد و معامله می‌ساخت، ولی شنودگر صفر فراخوانی
+        می‌دید. `grep` نشان داد **۹ اسکریپتِ پایتون** از این موتور استفاده
+        می‌کنند (خانوادهٔ `s346_*`, `s347_ensemble`, `s348_rr_sweep`,
+        `s351_lpsb`) — پس این یک لایه نبود، یک خانواده بود.
+
+        نکتهٔ اعتبار: امضای خودِ موتور صریح است — «اندیس‌های کندلِ سیگنال
+        (ورود در `sig_idx+1`)» — یعنی همان قاعدهٔ رسمیِ ورود روی `open` کندلِ
+        بعد. پس داوریِ این کارت‌ها بدونِ نشتیِ آینده است.
+
+        تفاوتِ ساختاری: خروجیِ خام است و **فیلترِ همپوشانی ندارد** (خودِ
+        فراخوان بعداً `select_non_overlap` می‌زند). برای اینکه با قاعدهٔ
+        رسمی یکسان شود، همان انتخاب را اینجا اعمال می‌کنیم.
+        """
+        res = orig(df, sig_idx, is_long, sl_dist, tp_dist, max_hold,
+                   pip, spread_pip, slip_pip, *a, **kw)
+        try:
+            if not isinstance(res, dict) or 'entry_bar' not in res:
+                return res
+            eb = np.asarray(res['entry_bar'], dtype=np.int64)
+            if eb.size == 0:
+                return res
+            xo = np.asarray(res.get('exit_off', np.zeros_like(eb)),
+                            dtype=np.int64)
+            il = np.asarray(res.get('is_long', np.ones_like(eb, dtype=bool)))
+            pn = np.asarray(res.get('pnl_pip', np.zeros_like(eb,
+                                                             dtype=float)),
+                            dtype=np.float64)
+
+            # همان صفِ بی‌همپوشانیِ داوریِ رسمی
+            try:
+                from strategies.s346_fast import select_non_overlap
+                keep = select_non_overlap(eb, xo)
+            except Exception:
+                keep = np.ones(eb.size, dtype=bool)
+            eb, xo, il, pn = eb[keep], xo[keep], il[keep], pn[keep]
+            if eb.size == 0:
+                return res
+
+            close = df['close'].values.astype(np.float64)
+            # هندسه بر حسبِ **قیمت** داده می‌شود؛ به pip تبدیل می‌کنیم
+            def to_pip(v):
+                arr = np.asarray(v, dtype=np.float64).ravel()
+                if arr.size == 0:
+                    return {'kind': 'scalar', 'value': 0.0}
+                arr = arr / float(pip) if float(pip) else arr
+                if arr.size == 1 or float(arr.max() - arr.min()) < 1e-9:
+                    return {'kind': 'scalar', 'value': float(arr[0])}
+                return {'kind': 'series',
+                        'median': float(np.nanmedian(arr)),
+                        'min': float(np.nanmin(arr)),
+                        'max': float(np.nanmax(arr)),
+                        'values': [float(x) for x in arr[:MAX_GEOM_VALS]]}
+
+            li = eb[il.astype(bool)]
+            si = eb[~il.astype(bool)]
+            t = df['time'] if 'time' in df.columns else None
+            self._add({
+                'engine': 'barrier_outcomes',
+                'asset': kw.get('asset'),
+                'n_bars': int(len(df)),
+                't_first': (str(t.iloc[0]) if t is not None else None),
+                't_last': (str(t.iloc[-1]) if t is not None else None),
+                'close_sum': float(np.nansum(close)),
+                'close_first': float(close[0]),
+                'close_last': float(close[-1]),
+                'long_idx': pack_idx(np.asarray(sorted(li)[:MAX_SIG_IDX])),
+                'short_idx': pack_idx(np.asarray(sorted(si)[:MAX_SIG_IDX])),
+                'n_long_sig': int(li.size),
+                'n_short_sig': int(si.size),
+                'sl': to_pip(sl_dist),
+                'tp': to_pip(tp_dist),
+                'max_hold': int(max_hold),
+                'allow_overlap': False,
+                'be_trigger_pip': None,
+                'trail_pip': None,
+                'result_n_trades': int(eb.size),
+                'result_sum_pip': float(np.nansum(pn)),
+            })
+        except Exception:
+            if len(self.calls) < MAX_FULL_CALLS:
+                self.calls.append({'capture_error':
+                                   traceback.format_exc()[-1500:]})
+        return res
+
 
 def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
                    _force_park: bool = False) -> dict:
