@@ -2738,7 +2738,7 @@
    "H0": true,
    "H1": false,
    "H2": true,
-   "H3": false,
+   "H3": null,
    "H4": false,
    "H5": false,
    "H6": false,
@@ -2770,6 +2770,7 @@
    "null_ref_wr": 32.79,
    "skill_lift_pp": 0.09,
    "skill_z": 0.09,
+   "skill_p_perm": 0.464652,
    "perm_max": 34.55,
    "perm_k": 200,
    "side_n": {
@@ -2830,10 +2831,12 @@
     "exp_counter": 2.276,
     "wr_aligned": 33.46,
     "exp_aligned": 4.778
-   }
+   },
+   "n_required_h3": 2422374.0
   },
   "notes": [
-   "PF=1.020<1.3"
+   "PF=1.020<1.3",
+   "H3 UNKNOWN: only 200 permutations (<500) \u2014 the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
   ]
  },
  "rqs2_opt": {
@@ -2843,7 +2846,7 @@
    "H0": true,
    "H1": false,
    "H2": true,
-   "H3": false,
+   "H3": null,
    "H4": false,
    "H5": false,
    "H6": false,

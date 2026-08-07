@@ -1,0 +1,8 @@
+{
+ "layer": "S350_TripleLockDerivedHold_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 2000
+}
