@@ -251,13 +251,29 @@ def geom_to_pip(g: dict, pair: str, n_bars: int, idx: np.ndarray):
             return None
         div = float(cfg['pip'])
 
+    # ⚠️ BUG-20 — یک فراخوانِ بی‌هندسه، کلِ پاسِ داوری را می‌کشت.
+    # فراخوان‌هایی هستند که هیچ معامله‌ای نمی‌سازند (`nL=0 nS=0`) و آرشیو در
+    # آن‌ها `sl`/`tp` را با `value=None` ثبت می‌کند — برای S330 دقیقاً دو
+    # فراخوانِ آخر از شش فراخوان چنین بودند. نگهبانِ پیشین فقط `g is None` و
+    # `kind=='none'` را می‌گرفت، پس `float(None)` یک `TypeError` می‌داد و مثلِ
+    # BUG-16 پاس را از میان می‌بُرد و کارت‌های سالم را با خود می‌بُرد.
+    # اکنون هندسهٔ نامعتبر ⇒ `None` که فراخوان‌کننده با `continue` ردش می‌کند:
+    # فراخوانِ معیوب کنار گذاشته می‌شود، نه کلِ لایه.
+    def _num(x):
+        try:
+            v = float(x)
+        except (TypeError, ValueError):
+            return None
+        return None if (v != v) else v          # NaN را هم رد می‌کند
+
     if g['kind'] == 'scalar':
-        return float(g['value']) / div
+        v = _num(g.get('value'))
+        return None if v is None else v / div
 
     vals = g.get('at_signals') or []
     if not vals:
-        m = g.get('median')
-        return None if m is None else float(m) / div
+        m = _num(g.get('median'))
+        return None if m is None else m / div
     arr = np.full(int(n_bars), np.nan)
     k = min(len(vals), len(idx))
     for j in range(k):
