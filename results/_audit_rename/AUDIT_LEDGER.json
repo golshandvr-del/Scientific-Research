@@ -2585,10 +2585,121 @@
   ]
  },
  "S313": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S313_SqueezeBreakout_Xauusd_H1M30_92.md",
-  "reason": "INCOMPLETE was caused by the interceptor not patching engine.trade_simulator.simulate (third archive engine); fix verified on S310: 0 calls -> 40 calls in 467s"
+  "new": "S313_SqueezeBreakoutXauusdH1M30_Xauusd_M5_rqs2_1_REJECT.md",
+  "verdict": "REJECT",
+  "score": 0.7,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 1103
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 1281
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 376
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 1288
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 1132
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 355
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 591
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 670
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 1190
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 1331
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 353
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 630
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 481
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 1034
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 370
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 1452
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 594
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 357
+   }
+  ]
  },
  "S320": {
   "done": true,

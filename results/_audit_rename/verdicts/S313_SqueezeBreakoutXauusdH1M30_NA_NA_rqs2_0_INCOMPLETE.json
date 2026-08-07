@@ -1,0 +1,2928 @@
+{
+ "layer": "S313_SqueezeBreakoutXauusdH1M30_NA_NA_rqs2_0_INCOMPLETE.md",
+ "script": "s313_squeeze_revival.py",
+ "n_trials": 807,
+ "perm_k": 600,
+ "seed": 20260806,
+ "unmatched_calls": 0,
+ "reproduction": [
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1237
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1180
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 431
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1590
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 608
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 390
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 763
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1172
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 429
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1576
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 604
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 666
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 757
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1164
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 430
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1565
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 605
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1614
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 758
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1113
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 411
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 384
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 570
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 543
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 714
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1098
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 408
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1458
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 564
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1747
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 706
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 536
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 405
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1358
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 561
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 678
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 703
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1052
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 394
+  },
+  {
+   "engine": "trade_simulator.simulate",
+   "n_trades": 1031
+  }
+ ],
+ "cards": [
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 1103,
+    "win_rate": 20.13,
+    "net_profit": -8939.9,
+    "profit_factor": 0.846,
+    "max_dd_pct": 91.57,
+    "max_consec_losses": 27,
+    "mcl_allowed": 44,
+    "n_wins": 222,
+    "top_win_share": 0.0045,
+    "recovery_factor": -0.78,
+    "expectancy_pip": -3.2151,
+    "expectancy_at_2x_cost": -6.5151,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 17.569,
+    "tp_pip": 70.144,
+    "rr": 3.992,
+    "breakeven_wr_cost": 23.79,
+    "wr_excess_cost": -3.67,
+    "null_ref_wr": 21.62,
+    "skill_lift_pp": -1.49,
+    "skill_z": -1.21,
+    "skill_p_perm": 0.886031,
+    "perm_max": 25.26,
+    "perm_k": 600,
+    "side_n": {
+     "long": 1103,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 20.13
+    },
+    "side_lift_pp": {
+     "long": -1.49
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.89293,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.206,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.399,
+    "n_trials": 807,
+    "cal_nets": [
+     316.7,
+     -5171.5,
+     -2344.4,
+     -7218.7
+    ],
+    "cal_counts": [
+     220,
+     267,
+     311,
+     305
+    ],
+    "cal_positive": 1,
+    "cal_occupied": 4,
+    "half_nets": [
+     -5004.3,
+     -7865.5
+    ],
+    "oos": {
+     "n": 389,
+     "wr": 16.71,
+     "pf": 0.687,
+     "net": -7639.0,
+     "wr_req": 23.79
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 840,
+     "n_unjudgeable": 263,
+     "n_counter": 0,
+     "n_aligned": 840,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 19.29,
+     "exp_aligned": -3.953,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.846<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.7,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 1237,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 17.5692,
+    "tp_pip_med": 70.1445,
+    "rr": 3.9925,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 1281,
+    "win_rate": 47.62,
+    "net_profit": -8693.0,
+    "profit_factor": 0.768,
+    "max_dd_pct": 87.05,
+    "max_consec_losses": 13,
+    "mcl_allowed": 17,
+    "n_wins": 610,
+    "top_win_share": 0.0016,
+    "recovery_factor": -0.99,
+    "expectancy_pip": -4.7137,
+    "expectancy_at_2x_cost": -8.0137,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 30.526,
+    "tp_pip": 30.61,
+    "rr": 1.003,
+    "breakeven_wr_cost": 55.33,
+    "wr_excess_cost": -7.71,
+    "null_ref_wr": 49.78,
+    "skill_lift_pp": -2.16,
+    "skill_z": -1.55,
+    "skill_p_perm": 0.939131,
+    "perm_max": 53.11,
+    "perm_k": 600,
+    "side_n": {
+     "long": 1281,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 47.62
+    },
+    "side_lift_pp": {
+     "long": -2.16
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.942425,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.548,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.741,
+    "n_trials": 807,
+    "cal_nets": [
+     -1573.5,
+     -3421.3,
+     -4165.0,
+     -5990.0
+    ],
+    "cal_counts": [
+     244,
+     275,
+     385,
+     377
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -4448.7,
+     -7652.5
+    ],
+    "oos": {
+     "n": 478,
+     "wr": 44.77,
+     "pf": 0.68,
+     "net": -6452.4,
+     "wr_req": 55.33
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 987,
+     "n_unjudgeable": 294,
+     "n_counter": 0,
+     "n_aligned": 987,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 46.61,
+     "exp_aligned": -5.333,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.768<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 1625,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 30.5262,
+    "tp_pip_med": 30.61,
+    "rr": 1.0027,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 376,
+    "win_rate": 48.67,
+    "net_profit": -4001.2,
+    "profit_factor": 0.784,
+    "max_dd_pct": 40.01,
+    "max_consec_losses": 11,
+    "mcl_allowed": 14,
+    "n_wins": 183,
+    "top_win_share": 0.0055,
+    "recovery_factor": -1.0,
+    "expectancy_pip": -4.0177,
+    "expectancy_at_2x_cost": -7.3177,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 30.645,
+    "tp_pip": 30.845,
+    "rr": 1.007,
+    "breakeven_wr_cost": 55.2,
+    "wr_excess_cost": -6.53,
+    "null_ref_wr": 49.87,
+    "skill_lift_pp": -1.2,
+    "skill_z": -0.47,
+    "skill_p_perm": 0.679443,
+    "perm_max": 58.08,
+    "perm_k": 600,
+    "side_n": {
+     "long": 376,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.67
+    },
+    "side_lift_pp": {
+     "long": -1.2
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.697671,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -0.466,
+    "z_luck_bound": 3.194,
+    "z_margin": -3.66,
+    "n_trials": 807,
+    "cal_nets": [
+     -334.9,
+     -605.6,
+     -762.6,
+     -2842.9
+    ],
+    "cal_counts": [
+     86,
+     76,
+     110,
+     104
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -922.3,
+     -3385.2
+    ],
+    "oos": {
+     "n": 124,
+     "wr": 41.13,
+     "pf": 0.589,
+     "net": -2995.9,
+     "wr_req": 55.2
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 274,
+     "n_unjudgeable": 102,
+     "n_counter": 0,
+     "n_aligned": 274,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 47.81,
+     "exp_aligned": -4.547,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.784<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 436,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 30.6454,
+    "tp_pip_med": 30.8454,
+    "rr": 1.0065,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 1288,
+    "win_rate": 48.45,
+    "net_profit": -8490.6,
+    "profit_factor": 0.786,
+    "max_dd_pct": 85.43,
+    "max_consec_losses": 9,
+    "mcl_allowed": 16,
+    "n_wins": 624,
+    "top_win_share": 0.0016,
+    "recovery_factor": -0.96,
+    "expectancy_pip": -4.1548,
+    "expectancy_at_2x_cost": -7.4548,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 29.222,
+    "tp_pip": 29.331,
+    "rr": 1.004,
+    "breakeven_wr_cost": 55.54,
+    "wr_excess_cost": -7.1,
+    "null_ref_wr": 49.73,
+    "skill_lift_pp": -1.28,
+    "skill_z": -0.92,
+    "skill_p_perm": 0.821808,
+    "perm_max": 53.04,
+    "perm_k": 600,
+    "side_n": {
+     "long": 1288,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.45
+    },
+    "side_lift_pp": {
+     "long": -1.28
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.828979,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -0.922,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.116,
+    "n_trials": 807,
+    "cal_nets": [
+     -1290.6,
+     -3398.5,
+     -3709.7,
+     -5861.4
+    ],
+    "cal_counts": [
+     249,
+     279,
+     389,
+     371
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -4237.6,
+     -7389.6
+    ],
+    "oos": {
+     "n": 473,
+     "wr": 45.88,
+     "pf": 0.712,
+     "net": -6090.2,
+     "wr_req": 55.54
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 989,
+     "n_unjudgeable": 299,
+     "n_counter": 0,
+     "n_aligned": 989,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 47.32,
+     "exp_aligned": -4.815,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.786<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 1601,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 29.2219,
+    "tp_pip_med": 29.3307,
+    "rr": 1.0037,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 1132,
+    "win_rate": 48.67,
+    "net_profit": -7677.8,
+    "profit_factor": 0.796,
+    "max_dd_pct": 78.53,
+    "max_consec_losses": 10,
+    "mcl_allowed": 16,
+    "n_wins": 551,
+    "top_win_share": 0.0018,
+    "recovery_factor": -0.9,
+    "expectancy_pip": -4.4334,
+    "expectancy_at_2x_cost": -7.7334,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 35.684,
+    "tp_pip": 35.298,
+    "rr": 0.989,
+    "breakeven_wr_cost": 54.92,
+    "wr_excess_cost": -6.25,
+    "null_ref_wr": 50.67,
+    "skill_lift_pp": -2.0,
+    "skill_z": -1.34,
+    "skill_p_perm": 0.910413,
+    "perm_max": 54.53,
+    "perm_k": 600,
+    "side_n": {
+     "long": 1132,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.67
+    },
+    "side_lift_pp": {
+     "long": -2.0
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.915128,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.343,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.537,
+    "n_trials": 807,
+    "cal_nets": [
+     -1230.5,
+     -2833.3,
+     -3721.6,
+     -4136.9
+    ],
+    "cal_counts": [
+     215,
+     239,
+     347,
+     331
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -3723.9,
+     -6295.9
+    ],
+    "oos": {
+     "n": 416,
+     "wr": 46.63,
+     "pf": 0.718,
+     "net": -5084.0,
+     "wr_req": 54.92
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 874,
+     "n_unjudgeable": 258,
+     "n_counter": 0,
+     "n_aligned": 874,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 47.83,
+     "exp_aligned": -5.036,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.796<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 1440,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 35.6838,
+    "tp_pip_med": 35.2982,
+    "rr": 0.9892,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 355,
+    "win_rate": 47.04,
+    "net_profit": -4139.0,
+    "profit_factor": 0.756,
+    "max_dd_pct": 41.92,
+    "max_consec_losses": 10,
+    "mcl_allowed": 15,
+    "n_wins": 167,
+    "top_win_share": 0.006,
+    "recovery_factor": -0.99,
+    "expectancy_pip": -5.5474,
+    "expectancy_at_2x_cost": -8.8474,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 38.407,
+    "tp_pip": 38.459,
+    "rr": 1.001,
+    "breakeven_wr_cost": 54.26,
+    "wr_excess_cost": -7.22,
+    "null_ref_wr": 50.92,
+    "skill_lift_pp": -3.87,
+    "skill_z": -1.46,
+    "skill_p_perm": 0.927819,
+    "perm_max": 59.01,
+    "perm_k": 600,
+    "side_n": {
+     "long": 355,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 47.04
+    },
+    "side_lift_pp": {
+     "long": -3.87
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.934837,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.46,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.653,
+    "n_trials": 807,
+    "cal_nets": [
+     -214.2,
+     -1345.4,
+     -1525.6,
+     -1782.8
+    ],
+    "cal_counts": [
+     81,
+     72,
+     105,
+     97
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -1545.2,
+     -3030.3
+    ],
+    "oos": {
+     "n": 117,
+     "wr": 41.88,
+     "pf": 0.613,
+     "net": -2575.1,
+     "wr_req": 54.26
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 259,
+     "n_unjudgeable": 96,
+     "n_counter": 0,
+     "n_aligned": 259,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 45.17,
+     "exp_aligned": -6.984,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.756<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 390,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 38.407,
+    "tp_pip_med": 38.4591,
+    "rr": 1.0014,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 591,
+    "win_rate": 48.05,
+    "net_profit": -5458.0,
+    "profit_factor": 0.786,
+    "max_dd_pct": 54.98,
+    "max_consec_losses": 7,
+    "mcl_allowed": 15,
+    "n_wins": 284,
+    "top_win_share": 0.0035,
+    "recovery_factor": -0.99,
+    "expectancy_pip": -5.1606,
+    "expectancy_at_2x_cost": -8.4606,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 40.206,
+    "tp_pip": 39.59,
+    "rr": 0.985,
+    "breakeven_wr_cost": 54.52,
+    "wr_excess_cost": -6.47,
+    "null_ref_wr": 51.13,
+    "skill_lift_pp": -3.08,
+    "skill_z": -1.5,
+    "skill_p_perm": 0.932858,
+    "perm_max": 57.32,
+    "perm_k": 600,
+    "side_n": {
+     "long": 591,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.05
+    },
+    "side_lift_pp": {
+     "long": -3.08
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.938044,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.497,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.691,
+    "n_trials": 807,
+    "cal_nets": [
+     -674.1,
+     -89.1,
+     -3547.0,
+     -2350.9
+    ],
+    "cal_counts": [
+     125,
+     116,
+     190,
+     160
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -780.9,
+     -5067.1
+    ],
+    "oos": {
+     "n": 199,
+     "wr": 43.72,
+     "pf": 0.649,
+     "net": -3544.4,
+     "wr_req": 54.52
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 443,
+     "n_unjudgeable": 148,
+     "n_counter": 0,
+     "n_aligned": 443,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 47.18,
+     "exp_aligned": -5.859,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.786<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 666,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 40.206,
+    "tp_pip_med": 39.5903,
+    "rr": 0.9847,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 670,
+    "win_rate": 48.51,
+    "net_profit": -6849.4,
+    "profit_factor": 0.761,
+    "max_dd_pct": 69.47,
+    "max_consec_losses": 9,
+    "mcl_allowed": 15,
+    "n_wins": 325,
+    "top_win_share": 0.0031,
+    "recovery_factor": -0.96,
+    "expectancy_pip": -4.1872,
+    "expectancy_at_2x_cost": -7.4872,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 24.954,
+    "tp_pip": 24.661,
+    "rr": 0.988,
+    "breakeven_wr_cost": 56.95,
+    "wr_excess_cost": -8.44,
+    "null_ref_wr": 49.55,
+    "skill_lift_pp": -1.04,
+    "skill_z": -0.54,
+    "skill_p_perm": 0.70452,
+    "perm_max": 54.16,
+    "perm_k": 600,
+    "side_n": {
+     "long": 670,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.51
+    },
+    "side_lift_pp": {
+     "long": -1.04
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.71772,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -0.537,
+    "z_luck_bound": 3.194,
+    "z_margin": -3.731,
+    "n_trials": 807,
+    "cal_nets": [
+     34.9,
+     -564.2,
+     -4444.4,
+     -4008.0
+    ],
+    "cal_counts": [
+     145,
+     131,
+     209,
+     185
+    ],
+    "cal_positive": 1,
+    "cal_occupied": 4,
+    "half_nets": [
+     -518.4,
+     -6670.3
+    ],
+    "oos": {
+     "n": 226,
+     "wr": 41.59,
+     "pf": 0.559,
+     "net": -5039.1,
+     "wr_req": 56.95
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 498,
+     "n_unjudgeable": 172,
+     "n_counter": 0,
+     "n_aligned": 498,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 46.18,
+     "exp_aligned": -5.34,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.761<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.7,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 768,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 24.9543,
+    "tp_pip_med": 24.661,
+    "rr": 0.9882,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 1190,
+    "win_rate": 48.49,
+    "net_profit": -7682.8,
+    "profit_factor": 0.812,
+    "max_dd_pct": 77.44,
+    "max_consec_losses": 13,
+    "mcl_allowed": 16,
+    "n_wins": 577,
+    "top_win_share": 0.0017,
+    "recovery_factor": -0.97,
+    "expectancy_pip": -4.3795,
+    "expectancy_at_2x_cost": -7.6795,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 36.93,
+    "tp_pip": 37.008,
+    "rr": 1.002,
+    "breakeven_wr_cost": 54.41,
+    "wr_excess_cost": -5.92,
+    "null_ref_wr": 50.42,
+    "skill_lift_pp": -1.93,
+    "skill_z": -1.33,
+    "skill_p_perm": 0.909045,
+    "perm_max": 55.15,
+    "perm_k": 600,
+    "side_n": {
+     "long": 1190,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.49
+    },
+    "side_lift_pp": {
+     "long": -1.93
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.913698,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.335,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.529,
+    "n_trials": 807,
+    "cal_nets": [
+     -1107.3,
+     -2694.4,
+     -2551.6,
+     -5258.1
+    ],
+    "cal_counts": [
+     225,
+     252,
+     356,
+     357
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -3523.7,
+     -6469.4
+    ],
+    "oos": {
+     "n": 452,
+     "wr": 45.13,
+     "pf": 0.693,
+     "net": -5773.3,
+     "wr_req": 54.41
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 921,
+     "n_unjudgeable": 269,
+     "n_counter": 0,
+     "n_aligned": 921,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 47.45,
+     "exp_aligned": -5.148,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.812<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 1547,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 36.9302,
+    "tp_pip_med": 37.008,
+    "rr": 1.0021,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 1331,
+    "win_rate": 48.23,
+    "net_profit": -8177.3,
+    "profit_factor": 0.802,
+    "max_dd_pct": 82.19,
+    "max_consec_losses": 11,
+    "mcl_allowed": 17,
+    "n_wins": 642,
+    "top_win_share": 0.0016,
+    "recovery_factor": -0.98,
+    "expectancy_pip": -4.6255,
+    "expectancy_at_2x_cost": -7.9255,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 37.255,
+    "tp_pip": 37.234,
+    "rr": 0.999,
+    "breakeven_wr_cost": 54.44,
+    "wr_excess_cost": -6.21,
+    "null_ref_wr": 50.56,
+    "skill_lift_pp": -2.33,
+    "skill_z": -1.7,
+    "skill_p_perm": 0.955152,
+    "perm_max": 54.31,
+    "perm_k": 600,
+    "side_n": {
+     "long": 1331,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.23
+    },
+    "side_lift_pp": {
+     "long": -2.33
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.957683,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.697,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.891,
+    "n_trials": 807,
+    "cal_nets": [
+     -1633.0,
+     -2613.3,
+     -4120.4,
+     -5056.7
+    ],
+    "cal_counts": [
+     254,
+     284,
+     398,
+     395
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -3860.4,
+     -7064.4
+    ],
+    "oos": {
+     "n": 499,
+     "wr": 45.89,
+     "pf": 0.706,
+     "net": -5846.7,
+     "wr_req": 54.44
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 1029,
+     "n_unjudgeable": 302,
+     "n_counter": 0,
+     "n_aligned": 1029,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 47.23,
+     "exp_aligned": -5.373,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.802<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 1614,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 37.2548,
+    "tp_pip_med": 37.234,
+    "rr": 0.9994,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 353,
+    "win_rate": 47.59,
+    "net_profit": -3904.8,
+    "profit_factor": 0.769,
+    "max_dd_pct": 39.61,
+    "max_consec_losses": 9,
+    "mcl_allowed": 15,
+    "n_wins": 168,
+    "top_win_share": 0.006,
+    "recovery_factor": -0.99,
+    "expectancy_pip": -5.2214,
+    "expectancy_at_2x_cost": -8.5214,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 38.682,
+    "tp_pip": 38.559,
+    "rr": 0.997,
+    "breakeven_wr_cost": 54.35,
+    "wr_excess_cost": -6.76,
+    "null_ref_wr": 50.79,
+    "skill_lift_pp": -3.2,
+    "skill_z": -1.2,
+    "skill_p_perm": 0.885545,
+    "perm_max": 57.33,
+    "perm_k": 600,
+    "side_n": {
+     "long": 353,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 47.59
+    },
+    "side_lift_pp": {
+     "long": -3.2
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.895515,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.203,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.397,
+    "n_trials": 807,
+    "cal_nets": [
+     -243.9,
+     -1186.9,
+     -1532.5,
+     -1610.1
+    ],
+    "cal_counts": [
+     81,
+     72,
+     105,
+     95
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -1391.5,
+     -2903.9
+    ],
+    "oos": {
+     "n": 115,
+     "wr": 42.61,
+     "pf": 0.627,
+     "net": -2425.7,
+     "wr_req": 54.35
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 257,
+     "n_unjudgeable": 96,
+     "n_counter": 0,
+     "n_aligned": 257,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 45.91,
+     "exp_aligned": -6.517,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.769<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 384,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 38.6821,
+    "tp_pip_med": 38.5592,
+    "rr": 0.9968,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 630,
+    "win_rate": 47.3,
+    "net_profit": -6439.4,
+    "profit_factor": 0.749,
+    "max_dd_pct": 64.39,
+    "max_consec_losses": 10,
+    "mcl_allowed": 16,
+    "n_wins": 298,
+    "top_win_share": 0.0034,
+    "recovery_factor": -1.0,
+    "expectancy_pip": -5.0436,
+    "expectancy_at_2x_cost": -8.3436,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 31.81,
+    "tp_pip": 31.753,
+    "rr": 0.998,
+    "breakeven_wr_cost": 55.24,
+    "wr_excess_cost": -7.93,
+    "null_ref_wr": 50.24,
+    "skill_lift_pp": -2.93,
+    "skill_z": -1.47,
+    "skill_p_perm": 0.929644,
+    "perm_max": 55.08,
+    "perm_k": 600,
+    "side_n": {
+     "long": 630,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 47.3
+    },
+    "side_lift_pp": {
+     "long": -2.93
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.934858,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.473,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.667,
+    "n_trials": 807,
+    "cal_nets": [
+     -1189.5,
+     -210.8,
+     -3875.0,
+     -3230.3
+    ],
+    "cal_counts": [
+     134,
+     121,
+     201,
+     174
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -1392.9,
+     -5865.8
+    ],
+    "oos": {
+     "n": 213,
+     "wr": 43.66,
+     "pf": 0.647,
+     "net": -3953.2,
+     "wr_req": 55.24
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 472,
+     "n_unjudgeable": 158,
+     "n_counter": 0,
+     "n_aligned": 472,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 46.4,
+     "exp_aligned": -5.618,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.749<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 725,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 31.8098,
+    "tp_pip_med": 31.753,
+    "rr": 0.9982,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 481,
+    "win_rate": 47.61,
+    "net_profit": -5019.3,
+    "profit_factor": 0.769,
+    "max_dd_pct": 51.64,
+    "max_consec_losses": 10,
+    "mcl_allowed": 15,
+    "n_wins": 229,
+    "top_win_share": 0.0044,
+    "recovery_factor": -0.95,
+    "expectancy_pip": -5.5474,
+    "expectancy_at_2x_cost": -8.8474,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 39.943,
+    "tp_pip": 39.234,
+    "rr": 0.982,
+    "breakeven_wr_cost": 54.62,
+    "wr_excess_cost": -7.01,
+    "null_ref_wr": 51.27,
+    "skill_lift_pp": -3.66,
+    "skill_z": -1.61,
+    "skill_p_perm": 0.945833,
+    "perm_max": 57.34,
+    "perm_k": 600,
+    "side_n": {
+     "long": 481,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 47.61
+    },
+    "side_lift_pp": {
+     "long": -3.66
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.950665,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.606,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.799,
+    "n_trials": 807,
+    "cal_nets": [
+     -232.9,
+     -1019.2,
+     -2423.1,
+     -2461.8
+    ],
+    "cal_counts": [
+     106,
+     92,
+     153,
+     130
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -1232.4,
+     -4294.8
+    ],
+    "oos": {
+     "n": 161,
+     "wr": 42.24,
+     "pf": 0.617,
+     "net": -3320.3,
+     "wr_req": 54.62
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 355,
+     "n_unjudgeable": 126,
+     "n_counter": 0,
+     "n_aligned": 355,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 46.2,
+     "exp_aligned": -6.665,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.769<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 543,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 39.943,
+    "tp_pip_med": 39.2343,
+    "rr": 0.9823,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 1034,
+    "win_rate": 48.74,
+    "net_profit": -7306.1,
+    "profit_factor": 0.801,
+    "max_dd_pct": 74.81,
+    "max_consec_losses": 11,
+    "mcl_allowed": 16,
+    "n_wins": 504,
+    "top_win_share": 0.002,
+    "recovery_factor": -0.91,
+    "expectancy_pip": -4.2486,
+    "expectancy_at_2x_cost": -7.5486,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 35.319,
+    "tp_pip": 35.195,
+    "rr": 0.996,
+    "breakeven_wr_cost": 54.77,
+    "wr_excess_cost": -6.03,
+    "null_ref_wr": 50.51,
+    "skill_lift_pp": -1.77,
+    "skill_z": -1.14,
+    "skill_p_perm": 0.87233,
+    "perm_max": 54.47,
+    "perm_k": 600,
+    "side_n": {
+     "long": 1034,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.74
+    },
+    "side_lift_pp": {
+     "long": -1.77
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.878713,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.137,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.331,
+    "n_trials": 807,
+    "cal_nets": [
+     -1051.5,
+     -2972.9,
+     -2310.4,
+     -4347.9
+    ],
+    "cal_counts": [
+     201,
+     223,
+     318,
+     292
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -3729.0,
+     -5639.2
+    ],
+    "oos": {
+     "n": 372,
+     "wr": 45.43,
+     "pf": 0.692,
+     "net": -5101.5,
+     "wr_req": 54.77
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 792,
+     "n_unjudgeable": 242,
+     "n_counter": 0,
+     "n_aligned": 792,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 47.98,
+     "exp_aligned": -4.787,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.801<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 1300,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 35.3187,
+    "tp_pip_med": 35.1946,
+    "rr": 0.9965,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 370,
+    "win_rate": 48.92,
+    "net_profit": -3859.1,
+    "profit_factor": 0.788,
+    "max_dd_pct": 38.59,
+    "max_consec_losses": 11,
+    "mcl_allowed": 14,
+    "n_wins": 181,
+    "top_win_share": 0.0055,
+    "recovery_factor": -1.0,
+    "expectancy_pip": -3.8919,
+    "expectancy_at_2x_cost": -7.1919,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 30.586,
+    "tp_pip": 30.728,
+    "rr": 1.005,
+    "breakeven_wr_cost": 55.27,
+    "wr_excess_cost": -6.35,
+    "null_ref_wr": 49.79,
+    "skill_lift_pp": -0.87,
+    "skill_z": -0.34,
+    "skill_p_perm": 0.631226,
+    "perm_max": 56.64,
+    "perm_k": 600,
+    "side_n": {
+     "long": 370,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 48.92
+    },
+    "side_lift_pp": {
+     "long": -0.87
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.650655,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -0.335,
+    "z_luck_bound": 3.194,
+    "z_margin": -3.529,
+    "n_trials": 807,
+    "cal_nets": [
+     -337.1,
+     -616.7,
+     -752.8,
+     -2663.9
+    ],
+    "cal_counts": [
+     86,
+     76,
+     108,
+     100
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -934.7,
+     -3219.1
+    ],
+    "oos": {
+     "n": 120,
+     "wr": 41.67,
+     "pf": 0.598,
+     "net": -2839.9,
+     "wr_req": 55.27
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 268,
+     "n_unjudgeable": 102,
+     "n_counter": 0,
+     "n_aligned": 268,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 48.13,
+     "exp_aligned": -4.373,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.788<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 408,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 30.5858,
+    "tp_pip_med": 30.7277,
+    "rr": 1.0046,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 1452,
+    "win_rate": 47.66,
+    "net_profit": -8959.3,
+    "profit_factor": 0.771,
+    "max_dd_pct": 89.69,
+    "max_consec_losses": 11,
+    "mcl_allowed": 17,
+    "n_wins": 692,
+    "top_win_share": 0.0014,
+    "recovery_factor": -0.99,
+    "expectancy_pip": -4.7897,
+    "expectancy_at_2x_cost": -8.0897,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 31.81,
+    "tp_pip": 31.81,
+    "rr": 1.0,
+    "breakeven_wr_cost": 55.19,
+    "wr_excess_cost": -7.53,
+    "null_ref_wr": 50.09,
+    "skill_lift_pp": -2.43,
+    "skill_z": -1.85,
+    "skill_p_perm": 0.968167,
+    "perm_max": 53.7,
+    "perm_k": 600,
+    "side_n": {
+     "long": 1452,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 47.66
+    },
+    "side_lift_pp": {
+     "long": -2.43
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.969998,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.855,
+    "z_luck_bound": 3.194,
+    "z_margin": -5.048,
+    "n_trials": 807,
+    "cal_nets": [
+     -2184.8,
+     -2945.1,
+     -5543.1,
+     -5769.2
+    ],
+    "cal_counts": [
+     278,
+     311,
+     439,
+     424
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -4494.0,
+     -8123.1
+    ],
+    "oos": {
+     "n": 535,
+     "wr": 45.61,
+     "pf": 0.695,
+     "net": -6506.4,
+     "wr_req": 55.19
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 1120,
+     "n_unjudgeable": 332,
+     "n_counter": 0,
+     "n_aligned": 1120,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 46.61,
+     "exp_aligned": -5.459,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.771<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 1780,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 31.8104,
+    "tp_pip_med": 31.8104,
+    "rr": 1.0,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 594,
+    "win_rate": 47.98,
+    "net_profit": -5576.9,
+    "profit_factor": 0.778,
+    "max_dd_pct": 56.16,
+    "max_consec_losses": 7,
+    "mcl_allowed": 15,
+    "n_wins": 285,
+    "top_win_share": 0.0035,
+    "recovery_factor": -0.99,
+    "expectancy_pip": -5.3061,
+    "expectancy_at_2x_cost": -8.6061,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 40.083,
+    "tp_pip": 39.277,
+    "rr": 0.98,
+    "breakeven_wr_cost": 54.67,
+    "wr_excess_cost": -6.69,
+    "null_ref_wr": 51.18,
+    "skill_lift_pp": -3.2,
+    "skill_z": -1.56,
+    "skill_p_perm": 0.940428,
+    "perm_max": 56.74,
+    "perm_k": 600,
+    "side_n": {
+     "long": 594,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 47.98
+    },
+    "side_lift_pp": {
+     "long": -3.2
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.945136,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.558,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.752,
+    "n_trials": 807,
+    "cal_nets": [
+     -693.9,
+     -333.2,
+     -3513.6,
+     -2405.1
+    ],
+    "cal_counts": [
+     125,
+     116,
+     191,
+     162
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -993.4,
+     -5080.9
+    ],
+    "oos": {
+     "n": 201,
+     "wr": 43.78,
+     "pf": 0.647,
+     "net": -3589.5,
+     "wr_req": 54.67
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 446,
+     "n_unjudgeable": 148,
+     "n_counter": 0,
+     "n_aligned": 446,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 47.09,
+     "exp_aligned": -6.016,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.778<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 678,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 40.0827,
+    "tp_pip_med": 39.2769,
+    "rr": 0.9799,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  },
+  {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": true
+   },
+   "metrics": {
+    "n_trades": 357,
+    "win_rate": 46.5,
+    "net_profit": -4331.0,
+    "profit_factor": 0.746,
+    "max_dd_pct": 43.83,
+    "max_consec_losses": 10,
+    "mcl_allowed": 15,
+    "n_wins": 166,
+    "top_win_share": 0.006,
+    "recovery_factor": -0.99,
+    "expectancy_pip": -5.8629,
+    "expectancy_at_2x_cost": -9.1629,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 38.081,
+    "tp_pip": 38.304,
+    "rr": 1.006,
+    "breakeven_wr_cost": 54.17,
+    "wr_excess_cost": -7.68,
+    "null_ref_wr": 50.39,
+    "skill_lift_pp": -3.89,
+    "skill_z": -1.47,
+    "skill_p_perm": 0.929054,
+    "perm_max": 57.29,
+    "perm_k": 600,
+    "side_n": {
+     "long": 357,
+     "short": 0
+    },
+    "side_wr": {
+     "long": 46.5
+    },
+    "side_lift_pp": {
+     "long": -3.89
+    },
+    "prune_sides": [
+     "long"
+    ],
+    "p_emp": 0.935959,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -1.469,
+    "z_luck_bound": 3.194,
+    "z_margin": -4.662,
+    "n_trials": 807,
+    "cal_nets": [
+     -310.8,
+     -1333.0,
+     -1514.9,
+     -2039.3
+    ],
+    "cal_counts": [
+     82,
+     72,
+     105,
+     98
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+     -1617.7,
+     -3228.1
+    ],
+    "oos": {
+     "n": 118,
+     "wr": 40.68,
+     "pf": 0.588,
+     "net": -2780.4,
+     "wr_req": 54.17
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 260,
+     "n_unjudgeable": 97,
+     "n_counter": 0,
+     "n_aligned": 260,
+     "regime_lookback_days": 280.0,
+     "wr_aligned": 44.62,
+     "exp_aligned": -7.301,
+     "h10_substitute": "no-counter-trades-selective"
+    },
+    "n_required_h3": null
+   },
+   "notes": [
+    "PF=0.746<1.3",
+    "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+   ],
+   "passed": false,
+   "rqs2_score": 0.0,
+   "verdict": "REJECT",
+   "n_fail": 9,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": false,
+    "G2_evidence": false,
+    "G3_efdr": false,
+    "G4_economics": false,
+    "G5_glass_ceiling": false,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": false,
+     "H2": false,
+     "H8": false,
+     "H9": false
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": true
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D",
+   "geometry_kind": "scalar",
+   "card": "XAUUSD-M5",
+   "n_signals": {
+    "long": 394,
+    "short": 0
+   },
+   "geometry": {
+    "sl_pip_med": 38.0811,
+    "tp_pip_med": 38.3044,
+    "rr": 1.0059,
+    "max_hold": 200001,
+    "allow_overlap": false
+   }
+  }
+ ],
+ "headline_verdict": "REJECT",
+ "headline_score": 0.7
+}
