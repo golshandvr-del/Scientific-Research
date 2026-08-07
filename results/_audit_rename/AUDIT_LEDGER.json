@@ -2014,44 +2014,34 @@
   "reason": "capture > 900s"
  },
  "S223b": {
-  "done": true,
-  "old": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
-  "new": "S223b_BrooksHigh2WR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S223b_BrooksHigh2WR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was caused by AUDIT_KEEP_CACHE keeping an ALREADY-COMPLETE resume cache, so the script skipped all computation and recorded zero engine calls; harness now auto-retries once with the cache parked"
  },
  "S223c": {
-  "done": true,
-  "old": "S223c_BrooksLow2WR60_Xauusd_M5M30H1_1298_87.md",
-  "new": "S223c_BrooksLow2WR60XauusdM5M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S223c_BrooksLow2WR60XauusdM5M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was caused by AUDIT_KEEP_CACHE keeping an ALREADY-COMPLETE resume cache, so the script skipped all computation and recorded zero engine calls; harness now auto-retries once with the cache parked"
  },
  "S224": {
-  "done": true,
-  "old": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
-  "new": "S224_S81SwingRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S224_S81SwingRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was caused by AUDIT_KEEP_CACHE keeping an ALREADY-COMPLETE resume cache, so the script skipped all computation and recorded zero engine calls; harness now auto-retries once with the cache parked"
  },
  "S225": {
-  "done": true,
-  "old": "S225_S91SqueezeRevivedWR60_Xauusd_M5M15M30H1_2584_85.md",
-  "new": "S225_S91SqueezeRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S225_S91SqueezeRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was caused by AUDIT_KEEP_CACHE keeping an ALREADY-COMPLETE resume cache, so the script skipped all computation and recorded zero engine calls; harness now auto-retries once with the cache parked"
  },
  "S226": {
-  "done": true,
-  "old": "S226_RQS_MethodologyAudit_Xauusd_M15M5_ByGate.md",
-  "new": "S226_RQSMethodologyAuditXauusdM15M5ByGate_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S226_RQSMethodologyAuditXauusdM15M5ByGate_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was caused by AUDIT_KEEP_CACHE keeping an ALREADY-COMPLETE resume cache, so the script skipped all computation and recorded zero engine calls; harness now auto-retries once with the cache parked"
  },
  "S300": {
   "done": true,
