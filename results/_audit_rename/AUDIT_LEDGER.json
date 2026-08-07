@@ -3574,5 +3574,26 @@
     "n": 1403
    }
   ]
+ },
+ "S344": {
+  "done": true,
+  "old": "S344_BrooksTrendFromOpen_Xauusd_M15_rqs91.md",
+  "new": "S344_BrooksTrendFromOpenXauusdM15_Xauusd_M15H1_rqs2_89_ACCEPT.md",
+  "verdict": "ACCEPT",
+  "score": 89.0,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 29.2,
+    "n": 77
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "ACCEPT",
+    "score": 89.0,
+    "n": 92
+   }
+  ]
  }
 }
