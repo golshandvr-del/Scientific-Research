@@ -3857,5 +3857,20 @@
   "status": "DEFERRED",
   "old": "S353_HalfTrendRegimeGate_XauusdEurusd_D1_rqs2-PL.md",
   "reason": "capture > 1500s"
+ },
+ "S354": {
+  "done": true,
+  "old": "S354_BrooksTrendResumption_Xauusd_H1_rqs2-80.md",
+  "new": "S354_BrooksTrendResumptionXauusdH1_Xauusd_H1_rqs2_23_POWER-LIMITED.md",
+  "verdict": "POWER-LIMITED",
+  "score": 22.8,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "POWER-LIMITED",
+    "score": 22.8,
+    "n": 158
+   }
+  ]
  }
 }
