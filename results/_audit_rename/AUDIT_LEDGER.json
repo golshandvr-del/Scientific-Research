@@ -4157,5 +4157,80 @@
     "n": 615
    }
   ]
+ },
+ "S371#doc:S371_PREREG_directional_breakout_eur.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S371_PREREG_directional_breakout_eur.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S372#doc:S372_GateConditionality_4Instruments_CONFIRMED.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S372_GateConditionality_4Instruments_CONFIRMED.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S372#doc:S372_PREREG_gate_conditionality_third_instrument.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S372_PREREG_gate_conditionality_third_instrument.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S373": {
+  "done": true,
+  "old": "S373_InstrumentNativeChannel_XauEur_H4_rqs2-00_DEAD.md",
+  "new": "S373_InstrumentNativeChannelXauEurH4_EurusdXauusd_H4_rqs2_15_REJECT.md",
+  "verdict": "REJECT",
+  "score": 14.7,
+  "cards": [
+   {
+    "card": "EURUSD-H4",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 239
+   },
+   {
+    "card": "EURUSD-H4",
+    "verdict": "REJECT",
+    "score": 1.3,
+    "n": 232
+   },
+   {
+    "card": "EURUSD-H4",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 232
+   },
+   {
+    "card": "EURUSD-H4",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 226
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 11.4,
+    "n": 90
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 8.2,
+    "n": 89
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 14.7,
+    "n": 88
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 6.8,
+    "n": 86
+   }
+  ]
  }
 }
