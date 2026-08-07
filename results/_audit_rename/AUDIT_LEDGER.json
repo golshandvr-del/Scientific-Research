@@ -2010,14 +2010,14 @@
  "S223a": {
   "done": false,
   "status": "DEFERRED",
-  "old": "S223a_ShortMAConfluenceWR60_Xauusd_M15M30H1_1465_85.md",
-  "reason": "capture > 900s"
+  "old": "S223a_ShortMAConfluenceWR60XauusdM15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "DEFERRED twice at 900s; file already carries the INCOMPLETE name from an earlier pass, so the ledger pointed at a path that no longer exists and the engine could never pick it up"
  },
  "S223b": {
   "done": false,
   "status": "DEFERRED",
-  "old": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
-  "reason": "capture > 900s"
+  "old": "S223b_BrooksHigh2WR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "DEFERRED twice at 900s; file already carries the INCOMPLETE name from an earlier pass, so the ledger pointed at a path that no longer exists and the engine could never pick it up"
  },
  "S223c": {
   "done": true,
@@ -3663,8 +3663,10 @@
  },
  "S323#layer:S323_SRPullbackGolden_Xauusd_M15M30H1_88.md": {
   "done": true,
-  "status": "FILE_MISSING",
-  "old": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md"
+  "status": "REJECT",
+  "old": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md",
+  "new": "S323_SRPullbackGoldenXauusdM15M30H1_Xauusd_M15_rqs2_24_REJECT.md",
+  "note": "DUPLICATE ROW of the bare S323 key, not a lost file. The BUG-14 fix re-keyed ledger rows by filename; this row still pointed at the pre-rename name of a layer that had ALREADY been judged REJECT/23.8 under the bare key, so the engine reported FILE_MISSING. Both S323 layers are present on disk with their new RQS2 names; nothing was lost"
  },
  "S323#layer:S323_SRPullbackGolden_Xauusd_M5M15M30H1_rqs2-24_DEAD.md": {
   "done": true,
