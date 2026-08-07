@@ -3529,5 +3529,20 @@
     "n": 331
    }
   ]
+ },
+ "S340": {
+  "done": true,
+  "old": "S340_BrooksMicroChannel_Xauusd_H4_rqs93.md",
+  "new": "S340_BrooksMicroChannelXauusdH4_Xauusd_M5_rqs2_8_REJECT.md",
+  "verdict": "REJECT",
+  "score": 8.5,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 8.5,
+    "n": 86
+   }
+  ]
  }
 }
