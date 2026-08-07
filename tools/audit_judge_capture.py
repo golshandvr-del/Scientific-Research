@@ -131,6 +131,44 @@ def _tail_index() -> dict:
     return idx
 
 
+def _identify_by_asset(call: dict):
+    """
+    کارتِ فراخوانی‌هایی که **دیتافریم ندارند** ولی `asset` صریح دارند.
+
+    این حالت مخصوصِ موتورِ چهارم (`rqs2.compute_rqs2`) است: دارایی معلوم
+    است ولی تایم‌فریم نه. تایم‌فریم از **بلندترین ایندکسِ سیگنال** استنتاج
+    می‌شود: هر تایم‌فریمی که طولش از آن ایندکس کمتر باشد، ممکن نیست.
+
+    مرزِ صداقت: اگر بیش از یک تایم‌فریمِ آن دارایی جا شد، هیچ تصمیمی گرفته
+    نمی‌شود و `None` برمی‌گردد. یعنی ابهام به `INCOMPLETE` می‌انجامد، هرگز
+    به یک حدسِ داوری‌شده.
+    """
+    pair = call.get('asset')
+    if not pair:
+        return None
+    tails = _tail_index()
+    if pair not in tails:
+        return None
+
+    try:
+        li = unpack_idx(call.get('long_idx'))
+        si = unpack_idx(call.get('short_idx'))
+    except Exception:
+        return None
+    hi = -1
+    for arr in (li, si):
+        if arr is not None and len(arr):
+            hi = max(hi, int(np.max(arr)))
+    if hi < 0:
+        return None
+
+    fits = [(tf, len(c)) for tf, c in tails[pair] if len(c) > hi]
+    if len(fits) != 1:
+        # مبهم (چند تایم‌فریم جا می‌شوند) یا ناممکن (هیچ‌کدام) ⇒ تصمیم نگیر
+        return None
+    return (pair, fits[0][0], 0)
+
+
 def identify_card(call: dict):
     """
     کارتِ یک فراخوانیِ ضبط‌شده را برمی‌گرداند یا `None`.
@@ -146,7 +184,26 @@ def identify_card(call: dict):
 
     تطبیق با «دارایی + طول + لنگرهای قیمتی» انجام می‌شود و بعد با
     `close_sum` **تأیید** می‌شود، پس همچنان قطعی است نه احتمالی.
+
+    مرحلهٔ ⓪ (باگِ شانزدهم) ⚠️ چرا لازم شد (اندازه‌گیری‌شده): موتورِ چهارم
+    `rqs2.compute_rqs2` **دیتافریم نمی‌گیرد** (فقط لیستِ معاملات)، پس در ضبط
+    `n_bars=None` و `close_first/last=None` است — ولی `asset` را **صریح**
+    دارد. کدِ قبلی بی‌قید `int(call['n_bars'])` می‌زد و همان اولین فراخوانیِ
+    این‌شکلی یک `TypeError` پرتاب می‌کرد که **کلِ داوری** را از کار می‌انداخت:
+    ۴ فراخوانیِ این‌شکلی، ۳۶ فراخوانیِ سالم را با خود نابود می‌کردند و لایه
+    `cards=0 → INCOMPLETE` می‌گرفت. مدرک: `s350_triplelock_sweep` و
+    `s348_rr_sweep` هر دو `calls=40` با `n_bars=None: 4` داشتند و حکمشان
+    `INCOMPLETE/0.0` شد، در حالی که خودِ stdoutشان حکمِ کاملِ RQS2 را چاپ
+    کرده بود (`EURUSD-W1 REJECT RQS2=5.4` با همهٔ دروازه‌ها).
+
+    درمان: این فراخوانی‌ها با `_identify_by_asset` حل می‌شوند — دارایی از
+    خودِ ضبط، و تایم‌فریم از **بلندترین ایندکسِ سیگنال** که فقط در یک
+    تایم‌فریمِ آن دارایی جا می‌شود. اگر بیش از یک تایم‌فریم جا شد، تصمیم
+    گرفته **نمی‌شود** (بازگشتِ `None`) تا حدس وارد داوری نشود.
     """
+    if call.get('n_bars') is None:
+        return _identify_by_asset(call)
+
     n = int(call['n_bars'])
     c0 = round(float(call['close_first']), 6)
     c1 = round(float(call['close_last']), 6)
