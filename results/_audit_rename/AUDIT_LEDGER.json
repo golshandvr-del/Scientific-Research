@@ -3415,5 +3415,38 @@
     "n": 47
    }
   ]
+ },
+ "S336": {
+  "done": true,
+  "old": "S336_HighFreqShortScalp_Xauusd_M5_DEAD.md",
+  "new": "S336_HighFreqShortScalpXauusdM5_Xauusd_M5_rqs2_0_REJECT.md",
+  "verdict": "REJECT",
+  "score": 0.0,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 24566
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 24920
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 21781
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 22108
+   }
+  ]
  }
 }
