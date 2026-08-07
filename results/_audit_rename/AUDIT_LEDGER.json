@@ -3508,5 +3508,26 @@
     "n": 60000
    }
   ]
+ },
+ "S339": {
+  "done": true,
+  "old": "S339_R2xZscore_MeanRevert_Xauusd_M5_WIP.md",
+  "new": "S339_R2xZscoreMeanRevertXauusdM5WIP_Xauusd_M5_rqs2_17_REJECT.md",
+  "verdict": "REJECT",
+  "score": 16.9,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 16.9,
+    "n": 47
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 3.8,
+    "n": 331
+   }
+  ]
  }
 }
