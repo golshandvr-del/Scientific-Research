@@ -659,6 +659,20 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
                           rec.record_simulate(orig, df, strategy, asset,
                                               *a, **kw)))
 
+    # ⚠️ موتورِ چهارم — خانوادهٔ «خودداورِ» آرشیو (اندازه‌گیری‌شده):
+    #   `record_compute_rqs2` در کامیتِ `3a1a7a6` نوشته و کامیت شد، ولی
+    #   سیم‌کشیِ نهایی‌اش انجام نشد — یعنی تابع وجود داشت و **هرگز فعال
+    #   نمی‌شد**. مدرک: فهرستِ `install(...)` فقط سه ورودی داشت، پس
+    #   `S346/S348/S350` باز هم `n_calls=0` می‌گرفتند در حالی که ضبطشان
+    #   موفق بود (`ok=True`, `37.3s`/`45.3s`) و خودشان یک ردیفِ حکمِ کاملِ
+    #   یازده‌دروازه‌ای چاپ می‌کردند. این خانواده هیچ موتورِ شبیه‌سازیِ
+    #   آرشیو را صدا نمی‌زند: معاملات را خودش می‌سازد و مستقیماً داورِ
+    #   **رسمیِ** پروژه را فرا می‌خواند.
+    install(['engine.rqs2', 'rqs2'], 'compute_rqs2',
+            lambda orig: (lambda trades, asset, *a, **kw:
+                          rec.record_compute_rqs2(orig, trades, asset,
+                                                  *a, **kw)))
+
     path = ROOT / 'strategies' / script
     out = {'script': script, 'ok': False, 'calls': [], 'stdout_tail': '',
            'error': None, 'seconds': None}
