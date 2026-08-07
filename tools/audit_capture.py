@@ -474,6 +474,96 @@ class Recorder:
                                    traceback.format_exc()[-1500:]})
         return res
 
+    # ── آداپتورِ `rqs2.compute_rqs2` (خانوادهٔ «خودداور»، موتورِ چهارم) ──────
+    def record_compute_rqs2(self, orig, trades, asset, *args, **kw):
+        """
+        خانوادهٔ «خودداورِ» آرشیو: اسکریپت‌هایی که **هیچ موتورِ شبیه‌سازیِ
+        آرشیو را صدا نمی‌زنند** و در عوض خودشان معاملات را می‌سازند و
+        مستقیماً `engine.rqs2.compute_rqs2(...)` — یعنی داورِ **رسمیِ**
+        پروژه — را فرا می‌خوانند.
+
+        ⚠️ چرا لازم شد (اندازه‌گیری‌شده): `S346`,`S348`,`S350` پشتِ‌سرهم
+        `INCOMPLETE (not reproducible)` گرفتند، **در حالی که ضبط موفق بود**
+        (`ok=True`, `seconds=37.3` و `45.3`) ولی `n_calls=0`. علت باگِ
+        شنودگر نبود: خروجیِ خودِ اسکریپت نشان می‌دهد که حکم را **خودش**
+        صادر کرده است، با فرمتِ کاملِ یازده‌دروازه‌ای:
+
+            EURUSD-W1 CONS | REJECT RQS2= 5.4 | n=84 WR=47.62% PF=1.07
+                           | H0:✓ H1:✗ H2:✗ H3:? ... H10:✗
+
+        یعنی این لایه‌ها **به‌هیچ‌وجه غیرقابل‌اثبات نبودند**؛ فقط مسیرشان
+        به داور از جایی می‌گذشت که شنودگر تماشا نمی‌کرد.
+
+        چرا این آداپتور از «تجزیهٔ متنِ stdout» بهتر است: ورودیِ
+        `compute_rqs2` **همان `DataFrame`ِ معاملات** است که سه آداپتورِ قبلی
+        ضبط می‌کنند (ستون‌های `pnl_pip, outcome, sl_pip, entry_bar,
+        exit_bar, direction`). پس هیچ عددی از متن حدس زده نمی‌شود — همان
+        دادهٔ ساختاریِ اصل ضبط می‌شود و داورِ مستقلِ ما می‌تواند مثلِ بقیهٔ
+        لایه‌ها رویش کار کند. `dtype`ها هم دقیقاً همان‌اند، پس هیچ مسیرِ
+        داوریِ جداگانه‌ای لازم نیست.
+        """
+        res = orig(trades, asset, *args, **kw)
+        try:
+            import numpy as np
+            n = int(len(trades)) if trades is not None else 0
+            if n == 0:
+                return res
+
+            def col(name):
+                try:
+                    return np.asarray(trades[name])
+                except Exception:
+                    return None
+
+            eb, dirn = col('entry_bar'), col('direction')
+            li, si = [], []
+            if eb is not None and dirn is not None:
+                for i in range(n):
+                    d = str(dirn[i]).lower()
+                    (li if d.startswith('l') else si).append(int(eb[i]))
+
+            # هندسه: `compute_rqs2` آن را به‌صورتِ آرگومانِ کلیدواژه‌ای
+            # می‌گیرد (`sl_pip`/`tp_pip`) و همان چیزی است که `H2`/`H9` را
+            # زنده می‌کند — پس دقیقاً همان مقدار ضبط می‌شود، بی‌حدس.
+            def geom(v, fallback_col=None):
+                if v is None and fallback_col is not None:
+                    a = col(fallback_col)
+                    v = (float(np.nanmedian(a)) if a is not None
+                         and len(a) else None)
+                if v is None:
+                    return None
+                a = np.atleast_1d(np.asarray(v, dtype=float))
+                if len(a) == 1 or float(a.max() - a.min()) < 1e-9:
+                    return {'kind': 'scalar', 'value': float(a.flat[0])}
+                return {'kind': 'series',
+                        'median': float(np.nanmedian(a)),
+                        'min': float(np.nanmin(a)), 'max': float(np.nanmax(a)),
+                        'values': [float(x) for x in a[:MAX_GEOM_VALS]]}
+
+            pnl = col('pnl_pip')
+            self._add({
+                'engine': 'rqs2.compute_rqs2',
+                'asset': str(asset),
+                'n_bars': None,          # این مسیر دادهٔ کندل را عبور نمی‌دهد
+                't_first': None, 't_last': None,
+                'long_idx': pack_idx(np.asarray(sorted(li)[:MAX_SIG_IDX])),
+                'short_idx': pack_idx(np.asarray(sorted(si)[:MAX_SIG_IDX])),
+                'n_long_sig': len(li), 'n_short_sig': len(si),
+                'sl': geom(kw.get('sl_pip'), 'sl_pip'),
+                'tp': geom(kw.get('tp_pip')),
+                'n_trials_declared': kw.get('n_trials'),
+                'allow_overlap': bool(kw.get('allow_overlap', False)),
+                'be_trigger_pip': None, 'trail_pip': None,
+                'result_n_trades': n,
+                'result_sum_pip': (float(np.nansum(pnl))
+                                   if pnl is not None else None),
+            })
+        except Exception:
+            if len(self.calls) < MAX_FULL_CALLS:
+                self.calls.append({'capture_error':
+                                   traceback.format_exc()[-1500:]})
+        return res
+
 
 def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
                    _force_park: bool = False) -> dict:
