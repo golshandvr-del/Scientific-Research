@@ -3595,5 +3595,20 @@
     "n": 92
    }
   ]
+ },
+ "S345": {
+  "done": true,
+  "old": "S345_BrooksReversalDay_XauEur_M15M30_rqs90.md",
+  "new": "S345_BrooksReversalDayXauEurM15M30_Xauusd_M5_rqs2_0_REJECT.md",
+  "verdict": "REJECT",
+  "score": 0.0,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 236
+   }
+  ]
  }
 }
