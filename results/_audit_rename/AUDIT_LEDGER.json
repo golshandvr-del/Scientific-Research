@@ -3385,5 +3385,20 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S332": {
+  "done": true,
+  "old": "S332_SqueezeBankFilters_Xauusd_H4M15_91.md",
+  "new": "S332_SqueezeBankFiltersXauusdH4M15_Xauusd_M15_rqs2_18_REJECT.md",
+  "verdict": "REJECT",
+  "score": 18.5,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 18.5,
+    "n": 899
+   }
+  ]
  }
 }
