@@ -3284,5 +3284,98 @@
     "n": 317
    }
   ]
+ },
+ "S329": {
+  "done": true,
+  "old": "S329_MarketInertiaShortMTF_Eurusd_M15_29_DEAD.md",
+  "new": "S329_MarketInertiaShortMTFEurusdM15_Xauusd_M30H1H4_rqs2_6_REJECT.md",
+  "verdict": "REJECT",
+  "score": 5.7,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 102
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 109
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 111
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 104
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 107
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 114
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 0.9,
+    "n": 26
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 0.8,
+    "n": 26
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 5.7,
+    "n": 23
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 0.8,
+    "n": 25
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 177
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 4.5,
+    "n": 174
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 168
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 162
+   }
+  ]
  }
 }
