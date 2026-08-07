@@ -2071,10 +2071,145 @@
   ]
  },
  "S224": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S224_S81SwingRevivedWR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "INCOMPLETE was caused by AUDIT_KEEP_CACHE keeping an ALREADY-COMPLETE resume cache, so the script skipped all computation and recorded zero engine calls; harness now auto-retries once with the cache parked"
+  "done": true,
+  "old": "S224_S81SwingRevivedWR60_Xauusd_M5M15M30H1_6098_82.md",
+  "new": "S224_S81SwingRevivedWR60XauusdM5M15M30H1_Xauusd_M5M15M30_rqs2_19_REJECT.md",
+  "verdict": "REJECT",
+  "score": 19.0,
+  "cards": [
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 12.1,
+    "n": 507
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 19.0,
+    "n": 311
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 18.5,
+    "n": 298
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 17.8,
+    "n": 317
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 18.5,
+    "n": 341
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 18.9,
+    "n": 270
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.3,
+    "n": 750
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.2,
+    "n": 875
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 9.8,
+    "n": 999
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 10.1,
+    "n": 941
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.4,
+    "n": 724
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 10.7,
+    "n": 920
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 10.0,
+    "n": 861
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.6,
+    "n": 980
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.4,
+    "n": 810
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 15.7,
+    "n": 747
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 12.6,
+    "n": 674
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 16.8,
+    "n": 767
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 12.2,
+    "n": 965
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 13.5,
+    "n": 901
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 10.6,
+    "n": 793
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 12.3,
+    "n": 861
+   }
+  ]
  },
  "S225": {
   "done": false,
