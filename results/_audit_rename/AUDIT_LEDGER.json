@@ -3448,5 +3448,50 @@
     "n": 22108
    }
   ]
+ },
+ "S337": {
+  "done": true,
+  "old": "S337_WR_Floor_Discovery_Xauusd_AllTF_DIAG.md",
+  "new": "S337_WRFloorDiscoveryXauusdAllTFDIAG_Xauusd_M5_rqs2_4_REJECT.md",
+  "verdict": "REJECT",
+  "score": 4.1,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 2659
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.0,
+    "n": 2077
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 3.7,
+    "n": 4458
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.7,
+    "n": 2059
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 4.1,
+    "n": 4120
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 0.9,
+    "n": 1276
+   }
+  ]
  }
 }
