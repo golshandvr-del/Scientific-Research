@@ -4008,7 +4008,7 @@
   "done": false,
   "status": "DEFERRED",
   "old": "S353_HalfTrendRegimeGate_XauusdEurusd_D1_rqs2-PL.md",
-  "reason": "capture > 1500s"
+  "reason": "capture > 1800s"
  },
  "S354": {
   "done": true,
