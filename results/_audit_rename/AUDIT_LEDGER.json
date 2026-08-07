@@ -3610,5 +3610,13 @@
     "n": 236
    }
   ]
+ },
+ "S346": {
+  "done": true,
+  "old": "S346_AdaptiveATRChannelBreakout_Xauusd_D1_rqs84.md",
+  "new": "S346_AdaptiveATRChannelBreakoutXauusdD1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
