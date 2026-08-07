@@ -3642,20 +3642,16 @@
   "reason": "BUG-17 victim: find_current required exactly one glob hit but this SID also owns document files, so the layer was filed FILE_MISSING untested. Its only recorded verdict is the BUG-16 INCOMPLETE (identify_card TypeError on dataframe-less compute_rqs2 calls), so it still needs a real measurement."
  },
  "S348": {
-  "done": true,
-  "old": "S348_RRGeometrySweep_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
-  "new": "S348_RRGeometrySweepXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S348_RRGeometrySweepXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "BUG-16 victim, re-requeued: chronology proves the verdicts at 13:06:59 and 13:08:08 both predate the BUG-16 fix at 13:14:32, so the fix never ran on them. Direct measurement after the fix: card identification went 0 -> 36 of 40 calls on both captures, yielding real cards across W1/D1/H4/H1/M30."
  },
  "S350": {
-  "done": true,
-  "old": "S350_TripleLockDerivedHold_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
-  "new": "S350_TripleLockDerivedHoldXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S350_TripleLockDerivedHoldXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "BUG-16 victim, re-requeued: chronology proves the verdicts at 13:06:59 and 13:08:08 both predate the BUG-16 fix at 13:14:32, so the fix never ran on them. Direct measurement after the fix: card identification went 0 -> 36 of 40 calls on both captures, yielding real cards across W1/D1/H4/H1/M30."
  },
  "S323#layer:S323_SRPullbackGolden_Xauusd_M15M30H1_88.md": {
   "done": true,
