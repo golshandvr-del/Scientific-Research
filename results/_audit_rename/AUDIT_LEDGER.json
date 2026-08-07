@@ -3843,5 +3843,25 @@
     "n": 3941
    }
   ]
+ },
+ "S341#layer:S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md": {
+  "done": true,
+  "status": "FILE_MISSING",
+  "old": "S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md"
+ },
+ "S341#layer:S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md": {
+  "done": true,
+  "old": "S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md",
+  "new": "S341_BrooksSwingFadeXauusdM5M15M30H1_Xauusd_M5_rqs2_5_REJECT.md",
+  "verdict": "REJECT",
+  "score": 5.0,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 5.0,
+    "n": 1354
+   }
+  ]
  }
 }
