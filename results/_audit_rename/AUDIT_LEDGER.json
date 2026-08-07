@@ -3817,5 +3817,37 @@
     "n": 64
    }
   ]
+ },
+ "S327#layer:S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md": {
+  "done": true,
+  "status": "FILE_MISSING",
+  "old": "S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md"
+ },
+ "S327#layer:S327_SellClimaxReversal_XauEur_M5M15M30H1H4_98.md": {
+  "done": true,
+  "old": "S327_SellClimaxReversal_XauEur_M5M15M30H1H4_98.md",
+  "new": "S327_SellClimaxReversalXauEurM5M15M30H1H4_Xauusd_M5_rqs2_19_REJECT.md",
+  "verdict": "REJECT",
+  "score": 18.9,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 18.9,
+    "n": 1830
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.6,
+    "n": 4094
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.8,
+    "n": 3941
+   }
+  ]
  }
 }
