@@ -3559,5 +3559,20 @@
     "n": 1354
    }
   ]
+ },
+ "S342": {
+  "done": true,
+  "old": "S342_BrooksMAReturn_XauusdEurusd_AllTF_rqs32.md",
+  "new": "S342_BrooksMAReturnXauusdEurusdAllTF_Xauusd_M5_rqs2_4_REJECT.md",
+  "verdict": "REJECT",
+  "score": 4.5,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 4.5,
+    "n": 1403
+   }
+  ]
  }
 }
