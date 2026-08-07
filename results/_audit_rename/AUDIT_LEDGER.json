@@ -3872,5 +3872,56 @@
     "n": 158
    }
   ]
+ },
+ "S355": {
+  "done": true,
+  "old": "S355_LPSBStateFilterRevival_Xauusd_M5_rqs2-84.md",
+  "new": "S355_LPSBStateFilterRevivalXauusdM5_Xauusd_M5M15M30H1_rqs2_90_ACCEPT.md",
+  "verdict": "ACCEPT",
+  "score": 89.6,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 28.5,
+    "n": 74
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "ACCEPT",
+    "score": 89.6,
+    "n": 1298
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 28.9,
+    "n": 51
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 31.0,
+    "n": 51
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 29.0,
+    "n": 42
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 24.7,
+    "n": 64
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 16.7,
+    "n": 63
+   }
+  ]
  }
 }

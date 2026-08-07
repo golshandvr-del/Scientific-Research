@@ -29,7 +29,7 @@
       "H0": true,
       "H1": true,
       "H2": true,
-      "H3": false,
+      "H3": null,
       "H4": true,
       "H5": true,
       "H6": true,
@@ -58,12 +58,12 @@
       "rr": 1.0,
       "breakeven_wr_cost": 51.38,
       "wr_excess_cost": 14.25,
-      "null_ref_wr": 46.95,
-      "skill_lift_pp": 18.67,
-      "skill_z": 2.98,
-      "skill_p_perm": 0.00143,
+      "null_ref_wr": 46.8,
+      "skill_lift_pp": 18.82,
+      "skill_z": 2.95,
+      "skill_p_perm": 0.001584,
       "perm_max": 64.06,
-      "perm_k": 500,
+      "perm_k": 300,
       "side_n": {
         "long": 64,
         "short": 0
@@ -72,14 +72,14 @@
         "long": 65.62
       },
       "side_lift_pp": {
-        "long": 18.67
+        "long": 18.82
       },
       "prune_sides": [],
-      "p_emp": 0.002008,
-      "p_adj_bonferroni": 0.01606,
-      "z_obs": 2.993,
+      "p_emp": 0.001861,
+      "p_adj_bonferroni": 0.014887,
+      "z_obs": 3.018,
       "z_luck_bound": 1.459,
-      "z_margin": 1.534,
+      "z_margin": 1.559,
       "n_trials": 8,
       "cal_nets": [
         142.3,
@@ -116,20 +116,22 @@
         "wr_aligned": 71.11,
         "exp_aligned": 53.078,
         "h10_substitute": "no-counter-trades-selective"
-      }
+      },
+      "n_required_h3": 67.1
     },
     "notes": [
+      "H3 UNKNOWN: only 300 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3.",
       "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
     ]
   },
   "filtered": {
-    "verdict": "ACCEPT",
-    "rqs2_score": 83.9,
+    "verdict": "POWER-LIMITED",
+    "rqs2_score": 29.1,
     "gates": {
       "H0": true,
       "H1": true,
       "H2": true,
-      "H3": true,
+      "H3": null,
       "H4": true,
       "H5": true,
       "H6": true,
@@ -158,12 +160,12 @@
       "rr": 1.0,
       "breakeven_wr_cost": 51.38,
       "wr_excess_cost": 20.97,
-      "null_ref_wr": 47.07,
-      "skill_lift_pp": 25.27,
-      "skill_z": 3.47,
-      "skill_p_perm": 0.000259,
+      "null_ref_wr": 47.05,
+      "skill_lift_pp": 25.29,
+      "skill_z": 3.41,
+      "skill_p_perm": 0.000324,
       "perm_max": 70.21,
-      "perm_k": 500,
+      "perm_k": 300,
       "side_n": {
         "long": 47,
         "short": 0
@@ -172,14 +174,14 @@
         "long": 72.34
       },
       "side_lift_pp": {
-        "long": 25.27
+        "long": 25.29
       },
       "prune_sides": [],
-      "p_emp": 0.000393,
-      "p_adj_bonferroni": 0.00314,
-      "z_obs": 3.471,
+      "p_emp": 0.00039,
+      "p_adj_bonferroni": 0.003116,
+      "z_obs": 3.473,
       "z_luck_bound": 1.459,
-      "z_margin": 2.012,
+      "z_margin": 2.014,
       "n_trials": 8,
       "cal_nets": [
         183.2,
@@ -216,9 +218,11 @@
         "wr_aligned": 77.42,
         "exp_aligned": 66.929,
         "h10_substitute": "no-counter-trades-selective"
-      }
+      },
+      "n_required_h3": 37.2
     },
     "notes": [
+      "H3 UNKNOWN: only 300 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3.",
       "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
     ]
   }

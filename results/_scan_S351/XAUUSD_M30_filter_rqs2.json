@@ -23,12 +23,12 @@
   "n_filtered": 28,
   "base": {
     "verdict": "POWER-LIMITED",
-    "rqs2_score": 30.4,
+    "rqs2_score": 30.3,
     "gates": {
       "H0": true,
       "H1": true,
       "H2": true,
-      "H3": false,
+      "H3": null,
       "H4": true,
       "H5": true,
       "H6": true,
@@ -59,10 +59,10 @@
       "wr_excess_cost": 18.75,
       "null_ref_wr": 48.31,
       "skill_lift_pp": 18.36,
-      "skill_z": 2.27,
-      "skill_p_perm": 0.011641,
+      "skill_z": 2.23,
+      "skill_p_perm": 0.012765,
       "perm_max": 69.05,
-      "perm_k": 500,
+      "perm_k": 300,
       "side_n": {
         "long": 42,
         "short": 0
@@ -117,9 +117,11 @@
         "wr_aligned": 61.29,
         "exp_aligned": 78.877,
         "h10_substitute": "small-counter-sample-nonnegative"
-      }
+      },
+      "n_required_h3": 70.7
     },
     "notes": [
+      "H3 UNKNOWN: only 300 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3.",
       "H10 WARN (substitute PASS): only 9 counter-drift trades (<20) but their expectancy is non-negative (+65.200 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
     ]
   },
@@ -130,7 +132,7 @@
       "H0": false,
       "H1": true,
       "H2": true,
-      "H3": false,
+      "H3": null,
       "H4": true,
       "H5": true,
       "H6": false,
@@ -159,12 +161,12 @@
       "rr": 1.105,
       "breakeven_wr_cost": 47.91,
       "wr_excess_cost": 19.94,
-      "null_ref_wr": 48.61,
-      "skill_lift_pp": 19.25,
-      "skill_z": 2.04,
-      "skill_p_perm": 0.020795,
+      "null_ref_wr": 48.76,
+      "skill_lift_pp": 19.1,
+      "skill_z": 2.02,
+      "skill_p_perm": 0.021597,
       "perm_max": 78.57,
-      "perm_k": 500,
+      "perm_k": 300,
       "side_n": {
         "long": 28,
         "short": 0
@@ -173,14 +175,14 @@
         "long": 67.86
       },
       "side_lift_pp": {
-        "long": 19.25
+        "long": 19.1
       },
       "prune_sides": [],
-      "p_emp": 0.031602,
-      "p_adj_bonferroni": 0.252817,
-      "z_obs": 2.038,
+      "p_emp": 0.032731,
+      "p_adj_bonferroni": 0.261845,
+      "z_obs": 2.022,
       "z_luck_bound": 1.459,
-      "z_margin": 0.579,
+      "z_margin": 0.563,
       "n_trials": 8,
       "cal_nets": [
         -23.1,
@@ -219,9 +221,11 @@
         "wr_aligned": 63.64,
         "exp_aligned": 81.127,
         "h10_substitute": "small-counter-sample-nonnegative"
-      }
+      },
+      "n_required_h3": 65.4
     },
     "notes": [
+      "H3 UNKNOWN: only 300 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3.",
       "H10 WARN (substitute PASS): only 6 counter-drift trades (<20) but their expectancy is non-negative (+76.717 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
     ]
   }
