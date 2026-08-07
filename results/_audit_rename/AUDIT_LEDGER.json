@@ -4103,5 +4103,20 @@
     "n": 110
    }
   ]
+ },
+ "S370": {
+  "done": true,
+  "old": "S370_EnsembleUnion_XauEur_ALL_rqs2-00_DEAD.md",
+  "new": "S370_EnsembleUnionXauEurALL_Xauusd_H1_rqs2_2_REJECT.md",
+  "verdict": "REJECT",
+  "score": 1.7,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 1.7,
+    "n": 292
+   }
+  ]
  }
 }
