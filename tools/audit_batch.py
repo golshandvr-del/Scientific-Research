@@ -106,6 +106,35 @@ def save_ledger(d: dict):
                    encoding='utf-8')
 
 
+_SID_LAYERS: dict | None = None
+
+
+def _sid_layer_count(sid: str) -> int:
+    """
+    چند ردیفِ `LAYER` در همین اسکن با این `SID` وجود دارد؟
+
+    ⚠️ چرا لازم شد (اندازه‌گیری‌شده): آرشیو برای بعضی SIDها **دو سندِ لایه**
+    دارد — نسخهٔ اصلی و نسخهٔ «Rejudged» — با اندازه‌های متفاوت روی دیسک
+    (`S341`: ۳۲٬۵۲۵ و ۱۲٬۹۰۴ بایت). با کلیدِ `SID`، هرکدام اول داوری می‌شد
+    دیگری را برای همیشه از صف حذف می‌کرد. این شمارش تعیین می‌کند که کلید
+    باید نامِ فایل را هم بگیرد یا نه، تا سازگاریِ عقب‌روی حکم‌های ثبت‌شده
+    (که SIDشان یکتاست) حفظ شود.
+    """
+    global _SID_LAYERS
+    if _SID_LAYERS is None:
+        _SID_LAYERS = {}
+        try:
+            scan = json.loads((AUD / 'scan.json').read_text(encoding='utf-8'))
+        except Exception:
+            scan = []
+        for r in scan:
+            if r.get('kind') == 'DOC':
+                continue
+            s, _ = clean_name(r.get('file', ''))
+            _SID_LAYERS[s] = _SID_LAYERS.get(s, 0) + 1
+    return _SID_LAYERS.get(sid, 1)
+
+
 def sort_key(fname: str):
     m = re.match(r'^S(\d+)([a-z]?)_', fname)
     return (0, int(m.group(1)), m.group(2)) if m else (1, 0, fname)
@@ -242,7 +271,25 @@ def process(rec: dict, ledger: dict) -> str:
     #   درمان: اسناد با کلیدِ **مبتنی بر نامِ فایل** ثبت می‌شوند تا کلیدِ
     #   `SID` دست‌نخورده برای لایهٔ واقعی بماند. برای لایه‌ها کلید همان `SID`
     #   می‌ماند (سازگاریِ عقب‌رو با ۵۸ حکمِ ثبت‌شده).
-    key = sid if rec.get('kind') != 'DOC' else f'{sid}#doc:{old}'
+    #
+    # ⚠️ باگِ چهاردهم — همان دزدیِ کلید، ولی این بار بینِ **دو LAYER**:
+    #   رفعِ قبلی فقط `DOC` را جدا کرد، ولی آرشیو برای بعضی SIDها **دو سندِ
+    #   لایه** دارد: نسخهٔ اصلی و نسخهٔ «Rejudged». اندازه‌گیری‌شده روی دیسک:
+    #       S341_BrooksSwingFadeRejudged..._rqs2_5_REJECT.md   = ۳۲٬۵۲۵ B
+    #       S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md    = ۱۲٬۹۰۴ B
+    #   (همین‌طور `S323`: ۱۵۱۷۳/۱۶۸۳۴ و `S327`: ۱۵۱۳۶/۱۵۴۱۰). موتور نسخهٔ
+    #   بازداوری‌شده را داوری کرد، کلیدِ `SID` را قاپید، و **نسخهٔ اصلی برای
+    #   همیشه از صف حذف شد** — یعنی سه لایهٔ آرشیو بی‌آزمون دفن شده بودند.
+    #
+    #   درمان: اگر در همین اسکن بیش از یک ردیفِ `LAYER` با این `SID` باشد،
+    #   کلید نامِ فایل را هم می‌گیرد. وقتی SID یکتاست کلید همان `SID` می‌ماند،
+    #   پس ۹۳ حکمِ ثبت‌شده دست‌نخورده و سازگار باقی می‌مانند.
+    if rec.get('kind') == 'DOC':
+        key = f'{sid}#doc:{old}'
+    elif _sid_layer_count(sid) > 1:
+        key = f'{sid}#layer:{old}'
+    else:
+        key = sid
 
     if key in ledger and ledger[key].get('done'):
         return 'skip'
@@ -432,7 +479,14 @@ def main():
         sid, _ = clean_name(rec['file'])
         # همان قاعدهٔ کلیدِ `process` — وگرنه ردیفِ `DOC` که کلیدِ `SID` لایه را
         # می‌بیند بی‌دلیل رد می‌شود (و برعکس).
-        k = sid if rec.get('kind') != 'DOC' else f"{sid}#doc:{rec['file']}"
+        # همان قاعدهٔ یکتاسازیِ `process` — و حالا شاملِ باگِ چهاردهم
+        # (دو ردیفِ `LAYER` با یک `SID`) تا هیچ لایه‌ای بی‌آزمون دفن نشود.
+        if rec.get('kind') == 'DOC':
+            k = f"{sid}#doc:{rec['file']}"
+        elif _sid_layer_count(sid) > 1:
+            k = f"{sid}#layer:{rec['file']}"
+        else:
+            k = sid
         if k in ledger and ledger[k].get('done'):
             continue
         r = process(rec, ledger)
