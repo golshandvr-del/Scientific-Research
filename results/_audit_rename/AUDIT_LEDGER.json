@@ -4648,5 +4648,31 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S390#doc:S390_PREREG_CCI_H1_IMPROVEMENT.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S390_PREREG_CCI_H1_IMPROVEMENT.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S391#doc:S391_PREREG_DRAWDOWN_FILTER.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S391_PREREG_DRAWDOWN_FILTER.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S391#doc:S391_STEP1_FILTER_RESULT.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S391_STEP1_FILTER_RESULT.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S392": {
+  "done": true,
+  "old": "S392_JOINT_GRID_RESULT.md",
+  "new": "S392_JOINTGRIDRESULT_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
