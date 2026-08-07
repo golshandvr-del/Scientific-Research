@@ -4583,12 +4583,10 @@
   "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
  },
  "S382": {
-  "done": true,
-  "old": "S382_WilliamsR_Xauusd_H4_rqs2-83.md",
-  "new": "S382_WilliamsRXauusdH4_NA_NA_rqs2_0_INCOMPLETE.md",
-  "verdict": "INCOMPLETE",
-  "score": 0.0,
-  "cards": []
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S382_WilliamsRXauusdH4_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "INCOMPLETE was BUG-19: this layer only reaches compute_rqs2, so its captured call has no dataframe and the highest-signal-index test was ambiguous across five gold timeframes. The n_trials_declared constraint (23755 == XAUUSD_H4 length) now resolves it exactly. Capture itself was always healthy: OK calls=1 in 2.7s, reproducing the archive figure of 869 trades exactly."
  },
  "S383#doc:S383_LAW_COST_TO_STOP_RATIO.md": {
   "done": true,
