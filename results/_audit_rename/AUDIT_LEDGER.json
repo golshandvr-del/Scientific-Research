@@ -3672,10 +3672,37 @@
   ]
  },
  "S348": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S348_RRGeometrySweepXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "BUG-16 victim, re-requeued: chronology proves the verdicts at 13:06:59 and 13:08:08 both predate the BUG-16 fix at 13:14:32, so the fix never ran on them. Direct measurement after the fix: card identification went 0 -> 36 of 40 calls on both captures, yielding real cards across W1/D1/H4/H1/M30."
+  "done": true,
+  "old": "S348_RRGeometrySweep_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
+  "new": "S348_RRGeometrySweepXauusdEurusdM5M15M30H1H4D1W1_Xauusd_H1H4D1W1_rqs2_21_REJECT.md",
+  "verdict": "REJECT",
+  "score": 21.1,
+  "cards": [
+   {
+    "card": "XAUUSD-D1",
+    "verdict": "REJECT",
+    "score": 10.1,
+    "n": 401
+   },
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 4.8,
+    "n": 3380
+   },
+   {
+    "card": "XAUUSD-H4",
+    "verdict": "REJECT",
+    "score": 11.1,
+    "n": 865
+   },
+   {
+    "card": "XAUUSD-W1",
+    "verdict": "REJECT",
+    "score": 21.1,
+    "n": 75
+   }
+  ]
  },
  "S350": {
   "done": false,
