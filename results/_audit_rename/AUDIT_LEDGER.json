@@ -3054,5 +3054,86 @@
     "n": 188
    }
   ]
+ },
+ "S324": {
+  "done": true,
+  "old": "S324_LiquiditySweepReversal_Xauusd_M15M30_93_ACCEPTED.md",
+  "new": "S324_LiquiditySweepReversalXauusdM15M30_Xauusd_M5_rqs2_18_REJECT.md",
+  "verdict": "REJECT",
+  "score": 18.2,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 5.2,
+    "n": 309
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 5.2,
+    "n": 309
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 7.5,
+    "n": 349
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 6.8,
+    "n": 851
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 6.8,
+    "n": 851
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 18.1,
+    "n": 79
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 18.1,
+    "n": 79
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 7.5,
+    "n": 349
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 5.3,
+    "n": 309
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 6.8,
+    "n": 889
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 7.5,
+    "n": 349
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 18.2,
+    "n": 79
+   }
+  ]
  }
 }
