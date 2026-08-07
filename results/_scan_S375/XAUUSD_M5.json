@@ -10,7 +10,7 @@
  },
  "retention_pct": 39.9,
  "d_e_pip": -0.878,
- "d_z": -1.843,
+ "d_z": -1.871,
  "d_trade_pooled": -0.0313,
  "base": {
   "asset": "XAUUSD",
@@ -23,15 +23,15 @@
   "fam_pooled": -0.1229,
   "trade_pooled": -0.1263,
   "weighting_effect": 0.0035,
-  "null_meanR": -0.1624,
-  "sd": 0.0189,
-  "lift": 0.0361,
-  "z": 1.907,
-  "p_perm": 0.0299,
+  "null_meanR": -0.1626,
+  "sd": 0.0185,
+  "lift": 0.0362,
+  "z": 1.956,
+  "p_perm": 0.024,
   "half1": -0.2753,
   "half2": 0.026,
   "share_tp_lt_sl": 0.25,
-  "n_needed": 6417,
+  "n_needed": 6102,
   "econ": {
    "n": 3491,
    "n_raw_sig": 3536,
@@ -46,7 +46,7 @@
    "gate": false,
    "max_hold": 52
   },
-  "n_perm": 400,
+  "n_perm": 500,
   "max_hold": 52,
   "members": [
    {
@@ -170,15 +170,15 @@
   "fam_pooled": -0.16,
   "trade_pooled": -0.1576,
   "weighting_effect": -0.0024,
-  "null_meanR": -0.1594,
-  "sd": 0.0283,
-  "lift": 0.0018,
-  "z": 0.064,
-  "p_perm": 0.4888,
+  "null_meanR": -0.16,
+  "sd": 0.0287,
+  "lift": 0.0024,
+  "z": 0.085,
+  "p_perm": 0.485,
   "half1": -0.2361,
   "half2": -0.0805,
   "share_tp_lt_sl": 0.25,
-  "n_needed": 2245430,
+  "n_needed": 1292811,
   "econ": {
    "n": 1392,
    "n_raw_sig": 1394,
@@ -193,7 +193,7 @@
    "gate": false,
    "max_hold": 52
   },
-  "n_perm": 400,
+  "n_perm": 500,
   "max_hold": 52,
   "members": [
    {

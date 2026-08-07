@@ -4475,5 +4475,25 @@
     "n": 382
    }
   ]
+ },
+ "S374#doc:S374_PREREG_kennedy_break_gate.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S374_PREREG_kennedy_break_gate.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S375#doc:S375_FINDING_BREAKEVEN_AWARE_LIFT.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S375_FINDING_BREAKEVEN_AWARE_LIFT.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S375": {
+  "done": true,
+  "old": "S375_KennedySingleInstrument_Xauusd_H1_rqs2-07_DEAD.md",
+  "new": "S375_KennedySingleInstrumentXauusdH1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
