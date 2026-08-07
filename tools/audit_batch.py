@@ -250,6 +250,25 @@ def find_current(old: str) -> Path | None:
         hits = sorted(RES.glob(f'{sid}_*.md'))
         if len(hits) == 1:
             return hits[0]
+        # ⚠️ باگِ هفدهم (اندازه‌گیری‌شده): شرطِ «فقط یک تطبیق» وقتی SID چند
+        #   فایل دارد دست خالی برمی‌گردد و لایه `FILE_MISSING` می‌گیرد —
+        #   یعنی **بی‌آزمون از صف می‌افتد**. `S346` سه فایل دارد:
+        #       S346_AdaptiveATRChannelBreakout...rqs2_0_INCOMPLETE.md  ← لایه
+        #       S346_LAW4_TRADEABILITY.md                               ← سند
+        #       S346_PREREGISTRATION_OOS.md                             ← سند
+        #   هر دو قربانی (`S346` مدعیِ rqs84 و `S347`) این‌طور دفن شدند.
+        #
+        #   درمان: اسناد را کنار بگذار. اگر بعد از حذفِ اسناد **یک** نامزد
+        #   ماند، همان لایه است. اگر بیش از یکی ماند، تصمیم گرفته نمی‌شود
+        #   (بازگشتِ `None`) تا هیچ فایلِ اشتباهی داوری نشود.
+        DOCW = ('PREREGISTRATION', 'PREREG', 'FINDING', 'LAW', 'ADDENDUM',
+                'AUDIT', 'SELF_AUDIT', 'BRIEF', 'BUGFIX', 'DISCOVERY',
+                'CONFIRMED', 'NEGATIVE', 'RESULT', 'STEP1', 'SPEC',
+                'PROTOCOL', 'CENSUS', 'SUMMARY', 'INDEX', 'NOTE', 'PLAN')
+        cand = [h for h in hits
+                if not any(w in h.name.upper() for w in DOCW)]
+        if len(cand) == 1:
+            return cand[0]
     return None
 
 
