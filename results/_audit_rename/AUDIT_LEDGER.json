@@ -3814,5 +3814,48 @@
     "n": 3941
    }
   ]
+ },
+ "S341#layer:S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md": {
+  "done": true,
+  "status": "FILE_MISSING",
+  "old": "S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md"
+ },
+ "S341#layer:S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md": {
+  "done": true,
+  "status": "FILE_MISSING",
+  "old": "S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md"
+ },
+ "S351": {
+  "done": true,
+  "old": "S351_LPSBStructureFilter_Xauusd_M5M15M30H1_rqs2-29.md",
+  "new": "S351_LPSBStructureFilterXauusdM5M15M30H1_Xauusd_M5M15M30H1_rqs2_29_REJECT.md",
+  "verdict": "REJECT",
+  "score": 29.0,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 28.5,
+    "n": 74
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 28.9,
+    "n": 51
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 29.0,
+    "n": 42
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 24.7,
+    "n": 64
+   }
+  ]
  }
 }
