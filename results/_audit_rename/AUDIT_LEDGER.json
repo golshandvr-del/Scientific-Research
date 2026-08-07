@@ -3612,9 +3612,10 @@
   ]
  },
  "S346": {
-  "done": true,
-  "status": "FILE_MISSING",
-  "old": "S346_AdaptiveATRChannelBreakout_Xauusd_D1_rqs84.md"
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S346_AdaptiveATRChannelBreakoutXauusdD1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "BUG-17 victim: find_current required exactly one glob hit but this SID also owns document files, so the layer was filed FILE_MISSING untested. Its only recorded verdict is the BUG-16 INCOMPLETE (identify_card TypeError on dataframe-less compute_rqs2 calls), so it still needs a real measurement."
  },
  "S346#doc:S346_LAW4_TRADEABILITY.md": {
   "done": true,
@@ -3635,9 +3636,10 @@
   "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
  },
  "S347": {
-  "done": true,
-  "status": "FILE_MISSING",
-  "old": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md"
+  "done": false,
+  "status": "REQUEUED",
+  "old": "S347_VoteEnsembleXauusdAllTF_NA_NA_rqs2_0_INCOMPLETE.md",
+  "reason": "BUG-17 victim: find_current required exactly one glob hit but this SID also owns document files, so the layer was filed FILE_MISSING untested. Its only recorded verdict is the BUG-16 INCOMPLETE (identify_card TypeError on dataframe-less compute_rqs2 calls), so it still needs a real measurement."
  },
  "S348": {
   "done": true,
@@ -3657,8 +3659,13 @@
  },
  "S323#layer:S323_SRPullbackGolden_Xauusd_M15M30H1_88.md": {
   "done": true,
-  "status": "FILE_MISSING",
-  "old": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md"
+  "status": "RESOLVED_ALREADY_JUDGED",
+  "old": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md",
+  "siblings": [
+   "S323_SRPullbackGoldenXauusdM15M30H1_Xauusd_M15_rqs2_24_REJECT.md",
+   "S323_SRPullbackGoldenXauusdM5M15M30H1_Xauusd_M15_rqs2_22_POWER-LIMITED.md"
+  ],
+  "reason": "BUG-14 gave this SID two LAYER rows; both versions were judged and renamed, so the stale old-name lookup could not resolve. No card was lost — verified on disk."
  },
  "S323#layer:S323_SRPullbackGolden_Xauusd_M5M15M30H1_rqs2-24_DEAD.md": {
   "done": true,
@@ -3779,8 +3786,13 @@
  },
  "S327#layer:S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md": {
   "done": true,
-  "status": "FILE_MISSING",
-  "old": "S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md"
+  "status": "RESOLVED_ALREADY_JUDGED",
+  "old": "S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md",
+  "siblings": [
+   "S327_SellClimaxReversalRejudgedXauEurM5M15M30H1H4_Xauusd_M5_rqs2_18_REJECT.md",
+   "S327_SellClimaxReversalXauEurM5M15M30H1H4_Xauusd_M5_rqs2_19_REJECT.md"
+  ],
+  "reason": "BUG-14 gave this SID two LAYER rows; both versions were judged and renamed, so the stale old-name lookup could not resolve. No card was lost — verified on disk."
  },
  "S327#layer:S327_SellClimaxReversal_XauEur_M5M15M30H1H4_98.md": {
   "done": true,
@@ -3811,13 +3823,23 @@
  },
  "S341#layer:S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md": {
   "done": true,
-  "status": "FILE_MISSING",
-  "old": "S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md"
+  "status": "RESOLVED_ALREADY_JUDGED",
+  "old": "S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md",
+  "siblings": [
+   "S341_BrooksSwingFadeRejudgedXauusdM5M15M30H1_Xauusd_M5_rqs2_5_REJECT.md",
+   "S341_BrooksSwingFadeXauusdM5M15M30H1_Xauusd_M5_rqs2_5_REJECT.md"
+  ],
+  "reason": "BUG-14 gave this SID two LAYER rows; both versions were judged and renamed, so the stale old-name lookup could not resolve. No card was lost — verified on disk."
  },
  "S341#layer:S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md": {
   "done": true,
-  "status": "FILE_MISSING",
-  "old": "S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md"
+  "status": "RESOLVED_ALREADY_JUDGED",
+  "old": "S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md",
+  "siblings": [
+   "S341_BrooksSwingFadeRejudgedXauusdM5M15M30H1_Xauusd_M5_rqs2_5_REJECT.md",
+   "S341_BrooksSwingFadeXauusdM5M15M30H1_Xauusd_M5_rqs2_5_REJECT.md"
+  ],
+  "reason": "BUG-14 gave this SID two LAYER rows; both versions were judged and renamed, so the stale old-name lookup could not resolve. No card was lost — verified on disk."
  },
  "S351": {
   "done": true,
