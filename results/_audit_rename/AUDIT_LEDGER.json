@@ -3400,5 +3400,20 @@
     "n": 899
    }
   ]
+ },
+ "S334": {
+  "done": true,
+  "old": "S334_MeanReversionShort_XauusdEurusd_M5_84.md",
+  "new": "S334_MeanReversionShortXauusdEurusdM5_Xauusd_M5_rqs2_28_POWER-LIMITED.md",
+  "verdict": "POWER-LIMITED",
+  "score": 27.6,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "POWER-LIMITED",
+    "score": 27.6,
+    "n": 47
+   }
+  ]
  }
 }
