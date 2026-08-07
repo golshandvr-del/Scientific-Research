@@ -2010,14 +2010,14 @@
  "S223a": {
   "done": false,
   "status": "DEFERRED",
-  "old": "S223a_ShortMAConfluenceWR60XauusdM15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "DEFERRED twice at 900s; file already carries the INCOMPLETE name from an earlier pass, so the ledger pointed at a path that no longer exists and the engine could never pick it up"
+  "old": "S223a_ShortMAConfluenceWR60_Xauusd_M15M30H1_1465_85.md",
+  "reason": "capture > 900s"
  },
  "S223b": {
   "done": false,
   "status": "DEFERRED",
-  "old": "S223b_BrooksHigh2WR60XauusdM5M15M30H1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "DEFERRED twice at 900s; file already carries the INCOMPLETE name from an earlier pass, so the ledger pointed at a path that no longer exists and the engine could never pick it up"
+  "old": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
+  "reason": "capture > 900s"
  },
  "S223c": {
   "done": true,
@@ -3613,8 +3613,11 @@
  },
  "S346": {
   "done": true,
-  "status": "FILE_MISSING",
-  "old": "S346_AdaptiveATRChannelBreakout_Xauusd_D1_rqs84.md"
+  "old": "S346_AdaptiveATRChannelBreakout_Xauusd_D1_rqs84.md",
+  "new": "S346_AdaptiveATRChannelBreakoutXauusdD1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S346#doc:S346_LAW4_TRADEABILITY.md": {
   "done": true,
@@ -3636,8 +3639,11 @@
  },
  "S347": {
   "done": true,
-  "status": "FILE_MISSING",
-  "old": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md"
+  "old": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md",
+  "new": "S347_VoteEnsembleXauusdAllTF_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S348": {
   "done": true,
@@ -3657,10 +3663,8 @@
  },
  "S323#layer:S323_SRPullbackGolden_Xauusd_M15M30H1_88.md": {
   "done": true,
-  "status": "REJECT",
-  "old": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md",
-  "new": "S323_SRPullbackGoldenXauusdM15M30H1_Xauusd_M15_rqs2_24_REJECT.md",
-  "note": "DUPLICATE ROW of the bare S323 key, not a lost file. The BUG-14 fix re-keyed ledger rows by filename; this row still pointed at the pre-rename name of a layer that had ALREADY been judged REJECT/23.8 under the bare key, so the engine reported FILE_MISSING. Both S323 layers are present on disk with their new RQS2 names; nothing was lost"
+  "status": "FILE_MISSING",
+  "old": "S323_SRPullbackGolden_Xauusd_M15M30H1_88.md"
  },
  "S323#layer:S323_SRPullbackGolden_Xauusd_M5M15M30H1_rqs2-24_DEAD.md": {
   "done": true,
@@ -3779,39 +3783,6 @@
    }
   ]
  },
- "S351": {
-  "done": true,
-  "old": "S351_LPSBStructureFilter_Xauusd_M5M15M30H1_rqs2-29.md",
-  "new": "S351_LPSBStructureFilterXauusdM5M15M30H1_Xauusd_M5M15M30H1_rqs2_29_REJECT.md",
-  "verdict": "REJECT",
-  "score": 29.0,
-  "cards": [
-   {
-    "card": "XAUUSD-H1",
-    "verdict": "REJECT",
-    "score": 28.5,
-    "n": 74
-   },
-   {
-    "card": "XAUUSD-M15",
-    "verdict": "REJECT",
-    "score": 28.9,
-    "n": 51
-   },
-   {
-    "card": "XAUUSD-M30",
-    "verdict": "REJECT",
-    "score": 29.0,
-    "n": 42
-   },
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 24.7,
-    "n": 64
-   }
-  ]
- },
  "S327#layer:S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md": {
   "done": true,
   "status": "FILE_MISSING",
@@ -3841,26 +3812,6 @@
     "verdict": "REJECT",
     "score": 17.8,
     "n": 3941
-   }
-  ]
- },
- "S341#layer:S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md": {
-  "done": true,
-  "status": "FILE_MISSING",
-  "old": "S341_BrooksSwingFadeRejudged_Xauusd_M5M15M30H1_rqs2-28.md"
- },
- "S341#layer:S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md": {
-  "done": true,
-  "old": "S341_BrooksSwingFade_Xauusd_M5M15M30H1_rqs94.md",
-  "new": "S341_BrooksSwingFadeXauusdM5M15M30H1_Xauusd_M5_rqs2_5_REJECT.md",
-  "verdict": "REJECT",
-  "score": 5.0,
-  "cards": [
-   {
-    "card": "XAUUSD-M5",
-    "verdict": "REJECT",
-    "score": 5.0,
-    "n": 1354
    }
   ]
  }
