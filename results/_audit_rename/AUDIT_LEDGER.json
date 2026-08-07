@@ -3618,5 +3618,31 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S346#doc:S346_LAW4_TRADEABILITY.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S346_LAW4_TRADEABILITY.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S346#doc:S346_PREREGISTRATION_OOS.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S346_PREREGISTRATION_OOS.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S347#doc:S347_PREREGISTRATION_ENSEMBLE.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S347_PREREGISTRATION_ENSEMBLE.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S347": {
+  "done": true,
+  "old": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md",
+  "new": "S347_VoteEnsembleXauusdAllTF_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }

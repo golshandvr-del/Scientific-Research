@@ -46,7 +46,7 @@
    "H0": true,
    "H1": true,
    "H2": true,
-   "H3": false,
+   "H3": null,
    "H4": true,
    "H5": false,
    "H6": true,
@@ -78,6 +78,7 @@
    "null_ref_wr": 50.63,
    "skill_lift_pp": 9.69,
    "skill_z": 2.27,
+   "skill_p_perm": 0.011641,
    "perm_max": 64.12,
    "perm_k": 300,
    "side_n": {
@@ -126,21 +127,57 @@
    },
    "max_concurrency": 1,
    "counter_drift": {
+    "n_judgeable": 240,
+    "n_unjudgeable": 7,
     "n_counter": 79,
-    "n_aligned": 168,
-    "wr_counter": 54.43,
-    "exp_counter": 25.792,
-    "wr_aligned": 63.1,
-    "exp_aligned": 61.134
-   }
+    "n_aligned": 161,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 55.7,
+    "exp_counter": 28.646,
+    "wr_aligned": 63.35,
+    "exp_aligned": 63.596
+   },
+   "n_required_h3": 254.1
   },
-  "notes": [],
+  "notes": [
+   "H3 UNKNOWN: only 300 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+  ],
   "passed": false,
   "rqs2_score": 27.1,
   "verdict": "REJECT",
-  "n_fail": 2,
-  "n_unknown": 0,
-  "accepted": false
+  "n_fail": 1,
+  "n_unknown": 1,
+  "accepted": false,
+  "power_limited": false,
+  "unproven": false,
+  "unproven_checks": {
+   "G1_lift_floor": true,
+   "G2_evidence": true,
+   "G3_efdr": false,
+   "G4_economics": true,
+   "G5_glass_ceiling": true,
+   "G6_structure": true
+  },
+  "gate_families": {
+   "economic": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H8": true,
+    "H9": true
+   },
+   "power": {
+    "H3": null,
+    "H7": true,
+    "H10": true
+   },
+   "economic_all_pass": true,
+   "power_defects": [
+    "H3"
+   ]
+  },
+  "admission_rule": "gates_only",
+  "rank_tier": "D"
  },
  "verdict_optimistic": {
   "asset": "XAUUSD",
@@ -148,7 +185,7 @@
    "H0": true,
    "H1": true,
    "H2": true,
-   "H3": false,
+   "H3": null,
    "H4": true,
    "H5": true,
    "H6": true,
@@ -180,6 +217,7 @@
    "null_ref_wr": 50.63,
    "skill_lift_pp": 9.69,
    "skill_z": 2.27,
+   "skill_p_perm": 0.011641,
    "perm_max": 64.12,
    "perm_k": 300,
    "side_n": {
@@ -228,20 +266,56 @@
    },
    "max_concurrency": 1,
    "counter_drift": {
+    "n_judgeable": 240,
+    "n_unjudgeable": 7,
     "n_counter": 79,
-    "n_aligned": 168,
-    "wr_counter": 54.43,
-    "exp_counter": 25.792,
-    "wr_aligned": 63.1,
-    "exp_aligned": 61.134
-   }
+    "n_aligned": 161,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 55.7,
+    "exp_counter": 28.646,
+    "wr_aligned": 63.35,
+    "exp_aligned": 63.596
+   },
+   "n_required_h3": 254.1
   },
-  "notes": [],
+  "notes": [
+   "H3 UNKNOWN: only 300 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+  ],
   "passed": false,
   "rqs2_score": 28.6,
-  "verdict": "REJECT",
-  "n_fail": 1,
-  "n_unknown": 0,
-  "accepted": false
+  "verdict": "POWER-LIMITED",
+  "n_fail": 0,
+  "n_unknown": 1,
+  "accepted": false,
+  "power_limited": true,
+  "unproven": false,
+  "unproven_checks": {
+   "G1_lift_floor": true,
+   "G2_evidence": true,
+   "G3_efdr": true,
+   "G4_economics": true,
+   "G5_glass_ceiling": true,
+   "G6_structure": true
+  },
+  "gate_families": {
+   "economic": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H8": true,
+    "H9": true
+   },
+   "power": {
+    "H3": null,
+    "H7": true,
+    "H10": true
+   },
+   "economic_all_pass": true,
+   "power_defects": [
+    "H3"
+   ]
+  },
+  "admission_rule": "gates_only",
+  "rank_tier": "D"
  }
 }

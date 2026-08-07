@@ -1,0 +1,8 @@
+{
+ "layer": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md",
+ "headline_verdict": "INCOMPLETE",
+ "headline_score": 0.0,
+ "cards": [],
+ "reason": "no engine call captured / script failed — not reproducible with current harness",
+ "n_trials": 90
+}
