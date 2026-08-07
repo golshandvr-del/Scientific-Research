@@ -771,14 +771,14 @@
    "H0": false,
    "H1": true,
    "H2": true,
-   "H3": false,
+   "H3": null,
    "H4": false,
    "H5": false,
    "H6": true,
    "H7": true,
    "H8": false,
    "H9": true,
-   "H10": null
+   "H10": false
   },
   "metrics": {
    "n_trades": 58,
@@ -803,6 +803,7 @@
    "null_ref_wr": 53.61,
    "skill_lift_pp": 3.29,
    "skill_z": 0.38,
+   "skill_p_perm": 0.350821,
    "perm_max": 69.81,
    "perm_k": 200,
    "side_n": {
@@ -861,11 +862,14 @@
     "wr_counter": 12.5,
     "exp_counter": -300.541,
     "wr_aligned": 64.0,
-    "exp_aligned": 291.89
-   }
+    "exp_aligned": 291.89,
+    "h10_substitute": "small-counter-sample-adverse"
+   },
+   "n_required_h3": 2195.7
   },
   "notes": [
-   "H10 UNKNOWN: only 8 counter-drift trades (<20) \u2014 the layer has never actually been tested against an adverse drift regime"
+   "H3 UNKNOWN: only 200 permutations (<500) \u2014 the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3.",
+   "H10 FAIL (substitute): 8 counter-drift trades (<20) and their expectancy is negative (-300.541 pip) \u2014 the little adverse-regime evidence there is points against the edge."
   ]
  },
  "rqs2_opt": {
@@ -875,14 +879,14 @@
    "H0": false,
    "H1": true,
    "H2": true,
-   "H3": false,
+   "H3": null,
    "H4": false,
    "H5": false,
    "H6": true,
    "H7": true,
    "H8": false,
    "H9": true,
-   "H10": null
+   "H10": false
   }
  }
 }
