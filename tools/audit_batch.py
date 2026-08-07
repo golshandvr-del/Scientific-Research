@@ -357,8 +357,22 @@ def process(rec: dict, ledger: dict) -> str:
     # بودجهٔ بزرگ‌تر آزموده شود. این مستقیماً در خدمتِ قانونِ «اندک اندک»
     # است: پیشرفتِ قطعیِ بسیاری از لایه‌ها بر پیشرفتِ نامعلومِ یک لایه اولویت
     # دارد، چون سندباکس هر لحظه ممکن است ریست شود.
+    # ⚠️ BUG-19 — «اولین ضبطِ ناصفر» با «غنی‌ترین ضبط» یکی نیست.
+    # منطقِ پیشین به‌محضِ دیدنِ اولین اسکریپتِ ناصفر `break` می‌کرد. اندازه‌گیری
+    # روی S330 نشان داد این معیار می‌تواند شاهدِ اصلی را دور بریزد:
+    #       s330_final_verify.py  ->  OK calls=1  (۰.۵ ثانیه)
+    #       s330_orb_baseline.py  ->  OK calls=6  (۳.۸ ثانیه)
+    # اگر `final_verify` اول بیاید، راننده با آن یک فراخوانِ تنها قانع می‌شد و
+    # شش فراخوانِ واقعیِ لایه هرگز داوری نمی‌شد؛ و چون آن یک فراخوان به کارتِ
+    # قابل‌شناسایی نمی‌رسید، لایه `cards=0` و در نتیجه INCOMPLETE می‌گرفت —
+    # یعنی یک نقصِ ابزار به‌جای یک یافتهٔ علمی ثبت می‌شد.
+    # از این پس **غنی‌ترین** ضبط برنده است. برای آن‌که این دقت به قانونِ
+    # «اندک اندک» آسیب نزند، اگر اسکریپتِ اول به‌قدرِ کافی غنی باشد
+    # (`RICH_ENOUGH`) از ضبطِ بقیه صرف‌نظر می‌شود.
+    RICH_ENOUGH = 4
     cap_file = None
     timed_out = False
+    best_calls = 0
     for scr in scripts[:2]:
         dest = CAP / (scr.replace('/', '_') + '.capture.json')
         if not dest.exists():
@@ -374,9 +388,14 @@ def process(rec: dict, ledger: dict) -> str:
                 cd = json.loads(dest.read_text(encoding='utf-8'))
             except Exception:
                 continue
-            if cd.get('n_calls'):
-                cap_file = dest
+            n = int(cd.get('n_calls') or 0)
+            if n > best_calls:
+                best_calls, cap_file = n, dest
+            if best_calls >= RICH_ENOUGH:
                 break
+    if cap_file is not None and len(scripts[:2]) > 1:
+        print(f'  ↑ richest capture chosen: {cap_file.name} '
+              f'({best_calls} calls)', flush=True)
 
     # ── ② judge ──────────────────────────────────────────────────────────────
     if cap_file is not None:
