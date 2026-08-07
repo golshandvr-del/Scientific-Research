@@ -135,6 +135,40 @@ def _sid_layer_count(sid: str) -> int:
     return _SID_LAYERS.get(sid, 1)
 
 
+def _self_declared_doc(path) -> bool:
+    """
+    آیا **خودِ فایل** اعلام می‌کند که لایهٔ معاملاتی نیست؟
+
+    قطعی‌ترین منبعِ طبقه‌بندی، نامِ فایل نیست — اعلانِ سرآغازِ سند است. این
+    اسناد در سطرِ دوم می‌نویسند `**نوعِ سند:** نتیجهٔ اندازه‌گیری` یا
+    `یافتهٔ تشخیصی ... نه یک لایهٔ قابلِ‌اتصال`.
+
+    مرزِ صداقت (محافظه‌کارانه): هر اعلانی که واژهٔ «لایه» را به‌عنوانِ **خودِ
+    موضوع** داشته باشد (`لایهٔ پذیرفته‌شده`, `لایهٔ کاندیدا`) لایه شمرده
+    می‌شود و داوری خواهد شد — مگر آنکه صریحاً «نه لایه» گفته باشد. یعنی در
+    ابهام، فایل **لایه** فرض می‌شود و آزمون می‌شود، نه برعکس؛ چون از دست
+    دادنِ یک لایهٔ واقعی خطای بزرگ‌تری از داوریِ یک سند است.
+    """
+    try:
+        head = path.read_text(encoding='utf-8', errors='replace')[:1500]
+    except Exception:
+        return False
+    m = re.search(r'\*\*نوعِ?\s*سند:\*\*\s*([^\n]{0,120})', head)
+    if not m:
+        return False
+    decl = m.group(1)
+    # اعلانِ صریحِ «نه لایه» همیشه برنده است
+    if re.search(r'نه\s+(?:یک\s+)?لایه', decl):
+        return True
+    # اعلانِ صریحِ «لایه» ⇒ لایه است، داوری شود
+    if 'لایه' in decl:
+        return False
+    DOC_DECL = ('نتیجهٔ اندازه‌گیری', 'نتیجه اندازه‌گیری', 'پیش‌ثبت',
+                'پیش ثبت', 'یافتهٔ', 'یافته\u200cی', 'ممیزی', 'پیوست',
+                'پروتکل', 'سرشماری', 'گزارش')
+    return any(w in decl for w in DOC_DECL)
+
+
 def sort_key(fname: str):
     m = re.match(r'^S(\d+)([a-z]?)_', fname)
     return (0, int(m.group(1)), m.group(2)) if m else (1, 0, fname)
@@ -328,13 +362,29 @@ def process(rec: dict, ledger: dict) -> str:
     #   (سند وضعیتِ «REJECT» می‌گیرد در حالی که هیچ ادعای معاملاتی ندارد).
     #   پس اسناد **دست‌نخورده** می‌مانند و از صف خارج می‌شوند تا موتور وقتش
     #   را روی لایه‌های واقعی بگذارد.
-    if rec.get('kind') == 'DOC':
+    # ⚠️ باگِ هجدهم (اندازه‌گیری‌شده): `kind` از `scan.json` بر پایهٔ **نامِ
+    #   فایل** حدس زده می‌شود و برای یک خانوادهٔ کامل شکست خورد:
+    #       S391_STEP1_FILTER_RESULT.md      → DOC    ✅
+    #       S392_JOINT_GRID_RESULT.md        → LAYER  ❌
+    #       S393_ALPHA_FILTER_RESULT.md      → LAYER  ❌
+    #       S394_EFFECTIVE_TRIALS_RESULT.md  → LAYER  ❌
+    #   هر چهار از یک جنس‌اند (سندِ نتیجهٔ یک پیش‌ثبت) و هر سهِ غلط
+    #   `scripts=[]` دارند — یعنی هیچ کدِ اجرایی و هیچ ادعای معاملاتی.
+    #
+    #   منبعِ قطعی نامِ فایل نیست، **اعلانِ خودِ سند** است: این فایل‌ها در
+    #   سطرِ دومِ خودشان می‌نویسند `**نوعِ سند:** نتیجهٔ اندازه‌گیری` یا
+    #   `یافتهٔ تشخیصی ... نه یک لایهٔ قابلِ‌اتصال`. مرزِ صداقت هم همین‌جاست:
+    #   `S382` که می‌نویسد `**لایهٔ پذیرفته‌شده.**` و `S339` که می‌نویسد
+    #   `لایهٔ کاندیدا (WIP)` **لایه می‌مانند** و داوری می‌شوند.
+    if rec.get('kind') == 'DOC' or _self_declared_doc(cur):
+        why = ('scan kind=DOC' if rec.get('kind') == 'DOC'
+               else 'the file itself declares it is not a tradeable layer')
         print(f'\n════ {sid}  {cur.name[:60]}', flush=True)
-        print('  ⏭  DOC (preregistration/addendum/finding) — not a strategy '
-              'layer; left untouched', flush=True)
+        print(f'  ⏭  DOC — not a strategy layer ({why}); left untouched',
+              flush=True)
         ledger[key] = {'done': True, 'status': 'NOT_A_LAYER', 'old': old,
                        'note': 'documentation artefact, not a tradeable layer; '
-                               'no RQS2 name/score applies'}
+                               'no RQS2 name/score applies (' + why + ')'}
         return 'ok'
 
     scripts = [s for s in (rec.get('scripts') or [])
