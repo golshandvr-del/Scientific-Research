@@ -3657,10 +3657,19 @@
   "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
  },
  "S347": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S347_VoteEnsembleXauusdAllTF_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "BUG-17 victim: find_current required exactly one glob hit but this SID also owns document files, so the layer was filed FILE_MISSING untested. Its only recorded verdict is the BUG-16 INCOMPLETE (identify_card TypeError on dataframe-less compute_rqs2 calls), so it still needs a real measurement."
+  "done": true,
+  "old": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md",
+  "new": "S347_VoteEnsembleXauusdAllTF_Xauusd_D1_rqs2_2_REJECT.md",
+  "verdict": "REJECT",
+  "score": 1.7,
+  "cards": [
+   {
+    "card": "XAUUSD-D1",
+    "verdict": "REJECT",
+    "score": 1.7,
+    "n": 1469
+   }
+  ]
  },
  "S348": {
   "done": false,
