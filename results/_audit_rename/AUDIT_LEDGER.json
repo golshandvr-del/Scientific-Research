@@ -2059,10 +2059,55 @@
   ]
  },
  "S223b": {
-  "done": false,
-  "status": "DEFERRED",
+  "done": true,
   "old": "S223b_BrooksHigh2WR60_Xauusd_M5M15M30H1_12338_82.md",
-  "reason": "capture > 900s"
+  "new": "S223b_BrooksHigh2WR60XauusdM5M15M30H1_Xauusd_M5M15M30H1_rqs2_24_REJECT.md",
+  "verdict": "REJECT",
+  "score": 23.6,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "REJECT",
+    "score": 23.6,
+    "n": 64
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 11.7,
+    "n": 986
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 11.1,
+    "n": 535
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 15.6,
+    "n": 220
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "REJECT",
+    "score": 22.4,
+    "n": 133
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 18.6,
+    "n": 422
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 22.0,
+    "n": 365
+   }
+  ]
  },
  "S223c": {
   "done": true,
