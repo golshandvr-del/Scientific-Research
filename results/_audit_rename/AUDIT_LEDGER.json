@@ -4682,5 +4682,19 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S393#doc:S393_PREREG_ALPHA_FILTER.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S393_PREREG_ALPHA_FILTER.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S394": {
+  "done": true,
+  "old": "S394_EFFECTIVE_TRIALS_RESULT.md",
+  "new": "S394_EFFECTIVETRIALSRESULT_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
