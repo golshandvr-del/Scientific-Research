@@ -3612,10 +3612,9 @@
   ]
  },
  "S346": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S346_AdaptiveATRChannelBreakoutXauusdD1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "INCOMPLETE was caused by the fifth archive engine (strategies.s346_fast.barrier_outcomes) being DEAD CODE in the harness: record_barrier existed since b706e93 but had no install() call, so these layers recorded n_calls=0. Wiring landed at 12:46:37, AFTER all four verdicts (12:29:36 / 12:29:56 / 12:31:13 / 12:42:07). Measured proof after wiring: s348_rr_sweep.py went 0 calls -> 40 calls in 54.5s."
+  "done": true,
+  "status": "FILE_MISSING",
+  "old": "S346_AdaptiveATRChannelBreakout_Xauusd_D1_rqs84.md"
  },
  "S346#doc:S346_LAW4_TRADEABILITY.md": {
   "done": true,
@@ -3636,16 +3635,17 @@
   "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
  },
  "S347": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S347_VoteEnsembleXauusdAllTF_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "INCOMPLETE was caused by the fifth archive engine (strategies.s346_fast.barrier_outcomes) being DEAD CODE in the harness: record_barrier existed since b706e93 but had no install() call, so these layers recorded n_calls=0. Wiring landed at 12:46:37, AFTER all four verdicts (12:29:36 / 12:29:56 / 12:31:13 / 12:42:07). Measured proof after wiring: s348_rr_sweep.py went 0 calls -> 40 calls in 54.5s."
+  "done": true,
+  "status": "FILE_MISSING",
+  "old": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md"
  },
  "S348": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S348_RRGeometrySweepXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "INCOMPLETE was caused by the fifth archive engine (strategies.s346_fast.barrier_outcomes) being DEAD CODE in the harness: record_barrier existed since b706e93 but had no install() call, so these layers recorded n_calls=0. Wiring landed at 12:46:37, AFTER all four verdicts (12:29:36 / 12:29:56 / 12:31:13 / 12:42:07). Measured proof after wiring: s348_rr_sweep.py went 0 calls -> 40 calls in 54.5s."
+  "done": true,
+  "old": "S348_RRGeometrySweep_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
+  "new": "S348_RRGeometrySweepXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S350": {
   "done": false,
