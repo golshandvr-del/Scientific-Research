@@ -3923,5 +3923,26 @@
     "n": 63
    }
   ]
+ },
+ "S355#doc:S355_PREREGISTRATION_15Layer_Revisit_v24.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S355_PREREGISTRATION_15Layer_Revisit_v24.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S356": {
+  "done": true,
+  "old": "S356_BrooksTrendResumptionCausal_Xauusd_H1_rqs2-81.md",
+  "new": "S356_BrooksTrendResumptionCausalXauusdH1_Xauusd_H1_rqs2_80_ACCEPT.md",
+  "verdict": "ACCEPT",
+  "score": 79.6,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "ACCEPT",
+    "score": 79.6,
+    "n": 117
+   }
+  ]
  }
 }
