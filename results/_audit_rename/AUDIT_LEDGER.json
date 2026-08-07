@@ -2558,10 +2558,31 @@
   "cards": []
  },
  "S312": {
-  "done": false,
-  "status": "REQUEUED",
+  "done": true,
   "old": "S312_MidMonthDrift_Xauusd_M15M30H1_89_ACCEPTED.md",
-  "reason": "INCOMPLETE was caused by the interceptor not patching engine.trade_simulator.simulate (third archive engine); fix verified on S310: 0 calls -> 40 calls in 467s"
+  "new": "S312_MidMonthDriftXauusdM15M30H1_Xauusd_M15M30H1_rqs2_88_ACCEPT.md",
+  "verdict": "ACCEPT",
+  "score": 87.7,
+  "cards": [
+   {
+    "card": "XAUUSD-H1",
+    "verdict": "POWER-LIMITED",
+    "score": 29.6,
+    "n": 260
+   },
+   {
+    "card": "XAUUSD-M15",
+    "verdict": "REJECT",
+    "score": 27.3,
+    "n": 129
+   },
+   {
+    "card": "XAUUSD-M30",
+    "verdict": "ACCEPT",
+    "score": 87.7,
+    "n": 289
+   }
+  ]
  },
  "S313": {
   "done": false,
