@@ -3200,5 +3200,32 @@
     "n": 1008
    }
   ]
+ },
+ "S327": {
+  "done": true,
+  "old": "S327_SellClimaxReversalRejudged_XauEur_M5M15M30H1H4_rqs2-29.md",
+  "new": "S327_SellClimaxReversalRejudgedXauEurM5M15M30H1H4_Xauusd_M5_rqs2_18_REJECT.md",
+  "verdict": "REJECT",
+  "score": 18.5,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 18.5,
+    "n": 1830
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.0,
+    "n": 4094
+   },
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 17.3,
+    "n": 3941
+   }
+  ]
  }
 }
