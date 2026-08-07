@@ -4610,5 +4610,43 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S385#doc:S385_FINDING_WIDENING_LIFTS_EVERYONE.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S385_FINDING_WIDENING_LIFTS_EVERYONE.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S386#doc:S386_PREREG_PORTFOLIO_AGGREGATION.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S386_PREREG_PORTFOLIO_AGGREGATION.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S386#doc:S386_STEP1_OVERLAP_VS_S382.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S386_STEP1_OVERLAP_VS_S382.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S387#doc:S387_LAW_UNION_DILUTION.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S387_LAW_UNION_DILUTION.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S388#doc:S388_PREREG_ALPHA_RESCAN.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S388_PREREG_ALPHA_RESCAN.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S389": {
+  "done": true,
+  "old": "S389_CCIBreakoutHourGated_Xauusd_H1_rqs2-25_DEAD.md",
+  "new": "S389_CCIBreakoutHourGatedXauusdH1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
