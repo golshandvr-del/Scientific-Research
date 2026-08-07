@@ -769,6 +769,27 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
                           rec.record_compute_rqs2(orig, trades, asset,
                                                   *a, **kw)))
 
+    # ⚠️ موتورِ پنجم — `strategies.s346_fast.barrier_outcomes` (۹ اسکریپت).
+    #   دو راهِ مستقل برای همین خانواده لازم است و هر دو می‌مانند:
+    #     • `compute_rqs2` وقتی اسکریپت تا داورِ رسمی می‌رسد (برتر است، چون
+    #       عددها را از خودِ داور می‌گیرد، نه از تجزیهٔ stdout).
+    #     • `barrier_outcomes` وقتی اسکریپت **هرگز** به داور نمی‌رسد
+    #       (جاروب/اکتشاف) و فقط همین موتور را صدا می‌زند.
+    #   نکتهٔ ایمپورت (اندازه‌گیری‌شده): همهٔ ۹ اسکریپت تابع را با
+    #   `from strategies.s346_fast import barrier_outcomes` **کپی** می‌کنند؛
+    #   چون این وصله *پیش از* اجرای اسکریپت نصب می‌شود، کپی‌شان از نسخهٔ
+    #   وصله‌خورده گرفته می‌شود. پس شنود قطعی است.
+    #   نکتهٔ صداقت: مستندِ خودِ ماژول می‌گوید این موتور «اکتشافی» است و با
+    #   `allow_overlap=True` کار می‌کند؛ آداپتور با اعمالِ `select_non_overlap`
+    #   صفِ معاملات را به همان قاعدهٔ رسمیِ بدونِ همپوشانی برمی‌گرداند.
+    install(['strategies.s346_fast', 's346_fast'], 'barrier_outcomes',
+            lambda orig: (lambda df, sig_idx, is_long, sl_dist, tp_dist,
+                          max_hold, pip, spread_pip, slip_pip, *a, **kw:
+                          rec.record_barrier(orig, df, sig_idx, is_long,
+                                             sl_dist, tp_dist, max_hold,
+                                             pip, spread_pip, slip_pip,
+                                             *a, **kw)))
+
     path = ROOT / 'strategies' / script
     out = {'script': script, 'ok': False, 'calls': [], 'stdout_tail': '',
            'error': None, 'seconds': None}
