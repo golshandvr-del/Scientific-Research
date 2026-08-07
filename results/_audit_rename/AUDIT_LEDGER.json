@@ -4590,5 +4590,25 @@
   "verdict": "INCOMPLETE",
   "score": 0.0,
   "cards": []
+ },
+ "S383#doc:S383_LAW_COST_TO_STOP_RATIO.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S383_LAW_COST_TO_STOP_RATIO.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S384#doc:S384_PREREG_WIDE_STOP_ON_FAST_CARDS.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S384_PREREG_WIDE_STOP_ON_FAST_CARDS.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S384": {
+  "done": true,
+  "old": "S384_WideStop_XAUUSD_EURUSD_M30M15M5_rqs2-0.md",
+  "new": "S384_WideStopXAUUSDEURUSDM30M15M5_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
