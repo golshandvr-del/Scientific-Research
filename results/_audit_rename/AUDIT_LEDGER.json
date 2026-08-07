@@ -3640,16 +3640,20 @@
   "old": "S347_VoteEnsemble_Xauusd_AllTF_rqs27.md"
  },
  "S348": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S348_RRGeometrySweepXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "INCOMPLETE was BUG-16: identify_card raised TypeError on the dataframe-less rqs2.compute_rqs2 calls (n_bars=None), which aborted the whole judging pass so 4 malformed calls annihilated 36 healthy ones. After the fix, identification goes 0 -> 36 of 40 and yields real cards across W1/D1/H4/H1/M30."
+  "done": true,
+  "old": "S348_RRGeometrySweep_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
+  "new": "S348_RRGeometrySweepXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S350": {
-  "done": false,
-  "status": "REQUEUED",
-  "old": "S350_TripleLockDerivedHoldXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
-  "reason": "INCOMPLETE was BUG-16: identify_card raised TypeError on the dataframe-less rqs2.compute_rqs2 calls (n_bars=None), which aborted the whole judging pass so 4 malformed calls annihilated 36 healthy ones. After the fix, identification goes 0 -> 36 of 40 and yields real cards across W1/D1/H4/H1/M30."
+  "done": true,
+  "old": "S350_TripleLockDerivedHold_XauusdEurusd_M5M15M30H1H4D1W1_rqs28_REJECTED.md",
+  "new": "S350_TripleLockDerivedHoldXauusdEurusdM5M15M30H1H4D1W1_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  },
  "S323#layer:S323_SRPullbackGolden_Xauusd_M15M30H1_88.md": {
   "done": true,
@@ -3847,5 +3851,11 @@
     "n": 64
    }
   ]
+ },
+ "S353": {
+  "done": false,
+  "status": "DEFERRED",
+  "old": "S353_HalfTrendRegimeGate_XauusdEurusd_D1_rqs2-PL.md",
+  "reason": "capture > 1500s"
  }
 }
