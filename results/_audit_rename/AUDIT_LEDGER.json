@@ -3493,5 +3493,20 @@
     "n": 1276
    }
   ]
+ },
+ "S338": {
+  "done": true,
+  "old": "S338_ConditionalWR_Mining_Xauusd_M5_DIAG.md",
+  "new": "S338_ConditionalWRMiningXauusdM5DIAG_Xauusd_M5_rqs2_11_REJECT.md",
+  "verdict": "REJECT",
+  "score": 11.1,
+  "cards": [
+   {
+    "card": "XAUUSD-M5",
+    "verdict": "REJECT",
+    "score": 11.1,
+    "n": 60000
+   }
+  ]
  }
 }
