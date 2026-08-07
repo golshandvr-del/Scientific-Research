@@ -4540,5 +4540,55 @@
     "n": 64
    }
   ]
+ },
+ "S376#doc:S376_PREREG_fractal_sr_proximity_filter.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S376_PREREG_fractal_sr_proximity_filter.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S377#doc:S377_FINDING_STEP1_DATA_CENSUS.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S377_FINDING_STEP1_DATA_CENSUS.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S378#doc:S378_FINDING_STEP1_TRADE_BUDGET_IS_ABUNDANT.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S378_FINDING_STEP1_TRADE_BUDGET_IS_ABUNDANT.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S379#doc:S379_FINDING_STEP1_FILTER_COST_LAW.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S379_FINDING_STEP1_FILTER_COST_LAW.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S380#doc:S380_FINDING_REJECTION_CARRIES_NO_INFORMATION.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S380_FINDING_REJECTION_CARRIES_NO_INFORMATION.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S381#doc:S381_PREREG_GEOMETRY_LIFT_TRADE.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S381_PREREG_GEOMETRY_LIFT_TRADE.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S381#doc:S381_RESULT_GEOMETRY_LIFT_TRADE_REFUTED.md": {
+  "done": true,
+  "status": "NOT_A_LAYER",
+  "old": "S381_RESULT_GEOMETRY_LIFT_TRADE_REFUTED.md",
+  "note": "documentation artefact, not a tradeable layer; no RQS2 name/score applies"
+ },
+ "S382": {
+  "done": true,
+  "old": "S382_WilliamsR_Xauusd_H4_rqs2-83.md",
+  "new": "S382_WilliamsRXauusdH4_NA_NA_rqs2_0_INCOMPLETE.md",
+  "verdict": "INCOMPLETE",
+  "score": 0.0,
+  "cards": []
  }
 }
