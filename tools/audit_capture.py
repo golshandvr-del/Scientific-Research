@@ -662,7 +662,8 @@ class Recorder:
 
 
 def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
-                   _force_park: bool = False) -> dict:
+                   _force_park: bool = False,
+                   script_args: list | None = None) -> dict:
     """
     یک اسکریپتِ آرشیو را با وصلهٔ ضبط اجرا می‌کند.
 
@@ -792,7 +793,8 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
 
     path = ROOT / 'strategies' / script
     out = {'script': script, 'ok': False, 'calls': [], 'stdout_tail': '',
-           'error': None, 'seconds': None}
+           'error': None, 'seconds': None,
+           'script_args': [str(a) for a in (script_args or [])]}
 
     import io
     from contextlib import redirect_stdout, redirect_stderr
@@ -909,7 +911,23 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
         pass
 
     try:
-        sys.argv = [str(path)]
+        # ⚠️ باگِ بیستم (اندازه‌گیری‌شده): این خط قبلاً `[str(path)]` بود و
+        #   هیچ آرگومانی عبور نمی‌داد، پس هارنس اسکریپت را همیشه در حالتِ
+        #   **پیش‌فرض** می‌دواند. برای `s353_halftrend_regime.py` پیش‌فرض یعنی
+        #   `۲ جفت‌ارز × ۷ تایم‌فریم = ۱۴ کارت` در یک اجرا، هر کارت با یک
+        #   شبکهٔ بزرگ (`AMPL×R2_P×HURST_P×R2_Q×HURST_MIN×ENT_Q×side×SL_K×RR`)
+        #   و ۲۰۰ جایگشت، و `M5` با ۲۰۰٬۰۰۰ کندل در همان صف. نتیجه:
+        #   `DEFERRED (capture exceeded 1800s budget)` — یعنی نقصِ ابزار،
+        #   نه حکمِ علمی. و این اسکریپت هیچ کشِ resume ندارد، پس «ادامه بده»
+        #   هم کاری نمی‌کند و لایه برای همیشه DEFERRED می‌ماند.
+        #
+        #   نکتهٔ صداقت: درمان **دست‌بردن در اسکریپت آرشیو نیست**. خودِ
+        #   اسکریپت در `main()` یک درِ ورودیِ رسمی دارد:
+        #       if args:
+        #           for a in args: asset, tf = a.split("_")
+        #   پس فقط همان رابطِ اعلام‌شدهٔ خودش را صدا می‌زنیم و هر تایم‌فریم
+        #   را جدا می‌سنجیم — که دقیقاً همان قاعدهٔ چندتایم‌فریمیِ ممیزی است.
+        sys.argv = [str(path)] + [str(a) for a in (script_args or [])]
         os.chdir(ROOT)
         with redirect_stdout(buf), redirect_stderr(buf):
             runpy.run_path(str(path), run_name='__main__')
@@ -957,10 +975,29 @@ def capture_script(script: str, timeout: int = DEFAULT_TIMEOUT,
 def main():
     if len(sys.argv) < 2:
         print('usage: audit_capture.py <script.py> [more.py ...]')
+        print('       audit_capture.py <script.py> -- ARG [ARG ...]')
         return 2
-    for script in sys.argv[1:]:
-        print(f'── capturing {script} ...', flush=True)
-        r = capture_script(script)
+
+    # ── عبورِ آرگومان به اسکریپتِ آرشیو (باگِ بیستم) ─────────────────────────
+    #   هر چیزی بعد از `--` عیناً به `sys.argv` اسکریپت داده می‌شود، پس
+    #   می‌توان از رابطِ رسمیِ خودِ اسکریپت برای اجرای **تک‌کارتی** استفاده کرد:
+    #       python tools/audit_capture.py s353_halftrend_regime.py -- XAUUSD_D1
+    #   نامِ فایلِ ضبط هم آرگومان‌ها را در خود می‌گیرد تا کارت‌ها روی هم
+    #   بازنویسی نشوند.
+    argv = sys.argv[1:]
+    script_args: list[str] = []
+    if '--' in argv:
+        i = argv.index('--')
+        script_args = argv[i + 1:]
+        argv = argv[:i]
+    if not argv:
+        print('usage: audit_capture.py <script.py> [-- ARG ...]')
+        return 2
+
+    for script in argv:
+        tag = (' ' + ' '.join(script_args)) if script_args else ''
+        print(f'── capturing {script}{tag} ...', flush=True)
+        r = capture_script(script, script_args=script_args)
 
         # ── پاسِ دومِ خودکار: صفر فراخوانی + کشِ نگه‌داشته = کشِ **کامل** ──
         # ⚠️ اندازه‌گیری‌شده: `S224/S225/S226/S223b/S223c` همه با
@@ -976,11 +1013,13 @@ def main():
             print('   ↻ zero calls with the cache kept ⇒ the cache is '
                   'COMPLETE; retrying once with it parked so the script '
                   'must recompute', flush=True)
-            r2 = capture_script(script, _force_park=True)
+            r2 = capture_script(script, _force_park=True,
+                                script_args=script_args)
             if (r2.get('n_calls') or 0) > 0:
                 r = r2
 
-        dest = OUT / (script.replace('/', '_') + '.capture.json')
+        suf = ('.' + '_'.join(script_args)) if script_args else ''
+        dest = OUT / (script.replace('/', '_') + suf + '.capture.json')
         with open(dest, 'w', encoding='utf-8') as fh:
             json.dump(r, fh, ensure_ascii=False, default=float)
         status = 'OK' if r['ok'] else 'ERR'
