@@ -292,16 +292,35 @@ def main():
     #   • `H6`/تقسیمِ تقویمی  ← `bar_time[exit_bar]`
     #   • همزمانی (`rqs2.py:662`) ← `[entry_bar, exit_bar]`
     #   • `H10` خلاف‌جریان (`rqs2.py:413`) ← `close[entry_bar]`
-    # محور = کندل‌های **M5** (ریزترین عضو). ⚠️ نسخهٔ دومِ من H1 را انتخاب کرد
-    # و باگِ دومی ساخت (`BUG-QUANT`): همپوشانیِ واقعیِ تقویمی **صفر** بود
-    # (FIFO بی‌عیب کار کرد و با عدد تأیید شد)، ولی ۴ معامله فاصله‌شان از خروجِ
-    # قبلی زیرِ ۶۰ دقیقه بود (کمینه ۵ دقیقه) ⇒ در یک سطلِ ساعتی برخورد کردند
-    # ⇒ موتور `max_concurrency=2` شمرد ⇒ `H0` به‌غلط شکست. یعنی همپوشانی
-    # مصنوعِ **گردکردنِ محورِ من** بود، نه واقعیت. با محورِ M5 (۵ دقیقه)
-    # کوچک‌ترین فاصلهٔ واقعیِ استخر (۵ دقیقه) قابلِ تفکیک می‌شود.
-    axis_df = se.load_data(se.ASSETS['XAUUSD_M5']['file'])
-    axis_t = axis_df['dt'].values.astype('datetime64[ns]').astype(np.int64)
-    axis_close = axis_df['close'].to_numpy(float)
+    # ---- محورِ مشترک: شبکهٔ **مصنوعیِ** ۵دقیقه‌ای روی افقِ کاملِ استخر ----
+    # ⚠️ دو تلاشِ قبلیِ من هر دو باگ داشتند و هر دو با عدد کشف شدند:
+    #   • `BUG-QUANT` (محورِ H1): همپوشانیِ واقعیِ تقویمی **صفر** بود، ولی ۴
+    #     معامله فاصله‌شان از خروجِ قبلی زیرِ ۶۰ دقیقه بود (کمینه ۵ دقیقه) ⇒
+    #     در یک سطلِ ساعتی برخورد کردند ⇒ `concurrency=2` ⇒ `H0` غلط شکست.
+    #   • `BUG-SPAN` (محورِ فایلِ M5): فایلِ `XAUUSD_M5.csv` فقط از
+    #     **۲۰۲۳-۰۹-۱۸** شروع می‌شود، ولی اعضای M30/H1 از **۲۰۱۱-۰۱-۰۳**.
+    #     پس هر معاملهٔ پیش از ۲۰۲۳ به ایندکسِ صفر **کلیپ** شد و روی هم انبار
+    #     گشت ⇒ `concurrency=34` (بدتر از قبل!). یعنی افقِ محور باید **ابرمجموعهٔ**
+    #     افقِ استخر باشد؛ هیچ فایلِ واحدی این شرط را ندارد.
+    # اصلاح: محور را از هیچ فایلی نمی‌گیریم — یک شبکهٔ یکنواختِ ۵دقیقه‌ای از
+    # min(t_entry) تا max(t_exit) می‌سازیم. رزولوشن = ریزترین فاصلهٔ واقعیِ
+    # استخر (۵ دقیقه) و پوشش = کلِ ~۱۵ سال. پس نه گردکردن رخ می‌دهد نه کلیپ.
+    STEP_NS = 5 * 60 * 1_000_000_000            # ۵ دقیقه بر حسبِ نانوثانیه
+    t_lo = int(pool['t_entry'].values.astype(np.int64).min())
+    t_hi = int(pool['t_exit'].values.astype(np.int64).max())
+    axis_t = np.arange(t_lo - STEP_NS, t_hi + 2 * STEP_NS, STEP_NS, dtype=np.int64)
+    axis_dt = axis_t.astype('datetime64[ns]')
+    print(f'\n[محورِ مشترک] شبکهٔ ۵دقیقه‌ای · {axis_dt[0]} → {axis_dt[-1]} '
+          f'· {len(axis_t):,} سطل', flush=True)
+
+    # `close`ِ هم‌راستا با محور (برای `H10`): از درشت‌ترین کارتی که کلِ افق را
+    # دارد (H1، از ۲۰۱۱) با نگهداشتِ آخرین مقدار روی شبکه نمونه‌برداری می‌شود.
+    # `searchsorted(..., 'right')-1` ⇒ هیچ قیمتِ **آینده** به گذشته نمی‌نشیند.
+    ref_df = se.load_data(se.ASSETS['XAUUSD_H1']['file'])
+    ref_t = ref_df['dt'].values.astype('datetime64[ns]').astype(np.int64)
+    ref_c = ref_df['close'].to_numpy(float)
+    pos = np.clip(np.searchsorted(ref_t, axis_t, 'right') - 1, 0, len(ref_c) - 1)
+    axis_close = ref_c[pos]
 
     pool = pool.copy()
     pool['entry_bar'] = np.searchsorted(axis_t, pool['t_entry'].values, 'left')
@@ -313,7 +332,7 @@ def main():
     pool['exit_bar'] = np.maximum(pool['exit_bar'], pool['entry_bar'])
     pool = pool.sort_values('exit_bar', kind='mergesort').reset_index(drop=True)
 
-    bar_time = axis_df['dt'].values.astype('datetime64[ns]')
+    bar_time = axis_dt
 
     # ---------- تقسیمِ اکتشاف/خارج‌نمونه (اصلاحِ `BUG-OOS`) ----------
     # اجرای قبلی `H3`/`H7` را «نامعلوم» داد چون `split_bar` پاس نشده بود
