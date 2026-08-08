@@ -315,9 +315,31 @@ def main():
 
     bar_time = axis_df['dt'].values.astype('datetime64[ns]')
 
+    # ---------- تقسیمِ اکتشاف/خارج‌نمونه (اصلاحِ `BUG-OOS`) ----------
+    # اجرای قبلی `H3`/`H7` را «نامعلوم» داد چون `split_bar` پاس نشده بود
+    # (`oos = {}`). این هم نقصِ کدِ من بود، نه نقصِ لایه — و خطرناک‌تر از
+    # شکستِ صریح است، چون دروازه در **سکوت** خاموش می‌شود.
+    #
+    # قاعده **ارثی** است، ساختهٔ من نیست: `s351_filter_rqs2.py:46` ⇒
+    # `SPLIT_FRAC = 0.60` و هر چهار کارت همین ۶۰٪ را داشتند
+    # (M5:۱۲۰۰۰۰/۲۰۰۰۰۰، M15:۹۰۰۰۰/۱۵۰۰۰۰، M30:۱۰۸۸۲۹/۱۸۱۳۸۳، H1:۵۴۵۷۰/۹۰۹۵۰).
+    #
+    # ⚠️ چرا `holdout_mask` و نه `split_bar`: استخر جمعیتی ترکیبی است و
+    # `split_bar` را موتور روی `entry_bar` اعمال می‌کند — که من بازنویسی‌اش
+    # کردم. ماسکِ صریح روی **زمانِ تقویمیِ مطلق** ساخته می‌شود (نقطهٔ ۶۰٪ِ
+    # محورِ مشترک)، پس مرزِ اکتشاف/خارج‌نمونه برای هر سه تایم‌فریم **یک
+    # لحظهٔ تقویمیِ واحد** است، نه سه مرزِ متفاوت. موتور طولِ ماسک را هم
+    # اعتبارسنجی می‌کند، پس ناهم‌ترازیِ خاموش ممکن نیست.
+    split_ns = int(axis_t[int(len(axis_t) * SPLIT_FRAC)])
+    holdout = pool['t_entry'].values.astype(np.int64) >= split_ns
+    print(f'\n[تقسیمِ ارثی {SPLIT_FRAC:.0%}] مرز={np.datetime64(split_ns, "ns")} '
+          f'· اکتشاف={int((~holdout).sum())} · خارج‌نمونه={int(holdout.sum())}',
+          flush=True)
+
     r = rqs2.compute_rqs2(pool, asset, sl_pip=sl_med, tp_pip=tp_med,
                           bar_time=bar_time, null=null,
                           close=axis_close,
+                          holdout_mask=holdout,
                           n_trials=N_TRIALS_INHERITED,
                           allow_overlap=False)
 
