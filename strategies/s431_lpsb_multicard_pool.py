@@ -276,11 +276,43 @@ def main():
                  if c in by_card)
     sl_med = float(sl_med) if sl_med > 0 else None
     tp_med = float(tp_med) if tp_med > 0 else None
-    # محورِ زمانِ تقویمی برای آزمون‌های تقویمی/رژیمی
-    bar_time = pool['t_entry'].values.astype('datetime64[ns]')
+
+    # ---------------- محورِ تقویمیِ مشترک (اصلاحِ باگِ BUG-AXIS) ----------------
+    # ⚠️ نسخهٔ اولِ من `bar_time = pool['t_entry']` می‌داد. باگ: موتور
+    # (`rqs2.py:729`) محور را با **`exit_bar`** ایندکس می‌کند
+    # (`bt[clip(exit_bar, 0, len(bt)-1)]`). طولِ آن آرایه ۱۰۹ بود و
+    # `exit_bar`ها ~۱۲۰٬۰۰۰ ⇒ همه به ۱۰۸ کلیپ شدند ⇒ هر ۱۰۹ معامله در **یک**
+    # سطلِ تقویمی افتادند (`cal_occupied=1`) ⇒ `H0`/`H6` به‌غلط شکستند.
+    # این یک نقصِ لایه نبود، نقصِ کدِ من بود.
+    #
+    # اصلاحِ درست: استخر جمعیتی **ترکیبی** است و `entry_bar`ِ هر عضو در
+    # ایندکس‌گذاریِ کارتِ خودش معنا دارد (کندلِ ۵۰۰۰ در M5 ≠ در H1). پس یک
+    # محورِ **مشترک** می‌سازیم و اندیس‌ها را روی آن **بازنویسی** می‌کنیم تا
+    # هر سه مصرف‌کنندهٔ موتور هم‌راستا شوند:
+    #   • `H6`/تقسیمِ تقویمی  ← `bar_time[exit_bar]`
+    #   • همزمانی (`rqs2.py:662`) ← `[entry_bar, exit_bar]`
+    #   • `H10` خلاف‌جریان (`rqs2.py:413`) ← `close[entry_bar]`
+    # محور = کندل‌های **H1** (درشت‌ترین عضو): افقِ کاملِ ~۶ سال را می‌پوشاند و
+    # رزولوشنِ ساعتی برای هر سه آزمون کافی است.
+    axis_df = se.load_data(se.ASSETS['XAUUSD_H1']['file'])
+    axis_t = axis_df['dt'].values.astype('datetime64[ns]').astype(np.int64)
+    axis_close = axis_df['close'].to_numpy(float)
+
+    pool = pool.copy()
+    pool['entry_bar'] = np.searchsorted(axis_t, pool['t_entry'].values, 'left')
+    pool['exit_bar'] = np.searchsorted(axis_t, pool['t_exit'].values, 'left')
+    pool['entry_bar'] = np.clip(pool['entry_bar'], 0, len(axis_t) - 1)
+    pool['exit_bar'] = np.clip(pool['exit_bar'], 0, len(axis_t) - 1)
+    # معاملهٔ درون-ساعتی (M5) ممکن است ورود و خروجش به یک سطل بیفتد؛ برای
+    # اینکه محاسبهٔ همزمانی بازهٔ تهی نبیند، حداقل یک سطل عرض می‌دهیم.
+    pool['exit_bar'] = np.maximum(pool['exit_bar'], pool['entry_bar'])
+    pool = pool.sort_values('exit_bar', kind='mergesort').reset_index(drop=True)
+
+    bar_time = axis_df['dt'].values.astype('datetime64[ns]')
 
     r = rqs2.compute_rqs2(pool, asset, sl_pip=sl_med, tp_pip=tp_med,
                           bar_time=bar_time, null=null,
+                          close=axis_close,
                           n_trials=N_TRIALS_INHERITED,
                           allow_overlap=False)
 
