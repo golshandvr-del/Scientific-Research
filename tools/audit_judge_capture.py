@@ -514,7 +514,22 @@ def main():
 
     print(f'══ judging {layer}  (n_trials={n_trials}) ══', flush=True)
     out = judge_capture(cap, n_trials, layer)
-    dest = VER / (layer.replace('.md', '') + '.json')
+
+    # ── باگِ بیست‌ویکم (اندازه‌گیری‌شده): تصادمِ فایلِ حکم ────────────────────
+    #   مسیرِ حکم فقط با «نامِ لایه» ساخته می‌شد. تا وقتی هر لایه یک‌جا داوری
+    #   می‌شد بی‌خطر بود، اما رفعِ باگِ بیستم داوریِ **کارت‌به‌کارت** را به حالتِ
+    #   عادی تبدیل کرد، و از آن لحظه هر کارت حکمِ کارتِ قبلی را بی‌صدا پاک
+    #   می‌کرد. مشاهدهٔ عینی روی S353:
+    #       XAUUSD_D1 → REJECT/25.0   (نوشته شد)
+    #       EURUSD_D1 → REJECT/20.1   (همان فایل را بازنویسی کرد)
+    #   نتیجه: حکمِ XAUUSD برای همیشه گم شد — دقیقاً همان خانوادهٔ خطای
+    #   «دزدیِ کلید» (باگ ۱۱/۱۴) که S355 و S382 را دفن کرده بود.
+    #   درمان: هر آرگومانِ کارت که در خودِ فایلِ ضبط ثبت شده، به نامِ فایلِ
+    #   حکم هم بچسبد. برای ضبط‌های بدونِ آرگومان، نام هیچ تغییری نمی‌کند،
+    #   پس هیچ‌کدام از ۱۸۰ حکمِ قبلی بی‌اعتبار یا جابه‌جا نمی‌شود.
+    sargs = [str(a) for a in (cap.get('script_args') or [])]
+    suf = ('.' + '_'.join(sargs)) if sargs else ''
+    dest = VER / (layer.replace('.md', '') + suf + '.json')
     with open(dest, 'w', encoding='utf-8') as fh:
         json.dump(out, fh, ensure_ascii=False, indent=1, default=float)
     print(f'HEADLINE: {out["headline_verdict"]} {out["headline_score"]}')
