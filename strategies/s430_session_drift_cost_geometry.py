@@ -112,14 +112,22 @@ def anchor_signal(df: pd.DataFrame, anchor_hour: int, dip_len: int) -> np.ndarra
     dt = pd.to_datetime(df['time'].values, unit='s')
     is_anchor = (dt.hour == anchor_hour) & (dt.minute == 0)
 
-    o = df['open'].values.astype(np.float64)
+    # ⚠️ اصلاحِ باگِ بازتولید (S430، گامِ ۳): تعریفِ «dip» در S73 اصلی
+    # **جابه‌جاییِ خالصِ قیمت در `dip_len` کندل** است، نه «`dip_len` کندلِ
+    # نزílیِ پیاپی». منبع: `strategies/s73_eurusd_session_drift.py` خطوطِ ۸۷–۹۱:
+    #     prior[k:] = c[k:] - c[:-k];  long_sig &= (prior < 0)
+    # تفاوت **کیفی** است، نه سلیقه‌ای: نسخهٔ «پیاپی» ~۱۰× سخت‌گیرتر است
+    # (۱۲۲ سیگنال در برابر ۱۱۹۴) و توانِ آماریِ لایه را نابود می‌کند.
+    # بازتولیدِ verbatim یک الزام است، نه یک تشریف: اگر منطق را عوض کنیم،
+    # دیگر «احیای S73» نیست و z=۱۱.۳۲σِ بایگانی هیچ ربطی به آن ندارد.
     c = df['close'].values.astype(np.float64)
-    down = c < o                      # کندلِ نزولی
-
-    dip = np.ones(len(df), dtype=bool)
-    for k in range(1, dip_len + 1):
-        dip &= np.roll(down, k)       # k کندلِ قبل نزولی بوده
-    dip[:dip_len] = False             # حاشیهٔ ابتدایی: داده‌ای نیست
+    prior = np.zeros(len(df), dtype=np.float64)
+    if dip_len > 0:
+        prior[dip_len:] = c[dip_len:] - c[:-dip_len]
+        dip = prior < 0.0
+        dip[:dip_len] = False         # حاشیهٔ ابتدایی: داده‌ای نیست
+    else:
+        dip = np.ones(len(df), dtype=bool)
 
     return np.asarray(is_anchor) & dip
 
