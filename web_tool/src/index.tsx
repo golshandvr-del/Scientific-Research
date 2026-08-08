@@ -156,12 +156,30 @@ app.post('/api/trade/advice', async (c) => {
     // داده‌ی زنده + تحلیل مخصوص همان دارایی
     let a
     if (meta_asset.isGold) {
-      const { candles } = await fetchGold('15m', '1mo')
-      if (candles.length < 220) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
+      // 🔴 **تعمیرِ S396 (BUG-TFM):** پیش‌تر اینجا `fetchGold('15m','1mo')` و
+      //    `rebaseFuturesToSpot(..., 900)` هارد-کد بود ⇒ توصیهٔ مدیریتِ معامله
+      //    برای **هر پنج کارت** با کندلِ M15 ساخته می‌شد. حالا از همان
+      //    `GOLD_TF` تغذیه می‌شود که مسیرِ تصمیم استفاده می‌کند.
+      //
+      //    چرا مهم است: `evaluateTrade` بر پایهٔ `a.atr` و `a.trend` می‌گوید
+      //    SL/TP را کجا بگذار یا معامله را ببند. ATRِ M15 روی طلا حدودِ یک‌چهارمِ
+      //    ATRِ H4 است ⇒ کارتِ H4 با SLِ چهاربرابر تنگ‌تر مدیریت می‌شد و معاملهٔ
+      //    سالم را با نوسانِ معمولی بیرون می‌انداخت. برای S382 (که SL آن
+      //    ۱.۵×ATR(100)=۱۲۲.۹ pip است) این یعنی نابودیِ کاملِ هندسهٔ لایه.
+      //
+      //    H4 نکتهٔ خاص دارد: Yahoo کندلِ ۴ساعته **نمی‌دهد**؛ عیناً مثلِ مسیرِ
+      //    تصمیم، H1 گرفته و با `aggregateCandles(·,4)` تجمیع می‌شود.
+      const mtf = GOLD_TF[meta_asset.id] || GOLD_TF['XAUUSD']
+      const { candles } = await fetchGold(mtf.interval, mtf.range)
+      // کفِ دادهٔ لازم: H4 پس از تجمیع ۱/۴ کندل دارد ⇒ آستانهٔ آن پایین‌تر است
+      // (همان ۶۰ کندلی که مسیرِ تصمیم برای H4 می‌پذیرد).
+      const isH4 = meta_asset.id === 'XAUUSD-H4'
+      const minBars = isH4 ? 240 : 220
+      if (candles.length < minBars) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
       let spot: SpotPrice | null = null
       try { spot = await getSpotGold() } catch {}
-      const merged = rebaseFuturesToSpot(candles, spot, 900)
-      a = analyze(merged.candles)
+      const merged = rebaseFuturesToSpot(candles, spot, mtf.gap)
+      a = analyze(isH4 ? aggregateCandles(merged.candles, 4) : merged.candles)
     } else {
       const { candles } = await yahooCandles(meta_asset.symbol, '15m', '1mo')
       if (candles.length < 220) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
@@ -484,6 +502,33 @@ const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: 
 //   نکته: فقط «کندل‌های بسته‌شده» ذخیره می‌شوند (نه کندلِ در حالِ شکل‌گیری) تا
 //   تاریخچهٔ ذخیره‌شده repaint نشود — هم‌راستا با closedBars.
 // نگاشتِ id کارتِ طلا → برچسبِ استانداردِ تایم‌فریم (کلیدِ افرازِ ذخیره‌سازی).
+// ---------------------------------------------------------------------------
+// GOLD_TF — نگاشتِ ماژولارِ «کارتِ طلا → (interval, range, gapSec)».
+//
+// هر کارتِ طلا تایم‌فریمِ مستقلِ خودش را از این جدول می‌گیرد. افزودنِ تایم‌فریمِ
+// تازه فقط یک ردیف است و بقیهٔ کارت‌ها را دست نمی‌زند (ماژولاریتیِ ROS2).
+// نکته: Yahoo برای interval=30m/1h فقط range محدود می‌دهد؛ مقادیرِ امن انتخاب شده.
+//
+// 🔴 **جابه‌جاییِ S396:** این جدول پیش‌تر **داخلِ** `decideAsset()` تعریف شده بود
+//    و بنابراین فقط مسیرِ *تصمیم* از آن استفاده می‌کرد. مسیرِ **مدیریتِ معامله**
+//    (`POST /api/trade-advice`) به‌جای آن `fetchGold('15m','1mo')` را
+//    **هارد-کد** کرده بود ⇒ اگر کاربر روی کارتِ `H4` معامله ثبت می‌کرد،
+//    توصیهٔ مدیریت با کندل‌های **M15** ساخته می‌شد: ATRِ اشتباه، روندِ اشتباه،
+//    و در نتیجه SL/TPِ متحرکِ اشتباه.
+//
+//    این عیناً **اشتباهِ رایجِ ۶** («تنظیمِ یکسان برای همهٔ تایم‌فریم‌ها») بود، فقط
+//    در لباسِ زیرساخت نه در لباسِ استراتژی — و دقیقاً در حساس‌ترین بخشِ سایت
+//    (مدیریتِ معاملهٔ باز). با انتقالِ جدول به سطحِ ماژول، **هر دو مسیر** از یک
+//    منبعِ حقیقتِ واحد تغذیه می‌شوند.
+// ---------------------------------------------------------------------------
+const GOLD_TF: Record<string, { interval: string; range: string; gap: number }> = {
+  'XAUUSD':    { interval: '15m', range: '1mo', gap: 900 },
+  'XAUUSD-M5': { interval: '5m',  range: '5d',  gap: 300 },
+  'XAUUSD-M30':{ interval: '30m', range: '1mo', gap: 1800 },
+  'XAUUSD-H1': { interval: '1h',  range: '3mo', gap: 3600 },
+  'XAUUSD-H4': { interval: '1h',  range: '1y',  gap: 3600 },  // H4 از تجمیعِ H1 ساخته می‌شود
+}
+
 function tfLabelForGold(id: string): string {
   switch (id) {
     case 'XAUUSD-M5': return 'M5'
@@ -521,17 +566,6 @@ function persistHistoryShadow(asset: string, tf: string, closed: Candle[]): void
 // تصمیمِ یک دارایی: کندلِ زنده → analyze → runCard (۴-حالته، رجیستریِ ماژولار).
 async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 1.0) {
   if (a.isGold) {
-    // --- نگاشتِ ماژولارِ تایم‌فریمِ طلا → (interval, range, gapSec) ---
-    // هر کارتِ طلا تایم‌فریمِ مستقلِ خودش را از این جدول می‌گیرد. افزودنِ تایم‌فریمِ
-    // تازه فقط یک ردیف است و بقیهٔ کارت‌ها را دست نمی‌زند (ماژولار).
-    // نکته: Yahoo برای interval=30m/1h فقط range محدود می‌دهد؛ مقادیرِ امن انتخاب شده.
-    const GOLD_TF: Record<string, { interval: string; range: string; gap: number }> = {
-      'XAUUSD':    { interval: '15m', range: '1mo', gap: 900 },
-      'XAUUSD-M5': { interval: '5m',  range: '5d',  gap: 300 },
-      'XAUUSD-M30':{ interval: '30m', range: '1mo', gap: 1800 },
-      'XAUUSD-H1': { interval: '1h',  range: '3mo', gap: 3600 },
-      'XAUUSD-H4': { interval: '1h',  range: '1y',  gap: 3600 },  // H4 از تجمیعِ H1 ساخته می‌شود
-    }
     const tfc = GOLD_TF[a.id] || GOLD_TF['XAUUSD']
     const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range)
     // H4: Yahoo تایم‌فریمِ ۴ساعته را مستقیم نمی‌دهد ⇒ از تجمیعِ کندل‌های H1 می‌سازیم.
