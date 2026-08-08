@@ -44,69 +44,85 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from engine import scalp_engine as se                              # noqa: E402
 from engine import rqs2                                            # noqa: E402
-from engine.rqs2_pool import pool_cards, _to_calendar              # noqa: E402
-from strategies.s348_rr_sweep import (queue_rr, trades_df,         # noqa: E402
-                                      cost_pip, SPLIT_FRAC)
-from strategies.s351_lpsb import (atr_series, lpsb_signals, CARDS,  # noqa: E402
-                                  GEO_SL_K, GEO_RR, GEO_HOLD, ATR_P)
+from engine.rqs2_pool import pool_cards                             # noqa: E402
+from strategies import s333_s79_pullback_revival as s333            # noqa: E402
+from strategies.s351_lpsb import lpsb_signals                       # noqa: E402
 from strategies.s351_verdict import build_null_side, CENTRAL        # noqa: E402
 
 OUT = 'results/_scan_S431'
 
 # ---------------------- اعضای استخر (قفل‌شده در پیش‌ثبت) ----------------------
-# دقیقاً همان چهار کارتی که در الحاقیهٔ ۲ اعلام شد. قیدِ `C2`: این فهرست
-# **پیش از** دیدنِ هر عددِ نو قفل شده و پس از اجرا کوتاه نمی‌شود.
-POOL_MEMBERS = ['XAUUSD-M5', 'XAUUSD-M15', 'XAUUSD-M30', 'XAUUSD-H1']
+# قیدِ `C2`: این فهرست **پیش از** دیدنِ هر عددِ نو قفل شده و پس از اجرا
+# کوتاه نمی‌شود. نام‌گذاری با زیرخط چون `s333.BEST_CFG` همین کلید را دارد.
+POOL_MEMBERS = ['XAUUSD_M5', 'XAUUSD_M15', 'XAUUSD_M30', 'XAUUSD_H1']
 
-WARMUP = max(4 * (2 * 13 + 1), 250)     # همان WARMUPِ S351 (بزرگ‌ترین L=13)
+WARMUP = 300                            # همان WARMUPِ `s351_filter_rqs2.py`
 SEED = 20260805                         # بذرِ پیش‌ثبت‌شده
 K_PERM = 2000                           # `K` پیش‌ثبت‌شده
+SPLIT_FRAC = 0.60                       # همان تقسیمِ ارثی
 
 # قیدِ `C5`ِ پیش‌ثبت‌شده: هیچ عضوی بیش از این سهم از نمونهٔ تجمیعی نباشد.
 C5_MAX_MEMBER_SHARE = 0.50
 
 # ---- چندگانگیِ صادقانه (قیدِ `C4`) --------------------------------------------
-# `S431` هیچ پارامترِ نویی جست‌وجو نمی‌کند. تنها هزینهٔ چندگانگی، **ارثِ**
-# خانوادهٔ پیش‌ثبت‌شدهٔ `S351` است: |L_LIST| × |F_LIST| = 3×3 = 9 عضو،
-# ضربدر ۴ کارتِ استخر ⇒ ۳۶. عمداً بدبینانه گزارش می‌شود.
-N_TRIALS_INHERITED = 9 * len(POOL_MEMBERS)
+# `S431` هیچ پارامترِ نویی جست‌وجو نمی‌کند: نه هندسه (ارثیِ `S333.BEST_CFG`)،
+# نه فیلتر (`state == -1`، صفر-پارامتر). هزینهٔ ارثی = ۲ علامتِ حالت × ۴ کارت
+# = ۸ (همان `N_MULT`ِ `s351_filter_rqs2.py`). برای بدبینیِ بیشتر، خودِ
+# تصمیمِ «تجمیع» را هم یک درجهٔ آزادی می‌شماریم ⇒ ۸ × ۲ = ۱۶.
+N_TRIALS_INHERITED = 16
+
+
+def _win_col(tr):
+    """`evaluate` ممکن است ستونِ `win` نداشته باشد؛ از `pnl_pip` بساز."""
+    if 'win' not in tr.columns:
+        tr = tr.copy()
+        tr['win'] = (tr['pnl_pip'].to_numpy() > 0).astype(int)
+    return tr
 
 
 def card_population(card, n_perm=K_PERM, verbose=True):
     """
-    اجرای عضوِ مرکزیِ LPSB روی یک کارت با هندسهٔ منجمدِ `S351`.
+    جمعیتِ یک عضوِ استخر = **`S333` + دروازهٔ صفر-پارامترِ `state == -1`**.
 
-    برمی‌گرداند dict شاملِ `tr` (معاملات)، `dt` (محورِ تقویمی)، `lift`
-    (نسبت به مبنای **اندازه‌گیری‌شده**) و متریک‌های خودِ کارت.
+    ⚠️ این تابع در الحاقیهٔ ۳ بازنویسی شد. نسخهٔ اولِ من LPSBِ **خام** را
+    اجرا می‌کرد (`n≈۴۴۶۱`, `lift≈۰`) که جمعیتِ اشتباهی بود؛ جمعیتِ درست
+    همان است که `s351_filter_rqs2.py:77` می‌سازد:
+        `filt = s333.build_layer(df, cfg) & (state == -1)`
+    هندسه = `S333.BEST_CFG[card]` (ارثی، جست‌وجو نشده).
 
-    هیچ پارامتری اینجا جست‌وجو نمی‌شود — همه ارثی و منجمدند.
+    برمی‌گرداند dict شاملِ `tr`، `dt` (محورِ تقویمی)، `lift` نسبت به مبنای
+    **اندازه‌گیری‌شده**، و متریک‌های کارت.
     """
-    asset, path = CARDS[card]
+    cfg = s333.BEST_CFG[card]
+    asset = 'XAUUSD'
+    path = se.ASSETS[card]['file']
+    if not os.path.exists(path):
+        return None
+
     df = se.load_data(path)
-    atr = atr_series(df)
-    dt = df['dt'].values if 'dt' in df.columns else np.arange(len(df))
+    n = len(df)
+    close = df['close'].to_numpy(float)
+    dt = df['dt'].values if 'dt' in df.columns else np.arange(n)
 
-    ls, ss, _ = lpsb_signals(df, CENTRAL['L'], CENTRAL['f'], warmup=WARMUP)
-    sel = (ls | ss) & np.isfinite(atr) & (atr > 0)
-    sig = np.where(sel)[0]
-    if len(sig) < 5:
-        return None
+    base = s333.build_layer(df, cfg)
+    _, _, state = lpsb_signals(df, CENTRAL['L'], CENTRAL['f'], warmup=WARMUP)
+    filt = base & (state == -1)                      # فیلترِ صفر-پارامتر
 
-    is_long = ls[sig]
-    st = queue_rr(df, sig, is_long, GEO_SL_K * atr[sig], asset,
-                  GEO_HOLD, GEO_RR)
-    if st is None or st['n'] < 5:
+    sl, tp, mh = cfg['sl'], cfg['tp'], cfg['mh']
+    tr, _ = s333.evaluate(df, filt, card, sl, tp, mh)
+    if tr is None or len(tr) < 3:
         return None
-    tr = trades_df(st)
+    tr = _win_col(tr)
 
     # ---- مبنای **اندازه‌گیری‌شده** روی همان کارت (نه عددِ فرضی) ----
-    valid = np.where(np.isfinite(atr) & (atr > 0))[0]
+    valid = np.where(np.isfinite(close))[0]
     valid = valid[valid >= WARMUP]
     nL = int((tr['direction'] == 'long').sum())
     nS = int(len(tr) - nL)
     rng = np.random.default_rng(SEED)
-    null = build_null_side(df, asset, valid, GEO_SL_K * atr, nL, nS,
-                           n_perm, rng, verbose=verbose)
+    sl_price = sl * se.ASSETS[asset]['pip']
+    null = build_null_side(df, asset, valid, np.full(n, sl_price),
+                           nL, nS, n_perm, rng, verbose=verbose)
 
     # lift وزنی به سمت، نسبت به مبنای بی‌قید
     wr = 100.0 * float((tr['pnl_pip'] > 0).mean())
@@ -121,9 +137,10 @@ def card_population(card, n_perm=K_PERM, verbose=True):
 
     return dict(card=card, asset=asset, tr=tr, dt=dt, lift=lift,
                 n=int(len(tr)), wr=wr, ref_wr=ref, null=null,
-                n_long=nL, n_short=nS,
+                n_long=nL, n_short=nS, n_base=int(base.sum()),
+                sl_pip=float(sl), tp_pip=float(tp), max_hold=int(mh),
                 exp_pip=float(np.mean(tr['pnl_pip'])),
-                bars=int(len(df)))
+                bars=int(n))
 
 
 def blend_pool_null(members_used, pool_df):
@@ -175,8 +192,8 @@ def main():
     want = [c.strip() for c in a.cards.split(',') if c.strip()] or POOL_MEMBERS
 
     print(f'== S431 — تجمیعِ چند-کارتیِ LPSB · اعضا: {want} ==', flush=True)
-    print(f'   هندسهٔ منجمد: SL={GEO_SL_K}·ATR{ATR_P} RR={GEO_RR} '
-          f'hold={GEO_HOLD} · عضو={CENTRAL} · K={a.perm}', flush=True)
+    print(f'   جمعیت: S333 + دروازهٔ `state == -1` · عضوِ LPSB={CENTRAL} · '
+          f'هندسه: ارثیِ S333.BEST_CFG (per-card) · K={a.perm}', flush=True)
 
     members = []
     for card in want:
@@ -247,8 +264,18 @@ def main():
 
     # ------------------------- داوریِ RQS2 v2.6 -------------------------
     asset = used_members[0]['asset']
-    sl_med = float(np.median(pool['sl_pip'])) if 'sl_pip' in pool else None
-    tp_med = (sl_med * GEO_RR) if sl_med else None
+    # ⚠️ هندسهٔ استخر: اعضا SLِ **pipِ متفاوت** دارند (M5=۱۲۰ … H1=۴۵۰)، پس
+    # نمی‌توان یک عددِ ثابت داد. مدیانِ **وزنی به سهمِ پس-از-FIFO** گرفته
+    # می‌شود تا `H9`/`H2` با هندسهٔ واقعیِ استخر داوری شوند، نه با هندسهٔ یک
+    # کارتِ دلبخواه. `RR`ِ استخر هم از همان نسبتِ ارثی مشتق می‌شود.
+    shares = pool['src_card'].value_counts(normalize=True).to_dict()
+    by_card = {m['card']: m for m in used_members}
+    sl_med = sum(by_card[c]['sl_pip'] * w for c, w in shares.items()
+                 if c in by_card)
+    tp_med = sum(by_card[c]['tp_pip'] * w for c, w in shares.items()
+                 if c in by_card)
+    sl_med = float(sl_med) if sl_med > 0 else None
+    tp_med = float(tp_med) if tp_med > 0 else None
     # محورِ زمانِ تقویمی برای آزمون‌های تقویمی/رژیمی
     bar_time = pool['t_entry'].values.astype('datetime64[ns]')
 
