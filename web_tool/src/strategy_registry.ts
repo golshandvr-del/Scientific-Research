@@ -85,9 +85,15 @@ import { decideS333, S333_CFG } from './s333_pullback'
 //     منشأ: منبعِ تلگرامیِ Market_Structure_Break_and_Order_Block_v3 (MT4/GPL) — بازسازیِ **علّی**
 //     (نسخهٔ اصلی repaint داشت). پورتِ verbatim تأیید شد: mismatch=0 روی ۲۰۰٬۰۰۰ کندل
 //     (web_tool/parity_s355_state.mjs). همپوشانی: زیرمجموعهٔ اکیدِ S333 (۷۳.۴٪ از ورودهایش).
-//     ⚠️ فقط روی M5 وصل می‌شود؛ M15/M30/H1 در دروازهٔ H3 ماندند ⇒ حق اتصال ندارند.
+//     ⚠️ تا پیش از S431 فقط روی M5 وصل می‌شد؛ M15/M30/H1 در دروازهٔ H3 (توان)
+//        مانده بودند ⇒ حقِ اتصال نداشتند.
+//     ✅ **رفعِ محدودیت در S431:** آن سه کارت با تجمیعِ تقویمی در یک جمعیتِ
+//        واحد (n=۱۶۸) هر ۱۱ دروازه را پاس کردند ⇒ RQS2=93.9 · z=4.706.
+//        شکستِ قبلی‌شان **کمبودِ نمونه** بود نه نبودِ لبه (n=۳۸/۲۸/۶۶ در برابرِ
+//        n_required_h3=۷۲.۴؛ lift هر سه مثبت: +۱۷.۴/+۱۹.۵/+۱۶.۲).
 //     سند: results/S355_LPSBStateFilterRevival_Xauusd_M5_rqs2-84.md
-import { withLpsbGate, S355_CFG } from './lpsb_state_s355'
+//           results/S431_LpsbMulticardPool_Xauusd_M5M15M30H1_rqs2_93_ACCEPT.md
+import { withLpsbGate, S355_CFG, S431_CFG } from './lpsb_state_s355'
 // --- لایهٔ نوِ این نشست: S335 Reflex-TrendFlex Cycle-Turn (چرخهٔ DSP اِهلرز) ---
 //     خریدِ کفِ چرخه درونِ روندِ صعودیِ کم‌تأخیر روی XAU M5/M15/H1 —
 //     همپوشانیِ صفر با S333؛ RQS+ = 92.2/89.7/89.7 ---
