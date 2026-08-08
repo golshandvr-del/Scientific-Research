@@ -418,26 +418,36 @@ app.get('/api/context', async (c) => {
 // فیلدِ `tf`: تایم‌فریمِ Yahoo برای دریافتِ کندل (5m/15m/30m/1m). فقط برای کارت‌های
 //   غیرطلا کاربرد دارد (طلا تایم‌فریمش را از id می‌گیرد).
 // ---------------------------------------------------------------------------
-// ASSETS — فهرستِ کارت‌های سایت. پس از حذفِ کاملِ استراتژی‌های قدیمی (User Note)،
-// فقط کارت‌هایی می‌مانند که ≥۱ لایهٔ احیاشدهٔ ACCEPTED (RQS+≥80) در رجیستری دارند.
-//   فیلدِ `card` = کلیدِ CARD_LAYERS در strategy_registry.ts (منبعِ منطقِ تصمیم).
-//   هر کارت مستقل است؛ افزودنِ کارت/لایهٔ جدید فقط این جدول + CARD_LAYERS را تغییر می‌دهد.
+// ASSETS — فهرستِ کارت‌های سایت.
 //
-//   کارت         لایه‌های ACCEPTED
-//   XAUUSD-M5    S330·S328·S327·S326
-//   XAUUSD-M15   S324·S322·S323·S335·S344·S310·S312   (S344 = نخستین لایهٔ SHORT — Brooks فصلِ ۲۳)
-//   XAUUSD-M30   S313·S324·S321·S327·S326·S323·S312
-//   XAUUSD-H1    S313·S328·S327·S323·S312
-//   XAUUSD-H4    S374·S340·S332   (S374 = «دروازهٔ شکستِ Kennedy» — لایهٔ نوِ این نشست)
-//   EURUSD-M15   S326
-//   EURUSD-M30   S345
-//   EURUSD-H4    S374            ⭐ کارتِ **نوساز**: نخستین کارتِ یوروی H4 پروژه
+// 🔴 **پاک‌سازیِ حاکمیتیِ S396:** از **۸ کارت** به **۵ کارت** رسید.
+//    قاعده: کارت وجود دارد اگر و فقط اگر ≥۱ لایه در `CARD_LAYERS` داشته باشد که
+//    **روی همان کارت** حکمِ `ACCEPT` از RQS2 v2.4 گرفته باشد.
+//    این جدول باید **همیشه** با `CARD_LAYERS` هم‌راستا بماند؛ ناهم‌راستایی =
+//    «کارتِ توخالی» (کارتی که چیزی برای گفتن ندارد ولی وانمود می‌کند دارد).
 //
-//   ⭐ افزودنِ کارتِ EURUSD-H4 در این نشست الزامِ **قانونِ MTF** بود: پذیرشِ S374 روی
-//     `XAUUSD+EURUSD-H4` **باهم** اندازه‌گیری شد (z=+4.100 · n=1,062)، و یورو مستقلاً
-//     بالای هزینه بود (e_pip ۱.۵۷→۶.۴۴ در برابرِ c=1.6). وصل‌کردنِ لایه فقط به طلا
-//     نیمی از شواهدِ پذیرش را دور می‌ریخت. یورو بسامدِ بهتر را هم دارد: ۸۹ سیگنال
-//     در برابرِ ۲۰ سیگنالِ طلا ⇒ همان‌جا که ضعفِ «کم‌بودنِ رویدادِ مستقل» کم‌ترین شدت را دارد.
+//   فیلدِ `card` = کلیدِ `CARD_LAYERS` در `strategy_registry.ts` (منبعِ منطقِ تصمیم).
+//   هر کارت داده/منطق/localStorageِ مستقل دارد ⇒ کارت‌ها هیچ تداخلی با هم ندارند.
+//
+//   کارت         لایهٔ فعال   RQS2    n     WR       جهت
+//   XAUUSD-M5    S355        83.9*   47*   72.34%*  LONG   (*بدهیِ باز — سندِ S396 بندِ ۳)
+//   XAUUSD-M15   S344        89.0     92   64.13%   SHORT
+//   XAUUSD-M30   S312        87.7    289   61.25%   LONG
+//   XAUUSD-H1    S356        79.6    117   51.28%   LONG
+//   XAUUSD-H4    S382        79.2    869   48.22%   LONG/SHORT
+//
+//   ⚰️ **سه کارتِ EURUSD حذف شدند** (`EURUSD-M15`, `EURUSD-M30`, `EURUSD-H4`):
+//      هیچ‌یک لایه‌ای با ACCEPTِ RQS2 نداشتند. سایت اکنون **تک‌ارزی (XAUUSD)** است.
+//      این ضعف نیست — صداقتِ آماری است: پروژه هنوز روی EURUSD لبهٔ اثبات‌شده ندارد.
+//      معماری دست‌نخورده است؛ افزودنِ کارتِ یورو در آینده = یک سطر در این جدول
+//      + یک سطر در `CARD_LAYERS`.
+//
+//   ⚠️ توجه: `id: 'XAUUSD'` (بدونِ پسوند) عمداً حفظ شده است — کلیدِ تاریخیِ
+//      localStorageِ کاربران و مسیرهای API به آن وابسته‌اند. تغییرش معاملاتِ
+//      ثبت‌شدهٔ کاربر را یتیم می‌کرد. `card` آن `XAUUSD-M15` است.
+//
+//   فیلدِ `layer`: 'scalp'=M5 · 'swing'=M15 · 'swing-m30'=M30 · 'htf'=H1/H4
+//      (برچسبِ سبک، برای اینکه کاربر بداند پیشنهاد از کدام افق آمده).
 // ---------------------------------------------------------------------------
 const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: boolean; decimals: number; layer: 'swing' | 'scalp' | 'swing-m30' | 'placeholder' | 'htf'; tf?: string }[] = [
   { id: 'XAUUSD-M5',  card: 'XAUUSD-M5',  name: 'طلا / دلار — M5 (پنج‌دقیقه‌ای)',   symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'scalp' },
@@ -445,10 +455,10 @@ const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: 
   { id: 'XAUUSD-M30', card: 'XAUUSD-M30', name: 'طلا / دلار — M30 (سی‌دقیقه‌ای)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing-m30' },
   { id: 'XAUUSD-H1',  card: 'XAUUSD-H1',  name: 'طلا / دلار — H1 (یک‌ساعته)',      symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
   { id: 'XAUUSD-H4',  card: 'XAUUSD-H4',  name: 'طلا / دلار — H4 (چهارساعته)',     symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
-  { id: 'EURUSD-M15', card: 'EURUSD-M15', name: 'یورو / دلار — M15 (پانزده‌دقیقه‌ای)', symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '15m' },
-  { id: 'EURUSD-M30', card: 'EURUSD-M30', name: 'یورو / دلار — M30 (سی‌دقیقه‌ای)',  symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'scalp', tf: '30m' },
-  // ⭐ کارتِ نوسازِ این نشست — تنها لایه‌اش S374 است (نخستین لایهٔ پذیرفته‌شدهٔ یوروی H4).
-  { id: 'EURUSD-H4',  card: 'EURUSD-H4',  name: 'یورو / دلار — H4 (چهارساعته)',    symbol: 'EURUSD=X', isGold: false, decimals: 5, layer: 'htf',   tf: '4h'  },
+  // ⚰️ حذف‌شده در S396 — بی‌ACCEPT زیرِ RQS2 v2.4:
+  //   { id: 'EURUSD-M15', card: 'EURUSD-M15', … }   ← S326
+  //   { id: 'EURUSD-M30', card: 'EURUSD-M30', … }   ← S345 (RQS+ 91.7، ولی بی‌ACCEPT)
+  //   { id: 'EURUSD-H4',  card: 'EURUSD-H4',  … }   ← S374 (REJECT/15.7)
 ]
 
 // یادداشت: پیوستِ لایه‌های ثانویه اکنون درونِ runCard (strategy_registry) انجام
