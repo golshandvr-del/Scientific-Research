@@ -8156,15 +8156,18 @@ app.post("/api/trade/advice", async (c) => {
     const meta_asset = ASSETS.find((x) => x.id === assetId) || ASSETS[0];
     let a;
     if (meta_asset.isGold) {
-      const { candles } = await fetchGold("15m", "1mo");
-      if (candles.length < 220) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A" }, 400);
+      const mtf = GOLD_TF[meta_asset.id] || GOLD_TF["XAUUSD"];
+      const { candles } = await fetchGold(mtf.interval, mtf.range);
+      const isH4 = meta_asset.id === "XAUUSD-H4";
+      const minBars = isH4 ? 240 : 220;
+      if (candles.length < minBars) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A" }, 400);
       let spot = null;
       try {
         spot = await getSpotGold();
       } catch {
       }
-      const merged = rebaseFuturesToSpot(candles, spot, 900);
-      a = analyze(merged.candles);
+      const merged = rebaseFuturesToSpot(candles, spot, mtf.gap);
+      a = analyze(isH4 ? aggregateCandles(merged.candles, 4) : merged.candles);
     } else {
       const { candles } = await yahooCandles(meta_asset.symbol, "15m", "1mo");
       if (candles.length < 220) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A" }, 400);
@@ -8365,6 +8368,14 @@ var ASSETS = [
   //   { id: 'EURUSD-M30', card: 'EURUSD-M30', … }   ← S345 (RQS+ 91.7، ولی بی‌ACCEPT)
   //   { id: 'EURUSD-H4',  card: 'EURUSD-H4',  … }   ← S374 (REJECT/15.7)
 ];
+var GOLD_TF = {
+  "XAUUSD": { interval: "15m", range: "1mo", gap: 900 },
+  "XAUUSD-M5": { interval: "5m", range: "5d", gap: 300 },
+  "XAUUSD-M30": { interval: "30m", range: "1mo", gap: 1800 },
+  "XAUUSD-H1": { interval: "1h", range: "3mo", gap: 3600 },
+  "XAUUSD-H4": { interval: "1h", range: "1y", gap: 3600 }
+  // H4 از تجمیعِ H1 ساخته می‌شود
+};
 function tfLabelForGold(id) {
   switch (id) {
     case "XAUUSD-M5":
@@ -8408,14 +8419,6 @@ function persistHistoryShadow(asset, tf, closed) {
 }
 async function decideAsset(a, capital = 1e4, riskPct = 1) {
   if (a.isGold) {
-    const GOLD_TF = {
-      "XAUUSD": { interval: "15m", range: "1mo", gap: 900 },
-      "XAUUSD-M5": { interval: "5m", range: "5d", gap: 300 },
-      "XAUUSD-M30": { interval: "30m", range: "1mo", gap: 1800 },
-      "XAUUSD-H1": { interval: "1h", range: "3mo", gap: 3600 },
-      "XAUUSD-H4": { interval: "1h", range: "1y", gap: 3600 }
-      // H4 از تجمیعِ H1 ساخته می‌شود
-    };
     const tfc = GOLD_TF[a.id] || GOLD_TF["XAUUSD"];
     const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range);
     const candles2 = a.id === "XAUUSD-H4" ? aggregateCandles(rawCandles, 4) : rawCandles;
