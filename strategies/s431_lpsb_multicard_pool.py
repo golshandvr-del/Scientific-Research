@@ -227,11 +227,49 @@ def main():
         return
 
     # --------------------- تجمیعِ تقویمی + حذفِ همپوشانی ---------------------
-    res = pool_cards([dict(card=m['card'], tr=m['tr'], dt=m['dt'],
-                           lift=m['lift']) for m in members])
-    if res is None:
+    # ⚠️ مسئلهٔ صداقتِ علمی (`ISSUE-C2`) و راه‌حلِ آن:
+    # `pool_cards` درونِ خود `choose_homogeneous_subset` را صدا می‌زند که
+    # کارتی را که `z_proxy` را کمتر از ۱۵٪ بالا می‌برد **حذف** می‌کند
+    # («dilutes pool»). در اجرای من این کارتِ `XAUUSD_H1` بود.
+    # آن حذف **پس از دیدنِ نتیجه** رخ می‌دهد ⇒ یک درجهٔ آزادیِ پس‌ازدیدن-داده
+    # ⇒ نقضِ قیدِ `C2`ِ خودم («فهرستِ اعضا پیش از دیدنِ عدد قفل است و بعد
+    # کوتاه نمی‌شود»). حتی اگر منطقِ انتخابگر معقول باشد، *من* حق ندارم
+    # نتیجهٔ گزینش‌شده را حکمِ اصلی اعلام کنم؛ وگرنه با یک شبکهٔ ۴ کارتی
+    # ۱۵ زیرمجموعه در اختیار دارم و «بهترین» را برمی‌دارم — همان `H5`ِ پنهان.
+    #
+    # راه‌حل: **هر دو** محاسبه و گزارش می‌شوند و حکمِ **اصلی** روی استخرِ
+    # کاملِ ۴ کارتی (`FULL`، بدونِ هیچ گزینش) صادر می‌شود؛ نسخهٔ گزینش‌شده
+    # (`SELECTED`) فقط **تحلیلِ ثانویه** است. اگر `FULL` پاس شود، نتیجه
+    # مستحکم‌تر است چون به هیچ گزینشی بدهکار نیست.
+    res_sel = pool_cards([dict(card=m['card'], tr=m['tr'], dt=m['dt'],
+                               lift=m['lift']) for m in members])
+    if res_sel is None:
         print('[توقف] pool_cards هیچ عضوِ معتبری نیافت.', flush=True)
         return
+
+    # استخرِ `FULL`: همان مسیر، ولی با حاشیهٔ افزودنِ منفی تا **هیچ** کارتِ
+    # هم‌جهتی به‌دلیلِ رقیق‌سازی حذف نشود. فیلترِ `lift<=0` (شرطِ ۲) سرِ جایش
+    # می‌ماند چون آن قیدِ **پیش‌ثبت‌شدهٔ من** (`C1`) است، نه گزینشِ پس‌ازواقع.
+    import engine.rqs2_pool as _rp
+    _saved_margin = _rp.POOL_ADD_MARGIN
+    try:
+        _rp.POOL_ADD_MARGIN = -1.0          # هر کارتِ هم‌جهت پذیرفته می‌شود
+        res_full = pool_cards([dict(card=m['card'], tr=m['tr'], dt=m['dt'],
+                                    lift=m['lift']) for m in members])
+    finally:
+        _rp.POOL_ADD_MARGIN = _saved_margin
+
+    if res_full is None:
+        print('[توقف] استخرِ FULL ساخته نشد.', flush=True)
+        return
+
+    print(f"\n[ISSUE-C2] استخرِ SELECTED اعضا="
+          f"{[u['card'] for u in res_sel['used']]} · "
+          f"استخرِ FULL اعضا={[u['card'] for u in res_full['used']]}",
+          flush=True)
+    print('   ⇒ حکمِ اصلی روی FULL صادر می‌شود (قیدِ C2).', flush=True)
+
+    res = res_full
 
     pool = res['pool']
     print(f"\n[تجمیع] n_before={res['n_before']} → n_after={res['n_after']} "
