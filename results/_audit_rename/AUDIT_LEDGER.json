@@ -4005,10 +4005,14 @@
   ]
  },
  "S353": {
-  "done": false,
+  "done": true,
   "status": "DEFERRED",
   "old": "S353_HalfTrendRegimeGate_XauusdEurusd_D1_rqs2-PL.md",
-  "reason": "capture > 1800s"
+  "reason": "capture > 1800s",
+  "verdict": "REJECT",
+  "score": 25.0,
+  "new_name": "S353_HalfTrendRegimeGate_XauusdEurusd_D1_rqs2_25_REJECT.md",
+  "note": "BUG-20+BUG-21 fixed; per-card capture 27.7s+25.6s; reproduction exact (n=71,n=86)"
  },
  "S354": {
   "done": true,
