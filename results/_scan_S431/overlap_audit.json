@@ -1,0 +1,50 @@
+[
+ {
+  "card": "XAUUSD_M5",
+  "n_mine": 47,
+  "n_base_s333": 81,
+  "site_layer": "S355",
+  "site_src": "s333 + withLpsbGate  (registry.ts:510)",
+  "overlap_pct": 100.0,
+  "jaccard_pct": 100.0,
+  "n_novel": 0,
+  "comparable": true,
+  "note": "همانِ سازوکار (S333+LPSB gate) ⇒ همپوشانیِ کامل روی این کارت. لایهٔ من چیزِ نویی به M5 اضافه نمی‌کند."
+ },
+ {
+  "card": "XAUUSD_M15",
+  "n_mine": 38,
+  "n_base_s333": 87,
+  "site_layer": "S344",
+  "site_src": "s344Layer            (registry.ts:522)",
+  "overlap_pct": null,
+  "jaccard_pct": null,
+  "n_novel": null,
+  "comparable": false,
+  "note": "لایهٔ سایت (S344) سازوکارِ متفاوت است؛ همپوشانیِ ورود در این گام محاسبه نشد ⇒ N/A (نه صفر)."
+ },
+ {
+  "card": "XAUUSD_M30",
+  "n_mine": 28,
+  "n_base_s333": 46,
+  "site_layer": "S312",
+  "site_src": "s312Layer(295,295,36) (registry.ts:534)",
+  "overlap_pct": null,
+  "jaccard_pct": null,
+  "n_novel": null,
+  "comparable": false,
+  "note": "لایهٔ سایت (S312) سازوکارِ متفاوت است؛ همپوشانیِ ورود در این گام محاسبه نشد ⇒ N/A (نه صفر)."
+ },
+ {
+  "card": "XAUUSD_H1",
+  "n_mine": 66,
+  "n_base_s333": 126,
+  "site_layer": "S356",
+  "site_src": "s354Layer            (registry.ts:545)",
+  "overlap_pct": null,
+  "jaccard_pct": null,
+  "n_novel": null,
+  "comparable": false,
+  "note": "لایهٔ سایت (S356) سازوکارِ متفاوت است؛ همپوشانیِ ورود در این گام محاسبه نشد ⇒ N/A (نه صفر)."
+ }
+]
