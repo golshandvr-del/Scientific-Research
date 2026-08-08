@@ -250,14 +250,28 @@ def main():
     # استخرِ `FULL`: همان مسیر، ولی با حاشیهٔ افزودنِ منفی تا **هیچ** کارتِ
     # هم‌جهتی به‌دلیلِ رقیق‌سازی حذف نشود. فیلترِ `lift<=0` (شرطِ ۲) سرِ جایش
     # می‌ماند چون آن قیدِ **پیش‌ثبت‌شدهٔ من** (`C1`) است، نه گزینشِ پس‌ازواقع.
+    # ⚠️ اصلاحِ `BUG-DEFAULTARG`: تلاشِ اولِ من (`_rp.POOL_ADD_MARGIN = -1.0`)
+    # **بی‌اثر** بود و این را از لاگ فهمیدم: استخرِ «FULL» هم همان ۳ کارت را
+    # داشت و `XAUUSD_H1` باز حذف شده بود. علت یک دامِ کلاسیکِ پایتون است:
+    #     `def choose_homogeneous_subset(candidates, add_margin=POOL_ADD_MARGIN)`
+    # مقدارِ پیش‌فرض **در لحظهٔ تعریفِ تابع** ارزیابی و قفل می‌شود (`0.15`)؛
+    # تغییرِ بعدیِ متغیرِ ماژول هیچ اثری ندارد. اگر لاگ را نخوانده بودم،
+    # گمان می‌کردم قیدِ `C2` را رعایت کرده‌ام در حالی که نکرده بودم — یعنی
+    # یک حکمِ ACCEPT روی استخرِ **گزینش‌شده** صادر می‌کردم و آن را «کامل»
+    # می‌نامیدم. اصلاح: خودِ تابع را با wrapper جایگزین می‌کنیم تا آرگومان
+    # صریحاً پاس شود.
     import engine.rqs2_pool as _rp
-    _saved_margin = _rp.POOL_ADD_MARGIN
+    _orig_choose = _rp.choose_homogeneous_subset
+
+    def _choose_all(cands, add_margin=None):
+        return _orig_choose(cands, add_margin=-1.0)
+
     try:
-        _rp.POOL_ADD_MARGIN = -1.0          # هر کارتِ هم‌جهت پذیرفته می‌شود
+        _rp.choose_homogeneous_subset = _choose_all
         res_full = pool_cards([dict(card=m['card'], tr=m['tr'], dt=m['dt'],
                                     lift=m['lift']) for m in members])
     finally:
-        _rp.POOL_ADD_MARGIN = _saved_margin
+        _rp.choose_homogeneous_subset = _orig_choose
 
     if res_full is None:
         print('[توقف] استخرِ FULL ساخته نشد.', flush=True)
