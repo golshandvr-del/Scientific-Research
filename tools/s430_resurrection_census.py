@@ -126,29 +126,34 @@ def main() -> None:
         print(f'  {g:4s}: {hist[g]}')
 
     # ---------- TIER-A: احیای رایگان ----------
+    def s(v, w=0):
+        """قالب‌بندیِ مصون از None (نبودِ داده ≠ صفر — با '?' نشان داده می‌شود)."""
+        txt = '?' if v is None else (f'{v}')
+        return txt.ljust(w) if w else txt
+
     print('\n=== TIER-A — هر ۱۱ دروازه پاس (احیای رایگان) ===')
     ta = sorted(by_tier['TIER-A'], key=lambda r: -(r['n'] or 0))
     for r in ta:
-        print(f"  {r['layer']:6s} {str(r['card']):14s} score={r['score']:6} "
-              f"verdict={r['verdict']:12s} n={r['n']:6} wr={r['wr']} pf={r['pf']} "
-              f"z={r['z']} p={r['p_perm']} K={r['perm_k']}")
+        print(f"  {s(r['layer'],6)} {s(r['card'],14)} score={s(r['score'],6)} "
+              f"verdict={s(r['verdict'],12)} n={s(r['n'],6)} wr={s(r['wr'])} pf={s(r['pf'])} "
+              f"z={s(r['z'])} p={s(r['p_perm'])} K={s(r['perm_k'])}")
 
     # ---------- TIER-B: تک/چندنقصِ آماری ----------
     print('\n=== TIER-B — فقط دروازه‌های آماری (H3/H5/H7/H10) افتاده ===')
     tb = sorted(by_tier['TIER-B'], key=lambda r: (r['n_fail'], -(r['n'] or 0)))
-    for r in tb[:60]:
-        print(f"  {r['layer']:6s} {str(r['card']):14s} fail={','.join(r['failed']):16s} "
-              f"n={r['n']:6} wr={r['wr']} pf={r['pf']} rr={r['rr']} "
-              f"lift={r['lift']} z={r['z']} p={r['p_perm']} K={r['perm_k']} "
-              f"oosN={r['oos_n']} oosPF={r['oos_pf']}")
+    for r in tb:
+        print(f"  {s(r['layer'],6)} {s(r['card'],14)} fail={s(','.join(r['failed']),16)} "
+              f"n={s(r['n'],6)} wr={s(r['wr'],6)} pf={s(r['pf'],6)} rr={s(r['rr'],6)} "
+              f"lift={s(r['lift'],6)} z={s(r['z'],6)} p={s(r['p_perm'],9)} K={s(r['perm_k'],5)} "
+              f"oosN={s(r['oos_n'],5)} oosPF={s(r['oos_pf'])}")
 
     # ---------- TIER-C ----------
     print('\n=== TIER-C — تک/دو نقصِ اقتصادی-هندسی ===')
     tc = sorted(by_tier['TIER-C'], key=lambda r: (r['n_fail'], -(r['n'] or 0)))
-    for r in tc[:60]:
-        print(f"  {r['layer']:6s} {str(r['card']):14s} fail={','.join(r['failed']):16s} "
-              f"n={r['n']:6} wr={r['wr']} pf={r['pf']} rr={r['rr']} "
-              f"sl={r['sl_pip']} tp={r['tp_pip']} z={r['z']} maxdd={r['maxdd']}")
+    for r in tc:
+        print(f"  {s(r['layer'],6)} {s(r['card'],14)} fail={s(','.join(r['failed']),16)} "
+              f"n={s(r['n'],6)} wr={s(r['wr'],6)} pf={s(r['pf'],6)} rr={s(r['rr'],6)} "
+              f"sl={s(r['sl_pip'],7)} tp={s(r['tp_pip'],7)} z={s(r['z'],6)} maxdd={s(r['maxdd'])}")
 
     out = os.path.join(OUT_DIR, 'candidates.json')
     with open(out, 'w', encoding='utf-8') as fh:
