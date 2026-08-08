@@ -116,7 +116,7 @@ await build({
 const { CARD_LAYERS } = await import(pathToFileURL(outfile).href)
 
 console.log('نگهبانِ پاک‌سازیِ S396 — آزمونِ دودِ ساختاریِ رجیستری')
-console.log('قرار: ۵ کارت · هر کارت ۱ لایه · فقط لایه‌های ACCEPTِ RQS2 v2.4\n')
+console.log('قرار: ۵ کارت · تعدادِ لایهٔ هر کارت طبقِ ACCEPT_CONTRACT · فقط لایه‌های ACCEPT (v2.4/v2.6)\n')
 
 const cards = Object.keys(CARD_LAYERS).sort()
 const want = Object.keys(ACCEPT_CONTRACT).sort()
