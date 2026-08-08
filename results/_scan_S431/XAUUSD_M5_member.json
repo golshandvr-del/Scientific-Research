@@ -1,0 +1,32 @@
+{
+ "card": "XAUUSD_M5",
+ "asset": "XAUUSD",
+ "lift": 25.914042031812798,
+ "n": 47,
+ "wr": 72.3404255319149,
+ "ref_wr": 46.426383500102105,
+ "null": {
+  "long": {
+   "uncond_wr": 46.426383500102105,
+   "perm_mean": 47.07684002373411,
+   "perm_sd": 7.020423912570348,
+   "perm_max": 72.3404255319149,
+   "perm_k": 2000
+  },
+  "short": {
+   "uncond_wr": null,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": null
+  }
+ },
+ "n_long": 47,
+ "n_short": 0,
+ "n_base": 81,
+ "sl_pip": 120.0,
+ "tp_pip": 120.0,
+ "max_hold": 96,
+ "exp_pip": 56.81063829787217,
+ "bars": 200000
+}
