@@ -1,0 +1,65 @@
+{
+ "note": "S434 signal-semantics census",
+ "rows": [
+  {
+   "tf": "M1",
+   "src": "mt5_full",
+   "n_bars": 5000000,
+   "span_years": 14.34,
+   "raw_hour": 365144,
+   "session_open": 6319,
+   "reduction": 57.79,
+   "identical": false,
+   "hold_bars_24h": 1440,
+   "load_s": 1.063
+  },
+  {
+   "tf": "M5",
+   "src": "mt5_full",
+   "n_bars": 1089574,
+   "span_years": 15.59,
+   "raw_hour": 77884,
+   "session_open": 6857,
+   "reduction": 11.36,
+   "identical": false,
+   "hold_bars_24h": 288,
+   "load_s": 0.225
+  },
+  {
+   "tf": "M15",
+   "src": "mt5_full",
+   "n_bars": 363778,
+   "span_years": 15.59,
+   "raw_hour": 26297,
+   "session_open": 6857,
+   "reduction": 3.84,
+   "identical": false,
+   "hold_bars_24h": 96,
+   "load_s": 0.082
+  },
+  {
+   "tf": "M30",
+   "src": "mt5_full",
+   "n_bars": 182145,
+   "span_years": 15.59,
+   "raw_hour": 13338,
+   "session_open": 6857,
+   "reduction": 1.95,
+   "identical": false,
+   "hold_bars_24h": 48,
+   "load_s": 0.041
+  },
+  {
+   "tf": "H1",
+   "src": "mt5_full",
+   "n_bars": 91331,
+   "span_years": 15.59,
+   "raw_hour": 6857,
+   "session_open": 6857,
+   "reduction": 1.0,
+   "identical": true,
+   "hold_bars_24h": 24,
+   "load_s": 0.022
+  }
+ ]
+}
