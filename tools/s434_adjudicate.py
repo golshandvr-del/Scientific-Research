@@ -141,3 +141,114 @@ def run_candidate(asset: str, tf: str) -> dict:
         'sl': sl, 'tp': tp, 'max_hold': mh,
         'n_signals': int(sig.sum()),
     }
+
+
+def adjudicate(asset: str, tf: str, oos_frac: float = 0.30) -> dict:
+    """داوریِ کاملِ RQS2 v2.6 روی یک کارت."""
+    run = run_candidate(asset, tf)
+    tr, df, d = run['trades'], run['df'], run['d']
+
+    if tr is None or len(tr) == 0:
+        return {'asset': asset, 'tf': tf, 'error': 'no trades'}
+
+    # ── تقسیمِ اکتشاف / خارج‌ازنمونه بر حسبِ **کندل** (نه معامله) ─────────
+    #   دلیل در docstringِ بالا: تقسیمِ معامله‌محور می‌تواند یک رژیمِ تقویمی
+    #   را در هر دو نیمه پخش کند و آزمونِ H7 را بی‌معنا کند.
+    n_bars = len(df)
+    split_bar = int(n_bars * (1.0 - oos_frac))
+
+    res = compute_rqs2(
+        tr, asset,
+        sl_pip=run['sl'], tp_pip=run['tp'],
+        bar_time=d['time'],
+        close=d['close'],
+        n_trials=CAND['n_trials'],
+        split_bar=split_bar,
+        initial_capital=10000.0,
+        allow_overlap=False,
+    )
+
+    m = res.get('metrics') or {}
+    g = res.get('gates') or {}
+    failed = sorted(k for k, v in g.items() if v is False)
+    unknown = sorted(k for k, v in g.items() if v is None)
+
+    return {
+        'asset': asset, 'tf': tf,
+        'candidate': {k: (list(v) if isinstance(v, tuple) else v)
+                      for k, v in CAND.items()},
+        'geometry': {'sl_pip': run['sl'], 'tp_pip': run['tp'],
+                     'ratio': round(run['tp'] / run['sl'], 4),
+                     'max_hold_bars': run['max_hold']},
+        'data_source': {'path': os.path.relpath(d['src'], ROOT),
+                        'n_bars': d['n_bars'],
+                        'span_years': d['span_years'],
+                        'first_utc': d['first_utc'], 'last_utc': d['last_utc']},
+        'split_bar': split_bar, 'oos_frac': oos_frac,
+        'n_signals': run['n_signals'],
+        'verdict': res.get('verdict'),
+        'rqs2_score': res.get('rqs2_score'),
+        'gates': {k: g.get(k) for k in sorted(g)},
+        'failed_gates': failed,
+        'unknown_gates': unknown,
+        'metrics': {k: m.get(k) for k in (
+            'n_trades', 'n_wins', 'win_rate', 'expectancy_pip', 'cost_pip',
+            'profit_factor', 'net_profit', 'max_dd_pct', 'max_consec_losses',
+            'mcl_allowed', 'recovery_factor', 'skill_lift_pp', 'skill_z',
+            'null_ref_wr', 'breakeven_wr_cost', 'expectancy_at_2x_cost',
+            'rr', 'top_win_share', 'max_concurrency', 'wr_excess_cost')},
+        'notes': [str(x) for x in (res.get('notes') or [])],
+    }
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--asset', default='XAUUSD')
+    ap.add_argument('--tfs', default='M30')
+    ap.add_argument('--oos', type=float, default=0.30)
+    a = ap.parse_args()
+    os.makedirs(OUT_DIR, exist_ok=True)
+
+    for tf in [t.strip() for t in a.tfs.split(',') if t.strip()]:
+        try:
+            out = adjudicate(a.asset, tf, a.oos)
+        except Exception as e:                          # noqa: BLE001
+            print(f'!! {a.asset}-{tf}: {type(e).__name__}: {e}')
+            sys.stdout.flush()
+            continue
+
+        # 🔒 قانونِ سومِ پروژه (اندک اندک): هر کارت **فوراً** ذخیره می‌شود،
+        #    منتظرِ اتمامِ همهٔ کارت‌ها نمی‌مانیم چون سندباکس ناپایدار است.
+        fp = os.path.join(OUT_DIR, f'verdict_{a.asset}_{tf}.json')
+        with open(fp, 'w', encoding='utf-8') as f:
+            json.dump(out, f, ensure_ascii=False, indent=1)
+
+        if 'error' in out:
+            print(f'[{a.asset}-{tf}] {out["error"]}')
+            sys.stdout.flush()
+            continue
+
+        m, ds = out['metrics'], out['data_source']
+        print(f'\n═══ {a.asset}-{tf} ═══  ({ds["n_bars"]:,} کندل · '
+              f'{ds["span_years"]}س · {os.path.basename(ds["path"])})')
+        print(f'  حکم = {out["verdict"]}   RQS2 = {out["rqs2_score"]}')
+        print(f'  n={m["n_trades"]} WR={m["win_rate"]}% '
+              f'PF={m["profit_factor"]} exp={m["expectancy_pip"]}pip')
+        print(f'  maxDD={m["max_dd_pct"]}% MCL={m["max_consec_losses"]}/'
+              f'{m["mcl_allowed"]} rec={m["recovery_factor"]}')
+        print(f'  z={m["skill_z"]} lift={m["skill_lift_pp"]}pp '
+              f'BE_wr={m["breakeven_wr_cost"]}% '
+              f'exp@2x={m["expectancy_at_2x_cost"]}')
+        print(f'  افتاده: {out["failed_gates"] or "هیچ ✅"}')
+        if out['unknown_gates']:
+            print(f'  نامعلوم: {out["unknown_gates"]}')
+        for nt in out['notes'][:6]:
+            print(f'    · {nt[:150]}')
+        sys.stdout.flush()
+
+    print('\n[done]')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
