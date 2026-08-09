@@ -1,0 +1,231 @@
+{
+ "note": "S434 - discrimination screen of the 401-indicator bank, per MISSION_4 warning #3. AUC of indicator value at entry_bar-1 between winning and losing trades. NOT a backtest: this screen does not increase n_trials.",
+ "asset": "XAUUSD",
+ "tf": "M30",
+ "n_trades": 1807,
+ "n_wins": 827,
+ "n_losses": 980,
+ "read_bar_column": "signal_bar",
+ "lookahead_guard": "indicator read at signal_bar (decision close), never at entry_bar. Verified entry_bar-signal_bar==1 for all 1807 trades.",
+ "auc_se_under_null": 0.01363,
+ "n_indicators_screened": 401,
+ "expected_max_z_from_search": 3.4624,
+ "auc_bar_preregistered": 0.54721,
+ "n_scored": 398,
+ "n_failed_compute": 3,
+ "n_passing_bar": 0,
+ "passing": [],
+ "top30_by_deviation": [
+  {
+   "name": "er_lucas_123",
+   "auc": 0.47107,
+   "dev": 0.02893,
+   "z": -2.122,
+   "n_finite": 1807
+  },
+  {
+   "name": "std_fib_144",
+   "auc": 0.47127,
+   "dev": 0.02873,
+   "z": -2.107,
+   "n_finite": 1807
+  },
+  {
+   "name": "er_lucas_47",
+   "auc": 0.52786,
+   "dev": 0.02786,
+   "z": 2.043,
+   "n_finite": 1807
+  },
+  {
+   "name": "mom_fib_5",
+   "auc": 0.52624,
+   "dev": 0.02624,
+   "z": 1.925,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_233",
+   "auc": 0.47398,
+   "dev": 0.02602,
+   "z": -1.908,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_144",
+   "auc": 0.47556,
+   "dev": 0.02444,
+   "z": -1.793,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr",
+   "auc": 0.4768,
+   "dev": 0.0232,
+   "z": -1.702,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_13",
+   "auc": 0.4769,
+   "dev": 0.0231,
+   "z": -1.694,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_21",
+   "auc": 0.47697,
+   "dev": 0.02303,
+   "z": -1.689,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_89",
+   "auc": 0.477,
+   "dev": 0.023,
+   "z": -1.687,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_34",
+   "auc": 0.47757,
+   "dev": 0.02243,
+   "z": -1.645,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_55",
+   "auc": 0.47769,
+   "dev": 0.02231,
+   "z": -1.636,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_8",
+   "auc": 0.47784,
+   "dev": 0.02216,
+   "z": -1.625,
+   "n_finite": 1807
+  },
+  {
+   "name": "atr_fib_233",
+   "auc": 0.47839,
+   "dev": 0.02161,
+   "z": -1.585,
+   "n_finite": 1807
+  },
+  {
+   "name": "ac",
+   "auc": 0.52156,
+   "dev": 0.02156,
+   "z": 1.581,
+   "n_finite": 1807
+  },
+  {
+   "name": "roc_fib_144",
+   "auc": 0.47861,
+   "dev": 0.02139,
+   "z": -1.569,
+   "n_finite": 1807
+  },
+  {
+   "name": "roc_fib_5",
+   "auc": 0.52097,
+   "dev": 0.02097,
+   "z": 1.538,
+   "n_finite": 1807
+  },
+  {
+   "name": "chop_fib_3",
+   "auc": 0.51999,
+   "dev": 0.01999,
+   "z": 1.466,
+   "n_finite": 1807
+  },
+  {
+   "name": "dpo_fib_5",
+   "auc": 0.51969,
+   "dev": 0.01969,
+   "z": 1.444,
+   "n_finite": 1807
+  },
+  {
+   "name": "std_fib_233",
+   "auc": 0.48054,
+   "dev": 0.01946,
+   "z": -1.427,
+   "n_finite": 1807
+  },
+  {
+   "name": "atr_fib_144",
+   "auc": 0.48059,
+   "dev": 0.01941,
+   "z": -1.424,
+   "n_finite": 1807
+  },
+  {
+   "name": "r2_fib_233",
+   "auc": 0.48067,
+   "dev": 0.01933,
+   "z": -1.418,
+   "n_finite": 1807
+  },
+  {
+   "name": "natr_fib_5",
+   "auc": 0.48082,
+   "dev": 0.01918,
+   "z": -1.406,
+   "n_finite": 1807
+  },
+  {
+   "name": "hurst",
+   "auc": 0.48096,
+   "dev": 0.01904,
+   "z": -1.396,
+   "n_finite": 1807
+  },
+  {
+   "name": "r2_fib_5",
+   "auc": 0.51871,
+   "dev": 0.01871,
+   "z": 1.372,
+   "n_finite": 1807
+  },
+  {
+   "name": "mom_fib_144",
+   "auc": 0.48131,
+   "dev": 0.01869,
+   "z": -1.371,
+   "n_finite": 1807
+  },
+  {
+   "name": "atr_fib_89",
+   "auc": 0.48165,
+   "dev": 0.01835,
+   "z": -1.346,
+   "n_finite": 1807
+  },
+  {
+   "name": "atr_fib_55",
+   "auc": 0.48215,
+   "dev": 0.01785,
+   "z": -1.309,
+   "n_finite": 1807
+  },
+  {
+   "name": "chop_fib_144",
+   "auc": 0.51783,
+   "dev": 0.01783,
+   "z": 1.307,
+   "n_finite": 1807
+  },
+  {
+   "name": "chop",
+   "auc": 0.48224,
+   "dev": 0.01776,
+   "z": -1.303,
+   "n_finite": 1807
+  }
+ ],
+ "secs": 205.1
+}
