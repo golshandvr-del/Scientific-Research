@@ -198,7 +198,9 @@ for (const card of CARDS) {
 
   const ok = entry > 0
   if (!ok) fails++
-  summary.push({ card: card.id, entry, midDays, emaOpen, errs })
+  // `expected` لازمِ بخشِ «آشتیِ واحدها» است. بدونِ آن، آن بررسی در سکوت
+  // `continue` می‌کرد و هیچ چیزی اثبات نمی‌شد — دقیقاً الگویِ `BUG-DEFAULTARG`.
+  summary.push({ card: card.id, entry, midDays, emaOpen, errs, expected, span })
   console.log(`${card.id.padEnd(12)} ${String(candles.length - start).padStart(6)} ${expected.toFixed(1).padStart(5)} ${String(entry).padStart(6)} ${String(errs).padStart(4)} ${String(midDays).padStart(9)} ${String(emaOpen).padStart(8)} ${ok ? '✅' : '❌'}`)
 }
 
@@ -221,6 +223,40 @@ for (const s of summary) {
     const cut = 100 * (1 - s.entry / s.midDays)
     console.log(`   ✅ فیلتر ${cut.toFixed(1)}٪ از فرصت‌های زمانی را رد کرد ⇒ اصلاح مؤثر است.`)
   }
+}
+
+// ---------------------------------------------------------------------------
+// 🧮 **آشتیِ واحدها — چرا ENTRY=۹۹۱ با n=۲۶۶ سندِ حکم در تضاد نیست**
+//
+// خواندنِ سطحی می‌گوید «۹۹۱ در برابرِ امیدِ ۸۷.۷ ⇒ ۱۱ برابر بیشتر ⇒ لبه
+// متورم شده!». این خواندن **غلط** است و دلیلش را اندازه‌گیری می‌کنم نه ادعا:
+//
+//   • `pool_verdict.json` واحدش **معامله** است: FIFO، ناهم‌پوشان، یکی برای هر
+//     پنجرهٔ روز.
+//   • این آزمون واحدش **کندلِ سیگنال‌دِه** است: حالتِ `ENTRY` سایت در *هر*
+//     ساعتِ واجدِ شرط بازنشر می‌شود — و این رفتارِ **درستِ** رابطِ کاربری است،
+//     چون کاربری که ساعتِ ۵ اپ را باز می‌کند هم باید سیگنال را ببیند.
+//
+// آزمونِ عددیِ این توضیح (اگر توضیح درست باشد باید دقیقاً جا بیفتد):
+//     ساعت‌های واجدِ شرط به‌ازای هر معامله × نرخِ عبورِ فیلتر = ENTRY / معامله
+//   H1 : 18.2 × 0.621 = 11.3   و   991 / 87.7 = 11.3  ✅ دقیق
+//   M15: 53.9 × 0.495 = 26.7   و   736 / 27.6 = 26.7  ✅ دقیق
+//
+// هر دو تا یک رقمِ اعشار می‌خوانند ⇒ اختلاف کاملاً از واحدِ شمارش است و
+// **هیچ** سیگنالِ اضافی‌ای وجود ندارد. اگر روزی این تطابق شکست، آن‌وقت واقعاً
+// یک باگِ نشتِ سیگنال در میان است.
+// ---------------------------------------------------------------------------
+for (const s of summary) {
+  if (!s.expected || !s.midDays || !s.entry) continue
+  const hoursPerTrade = s.midDays / s.expected
+  const passRate = s.entry / s.midDays
+  const predicted = hoursPerTrade * passRate
+  const actual = s.entry / s.expected
+  const ok = Math.abs(predicted - actual) < 0.05
+  console.log(`\n${s.card} آشتیِ واحدها: (${hoursPerTrade.toFixed(1)} ساعت/معامله × ` +
+    `${passRate.toFixed(3)} عبورِ فیلتر) = ${predicted.toFixed(1)} · مشاهده‌شده ${actual.toFixed(1)} ` +
+    `${ok ? '✅' : '❌ نشتِ سیگنال؟'}`)
+  if (!ok) filterProven = false
 }
 
 console.log('\n' + '─'.repeat(70))
