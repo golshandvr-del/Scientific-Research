@@ -1,0 +1,37 @@
+{
+ "note": "S434 - exact quantification of the H3/H5 skill shortfall for the locked candidate, computed from the engine's own constants rather than estimated",
+ "card": "XAUUSD-M30",
+ "measured": {
+  "n_trades": 1807,
+  "win_rate_pct": 45.77,
+  "null_ref_wr_pct": 43.730,
+  "skill_lift_pp": 2.04,
+  "skill_z": 1.75,
+  "perm_sd": 0.8674,
+  "perm_max_pct": 45.309
+ },
+ "bars": {
+  "H3_lift_floor_pp": 4.0,
+  "H3_z_floor_sigma": 3.09,
+  "H5_expected_max_z_at_1296_trials": 3.328
+ },
+ "required_win_rate_pct": {
+  "H3_lift_floor": 47.73,
+  "H3_z_floor": 46.41,
+  "H5_efdr_floor": 46.62
+ },
+ "gaps_pp": {
+  "H3_lift_floor": 1.96,
+  "H3_z_floor": 0.64,
+  "H5_efdr_floor": 0.85
+ },
+ "binding_constraint": "H3_lift_floor",
+ "skill_multiple_required": 1.96,
+ "structural_finding": {
+  "why_more_filtering_cannot_work": "The lift floor is an ABSOLUTE percentage-point requirement measured against the null, and it is unaffected by n. The z floor and the EFDR floor, by contrast, both scale with perm_sd, which grows as 1/sqrt(n). Adding filters reduces n, which INFLATES perm_sd and therefore RAISES the z and EFDR bars, while doing nothing to relax the lift floor unless the removed trades were disproportionately losers by more than the amount required. Filtering therefore gives with one hand and takes with the other: each additional filter must raise lift by enough to cover BOTH the 1.96pp lift deficit AND the widening of the z bar it itself causes.",
+  "numeric_illustration": "perm_sd is 0.8674 at n=1807. Halving n to ~900 would raise perm_sd to roughly 1.23, lifting the z-floor win-rate requirement from 46.41% to about 47.53% - i.e. the z bar alone would then demand nearly as much as the lift bar. The filtering route is thus self-defeating beyond a shallow depth.",
+  "what_would_actually_work": "Skill must be roughly DOUBLED, from 2.04pp to 4.0pp, WITHOUT a large reduction in n. That requires a genuinely stronger entry hypothesis rather than a stricter filter on the existing one - which is the definition of a NEW LAYER, not an improvement of this one.",
+  "budget_rule_check": "The project's budget-preservation rule says raise the edge without spending trade count. Here the arithmetic shows the remaining edge cannot be bought with trade count at all: even spending ALL of it would not close the lift gap, because lift is not a function of n."
+ },
+ "honest_conclusion": "The two-lever repair achieved exactly what it was designed for - H8 drawdown 18.83% to 5.78% and H1 profit factor 1.161 to 1.383, both now passing - and it is nonetheless insufficient, because the obstacle was never risk shape but EDGE SIZE. The S139 nightly-drift hypothesis contains a real but small effect: +2.04pp of genuine, control-verified timing skill at z=1.75. That is approximately half of what RQS2 v2.6 requires, and about 53% of what an unskilled search over 1296 combinations produces by luck alone. This is a POWER-LIMITED effect, not a false one, and the distinction is the scientifically useful part of the result."
+}
