@@ -31,7 +31,8 @@
 //     M15: ۱۳۸ ورود / ۱۵۰٬۰۰۰ کندل ⇒ یکی هر ۱٬۰۸۷ کندل ⇒ امید ≈ ۲۸
 // =============================================================================
 
-import { readFileSync, existsSync } from 'node:fs'
+// `rmSync` برای پاکسازیِ فایلِ موقت (`BUG-TMPLEAK` · `S433`) لازم است.
+import { readFileSync, existsSync, rmSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { tmpdir } from 'node:os'
@@ -49,7 +50,14 @@ if (!existsSync(esbuildPath)) {
 }
 const { build } = await import(pathToFileURL(esbuildPath).href)
 
-const outfile = join(tmpdir(), `s432_parity_${Date.now()}.mjs`)
+// 🐞 **اصلاحِ `BUG-TMPLEAK` (`S433`)** — همان دو نقصی که در آزمونِ `S431`
+// اصلاح شد، اینجا هم بود: (۱) فایلِ موقت هرگز پاک نمی‌شد ⇒ نشتیِ ~۴۰۰KB در
+// هر اجرا؛ (۲) `Date.now()` تنها برای یکتایی کافی نیست، چون دو پروسه در همان
+// میلی‌ثانیه نامِ یکسان می‌گیرند. `process.pid` هرگز تکرار نمی‌شود.
+// ⚠️ **این آزمون را عمداً هم‌شکلِ آزمونِ `S431` نگه می‌دارم.** واگراییِ سبکِ
+//    دو نگهبانِ خواهر، همان چیزی است که در `E-12` باعث شد یکی `BUG-LASTLAYER`
+//    داشته باشد و دیگری نداشته باشد — و کشفش سه مرحله وقت گرفت.
+const outfile = join(tmpdir(), `s432_parity_${process.pid}_${Date.now()}.mjs`)
 await build({
   entryPoints: [join(ROOT, 'web_tool', 'src', 'strategy_registry.ts')],
   bundle: true, format: 'esm', platform: 'node', outfile,
@@ -57,6 +65,8 @@ await build({
   alias: { 'hono/cloudflare-workers': join(ROOT, 'local-mobile', 'cf-shim.mjs') },
 })
 const { CARD_LAYERS } = await import(pathToFileURL(outfile).href)
+// پاکسازیِ **پس از** `import` (پیش از آن، ماژول هنوز از دیسک خوانده می‌شود).
+try { rmSync(outfile, { force: true }) } catch { /* پاکسازی بحرانی نیست */ }
 
 // --- بارگذاریِ CSV ---------------------------------------------------------
 //
