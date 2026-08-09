@@ -182,3 +182,121 @@ def as_dataframe(d: dict) -> pd.DataFrame:
         'time': d['time'], 'open': d['open'], 'high': d['high'],
         'low': d['low'], 'close': d['close'], 'volume': d['volume'],
     })
+
+
+# ══════════════════════════════════════════════════════════════════════════
+#  معناشناسیِ سیگنالِ زمان‌محور — هستهٔ کشفِ مسئلهٔ ۲
+# ══════════════════════════════════════════════════════════════════════════
+
+def session_open_signal(d: dict, hours=(22, 23), mode: str = 'SESSION_OPEN'):
+    """سیگنالِ «بازگشاییِ سشن» با **معناشناسیِ حفظ‌شده** روی هر تایم‌فریم.
+
+    دو حالت:
+
+    ``SESSION_OPEN`` (پیش‌فرض) — تنها **اولین کندلِ** هر ساعتِ هدف.
+        روی H1 با ``RAW_HOUR`` **یکسان** است (چون هر ساعت فقط یک کندل دارد)،
+        پس این تعمیم نسخهٔ تاریخیِ لایه را نقض نمی‌کند بلکه آن را به
+        تایم‌فریم‌های ریزتر **منتقل** می‌کند.
+
+    ``RAW_HOUR`` — هر کندلی که ساعتش در `hours` است (پورتِ ساده).
+        روی M1 معنایش «هر دقیقه از آن دو ساعت تلاش کن» است ⇒ لایهٔ دیگری.
+        نگه داشته می‌شود چون **حذفِ** یک گزینه هم یک انتخابِ پژوهشی است و
+        باید داده تصمیم بگیرد نه سلیقهٔ من. اگر این حالت پاس شد، به‌عنوانِ
+        لایهٔ **نو** با شمارهٔ جدا و افشای همپوشانی گزارش می‌شود، نه S139.
+
+    ⚠️ چرا «اولین کندلِ ساعت» را با `minute == 0` تعریف **نمی‌کنم**: روی
+      تایم‌فریم‌هایی مثل M12 یا M20 که ۶۰ بر آنها بخش‌پذیر است مشکلی نیست،
+      اما روی M4 مرزهای کندل روی ۰،۴،۸… می‌افتد و `minute == 0` درست است،
+      حال آنکه روی تایم‌فریمی مثل H3 «اولین کندلِ ساعتِ ۲۲» ممکن است اصلاً
+      وجود نداشته باشد. پس تعریفِ مقاوم این است: کندلی که ساعتش هدف است و
+      **کندلِ قبلی‌اش ساعتِ دیگری داشته** — یعنی لبهٔ ورود به آن ساعت.
+      این تعریف به شبکهٔ دقیقه‌ای وابسته نیست و روی هر ۱۹ تایم‌فریم کار می‌کند.
+    """
+    h = d['hour']
+    in_h = np.isin(h, np.asarray(hours, dtype=h.dtype))
+    if mode == 'RAW_HOUR':
+        return in_h
+    if mode != 'SESSION_OPEN':
+        raise ValueError(f'mode نامعتبر: {mode}')
+    prev = np.empty_like(h)
+    prev[0] = -1
+    prev[1:] = h[:-1]
+    # لبهٔ ورود: ساعت هدف است و ساعتِ کندلِ قبلی هدف **نبود**
+    prev_in = np.isin(prev, np.asarray(hours, dtype=h.dtype))
+    return in_h & (~prev_in)
+
+
+def hold_bars_for(tf: str, hours: float = 24.0) -> int:
+    """`max_hold` را از یک **پنجرهٔ ساعتیِ واقعی** می‌سازد، نه عددِ ثابتِ کندل.
+
+    اصلِ S139 روی M15 با ``max_hold=96`` نوشته شده که یعنی ۲۴ ساعت. استفادهٔ
+    مستقیمِ ۹۶ روی H1 یعنی چهار روز نگه‌داشتن ⇒ لایهٔ دیگری با نامِ S139.
+    این همان **اشتباهِ رایجِ ۶** است و اینجا ساختاراً بسته می‌شود.
+    """
+    return max(1, int(round(hours * 60.0 / TF_MINUTES[tf])))
+
+
+def signal_census(asset: str, tfs, hours=(22, 23)) -> list:
+    """شمارشِ سیگنال در دو معناشناسی روی چند تایم‌فریم — برای **اثبات** ادعا.
+
+    این تابع چیزی را بهینه نمی‌کند؛ فقط عددی می‌دهد که ادعای «۵۹× کاهش» و
+    «روی H1 دو تعریف یکسان‌اند» را قابلِ بازبینی می‌کند.
+    """
+    rows = []
+    for tf in tfs:
+        t0 = time.time()
+        d = load_fast(asset, tf)
+        raw = int(session_open_signal(d, hours, 'RAW_HOUR').sum())
+        so = int(session_open_signal(d, hours, 'SESSION_OPEN').sum())
+        rows.append({
+            'tf': tf, 'src': os.path.basename(os.path.dirname(d['src'])),
+            'n_bars': d['n_bars'], 'span_years': d['span_years'],
+            'raw_hour': raw, 'session_open': so,
+            'reduction': round(raw / so, 2) if so else None,
+            'identical': raw == so,
+            'hold_bars_24h': hold_bars_for(tf),
+            'load_s': round(time.time() - t0, 3),
+        })
+    return rows
+
+
+def main() -> int:
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--asset', default='XAUUSD')
+    ap.add_argument('--tfs', default='M1,M5,M15,M30,H1')
+    ap.add_argument('--rebuild', action='store_true')
+    ap.add_argument('--census', action='store_true')
+    a = ap.parse_args()
+    tfs = [t.strip() for t in a.tfs.split(',') if t.strip()]
+
+    if a.rebuild:
+        for tf in tfs:
+            t0 = time.time()
+            d = load_fast(a.asset, tf, rebuild=True)
+            print(f'  کش ساخته شد {a.asset}-{tf}: {d["n_bars"]:,} کندل '
+                  f'({d["span_years"]}س) در {time.time()-t0:.2f}s '
+                  f'← {os.path.basename(d["src"])}')
+            sys.stdout.flush()
+
+    if a.census or not a.rebuild:
+        rows = signal_census(a.asset, tfs)
+        print(f'\n{"TF":<5} {"منبع":<9} {"کندل":>10} {"سال":>5} '
+              f'{"RAW":>8} {"SESSION":>8} {"نسبت":>6} {"یکسان":>6} '
+              f'{"هولد۲۴h":>8} {"بارگذاری":>8}')
+        for r in rows:
+            print(f'{r["tf"]:<5} {r["src"]:<9} {r["n_bars"]:>10,} '
+                  f'{r["span_years"]:>5.1f} {r["raw_hour"]:>8,} '
+                  f'{r["session_open"]:>8,} {str(r["reduction"]):>6} '
+                  f'{"✓" if r["identical"] else "—":>6} '
+                  f'{r["hold_bars_24h"]:>8} {r["load_s"]:>8.3f}')
+        os.makedirs(os.path.join(ROOT, 'results', '_s434_search'), exist_ok=True)
+        fp = os.path.join(ROOT, 'results', '_s434_search',
+                          f'signal_census_{a.asset}.json')
+        json.dump({'note': 'S434 signal-semantics census', 'rows': rows},
+                  open(fp, 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
+        print(f'\n[ذخیره] {fp}')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
