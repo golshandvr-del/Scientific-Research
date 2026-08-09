@@ -134,11 +134,19 @@ for (const card of CARDS) {
     let out
     try { out = fn(ctx) } catch (e) { errs++; continue }
     if (!out) { neutral++; continue }
-    const code = String(out.layerCode || out.code || '')
-    const st   = String(out.state || out.status || '')
-    if (!code.includes('S431')) continue
-    if (/ENTRY|ورود/i.test(st)) entry++
-    else if (/APPROACH|نزدیک/i.test(st)) appr++
+    // ⚠️ اصلاحِ `BUG-FIELDNAME` (باگِ خودِ آزمون، نه لایه): اجرای اول برای هر
+    // سه کارت «۰ ورود و ۰ خطا» داد و من نزدیک بود اتصال را مرده اعلام کنم.
+    // علت: کدِ لایه را از `out.layerCode || out.code` می‌خواندم که **هیچ‌یک
+    // در `RouterDecision` وجود ندارند** (تعریف: `web_tool/src/router.ts:174`).
+    // مسیرِ درست `out.sourceLayer.code` است. پس شرطِ `includes('S431')` همیشه
+    // false می‌شد و هر تصمیم — حتی یک ENTRYِ واقعی — با `continue` دور ریخته
+    // می‌شد. صفرِ حاصل «صفرِ لایه» نبود، «صفرِ آزمون» بود.
+    // درسِ تکرارشده: یک آزمونِ سبز/قرمزِ نادرست بدتر از نداشتنِ آزمون است.
+    const code = String(out?.sourceLayer?.code ?? '')
+    const st   = String(out?.state ?? '')
+    if (!code.includes('S431')) { neutral++; continue }
+    if (st === 'ENTRY') entry++
+    else if (st === 'APPROACHING') appr++
     else neutral++
   }
 
