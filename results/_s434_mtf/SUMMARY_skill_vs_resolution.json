@@ -1,0 +1,31 @@
+{
+ "note": "S434 - MTF skill scan summary: measured lift against a per-card null, for the locked S139 two-lever candidate. Screening tool, not a judge: LIFT is comparable across cards, Z IS NOT (12 permutations under-estimate perm_sd by ~1.7x).",
+ "asset": "XAUUSD",
+ "h3_lift_floor_pp": 4.0,
+ "structural_zero_signal_cards": {
+  "cards": ["H3", "H6", "H8", "H12", "D1", "W1", "MN1"],
+  "count": 7,
+  "mechanism": "These timeframes bar the clock at intervals that never land on hour 22 or 23. H3 opens at 00/03/06/.../21, H6 at 00/06/12/18, H8 at 00/08/16, H12 at 00/12, D1 once daily, W1 weekly, MN1 monthly. The S139 nightly-drift hypothesis is therefore UNDEFINED on these cards, not merely weak. Seven of nineteen available gold timeframes cannot host any hour-specific layer.",
+  "reusable_lesson": "Any time-of-day layer inherits this boundary. A future AI seeing zero trades on H3 should not diagnose a data fault."
+ },
+ "measured_cards": [
+  {"tf": "M10", "minutes": 10, "bars": 545488, "layer_n": 1838, "layer_lift_pp": 2.065, "base_lift_pp": 0.927, "filter_gain_x": 2.23, "pct_of_h3_bar": 52},
+  {"tf": "M12", "minutes": 12, "bars": 454692, "layer_n": 1836, "layer_lift_pp": 1.850, "base_lift_pp": 0.873, "filter_gain_x": 2.12, "pct_of_h3_bar": 46},
+  {"tf": "M15", "minutes": 15, "bars": 363778, "layer_n": 1831, "layer_lift_pp": 1.898, "base_lift_pp": 1.074, "filter_gain_x": 1.77, "pct_of_h3_bar": 47},
+  {"tf": "M20", "minutes": 20, "bars": 272979, "layer_n": 1821, "layer_lift_pp": 1.626, "base_lift_pp": 0.907, "filter_gain_x": 1.79, "pct_of_h3_bar": 41},
+  {"tf": "M30", "minutes": 30, "bars": 182145, "layer_n": 1807, "layer_lift_pp": 2.037, "base_lift_pp": 1.171, "filter_gain_x": 1.74, "pct_of_h3_bar": 51},
+  {"tf": "H1", "minutes": 60, "bars": 91331, "layer_n": 1844, "layer_lift_pp": 0.690, "base_lift_pp": 0.083, "filter_gain_x": 8.31, "pct_of_h3_bar": 17},
+  {"tf": "H2", "minutes": 120, "bars": 47623, "layer_n": 2090, "layer_lift_pp": 0.811, "base_lift_pp": -0.249, "filter_gain_x": null, "pct_of_h3_bar": 20}
+ ],
+ "untested_cards": {
+  "cards": ["M1", "M3", "M4", "M5", "M6"],
+  "reason": "Sandbox RAM is 985MB total. M1 at 5.0M bars killed the first sweep by exhaustion. The dominant cost is the UNCONDITIONAL baseline arm, which runs with allow_overlap=True over every eligible bar and therefore generates hundreds of thousands of trades on fine cards; M6 exceeded nine minutes without completing.",
+  "why_this_does_not_change_the_conclusion": "Skill SATURATES across the entire M10-M30 band at 1.63-2.07pp with no upward trend as resolution rises from 30 to 10 minutes. Extrapolating a further 10x resolution increase to M1 would have to produce a 1.94x jump in lift against a flat local trend, which the measured curve gives no support for. The finding is therefore robust to the missing fine cards, and I state plainly that they remain UNTESTED rather than claiming they were tested."
+ },
+ "findings": {
+  "1_resolution_step_change": "Lift jumps roughly THREE-FOLD between the hourly cards and the sub-30-minute band: 0.690pp on H1 and 0.811pp on H2 against 1.626-2.065pp on M20 through M10. This is genuine MECHANISTIC support for the layer's stated hypothesis: on an hourly bar 'enter at the open following the 22:00 close' resolves to one coarse moment, while on a ten-minute bar it pins entry to a narrow slice of the Asian-session open, so a real session-open effect must sharpen with resolution - and it does.",
+  "2_saturation": "Within M10-M30 lift is flat at 1.63-2.07pp with no monotone trend, so the effect has a characteristic time scale of roughly ten to thirty minutes and further resolution buys nothing.",
+  "3_filter_is_real": "The regime filter raises lift on EVERY measured card, by 1.74x to 2.23x in the productive band and 8.31x on H1, and the base arm is NEGATIVE on H2 at -0.249pp. The hour rule alone therefore carries almost no skill; roughly half of all measured skill comes from the momentum regime filter. The second lever is genuine rather than incidental.",
+  "4_the_negative_verdict": "The BEST card in the entire scan is M10 at 2.065pp, which is 52% of the 4.0pp H3 lift floor. Skill would need to be 1.94x larger. No card is close, and the MTF avenue - the last one the eternal-death rule required me to test - is therefore exhausted for this candidate."
+ }
+}
