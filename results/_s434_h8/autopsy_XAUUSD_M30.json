@@ -1,0 +1,66 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M30",
+ "bars": 181383,
+ "n_signals": 13270,
+ "geometry": {
+  "sl_pip": 150.0,
+  "tp_pip": 500.0,
+  "max_hold_bars": 48,
+  "hold_hours": 24.0,
+  "signal_hours_utc": [
+   22,
+   23
+  ]
+ },
+ "h8_parts": {
+  "n": 2911,
+  "wr": 46.375815870834764,
+  "mcl": 17,
+  "mcl_allowed": 19
+ },
+ "breakeven_wr": 23.585,
+ "metrics": {
+  "n_trades": 2911,
+  "n_wins": 1350,
+  "win_rate": 46.38,
+  "expectancy_pip": 7.5804,
+  "cost_pip": 3.3,
+  "profit_factor": 1.161,
+  "net_profit": 26068.4,
+  "max_dd_pct": 14.72,
+  "max_consec_losses": 17,
+  "mcl_allowed": 19,
+  "recovery_factor": 4.3,
+  "skill_lift_pp": null,
+  "skill_z": null,
+  "null_ref_wr": null,
+  "breakeven_wr_cost": 23.58,
+  "expectancy_at_2x_cost": 4.2804,
+  "rr": 3.333,
+  "top_win_share": 0.0026,
+  "max_concurrency": 1
+ },
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H10": true,
+  "H2": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
+  "H6": false,
+  "H7": null,
+  "H8": false,
+  "H9": true
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 8.5,
+ "notes": [
+  "PF=1.161<1.3",
+  "H3 UNKNOWN: no measured null model supplied — absence of a control is not evidence of skill",
+  "H5 UNKNOWN: n_trials not supplied — the size of the space actually searched must be declared; a finding cannot be judged without knowing how many chances luck was given",
+  "H7 UNKNOWN: no discovery/holdout split supplied"
+ ],
+ "edge_margin_pp": 22.795
+}

@@ -1,0 +1,67 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M5",
+ "bars": 200000,
+ "n_signals": 15981,
+ "geometry": {
+  "sl_pip": 150.0,
+  "tp_pip": 500.0,
+  "max_hold_bars": 288,
+  "hold_hours": 24.0,
+  "signal_hours_utc": [
+   22,
+   23
+  ]
+ },
+ "h8_parts": {
+  "n": 713,
+  "wr": 38.99018232819074,
+  "mcl": 14,
+  "mcl_allowed": 20
+ },
+ "breakeven_wr": 23.585,
+ "metrics": {
+  "n_trades": 713,
+  "n_wins": 278,
+  "win_rate": 38.99,
+  "expectancy_pip": 28.0792,
+  "cost_pip": 3.3,
+  "profit_factor": 1.231,
+  "net_profit": 24382.5,
+  "max_dd_pct": 21.69,
+  "max_consec_losses": 14,
+  "mcl_allowed": 20,
+  "recovery_factor": 2.56,
+  "skill_lift_pp": null,
+  "skill_z": null,
+  "null_ref_wr": null,
+  "breakeven_wr_cost": 23.58,
+  "expectancy_at_2x_cost": 24.7792,
+  "rr": 3.333,
+  "top_win_share": 0.006,
+  "max_concurrency": 1
+ },
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H10": true,
+  "H2": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
+  "H6": true,
+  "H7": null,
+  "H8": false,
+  "H9": true
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 11.5,
+ "notes": [
+  "PF=1.231<1.3",
+  "H3 UNKNOWN: no measured null model supplied — absence of a control is not evidence of skill",
+  "H5 UNKNOWN: n_trials not supplied — the size of the space actually searched must be declared; a finding cannot be judged without knowing how many chances luck was given",
+  "H7 UNKNOWN: no discovery/holdout split supplied",
+  "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+ ],
+ "edge_margin_pp": 15.405
+}
