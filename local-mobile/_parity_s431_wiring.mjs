@@ -89,19 +89,28 @@ function loadCsv(file) {
   return out
 }
 
+// ⚠️ اصلاحِ `BUG-PROBEWINDOW`: با `PROBE=6000` یکسان برای همه، کارتِ `M15`
+// صفر ورود داد و دو کارتِ دیگر ورود دادند. این را **نباید** «لایهٔ مردهٔ M15»
+// خواند: نرخِ ورودِ اندازه‌گیری‌شدهٔ M15 در حکمِ RQS2 برابر `n=۳۸` روی کلِ
+// ۱۵۰٬۰۰۰ کندل است ⇒ یک ورود در هر ~۳٬۹۴۷ کندل. با پنجرهٔ ۶٬۰۰۰ کندلی
+// امیدِ ریاضیِ تعدادِ ورود فقط ~۱.۵ است و احتمالِ دیدنِ صفر (پواسون، λ=۱.۵)
+// حدودِ ۲۲٪ — یعنی صفر دیدن کاملاً محتمل بود و **هیچ چیزی را اثبات نمی‌کرد**.
+// این همان اشتباهِ رایجِ ۵ در پوششِ آزمون است: نتیجه‌گیریِ سریع از یک پنجرهٔ
+// کوچک. اصلاح: نرخِ ورودِ هر کارت را از حکم برمی‌داریم و پنجره را طوری
+// می‌بندیم که امیدِ تعدادِ ورود ≥۱۰ باشد (احتمالِ صفرِ کاذب < 0.005٪).
 const CARDS = [
-  { id: 'XAUUSD-M15', csv: 'XAUUSD_M15.csv' },
-  { id: 'XAUUSD-M30', csv: 'XAUUSD_M30.csv' },
-  { id: 'XAUUSD-H1',  csv: 'XAUUSD_H1.csv'  },
+  // n = تعدادِ ورودِ ثبت‌شده در results/_scan_S431/*_member.json روی کلِ فایل
+  { id: 'XAUUSD-M15', csv: 'XAUUSD_M15.csv', n: 38, probe: 60000 },
+  { id: 'XAUUSD-M30', csv: 'XAUUSD_M30.csv', n: 28, probe: 60000 },
+  { id: 'XAUUSD-H1',  csv: 'XAUUSD_H1.csv',  n: 66, probe: 60000 },
 ]
 
 const WIN   = 400     // طولِ پنجرهٔ تحلیل (کافی برای ema100/rsi21/hurst)
 const STEP  = 1       // هر کندل
-const PROBE = 6000    // تعدادِ کندلِ آخر که کاوش می‌شود (سرعت)
 
 console.log('آزمونِ رفتاریِ اتصالِ S431 — آیا لایه روی دادهٔ واقعی سیگنال می‌دهد؟')
-console.log(`پنجره=${WIN} · کاوش=${PROBE} کندلِ آخر · دادهٔ واقعیِ data/XAUUSD_*.csv\n`)
-console.log(`${'کارت'.padEnd(13)} ${'کندل'.padStart(7)} ${'لایه'.padStart(4)} ${'S431 ENTRY'.padStart(10)} ${'S431 APPR'.padStart(9)} ${'خطا'.padStart(5)}`)
+console.log(`پنجره=${WIN} · کاوش=per-card (طبقِ نرخِ ورودِ حکم) · دادهٔ واقعیِ data/XAUUSD_*.csv\n`)
+console.log(`${'کارت'.padEnd(13)} ${'کندل'.padStart(7)} ${'کاوش'.padStart(6)} ${'امید'.padStart(5)} ${'ENTRY'.padStart(6)} ${'APPR'.padStart(5)} ${'خطا'.padStart(5)}`)
 console.log('─'.repeat(72))
 
 let fails = 0
@@ -116,7 +125,10 @@ for (const card of CARDS) {
   const layers = CARD_LAYERS[card.id] || []
   let entry = 0, appr = 0, errs = 0, neutral = 0
 
-  const start = Math.max(WIN, candles.length - PROBE)
+  const probe = card.probe
+  const start = Math.max(WIN, candles.length - probe)
+  // امیدِ ریاضیِ تعدادِ ورود در این پنجره (برای تفسیرِ صفرِ احتمالی)
+  const expected = (card.n / candles.length) * (candles.length - start)
   for (let i = start; i < candles.length; i += STEP) {
     const win = candles.slice(i - WIN, i + 1)          // فقط گذشته + خودِ i
     let a
@@ -153,7 +165,7 @@ for (const card of CARDS) {
   const ok = entry > 0
   if (!ok) fails++
   summary.push({ card: card.id, entry, appr, errs })
-  console.log(`${card.id.padEnd(13)} ${String(candles.length).padStart(7)} ${String(layers.length).padStart(4)} ${String(entry).padStart(10)} ${String(appr).padStart(9)} ${String(errs).padStart(5)} ${ok ? '✅' : '❌'}`)
+  console.log(`${card.id.padEnd(13)} ${String(candles.length).padStart(7)} ${String(candles.length - start).padStart(6)} ${expected.toFixed(1).padStart(5)} ${String(entry).padStart(6)} ${String(appr).padStart(5)} ${String(errs).padStart(5)} ${ok ? '✅' : '❌'}`)
 }
 
 console.log('─'.repeat(72))
