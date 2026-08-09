@@ -167,3 +167,142 @@ def regime_mask(df, kind, days, tf):
         raise ValueError(kind)
 
     return ok.shift(1).fillna(False).values.astype(bool)
+
+
+def eval_combo(df, tf, asset, hours, kind, days, scale, be_trig, trail):
+    """یک ترکیب را می‌سنجد و متریک‌های **خامِ غربال** را برمی‌گرداند.
+
+    هیچ حکمی صادر نمی‌شود. تنها اعدادی که برای رتبه‌بندیِ نامزدها لازم است.
+    """
+    sl = BASE_SL * scale
+    tp = BASE_TP * scale
+    # نسبت باید دست‌نخورده بماند — این را می‌سنجم نه فرض می‌کنم (تعهدِ S434)
+    ratio = tp / sl
+
+    sig = build_signals(df, hours)
+    if kind is not None:
+        sig = sig & regime_mask(df, kind, days, tf)
+
+    n_sig = int(sig.sum())
+    if n_sig < 25:
+        return None
+
+    mh = max(1, int(round(HOLD_HOURS * 60 / TF_MIN[tf])))
+    tr = se.simulate_trades(df, sig, np.zeros(len(df), bool), sl, tp, asset,
+                            max_hold=mh, allow_overlap=False,
+                            be_trigger_pip=be_trig, trail_pip=trail)
+    if tr is None or len(tr) < 25:
+        return None
+
+    pnl = tr['pnl_pip'].values.astype(np.float64)
+    n = len(pnl)
+    wins = int((pnl > 0).sum())
+    wr = 100.0 * wins / n
+    net = float(pnl.sum())
+    gp = float(pnl[pnl > 0].sum())
+    gl = float(-pnl[pnl < 0].sum())
+    pf = (gp / gl) if gl > 0 else 999.0
+
+    # افتِ سرمایه بر حسبِ **درصدِ** حسابِ ۱۰٬۰۰۰$ — همان مبنایی که موتور دارد
+    cfg = se.ASSETS[asset]
+    usd = pnl * cfg['pip'] * 100.0        # CONTRACT_SIZE=100 ⇒ 1 lot = 100 oz
+    eq = 10000.0 + np.cumsum(usd)
+    peak = np.maximum.accumulate(np.concatenate([[10000.0], eq]))[1:]
+    dd_pct = float((100.0 * (peak - eq) / peak).max())
+    dd_usd = float((peak - eq).max())
+    rec = (float(usd.sum()) / dd_usd) if dd_usd > 0 else float('inf')
+
+    mcl = int(max_consec_losses(pnl))
+    mcl_max = int(mcl_bound(n, 1.0 - wr / 100.0))
+
+    cost = cfg['spread_pip'] + 2.0 * cfg['slip_pip']
+    be = breakeven_wr_cost(sl, tp, cost)
+
+    # سه شرطِ H8 — دقیقاً همان‌ها که موتور می‌سنجد
+    h8_dd = dd_pct <= 8.0
+    h8_mcl = mcl <= mcl_max
+    h8_rec = (rec >= 3.0) or not np.isfinite(rec)
+
+    return {
+        'hours': list(hours), 'regime': kind, 'days': days,
+        'scale': scale, 'sl': sl, 'tp': tp, 'ratio': round(ratio, 4),
+        'be_trigger': be_trig, 'trail': trail,
+        'n_signals': n_sig, 'n': n, 'wr': round(wr, 3),
+        'be_wr': round(be, 3) if be is not None else None,
+        'edge_margin_pp': round(wr - be, 3) if be is not None else None,
+        'pf': round(pf, 4), 'net_pip': round(net, 1),
+        'exp_pip': round(net / n, 4),
+        'max_dd_pct': round(dd_pct, 3), 'recovery': round(rec, 3),
+        'mcl': mcl, 'mcl_allowed': mcl_max,
+        'h8_dd': h8_dd, 'h8_mcl': h8_mcl, 'h8_rec': h8_rec,
+        'h8_all': bool(h8_dd and h8_mcl and h8_rec),
+    }
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--asset', default='XAUUSD')
+    ap.add_argument('--tfs', default='M30')
+    args = ap.parse_args()
+    os.makedirs(OUT_DIR, exist_ok=True)
+
+    # فضایِ جستجو — با «رژیمِ خاموش» هم آزموده می‌شود تا اثرِ فیلتر منفرد شود
+    regime_space = [(None, 0)] + [(k, d) for k in REGIME_KINDS
+                                  for d in REGIME_DAYS]
+
+    for tf in [t.strip() for t in args.tfs.split(',') if t.strip()]:
+        df = load(args.asset, tf)
+        rows, n_trials = [], 0
+        space = itertools.product(HOUR_SETS, regime_space, GEO_SCALES,
+                                  BE_TRIGGERS, TRAILS)
+        for hours, (kind, days), scale, be_t, tl in space:
+            n_trials += 1
+            try:
+                r = eval_combo(df, tf, args.asset, hours, kind, days,
+                               scale, be_t, tl)
+            except Exception as e:
+                print(f'  !! {tf} {hours} {kind}{days} s={scale}: {e}')
+                continue
+            if r is not None:
+                rows.append(r)
+
+        # 🔒 صداقتِ آماری: n_trials شمرده می‌شود، نه تخمین زده.
+        #    این عدد به دروازهٔ H5 (بقا در آزمونِ چندگانه) داده خواهد شد.
+        passing = [r for r in rows if r['h8_all']]
+
+        # رتبه‌بندی: میانِ آن‌هایی که H8 را پاس می‌کنند، بزرگ‌ترین n
+        #   ← عمداً بر اساسِ **توان** مرتب می‌کنم نه بر اساسِ سود، چون خطرِ
+        #     شناخته‌شدهٔ این گام شکستِ H3 است نه کمبودِ سود.
+        passing.sort(key=lambda r: (-r['n'], -r['exp_pip']))
+
+        out = {
+            'note': 'S434 regime-filter search on S139 overnight drift',
+            'asset': args.asset, 'tf': tf,
+            'base_geometry': {'sl': BASE_SL, 'tp': BASE_TP,
+                              'ratio': round(BASE_RATIO, 4),
+                              'hold_hours': HOLD_HOURS},
+            'n_trials_total': n_trials,
+            'n_evaluated': len(rows),
+            'n_h8_passing': len(passing),
+            'top_h8_passing': passing[:25],
+            'all_rows': rows,
+        }
+        fp = os.path.join(OUT_DIR, f'search_{args.asset}_{tf}.json')
+        with open(fp, 'w', encoding='utf-8') as f:
+            json.dump(out, f, ensure_ascii=False, indent=1)
+
+        print(f'[{args.asset}-{tf}] trials={n_trials} evaluated={len(rows)} '
+              f'H8-passing={len(passing)}')
+        for r in passing[:6]:
+            print(f'   n={r["n"]:>5} wr={r["wr"]:>6.2f} pf={r["pf"]:>6.3f} '
+                  f'dd={r["max_dd_pct"]:>6.2f}% rec={r["recovery"]:>6.2f} '
+                  f'exp={r["exp_pip"]:>8.2f} margin={r["edge_margin_pp"]:>6.2f}pp '
+                  f'| h={r["hours"]} {r["regime"]}{r["days"]} '
+                  f'sc={r["scale"]} be={r["be_trigger"]} tr={r["trail"]}')
+        sys.stdout.flush()
+
+    print('[done]')
+
+
+if __name__ == '__main__':
+    main()
