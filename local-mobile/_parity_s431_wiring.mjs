@@ -25,11 +25,23 @@
 import { readFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
-import { build } from 'esbuild'
 import { tmpdir } from 'node:os'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
+
+// ⚠️ اصلاحِ `BUG-ESBUILD-RESOLVE`: نوشتنِ `import { build } from 'esbuild'`
+// شکست خورد (`ERR_MODULE_NOT_FOUND`) چون پوشهٔ `local-mobile` **عمداً**
+// `node_modules` ندارد — کلِ فلسفه‌اش این است که روی گوشی بدونِ npm install
+// اجرا شود. `esbuild` فقط داخلِ `web_tool/node_modules` هست. الگوی درست را
+// از `build.mjs` و `_smoke_card_inventory.mjs` خودِ پروژه برداشتم: مسیرِ
+// مطلق را دستی resolve و با `import()` بارگذاری کن.
+const esbuildPath = join(ROOT, 'web_tool', 'node_modules', 'esbuild', 'lib', 'main.js')
+if (!existsSync(esbuildPath)) {
+  console.error('❌ esbuild یافت نشد. اول در web_tool: npm install')
+  process.exit(2)
+}
+const { build } = await import(pathToFileURL(esbuildPath).href)
 
 // ---------------------------------------------------------------------------
 // ۱) باندل‌سازیِ رجیستری به‌صورتِ ماژولِ قابلِ import
