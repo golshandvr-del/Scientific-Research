@@ -1,0 +1,230 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M15",
+ "n_trades": 1340,
+ "total_net_pip": 29230.7,
+ "worst_dd": {
+  "pip": -4276.3,
+  "n_trades_in_dd": 124,
+  "from": "2022-03-03",
+  "to": "2022-10-19",
+  "span_days": 229,
+  "share_of_net_pct": 14.6
+ },
+ "loss_concentration": {
+  "worst5pct_share_of_total_loss": 10.7,
+  "n_losses": 737
+ },
+ "regime_split": {
+  "ma_7d|bull": {
+   "n": 695,
+   "exp_pip": 33.673,
+   "net_pip": 23403.0,
+   "wr": 46.33,
+   "maxdd_pip": -2624.6
+  },
+  "ma_7d|bear": {
+   "n": 645,
+   "exp_pip": 9.035,
+   "net_pip": 5827.7,
+   "wr": 43.57,
+   "maxdd_pip": -2666.4
+  },
+  "mom_7d|bull": {
+   "n": 733,
+   "exp_pip": 24.034,
+   "net_pip": 17616.6,
+   "wr": 45.7,
+   "maxdd_pip": -3046.7
+  },
+  "mom_7d|bear": {
+   "n": 607,
+   "exp_pip": 19.134,
+   "net_pip": 11614.1,
+   "wr": 44.15,
+   "maxdd_pip": -2448.1
+  },
+  "peak_7d|bull": {
+   "n": 201,
+   "exp_pip": 23.098,
+   "net_pip": 4642.6,
+   "wr": 40.8,
+   "maxdd_pip": -2128.9
+  },
+  "peak_7d|bear": {
+   "n": 1139,
+   "exp_pip": 21.587,
+   "net_pip": 24588.1,
+   "wr": 45.74,
+   "maxdd_pip": -3163.8
+  },
+  "ma_13d|bull": {
+   "n": 729,
+   "exp_pip": 33.817,
+   "net_pip": 24652.9,
+   "wr": 46.5,
+   "maxdd_pip": -2610.3
+  },
+  "ma_13d|bear": {
+   "n": 611,
+   "exp_pip": 7.492,
+   "net_pip": 4577.8,
+   "wr": 43.21,
+   "maxdd_pip": -2403.8
+  },
+  "mom_13d|bull": {
+   "n": 755,
+   "exp_pip": 29.956,
+   "net_pip": 22616.8,
+   "wr": 45.7,
+   "maxdd_pip": -2759.4
+  },
+  "mom_13d|bear": {
+   "n": 585,
+   "exp_pip": 11.306,
+   "net_pip": 6613.9,
+   "wr": 44.1,
+   "maxdd_pip": -2880.3
+  },
+  "peak_13d|bull": {
+   "n": 154,
+   "exp_pip": 34.13,
+   "net_pip": 5256.0,
+   "wr": 42.86,
+   "maxdd_pip": -2026.6
+  },
+  "peak_13d|bear": {
+   "n": 1186,
+   "exp_pip": 20.215,
+   "net_pip": 23974.7,
+   "wr": 45.28,
+   "maxdd_pip": -3287.9
+  },
+  "ma_23d|bull": {
+   "n": 762,
+   "exp_pip": 27.241,
+   "net_pip": 20757.4,
+   "wr": 44.88,
+   "maxdd_pip": -2907.6
+  },
+  "ma_23d|bear": {
+   "n": 578,
+   "exp_pip": 14.66,
+   "net_pip": 8473.3,
+   "wr": 45.16,
+   "maxdd_pip": -2763.5
+  },
+  "mom_23d|bull": {
+   "n": 815,
+   "exp_pip": 27.633,
+   "net_pip": 22521.1,
+   "wr": 45.15,
+   "maxdd_pip": -3961.6
+  },
+  "mom_23d|bear": {
+   "n": 525,
+   "exp_pip": 12.78,
+   "net_pip": 6709.6,
+   "wr": 44.76,
+   "maxdd_pip": -2195.2
+  },
+  "peak_23d|bull": {
+   "n": 128,
+   "exp_pip": 45.751,
+   "net_pip": 5856.1,
+   "wr": 46.09,
+   "maxdd_pip": -1306.5
+  },
+  "peak_23d|bear": {
+   "n": 1212,
+   "exp_pip": 19.286,
+   "net_pip": 23374.6,
+   "wr": 44.88,
+   "maxdd_pip": -3624.5
+  },
+  "ma_41d|bull": {
+   "n": 780,
+   "exp_pip": 29.359,
+   "net_pip": 22900.0,
+   "wr": 44.87,
+   "maxdd_pip": -2479.9
+  },
+  "ma_41d|bear": {
+   "n": 560,
+   "exp_pip": 11.305,
+   "net_pip": 6330.7,
+   "wr": 45.18,
+   "maxdd_pip": -2786.7
+  },
+  "mom_41d|bull": {
+   "n": 827,
+   "exp_pip": 30.478,
+   "net_pip": 25205.2,
+   "wr": 45.71,
+   "maxdd_pip": -2835.6
+  },
+  "mom_41d|bear": {
+   "n": 513,
+   "exp_pip": 7.847,
+   "net_pip": 4025.5,
+   "wr": 43.86,
+   "maxdd_pip": -2934.8
+  },
+  "peak_41d|bull": {
+   "n": 107,
+   "exp_pip": 60.114,
+   "net_pip": 6432.2,
+   "wr": 48.6,
+   "maxdd_pip": -961.3
+  },
+  "peak_41d|bear": {
+   "n": 1233,
+   "exp_pip": 18.49,
+   "net_pip": 22798.5,
+   "wr": 44.69,
+   "maxdd_pip": -3969.7
+  },
+  "ma_67d|bull": {
+   "n": 822,
+   "exp_pip": 30.488,
+   "net_pip": 25061.2,
+   "wr": 45.13,
+   "maxdd_pip": -2691.9
+  },
+  "ma_67d|bear": {
+   "n": 518,
+   "exp_pip": 8.049,
+   "net_pip": 4169.5,
+   "wr": 44.79,
+   "maxdd_pip": -3088.1
+  },
+  "mom_67d|bull": {
+   "n": 918,
+   "exp_pip": 25.557,
+   "net_pip": 23461.3,
+   "wr": 44.77,
+   "maxdd_pip": -2890.2
+  },
+  "mom_67d|bear": {
+   "n": 422,
+   "exp_pip": 13.672,
+   "net_pip": 5769.4,
+   "wr": 45.5,
+   "maxdd_pip": -2690.2
+  },
+  "peak_67d|bull": {
+   "n": 100,
+   "exp_pip": 61.496,
+   "net_pip": 6149.6,
+   "wr": 47.0,
+   "maxdd_pip": -1052.9
+  },
+  "peak_67d|bear": {
+   "n": 1240,
+   "exp_pip": 18.614,
+   "net_pip": 23081.1,
+   "wr": 44.84,
+   "maxdd_pip": -3969.7
+  }
+ }
+}
