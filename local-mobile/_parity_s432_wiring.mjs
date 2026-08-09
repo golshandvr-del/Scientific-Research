@@ -59,22 +59,80 @@ await build({
 const { CARD_LAYERS } = await import(pathToFileURL(outfile).href)
 
 // --- بارگذاریِ CSV ---------------------------------------------------------
+//
+// 🐞 **اصلاحِ `BUG-EPOCHPARSE` — چرا اجرای اولِ همین آزمون `روزِ-میان = ۰` داد**
+// ---------------------------------------------------------------------------
+// نشانه: در ۳۰٬۰۰۰ کندلِ H1 (≈۵ سال) شمارشِ «روزِ ۱۰/۱۳/۲۰ تقویمی» صفر شد.
+// این **ریاضیاً محال** است ⇒ پس باگ در خودِ آزمون بود، نه در لایه. (اگر این
+// را نمی‌سنجیدم، «صفر ورود» را به «لایهٔ مرده» ترجمه می‌کردم — دقیقاً همان
+// خطای `BUG-PROBEWINDOW` با لباسِ نو.)
+//
+// ریشه — دو خطای مستقل که روی هم افتادند:
+//   ⓵ ستونِ `time` در `data/*.csv` یک **epochِ یونیکس بر حسبِ ثانیه** است
+//      (`1294012800` ⇒ 2011-01-03)، نه رشتهٔ تاریخ. نسخهٔ قبلی
+//      `Date.parse('1294012800' + 'Z')` می‌زد که **`NaN`** می‌دهد، و
+//      `new Date(NaN).getUTCDate()` هم `NaN` است ⇒ هرگز با ۱۰/۱۳/۲۰ برابر
+//      نمی‌شود ⇒ صفرِ کاذب. (تأییدِ عددی در Node اجرا و دیده شد.)
+//   ⓶ حتی اگر پارس موفق می‌شد، آن مسیر **میلی‌ثانیه** می‌داد؛ ولی مرجعِ
+//      سایت `isMidMonthWindow` صریحاً `new Date(times[last] * 1000)` است
+//      ⇒ واحدِ موردِ انتظار **ثانیه** است. پس دادنِ میلی‌ثانیه در سال ۵۶۰۰۰
+//      می‌افتاد. دو خطا در یک خط.
+//
+// واحدِ درست از **سه** مرجعِ مستقل تأیید شد، نه از حدس:
+//   • `engine/backtest.py`: `pd.to_datetime(df['time'], unit='s')`
+//   • `web_tool/src/mid_month_drift.ts`: `new Date(times[i] * 1000)`
+//   • `local-mobile/_parity_s356_causal.mjs`: `parseInt(ts, 10)` برای رقم‌ها
+//
+// ⚠️ یافتهٔ جانبیِ مهم: `_parity_s431_wiring.mjs` **همین** لودرِ خراب را دارد
+//    و با این حال PASS شد. تصادفی نیست و بررسی‌اش کردم: مسیرِ S431
+//    (`withLpsbGate` + `s333Layer`) هیچ‌گاه `ctx.times` یا `utcHour` را
+//    نمی‌خواند (کاملاً قیمت/ساختار-محور) ⇒ `NaN` بی‌اثر بود. پس آن PASS
+//    معتبر می‌ماند. ولی S432 **زمان-محورِ خالص** است و همان باگِ نهفته
+//    دقیقاً جایی کُشنده شد که اهمیت داشت.
+// ---------------------------------------------------------------------------
 function loadCsv(name) {
   const txt = readFileSync(join(ROOT, 'data', name), 'utf8').trim().split('\n')
-  const head = txt[0].toLowerCase().split(',')
+  const head = txt[0].toLowerCase().split(',').map(s => s.trim())
   const ix = k => head.indexOf(k)
   const iT = ix('time') >= 0 ? ix('time') : ix('date')
   const iO = ix('open'), iH = ix('high'), iL = ix('low'), iC = ix('close')
   const out = []
   for (let i = 1; i < txt.length; i++) {
-    const p = txt[i].split(',')
+    // ⚠️ `\r` باید حذف شود: فایل‌ها CRLF دارند ⇒ آخرین ستون `"350.0\r"`
+    const p = txt[i].replace(/\r$/, '').split(',')
     if (p.length < 5) continue
-    out.push({
-      time: Date.parse(p[iT].replace(' ', 'T') + 'Z'),
-      open: +p[iO], high: +p[iH], low: +p[iL], close: +p[iC],
-    })
+    const raw = p[iT].trim()
+    // ثانیه، مطابقِ قراردادِ سایت و پایتون. رشتهٔ تاریخ هم پشتیبانی می‌شود
+    // ولی به **ثانیه** تبدیل می‌گردد، نه میلی‌ثانیه.
+    const tsec = /^\d+$/.test(raw)
+      ? parseInt(raw, 10)
+      : Math.floor(Date.parse(raw.replace(' ', 'T') + 'Z') / 1000)
+    const o = +p[iO], h = +p[iH], l = +p[iL], c = +p[iC]
+    // فیلترِ صحت: هر ردیفی که واحدِ زمانش مشکوک است **دور ریخته** می‌شود،
+    // نه اینکه با NaN جلو برود. «نبودِ داده» هرگز نباید به عدد ترجمه شود.
+    if (!Number.isFinite(tsec) || tsec <= 0) continue
+    if (![o, h, l, c].every(Number.isFinite)) continue
+    out.push({ t: tsec, time: tsec, open: o, high: h, low: l, close: c, volume: 0 })
   }
   return out
+}
+
+// 🛡️ گاردِ واحدِ زمان — یک‌بار، پیش از هر شمارش.
+// هدف: اگر روزی فرمتِ `data/*.csv` عوض شد، آزمون **بلند فریاد بزند** نه اینکه
+// دوباره یک صفرِ کاذبِ آرام تولید کند. بازهٔ ۲۰۰۰–۲۱۰۰ میلادی را می‌سنجم.
+function assertSecondsEpoch(candles, label) {
+  const first = candles[0]?.time, last = candles[candles.length - 1]?.time
+  const lo = 946684800, hi = 4102444800   // 2000-01-01 .. 2100-01-01 (ثانیه)
+  const ok = Number.isFinite(first) && Number.isFinite(last) &&
+             first >= lo && last <= hi && first < last
+  if (!ok) {
+    console.error(`❌ گاردِ واحدِ زمان برای ${label} شکست: first=${first} last=${last}`)
+    console.error('   ⇒ ستونِ time بر حسبِ ثانیهٔ یونیکس نیست. آزمون را تضعیف نکن؛ لودر را درست کن.')
+    process.exit(2)
+  }
+  const d0 = new Date(first * 1000).toISOString().slice(0, 10)
+  const d1 = new Date(last * 1000).toISOString().slice(0, 10)
+  return `${d0} → ${d1}`
 }
 
 const CARDS = [
@@ -94,6 +152,7 @@ const summary = []
 
 for (const card of CARDS) {
   const candles = loadCsv(card.csv)
+  const span = assertSecondsEpoch(candles, card.id)   // گاردِ واحدِ زمان
   const layers = CARD_LAYERS[card.id] || []
   let entry = 0, errs = 0, midDays = 0, emaOpen = 0
 
@@ -102,7 +161,9 @@ for (const card of CARDS) {
 
   for (let i = start; i < candles.length; i++) {
     const win = candles.slice(i - WIN, i + 1)
-    const d = new Date(win[win.length - 1].time)
+    // ⚠️ `* 1000`: ثانیه ⇒ میلی‌ثانیه. این دقیقاً همان تبدیلی است که
+    //    `isMidMonthWindow` انجام می‌دهد ⇒ ساعتِ آزمون و ساعتِ سایت یکی است.
+    const d = new Date(win[win.length - 1].time * 1000)
     const dom = d.getUTCDate(), hr = d.getUTCHours()
     const inMid = [10, 13, 20].includes(dom) && hr >= 1 && hr <= 12
     if (!inMid) continue        // بیرونِ پنجرهٔ زمانی ⇒ لایه ذاتاً ساکت است
