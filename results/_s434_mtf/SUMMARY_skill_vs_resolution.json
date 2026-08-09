@@ -1,31 +1,38 @@
 {
- "note": "S434 - MTF skill scan summary: measured lift against a per-card null, for the locked S139 two-lever candidate. Screening tool, not a judge: LIFT is comparable across cards, Z IS NOT (12 permutations under-estimate perm_sd by ~1.7x).",
+ "note": "S434 - COMPLETE MTF skill scan: measured lift against a per-card null, for the locked S139 two-lever candidate. Every one of the nineteen available XAUUSD timeframes is now accounted for: twelve measured, seven structurally incapable of hosting an hour-22/23 rule.",
  "asset": "XAUUSD",
- "h3_lift_floor_pp": 4.0,
- "structural_zero_signal_cards": {
-  "cards": ["H3", "H6", "H8", "H12", "D1", "W1", "MN1"],
-  "count": 7,
-  "mechanism": "These timeframes bar the clock at intervals that never land on hour 22 or 23. H3 opens at 00/03/06/.../21, H6 at 00/06/12/18, H8 at 00/08/16, H12 at 00/12, D1 once daily, W1 weekly, MN1 monthly. The S139 nightly-drift hypothesis is therefore UNDEFINED on these cards, not merely weak. Seven of nineteen available gold timeframes cannot host any hour-specific layer.",
-  "reusable_lesson": "Any time-of-day layer inherits this boundary. A future AI seeing zero trades on H3 should not diagnose a data fault."
- },
- "measured_cards": [
-  {"tf": "M10", "minutes": 10, "bars": 545488, "layer_n": 1838, "layer_lift_pp": 2.065, "base_lift_pp": 0.927, "filter_gain_x": 2.23, "pct_of_h3_bar": 52},
-  {"tf": "M12", "minutes": 12, "bars": 454692, "layer_n": 1836, "layer_lift_pp": 1.850, "base_lift_pp": 0.873, "filter_gain_x": 2.12, "pct_of_h3_bar": 46},
-  {"tf": "M15", "minutes": 15, "bars": 363778, "layer_n": 1831, "layer_lift_pp": 1.898, "base_lift_pp": 1.074, "filter_gain_x": 1.77, "pct_of_h3_bar": 47},
-  {"tf": "M20", "minutes": 20, "bars": 272979, "layer_n": 1821, "layer_lift_pp": 1.626, "base_lift_pp": 0.907, "filter_gain_x": 1.79, "pct_of_h3_bar": 41},
-  {"tf": "M30", "minutes": 30, "bars": 182145, "layer_n": 1807, "layer_lift_pp": 2.037, "base_lift_pp": 1.171, "filter_gain_x": 1.74, "pct_of_h3_bar": 51},
-  {"tf": "H1", "minutes": 60, "bars": 91331, "layer_n": 1844, "layer_lift_pp": 0.690, "base_lift_pp": 0.083, "filter_gain_x": 8.31, "pct_of_h3_bar": 17},
-  {"tf": "H2", "minutes": 120, "bars": 47623, "layer_n": 2090, "layer_lift_pp": 0.811, "base_lift_pp": -0.249, "filter_gain_x": null, "pct_of_h3_bar": 20}
+ "candidate": "S139 nightly drift, hours [22,23], SESSION_OPEN semantics, scale 1.37 (SL 205.5 / TP 685.0), trail 130, be None, regime mom13",
+ "why_lift_and_not_win_rate": "Raw win rate is meaningless for cross-card comparison because the 3.33:1 TP/SL geometry and gold's 15.6-year drift generate win rate by themselves. Proof from this very table: H2 has the HIGHEST win rate of all cards at 46.17% yet nearly the LOWEST skill at 0.811pp, because its own null baseline is also the highest at 45.36%. A ranking by win rate would have chosen exactly the wrong card. Every card therefore builds its own control and only the difference is reported.",
+ "screen_caveat": "The scanner uses 12 permutations per arm, so its LIFT is comparable across cards but its Z IS NOT comparable against the 3.09 or 3.328 engine bars - with 12 draws perm_sd is under-estimated and z is inflated roughly 1.7-fold (verified on M30: scanner z=2.926 vs adjudicator z=1.75 at 40 permutations). No verdict is issued from this file.",
+ "cards_measured": [
+  {"tf": "M1", "minutes": 1, "bars": 5000000, "n": 1575, "wr": 44.19, "null_ref": 42.38, "lift_pp": 1.812, "base_lift_pp": 1.258, "filter_gain": "1.44x", "pct_of_h3_floor": 45},
+  {"tf": "M3", "minutes": 3, "bars": 1815880, "n": 1829, "wr": 44.51, "null_ref": 42.61, "lift_pp": 1.891, "base_lift_pp": 0.899, "filter_gain": "2.10x", "pct_of_h3_floor": 47},
+  {"tf": "M4", "minutes": 4, "bars": 1362074, "n": 1833, "wr": 44.52, "null_ref": 42.59, "lift_pp": 1.927, "base_lift_pp": 0.823, "filter_gain": "2.34x", "pct_of_h3_floor": 48},
+  {"tf": "M5", "minutes": 5, "bars": 1089574, "n": 1821, "wr": 44.65, "null_ref": 42.38, "lift_pp": 2.270, "base_lift_pp": 1.301, "filter_gain": "1.74x", "pct_of_h3_floor": 57, "note": "BEST card in the entire sweep"},
+  {"tf": "M6", "minutes": 6, "bars": 908864, "n": 1850, "wr": 44.76, "null_ref": 43.13, "lift_pp": 1.623, "base_lift_pp": 0.427, "filter_gain": "3.80x", "pct_of_h3_floor": 41},
+  {"tf": "M10", "minutes": 10, "bars": 545488, "n": 1838, "wr": 45.16, "null_ref": 43.09, "lift_pp": 2.065, "base_lift_pp": 0.927, "filter_gain": "2.23x", "pct_of_h3_floor": 52},
+  {"tf": "M12", "minutes": 12, "bars": 454692, "n": 1836, "wr": 44.99, "null_ref": 43.14, "lift_pp": 1.850, "base_lift_pp": 0.873, "filter_gain": "2.12x", "pct_of_h3_floor": 46},
+  {"tf": "M15", "minutes": 15, "bars": 363778, "n": 1831, "wr": 45.17, "null_ref": 43.27, "lift_pp": 1.898, "base_lift_pp": 1.074, "filter_gain": "1.77x", "pct_of_h3_floor": 47},
+  {"tf": "M20", "minutes": 20, "bars": 272979, "n": 1821, "wr": 45.09, "null_ref": 43.46, "lift_pp": 1.626, "base_lift_pp": 0.907, "filter_gain": "1.79x", "pct_of_h3_floor": 41},
+  {"tf": "M30", "minutes": 30, "bars": 182145, "n": 1807, "wr": 45.77, "null_ref": 43.73, "lift_pp": 2.037, "base_lift_pp": 1.171, "filter_gain": "1.74x", "pct_of_h3_floor": 51, "note": "adjudicating card; full RQS2 v2.6 verdict = REJECT, score 18.7"},
+  {"tf": "H1", "minutes": 60, "bars": 91331, "n": 1844, "wr": 45.06, "null_ref": 44.38, "lift_pp": 0.690, "base_lift_pp": 0.083, "filter_gain": "8.31x", "pct_of_h3_floor": 17},
+  {"tf": "H2", "minutes": 120, "bars": 47623, "n": 2090, "wr": 46.17, "null_ref": 45.36, "lift_pp": 0.811, "base_lift_pp": -0.249, "filter_gain": "n/a (base negative)", "pct_of_h3_floor": 20}
  ],
- "untested_cards": {
-  "cards": ["M1", "M3", "M4", "M5", "M6"],
-  "reason": "Sandbox RAM is 985MB total. M1 at 5.0M bars killed the first sweep by exhaustion. The dominant cost is the UNCONDITIONAL baseline arm, which runs with allow_overlap=True over every eligible bar and therefore generates hundreds of thousands of trades on fine cards; M6 exceeded nine minutes without completing.",
-  "why_this_does_not_change_the_conclusion": "Skill SATURATES across the entire M10-M30 band at 1.63-2.07pp with no upward trend as resolution rises from 30 to 10 minutes. Extrapolating a further 10x resolution increase to M1 would have to produce a 1.94x jump in lift against a flat local trend, which the measured curve gives no support for. The finding is therefore robust to the missing fine cards, and I state plainly that they remain UNTESTED rather than claiming they were tested."
+ "cards_structurally_impossible": {
+  "list": ["H3", "H6", "H8", "H12", "D1", "W1", "MN1"],
+  "mechanism": "These timeframes bar the clock at intervals that never land on hour 22 or 23. H3 opens at 00/03/06/.../21, H6 at 00/06/12/18, H8 at 00/08/16, H12 at 00/12, D1 once daily, W1 weekly, MN1 monthly. The hour-22/23 hypothesis is therefore UNDEFINED on these cards, not weak.",
+  "reusable_lesson": "Any time-of-day layer inherits this constraint. A future AI seeing zero trades on H3 should not diagnose a data fault."
  },
  "findings": {
-  "1_resolution_step_change": "Lift jumps roughly THREE-FOLD between the hourly cards and the sub-30-minute band: 0.690pp on H1 and 0.811pp on H2 against 1.626-2.065pp on M20 through M10. This is genuine MECHANISTIC support for the layer's stated hypothesis: on an hourly bar 'enter at the open following the 22:00 close' resolves to one coarse moment, while on a ten-minute bar it pins entry to a narrow slice of the Asian-session open, so a real session-open effect must sharpen with resolution - and it does.",
-  "2_saturation": "Within M10-M30 lift is flat at 1.63-2.07pp with no monotone trend, so the effect has a characteristic time scale of roughly ten to thirty minutes and further resolution buys nothing.",
-  "3_filter_is_real": "The regime filter raises lift on EVERY measured card, by 1.74x to 2.23x in the productive band and 8.31x on H1, and the base arm is NEGATIVE on H2 at -0.249pp. The hour rule alone therefore carries almost no skill; roughly half of all measured skill comes from the momentum regime filter. The second lever is genuine rather than incidental.",
-  "4_the_negative_verdict": "The BEST card in the entire scan is M10 at 2.065pp, which is 52% of the 4.0pp H3 lift floor. Skill would need to be 1.94x larger. No card is close, and the MTF avenue - the last one the eternal-death rule required me to test - is therefore exhausted for this candidate."
- }
+  "1_resolution_step_change": "Lift TRIPLES from the hourly cards (H1 0.690, H2 0.811) to the sub-30-minute band (1.62 to 2.27). This is genuine MECHANISTIC support for the layer's own hypothesis: 'enter at the open following the 22:00 close' resolves to one coarse moment on an hourly bar but pins entry to a narrow slice of the Asian-session open on a 5-30 minute bar, so a real session-open effect must sharpen with resolution - and it measurably does.",
+  "2_saturation_with_characteristic_scale": "Within M1 to M30 lift is FLAT at 1.62 to 2.27pp with no monotone trend, and the finest card M1 (1.812) is WORSE than M5 (2.270) and M30 (2.037). The effect therefore has a characteristic time scale of roughly 5 to 30 minutes and further resolution buys nothing. Going 30x finer from M30 to M1 LOWERED lift by 11%.",
+  "3_filter_is_real_and_carries_most_of_the_skill": "The regime filter raises lift on EVERY one of the twelve cards, by 1.44x to 8.31x. The bare hour rule is nearly worthless on its own - 0.083pp on H1, 0.427pp on M6 - and outright NEGATIVE on H2 at -0.249pp. So roughly half to seven-eighths of all measured skill comes from the mom13 momentum filter rather than from the nightly hour. The second lever is real; the first lever alone is not a layer.",
+  "4_the_negative_verdict": "ALL TWELVE measured cards fall below the 4.0pp H3 lift floor. The best, M5, reaches 57% of the bar; the mean across cards is 1.708pp, i.e. 43% of the bar. There is no timeframe on which this layer's skill is sufficient, and the MTF route - the last avenue the eternal-death rule required testing - is therefore closed.",
+  "5_why_win_rate_ranking_would_have_failed": "H2 has the highest win rate (46.17%) and the second-lowest lift (0.811pp); M5 has a mid-table win rate (44.65%) and the highest lift (2.270pp). Ranking cards by win rate would have selected H2 - a card whose bare base arm has NEGATIVE skill. This is direct evidence for the project's rule that a control is mandatory."
+ },
+ "capacity_notes": {
+  "m1_required_two_engineering_fixes": "M1 at 5,000,000 bars killed the sandbox twice. Fix 1 (step 46): sample the unconditional arm at 50,000 eligible bars instead of all of them, validated on M30 where the full answer is computable (error -0.041pp). Fix 2 (step 48): pass copy=False to the DataFrame constructor, removing a silent 228MB duplication (326MB -> 554MB became 326MB flat, np.shares_memory True). After both, M1 completes in 90.5 seconds inside a 985MB sandbox.",
+  "cost_scaling": "Post-fix runtimes: M30 8.1s, M10 53s, M6 21.2s, M5 25.0s, M4 31.0s, M3 41.3s, M1 90.5s. Cost is now roughly linear in bar count instead of exploding."
+ },
+ "mtf_rule_status": "SATISFIED. 12 cards measured + 7 documented as structurally incapable = 19 of 19 XAUUSD timeframes accounted for."
 }
