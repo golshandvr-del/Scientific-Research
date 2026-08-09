@@ -167,11 +167,26 @@ def adjudicate(asset: str, tf: str, oos_frac: float = 0.30) -> dict:
     n_bars = len(df)
     split_bar = int(n_bars * (1.0 - oos_frac))
 
+    # ── مدلِ صفرِ سنجیده‌شده ───────────────────────────────────────────────
+    # بدونِ این، `H3` (توان)، `H4` (ضدِبرازش) و `H5` (آزمونِ چندگانه) هر سه
+    # **نامعلوم** برمی‌گردند — چنان که در داوریِ گامِ ۲۷ شد. نوتِ خودِ موتور:
+    #   «absence of a control is not evidence of skill»
+    # از فایلِ ذخیره‌شده خوانده می‌شود نه بازمحاسبه، چون ساختنش ~۹۰ ثانیه
+    # طول می‌کشد و باید **همان** شاهدی باشد که در مخزن قابلِ بازرسی است.
+    null = None
+    nfp = os.path.join(ROOT, 'results', '_s434_null', f'null_{asset}_{tf}.json')
+    if os.path.exists(nfp):
+        with open(nfp, encoding='utf-8') as f:
+            nd = json.load(f)
+        # کلیدِ `_meta` فقط تشخیصی است؛ موتور آن را نمی‌خواهد.
+        null = {k: v for k, v in nd.items() if k in ('long', 'short')}
+
     res = compute_rqs2(
         tr, asset,
         sl_pip=run['sl'], tp_pip=run['tp'],
         bar_time=d['time'],
         close=d['close'],
+        null=null,
         n_trials=CAND['n_trials'],
         split_bar=split_bar,
         initial_capital=10000.0,
