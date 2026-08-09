@@ -23,7 +23,8 @@
 // =============================================================================
 
 import { pathToFileURL } from 'node:url'
-import { readFileSync } from 'node:fs'
+// `existsSync` برای «نگهبانِ یگانگیِ رابطِ کاربری» (`S433`) لازم است.
+import { readFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -213,8 +214,43 @@ if (leaked.length === 0) {
   console.log(`ارجاعِ لایه‌های حذف‌شده در باندل: ❌ ${leaked.length} نماد لو رفته → ${leaked.join(', ')}`)
 }
 
+// ── بررسیِ ششم: **نگهبانِ یگانگیِ رابطِ کاربری** (افزوده در `S433`) ────────
+//
+// چرا این نگهبان وجود دارد: پروژه تا `S433` **دو** رابطِ کاربری داشت — سایتِ
+// رسمیِ `GET /` با موتورِ `TypeScript`، و یک نسخهٔ متروک زیرِ `/static/app/`
+// که موتورش را در مرورگر با `pyodide.js` اجرا می‌کرد و کپیِ فورک‌شدهٔ
+// `engine/*.py` را حمل می‌کرد (از جمله `s73_eurusd_session_drift.py`، یعنی
+// همان `S73`ی که در `S430` حکمِ `REJECT` گرفت).
+//
+// خطرِ واقعی‌اش تئوری نبود: همهٔ آزمون‌های نگهبانِ این پروژه فقط موتورِ
+// `TypeScript` را می‌سنجند، پس آن نسخه **صفر** پوششِ آزمون داشت و آزادانه
+// واگرا می‌شد؛ و کاربر هنگامِ تحویلِ `E-10` تصحیح کرد که من اشتباهاً همان
+// رابطِ متروک را «سایت» معرفی کرده بودم. **کپیِ کهنه‌ای که هیچ آزمونی آن را
+// نمی‌سنجد، بدتر از نبودِ کپی است.**
+//
+// این نگهبان تضمین می‌کند «رابطِ کاربریِ دوم» **خاموش** برنگردد.
+// ⚠️ اگر روزی این بررسی `FAIL` داد، پاسخِ درست حذفِ آن نیست؛ پاسخ این است که
+//    تصمیم بگیری کدام رابط رسمی است و دیگری را بازنشسته کنی.
+const LEGACY_UI_MARKERS = [
+  'pyodide',                  // مفسرِ پایتونیِ درونِ مرورگر
+  '/static/app/index.html',   // هدفِ ری‌دایرکتِ رابطِ متروک
+  'pyengine',                 // پوشهٔ موتورِ فورک‌شده
+]
+const uiLeak = LEGACY_UI_MARKERS.filter(m => bundle.includes(m))
+// وجودِ فیزیکیِ پوشه هم بررسی می‌شود، نه فقط باندل: ممکن است فایل‌ها برگردند
+// ولی هنوز به باندل وصل نشده باشند — و آن هم باید هشدار بگیرد.
+const legacyDir = join(__dirname, '..', 'web_tool', 'public', 'static', 'app')
+const legacyDirExists = existsSync(legacyDir)
+if (uiLeak.length === 0 && !legacyDirExists) {
+  console.log('یگانگیِ رابطِ کاربری: ✅ تنها یک رابط (GET /) — رابطِ متروکِ Pyodide بازنگشته')
+} else {
+  console.log(`یگانگیِ رابطِ کاربری: ❌ ${legacyDirExists ? 'پوشهٔ static/app بازگشته' : ''}` +
+    `${uiLeak.length ? ' نشانه در باندل: ' + uiLeak.join(', ') : ''}`)
+}
+
 // ── حکم ────────────────────────────────────────────────────────────────────
-const ok = empty === 0 && mismatch === 0 && setEqual && eurCards.length === 0 && leaked.length === 0
+const ok = empty === 0 && mismatch === 0 && setEqual && eurCards.length === 0 &&
+  leaked.length === 0 && uiLeak.length === 0 && !legacyDirExists
 console.log(`\nحکمِ آزمونِ دود: ${ok ? '✅ PASS' : '❌ FAIL'}`)
 if (!ok) {
   console.log('\n⚠️ اگر این FAIL بر اثرِ **احیای موجهِ** یک لایه است، جدولِ')
