@@ -203,14 +203,34 @@ def eval_combo(df, tf, asset, hours, kind, days, scale, be_trig, trail):
     gl = float(-pnl[pnl < 0].sum())
     pf = (gp / gl) if gl > 0 else 999.0
 
-    # افتِ سرمایه بر حسبِ **درصدِ** حسابِ ۱۰٬۰۰۰$ — همان مبنایی که موتور دارد
     cfg = se.ASSETS[asset]
-    usd = pnl * cfg['pip'] * 100.0        # CONTRACT_SIZE=100 ⇒ 1 lot = 100 oz
-    eq = 10000.0 + np.cumsum(usd)
-    peak = np.maximum.accumulate(np.concatenate([[10000.0], eq]))[1:]
-    dd_pct = float((100.0 * (peak - eq) / peak).max())
-    dd_usd = float((peak - eq).max())
-    rec = (float(usd.sum()) / dd_usd) if dd_usd > 0 else float('inf')
+
+    # ⚠️ BUG-NOTIONALSIZE (S434) — نسخهٔ اول افت را **دستی** حساب می‌کرد با
+    #   فرضِ «۱ لاتِ ثابت» روی حسابِ ۱۰٬۰۰۰$:
+    #       usd = pnl * pip * 100 ;  eq = 10000 + cumsum(usd)
+    #   نتیجه‌اش `max_dd = 182.03٪` بود در ردیفِ کنترل — **افتِ بیش از ۱۰۰٪
+    #   ریاضیاً محال است** (یعنی حساب منفی شده). ریشه: با SL=۱۵۰ pip و
+    #   pip_value=۱۰۰$، یک لاتِ کامل روی حسابِ ۱۰٬۰۰۰$ یعنی **۱۵۰٪ ریسک در هر
+    #   معامله**. موتور اما `run_capital` را می‌راند که لات را طوری می‌چیند که
+    #   خوردنِ کاملِ SL دقیقاً `risk_pct%` از equityِ جاری را ببرد، با
+    #   بهره‌مرکب و سقفِ اهرمِ MAX_LOTS_PER_10K.
+    #   خطرِ واقعی: افتِ کاذبِ ~۱۲ برابر، `h8_dd` را برای **هر ۱۲۹۶ ترکیب**
+    #   رد می‌کرد ⇒ من داشتم نتیجه بگیرم «فیلترِ رژیم لایه را نجات نمی‌دهد»
+    #   در حالی که کاوشِ گامِ ۷ خلافش را نشان داده بود. تناقضِ بین دو ابزارِ
+    #   خودم بود که مرا به این باگ رساند، نه یک استثنا.
+    #   اصلاح: حسابداریِ سرمایه به **خودِ موتور** واگذار می‌شود.
+    #   نام کلیدها از **متنِ خودِ موتور** (خطوطِ ۳۵۱–۳۶۷) گرفته شد نه از حافظه،
+    #   چون همین حدس‌زدن در BUG-METRICKEYS به سه جزءِ `None` منتهی شد.
+    #   ⚠️ نکتهٔ ظریف: کلیدِ آمادهٔ `net_over_dd` شرطِ `max_dd < 0` دارد ولی
+    #   موتور `max_dd` را **مثبت** ذخیره می‌کند ⇒ آن کلید همیشه `inf` است.
+    #   پس `recovery` را خودم از `net_profit / max_dd` می‌سازم، همان‌طور که
+    #   `rqs2.compute_rqs2` می‌کند.
+    cap, _ = se.run_capital(tr, asset, initial_capital=10000.0)
+    dd_pct = abs(float(cap['max_dd_pct']))
+    net_usd = float(cap['net_profit'])
+    dd_usd = abs(float(cap['max_dd']))
+    rec = (net_usd / dd_usd) if dd_usd > 0 else float('inf')
+    ruined = bool(cap.get('ruined', False))
 
     # ⚠️ BUG-OUTCOMETYPE (S434) — در نسخهٔ اول آرایهٔ **عددیِ** pip را به
     #   `max_consec_losses` دادم، اما آن تابع آرایهٔ **برچسبیِ** 'win'/'loss'
@@ -242,9 +262,14 @@ def eval_combo(df, tf, asset, hours, kind, days, scale, be_trig, trail):
         'pf': round(pf, 4), 'net_pip': round(net, 1),
         'exp_pip': round(net / n, 4),
         'max_dd_pct': round(dd_pct, 3), 'recovery': round(rec, 3),
+        'net_usd': round(net_usd, 1), 'dd_usd': round(dd_usd, 1),
+        'avg_lot': round(float(cap['avg_lot']), 3),
         'mcl': mcl, 'mcl_allowed': mcl_max,
+        # 🔴 `ruined` را صریح ذخیره می‌کنم: حسابِ ورشکسته‌شده هرگز نباید در
+        #   جدولِ «نامزدهای پاس‌شده» ظاهر شود، حتی اگر متریک‌هایش زیبا باشند.
+        'ruined': ruined,
         'h8_dd': h8_dd, 'h8_mcl': h8_mcl, 'h8_rec': h8_rec,
-        'h8_all': bool(h8_dd and h8_mcl and h8_rec),
+        'h8_all': bool(h8_dd and h8_mcl and h8_rec and not ruined),
     }
 
 
