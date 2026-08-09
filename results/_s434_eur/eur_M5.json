@@ -1,0 +1,32 @@
+{
+ "asset": "EURUSD",
+ "tf": "M5",
+ "n_bars": 200000,
+ "span_years": 2.69,
+ "sl_pip": 8.21,
+ "tp_pip": 27.37,
+ "trail_pip": 5.19,
+ "max_hold": 288,
+ "spread_as_pct_of_sl": 12.18,
+ "uncond_wr": 30.39,
+ "layer": {
+  "n": 518,
+  "wr": 21.815,
+  "perm_mean": 31.544,
+  "perm_sd": 2.1777,
+  "null_ref": 31.544,
+  "lift_pp": -9.73,
+  "z": -4.468,
+  "exp_pip": -2.2178
+ },
+ "base": {
+  "n": 1059,
+  "wr": 25.496,
+  "perm_mean": 31.04,
+  "perm_sd": 0.8277,
+  "null_ref": 31.04,
+  "lift_pp": -5.544,
+  "z": -6.698
+ },
+ "secs": 1.9
+}
