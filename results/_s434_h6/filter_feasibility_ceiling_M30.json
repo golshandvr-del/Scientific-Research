@@ -1,0 +1,85 @@
+{
+ "note": "S434 - BEST-CASE FEASIBILITY analysis for any hypothetical filter from the 400+ indicator bank. This file CORRECTS an incomplete argument I made in step 41 and it is recorded because the correction runs AGAINST my own convenience: it re-opens a route I had declared closed.",
+ "why_this_file_exists": "MISSION_4's dedicated warning #3 states that before declaring eternal death I must search the 400+ indicator bank at docs/indicators/. In step 41 I argued this was unnecessary because filtering is arithmetically self-defeating - it reduces n, inflating perm_sd, raising the z and EFDR bars while leaving the absolute lift floor untouched. That argument is TRUE but INCOMPLETE, and this analysis shows exactly where it breaks.",
+ "method": "A filter can only REMOVE trades, never add or improve them. So the theoretical CEILING of any filter is one that removes ONLY losing trades. I computed that ceiling as a function of how many trades are kept, with perm_sd scaled as 1/sqrt(n) per the engine's own dispersion behaviour.",
+ "baseline": {
+  "n": 1807,
+  "wins": 827,
+  "losses": 980,
+  "wr_pct": 45.766,
+  "null_ref_pct": 43.729,
+  "lift_pp": 2.037,
+  "perm_sd": 0.8674,
+  "z": 2.35
+ },
+ "bars": {
+  "H3_lift_floor_pp": 4.0,
+  "H3_z_floor": 3.09,
+  "H5_expected_max_z_1296_trials": 3.328
+ },
+ "ceiling_curve": [
+  {
+   "keep_frac": 1.0,
+   "n": 1807,
+   "wr": 45.77,
+   "lift": 2.037,
+   "perm_sd": 0.8674,
+   "z": 2.35,
+   "H3": false,
+   "H5": false
+  },
+  {
+   "keep_frac": 0.9,
+   "n": 1626,
+   "wr": 50.86,
+   "lift": 7.132,
+   "perm_sd": 0.9144,
+   "z": 7.8,
+   "H3": true,
+   "H5": true
+  },
+  {
+   "keep_frac": 0.8,
+   "n": 1446,
+   "wr": 57.19,
+   "lift": 13.463,
+   "perm_sd": 0.9696,
+   "z": 13.88,
+   "H3": true,
+   "H5": true
+  },
+  {
+   "keep_frac": 0.5,
+   "n": 903,
+   "wr": 91.58,
+   "lift": 47.855,
+   "perm_sd": 1.227,
+   "z": 39.0,
+   "H3": true,
+   "H5": true
+  }
+ ],
+ "minimum_sufficient_filter": {
+  "trades_to_remove": 74,
+  "removal_pct": 4.1,
+  "condition": "ALL 74 removed trades must be losers",
+  "resulting_n": 1733,
+  "resulting_wr_pct": 47.729,
+  "resulting_lift_pp": 4.0,
+  "resulting_perm_sd": 0.8858,
+  "resulting_z": 4.52,
+  "H3_z_floor_verdict": "PASS",
+  "H5_efdr_verdict": "PASS"
+ },
+ "the_correction": {
+  "what_step41_got_right": "Filtering IS self-defeating at DEPTH. The z and EFDR bars genuinely rise as n falls, and a filter removing half the trades must overcome a perm_sd inflated from 0.867 to 1.227.",
+  "what_step41_got_wrong": "I generalised that to ALL filters. But the required lift gain is only +1.96pp, and at shallow depth the lift gain from removing losers grows MUCH faster than the z bar rises. Removing just 4.1% of trades - if they are all losers - lifts WR from 45.77% to 47.73% while perm_sd rises only from 0.8674 to 0.8858, a 2.1% increase. Lift gains 96% while the bar it must clear gains 2%.",
+  "consequence": "The filtering route is NOT arithmetically closed. It is closed only for DEEP filters. A SHALLOW, HIGHLY SELECTIVE filter remains feasible in principle, and MISSION_4 warning #3 therefore still applies in full.",
+  "honesty_note": "This correction re-opens work I had declared finished and delays the mission's conclusion. I record it because an argument that closes a route by overgeneralising is exactly the kind of convenient reasoning the project's eternal-death rule exists to prevent. Declaring death on an incomplete proof would have been a quiet form of the same error as understating n_trials."
+ },
+ "what_this_means_practically": {
+  "required_filter_precision": "A filter must achieve at least 4.1% removal with near-100% loser purity. Since the baseline loses 54.2% of trades, a RANDOM 4.1% removal would take about 2.2% losers and 1.9% winners, moving WR by roughly +0.05pp - two orders of magnitude short. The filter must therefore be genuinely INFORMATIVE, not merely restrictive.",
+  "realistic_target": "In practice no filter is 100% pure. At 70% loser purity, removing 4.1% of trades yields roughly +0.9pp - still short. Reaching +1.96pp at 70% purity requires removing about 9% of trades, and at 60% purity about 14%. Those depths are still shallow enough that the z bar rises by under 8%, so the route stays open across a realistic purity range.",
+  "multiplicity_cost": "Every additional filter tested raises n_trials and therefore the H5 bar. n_trials is currently 1296 with an expected-max-z of 3.328. Testing 50 additional filter variants would take n_trials to 1346, raising the bar to roughly 3.34 - a negligible 0.4% increase, because expected-max-z grows as sqrt(2*ln(N)). So the multiplicity cost of a DISCIPLINED search of the indicator bank is small, and this is quantified rather than assumed."
+ }
+}
