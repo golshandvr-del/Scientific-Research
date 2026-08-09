@@ -82,6 +82,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 from engine import scalp_engine as se          # noqa: E402
+import tools.s434_fast_data as fd  # noqa: E402  (لایهٔ دادهٔ سریع)
 from engine.rqs2 import (                       # noqa: E402
     breakeven_wr_cost, max_consec_losses, mcl_bound,
 )
@@ -95,7 +96,11 @@ BASE_RATIO = BASE_TP / BASE_SL          # = 3.333… — این نسبت مقد�
 HOLD_HOURS = 24.0
 
 # دقیقهٔ هر تایم‌فریم — برای تبدیلِ ۲۴ ساعت به کندل
-TF_MIN = {'M1': 1, 'M5': 5, 'M15': 15, 'M30': 30, 'H1': 60, 'H4': 240}
+# ⚠️ گامِ ۲۲: از `s434_fast_data.TF_MINUTES` گرفته می‌شود تا هر ۱۹ تایم‌فریمِ
+#   دادهٔ جدیدِ MT5 شناخته شود. نسخهٔ اول فقط ۶ کارت را می‌شناخت و روی
+#   M3/M4/M6/M10/M12/M20 با KeyError می‌افتاد — یعنی شش کارتِ تازه‌کشف‌شده
+#   عملاً غیرقابلِ‌آزمون بودند و ممکن بود «آزموده نشد» را «صفر سیگنال» بخوانم.
+TF_MIN = dict(fd.TF_MINUTES)
 
 # ── اهرمِ ۱: تعریف‌های رژیم ────────────────────────────────────────────────────
 # پنجره‌ها بر حسبِ **روز** تا بین تایم‌فریم‌ها معنایِ یکسان داشته باشند.
@@ -120,22 +125,39 @@ def bars_per_day(tf):
 
 
 def load(asset, tf):
-    df = pd.read_csv(os.path.join(ROOT, 'data', f'{asset}_{tf}.csv'))
-    df['dt'] = pd.to_datetime(df['time'], unit='s')
-    return df.reset_index(drop=True)
+    """دادهٔ کندل — از **لایهٔ دادهٔ سریعِ** `s434_fast_data` با کشِ npz.
+
+    ⚠️ تغییرِ گامِ ۲۲: نسخهٔ اول مسیرِ `data/{asset}_{tf}.csv` را hardcode
+      می‌کرد، یعنی همیشه فایلِ **قدیمی** را می‌خواند. با ورودِ دادهٔ کاملِ MT5
+      این خطای خاموشی می‌شد: نتیجهٔ محاسبه‌شده روی M5 با ۲.۸ سال داده در
+      برابرِ ۱۵.۶ سالِ موجود — همان چیزی که کشفِ E-16 خطرش را نشان داد.
+      حالا مسیرِ `data/mt5_full/` مقدم است و `d['src']` در خروجی ذخیره
+      می‌شود تا هر نتیجه بداند روی کدام فایل محاسبه شده.
+    """
+    d = fd.load_fast(asset, tf)
+    df = fd.as_dataframe(d)
+    df.attrs['src'] = d['src']
+    df.attrs['n_bars'] = d['n_bars']
+    df.attrs['span_years'] = d['span_years']
+    df.attrs['_fast'] = d          # برای معناشناسیِ سیگنال
+    return df
 
 
-def build_signals(df, hours):
-    """بازتولیدِ **دقیقِ** منطقِ S139: ساعتِ UTC کندل در مجموعهٔ hours.
+def build_signals(df, hours, mode='SESSION_OPEN'):
+    """سیگنالِ زمان‌محور با **معناشناسیِ حفظ‌شده** (پیش‌فرض SESSION_OPEN).
 
     ورود در open کندلِ بعدی توسطِ خودِ موتور انجام می‌شود (entry_bar = si+1)،
     پس اینجا نباید دستی شیفت داد — وگرنه ورود دو کندل عقب می‌افتد.
+
+    ⚠️ تغییرِ گامِ ۲۲: نسخهٔ اول `RAW_HOUR` بود (هر کندلی که ساعتش هدف است).
+      روی M15 آن تعریف درست است، اما روی M1 معنایش «هر دقیقه از آن دو ساعت
+      تلاش کن وارد شوی» می‌شود ⇒ **لایهٔ دیگری** با نامِ S139. census نشان
+      داد اختلاف روی M1 پنجاه‌وهفت برابر است (۳۶۵٬۱۴۴ در برابرِ ۶٬۳۱۹).
+      `SESSION_OPEN` روی H1 با `RAW_HOUR` **دقیقاً یکی** است (۶٬۸۵۷ = ۶٬۸۵۷)،
+      پس این تعمیم نسخهٔ تاریخی را نقض نمی‌کند بلکه منتقل می‌کند.
     """
-    hour = df['dt'].dt.hour.values
-    sig = np.zeros(len(df), bool)
-    for h in hours:
-        sig |= (hour == h)
-    return sig
+    d = df.attrs['_fast']
+    return fd.session_open_signal(d, hours, mode)
 
 
 def regime_mask(df, kind, days, tf):
