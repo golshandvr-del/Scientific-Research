@@ -8161,7 +8161,7 @@ function scanIndicators(asset, tf, candles, horizon = 5) {
 var app = new Hono2();
 app.use("/api/*", cors());
 app.use("/static/*", serveStatic2({ root: "./public" }));
-app.get("/app", (c) => c.redirect("/static/app/index.html"));
+app.get("/app", (c) => c.redirect("/", 301));
 app.get("/api/spot", async (c) => {
   try {
     const s = await getSpotGold();
