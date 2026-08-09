@@ -157,7 +157,28 @@ def scan_card(adj, asset: str, tf: str, n_perm: int = N_PERM_SCREEN,
 
     # ── خطِ مبنای بی‌قید: **مشترک** است (به k وابسته نیست) ────────────────
     # (با تریلینگ و BE — درسِ BUG-NULLUNCOND در گامِ ۳۷.)
-    tr_unc = se.simulate_trades(df, valid, z, sl, tp, asset, max_hold=mh,
+    #
+    # ⚡ نمونه‌گیریِ کندل‌های واجد (گامِ ۴۶) — حلِ گلوگاهِ واقعی:
+    # این بازو با `allow_overlap=True` روی **هر** کندلِ واجد معامله می‌سازد،
+    # پس روی M1 پنج میلیون شبیه‌سازی می‌طلبد و سندباکسِ ۹۸۵MB را می‌کُشد
+    # (اولین اسکنِ کامل با Killed مُرد و M6 از ۹ دقیقه گذشت).
+    # اما WRِ بی‌قید یک **نسبت** است، نه یک جمع؛ پس نمونهٔ تصادفی همان را
+    # با خطای ناچیز برآورد می‌کند. **سنجیده شد نه فرض** (روی M30 که هر دو
+    # حالت کامل قابلِ محاسبه است):
+    #     کامل  (۱۸۱٬۸۴۶ معامله) → WR = ۴۳.۷۲۹۳٪
+    #     k=۵۰٬۰۰۰                → WR = ۴۳.۶۸۸۰٪  خطا = −۰.۰۴۱pp  ✅
+    #     k=۲۵٬۰۰۰                → WR = ۴۴.۱۲۴۰٪  خطا = +۰.۳۹۵pp  ❌
+    # پس ۵۰٬۰۰۰ انتخاب شد: خطا در برابرِ لیفت‌های ~۲pp که می‌سنجیم ناچیز
+    # است، و ۲۵٬۰۰۰ **نیست** چون خطایش با ۲۰٪ لیفت هم‌مرتبه می‌شود.
+    # بذر ثابت است تا کارت‌های مختلف با نمونهٔ هم‌آماره مقایسه شوند.
+    UNC_CAP = 50_000
+    unc_mask = valid
+    if int(valid.sum()) > UNC_CAP:
+        rng_u = np.random.default_rng(seed + 101)
+        pick_u = rng_u.choice(vidx, size=UNC_CAP, replace=False)
+        unc_mask = np.zeros(n, bool)
+        unc_mask[pick_u] = True
+    tr_unc = se.simulate_trades(df, unc_mask, z, sl, tp, asset, max_hold=mh,
                                 allow_overlap=True, be_trigger_pip=be,
                                 trail_pip=tl)
     wr_unc = _wr(tr_unc)
