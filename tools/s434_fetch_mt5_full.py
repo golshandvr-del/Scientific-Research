@@ -149,14 +149,61 @@ def download(dest_rar: str) -> None:
     print(f'[دانلود] تأیید شد: {got:,} بایت')
 
 
+def unpack() -> int:
+    """CSVها را از آرشیوهای `.gz`ِ **کامیت‌شده در مخزن** بازمی‌گشاید.
+
+    این مسیرِ **پیش‌فرض** پس از هر ریستِ سندباکس است و جایگزینِ دانلودِ
+    مجدد می‌شود: از گامِ ۳۰، هر ۱۹ فایل به‌صورتِ gzip در گیت هستند، پس
+    داده با `git clone` می‌آید و اینجا فقط بازگشوده می‌شود.
+
+    چرا فشرده نگه داشته می‌شوند و خام نه: `XAUUSD_M1.csv` خام ۲۳۲.۶MB
+    است و از سدِ سختِ ۱۰۰MB گیت‌هاب **رد** می‌شود؛ با gzip ۵۷.۴MB است.
+
+    چرا بی‌خطر است: بازگشتِ gzip بیت‌به‌بیت است و **سنجیده شد** — SHA256
+    فایلِ بازگشوده با اصل یکسان بود. با این حال، این تابع پس از بازگشایی
+    **الزاماً** `verify()` را صدا می‌زند، چون «فایل ساخته شد» شاهدِ
+    «فایل درست است» نیست؛ درسِ گرانِ همین مأموریت: دانلودِ فاسدِ اولِ من
+    باز شد و ۳ فایل از ۱۹ را «سالم» استخراج کرد.
+    """
+    import gzip
+    gzs = sorted(glob.glob(os.path.join(DEST, '*.csv.gz')))
+    if not gzs:
+        print(f'[توقف] هیچ آرشیوِ .gz در {DEST} نیست.\n'
+              f'        اگر مخزن را تازه clone کرده‌اید، مطمئن شوید فایل‌های\n'
+              f'        data/mt5_full/*.csv.gz دریافت شده‌اند (~۱۵۵MB).')
+        return 1
+    print(f'[بازگشایی] {len(gzs)} آرشیو …')
+    for gz in gzs:
+        dst = gz[:-3]                     # حذفِ پسوندِ .gz
+        if os.path.exists(dst):
+            print(f'  • {os.path.basename(dst):<22} از قبل موجود — رد')
+            continue
+        # نوشتنِ اتمی: اول در فایلِ موقت، بعد rename. اگر پروسه در میانهٔ
+        # بازگشاییِ M1 (۲۳۲MB) کشته شود، یک CSVِ **ناقص** روی دیسک
+        # می‌ماند که verify آن را ناهمسان می‌بیند ولی موتور ممکن است
+        # بی‌خطا بخواند و نتیجهٔ غلط بدهد. rename این حالت را حذف می‌کند.
+        tmp = dst + '.partial'
+        with gzip.open(gz, 'rb') as fi, open(tmp, 'wb') as fo:
+            shutil.copyfileobj(fi, fo, length=8 << 20)
+        os.replace(tmp, dst)
+        mb = os.path.getsize(dst) / 1048576
+        print(f'  ✓ {os.path.basename(dst):<22} {mb:>8.1f} MB')
+    print('[بازگشایی] پایان — اکنون تأییدِ SHA256:')
+    return verify()
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument('--verify', action='store_true',
                     help='فقط SHA256 فایل‌های موجود را بسنج')
+    ap.add_argument('--unpack', action='store_true',
+                    help='CSVها را از .gzهای مخزن بازگشا کن (پس از هر ریست)')
     ap.add_argument('--workdir', default=os.path.expanduser('~/mt5dl'))
     args = ap.parse_args()
 
     os.makedirs(DEST, exist_ok=True)
+    if args.unpack:
+        return unpack()
     if args.verify:
         return verify()
 
