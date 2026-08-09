@@ -1,0 +1,30 @@
+== S432 — تجمیعِ تقویمیِ S312 · اعضا: ['XAUUSD_H1', 'XAUUSD_M15'] ==
+   جمعیت: dom∈{10,13,20} · hour∈1..12 · close>EMA200 · هندسه: ارثیِ per-card · K=2000
+   ⚠️ کارتِ M30 عمداً بیرون است (قیدِ C3): از قبل ACCEPT دارد و واردکردنش n را با لبهٔ اثبات‌شده باد می‌کند.
+
+-- کارتِ XAUUSD_H1 --
+      null long  uncond=48.89341134571356 perm_mean=49.5888614037643 sd=3.0345733706294546
+      null short uncond=None perm_mean=None sd=None
+   n=266 (L=266/S=0) WR=60.53 ref=48.89341134571356 lift=11.632904443760125 exp=+47.51 pip
+
+-- کارتِ XAUUSD_M15 --
+      null long  uncond=47.961704756022236 perm_mean=48.62942961893793 sd=4.271080706644074
+      null short uncond=None perm_mean=None sd=None
+   n=138 (L=138/S=0) WR=60.14 ref=47.961704756022236 lift=12.183222780209647 exp=+44.07 pip
+
+[C1 همگنی] liftها=['11.63', '12.18'] هم‌علامت=True
+
+[تجمیع] n_before=404 → n_after=298 (حذفِ همپوشانیِ FIFO: 26.2%)
+   used=['XAUUSD_M15', 'XAUUSD_H1']
+
+[C5 سهمِ اعضا] {'XAUUSD_H1': 0.57, 'XAUUSD_M15': 0.43}
+
+[نولِ استخر] {"long": {"uncond_wr": 48.493215226651515, "perm_mean": 49.17675647605364, "perm_sd": 2.5223844315451363, "perm_max": null, "perm_k": 2000}, "short": {"uncond_wr": null, "perm_mean": null, "perm_sd": null, "perm_max": null, "perm_k": null}}
+
+[محورِ مشترک] شبکهٔ ۱۵دقیقه‌ای · 2011-02-10T01:45:00.000000000 → 2026-07-10T17:15:00.000000000 · 540,447 سطل
+
+[تقسیمِ ارثی 60%] مرز=2021-11-16T15:39:00.000000000 · اکتشاف=179 · خارج‌نمونه=119
+
+S432-POOL                  | ACCEPT     RQS2= 84.7 | n= 298 WR=58.39% PF=1.74 lift=  +9.21pp z= 3.2 | H0:✓ H1:✓ H2:✓ H3:✓ H4:✓ H5:✓ H6:✓ H7:✓ H8:✓ H9:✓ H10:✓
+
+[saved] /home/user/webapp/results/_scan_S432/pool_verdict.json
