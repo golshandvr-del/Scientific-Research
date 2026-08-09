@@ -242,7 +242,14 @@ def eval_combo(df, tf, asset, hours, kind, days, scale, be_trig, trail):
     #   یعنی ممکن بود ترکیبِ نجات‌دهنده را با دستِ خودم دور بریزم.
     outcomes = ['win' if p > 0 else 'loss' for p in pnl]
     mcl = int(max_consec_losses(outcomes))
-    mcl_max = int(mcl_bound(n, 1.0 - wr / 100.0))
+    # ⚠️ BUG-MCLARGCONV (S434) — امضا `mcl_bound(n, wr_pct)` است، یعنی
+    #   **نرخِ بردِ درصدی**. من `1.0 - wr/100` (نرخِ باختِ کسری ≈ ۰.۵۴) دادم.
+    #   تابع آن را «WR=۰.۵۴٪» فهمید ⇒ نرخِ باختِ ۹۹.۵٪ ⇒ کرانِ ۱۳۳۴ به‌جای ۱۹.
+    #   جهتِ خطا **سخاوتمندانه** بود: کرانِ ۷۰ برابر بزرگ‌تر یعنی `h8_mcl`
+    #   عملاً همیشه پاس می‌شد. پس این باگ ترکیب‌هایی را «پاس» نشان می‌داد که
+    #   موتور ردشان می‌کند — خطای خطرناک‌تر از نوعِ محافظه‌کارانه، چون
+    #   نامزدِ معیوب را تا مرحلهٔ داوری می‌بَرَد و بعد بی‌آبرو می‌شود.
+    mcl_max = int(mcl_bound(n, wr))
 
     cost = cfg['spread_pip'] + 2.0 * cfg['slip_pip']
     be = breakeven_wr_cost(sl, tp, cost)
