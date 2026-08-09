@@ -50,6 +50,8 @@
 // ============================================================================
 
 import type { Candle } from './indicators'
+// `ema` برای اصلاحِ `BUG-S312-FILTGATE` لازم است (فیلترِ کیفیتِ close>EMA200).
+import { ema } from './indicators'
 import type { AnalysisResult } from './signal'
 import type { RouterDecision } from './router'
 
@@ -304,9 +306,44 @@ const s310Layer: LayerFn = (ctx) => {
 }
 
 // ---- آداپترِ S312 (Mid-Month Drift) — SL/TP per-TF ----
+//
+// 🐞 **اصلاحِ `BUG-S312-FILTGATE` (کشف‌شده در S432) — عدم‌تطابقِ پورت**
+// ---------------------------------------------------------------------------
+// نشانه: `computeMidMonth` پارامترِ سومِ `filt?: MidFilter` دارد که فیلترِ
+// کیفیتِ `close > EMA200` را اعمال می‌کند، ولی **تنها فراخوانیِ کلِ پروژه**
+// (همین‌جا) آن را پاس نمی‌کرد. و `midFiltersPass(undefined)` صریحاً
+// `return true` می‌دهد ⇒ دروازه **همیشه باز** بود.
+//
+// چرا این جدی است و نه یک ریزه‌کاری:
+//   ⓵ حکمِ `ACCEPT`ِ کارتِ `XAUUSD-M30` (`RQS2 = 87.7`, `n=289`, `z=3.66`)
+//      **با** این فیلتر گرفته شده است (`s312_oos_check.py`:
+//      `quality_filter=True`). پس سایت لایه‌ای را می‌راند که با نسخهٔ
+//      نمره‌گرفته **یکی نیست** ⇒ اعدادِ حکم ضمانتی برای رفتارِ سایت نبودند.
+//   ⓶ آرایهٔ `filters` پایین‌تر صریحاً به کاربر می‌گوید
+//      «فیلترِ کیفیت (روندِ کلان)» — یعنی سایت چیزی را **اعلام** می‌کرد که
+//      اجرا نمی‌کرد. این از خودِ باگ بدتر است.
+//   ⓷ جهتِ خطا «سخاوتمندانه» است نه محافظه‌کارانه: بدونِ فیلتر، لایه در
+//      روندِ نزولیِ کلان هم `LONG` می‌دهد — دقیقاً موقعیتی که فیلتر برای
+//      حذفش گذاشته شده بود.
+//
+// اصلاح: `close > EMA200` از خودِ `ctx.candles` محاسبه و پاس می‌شود.
+// وفاداریِ عددی: `indicators.ema` با `alpha = 2/(period+1)` و بدونِ
+// bias-correction پیاده شده ⇒ معادلِ `pandas.ewm(span=200, adjust=False)`
+// که پایتون استفاده می‌کند ⇒ همان عدد، نه یک تقریبِ مشابه.
+//
+// ⚠️ اثرِ موردِ انتظار: تعدادِ سیگنال‌ها **کم** می‌شود. این «ضعیف‌ترشدن» نیست؛
+//    بازگرداندنِ لایه به همان نسخه‌ای است که حکم را گرفته.
+// ---------------------------------------------------------------------------
 function s312Layer(slPip: number, tpPip: number, maxHold: number): LayerFn {
   return (ctx) => {
-    const sig = computeMidMonth(ctx.times, ctx.utcHour)
+    const closes = ctx.candles.map(c => c.close)
+    const e200 = ema(closes, 200)
+    const iLast = closes.length - 1
+    const eLast = iLast >= 0 ? e200[iLast] : NaN
+    // اگر EMA هنوز گرم نشده (NaN) ⇒ فیلتر را **بسته** می‌گیریم، نه باز.
+    // «نبودِ داده» هرگز نباید به «تأییدِ سیگنال» ترجمه شود.
+    const aboveEma = Number.isFinite(eLast) && closes[iLast] > eLast
+    const sig = computeMidMonth(ctx.times, ctx.utcHour, { aboveEma })
     const price = ctx.a.price
     const active = sig.state === 'ENTRY'
     const approaching = sig.state === 'APPROACHING'
