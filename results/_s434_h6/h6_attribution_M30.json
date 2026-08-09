@@ -1,0 +1,83 @@
+{
+ "note": "S434 H6 calendar-tilt attribution (rebuilt after sandbox reset)",
+ "card": "XAUUSD-M30",
+ "data": "data/mt5_full/XAUUSD_M30.csv (182,145 bars / 15.59y)",
+ "gate": "H6 condition 4: BOTH calendar halves must be net-positive",
+ "variants": [
+  {
+   "variant": "UNTOUCHED base (sc1, no trail)",
+   "n": 2850,
+   "quarters": [
+    -1651,
+    -483,
+    5007,
+    23226
+   ],
+   "halves": [
+    -2070,
+    39663
+   ],
+   "h6_half_pass": false
+  },
+  {
+   "variant": "base + trail130 only",
+   "n": 3269,
+   "quarters": [
+    -276,
+    -2056,
+    5014,
+    21273
+   ],
+   "halves": [
+    -2299,
+    36303
+   ],
+   "h6_half_pass": false
+  },
+  {
+   "variant": "base + scale1.37 only",
+   "n": 2701,
+   "quarters": [
+    -296,
+    -594,
+    2276,
+    24483
+   ],
+   "halves": [
+    -853,
+    32100
+   ],
+   "h6_half_pass": false
+  },
+  {
+   "variant": "scale1.37 + trail130 (no regime)",
+   "n": 3245,
+   "quarters": [
+    302,
+    -1412,
+    4114,
+    15744
+   ],
+   "halves": [
+    -1239,
+    26315
+   ],
+   "h6_half_pass": false
+  },
+  {
+   "variant": "FULL candidate (+mom13)",
+   "n": 1807,
+   "quarters": [
+    572,
+    -696,
+    3496,
+    12405
+   ],
+   "halves": [
+    -124,
+    20157
+   ],
+   "h6_half_pass": false
+  }
+ ]
+}
