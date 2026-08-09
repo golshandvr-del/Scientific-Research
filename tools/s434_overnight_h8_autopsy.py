@@ -136,17 +136,24 @@ def run_tf(asset, tf, verbose=True):
                      'signal_hours_utc': list(SIGNAL_HOURS)},
         'h8_parts': parts,
         'breakeven_wr': round(be, 3) if be is not None else None,
+        # ⚠️ BUG-METRICKEYS (S434) — نامِ این کلیدها را در نسخهٔ اول *حدس* زده بودم
+        #   (`wr_pct`, `maxdd_pct`, `mcl`, `recovery`, `net_pip`) و همه `None`
+        #   برگشتند. خطرِ واقعی: خروجی «کار کرد» و هیچ استثنایی نداد — یعنی
+        #   کالبدشکافیِ H8 با هر سه جزءِ نامعلوم گزارش می‌شد و من می‌توانستم
+        #   نتیجه بگیرم «maxDD مشکل نیست». نام‌ها از خودِ موتور استخراج شدند.
         'metrics': {k: m.get(k) for k in (
-            'n_trades', 'wr_pct', 'expectancy_pip', 'cost_pip', 'profit_factor',
-            'net_pip', 'maxdd_pct', 'mcl', 'mcl_allowed', 'recovery',
-            'skill_lift_pp', 'null_ref_wr', 'breakeven_wr_cost')},
+            'n_trades', 'n_wins', 'win_rate', 'expectancy_pip', 'cost_pip',
+            'profit_factor', 'net_profit', 'max_dd_pct', 'max_consec_losses',
+            'mcl_allowed', 'recovery_factor', 'skill_lift_pp', 'skill_z',
+            'null_ref_wr', 'breakeven_wr_cost', 'expectancy_at_2x_cost',
+            'rr', 'top_win_share', 'max_concurrency')},
         'gates': {k: g.get(k) for k in sorted(g)},
         'verdict': res.get('verdict'),
         'rqs2_score': res.get('rqs2_score'),
         'notes': res.get('notes', []),
     }
     # حاشیهٔ لبه = WR واقعی − سربه‌سر (سنجهٔ درست، نه WR خام)
-    wr_real = m.get('wr_pct')
+    wr_real = m.get('win_rate')
     if wr_real is not None and be is not None:
         out['edge_margin_pp'] = round(float(wr_real) - be, 3)
     return out
@@ -175,9 +182,11 @@ def main():
         else:
             m = out['metrics']
             fails = [k for k, v in out['gates'].items() if v is False]
-            print(f'  == {tf}: n={m["n_trades"]} wr={m["wr_pct"]}% '
-                  f'exp={m["expectancy_pip"]} dd={m["maxdd_pct"]}% '
-                  f'mcl={m["mcl"]}/{m["mcl_allowed"]} rec={m["recovery"]} '
+            print(f'  == {tf}: n={m["n_trades"]} wr={m["win_rate"]}% '
+                  f'exp={m["expectancy_pip"]} pf={m["profit_factor"]} '
+                  f'dd={m["max_dd_pct"]}% '
+                  f'mcl={m["max_consec_losses"]}/{m["mcl_allowed"]} '
+                  f'rec={m["recovery_factor"]} '
                   f'edge_margin={out.get("edge_margin_pp")}pp '
                   f'verdict={out["verdict"]} failed={fails}', flush=True)
     print('[done]', flush=True)
