@@ -24,9 +24,11 @@
 
 import { pathToFileURL } from 'node:url'
 // `existsSync` برای «نگهبانِ یگانگیِ رابطِ کاربری» (`S433`) لازم است.
-import { readFileSync, existsSync } from 'node:fs'
+import { readFileSync, existsSync, rmSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+// `tmpdir` برای اصلاحِ `BUG-TMPCOLLISION` (`S433`) لازم است — نامِ یکتای فایلِ موقت.
+import { tmpdir } from 'node:os'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
@@ -128,7 +130,29 @@ const PURGED_SYMBOLS = [
   'computeStreakReversal', 'computeSellClimax', 'computeKennedy',
 ]
 
-const outfile = '/tmp/_registry_smoke.mjs'
+// 🐞 **اصلاحِ `BUG-TMPCOLLISION` (کشف‌شده در `S433`)** — نامِ **ثابتِ** فایلِ
+// موقت باعثِ «شکستِ متناوب» (flaky) در اجرای همزمان می‌شد.
+// ---------------------------------------------------------------------------
+// نشانه: وقتی این آزمون را همزمان با `_parity_s431_wiring.mjs` اجرا کردم، با
+// `MODULE_NOT_FOUND` افتاد — و لحظه‌ای بعد، تک‌به‌تک، **بی‌نقص** پاس شد. یعنی
+// شکست **متناوب** بود نه واقعی. (اگر آن `FAIL` را باور می‌کردم، می‌رفتم در
+// کدِ منتشرشده دنبالِ عیبی بگردم که وجود نداشت — همان تلهٔ `BUG-LASTLAYER`.)
+//
+// ریشه: هر دو آزمون رجیستری را با `esbuild` باندل می‌کنند. این یکی مقصد را
+// `/tmp/_registry_smoke.mjs` — یک نامِ **ثابت** — می‌گذاشت. اجرای همزمان ⇒ یک
+// پروسه فایل را **در حالِ نوشتن** دارد و پروسهٔ دیگر همان لحظه `import` می‌کند
+// و به فایلِ نیمه‌نوشته (یا حذف‌شده) می‌رسد.
+//
+// چرا مهم است و «صرفاً آزارنده» نیست: شکستِ متناوب **بدترین** نوعِ شکست است،
+// چون خواننده را وادار می‌کند نتیجهٔ آزمون را بی‌اعتبار بشمارد؛ و آن‌وقت یک
+// `FAIL`ِ **واقعی** هم به‌حسابِ «همان مشکلِ همیشگی» گذاشته می‌شود. نگهبانی که
+// گاهی بی‌دلیل قرمز می‌شود، عملاً **خاموش** است.
+//
+// اصلاح: نامِ یکتا (`pid` + زمان) — همان الگویی که دو آزمونِ `parity` از ابتدا
+// درست به‌کار برده بودند (`s431_wiring_${Date.now()}.mjs`). و برخلافِ آن‌ها،
+// فایل در پایان **پاک** می‌شود تا نامِ یکتا به نشتیِ `/tmp` تبدیل نشود.
+// ---------------------------------------------------------------------------
+const outfile = join(tmpdir(), `_registry_smoke_${process.pid}_${Date.now()}.mjs`)
 await build({
   entryPoints: [join(ROOT, 'web_tool', 'src', 'strategy_registry.ts')],
   bundle: true,
@@ -140,6 +164,11 @@ await build({
   logLevel: 'error',
 })
 const { CARD_LAYERS } = await import(pathToFileURL(outfile).href)
+// پاکسازیِ فایلِ موقت **پس از** `import`. نامِ یکتا مشکلِ تعارض را حل می‌کند
+// ولی بدونِ پاکسازی، هر اجرا یک فایلِ ~۴۰۰KB در `/tmp` جا می‌گذارد (پیش از این
+// اصلاح، ۷ فایلِ نشتی شمرده شد). `force: true` تا اگر فایل نبود خطا ندهد —
+// شکستِ پاکسازی هرگز نباید حکمِ آزمون را خراب کند.
+try { rmSync(outfile, { force: true }) } catch { /* پاکسازی بحرانی نیست */ }
 
 console.log('نگهبانِ پاک‌سازیِ S396 — آزمونِ دودِ ساختاریِ رجیستری')
 console.log('قرار: ۵ کارت · تعدادِ لایهٔ هر کارت طبقِ ACCEPT_CONTRACT · فقط لایه‌های ACCEPT (v2.4/v2.6)\n')
