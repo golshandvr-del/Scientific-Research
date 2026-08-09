@@ -1,0 +1,48 @@
+{
+ "note": "S434 - POSITIVE CONTROL for the AUC discrimination tool. A null result across 401 indicators is only credible if the measuring instrument can demonstrably DETECT a real signal. This file proves it can, using synthetic data with known ground truth.",
+ "why_this_matters": "Seven of this mission's bugs were silent successes - code that ran cleanly while its correctness measure had no effect. A screen returning zero passes is exactly the shape a broken screen would produce: if _auc had a rank-handling defect, or read a constant array, or mis-indexed the win mask, EVERY indicator would score near 0.5 and I would report eternal death on an instrument failure. The only defence is to feed the tool signals whose answer is known in advance.",
+ "tool": "tools/s434_filter_hunt.py::_auc (Mann-Whitney U with mid-rank tie handling)",
+ "sample_sizes_matched_to_real_screen": {
+  "n_pos": 827,
+  "n_neg": 980
+ },
+ "cases": [
+  {
+   "case": "perfect separation (means 10 vs 0, sd 1)",
+   "auc": 1.0,
+   "expected": "~1.000",
+   "pass": true,
+   "reads": "The tool reaches the theoretical maximum, so it is not compressing or clipping extreme discrimination."
+  },
+  {
+   "case": "no separation (identical distributions)",
+   "auc": 0.4982,
+   "expected": "~0.500",
+   "pass": true,
+   "reads": "Correctly unbiased under the null. A tool biased upward would have inflated all 401 scores; biased downward would have manufactured the null result."
+  },
+  {
+   "case": "weak but real (Cohen d=0.15)",
+   "auc": 0.535,
+   "expected": "~0.542",
+   "pass": true,
+   "reads": "MOST IMPORTANT CASE. The tool resolves an effect SMALLER than the 0.5472 bar, so it has the sensitivity required to have found a qualifying indicator had one existed. The zero result is therefore a property of the data, not a limit of the instrument."
+  },
+  {
+   "case": "heavily tied 3-value scale with real signal",
+   "auc": 0.6925,
+   "expected": ">0.6",
+   "pass": true,
+   "reads": "Validates mid-rank tie handling. The 31 cdl_* candle-pattern indicators take only -100/0/+100, so a naive ranking would distort the whole family. This confirms they were screened fairly rather than buried by a ranking artifact."
+  },
+  {
+   "case": "constant indicator",
+   "auc": null,
+   "expected": "None",
+   "pass": true,
+   "reads": "Degenerate input returns unmeasurable rather than 0.5, keeping UNKNOWN separate from 'perfectly uninformative' - the same principle the adjudicator applies to gates."
+  }
+ ],
+ "conclusion": "All five controls behave as their ground truth requires. The instrument is unbiased under the null, saturates correctly at the ceiling, resolves effects smaller than the decision bar, and handles the tied scales present in the bank. The step-57 finding that ZERO of 398 scored indicators clear AUC 0.5472 is therefore a measurement about gold's overnight-long trades, not an artifact of the screen.",
+ "residual_limitation_disclosed": "This screen tests MARGINAL discrimination by a single indicator at the signal bar. It cannot detect an INTERACTION - e.g. a rule that only helps when two indicators agree - nor a NON-MONOTONE relationship where both extremes lose and the middle wins, since AUC assumes a monotone ordering. I state this rather than implying the search was exhaustive over all possible filters. However the step-54 ceiling analysis bounds how much such a filter could contribute: it must remove ~4.1% of trades at near-perfect loser purity, and no marginal signal of that strength exists to build an interaction from."
+}
