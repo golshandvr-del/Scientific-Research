@@ -83,3 +83,143 @@ OUT_DIR = os.path.join(ROOT, 'results', '_s434_null')
 # می‌شود اگر بیشتر باشد، پس ۴۰ می‌گیریم: خطِ مبنا **سخت‌تر** می‌شود نه آسان‌تر.
 N_PERM = 40
 SEED = 7
+
+
+def _wr_of(trades) -> float | None:
+    """نرخِ بردِ یک مجموعهٔ معامله بر حسبِ درصد."""
+    if trades is None or len(trades) == 0:
+        return None
+    pnl = trades['pnl_pip'].values
+    return float(100.0 * (pnl > 0).sum() / len(pnl))
+
+
+def build_null(asset: str, tf: str, n_perm: int = N_PERM, seed: int = SEED,
+               verbose: bool = True) -> dict:
+    """مدلِ صفرِ کانونی برای نامزدِ قفل‌شده روی یک کارت.
+
+    خروجی: dict با کلیدهای `long` و `short` مطابقِ ساختارِ کانونیِ RQS2.
+    """
+    import importlib.util
+    import tools.s434_fast_data as fd
+    from engine import scalp_engine as se
+
+    spec = importlib.util.spec_from_file_location(
+        'adj', os.path.join(ROOT, 'tools', 's434_adjudicate.py'))
+    adj = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(adj)
+
+    # ── هندسه و ماسکِ لایه: عیناً از خودِ داور گرفته می‌شود ──────────────
+    # نه بازنویسی. اگر اینجا هندسه را دوباره حساب کنم و ذره‌ای واگرا شود،
+    # کنترل به لایهٔ **دیگری** تعلق می‌گیرد و z بی‌معنا می‌شود.
+    run = adj.run_candidate(asset, tf)
+    d, df = run['d'], run['df']
+    sl, tp, mh = run['sl'], run['tp'], run['max_hold']
+    sig_n = int(run['n_signals'])
+    n_final = int(len(run['trades']))
+    n = len(df)
+    z = np.zeros(n, bool)
+
+    if verbose:
+        print(f'[{asset}-{tf}] هندسه: SL={sl:.1f} TP={tp:.1f} hold={mh} '
+              f'| سیگنال={sig_n} معاملهٔ نهایی={n_final}')
+
+    # ── استخرِ کندل‌های «واجد» ───────────────────────────────────────────
+    # تلهٔ ۳: جای‌گشت باید فقط از کندل‌هایی انتخاب شود که **می‌توانند** یک
+    # معاملهٔ کامل بسازند. کندل‌های انتهایی جا برای max_hold ندارند و
+    # کندل‌های ابتدایی برای گرم‌شدنِ رژیم لازم‌اند. اگر آن‌ها را در استخر
+    # بگذارم، کنترل مصنوعاً ضعیف می‌شود و برتریِ من متعلق به «حذفِ کندلِ
+    # بی‌ربط» خواهد بود نه به انتخابِ زمانِ S139.
+    warmup = 250
+    valid = np.zeros(n, bool)
+    valid[warmup:n - mh - 1] = True
+
+    # ── خطِ مبنای ۱: بی‌قید (هر کندلِ واجد) ──────────────────────────────
+    # ⚠️ allow_overlap=True اینجا **اجباری** است: با False موتور پس از هر
+    # ورود تا خروج قفل می‌شود، پس «ورود در هر کندل» عملاً به «ورود در هر
+    # mh کندل» تبدیل می‌شود و آنچه می‌سنجیم دیگر بی‌قید نیست. این تنها
+    # جایی است که کنترل آگاهانه از سیگنال متفاوت است، و دلیلش معناییست:
+    # تعریفِ «بی‌قید» بدونِ همپوشانی قابلِ بیان نیست.
+    tr_unc = se.simulate_trades(df, valid, z, sl, tp, asset,
+                                max_hold=mh, allow_overlap=True, trail_pip=None)
+    wr_unc = _wr_of(tr_unc)
+    if verbose:
+        print(f'  خطِ مبنا ۱ (بی‌قید): n={0 if tr_unc is None else len(tr_unc):,} '
+              f'WR={wr_unc:.3f}%' if wr_unc is not None else '  بی‌قید: تهی')
+
+    # ── خطِ مبنای ۲: جای‌گشتِ زمانی ──────────────────────────────────────
+    # تلهٔ ۱: k = تعدادِ **سیگنالِ نهایی** (پس از فیلترِ رژیم)، نه پایه.
+    # تلهٔ ۲: همان sl/tp/mh/overlap/trail سیگنال — تنها تفاوت، *زمان*.
+    rng = np.random.default_rng(seed)
+    vidx = np.flatnonzero(valid)
+    k = min(sig_n, len(vidx))
+    perm_wrs: list[float] = []
+    for i in range(n_perm):
+        pick = rng.choice(vidx, size=k, replace=False)
+        pm = np.zeros(n, bool)
+        pm[pick] = True
+        # تلهٔ ۲ کاملاً بسته: `trail` **و** `be_trigger` هر دو از سیگنال
+        # می‌آیند. (BUG-NULLTRAIL: تا گامِ ۳۴ این کلیدها در خروجیِ داور
+        # نبودند و None می‌گرفتند ⇒ کنترل بی‌تریلینگ ⇒ z متورم.)
+        tr_p = se.simulate_trades(df, pm, z, sl, tp, asset, max_hold=mh,
+                                  allow_overlap=False,
+                                  be_trigger_pip=run['be_trigger'],
+                                  trail_pip=run['trail'])
+        w = _wr_of(tr_p)
+        if w is not None:
+            perm_wrs.append(w)
+        if verbose and (i + 1) % 10 == 0:
+            print(f'  جای‌گشت {i + 1}/{n_perm} …')
+            sys.stdout.flush()
+
+    pa = np.array(perm_wrs, float) if perm_wrs else np.array([])
+    long_null = dict(
+        uncond_wr=wr_unc,
+        perm_mean=float(pa.mean()) if pa.size else None,
+        perm_sd=float(pa.std(ddof=1)) if pa.size > 1 else None,
+        perm_max=float(pa.max()) if pa.size else None,
+        perm_k=int(k),
+    )
+    # سمتِ شورت تهی است چون لایه فقط-لانگ است. `blend_null` با وزنِ تعدادِ
+    # معاملهٔ هر سمت ترکیب می‌کند، پس سمتِ بی‌معامله وزنِ صفر می‌گیرد.
+    return {'long': long_null, 'short': {},
+            '_meta': {'asset': asset, 'tf': tf, 'n_perm': int(pa.size),
+                      'n_signals': sig_n, 'n_final_trades': n_final,
+                      'perm_k': int(k), 'n_valid_pool': int(valid.sum()),
+                      'sl_pip': sl, 'tp_pip': tp, 'max_hold': mh,
+                      'perm_wrs': [round(x, 4) for x in perm_wrs]}}
+
+
+def main() -> int:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--asset', default='XAUUSD')
+    ap.add_argument('--tfs', default='M30')
+    ap.add_argument('--nperm', type=int, default=N_PERM)
+    a = ap.parse_args()
+    os.makedirs(OUT_DIR, exist_ok=True)
+    for tf in [t.strip() for t in a.tfs.split(',') if t.strip()]:
+        try:
+            nd = build_null(a.asset, tf, n_perm=a.nperm)
+        except Exception as e:  # noqa: BLE001
+            print(f'!! {a.asset}-{tf}: {type(e).__name__}: {e}')
+            sys.stdout.flush()
+            continue
+        # 🔒 قانونِ سوم: هر کارت فوراً ذخیره می‌شود.
+        fp = os.path.join(OUT_DIR, f'null_{a.asset}_{tf}.json')
+        with open(fp, 'w', encoding='utf-8') as f:
+            json.dump(nd, f, ensure_ascii=False, indent=1)
+        L, M = nd['long'], nd['_meta']
+        print(f'\n═══ مدلِ صفر {a.asset}-{tf} ═══')
+        print(f'  بی‌قید WR      = {L["uncond_wr"]}')
+        print(f'  جای‌گشت میانگین = {L["perm_mean"]}  sd={L["perm_sd"]}')
+        print(f'  جای‌گشت بیشینه  = {L["perm_max"]}  (k={L["perm_k"]}, '
+              f'{M["n_perm"]} تکرار)')
+        ref = max(x for x in (L['uncond_wr'], L['perm_mean']) if x is not None)
+        print(f'  ⇒ خطِ مبنای مؤثر (بیشینه) = {ref:.3f}%')
+        sys.stdout.flush()
+    print('\n[done]')
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
