@@ -1,0 +1,188 @@
+{
+ "note": "S434 — MT5 full gold history supplied by the user (Windows MT5 export)",
+ "source_archive": "history.rar (158,438,429 bytes)",
+ "source_url": "https://abrehamrahi.ir/o/public/y6n6FKpq/",
+ "asset": "XAUUSD",
+ "n_files": 19,
+ "total_bytes": 600509345,
+ "compat_check": {
+  "method": "timestamp merge against pre-existing data/XAUUSD_M30.csv",
+  "overlapping_bars": 181383,
+  "pct_of_old_file": 100.0,
+  "ohlcv_identical_pct": 100.0,
+  "conclusion": "same broker, same feed — existing results remain commensurable"
+ },
+ "files": [
+  {
+   "file": "XAUUSD_D1.csv",
+   "bytes": 207780,
+   "sha256": "d90c5e62bbf4a6f7e7790a0f0a2307266491f4727c6208b5f6bb790560574c6a",
+   "bars": 4005,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 00:00:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_H1.csv",
+   "bytes": 4606529,
+   "sha256": "8328c09c97ee9a5b0fe794420f003d5c1c2d3e6cfa92eba01f63705b4dede83c",
+   "bars": 91331,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:00:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_H12.csv",
+   "bytes": 411918,
+   "sha256": "8de921a001a3ef98ec9da3d8c22164f3a31b6cf947585f06a7dcbb1d8895e333",
+   "bars": 7998,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 12:00:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_H2.csv",
+   "bytes": 2415912,
+   "sha256": "74f7d5adb2ca3ef40a84447b599cc406b7dd9d33a9fd865756ce5d439ac30e0a",
+   "bars": 47623,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 22:00:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_H3.csv",
+   "bytes": 1621299,
+   "sha256": "ac55e064b29cc05d55922b04861261017a7a085719f7d82eca57ea34b1a15448",
+   "bars": 31806,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 21:00:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_H6.csv",
+   "bytes": 819451,
+   "sha256": "f95feab673fd94760372676baadac54d962775a952f9b543be25ad751fe46be7",
+   "bars": 15966,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 18:00:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_H8.csv",
+   "bytes": 615790,
+   "sha256": "a3ba5ac31086ed3f6c1d4faaa3d1b3d364b17f8aa252e5ccb89b9a57b0c64e00",
+   "bars": 11978,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 16:00:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M1.csv",
+   "bytes": 243877238,
+   "sha256": "ab1df9d61abcd95adcf80a2110d2cd5480dbd4292810caa3a2b6461a710d6c1b",
+   "bars": 5000000,
+   "first_utc": "2012-04-04 20:48:00",
+   "last_utc": "2026-08-07 23:54:00",
+   "span_years": 14.34
+  },
+  {
+   "file": "XAUUSD_M10.csv",
+   "bytes": 27087891,
+   "sha256": "c6a8aca7fb0db05e68cd6485eb2b9e136721385ab8fafbe65aff1d55f5e31ff4",
+   "bars": 545488,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:50:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M12.csv",
+   "bytes": 22624655,
+   "sha256": "92d5a35a336b5b982f6d95142e25fc8272c89d87ea23726759083d2822929b82",
+   "bars": 454692,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:48:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M15.csv",
+   "bytes": 18147077,
+   "sha256": "fb55e1ed35a83fa4e93ee3cb59db2060a4a5714efe36f4a9ad5c46aa92b3c4db",
+   "bars": 363778,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:45:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M20.csv",
+   "bytes": 13660210,
+   "sha256": "33fe8c205463a68556b77d9ac8ceb655a7915ff61259e440a7333a755c6c9841",
+   "bars": 272979,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:40:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M3.csv",
+   "bytes": 89340078,
+   "sha256": "daed6f2aa5a412d0035231e24e62f67588322d8f59e648372780750b293f6529",
+   "bars": 1815880,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:54:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M30.csv",
+   "bytes": 9147076,
+   "sha256": "40cf0d8d020488c272e703fe41a93b47e49370dbf37086301b56fa53beb9d334",
+   "bars": 182145,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:30:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M4.csv",
+   "bytes": 67151715,
+   "sha256": "866c2a40eaa2aa41e976f2881070983720c7278aa34b131bd8fd8788ad79c664",
+   "bars": 1362074,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:52:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M5.csv",
+   "bytes": 53795049,
+   "sha256": "cee70f40ade5b251b0aeb6e340070484dc8330e9f571a104ccd1ccc2a2906057",
+   "bars": 1089574,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:50:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_M6.csv",
+   "bytes": 44926915,
+   "sha256": "bee60b27b4d81a3215aefeaece0120eb8fe4d84bb84aed860c5b412d71d5e93f",
+   "bars": 908864,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-08-07 23:54:00",
+   "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_MN1.csv",
+   "bytes": 10049,
+   "sha256": "9ca033dc00f7ac8700d9288939ac5bd9094f6a81a15325b9279e9b3b072a07f3",
+   "bars": 188,
+   "first_utc": "2011-01-01 00:00:00",
+   "last_utc": "2026-08-01 00:00:00",
+   "span_years": 15.58
+  },
+  {
+   "file": "XAUUSD_W1.csv",
+   "bytes": 42713,
+   "sha256": "c4ee820ac461cbe26b76ac1feeb13225be9070c7a2733a36d93bf80d1249b85f",
+   "bars": 813,
+   "first_utc": "2011-01-02 00:00:00",
+   "last_utc": "2026-08-02 00:00:00",
+   "span_years": 15.58
+  }
+ ]
+}
