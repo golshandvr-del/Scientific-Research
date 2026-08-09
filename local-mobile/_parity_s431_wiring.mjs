@@ -22,7 +22,8 @@
 //     مسیرِ اجرا در سایت **زنده** است.
 // =============================================================================
 
-import { readFileSync, existsSync } from 'node:fs'
+// `rmSync` برای پاکسازیِ فایل‌های موقت (`BUG-TMPLEAK` · `S433`) لازم است.
+import { readFileSync, existsSync, rmSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { tmpdir } from 'node:os'
@@ -46,7 +47,20 @@ const { build } = await import(pathToFileURL(esbuildPath).href)
 // ---------------------------------------------------------------------------
 // ۱) باندل‌سازیِ رجیستری به‌صورتِ ماژولِ قابلِ import
 // ---------------------------------------------------------------------------
-const outfile = join(tmpdir(), `s431_wiring_${Date.now()}.mjs`)
+// 🐞 **اصلاحِ `BUG-TMPLEAK` (`S433`)** — دو نقصِ کوچک ولی واقعی در همین دو خط:
+// ---------------------------------------------------------------------------
+// ⓵ **نشتی:** نامِ یکتا تعارضِ همزمانی را حل می‌کند (و همین آزمون از ابتدا
+//    درست انجامش داده بود، برخلافِ آزمونِ دود که نامِ ثابت داشت — `BUG-
+//    TMPCOLLISION`)، ولی **هیچ‌گاه پاک نمی‌شد**. هر اجرا **دو** باندلِ
+//    ~۴۰۰KB در `/tmp` جا می‌گذاشت؛ پیش از این اصلاح ۷ فایلِ نشتی شمرده شد.
+//    روی سندباکسی که با فشارِ منابع ریست می‌شود، این بی‌اهمیت نیست.
+// ⓶ **یکتاییِ ناکافی:** `Date.now()` **تنها** کافی نیست. دو پروسه که در همان
+//    میلی‌ثانیه شروع شوند نامِ یکسان می‌گیرند ⇒ همان تصادمی که تازه در آزمونِ
+//    دود اصلاح کردم، فقط با احتمالِ کمتر. «احتمالِ کم» با «امن» یکی نیست، و
+//    باگِ نادر بدتر از باگِ همیشگی است چون در تشخیص گم می‌شود.
+//    ⇒ `process.pid` افزوده شد: دو پروسه هرگز `pid` یکسان ندارند.
+// ---------------------------------------------------------------------------
+const outfile = join(tmpdir(), `s431_wiring_${process.pid}_${Date.now()}.mjs`)
 await build({
   entryPoints: [join(ROOT, 'web_tool/src/strategy_registry.ts')],
   bundle: true, format: 'esm', platform: 'node', target: 'node18',
@@ -57,7 +71,7 @@ const REG = await import(pathToFileURL(outfile).href)
 const { CARD_LAYERS } = REG
 
 // `analyze` را جدا باندل می‌کنیم (لازمِ ساختِ LayerContext)
-const outfile2 = join(tmpdir(), `s431_signal_${Date.now()}.mjs`)
+const outfile2 = join(tmpdir(), `s431_signal_${process.pid}_${Date.now()}.mjs`)
 await build({
   entryPoints: [join(ROOT, 'web_tool/src/signal.ts')],
   bundle: true, format: 'esm', platform: 'node', target: 'node18',
@@ -65,6 +79,12 @@ await build({
   alias: { 'hono/cloudflare-workers': join(__dirname, 'cf-shim.mjs') },
 })
 const { analyze } = await import(pathToFileURL(outfile2).href)
+
+// پاکسازیِ **پس از** هر دو `import` (پیش از آن، ماژول‌ها هنوز از دیسک خوانده
+// می‌شوند). شکستِ پاکسازی هرگز نباید حکمِ آزمون را خراب کند ⇒ `try` + `force`.
+for (const f of [outfile, outfile2]) {
+  try { rmSync(f, { force: true }) } catch { /* پاکسازی بحرانی نیست */ }
+}
 
 // ---------------------------------------------------------------------------
 // ۲) خواندنِ CSVِ واقعی
