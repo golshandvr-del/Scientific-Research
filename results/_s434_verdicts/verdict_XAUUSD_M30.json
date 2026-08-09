@@ -1,0 +1,85 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M30",
+ "candidate": {
+  "layer": "S139 Gold Overnight Drift (LONG, indicator-free)",
+  "hours": [
+   22,
+   23
+  ],
+  "sig_mode": "SESSION_OPEN",
+  "base_sl": 150.0,
+  "base_tp": 500.0,
+  "scale": 1.37,
+  "trail": 130.0,
+  "be_trigger": null,
+  "regime_kind": "mom",
+  "regime_days": 13,
+  "hold_hours": 24.0,
+  "n_trials": 1296
+ },
+ "geometry": {
+  "sl_pip": 205.50000000000003,
+  "tp_pip": 685.0,
+  "ratio": 3.3333,
+  "max_hold_bars": 48
+ },
+ "data_source": {
+  "path": "data/mt5_full/XAUUSD_M30.csv",
+  "n_bars": 182145,
+  "span_years": 15.59,
+  "first_utc": "2011-01-03 00:00:00",
+  "last_utc": "2026-08-07 23:30:00"
+ },
+ "split_bar": 127501,
+ "oos_frac": 0.3,
+ "n_signals": 3732,
+ "verdict": "REJECT",
+ "rqs2_score": 15.7,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
+  "H6": false,
+  "H7": true,
+  "H8": true,
+  "H9": true
+ },
+ "failed_gates": [
+  "H6"
+ ],
+ "unknown_gates": [
+  "H3",
+  "H4",
+  "H5"
+ ],
+ "metrics": {
+  "n_trades": 1807,
+  "n_wins": 827,
+  "win_rate": 45.77,
+  "expectancy_pip": 12.8411,
+  "cost_pip": 3.3,
+  "profit_factor": 1.383,
+  "net_profit": 19625.4,
+  "max_dd_pct": 5.78,
+  "max_consec_losses": 11,
+  "mcl_allowed": 18,
+  "recovery_factor": 11.14,
+  "skill_lift_pp": null,
+  "skill_z": null,
+  "null_ref_wr": null,
+  "breakeven_wr_cost": 23.45,
+  "expectancy_at_2x_cost": 9.5411,
+  "rr": 3.333,
+  "top_win_share": 0.0069,
+  "max_concurrency": 1,
+  "wr_excess_cost": 22.32
+ },
+ "notes": [
+  "H3 UNKNOWN: no measured null model supplied — absence of a control is not evidence of skill"
+ ]
+}
