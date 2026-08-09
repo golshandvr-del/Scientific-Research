@@ -212,7 +212,16 @@ def eval_combo(df, tf, asset, hours, kind, days, scale, be_trig, trail):
     dd_usd = float((peak - eq).max())
     rec = (float(usd.sum()) / dd_usd) if dd_usd > 0 else float('inf')
 
-    mcl = int(max_consec_losses(pnl))
+    # ⚠️ BUG-OUTCOMETYPE (S434) — در نسخهٔ اول آرایهٔ **عددیِ** pip را به
+    #   `max_consec_losses` دادم، اما آن تابع آرایهٔ **برچسبیِ** 'win'/'loss'
+    #   می‌خواهد و شرطش `if o == 'win'` است. هیچ عددِ شناوری با رشتهٔ 'win'
+    #   مساوی نیست، پس هر معامله «باخت» شمرده شد و خروجی `mcl = n` شد.
+    #   نشانهٔ محال در لاگ: `mcl=862/862` با WR=33.99٪ — یعنی ادعا می‌شد هر
+    #   ۸۶۲ معامله پشت‌سرهم باخت‌اند، در حالی که ۲۹۳ برد وجود داشت.
+    #   خطرِ واقعی: این خطا `h8_mcl` را برای ۸۷۳ ترکیب **کاذباً رد** می‌کرد،
+    #   یعنی ممکن بود ترکیبِ نجات‌دهنده را با دستِ خودم دور بریزم.
+    outcomes = ['win' if p > 0 else 'loss' for p in pnl]
+    mcl = int(max_consec_losses(outcomes))
     mcl_max = int(mcl_bound(n, 1.0 - wr / 100.0))
 
     cost = cfg['spread_pip'] + 2.0 * cfg['slip_pip']
