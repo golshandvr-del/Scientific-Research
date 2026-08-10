@@ -1,0 +1,30 @@
+{
+ "step": 89,
+ "purpose": "Before invoking the eternal-death rule, DIAGNOSE why the novel arm has zero skill, because improvements chosen without a mechanism are blind guesses and the rule requires that no combination of improvements can save the layer.",
+ "finding_1_inherited_filter_is_HARMFUL": {
+  "measured": {
+   "SoS_without_ATR": {"n": 548, "wr": 50.00, "expectancy_pip": 44.01},
+   "SoS_with_ATR":    {"n": 333, "wr": 48.05, "expectancy_pip": 32.06}
+  },
+  "reading": "The ATR14>ATR100 filter, which S204 introduced and validated as a STABILISER, lowers win rate by 1.95pp, lowers expectancy by 27%, and discards 39% of the sample. It is not merely neutral - it is actively harmful on the full history.",
+  "why_this_happened": "S204 validated the ATR filter on the INDEPENDENT REMAINDER of a 98%-covered layer - a residue of n=31 trades. A filter tuned on 31 trades from a heavily-overlapped residue has no obligation to generalise to the 548-trade parent population, and it did not. I inherited it uncritically because the pre-registration adopted the S202/S204 configuration wholesale.",
+  "my_own_error": "This is a violation of my own step-80 lesson applied to a different object. There I read the SOURCE of a layer rather than guessing its rule; here I adopted a FILTER on the authority of a prior report without measuring whether it still helps. Reading the source is not enough if the source's conclusion was reached under conditions that no longer hold.",
+  "consequence_for_the_verdict": "The step-88 REJECT was issued against a candidate carrying a filter that suppresses its own edge. That does not make the REJECT wrong, but it does mean the eternal-death argument is NOT yet complete: an obvious improvement - removing a harmful inherited component - has not been adjudicated."
+ },
+ "finding_2_geometry_is_mismatched_to_horizon": {
+  "exit_mix_full_layer": {"TP_hit": 28, "TP_pct": 8.4, "SL_hit": 118, "SL_pct": 35.4, "timeout": 187, "timeout_pct": 56.2},
+  "mean_pnl_of_timeouts_pip": 105.1,
+  "reading": "Only 8.4% of trades reach TP=750 within the 96-bar hold, while 56.2% expire on the clock. The geometry is not being used: the layer is effectively a 96-hour directional bet whose nominal target is almost never touched. Crucially the timeouts average +105.1 pip, so they are PROFITABLE - the layer is making money by drifting upward and then being closed by the clock, not by hitting its target.",
+  "implication": "TP=750 at max_hold=96 is not a target, it is a cap that never binds. The layer's real profit mechanism is time-limited drift capture, which means the RR=3.0 geometry misrepresents what the layer actually does and the H3 skill statistic - which is computed on WIN RATE - is measuring the wrong thing for this layer.",
+  "connection_to_the_zero_lift": "Win rate is 48.05% against a permutation null of 46.26%, giving lift 0.05pp after the engine takes max(uncond, perm_mean). But win rate is a poor descriptor of a layer where 56% of outcomes are clock-closed partial moves. A layer can have near-zero WIN-RATE skill while having real EXPECTANCY skill, if its edge lives in the size of the drift rather than in the frequency of target hits."
+ },
+ "finding_3_the_directional_edge_is_REAL": {
+  "long_expectancy_pip": 32.06,
+  "short_expectancy_pip": -20.81,
+  "asymmetry_pip": 52.88,
+  "reading": "Running the IDENTICAL signal on the SHORT side yields -20.81 pip per trade against +32.06 for LONG, a directional asymmetry of 52.88 pip. If the signal carried no information, both sides would lose symmetrically by roughly the spread. This is a control comparison, not a performance claim, and it establishes that SoS is detecting something directionally real on gold H1.",
+  "why_this_matters": "It separates two very different diagnoses. 'The layer has no edge' would predict symmetric losses on both sides. 'The layer has an edge that the current geometry and metric fail to capture' predicts exactly what is observed: strong directional asymmetry combined with near-zero win-rate skill."
+ },
+ "conclusion": "The step-88 REJECT stands as issued, but the eternal-death argument is INCOMPLETE and must not be declared. Three specific, measurable improvements are now indicated by mechanism rather than by search: remove the harmful inherited ATR filter, and re-examine the geometry given that TP is touched only 8.4% of the time while profitable timeouts dominate. Under the improvement rules - cooperation, infinity, and 'perhaps everything is floating' - these must be adjudicated before any death claim.",
+ "what_i_will_NOT_do": "I will not sweep geometry combinations until something passes. n_trials is already 290 and every additional arm raises the H5 bar against me. The improvements tested will be the ones the DIAGNOSIS points to, pre-registered with their reasoning, and counted honestly."
+}
