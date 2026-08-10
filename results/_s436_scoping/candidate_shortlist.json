@@ -1,0 +1,38 @@
+{
+ "step": 104,
+ "purpose": "Select the S436 revival candidate by EVIDENCE from the committed ranking rather than by intuition, applying the three de-biasing filters that S435 step 74 discovered were necessary, and record a NEW defect found while applying them.",
+ "source": "results/_s432_priority/priority_rank.json - 587 layer-card pairs across 147 result files",
+
+ "bug_caught_BUG_BUNDLEPATH": {
+  "what_i_did_wrong": "I looked for the shipped-layer bundle at 'local mobile/app.bundle.mjs' with a SPACE in the directory name. The actual path is 'local-mobile/app.bundle.mjs' with a HYPHEN. os.path.exists returned False, the loop body never executed, and the live-layer set came back EMPTY.",
+  "why_it_was_dangerous": "An empty live set means NO candidate is ever flagged as already-shipped. The shortlist would have been topped by S355 on XAUUSD-M15 - a layer that is live in production right now - and I would have spent the whole candidate 'reviving' something that needs no reviving. This is exactly trap 2 from S435 step 74, and knowing about the trap did not protect me, because the trap re-entered through a different door: last time the ranking simply did not know about shipped layers, this time my own detector was silently disconnected.",
+  "how_it_was_caught": "The printed line 'live from bundle: []' was visibly absurd - the portfolio provably contains S431 and S432 because I shipped them myself in this mission. A detector reporting zero live layers in a repository whose central report lists six is a claim I could falsify from memory.",
+  "pattern": "This is the SEVENTH silent defect in this mission and the fourth whose failure mode was to return an empty or default result WITHOUT raising an error. The family now reads: BUG-EPOCH (silent bad dates), BUG-DAYSET (silent empty union), BUG-PERMK (silent wrong convergence flag), BUG-BUNDLEPATH (silent empty live set). Every one of them produced the answer my hypothesis wanted. The operational rule this yields: any detector whose 'nothing found' output is indistinguishable from 'not wired up' must be given a positive control - here, asserting that the known-live S431 and S432 appear in the extracted set."
+ },
+
+ "filters_applied": {
+  "1_tier": "Kept only POOL-READY, POOL-SOLO and FILTER-CAND tiers - 42 of 587 rows. The 279 STRUCT-BROKEN and 264 DEAD-COST rows fail on structure or cost resistance, which no regime filter can repair.",
+  "2_deduplicate": "Collapsed rows sharing a (card, n, lift) fingerprint, since S435 step 74 established that the same layer appears under up to four different filenames. 42 rows collapsed to 29 unique layer-cards, so 31% of the apparent pool is aliases.",
+  "3_exclude_live": "Removed layers already shipped in local-mobile/app.bundle.mjs.",
+  "4_exclude_spent": "Removed the SoS family - S202, S205, S171 - because S435 declared eternal death on it three steps ago and its n_trials budget is exhausted at 292."
+ },
+
+ "live_layers_measured": ["S10","S14","S310","S312","S313","S32","S321","S322","S323","S324","S326","S327","S328","S330","S332","S333","S334","S335","S340","S341","S344","S345","S354","S355","S356","S374","S379","S382","S396","S431","S432","S83","S88"],
+
+ "the_headline_finding": {
+  "statement": "Of 29 unique candidate layer-cards, only 6 rows - covering 5 distinct layers - are neither already live nor already spent by S435.",
+  "why_this_matters": "The POOL-READY tier is advertised as 38 opportunities. After removing aliases, shipped layers and the exhausted SoS family, the real remaining inventory on this ranking is FIVE layers. That is a material fact about the state of mission 4 and it should be visible to whoever comes next rather than rediscovered by them.",
+  "survivors": [
+   {"layer": "S225", "card": "XAUUSD-M30", "n": 287, "lift": 6.80, "z": 2.31, "score": 19.5, "failed": ["H3","H5"]},
+   {"layer": "S221", "card": "XAUUSD-M5", "n": 205, "lift": 7.19, "z": 2.17, "score": 16.9, "failed": ["H3","H5"]},
+   {"layer": "S353", "card": "XAUUSD-D1", "n": 225, "lift": 6.59, "z": 1.98, "score": 25.0, "failed": ["H3","H5"]},
+   {"layer": "S353", "card": "XAUUSD-D1", "n": 313, "lift": 4.62, "z": 1.64, "score": 24.5, "failed": ["H3","H5"]},
+   {"layer": "S350", "card": "XAUUSD-W1", "n": 74, "lift": 5.98, "z": 1.04, "score": 25.4, "failed": ["H3","H5"]},
+   {"layer": "S214", "card": "XAUUSD-M5", "n": 275, "lift": 2.41, "z": 0.80, "score": 14.8, "failed": ["H3","H5","H7"]}
+  ]
+ },
+
+ "observation_that_will_drive_the_choice": "Two of the five survivors sit on D1 and W1. The live portfolio, by contrast, is concentrated on M5, M15, M30, H1 and H4. A candidate on a timeframe the portfolio barely occupies should have LOW overlap almost by construction - which is the opposite of the situation that killed S205 and forced S435 to spend eleven steps measuring coverage. That is a hypothesis about the shortlist rather than a decision, and it will be tested rather than assumed.",
+
+ "what_i_have_NOT_yet_done": "I have not read the source documents of any survivor, have not measured their overlap, and have not chosen. S435 step 80 established that guessing a layer's rule instead of reading its source produces a wrong window and a wrong measurement; that lesson applies here before any selection is made."
+}
