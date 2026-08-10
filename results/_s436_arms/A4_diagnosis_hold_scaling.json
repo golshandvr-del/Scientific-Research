@@ -1,0 +1,29 @@
+{
+ "step": 116,
+ "purpose": "Diagnose why arm A4 returned n=25 on both M15 and M30 before concluding anything about those cards, because a sample that small on 15.5 years of data is implausible on its face and demands explanation rather than acceptance.",
+
+ "the_suspicious_observation": "M5 covers 2.8 years and yields 53 trades. M30 covers 15.5 years - five and a half times longer - and yields 25. A layer firing on a monthly calendar frame should produce roughly the same number of OPPORTUNITIES per year on every card, so more years should mean more trades, not fewer. The direction of the anomaly is what made it detectable.",
+
+ "measurement": {
+  "M5":  {"bars": 200000, "years": 2.8,  "preeom_bars": 28810, "momentum_bars": 3952, "signal_bars": 530, "trades": 53, "hold_96_bars_equals_hours": 8},
+  "M15": {"bars": 150000, "years": 6.4,  "preeom_bars": 20910, "momentum_bars": 1680, "signal_bars": 210, "trades": 25, "hold_96_bars_equals_hours": 24},
+  "M30": {"bars": 181383, "years": 15.5, "preeom_bars": 25572, "momentum_bars": 1664, "signal_bars": 222, "trades": 25, "hold_96_bars_equals_hours": 48},
+  "H1":  {"bars": 90950,  "years": 15.5, "preeom_bars": 12821, "momentum_bars": 729,  "signal_bars": 93,  "trades": 18, "hold_96_bars_equals_hours": 96}
+ },
+
+ "the_defect_is_MINE_and_it_is_common_mistake_6": {
+  "what_i_did": "I carried the published geometry - SL150 / TP300 / max_hold=96 - unchanged to every card, because it is S214's committed configuration and I had made a rule of not paraphrasing committed values.",
+  "why_that_was_wrong_here": "max_hold is expressed in BARS, so its meaning in wall-clock time changes with the timeframe. Ninety-six bars is 8 hours on M5, 24 hours on M15, 48 hours on M30 and 96 hours on H1. The layer's signal is confined to a THREE-DAY calendar window. On M5 a trade lasts a third of a day and several can occur inside the window. On M30 a single trade occupies two of the three days, and with allow_overlap=False the engine cannot open another until it closes, so the window admits at most one or two trades per month regardless of how many signals fire.",
+  "the_proof_it_is_a_blocking_artefact_and_not_scarcity": "M30 produces 222 signal bars against M5's 530 - only 58% fewer signals - yet 25 trades against 53, and M30 has 5.5x more years. Normalising per year: M5 fires 189 signal-bars/year and takes 19 trades/year; M30 fires 14 signal-bars/year and takes 1.6 trades/year. The signal-to-trade conversion ratio is 10.0% on M5 and 11.3% on M30, i.e. essentially IDENTICAL. So the trades are not being blocked at conversion - the SIGNAL itself is 13x rarer per year on M30. The hold-scaling issue is real but is NOT the dominant cause, and I nearly published a wrong diagnosis by stopping at the plausible explanation.",
+  "the_actual_dominant_cause": "The momentum filter requires a complete run of at least 4 consecutive non-climactic bull trend bars within a 12-bar lookback. On M5 that is a 60-minute structure inside a 20-minute detection window; on M30 it is a 2-hour structure inside a 6-hour window. Sustained 4-bar directional runs become dramatically rarer as bar duration grows, because each bar aggregates more mean-reversion. Momentum bars fall from 3,952 on M5 to 1,664 on M30 despite M30 having 5.5x the history - a per-year collapse from 1,411 to 107, a factor of 13. That is the real constraint.",
+  "naming_it": "This is common mistake 6 in the project's list - using identical TP/SL and hold across all timeframes when some cards need different values - and I committed it while believing I was being disciplined by not paraphrasing committed constants. Faithfulness to a source value is not the same as correctness of that value in a new context, which is the same lesson as the S204 filter in S435 step 89, now recurring in a different form."
+ },
+
+ "what_this_does_and_does_not_license": {
+  "does_not_license": "Re-running A4 with a per-card max_hold and reporting whichever card then passes. That would be a sixth arm chosen after seeing results, which honesty commitment 2 forbids and which is mass search by another name.",
+  "does_license": "Reporting A4 as MEASUREMENT-LIMITED on M15/M30/H1 rather than as a negative result, because constraint 2 correctly refused to issue verdicts at n=25, 25 and 18. An arm that could not be measured has not been falsified.",
+  "the_honest_position": "The multi-timeframe rule has been executed - all four cards were tested - and it returned 'insufficient sample on three of four cards' rather than 'the layer fails on three of four cards'. Those are different findings and conflating them would overstate the strength of the rejection."
+ },
+
+ "consequence_for_the_verdict": "The candidate's fate rests on M5, where all four arms were measurable and all four failed. A1, A2 and A3 place the unframed layer BELOW its own null, and B0 with the frame reaches lift +3.17pp but z of only 0.46 against a bar of 3.89 - it fails on power, needing roughly n=2,400 at that lift, against the 53 the calendar frame permits in 2.8 years. That is a structural limit: the frame that supplies the edge also caps the sample at about 19 trades per year."
+}
