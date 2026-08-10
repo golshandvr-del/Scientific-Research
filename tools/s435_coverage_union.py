@@ -139,18 +139,33 @@ def main() -> int:
         print(f"  S356 (Brooks trend-resumption): ترید={d356['n_trade']}  "
               f"روزِ یکتا={len(days356)}")
 
-    # (۲) S312 — mid-month drift، پارامترِ زندهٔ H1: 395/395/24
+    # (۲) S312 — mid-month drift. قانونِ **زنده** از خودِ رجیستری خوانده شد،
+    #     نه از حدسِ من:
+    #       web_tool/src/mid_month_drift.ts:31  MID_ENTRY_HOURS = 1..12
+    #       strategy_registry.ts:355            activeDaysOfMonth = [10,13,20]
+    #       strategy_registry.ts:345            aboveEma = close > EMA200
+    #       strategy_registry.ts:654            s312Layer(395,395,24) روی H1
+    #
+    # 🔴 حدسِ اولِ من «dom 11..20 بدونِ فیلترِ EMA» بود — یعنی پنجره‌ای
+    #    ۱۰ روزه به‌جای ۳ روز و بدونِ دروازهٔ روند. آن نسخه ۱٬۵۰۴ ترید
+    #    می‌ساخت و اجتماع را مصنوعاً باد می‌کرد؛ یعنی خطا **علیهِ** فرضیهٔ
+    #    خودم بود. باز هم: خواندنِ منبع، نه حدس‌زدنِ آن.
     dt = df['dt']
     dom = dt.dt.day.to_numpy()
-    s312_mask = np.isin(dom, list(range(11, 21)))  # پنجرهٔ میانِ ماه
+    hr = dt.dt.hour.to_numpy()
+    ema200 = df['close'].ewm(span=200, adjust=False).mean().to_numpy()
+    above = df['close'].to_numpy() > ema200
+    above = pd.Series(above).shift(1).fillna(False).to_numpy()   # ضدِ نشتی
+    s312_mask = np.isin(dom, [10, 13, 20]) & np.isin(hr, list(range(1, 13))) & above
     t312 = trades_of(df, s312_mask, 395.0, 395.0, 24)
     d312 = days_from_trades(df, t312)
     union |= d312
     out['members']['S312_midmonth'] = {
-        'params': '395/395/24, dom 11-20', 'n_trades': int(0 if t312 is None else len(t312)),
-        'n_days': len(d312)}
-    print(f"  S312 (mid-month 395/395/24): ترید={0 if t312 is None else len(t312)}  "
-          f"روزِ یکتا={len(d312)}")
+        'params': '395/395/24 · dom{10,13,20} · h1-12 · close>EMA200',
+        'source': 'mid_month_drift.ts:31 + strategy_registry.ts:355,345,654',
+        'n_trades': int(0 if t312 is None else len(t312)), 'n_days': len(d312)}
+    print(f"  S312 (dom{{10,13,20}} h1-12 EMA200, 395/395/24): "
+          f"ترید={0 if t312 is None else len(t312)}  روزِ یکتا={len(d312)}")
 
     # ── پنجرهٔ مشترک ─────────────────────────────────────────────────
     if union:
