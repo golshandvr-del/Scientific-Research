@@ -198,14 +198,15 @@ def null_for(df, mask, sl, tp, mh, n_perm=N_PERM, seed=SEED, be=None):
             'short': {}}
 
 
-def adjudicate(df, mask, label, sl, tp, mh, oos_frac=0.30, extra=None):
+def adjudicate(df, mask, label, sl, tp, mh, oos_frac=0.30, extra=None, be=None):
     z = np.zeros(len(df), bool)
     tr = se.simulate_trades(df, mask, z, sl, tp, ASSET,
-                            max_hold=mh, allow_overlap=False)
+                            max_hold=mh, allow_overlap=False,
+                            be_trigger_pip=be)
     if tr is None or len(tr) == 0:
         return {'arm': label, 'error': 'no trades'}
 
-    null = null_for(df, mask, sl, tp, mh)
+    null = null_for(df, mask, sl, tp, mh, be=be)
     split_bar = int(len(df) * (1.0 - oos_frac))
     res = compute_rqs2(tr, ASSET, sl_pip=sl, tp_pip=tp,
                        bar_time=pd.to_numeric(df['time']).to_numpy(),
