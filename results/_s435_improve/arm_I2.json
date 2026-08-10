@@ -1,0 +1,82 @@
+{
+ "arm": "I2",
+ "geometry": {
+  "sl_pip": 250.0,
+  "tp_pip": 394.9,
+  "max_hold": 96,
+  "rr": 1.58
+ },
+ "n_signals": 1397,
+ "verdict": "REJECT",
+ "rqs2_score": 22.4,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": false,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3",
+  "H5",
+  "H8"
+ ],
+ "unknown_gates": [],
+ "null": {
+  "uncond_wr": 48.436,
+  "perm_mean": 47.741331850096195,
+  "perm_sd": 1.4050334832021392,
+  "perm_max": 51.608391608391614,
+  "perm_k": 500
+ },
+ "n_trials": 292,
+ "metrics": {
+  "n_trades": 597,
+  "n_wins": 313,
+  "win_rate": 52.43,
+  "expectancy_pip": 31.2139,
+  "cost_pip": 3.3,
+  "profit_factor": 1.348,
+  "net_profit": 10624.9,
+  "max_dd_pct": 8.4,
+  "max_consec_losses": 7,
+  "mcl_allowed": 14,
+  "recovery_factor": 5.93,
+  "skill_lift_pp": 3.99,
+  "skill_z": 1.95,
+  "null_ref_wr": 48.44,
+  "breakeven_wr_cost": 39.28,
+  "rr": 1.58,
+  "top_win_share": 0.005
+ },
+ "notes": [],
+ "derivation": {
+  "pip_read_from_engine": 0.1,
+  "n_signals_with_full_window": 1396,
+  "mfe_pct": {
+   "p50": 201.4,
+   "p60": 254.6,
+   "p70": 343.0,
+   "p75": 394.9,
+   "p80": 479.5,
+   "p90": 766.2
+  },
+  "mae_pct": {
+   "p50": 167.4,
+   "p75": 307.3,
+   "p90": 578.2
+  },
+  "tp_pip": 394.9,
+  "sl_pip": 250.0,
+  "rr": 1.58,
+  "constraint_tp_ge_sl": true,
+  "reach_old_tp_pct": 10.4,
+  "reach_new_tp_pct": 25.0
+ }
+}

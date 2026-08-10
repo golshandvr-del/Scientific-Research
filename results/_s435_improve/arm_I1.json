@@ -1,0 +1,59 @@
+{
+ "arm": "I1",
+ "geometry": {
+  "sl_pip": 250.0,
+  "tp_pip": 750.0,
+  "max_hold": 96,
+  "rr": 3.0
+ },
+ "n_signals": 1397,
+ "verdict": "REJECT",
+ "rqs2_score": 23.9,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": false,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3",
+  "H5",
+  "H8"
+ ],
+ "unknown_gates": [],
+ "null": {
+  "uncond_wr": 46.448,
+  "perm_mean": 45.20875236723708,
+  "perm_sd": 1.4487071677161598,
+  "perm_max": 49.039881831610046,
+  "perm_k": 500
+ },
+ "n_trials": 292,
+ "metrics": {
+  "n_trades": 548,
+  "n_wins": 274,
+  "win_rate": 50.0,
+  "expectancy_pip": 44.0091,
+  "cost_pip": 3.3,
+  "profit_factor": 1.482,
+  "net_profit": 15150.8,
+  "max_dd_pct": 9.0,
+  "max_consec_losses": 8,
+  "mcl_allowed": 14,
+  "recovery_factor": 6.39,
+  "skill_lift_pp": 3.55,
+  "skill_z": 1.67,
+  "null_ref_wr": 46.45,
+  "breakeven_wr_cost": 25.33,
+  "rr": 3.0,
+  "top_win_share": 0.0094
+ },
+ "notes": []
+}
