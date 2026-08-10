@@ -8,7 +8,7 @@
   "H1": true,
   "H10": false,
   "H2": true,
-  "H3": null,
+  "H3": false,
   "H4": false,
   "H5": false,
   "H6": true,
@@ -18,19 +18,18 @@
  },
  "failed_gates": [
   "H10",
+  "H3",
   "H4",
   "H5",
   "H8"
  ],
- "unknown_gates": [
-  "H3"
- ],
+ "unknown_gates": [],
  "null": {
   "uncond_wr": 46.448,
-  "perm_mean": 46.15968214037976,
-  "perm_sd": 5.603399406311939,
-  "perm_max": 57.407407407407405,
-  "perm_k": 57
+  "perm_mean": 46.254543639743545,
+  "perm_sd": 6.433117980551475,
+  "perm_max": 63.46153846153846,
+  "perm_k": 500
  },
  "n_trials": 290,
  "metrics": {
@@ -53,7 +52,6 @@
   "top_win_share": 0.0851
  },
  "notes": [
-  "H3 UNKNOWN: only 57 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3.",
   "H10 FAIL (substitute): 17 counter-drift trades (<20) and their expectancy is negative (-24.288 pip) — the little adverse-regime evidence there is points against the edge."
  ]
 }

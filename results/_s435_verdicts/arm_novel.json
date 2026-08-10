@@ -8,7 +8,7 @@
   "H1": false,
   "H10": true,
   "H2": true,
-  "H3": null,
+  "H3": false,
   "H4": false,
   "H5": false,
   "H6": false,
@@ -18,20 +18,19 @@
  },
  "failed_gates": [
   "H1",
+  "H3",
   "H4",
   "H5",
   "H6",
   "H8"
  ],
- "unknown_gates": [
-  "H3"
- ],
+ "unknown_gates": [],
  "null": {
   "uncond_wr": 46.448,
-  "perm_mean": 45.90980613397935,
-  "perm_sd": 2.8414881867909885,
-  "perm_max": 52.21238938053098,
-  "perm_k": 276
+  "perm_mean": 46.26346028908869,
+  "perm_sd": 3.0216351151291487,
+  "perm_max": 59.45945945945946,
+  "perm_k": 500
  },
  "n_trials": 290,
  "metrics": {
@@ -54,7 +53,6 @@
   "top_win_share": 0.0215
  },
  "notes": [
-  "PF=1.212<1.3",
-  "H3 UNKNOWN: only 276 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+  "PF=1.212<1.3"
  ]
 }

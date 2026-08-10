@@ -25,10 +25,10 @@
  "unknown_gates": [],
  "null": {
   "uncond_wr": 46.448,
-  "perm_mean": 46.05321452640722,
-  "perm_sd": 2.2004870234656604,
-  "perm_max": 51.18483412322274,
-  "perm_k": 632
+  "perm_mean": 45.74076707241043,
+  "perm_sd": 2.047162292657317,
+  "perm_max": 51.886792452830186,
+  "perm_k": 500
  },
  "n_trials": 290,
  "metrics": {
