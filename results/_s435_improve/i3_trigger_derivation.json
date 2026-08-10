@@ -1,0 +1,28 @@
+{
+  "step": 96,
+  "purpose": "Derive arm I3's break-even trigger from the data as pre-registered at step 95, and verify both hard constraints before the arm is allowed to run.",
+  "method": "be_trigger = median maximum favourable excursion of the LOSING trades, measured on I2's geometry (SL=250, TP=394.9, max_hold=96) over 597 trades. The question being asked of the data is: how far do losers typically travel into profit before turning? If half of them reach X, a break-even trigger at X converts half of them from full losses into scratches.",
+
+  "measured": {
+    "n_trades": 597, "n_losers": 284, "n_winners": 313,
+    "mfe_losers_pip": {"p25": 51.8, "p50": 110.5, "p60": 145.3, "p75": 229.3, "p90": 501.4},
+    "mfe_winners_pip": {"p25": 208.9, "p50": 361.9, "p75": 653.1},
+    "be_trigger_pip": 110.5
+  },
+
+  "constraints": {
+    "be_below_TP": {"value": 110.5, "limit": 394.9, "result": "PASS", "why": "a trigger above the target could never fire"},
+    "be_at_least_20pct_of_SL": {"value": 110.5, "limit": 50.0, "result": "PASS", "why": "a trigger too close to entry is triggered by noise and kills trades that were never in danger"}
+  },
+
+  "the_finding_that_matters": {
+    "losers_rescued_pct": 50.0,
+    "winners_reaching_trigger_pct": 97.1,
+    "reading": "97.1% of WINNERS travel at least 110.5 pip in profit, against 50.0% of LOSERS. The trigger therefore sits at a point that almost every winner passes through and only half of losers reach. That asymmetry is the whole mechanism: moving the stop to break-even at 110.5 pip converts half the losing population from full 250-pip losses into scratches, while leaving 97% of winners undisturbed in the sense that they have already cleared the trigger and continue to their target.",
+    "separation_of_the_two_distributions": "Median MFE is 110.5 for losers and 361.9 for winners, a factor of 3.3. The distributions are genuinely separated rather than overlapping, which is why a single threshold can act differentially on them at all. Had they overlapped tightly, no trigger value would have helped and the arm would have been pointless."
+  },
+
+  "the_risk_this_creates_stated_before_measuring_it": "The 97.1% figure describes winners under I2's rules, where no stop moves. Under I3 the stop DOES move, so some trades that were winners in I2 may now be stopped out at break-even after a retracement below entry, never reaching the target. Those become scratches rather than wins, which LOWERS win rate and LOWERS gross profit. The 97.1% therefore establishes that winners clear the trigger, not that they survive it. The actual effect on the winning population can only be measured by running the arm, and it is the reason PF was pre-registered at step 95 with a floor of 1.3 as a hard constraint.",
+
+  "forecast_scoring": "Step 95 predicted the trigger would land at 80-160 pip, reasoning that losers travel less far than winners and that whole-sample median MFE was 201. Measured 110.5, inside the band. The arm was predicted to run at 80% confidence and both constraints pass, so it runs."
+}
