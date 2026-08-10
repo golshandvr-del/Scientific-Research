@@ -109,13 +109,59 @@ def derive_i2_target(df, sig) -> dict:
     }
 
 
-def null_for(df, mask, sl, tp, mh, n_perm=N_PERM, seed=SEED):
-    """مدلِ صفرِ **اختصاصیِ همین بازو با همین هندسه**.
+def derive_i3_trigger(df, sig, tp) -> dict:
+    """`be_trigger` بازوی `I3` را از **خودِ داده** می‌گیرد.
+
+    تعریف: چندکِ ۵۰٪ِ MFEِ معاملاتِ **بازنده**. پرسشی که از داده می‌پرسیم:
+    بازنده‌ها **قبل از باختن** معمولاً چقدر جلو می‌روند؟ اگر نصفشان به X
+    می‌رسند، سربه‌سر در X نصفِ آن‌ها را از باختِ کامل به صفر می‌برد.
+
+    ⚠️ قیدهای سختِ پیش‌ثبتِ گامِ ۹۵: `be < TP` (وگرنه هرگز فعال نمی‌شود) و
+       `be ≥ 0.2×SL` (وگرنه نویز معامله‌ای را می‌کشد که در خطر نبوده).
+    """
+    pip = se.ASSETS[ASSET]['pip']
+    sl, mh = cov.CAND['sl'], cov.CAND['max_hold']
+    z = np.zeros(len(df), bool)
+    tr = se.simulate_trades(df, sig, z, sl, tp, ASSET, max_hold=mh,
+                            allow_overlap=False)
+    p = tr['pnl_pip'].values
+    eb = tr['entry_bar'].values
+    hi = df['high'].to_numpy()
+    op = df['open'].to_numpy()
+    n = len(df)
+    mfe = np.array([(hi[i + 1:min(i + 1 + mh, n)].max() - op[i + 1]) / pip
+                    if i + 1 < n else np.nan for i in eb])
+    ok = ~np.isnan(mfe)
+    los, win = mfe[ok & (p <= 0)], mfe[ok & (p > 0)]
+    be = float(np.percentile(los, 50))
+    return {
+        'be_trigger_pip': round(be, 1),
+        'n_losers': int(los.size), 'n_winners': int(win.size),
+        'mfe_losers': {f'p{q}': round(float(np.percentile(los, q)), 1)
+                       for q in (25, 50, 75, 90)},
+        'mfe_winners': {f'p{q}': round(float(np.percentile(win, q)), 1)
+                        for q in (25, 50, 75)},
+        'losers_rescued_pct': round(100.0 * float((los >= be).mean()), 1),
+        'winners_clearing_trigger_pct': round(100.0 * float((win >= be).mean()), 1),
+        'constraint_be_lt_tp': bool(be < tp),
+        'constraint_be_ge_20pct_sl': bool(be >= 0.2 * sl),
+    }
+
+
+def null_for(df, mask, sl, tp, mh, n_perm=N_PERM, seed=SEED, be=None):
+    """مدلِ صفرِ **اختصاصیِ همین بازو با همین هندسه و همین مدیریت**.
 
     چرا هندسه اینجا پارامتر است و از `CAND` خوانده نمی‌شود: `I2` هندسهٔ
     متفاوتی دارد و مدلِ صفرش باید با **همان** `tp` ساخته شود. اگر مدلِ صفر
     با `tp=750` ساخته شود و بازو با `tp=395` اجرا، لیفت مقایسهٔ دو چیزِ
     متفاوت است و z بی‌معنا — همان `BUG-NULLUNCOND` در لباسِ نو.
+
+    🔴 گامِ ۹۷ — و `be` هم به همین دلیل پارامتر است. بازوی `I3` سربه‌سر
+    دارد، پس جای‌گشت‌هایش **هم باید سربه‌سر داشته باشند**. سربه‌سر به‌تنهایی
+    WRِ هر لایه‌ای را عوض می‌کند (باختِ کامل ⇒ باختِ صفر که برد شمرده
+    نمی‌شود). اگر مدلِ صفر بدونِ سربه‌سر ساخته شود، لیفت **اثرِ سربه‌سر** را
+    اندازه می‌گیرد نه مهارتِ سیگنال را — و آن اثر می‌تواند در هر جهتی باشد.
+    این تعهدِ ۳ِ پیش‌ثبتِ گامِ ۹۵ است، و سومین لباسِ `BUG-NULLUNCOND`.
     """
     n = len(df)
     z = np.zeros(n, bool)
@@ -129,7 +175,7 @@ def null_for(df, mask, sl, tp, mh, n_perm=N_PERM, seed=SEED):
     um = np.zeros(n, bool)
     um[pick] = True
     tu = se.simulate_trades(df, um, z, sl, tp, ASSET, max_hold=mh,
-                            allow_overlap=True)
+                            allow_overlap=True, be_trigger_pip=be)
     wr_unc = _wr(tu)
 
     k = int(mask.sum())
@@ -139,7 +185,7 @@ def null_for(df, mask, sl, tp, mh, n_perm=N_PERM, seed=SEED):
         pm = np.zeros(n, bool)
         pm[p] = True
         t = se.simulate_trades(df, pm, z, sl, tp, ASSET, max_hold=mh,
-                               allow_overlap=False)
+                               allow_overlap=False, be_trigger_pip=be)
         w = _wr(t)
         if w is not None:
             perm.append(w)
