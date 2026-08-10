@@ -1,0 +1,62 @@
+{
+ "note": "S434 - EMPIRICAL TEST of my own step-61 prediction that a low-volatility nightly layer would fail. I tested it rather than relying on the prediction, because the eternal-death rule requires measurement and a forecast is not evidence.",
+ "what_i_predicted_in_step61": "Removing the top volatility quartile buys roughly +0.6pp, taking lift to about 2.6pp, still below the 4.0 floor, while cutting n from 1807 to about 1355 inflates perm_sd to ~1.00 and raises the z bar.",
+ "card": "XAUUSD-M30",
+ "shared_unconditional_control_wr": 43.816,
+ "control_note": "Control sampled at 50k eligible bars per step 46, run WITH trailing and break-even per BUG-NULLUNCOND. natr is lagged by shift(1) so the filter uses only information through the signal bar.",
+ "arms": [
+  {
+   "variant": "full candidate (all volatility)",
+   "n": 1807,
+   "wr": 45.77,
+   "lift_pp": 1.95,
+   "perm_sd_est": 0.8674,
+   "z_est": 2.25,
+   "H3": false
+  },
+  {
+   "variant": "drop top 25% natr",
+   "n": 1343,
+   "wr": 46.91,
+   "lift_pp": 3.094,
+   "perm_sd_est": 1.0061,
+   "z_est": 3.08,
+   "H3": false
+  },
+  {
+   "variant": "keep bottom 50% natr",
+   "n": 917,
+   "wr": 47.44,
+   "lift_pp": 3.621,
+   "perm_sd_est": 1.2176,
+   "z_est": 2.97,
+   "H3": false
+  },
+  {
+   "variant": "keep bottom 25% natr",
+   "n": 471,
+   "wr": 45.86,
+   "lift_pp": 2.044,
+   "perm_sd_est": 1.699,
+   "z_est": 1.2,
+   "H3": false
+  }
+ ],
+ "prediction_scoring": {
+  "predicted_lift": "~2.6pp",
+  "best_measured_lift": 3.621,
+  "verdict": "CORRECT in conclusion, WRONG in magnitude - the filter helped MORE than I forecast (+1.67pp rather than +0.6pp), yet the conclusion holds because 3.621 < 4.0.",
+  "why_i_under_predicted": "I estimated the lift gain from the AUC alone, treating filter selectivity as uniform across the volatility distribution. In fact the top-quartile trades are much worse than AUC 0.477 implies, so shallow removal is more productive than a linear reading of AUC predicts. This is a real limitation of using AUC to forecast filter yield, and it is exactly why the test was worth running rather than trusting the forecast.",
+  "honesty_note": "Recording that my forecast erred in the layer's FAVOUR matters: had I skipped the test on the strength of my own prediction, I would have missed that the true best lift is 3.62pp - only 0.38pp from the floor - a materially different picture from 2.6pp and much closer to viable."
+ },
+ "self_defeating_dynamic_observed_directly": {
+  "finding": "This is the clearest empirical demonstration of the step-41 arithmetic in the whole mission.",
+  "lift_trajectory": "1.950 -> 3.094 -> 3.621 -> 2.044 (rises then COLLAPSES)",
+  "z_trajectory": "2.25 -> 3.08 -> 2.97 -> 1.20 (essentially FLAT then collapses)",
+  "perm_sd_trajectory": "0.8674 -> 1.0061 -> 1.2176 -> 1.6990 (monotone inflation)",
+  "reading": "Lift improves 86% from unfiltered to best-filtered, yet z improves only 32% and then FALLS, because perm_sd inflates 40% over the same range. The filter's statistical benefit is almost entirely cancelled by the cost of the trades it discards. At 25% retention both collapse: lift falls to 2.044 because the filter has begun removing WINNERS, and z falls to 1.20 because n=471 nearly doubles perm_sd.",
+  "why_this_matters_beyond_S434": "Step 54 correctly identified that SHALLOW filtering escapes the self-defeating dynamic in principle. This measurement shows the escape window is NARROW and bounded in practice: favourable between 100% and 75% retention, neutral by 50%, destructive by 25%. Any future mission closing a lift deficit with a filter should expect a usable window of roughly 10-30% removal and must track the z trajectory, not just the lift trajectory."
+ },
+ "verdict": "All four arms FAIL H3. The best is 'keep bottom 50% natr' at lift 3.621pp against the 4.0pp floor - 91% of the bar, the closest any variant in this entire mission has come - but it fails on BOTH criteria simultaneously: lift is 0.379pp short AND z at 2.97 is below the 3.09 floor. The two failures are COUPLED, not independent: closing the lift gap requires deeper filtering, which inflates perm_sd further and pushes z DOWN. There is no retention level at which both clear.",
+ "no_further_search_conducted": "I did not sweep other volatility indicators, other quantile thresholds, or combinations, and I state why: it would inflate n_trials against myself while the measured z trajectory shows the route is structurally bounded rather than merely untuned. Sweeping until something passes at z~3.1 with n~900 would be precisely the mass-search behaviour H5 exists to catch."
+}
