@@ -61,7 +61,11 @@ CAND = {
 
 def load_h1() -> pd.DataFrame:
     df = pd.read_csv('data/mt5_full/XAUUSD_H1.csv')
-    df['dt'] = pd.to_datetime(df['time'])
+    # ⚠️ ستونِ time در این مخزن **اپکِ ثانیه‌ای به‌صورت رشته** است.
+    # pd.to_datetime(str) این را «سال ۱۲۹۴۸۶۶۰۰۰» می‌خواند و می‌ترکد —
+    # و بدتر: اگر نمی‌ترکید، تاریخ‌های بی‌معنا می‌ساخت و پوششِ صفر
+    # گزارش می‌شد. پس صریحاً عددی و سپس unit='s'.
+    df['dt'] = pd.to_datetime(pd.to_numeric(df['time']), unit='s')
     return df
 
 
@@ -126,7 +130,7 @@ def main() -> int:
     p356 = 'results/_scan_S356/XAUUSD-H1_entrybars.json'
     if os.path.exists(p356):
         d356 = json.load(open(p356, encoding='utf-8'))
-        tt = pd.to_datetime(pd.Series(d356['trade_times']))
+        tt = pd.to_datetime(pd.to_numeric(pd.Series(d356['trade_times'])), unit='s')
         days356 = set(tt.dt.floor('D'))
         union |= days356
         out['members']['S356_brooks_trend_resumption'] = {
