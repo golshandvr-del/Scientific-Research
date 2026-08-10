@@ -1,0 +1,29 @@
+{
+ "step": 108,
+ "purpose": "Correct my own step-107 pre-registration BEFORE running anything, because reading the layer's CODE revealed that its central hypothesis has already been tested and failed for a reason my pre-registration never mentioned.",
+
+ "what_i_missed": {
+  "where": "strategies/s214b_late_entry_as_filter.py, module docstring, lines 9-12",
+  "verbatim_finding": "The module states that the INDEPENDENT S214 candidates - i.e. the momentum signal WITHOUT the calendar frame - were both rejected: XAUUSD_M5 raw +$3,153 but 63.8% overlap with the gold union leaving an independent contribution of +$237; XAUUSD_H1 raw +$2,062 but 57.6% overlap leaving n=14, below the floor.",
+  "why_this_matters": "Arm A1 of my step-107 pre-registration is defined as 'remove the calendar frame, keep the momentum filter'. That is EXACTLY the unframed independent candidate described above. It has already been run, it produced a large raw profit, and it died on OVERLAP rather than on sample size or lift.",
+  "the_error_in_my_reasoning": "I read S214's RESULT document and its ranking row, and I read the final layer's code, but I did not read the code of the SIBLING module that documents why the unframed version was abandoned. My step-106 selection argued that the calendar frame is 'an inherited arbitrary constraint that the evidence says is not load-bearing'. The evidence actually says something quite different: the frame is what made the layer INDEPENDENT. Without it the momentum signal fires wherever gold trends, and gold trends predominantly inside the windows the calendar layers already occupy."
+ },
+
+ "why_this_is_the_same_defect_class_again": "This is the fifth time in this mission that a claim proved wrong when read from source rather than recalled or inferred - after S312's trading rule, gold's pip size, the S204 filter's continued validity, and the scope of the data-truncation finding. The new wrinkle is that here I DID read a source; I read the wrong one. Reading a layer's result document tells you what happened to that layer. It does not tell you what happened to the variants that were tried and abandoned along the way, and those variants are precisely what a revival proposes to resurrect. The rule this yields: before reviving a layer by REMOVING one of its components, grep the strategies directory for that layer's sibling modules, because the removal has probably already been tried by whoever added the component.",
+
+ "what_survives_of_the_candidate": {
+  "still_true": "S214's geometry is sound at SL150/TP300 with no common-mistake-8 contamination, and its three-way ablation with a rejected-set control genuinely locates the edge in the momentum filter.",
+  "still_true_2": "The unframed version makes real raw money: +$3,153 on M5 and +$2,062 on H1. That is not a marginal signal.",
+  "now_known": "The binding constraint on the unframed version is OVERLAP, measured at 63.8% on M5 and 57.6% on H1 against the union AS IT WAS THEN.",
+  "the_question_this_opens": "The S205/S435 precedent is directly relevant and cuts the opposite way this time. There, a layer rejected for 98% overlap was reopened because the union that covered it had died, and coverage was re-measured at 16.8%. Here the reverse must be checked: the union of that era included S142, S140, S139, S141 and S144, and the mission-4 work has KILLED several of those - I personally executed S139 in S434. If the covering union has shrunk, the 63.8% figure is stale in the favourable direction. If it has grown - and it has, since S431 and S432 shipped multi-card pools - it is stale in the unfavourable direction. Both movements are real and they oppose each other, so the net effect CANNOT be reasoned out and must be measured."
+ },
+
+ "amendment_to_the_pre_registration": {
+  "arm_A1_redefined": "A1 remains 'remove the calendar frame' but is now explicitly a REPLICATION of a known-failed configuration, not a novel hypothesis. Its purpose is to reproduce the +$3,153 raw result on current data and establish the current overlap, not to discover whether the frame is load-bearing.",
+  "new_mandatory_step_before_adjudication": "Coverage against the CURRENT live union must be measured before any arm is adjudicated, because if coverage is still above roughly 60% the candidate is dead on the same ground as before and adjudicating five arms would be wasted work that inflates n_trials against myself.",
+  "forecast_3_rescored": "My step-107 forecast 3 predicted A1's lift would FALL below B0's because the calendar frame probably selected a favourable regime. That reasoning was directionally right for the wrong mechanism: the frame did not select a favourable regime, it selected an INDEPENDENT one. I am recording the forecast as 'right conclusion, wrong mechanism' rather than claiming it as a hit.",
+  "what_is_NOT_changed": "n_trials stays at 1,928 and the bar stays at 3.89. This correction does not reduce the search history; if anything the sibling module documents further variants, but I will not inflate the count speculatively - 1,928 is what I can defend by direct enumeration."
+ },
+
+ "cost_of_catching_this_now_versus_later": "Catching it here costs one step. Catching it after adjudicating five arms would have cost the entire candidate and produced a document whose central claim - that the calendar frame is not load-bearing - was contradicted by a file already in the repository."
+}
