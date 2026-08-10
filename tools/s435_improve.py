@@ -255,28 +255,57 @@ def main() -> int:
 
     plan = {}
     if 'I1' in a.arms:
-        plan['I1'] = (cov.CAND['tp'], None)
-    if 'I2' in a.arms:
-        d = derive_i2_target(df, sig)
-        if not d['constraint_tp_ge_sl']:
-            print(f"  ⛔ I2 لغو شد: TP={d['tp_pip']} < SL={d['sl_pip']} "
+        plan['I1'] = (cov.CAND['tp'], None, None)
+
+    # 🔴 گامِ ۹۹ — `I2` و `I3` هر دو به هدفِ مشتق‌شده نیاز دارند، پس **یک‌بار**
+    # مشتق می‌شود و بینشان به اشتراک گذاشته می‌شود. `I3` طبقِ پیش‌ثبتِ گامِ ۹۵
+    # دقیقاً «`I2` + سربه‌سر» است؛ اگر هدف را دوبار مشتق کنم امروز بی‌ضرر است
+    # ولی **دو جای مستقل** برای واگراییِ تعریف می‌سازد.
+    d2 = None
+    if 'I2' in a.arms or 'I3' in a.arms:
+        d2 = derive_i2_target(df, sig)
+        if not d2['constraint_tp_ge_sl']:
+            print(f"  ⛔ I2/I3 لغو شد: TP={d2['tp_pip']} < SL={d2['sl_pip']} "
                   f"⇒ قانونِ حفظِ بودجه اجازه نمی‌دهد")
             with open(os.path.join(ROOT, OUT, 'I2_CANCELLED.json'), 'w',
                       encoding='utf-8') as f:
                 json.dump({'cancelled': True, 'reason':
                            'TP<SL violates budget-preservation rule',
-                           'derivation': d}, f, ensure_ascii=False, indent=1)
-        else:
-            plan['I2'] = (d['tp_pip'], d)
+                           'derivation': d2}, f, ensure_ascii=False, indent=1)
+            d2 = None      # ⇒ `I3` هم می‌میرد: بدونِ هندسه‌اش معنا ندارد
 
-    for lbl, (tp, extra) in plan.items():
-        out = adjudicate(df, sig, lbl, sl, tp, mh, extra=extra)
+    if 'I2' in a.arms and d2:
+        plan['I2'] = (d2['tp_pip'], d2, None)
+
+    if 'I3' in a.arms and d2:
+        d3 = derive_i3_trigger(df, sig, d2['tp_pip'])
+        ok = d3['constraint_be_lt_tp'] and d3['constraint_be_ge_20pct_sl']
+        # مکانیزم را **قبل از** نتیجه چاپ می‌کنیم تا خواننده بتواند مستقل از
+        # موفق/ناموفق‌بودنِ بازو، معقول‌بودنش را قضاوت کند.
+        print(f"  [I3] be_trigger={d3['be_trigger_pip']} pip · "
+              f"بازنده‌های نجات‌یافته={d3['losers_rescued_pct']}% · "
+              f"برنده‌های عبورکرده={d3['winners_clearing_trigger_pct']}%")
+        if not ok:
+            print(f"  ⛔ I3 لغو شد: قیدِ سختِ گامِ ۹۵ نقض شد "
+                  f"(be<TP={d3['constraint_be_lt_tp']}, "
+                  f"be≥0.2·SL={d3['constraint_be_ge_20pct_sl']})")
+            with open(os.path.join(ROOT, OUT, 'I3_CANCELLED.json'), 'w',
+                      encoding='utf-8') as f:
+                json.dump({'cancelled': True,
+                           'reason': 'step-95 hard constraint violated',
+                           'derivation': d3}, f, ensure_ascii=False, indent=1)
+        else:
+            plan['I3'] = (d2['tp_pip'], {'target': d2, 'trigger': d3},
+                          d3['be_trigger_pip'])
+
+    for lbl, (tp, extra, be) in plan.items():
+        out = adjudicate(df, sig, lbl, sl, tp, mh, extra=extra, be=be)
         p = os.path.join(ROOT, OUT, f'arm_{lbl}.json')
         with open(p, 'w', encoding='utf-8') as f:
             json.dump(out, f, ensure_ascii=False, indent=1)
         m = out.get('metrics') or {}
         print(f"  ═══ [{lbl}] {out.get('verdict')} · "
-              f"RQS2={out.get('rqs2_score')} · TP={tp}")
+              f"RQS2={out.get('rqs2_score')} · TP={tp} · BE={be}")
         print(f"      n={m.get('n_trades')} WR={m.get('win_rate')} "
               f"lift={m.get('skill_lift_pp')} z={m.get('skill_z')} "
               f"PF={m.get('profit_factor')}")
