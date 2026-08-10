@@ -1,0 +1,59 @@
+{
+ "arm": "overlap",
+ "n_signals": 57,
+ "verdict": "REJECT",
+ "rqs2_score": 14.3,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": false,
+  "H2": true,
+  "H3": null,
+  "H4": false,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": false,
+  "H9": true
+ },
+ "failed_gates": [
+  "H10",
+  "H4",
+  "H5",
+  "H8"
+ ],
+ "unknown_gates": [
+  "H3"
+ ],
+ "null": {
+  "uncond_wr": 46.448,
+  "perm_mean": 46.15968214037976,
+  "perm_sd": 5.603399406311939,
+  "perm_max": 57.407407407407405,
+  "perm_k": 57
+ },
+ "n_trials": 290,
+ "metrics": {
+  "n_trades": 57,
+  "n_wins": 26,
+  "win_rate": 45.61,
+  "expectancy_pip": 51.8877,
+  "cost_pip": 3.3,
+  "profit_factor": 1.492,
+  "net_profit": 1157.7,
+  "max_dd_pct": 8.52,
+  "max_consec_losses": 6,
+  "mcl_allowed": 13,
+  "recovery_factor": 1.2,
+  "skill_lift_pp": -0.83,
+  "skill_z": -0.13,
+  "null_ref_wr": 46.45,
+  "breakeven_wr_cost": 25.33,
+  "rr": 3.0,
+  "top_win_share": 0.0851
+ },
+ "notes": [
+  "H3 UNKNOWN: only 57 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3.",
+  "H10 FAIL (substitute): 17 counter-drift trades (<20) and their expectancy is negative (-24.288 pip) — the little adverse-regime evidence there is points against the edge."
+ ]
+}
