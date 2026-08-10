@@ -1,0 +1,64 @@
+{
+ "arm": "B0",
+ "card": "M5",
+ "geometry": {
+  "sl_pip": 150.0,
+  "tp_pip": 300.0,
+  "max_hold": 96,
+  "rr": 2.0
+ },
+ "n_signals": 530,
+ "verdict": "REJECT",
+ "rqs2_score": 14.3,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": false,
+  "H8": false,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3",
+  "H5",
+  "H7",
+  "H8"
+ ],
+ "unknown_gates": [],
+ "null": {
+  "uncond_wr": 47.776,
+  "perm_mean": 46.9862729512035,
+  "perm_sd": 2.263522987929237,
+  "perm_max": 53.125,
+  "perm_k": 500
+ },
+ "n_trials": 1928,
+ "metrics": {
+  "n_trades": 53,
+  "n_wins": 27,
+  "win_rate": 50.94,
+  "expectancy_pip": 19.9811,
+  "cost_pip": 3.3,
+  "profit_factor": 1.352,
+  "net_profit": 726.0,
+  "max_dd_pct": 4.89,
+  "max_consec_losses": 5,
+  "mcl_allowed": 11,
+  "recovery_factor": 1.32,
+  "skill_lift_pp": 3.17,
+  "skill_z": 0.46,
+  "null_ref_wr": 47.78,
+  "breakeven_wr_cost": 34.07,
+  "rr": 2.0,
+  "top_win_share": 0.0745
+ },
+ "notes": [
+  "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+ ],
+ "extra": null
+}
