@@ -1,0 +1,47 @@
+{
+ "step": 74,
+ "purpose": "Select the next revival candidate by EVIDENCE from the committed ranking, not intuition, and record the three traps found while doing so.",
+ "source": "results/_s432_priority/priority_rank.json (587 layer-card pairs, 147 files)",
+ "trap_1_duplicate_files": {
+  "finding": "Ranks 4,5,6,7 have BYTE-IDENTICAL n=64, lift=14.01, wr=65.62 on XAUUSD-M5. They are the SAME LPSB layer recorded under four different filenames: S351 (twice, two naming conventions), S355, S376.",
+  "same_pattern_at": ["XAUUSD-M30 n=42 lift=15.58 x4", "XAUUSD-H1 n=74 lift=10.43 x4", "XAUUSD-M15 n=51 lift=11.71 x4", "XAUUSD-M15 n=167 lift=10.85 x2 (S323)"],
+  "why_it_matters": "Ranking blindly by rank_score would have had me 'revive' a layer S431 already shipped, and the duplicate rows also INFLATE the apparent size of the POOL-READY tier: of 38 rows, a substantial share are aliases rather than distinct opportunities.",
+  "action": "De-duplicated by (strategy_id, card, n) fingerprint before choosing."
+ },
+ "trap_2_live_layers_in_the_candidate_list": {
+  "finding": "The ranking does not know which layers are already SHIPPED. Of the top 10 rows, 7 belong to layers already live in local-mobile/app.bundle.mjs: S355, S312, S354, S344, S334, S374, S323.",
+  "live_portfolio_verified": ["S312", "S344", "S355", "S356", "S431", "S432"],
+  "method": "Extracted every S-number from the built bundle and cross-referenced. Verified against the '// star Sxxx' layer registration comments rather than bare number matches."
+ },
+ "trap_3_my_own_false_alarm_recorded": {
+  "claim_i_made": "I initially grepped for 'SOS' in the bundle, got 15 hits, and concluded SoS logic was live under a different ID.",
+  "reality": "All 15 hits were substrings of toISOString(). The grep was naive and the conclusion was WRONG.",
+  "correction": "Re-checked with the layer-registration comment pattern and with an explicit S1xx scan: ZERO S1xx layers are live. S171 SoS is genuinely absent from the shipped portfolio.",
+  "why_recorded": "This mission's own history (E-13, BUG-NULLUNCOND) shows that the dangerous failures here are the ones that run silently and produce a confident wrong answer. A grep that matches a date function and returns 15 confident hits is precisely that shape, so it is logged rather than quietly fixed."
+ },
+ "chain_already_closed": {
+  "note": "S202 named an unfinished next step, and I checked whether it was done rather than assuming it was not. It WAS done, three times over.",
+  "S202": "SoS(LONG) on XAUUSD-H1 passed a hard gate at +$12,765, WR 48.3%, PF 1.69, SL250/TP750/mh96, with 62 parameter combinations passing => robust, not a single overfit setting. Market Inertia(SHORT) on H1 was dead.",
+  "S203": "Overlap vs SoS-M15: daily PnL corr +0.268 (low), but the genuinely independent remainder was only +$322 on n=87 with walk-forward [-1574,-453,+1087,+1746] => unstable. Independent-layer and replacement routes both REJECTED.",
+  "S204": "Filtering that independent remainder with ATR14>ATR100 stabilised it: +$1,445, WR 54.8%, n=31, WF 4/4 positive, with 5 gate-passing combinations all containing ATR => robust.",
+  "S205": "DECISIVE at the time: measured the remainder against the UNION of all gold LONG layers' trading days (1,534 days). Genuinely new share was 5 trades, net -$27 => non-incremental, REJECT.",
+  "S206": "H1 context as an MTF confirmation filter ON the live SoS-M15: every filter REDUCED net, best delta -$2,696 => no improvement."
+ },
+ "the_reframing": {
+  "observation": "S205's rejection rests entirely on the claim that ~98% of SoS-H1's trading days were already covered by the then-existing gold LONG portfolio, which explicitly included SoS-M15, Overnight, Monday and TurnOfMonth layers.",
+  "but": "That portfolio NO LONGER EXISTS. Under RQS2 v2.6 the live set is S312, S344, S355, S356, S431, S432 - and ZERO S1xx layers survive. SoS-M15 itself is gone, and the Overnight layer is the very S139/S434 family I proved eternally dead this mission.",
+  "implication": "The double-counting objection that killed S202-S205 was measured against a coverage union that has since been dismantled. It must be RE-MEASURED against the current live portfolio before the layer can be called dead. This is not a loophole: it is the project's own overlap rule, which requires overlap to be measured against the ACTUAL portfolio, applied to a portfolio that changed.",
+  "status": "HYPOTHESIS, not a finding. The new coverage union has not been computed yet. It is entirely possible the current six live layers still cover SoS-H1's days, in which case the REJECT stands and I will report that."
+ },
+ "decision": "Adopt S435 = revival of S202/S204 'SoS-H1 + ATR14>ATR100' as a candidate INDEPENDENT layer, re-adjudicated under RQS2 v2.6 against the CURRENT live portfolio's coverage union.",
+ "why_this_candidate_over_the_alternatives": [
+  "It is non-time-based price action (Al Brooks chapter 19 structure), whereas both my ACCEPTs this mission were time/structure based - directly addressing common mistake 1.",
+  "Its prior failure mode was NOT statistical weakness: S204 showed WF 4/4 positive and 5 robust gate-passing filter combinations. It was rejected for REDUNDANCY, a property of the portfolio rather than of the layer - and the portfolio changed.",
+  "Redundancy is the one rejection reason in the archive that can be overturned WITHOUT weakening any gate, so pursuing it cannot become common mistake 8.",
+  "It already carries a measured per-timeframe geometry lesson (H1 wants TP750 vs M15's TP450), consistent with common mistake 6."
+ ],
+ "pre_registered_risks": [
+  "n is small: S204's filtered independent remainder was n=31. Under RQS2 v2.6 that will likely fail H4/H3 on power alone, exactly as S434 did. The unfiltered SoS-H1+ATR set is n=267 (S202) / larger in S205, which is the set I should adjudicate.",
+  "n_trials must be carried honestly: the S202 battery swept 267 variants. That is a heavy multiplicity burden and will raise the H5 bar substantially. I will count it rather than reset it to 1."
+ ]
+}
