@@ -1,0 +1,20 @@
+{
+ "step": 75,
+ "purpose": "Open the S205 code and read the EXACT composition of the 1,534-day coverage union that produced the REJECT, rather than trusting the prose summary in the report.",
+ "why_reading_the_code_and_not_the_report": "The S205 report says the remainder was measured against 'the union of all gold LONG layers'. That phrasing is a description, not a specification, and the entire revival case turns on WHICH layers were in it. Accepting a prose summary here would repeat the step-61 error of substituting a plausible statement for a measurement.",
+ "source_file": "strategies/s205_sos_h1_final_confirm.py, function portfolio_long_days()",
+ "union_members_verbatim_from_code": [
+  {"layer": "Overnight h22-23", "geometry": "SL150 TP500 mh96", "status_today": "DEAD - this is the S139 family. I proved it eternally dead earlier THIS mission as S434, RQS2 18.7, after testing five independent revival routes including a 401-indicator scan and a full leak-free filter adjudication."},
+  {"layer": "Monday h18-21", "geometry": "SL150 TP400 mh96", "status_today": "NOT LIVE - absent from the shipped bundle."},
+  {"layer": "Turn-of-Month dom==1 h7-12", "geometry": "SL150 TP400 mh96", "status_today": "NOT LIVE - absent from the shipped bundle. Note S432 is a mid-month calendar layer, a DIFFERENT window."},
+  {"layer": "SoS-M15 record", "geometry": "SL300 TP450 mh96, sos_edge win=32", "status_today": "NOT LIVE - zero S1xx layers survive in the bundle."}
+ ],
+ "the_decisive_fact": "ALL FOUR members of the coverage union are absent from the current live portfolio. The union that generated the 98%-coverage finding is composed ENTIRELY of layers that no longer exist. One of them is a layer I personally proved eternally dead in this same mission.",
+ "current_live_portfolio": ["S312 mid-month calendar", "S344 Brooks trend-from-open SHORT", "S355 LPSB structure-gated M5", "S356 Brooks trend-resumption", "S431 LPSB multi-card pool", "S432 mid-month drift pool"],
+ "what_this_does_and_does_not_establish": {
+  "does_establish": "The S205 REJECT is not transferable to the present portfolio. Its evidential basis has been dismantled. Re-measurement is REQUIRED by the project's own overlap rule, which specifies overlap against the actual portfolio.",
+  "does_not_establish": "That SoS-H1 is incremental TODAY. The new union has not been computed. Three of the six live layers are LONG-capable on gold and could still cover a large share of SoS-H1's days. S344 is SHORT so it cannot overlap a LONG layer's directional exposure, but day-level overlap is still measured conservatively.",
+  "honest_prior": "I expect coverage to fall substantially - from 98% to somewhere in the 40-70% range - because the union lost its two broadest members. Overnight fires on EVERY trading day at hours 22-23 and SoS-M15 produced 920 trades, so between them they blanketed the calendar. The surviving layers are far more selective: S432 is mid-month only, S355 is M5 structure-gated, S431 is a pooled structure layer. But 40-70% is a PREDICTION and will be scored against the measurement."
+ },
+ "trap_i_must_avoid": "It would be easy to present 'the union was dismantled' as if it were 'the layer is now incremental'. It is not. Coverage must be recomputed against the live six, and if the remainder is again tiny or unstable, the REJECT stands and I will report it as such."
+}
