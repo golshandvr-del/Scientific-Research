@@ -74,11 +74,20 @@ CAND = {
     'night_hours': [19, 20, 21, 22, 23],   # ساعاتِ کنارگذاشته‌شده در S214
 }
 
-# ── اجتماعِ زندهٔ M5 — خوانده‌شده از رجیستریِ باندل در گامِ ۱۰۹ ────────────
-#    S355 = S333(M5) & (LPSB_state == -1)
-S355_S333_CFG = dict(ema_fast=20, ema_slow=100, rsi_p=21, rsi_th=35,
-                     confirm='rsi_turn', hurst_th=0.57, er_th=0.25,
-                     sl=120.0, tp=120.0, max_hold=96)
+# ── اجتماعِ زندهٔ M5 — S355 = S333(M5) & (LPSB_state == -1) ───────────────
+#
+# 🔴 گامِ ۱۱۱ — `BUG-CFGKEYS`: اینجا اول پیکربندی را **بازنویسی** کرده بودم
+#    (`ema_fast=20, ema_slow=100, …`) چون از باندلِ جاوااسکریپت خوانده بودمش.
+#    ولی ماژولِ پایتون کلیدهای `ef/es/rp/rth/hurst/er` می‌خواهد ⇒ `KeyError`.
+#    **کرش نجاتم داد**: اگر `build_layer` به‌جای کرش مقدارِ پیش‌فرض
+#    برمی‌گرداند، اتحادیهٔ غلطی می‌ساخت و پوشش را **به نفعِ من** پایین
+#    می‌آورد، بی‌صدا. همان الگویِ «موفقیتِ خاموش» برای بارِ هشتم.
+#
+#    ⇒ رفع: پیکربندی از **منبعِ commit‌شده** خوانده می‌شود، بازنویسی نمی‌شود.
+#    ⚠️ نامِ کارت در `BEST_CFG` با **زیرخط** است (`XAUUSD_M5`)، نه خط‌تیره.
+#    `BEST_CFG.get('XAUUSD-M5')` بی‌صدا `None` می‌دهد — تلهٔ دوم در یک خط.
+S355_CARD_KEY = 'XAUUSD_M5'
+S355_CFG = s333.BEST_CFG[S355_CARD_KEY]      # KeyError اگر غایب باشد ⇒ خوب
 
 
 def load_m5() -> pd.DataFrame:
@@ -116,8 +125,7 @@ def s355_mask(df: pd.DataFrame) -> np.ndarray:
     """بازتولیدِ لایهٔ زندهٔ `S355` روی `M5` — دقیقاً فرمولِ باندل:
         `s333.build_layer(df, cfg) & (lpsb_state == -1)`
     """
-    cfg = dict(S355_S333_CFG)
-    base = s333.build_layer(df, cfg)
+    base = s333.build_layer(df, S355_CFG)
     _, _, state = lpsb_signals(df, CENTRAL['L'], CENTRAL['f'], warmup=WARMUP)
     return np.asarray(base, bool) & (np.asarray(state) == -1)
 
@@ -151,9 +159,9 @@ def main() -> int:
     z = np.zeros(len(df), bool)
     tr_c = se.simulate_trades(df, cand, z, CAND['sl'], CAND['tp'], ASSET,
                               max_hold=CAND['max_hold'], allow_overlap=False)
-    tr_l = se.simulate_trades(df, live, z, S355_S333_CFG['sl'],
-                              S355_S333_CFG['tp'], ASSET,
-                              max_hold=S355_S333_CFG['max_hold'],
+    tr_l = se.simulate_trades(df, live, z, float(S355_CFG['sl']),
+                              float(S355_CFG['tp']), ASSET,
+                              max_hold=int(S355_CFG['mh']),
                               allow_overlap=False)
     print(f'  معاملات: نامزد={0 if tr_c is None else len(tr_c)} · '
           f'S355={0 if tr_l is None else len(tr_l)}')
