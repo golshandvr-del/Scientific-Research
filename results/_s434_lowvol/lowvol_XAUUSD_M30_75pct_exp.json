@@ -1,0 +1,65 @@
+{
+ "asset": "XAUUSD",
+ "tf": "M30",
+ "arm": "lowvol natr keep_bottom_75pct [EXPANDING]",
+ "keep_frac": 0.75,
+ "expanding": true,
+ "n_trials_declared": 1299,
+ "geometry": {
+  "sl_pip": 205.50000000000003,
+  "tp_pip": 685.0,
+  "ratio": 3.3333,
+  "trail": 130.0,
+  "be": null,
+  "max_hold": 48
+ },
+ "n_signals": 2753,
+ "null": {
+  "uncond_wr": 43.816,
+  "perm_mean": 43.29090682686399,
+  "perm_sd": 0.9826707532263264,
+  "perm_max": 45.16298633017876,
+  "perm_k": 2753
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 19.4,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": false,
+  "H7": true,
+  "H8": true,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3",
+  "H5",
+  "H6"
+ ],
+ "unknown_gates": [],
+ "metrics": {
+  "n_trades": 1331,
+  "n_wins": 628,
+  "win_rate": 47.18,
+  "expectancy_pip": 10.3411,
+  "cost_pip": 3.3,
+  "profit_factor": 1.314,
+  "net_profit": 9274.0,
+  "max_dd_pct": 5.69,
+  "max_consec_losses": 11,
+  "mcl_allowed": 17,
+  "recovery_factor": 8.45,
+  "skill_lift_pp": 3.37,
+  "skill_z": 2.48,
+  "null_ref_wr": 43.82,
+  "breakeven_wr_cost": 23.45,
+  "expectancy_at_2x_cost": 7.0411
+ },
+ "notes": [],
+ "secs": 8.7
+}
