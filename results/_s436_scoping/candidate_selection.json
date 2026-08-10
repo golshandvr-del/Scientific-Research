@@ -1,0 +1,42 @@
+{
+ "step": 106,
+ "purpose": "Choose the S436 candidate from the five survivors by reading each layer's SOURCE document, and record why three were rejected as strongly as why one was chosen.",
+
+ "S350_REJECTED": {
+  "reason": "n_trials = 45,150.",
+  "detail": "S350 searched a 150-cell grid under a frozen gate across 15 cards, and its own document tabulates the required lift for H5: 24.50pp on D1 and 27.21pp on W1 against measured lifts of 13.54 and 3.07. This is the S435 multiplicity problem multiplied by 150. S435 died at a bar of 3.37 built from 292 trials; a candidate arriving with 45,150 already spent is dead before the first measurement.",
+  "note": "S350 is nonetheless scientifically valuable and its document says so honestly - it ran a CONTROLLED experiment against S348 changing exactly one rule, and falsified the project's belief that H1 was the leverage point. It is not a failed layer, it is a completed experiment."
+ },
+
+ "S353_REJECTED": {
+  "reason": "Power-limited by the physics of daily bars, confirmed at step 105 after my own revival hypothesis was falsified.",
+  "detail": "Its binding constraint is EURUSD-D1 needing n around 280 against a measured 86, and fifteen years of daily euro data is all the data that exists. Step 105 measured that the daily files were never truncated and that the mt5_full archive contains no EURUSD, so no data recovery can help. S353's verdict of POWER-LIMITED - waiting room rather than dead - is correct and should stand."
+ },
+
+ "S225_and_S221_REJECTED_TOGETHER": {
+  "reason": "Both are products of a RETIRED objective function, and reviving them as-is would reproduce common mistake 8 rather than repair it.",
+  "the_evidence": "Both documents open by quoting the same session rule: 'raise WR above 60% at any price; net profit may fall.' Both implemented it the same way - S225 at SL300/TP60 and SL300/TP40, S221 at SL200/TP40 and SL300/TP80. Those are inverted risk-reward ratios of 5:1 and 7.5:1 against the trade, and both documents state the mechanism explicitly: 'TP کوچک / SL بزرگ ... معامله سریع در سودِ کوچک بسته می‌شود ⇒ WR جهش می‌کند'.",
+  "why_this_is_disqualifying": "The project's common mistake 8 prohibits exactly this: 'increasing WR with TP smaller than SL, so wins land often and WR looks high.' S225 reports 80-89% win rates and S221 reports 84-89%, achieved by construction rather than by edge. Their profit factors tell the real story - S225-M5 at 1.08 on 603 trades, essentially break-even after 80.8% wins.",
+  "the_important_nuance": "These layers are not FRAUDULENT and their authors were not cheating - they were correctly following a project rule that was in force at the time and has since been retired. That is a different failure from overfitting, and it means the underlying SIGNALS may still be sound. S221's base is S142 Mid-Month Drift, which is alive today as S312. S225's base is S132 squeeze-breakout. What is disqualified is their EXIT GEOMETRY, not their entries.",
+  "recorded_for_the_next_ai": "Any future revival of S225 or S221 must begin by discarding the inverted geometry entirely and re-deriving TP/SL, because the recorded win rates and net profits are artefacts of a rule that no longer applies. Reviving them at their published settings would import common mistake 8 into the portfolio."
+ },
+
+ "S214_CHOSEN": {
+  "what_it_is": "Al Brooks, 'Trading Price Action - Trends', chapter 11 'Late and Missed Entries'. A momentum-continuation LONG edge on XAUUSD-M5. Signal: within the last 12 bars there exists a complete run of at least 4 consecutive non-climactic bull trend bars, with ema20>ema50 regime. Trend bar defined as close>open with body at least 0.5 of range; anti-climax constraint requires mean run range at most 1.5x ATR14. All computed from bar i-1 closes, so no look-ahead.",
+  "current_status": "Accepted in its era at +$726 net, then re-adjudicated under RQS2 and landing at score 14.8 with n=275, lift 2.41, z 0.80, failing H3, H5 and H7.",
+
+  "reason_1_the_geometry_is_SOUND": "SL150/TP300 - the target is TWICE the stop. Unlike S225 and S221 this layer never purchased win rate by shrinking its target, and its reported 50.9% win rate sits against a break-even of roughly 34%. There is no common-mistake-8 contamination to unwind, so any improvement work starts from an honest baseline.",
+
+  "reason_2_it_has_a_DECISIVE_ablation": "Its document reports three variants on the identical window: without the momentum filter the window loses $382 at 41.7% over 647 trades; with the filter it makes $726 at 50.9% over 53; and the filter's REJECTED trades lose $158 at 41.8% over 639. The edge is located in the filter and nowhere else, and the rejected-set control makes that a genuine attribution rather than an assertion. Very few candidates in this pool have that.",
+
+  "reason_3_the_binding_constraint_is_an_INHERITED_ARBITRARY_FRAME": "The layer's signal is momentum, but it is confined to calendar days from_end in {-6,-7,-8}. Its own document says the calendar frame is merely a 'محدودکنندهٔ رویداد' - an event limiter used to extract a high-quality sample - and that the source of profit is 'قطعاً فیلترِ مومنتومِ فصلِ ۱۱، نه اثرِ تقویمی'. So the document itself states that the constraint costing 92% of the sample is NOT where the edge lives.",
+
+  "the_hypothesis_this_creates": "If the calendar frame is not the source of the edge, removing it should multiply n by roughly an order of magnitude while preserving lift. z scales as lift times root n, so at constant lift a tenfold sample increase raises z by a factor of about 3.2 - which is precisely the axis S214 fails on. This is the same shape of intervention that took S435's arm I1 from lift 0.05 to 3.55: REMOVE an inherited constraint that the evidence says is not load-bearing.",
+
+  "why_this_is_not_wishful": "It is a falsifiable prediction with an obvious failure mode, and the failure mode is the interesting case. If lift collapses when the calendar frame is removed, then the calendar WAS load-bearing and the source document's own attribution was wrong - which would be a finding about the layer regardless of the verdict. Either outcome is informative, which is the property a candidate should have.",
+
+  "the_honest_risk": "The published n=53 is from the era's 4-year data window while the ranking row shows n=275 on the current data, so the sample I inherit is already larger than the document's. The tenfold expansion I am predicting is relative to 275, not 53, and I must not quote the smaller figure to make the improvement look bigger. That trap is registered here before any measurement."
+ },
+
+ "what_happens_next": "Pre-register the improvement arms BEFORE running anything, including the declared n_trials and the multiplicity bar it implies, then measure overlap against the live portfolio, then adjudicate. No arm will be added after seeing a result."
+}
