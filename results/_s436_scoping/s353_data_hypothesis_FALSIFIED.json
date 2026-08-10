@@ -1,0 +1,29 @@
+{
+ "step": 105,
+ "purpose": "Test - and FALSIFY - my own attractive hypothesis about S353 before it could influence the candidate choice.",
+
+ "the_hypothesis_i_had": "S353 was rejected as POWER-LIMITED with the explicit reasoning that 'where lift is strong (D1) the data is scarce'. It needs EURUSD-D1 to reach n=280 against its measured 86. I recalled that S434 discovered the project's price data covered only 2.8 years and that I rebuilt a full 15.6-year MT5 archive. If S353's sample scarcity came from a truncated history, the new data would triple the sample, z would rise from 1.69 toward the required 3.0, and the layer would revive with NO new search at all - the cheapest possible win, and exactly the 'conditions have changed' pattern that justified reopening S205 in S435.",
+
+ "why_i_tested_it_instead_of_acting_on_it": "The hypothesis is extremely attractive, requires no new trials, and would have made S353 the obvious S436 candidate. That combination - attractive, cheap, and self-serving - is precisely the profile of the seven silent defects this mission has already produced, every one of which happened to favour my hypothesis. S435 step 62 established the rule: test the prediction rather than lean on it.",
+
+ "measurement": {
+  "old_XAUUSD_D1_rows": 3990,
+  "old_XAUUSD_D1_first_bar_epoch": 1294012800,
+  "old_XAUUSD_D1_first_bar": "2011-01-03",
+  "old_EURUSD_D1_rows": 4196,
+  "old_EURUSD_D1_first_bar_epoch": 1274227200,
+  "old_EURUSD_D1_first_bar": "2010-05-19",
+  "mt5_full_assets": ["XAUUSD only"],
+  "mt5_full_n_files": 19
+ },
+
+ "verdict_FALSIFIED": {
+  "finding_1": "The existing D1 data already spans ~15 years, from 2011 for gold and 2010 for the euro. The 2.8-year truncation that S434 discovered applied to the M5 file specifically, NOT to the daily files. I generalised a finding about one timeframe to all timeframes without checking.",
+  "finding_2": "The mt5_full archive I rebuilt contains XAUUSD ONLY, across 19 timeframes. It contains no EURUSD at all. S353's binding constraint is EURUSD-D1 at n=86, and that constraint is therefore untouched by the new data even in principle.",
+  "consequence": "The hypothesis fails on BOTH legs independently. There is no hidden sample waiting to be unlocked, and S353's own arithmetic stands: with lift 8.97 it needs n around 280 to reach z=3, and fifteen years of daily euro data yields 86 gated trades. S353 is genuinely power-limited by the physics of daily bars, not by a data-handling artefact."
+ },
+
+ "what_this_costs_and_what_it_saves": "It removes the cheapest candidate from the shortlist. It also saves the entire cost of discovering the same thing after building a full adjudication harness, which is what would have happened had I acted on the recall instead of spending one command checking it.",
+
+ "the_generalisable_error": "The error was not the hypothesis, it was the SCOPE I assigned to a remembered finding. S434 measured that ONE file was truncated; I remembered it as 'the project's data was truncated'. Findings acquire scope in memory that they never had in measurement, and this is the fourth time in this mission that a remembered value or claim proved wrong when read from source - after S312's rule, gold's pip size, and the S204 filter's continued validity. The rule already recorded for constants applies equally to FINDINGS: check the scope of a remembered result before generalising it."
+}
