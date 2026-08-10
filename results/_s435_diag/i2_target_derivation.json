@@ -1,0 +1,39 @@
+{
+  "step": 91,
+  "purpose": "Derive arm I2's target from the DATA as pre-registered at step 90, and verify the hard TP>=SL constraint before the arm is allowed to run.",
+  "method": "TP = 75th percentile of maximum favourable excursion within the 96-bar hold window, measured over all 1,396 SoS signals that have a complete window. One number determined by the distribution, not a grid of values I try.",
+
+  "bug_caught_BUG_PIPGUESS": {
+    "what_i_did_wrong": "I hardcoded gold's pip size as 0.01 from memory. The first run returned a p75 MFE of 3,949 pip, implying a $39 gold move within 96 hours, which is physically impossible.",
+    "correct_value": "engine/scalp_engine.py ASSETS['XAUUSD']['pip'] = 0.10 - read from the engine at runtime, not restated.",
+    "why_it_was_caught": "The number was PHYSICALLY ABSURD, so it could not survive a sanity check. That is the ONLY reason it was caught. Had I guessed 0.05 instead of 0.01 the error would have been twofold rather than tenfold, the resulting target would have looked entirely plausible, and it would have propagated into the adjudication undetected. I was protected by the SIZE of my mistake, not by any check I had built, which is the weakest possible form of protection.",
+    "pattern": "This is the twelfth defect in this mission and the THIRD caused by reconstructing a value instead of reading its source - after guessing S312's trading rule at step 80 and accepting the S204 filter's continued validity at step 89. The rule it implies is unambiguous: in this repository, any constant that lives in the engine must be READ from the engine at runtime.",
+    "protection_going_forward": "Both this derivation and the I2 adjudication read PIP from se.ASSETS at runtime rather than restating it."
+  },
+
+  "reproducibility_note_after_sandbox_reset": "This derivation was originally computed at step 91 but the sandbox reset before its commit landed, so the work was lost. It was RE-RUN from scratch after rebuilding the data from the SHA256-verified archive. Every figure below reproduced bit-for-bit - p75 MFE 394.9, reachability 10.4% and 25.0%, n=1396. That agreement is itself evidence that the data reconstruction pipeline is sound and that no figure here depends on sandbox state that has since changed.",
+
+  "measured_distributions_pip": {
+    "MFE": {"p50": 201.4, "p60": 254.6, "p70": 343.0, "p75": 394.9, "p80": 479.5, "p90": 766.2},
+    "MAE": {"p50": 167.4, "p75": 307.3, "p90": 578.2},
+    "n_signals": 1396
+  },
+
+  "independent_confirmation_of_step_89": {
+    "claim_at_step_89": "TP=750 is reached only 8.4% of the time in live simulation, so it is a cap that never binds rather than a target.",
+    "independent_check_here": "10.4% of signals have MFE >= 750 measured directly from the raw price path, with no simulator involved.",
+    "reading": "The two figures agree closely and the small gap is expected in the CORRECT direction: the simulator's 8.4% counts only trades that reach TP without first being stopped out at -250, whereas this MFE measure counts any signal whose price ever traded 750 pip above entry regardless of what happened first. The simulator figure must therefore be slightly LOWER, and it is. Two independent methods agreeing to within 2pp is corroboration of the step-89 diagnosis rather than a restatement of it, which matters because the entire justification for arm I2 rests on that diagnosis."
+  },
+
+  "derived_target": {
+    "TP_pip": 394.9,
+    "SL_pip": 250.0,
+    "ratio": 1.58,
+    "constraint_TP_ge_SL": "PASS",
+    "share_of_signals_reaching_new_TP": 25.0,
+    "why_this_respects_the_budget_rule": "TP remains LARGER than SL at a ratio of 1.58, so the break-even win rate stays below 50% and the layer is not buying win rate by shrinking its target. Risk-reward falls from 3.00 to 1.58 but is not INVERTED, so the prohibited pattern of common mistake 8 is avoided.",
+    "why_this_respects_the_limited_grid_rule": "394.9 is not a round number and was not chosen from a menu. It is whatever the 75th percentile happened to be. Had I swept a grid I would almost certainly have tried 300, 400 or 500 and landed on a value selected for its RESULT rather than for its MEANING."
+  },
+
+  "honest_note_on_expected_effect": "Raising target reachability from 10.4% to 25.0% should raise win rate substantially and should also reduce average win size. This is exactly the win-rate-versus-profit-factor trade-off measured in S434 at step 67, where a filter raised win rate while lowering profit factor. I therefore expect PF rather than WR to be the binding constraint on I2, consistent with the step-90 pre-registered PF forecast of 1.2-1.5 straddling the 1.3 floor rather than sitting safely on one side of it."
+}
