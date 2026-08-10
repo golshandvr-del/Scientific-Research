@@ -1,0 +1,36 @@
+{
+ "step": 77,
+ "purpose": "Read the AUTHORITATIVE per-card live wiring from web_tool/src/strategy_registry.ts CARD_LAYERS, and correct two errors in my own step-74/75 scoping notes before any measurement is made.",
+ "why_this_matters_now": "The whole S435 case rests on the claim that the coverage union shrank. If I under-count the CURRENT union, I inflate the apparent novelty of SoS-H1 in my own favour. So the union must be read from the shipped registry, per card, rather than from a flat list of S-numbers scraped out of the bundle.",
+
+ "authoritative_source": "web_tool/src/strategy_registry.ts, export const CARD_LAYERS (line 539+)",
+
+ "live_wiring_per_card": {
+   "XAUUSD-M5":  ["S355 = withLpsbGate(s333Layer)"],
+   "XAUUSD-M15": ["S344 = s344Layer (Brooks trend-from-open, SHORT)", "S431 = withLpsbGate(s333Layer)", "S312 = s312Layer(295,295,48)"],
+   "XAUUSD-M30": ["S312 = s312Layer(295,295,36)", "S431 = withLpsbGate(s333Layer)"],
+   "XAUUSD-H1":  ["S356 = s354Layer (Brooks trend-resumption, causal)", "S431 = withLpsbGate(s333Layer)", "S312 = s312Layer(395,395,24)"],
+   "XAUUSD-H4":  ["S382 = s382Layer (Williams %R momentum)"],
+   "EURUSD-*":   []
+ },
+
+ "correction_1_missing_layer": {
+   "my_step74_claim": "The live portfolio is six layers: S312, S344, S355, S356, S431, S432.",
+   "reality": "S382 (Williams %R momentum on XAUUSD-H4, ACCEPT 79.2, n=869) is ALSO live and I omitted it. It appeared in my own bundle scan at step 74 and I dropped it when writing the summary list.",
+   "impact_direction": "AGAINST my case, though only mildly: S382 is on H4, a different card from my H1 candidate, but its trading DAYS still enter a day-level coverage union and n=869 makes it the single broadest surviving layer by trade count.",
+   "why_recorded": "The omission ran in the direction that flatters my hypothesis, and per the step-69 principle an error favouring my own conclusion is more obligatory to record than one opposing it."
+ },
+
+ "correction_2_h1_is_not_empty": {
+   "implicit_assumption_i_was_carrying": "That SoS-H1's card was relatively uncontested because SoS-M15 had been retired.",
+   "reality": "XAUUSD-H1 carries THREE live layers simultaneously: S356 Brooks trend-resumption, S431 LPSB structure gate, and S312 mid-month drift at 395/395/24.",
+   "sharpest_point": "S356 is Brooks trend-resumption (chapter 25) and my candidate is Brooks signs-of-strength (chapter 19). Both are Al Brooks bullish-continuation constructs on the SAME card. That is the single most likely source of genuine overlap in this entire exercise, and it did not exist in the S205-era union at all.",
+   "consequence": "My pre-registered 40-70% coverage forecast may well be too LOW. I am NOT revising it - a forecast revised after seeing the reason it might be wrong is not a forecast. It stands and will be scored as written."
+ },
+
+ "measurement_plan_locked": {
+   "unit": "Day-level coverage, matching S205's method exactly, so the new number is comparable to the historic 98%.",
+   "union_members": "All gold LONG-capable live layers. S344 is SHORT-only and is therefore reported SEPARATELY rather than folded in, since a SHORT layer cannot double-count a LONG layer's directional exposure - but its days are also reported so the choice is visible rather than hidden.",
+   "reported": ["coverage_pct vs S205's 98%", "n_novel trades", "per-layer contribution to the union", "pairwise overlap with S356 specifically"]
+ }
+}
