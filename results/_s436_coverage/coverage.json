@@ -1,0 +1,18 @@
+{
+ "step": 110,
+ "card": "XAUUSD-M5",
+ "candidate_signal_bars": 3215,
+ "live_signal_bars": 60,
+ "candidate_trades": 312,
+ "live_trades": 47,
+ "common_window": [
+  "2023-10-06 00:00:00",
+  "2026-06-15 00:00:00"
+ ],
+ "candidate_days": 240,
+ "live_union_days": 45,
+ "overlapping_days": 19,
+ "coverage_pct": 7.92,
+ "historical_coverage_pct": 63.8,
+ "novel_days": 221
+}
