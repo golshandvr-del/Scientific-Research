@@ -167,6 +167,35 @@ def main() -> int:
     print(f"  S312 (dom{{10,13,20}} h1-12 EMA200, 395/395/24): "
           f"ترید={0 if t312 is None else len(t312)}  روزِ یکتا={len(d312)}")
 
+    # (۳) S431 — «S333 + دروازهٔ ساختارِ LPSB»، عضوِ زندهٔ سومِ کارتِ H1.
+    #     🔴 در نسخهٔ گامِ ۸۱ این عضو **جا افتاده بود** ⇒ اجتماع کم‌شمرده و
+    #     پوششِ ۱۶.۲٪ به نفعِ فرضیهٔ خودم پایین آمده بود. اینجا اضافه می‌شود.
+    #     منبع: strategy_registry.ts:~۶۳۰ (withLpsbGate روی XAUUSD-H1)
+    #     مولد: tools/s431_overlap_audit.py::my_entries — تابعِ **رسمیِ** خودِ
+    #     لایه، نه بازنویسیِ من (درسِ گامِ ۸۰).
+    #     ⚠️ آن تابع روی فایلِ قدیمیِ ۹۰٬۹۵۰ کندلی کار می‌کند، پس تراز
+    #     **حتماً** با timestamp است نه ایندکس (درسِ گامِ ۷۸).
+    try:
+        import importlib.util as _ilu
+        _sp = _ilu.spec_from_file_location(
+            's431aud', os.path.join(os.getcwd(), 'tools', 's431_overlap_audit.py'))
+        _m = _ilu.module_from_spec(_sp)
+        _sp.loader.exec_module(_m)
+        ent431, _base431, df431 = _m.my_entries('XAUUSD_H1')
+        t431 = pd.to_datetime(pd.to_numeric(df431['time']), unit='s')
+        days431 = set(t431.iloc[sorted(ent431)].dt.floor('D'))
+        union |= days431
+        out['members']['S431_lpsb_gate'] = {
+            'source': 'tools/s431_overlap_audit.py::my_entries (مولدِ رسمی)',
+            'n_trades': len(ent431), 'n_days': len(days431),
+            'note': 'تراز با timestamp؛ فایلِ مولد ۹۰٬۹۵۰ کندل دارد'}
+        print(f"  S431 (LPSB gate): ترید={len(ent431)}  روزِ یکتا={len(days431)}")
+    except Exception as e:                                    # pragma: no cover
+        # ❗ شکست را **پنهان نمی‌کنیم**: عضوِ غایب یعنی اجتماعِ کم‌شمرده،
+        #    یعنی پوششِ مصنوعاً پایین — دقیقاً به نفعِ فرضیهٔ من.
+        out['members']['S431_lpsb_gate'] = {'ERROR': str(e)}
+        print(f"  ⚠️ S431 ساخته نشد: {e}")
+
     # ── پنجرهٔ مشترک ─────────────────────────────────────────────────
     if union:
         lo, hi = min(union), max(union)
@@ -181,7 +210,13 @@ def main() -> int:
 
     out['common_window'] = {'from': str(lo), 'to': str(hi),
                             'candidate_days_in_window': len(cand_in)}
+    # 🔴 گامِ ۸۳: خودِ روزها هم ذخیره می‌شوند، نه فقط شمارش. در نسخهٔ
+    #    قبلی فقط `n_days` نوشته می‌شد و داورِ S435 که از همین فایل
+    #    می‌خواند، اجتماع را **تهی** می‌گرفت و هر ۳۳۳ معامله را «نو»
+    #    می‌شمرد — یک موفقیتِ خاموشِ کامل، دقیقاً به نفعِ فرضیهٔ خودم.
     out['union'] = {'n_days': len(union)}
+    out['union_days'] = sorted(str(d.date()) for d in union)
+    out['novel_days_list'] = sorted(str(d.date()) for d in (cand_in - union))
     out['coverage'] = {'covered_days': len(covered), 'novel_days': len(novel),
                        'coverage_pct': round(cov_pct, 2),
                        's205_historic_pct': 98.0}
