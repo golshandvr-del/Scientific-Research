@@ -1,0 +1,43 @@
+{
+ "step": 101,
+ "purpose": "Post-mortem of arm I3. The arm SUCCEEDED at its stated objective and DESTROYED the candidate in the same motion, which is a more instructive outcome than a plain failure and must not be summarised as 'break-even did not help'.",
+
+ "the_headline_that_would_be_wrong": "'Break-even failed to fix drawdown.' That statement is FALSE. H8 passed. Drawdown fell from 8.40% to 7.86%, below the 8.0% ceiling, exactly as arm I3 was designed to do. The step-94 forensics identified drawdown as the sole failing H8 component and predicted that trade management would move it; that prediction was correct and is scored as correct.",
+
+ "what_actually_happened": {
+  "gates_before_I3": {"failing": ["H3", "H5", "H8"], "count": 3},
+  "gates_after_I3": {"failing": ["H2", "H3", "H4", "H5", "H7", "H10"], "count": 6},
+  "H8_transition": "FAIL -> PASS",
+  "reading": "I3 closed the one gate it targeted and opened five that were previously passing. H2, H4, H7 and H10 all broke. This is not a marginal degradation, it is a different layer.",
+  "rqs2": {"I2": 22.4, "I3": 17.3, "delta": -5.1}
+ },
+
+ "the_mechanism_measured_rather_than_asserted": {
+  "win_rate": {"I2": 52.43, "I3": 30.66, "delta_pp": -21.77},
+  "null_reference_win_rate": {"I2": 48.44, "I3": 31.68, "delta_pp": -16.76},
+  "the_critical_observation": "The NULL's win rate fell almost as far as the layer's - from 48.44% to 31.68%, a drop of 16.76pp against the layer's 21.77pp. Because honesty commitment 3 was implemented at step 97, the permutation null was rebuilt WITH break-even management, so this is an apples-to-apples comparison. The collapse in win rate is therefore overwhelmingly a MECHANICAL consequence of break-even itself, not evidence that the signal disintegrated. Any entry timing whatsoever, including random timing, loses roughly 17 percentage points of win rate under this management, because scratched trades are not counted as wins.",
+  "why_this_matters_for_the_verdict": "Had the null been built WITHOUT break-even - the BUG-NULLUNCOND error that step 97 closed - the measured lift would have been 30.66 minus 48.44, i.e. -17.8pp, and I would have concluded that break-even annihilated the signal. The correct comparison shows the true lift is -1.02pp: the layer is very slightly WORSE than random under this management, not catastrophically worse. The step-97 fix changed the magnitude of the apparent damage by a factor of seventeen, and without it this post-mortem would have reached a confidently wrong diagnosis.",
+  "the_residual_finding_that_is_genuinely_bad": "After correcting for the mechanical effect, the layer still has NEGATIVE lift of -1.02pp with z of -0.56. Under break-even management, SoS entries are indistinguishable from - and marginally worse than - random entries. The edge that survived arm I2 at +3.99pp does not survive contact with break-even at all."
+ },
+
+ "why_the_edge_did_not_survive": {
+  "the_sizing_error": "The trigger was set at the median MFE of losing trades, 110.5 pip, on the measurement that 97.1% of winners clear that level against 50.0% of losers. That measurement is arithmetically correct and answers the wrong question. Maximum favourable excursion records WHERE price went, discarding the ORDER in which it went there. A winner that ultimately reaches 400 pip may first trade to 110, retrace through entry, and only then run; an MFE statistic cannot distinguish that path from a monotone advance. Break-even is a PATH-DEPENDENT intervention and it was sized with a PATH-INDEPENDENT statistic.",
+  "the_fingerprint_in_the_data": "Trade count rose from 597 to 649, an increase of 52. Break-even exits close positions earlier, which frees the non-overlapping engine to accept subsequent signals it would otherwise have skipped. The extra trades are the arithmetic signature of early scratching, and their presence confirms the mechanism rather than merely being consistent with it.",
+  "the_second_fingerprint": "Maximum consecutive losses ROSE from 7 to 13 while drawdown FELL from 8.40% to 7.86%. That combination is only possible if individual losses became much smaller while becoming much more frequent - which is exactly what converting full losses into scratches does. The two metrics moving in opposite directions is internal corroboration that break-even operated as designed at the trade level while damaging the layer at the portfolio level.",
+  "expectancy_confirms_it": "Expectancy fell from 31.21 pip to 20.96 pip and net profit from $10,625 to $6,706, a 37% reduction. Break-even did not merely redistribute outcomes, it removed roughly a third of the money."
+ },
+
+ "forecast_scoring_against_step_95": {
+  "prediction_1_H8_passes": {"predicted": "PASS", "measured": "PASS", "result": "CORRECT"},
+  "prediction_2_drawdown_below_8": {"predicted": "7.0-7.9%", "measured": "7.86%", "result": "CORRECT, inside band"},
+  "prediction_3_verdict_still_REJECT": {"predicted": "REJECT", "measured": "REJECT", "result": "CORRECT"},
+  "prediction_4_z_stays_near_1.95": {"predicted": "1.7-2.1", "measured": "-0.56", "result": "BADLY WRONG"},
+  "prediction_5_PF_stays_above_1.3": {"predicted": ">=1.3 hard constraint", "measured": 1.326, "result": "CORRECT but by a hair - 0.026 above the floor"},
+  "prediction_6_other_gates_unaffected": {"predicted": "H2, H4, H7, H10 remain PASS", "measured": "all four FAILED", "result": "BADLY WRONG"},
+  "summary": "Four of six correct, but the two failures are the two that determined the outcome. I correctly predicted the arm would do its job and correctly predicted the verdict; I completely failed to predict the collateral damage. Predicting the right verdict for entirely the wrong reason is worth less than it looks, and is recorded as such."
+ },
+
+ "calibration_note_recorded_against_myself": "This is the third consecutive optimistic forecast miss on this candidate: I1's z predicted 1.8-2.8 and measured 1.67; I2's win rate predicted 55-65% and measured 52.43%; I3's collateral gates predicted intact and five broke. Three in a row in the same direction on the same candidate is a systematic bias in how I estimate the effect of interventions I have personally designed, not sampling noise. The practical correction for future arms is to forecast the effect on gates I am NOT targeting with the same rigour as the gate I am targeting, since in this case every one of my targeted predictions was right and every untargeted one was wrong.",
+
+ "consequence_for_the_eternal_death_rule": "I3 was declared at step 95 to be the LAST arm for this candidate, a harder boundary adopted precisely because I had broken the step-90 pledge against a third arm. That boundary is honoured. Three improvement arms have now been adjudicated - filter removal, geometry realignment, and trade management - each derived from a measured diagnosis rather than from search, and the best of them, I1 at RQS2 23.9, remains far below any acceptance. The eternal-death analysis and final verdict follow."
+}
