@@ -1,0 +1,25 @@
+{
+ "step": 109,
+ "purpose": "Measure WHICH layers are live on each gold card, because the S214 revival's fate turns on the composition of the XAUUSD-M5 union and step 108 established that the 63.8% overlap figure is stale in two opposing directions.",
+
+ "method": "Read the CARD_LAYERS registry directly from local-mobile/app.bundle.mjs rather than inferring live layers from result documents. This is the corrected detector from step 104 - BUG-BUNDLEPATH made an earlier attempt return an empty set silently.",
+
+ "measured_registry": {
+  "XAUUSD-M5":  {"n_layers": 1, "layers": ["S355 = S333 generator + LPSB structural gate"]},
+  "XAUUSD-M15": {"n_layers": 3, "layers": ["S344 Brooks ch23 SHORT", "S431 LPSB pool", "S312 mid-month drift"]},
+  "XAUUSD-M30": {"n_layers": 2, "layers": ["S312 mid-month drift", "S431 LPSB pool"]},
+  "XAUUSD-H1":  {"n_layers": 3, "layers": ["S354", "S431 LPSB pool", "S312 mid-month drift"]},
+  "XAUUSD-H4":  {"n_layers": 1, "layers": ["S382"]}
+ },
+
+ "the_finding": {
+  "statement": "XAUUSD-M5 is the EMPTIEST gold card in the live portfolio. It carries exactly one layer, S355, and the bundle's own comment records that layer's documented sample as n=47.",
+  "comparison_with_the_era_that_killed_the_unframed_S214": "The s214b docstring names the union it was measured against: S142 mid-month, S140 Monday, S139 overnight, S141 turn-of-month and S144 end-of-month. NONE of those five is live on M5 today. S139 in particular I executed myself in S434 and proved eternally dead. The 63.8% coverage figure was therefore measured against a five-layer calendar union that no longer exists on this card.",
+  "the_opposing_force_is_weaker_than_i_feared": "Step 108 warned that S431 and S432 shipped multi-card pools since, which would push coverage UP. The registry shows S431 is live on M15, M30 and H1 - but NOT on M5. S432 does not appear on M5 either. So the unfavourable movement I registered as a real risk does not reach this card at all.",
+  "why_i_am_not_declaring_victory": "This is a count of LAYERS, not a measurement of DAYS. A single layer with a wide firing pattern can cover more calendar days than five narrow ones. S355 is LPSB-gated so it is probably narrow, and its n=47 suggests it is very narrow - but 'probably' and 'suggests' are exactly the words that preceded four of this mission's silent defects. Coverage will be measured in days, on the same unit S214 used, before any conclusion is drawn."
+ },
+
+ "a_debt_i_must_carry_forward": "The bundle's own comment on S355 records an OPEN DEBT from the S396 audit: the accepted card label may be wrong. The audit ledger lists S355 as XAUUSD-H1 with n=1298, SL=450, hold=12, while the layer's own document says XAUUSD-M5 with n=47, SL=TP=120, hold=96. The bundle flags the wiring as SUSPECT pending an M5-specific retest. This matters for my coverage measurement in a specific way: if S355's real firing pattern on M5 is the n=1298 variant rather than the n=47 one, the union is roughly 27x larger than the registry comment implies and my coverage estimate would be badly optimistic. I will therefore measure S355's actual M5 firing pattern from its committed config rather than trusting either number.",
+
+ "what_this_changes_about_the_candidate": "Nothing yet, and that restraint is deliberate. It changes the PRIOR - M5 being nearly empty makes low coverage plausible where step 108 made it doubtful - but the pre-registered mandatory coverage measurement stands unchanged and will be run in days against the actual live union."
+}
