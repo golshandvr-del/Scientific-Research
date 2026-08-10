@@ -1,0 +1,36 @@
+{
+  "step": 94,
+  "purpose": "Decompose EXACTLY why H3, H5 and H8 fail on arms I1 and I2, because the eternal-death rule cannot be invoked against a failure whose mechanism is unexamined, and because a gate that fails by a hair implies a completely different next action than one that fails by a mile.",
+
+  "H8_tail_risk": {
+    "engine_rule": "engine/rqs2.py:1141 - h8 = (maxdd_pct <= 8.0) AND (mcl <= mcl_allowed) AND (recovery >= 3.0)",
+    "decomposition": {
+      "I1": {"maxdd_pct": 9.0, "limit": 8.0, "verdict": "FAIL", "mcl": 8, "mcl_allowed": 14, "mcl_verdict": "PASS", "recovery": 6.39, "recovery_min": 3.0, "recovery_verdict": "PASS"},
+      "I2": {"maxdd_pct": 8.4, "limit": 8.0, "verdict": "FAIL", "mcl": 7, "mcl_allowed": 14, "mcl_verdict": "PASS", "recovery": 5.93, "recovery_min": 3.0, "recovery_verdict": "PASS"}
+    },
+    "reading": "H8 has three conditions and TWO of them pass comfortably on both arms. Maximum consecutive losses are 8 and 7 against an allowance of 14, roughly half the permitted streak. Recovery factor is 6.39 and 5.93 against a floor of 3.0, roughly double the requirement. The gate fails on ONE condition only: drawdown, at 9.0% and 8.4% against an 8.0% ceiling.",
+    "how_close": "I2 misses by 0.4 percentage points, which is 5% of the threshold. This is the difference between a layer whose risk profile is unacceptable and one that is very slightly over a line.",
+    "what_this_does_NOT_license": "It does not license moving the threshold, arguing the threshold is too strict, or reporting the gate as 'nearly passed'. The threshold is the project's and it is not mine to renegotiate, least of all at the moment I discover it stands between me and an ACCEPT.",
+    "what_it_DOES_indicate": "Drawdown is the only H8 component that responds to trade MANAGEMENT rather than to signal quality. Streak length is a property of the win rate, and recovery factor is a ratio of net profit to drawdown - both largely fixed by the signal. Drawdown depth, by contrast, is determined by how losing sequences are handled. A layer that fails ONLY on drawdown while passing streak and recovery by 2x is telling me its signal is sound and its exit handling is not."
+  },
+
+  "H5_multiplicity": {
+    "engine_rule": "survival of the multiple-testing correction at the declared n_trials",
+    "declared_n_trials": 292,
+    "bar_z": 3.37,
+    "measured_z": {"I1": 1.67, "I2": 1.95},
+    "reading": "Both arms fail. The bar of 3.37 comes from sqrt(2 ln 292), and 292 counts 267 configurations from the S202 battery, 20 from the S204 filter sweep, 3 from the step-85 arms and these 2. The overwhelming majority of that count - 287 of 292 - was spent by PRIOR work on this layer, not by me.",
+    "the_uncomfortable_observation_stated_plainly": "If n_trials were declared as 1, the bar would be 3.09 and both arms would still fail. If it were declared as the 5 arms I personally ran, the bar would be approximately 1.79 and I2's z of 1.95 would PASS. The honest count is what makes this gate fail, and I am recording that explicitly because a reader is entitled to know exactly how much of the rejection rests on my own accounting choice.",
+    "why_the_honest_count_is_nonetheless_correct": "The S202 battery searched 267 configurations of THIS signal family on THIS card. Those searches are what made the SoS parameters look good in the first place, so the parameters I inherited are already selected on that history. Excluding them would mean judging a survivor of a 267-way search as though it had been the first thing tried. That is the precise mechanism by which backtest overfitting is laundered into apparent significance, and the fact that including them costs me the verdict is not a reason to exclude them - it is the reason the count exists."
+  },
+
+  "H3_skill": {
+    "measured": {"I1": {"lift_pp": 3.55, "z": 1.67}, "I2": {"lift_pp": 3.99, "z": 1.95}},
+    "reading": "H3 fails on the same z as H5, since both are driven by the skill statistic against the arm's own 500-permutation null. z of 1.95 on I2 would clear the conventional two-sided 5% threshold of 1.96 to within rounding, so the layer is at the edge of ordinary statistical significance and fails the project's stricter standard.",
+    "why_this_is_not_a_complaint": "The project's standard is stricter than convention BECAUSE convention is calibrated for a single pre-specified hypothesis, and this is the 292nd. A layer that is marginally significant by a standard designed for a situation that does not apply is not marginally significant."
+  },
+
+  "consequence_for_the_eternal_death_rule": "Death CANNOT be declared at this step. The forensics identify one specific, mechanically-plausible improvement path that has not been tested: H8 fails only on drawdown, by 0.4pp on I2, while its other two components pass by roughly 2x, and drawdown is the single H8 component that responds to trade management rather than signal quality. The improvement rules - cooperation, infinity, and 'perhaps everything is floating' - require that this be adjudicated before any death claim.",
+
+  "what_i_must_be_careful_about": "H3 and H5 both fail on z, and no drawdown improvement can raise z on its own. Any drawdown fix must therefore be evaluated for whether it ALSO changes the trade population enough to move z, and if it does, that change must be scored as a new arm against the multiplicity bar rather than treated as a free improvement. A fix that cuts drawdown while leaving z at 1.95 converts a three-gate failure into a two-gate failure and still REJECTS. I record this before testing so that a partial success cannot later be presented as more than it is."
+}
