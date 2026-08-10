@@ -1,0 +1,37 @@
+{
+ "card": "XAUUSD-H1",
+ "bars": 91331,
+ "candidate": {
+  "n_signal": 632,
+  "n_trades": 333,
+  "n_days": 329
+ },
+ "members": {
+  "S356_brooks_trend_resumption": {
+   "source": "results/_scan_S356/XAUUSD-H1_entrybars.json",
+   "n_trades": 117,
+   "n_days": 117,
+   "note": "ground truth از خروجیِ ثبت‌شده؛ تراز با timestamp نه ایندکس"
+  },
+  "S312_midmonth": {
+   "params": "395/395/24 · dom{10,13,20} · h1-12 · close>EMA200",
+   "source": "mid_month_drift.ts:31 + strategy_registry.ts:355,345,654",
+   "n_trades": 267,
+   "n_days": 257
+  }
+ },
+ "common_window": {
+  "from": "2011-01-12 00:00:00",
+  "to": "2026-07-13 00:00:00",
+  "candidate_days_in_window": 328
+ },
+ "union": {
+  "n_days": 364
+ },
+ "coverage": {
+  "covered_days": 53,
+  "novel_days": 275,
+  "coverage_pct": 16.16,
+  "s205_historic_pct": 98.0
+ }
+}
