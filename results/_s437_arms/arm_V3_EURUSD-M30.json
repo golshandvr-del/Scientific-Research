@@ -1,0 +1,89 @@
+{
+ "arm": "V3",
+ "card": "EURUSD-M30",
+ "asset": "EURUSD",
+ "geometry": {
+  "sl_pip": 30.0,
+  "tp_pip": 63.0,
+  "max_hold": 96,
+  "rr": 2.1
+ },
+ "n_signals": 2669,
+ "verdict": "REJECT",
+ "rqs2_score": 0.0,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H10": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false
+ },
+ "failed_gates": [
+  "H1",
+  "H10",
+  "H2",
+  "H3",
+  "H4",
+  "H5",
+  "H6",
+  "H7",
+  "H8",
+  "H9"
+ ],
+ "unknown_gates": [],
+ "null": {
+  "uncond_wr": 34.222,
+  "perm_mean": 33.96843629843657,
+  "perm_sd": 0.8562271937251982,
+  "perm_max": 37.01086956521739,
+  "perm_k": 500
+ },
+ "n_trials": 412,
+ "z_luck_bound": 2.994,
+ "z_margin": -4.81,
+ "metrics": {
+  "n_trades": 1479,
+  "n_wins": 473,
+  "win_rate": 31.98,
+  "expectancy_pip": -3.4141,
+  "cost_pip": 1.6,
+  "profit_factor": 0.812,
+  "net_profit": -8354.6,
+  "max_dd_pct": 84.61,
+  "max_consec_losses": 18,
+  "mcl_allowed": 27,
+  "recovery_factor": -0.93,
+  "skill_lift_pp": -2.24,
+  "skill_z": -1.82,
+  "null_ref_wr": 34.22,
+  "breakeven_wr_cost": 33.98,
+  "rr": 2.1,
+  "top_win_share": 0.0024,
+  "z_obs": -1.816,
+  "z_luck_bound": 2.994,
+  "z_margin": -4.81,
+  "skill_p_perm": 0.965348,
+  "p_emp": 0.967397,
+  "p_adj_bonferroni": 1.0,
+  "perm_k": 500,
+  "perm_max": 37.01
+ },
+ "notes": [
+  "PF=0.812<1.3"
+ ],
+ "extra": {
+  "pip": 0.0001,
+  "n": 2669,
+  "p75": 92.20000000000006,
+  "tp": 63.0,
+  "sl": 30.0,
+  "rule": "TP=q60(MFE) · SL=q30(MAE)",
+  "rr": 2.101
+ }
+}
