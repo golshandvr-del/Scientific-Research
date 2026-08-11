@@ -165,9 +165,25 @@ def judge(df, mask, label, sl, tp, mh, extra=None):
                 'error': f'perm_k={null.get("perm_k")} < {N_PERM}'}
 
     split = int(len(df) * 0.70)
-    res = compute_rqs2(tr, asset='XAUUSD', sl_pip=sl, tp_pip=tp,
+    # 🔴 گامِ ۱۵۰ — `BUG-CALLARGS`. نسخهٔ قبلی `bar_time` و
+    #    `initial_capital` را **پاس نمی‌داد**. موتور خطا نداد؛ فقط
+    #    `wr=None`، `null_ref_wr=None`، `skill_lift_pp=None`، `skill_z=None`
+    #    برگرداند و `H3/H4/H5/H6` را **نامعلوم** گذاشت.
+    #    نکتهٔ تشخیصی: در گامِ ۱۴۸b نال را تعمیر کردم و نال **درست شد**
+    #    (`uncond_wr=48.854`, `perm_k=500`) ولی خروجی عوض نشد ⇒ نشانهٔ
+    #    اینکه علت جای دیگری است. `wr=None` سرنخِ قطعی بود: نرخِ برد به
+    #    نال ربطی ندارد، پس نقص باید در **ورودیِ** موتور باشد نه نال.
+    #    الگوی ریشه‌ای، نهمین تکرار: نگاشتِ **خروجی** را کپی کردم ولی
+    #    امضای **فراخوانی** را از حافظه بازسازی کردم. کپی‌کردنِ نیمی از
+    #    یک واسط، محافظت نمی‌کند.
+    #    ⇒ حالا دقیقاً همان فراخوانیِ `s437_adjudicate.py:240` است.
+    res = compute_rqs2(tr, 'XAUUSD', sl_pip=sl, tp_pip=tp,
+                       bar_time=pd.to_numeric(df['time']).to_numpy(),
+                       close=df['close'].to_numpy(),
                        null=null, n_trials=N_TRIALS, split_bar=split,
-                       close=df['close'].to_numpy(), allow_overlap=False)
+                       initial_capital=10000.0, allow_overlap=False)
+    if (res.get('metrics') or {}).get('wr') is None:
+        raise RuntimeError('wr=None ⇒ موتور ورودی را نپذیرفت (BUG-CALLARGS)')
     m = res.get('metrics') or {}
     g = res.get('gates') or {}
     return {
