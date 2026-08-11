@@ -301,9 +301,11 @@ def build_arm(df, arm: str, asset: str):
     if arm == 'V3':
         m = sos_edge_thr(df)
         d = derive_mfe_target(df, m, mh, asset)
-        if not d.get('p75'):
-            return None, sl, tp, mh, {'skip': 'MFE p75 نامعلوم'}
-        return m, sl, float(round(d['p75'], 1)), mh, d
+        # 🔴 گامِ ۱۳۸ — هر **دو** سمت از داده. پیش‌تر `sl` ثابتِ کارت پاس
+        #    می‌شد و فقط `tp` عوض می‌شد ⇒ نامتقارنی جابه‌جا می‌شد نه حل.
+        if not d.get('tp') or not d.get('sl'):
+            return None, sl, tp, mh, {'skip': 'چندکِ MFE/MAE نامعلوم'}
+        return m, float(d['sl']), float(d['tp']), mh, d
 
     raise ValueError(f'بازوی ناشناخته: {arm}')
 
