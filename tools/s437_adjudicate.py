@@ -237,14 +237,24 @@ def adjudicate(df, mask, label, sl, tp, mh, card, asset,
         'unknown_gates': sorted(k for k, v in g.items() if v is None),
         'null': null['long'],
         'n_trials': N_TRIALS,
-        # 🔴 گاردِ ④ — سد از خودِ موتور، نه بازمحاسبه
-        'z_luck_bound': res.get('z_luck_bound'),
-        'z_margin': res.get('z_margin'),
+        # 🔴 گامِ ۱۳۳ — `BUG-ZBARNEST`: گاردِ ④ **کار نکرد**. من
+        #    `res.get('z_luck_bound')` نوشتم ولی موتور آن را داخلِ
+        #    `res['metrics']` می‌گذارد (خطِ ۱۳۷۱ در `engine/rqs2.py`).
+        #    ⇒ سطحِ بالا `None` داد و لاگ `bar=None` چاپ کرد.
+        #    ⚠️ نکتهٔ ظریف‌تر: `z_luck_bound` در فهرستِ کلیدهایی که از
+        #    `metrics` کپی می‌کردم **هم** نبود، پس عدد **دو بار** گم شد.
+        #    ⇒ درسِ `BUG-SCOREKEY` را نصفه اجرا کردم: نگاشت را کپی کردم
+        #      ولی وقتی کلیدِ **تازه‌ای** افزودم، دوباره حدس زدم کجاست.
+        #      کپی‌کردنِ یک نگاشت از کپی‌کردنِ *عادتِ خواندن از منبع* کمتر است.
+        'z_luck_bound': m.get('z_luck_bound'),
+        'z_margin': m.get('z_margin'),
         'metrics': {k: m.get(k) for k in (
             'n_trades', 'n_wins', 'win_rate', 'expectancy_pip', 'cost_pip',
             'profit_factor', 'net_profit', 'max_dd_pct', 'max_consec_losses',
             'mcl_allowed', 'recovery_factor', 'skill_lift_pp', 'skill_z',
-            'null_ref_wr', 'breakeven_wr_cost', 'rr', 'top_win_share')},
+            'null_ref_wr', 'breakeven_wr_cost', 'rr', 'top_win_share',
+            'z_obs', 'z_luck_bound', 'z_margin', 'skill_p_perm',
+            'p_emp', 'p_adj_bonferroni', 'perm_k', 'perm_max')},
         'notes': [str(x) for x in (res.get('notes') or [])],
         'extra': extra,
     }
