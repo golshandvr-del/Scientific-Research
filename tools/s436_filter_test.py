@@ -66,7 +66,17 @@ for p in (ROOT, os.path.join(ROOT, 'strategies'), os.path.join(ROOT, 'tools')):
 from engine import scalp_engine as se                      # noqa: E402
 from engine.rqs2 import compute_rqs2                       # noqa: E402
 import s333_s79_pullback_revival as s333                   # noqa: E402
-from s351_lpsb import lpsb_signals, CENTRAL, WARMUP        # noqa: E402
+# 🔴 گامِ ۱۱۹ — `BUG-LPSBIMPORT`: اول `CENTRAL` را از `s351_lpsb` وارد کردم
+#    چون **حدس زدم** کنارِ `lpsb_signals` زندگی می‌کند. در واقع در ماژولِ
+#    جداگانهٔ `s351_verdict` است، و `WARMUP` اصلاً ثابتِ ماژول نیست بلکه
+#    مقداری است که خودم در `s436_coverage_m5.py` تعریف کردم.
+#    ⇒ الگوی **دقیقاً یکسان** با ابزارِ پوششِ گامِ ۱۱۰ کپی می‌شود تا هر دو
+#      ابزار *همان* لایهٔ `S355` را بسازند. اگر واردکردن‌ها واگرا شوند،
+#      «پوشش» و «فیلتر» دو لایهٔ متفاوت را می‌سنجند بی‌آنکه خطایی رخ دهد.
+from strategies.s351_lpsb import lpsb_signals              # noqa: E402
+from strategies.s351_verdict import CENTRAL                # noqa: E402
+
+WARMUP = 200                                                # مطابقِ گامِ ۱۱۰
 
 import importlib.util                                       # noqa: E402
 _spec = importlib.util.spec_from_file_location(
