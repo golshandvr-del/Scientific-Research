@@ -1,0 +1,259 @@
+# -*- coding: utf-8 -*-
+"""
+s437_clause3_filter.py — **بندِ سومِ قانونِ همپوشانی** برای نامزدِ `SoS`
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│ چرا این ابزار **الان** ساخته می‌شود و نه بعد از حکم                       │
+│                                                                          │
+│ قانونِ پروژه صریح است: اگر لایهٔ نو با لایه‌های موجود همپوشانی داشت،      │
+│ باید امکانِ استفاده از بخشِ همپوشان **به‌عنوانِ فیلتر** بررسی شود، و این  │
+│ بررسی **هرگز** به مرحلهٔ بعد موکول نمی‌شود.                              │
+│                                                                          │
+│ نکتهٔ منطقیِ مهم: لایه‌ای که لبه‌اش صفر یا **منفی** است، هنوز می‌تواند    │
+│ فیلترِ ارزشمندی باشد. لبهٔ منفی یعنی «این وضعیت پیش‌بینیِ بد می‌دهد» —    │
+│ و اگر همان وضعیت روزهای بدِ یک لایهٔ زنده را هم نشان دهد، **وتو** کردنِ  │
+│ آن روزها لایهٔ زنده را بهتر می‌کند. پس یک `REJECT` مستقل، بندِ سوم را    │
+│ بی‌موضوع نمی‌کند؛ برعکس، جهتِ `VETO` را **محتمل‌تر** می‌کند.             │
+└──────────────────────────────────────────────────────────────────────────┘
+
+کارت: `XAUUSD-M5` — تنها کارتی که هم نامزد رویش داوری شده و هم لایهٔ
+زنده دارد. (باندلِ زنده **هیچ** کارتِ یورویی ندارد ⇒ روی یورو موضوعی
+برای فیلتر شدن وجود ندارد.)
+
+لایهٔ زنده: `S355` = `s333.build_layer(df, cfg) & (lpsb_state == -1)`
+— دقیقاً همان فرمولِ باندل، و **همان بلوکِ واردکردنی** که در `S436`
+گامِ ۱۱۹ تثبیت شد (`BUG-LPSBIMPORT`).
+
+دو جهتِ فیلتر، هر دو آزموده و هر دو گزارش می‌شوند:
+  • `CONFIRM` — فقط معاملاتِ `S355` در روزهایی که نامزد **هم** فعال است
+  • `VETO`    — فقط معاملاتِ `S355` در روزهایی که نامزد فعال **نیست**
+
+انتخابِ جهت **پس از** دیدنِ نتیجه = جست‌وجوی پنهان. پس هر دو از پیش
+تعریف و هر دو گزارش می‌شوند.
+
+معیارِ موفقیت — **پیش از اجرا** قفل می‌شود، هر سه شرط لازم:
+  ① `RQS2` بالاتر از پایهٔ `S355`
+  ② نمونهٔ بازمانده ≥ ۳۰ معامله (قیدِ ۲)
+  ③ **لیفت** بالاتر از لیفتِ پایه
+شرطِ ③ حیاتی است: فیلتری که فقط `n` را کم کند و لیفت را بالا نبرد، چیزی
+نیافته — فقط تصادفی معامله حذف کرده. و چون کوچک‌شدنِ نمونه انحرافِ
+معیارِ جای‌گشت را باد می‌کند، `z` حتی با `WR` بهترْ افت می‌کند.
+⚠️ و درسِ `S436` گامِ ۱۲۲: `PF` و `maxDD` **هر دو** می‌توانند با حذفِ
+   چند برندهٔ کوچک و یک بازندهٔ بزرگ بهتر شوند بی‌آنکه لبه‌ای اضافه شود.
+   ⇒ اشتباهِ رایجِ ۸ با لباسِ نسبت. تنها شرطِ ③ آن را می‌گیرد.
+
+گاردها (همه با نامِ باگی که تولیدشان کرد):
+  `BUG-DAYDTYPE`  — روزها **همه‌جا** `int64`ِ روزِ اپوک؛ هر دو طرفِ
+                    `np.isin` هم‌نوع، و گاردِ افراز `C+V==BASE` صدادار.
+  `BUG-NULLUNCOND`— نال با هندسهٔ **خودِ `S355`** ساخته می‌شود، نه هندسهٔ
+                    نامزد. امتیازدهی به یک لایه با هندسهٔ دیگری = سنجشِ
+                    تغییرِ هندسه به‌جای مهارتِ سیگنال.
+  `BUG-PERMK`     — `perm_k = pa.size` (تعدادِ جای‌گشت)، نه اندازهٔ نمونه.
+  `BUG-SCOREKEY`  — نگاشتِ خروجیِ موتور **عیناً** از `s437_adjudicate`.
+  `BUG-ZBARNEST`  — سد از `res['metrics']['z_luck_bound']` خوانده می‌شود.
+  `BUG-CFGKEYS`   — پیکربندیِ `S355` از `s333.BEST_CFG` **خوانده** می‌شود.
+  گاردِ پایهٔ صفر — اگر `S355` صفر سیگنال داد، «شکستِ اندازه‌گیری» اعلام
+                    می‌شود نه «فیلترِ عالی» (پایهٔ صفر هر فیلتری را
+                    بی‌نهایت خوب نشان می‌دهد).
+
+هزینهٔ چندگانگی: دو نسخه ⇒ `n_trials` از ۴۱۲ به ۴۱۴.
+(هر دو زیرِ آستانهٔ ۵۶۷ ⇒ سد همچنان `H3=3.09` می‌ماند ⇒ رایگان.)
+"""
+from __future__ import annotations
+
+import json
+import os
+import sys
+
+import numpy as np
+import pandas as pd
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+for p in (ROOT, os.path.join(ROOT, 'strategies'), os.path.join(ROOT, 'tools')):
+    if p not in sys.path:
+        sys.path.insert(0, p)
+
+from engine import scalp_engine as se                        # noqa: E402
+from engine.rqs2 import compute_rqs2                         # noqa: E402
+import s333_s79_pullback_revival as s333                     # noqa: E402
+# بلوکِ واردکردنیِ تثبیت‌شده در `S436` گامِ ۱۱۹ (`BUG-LPSBIMPORT`)
+from strategies.s351_lpsb import lpsb_signals                # noqa: E402
+from strategies.s351_verdict import CENTRAL                  # noqa: E402
+import tools.s435_coverage_union as cov                      # noqa: E402
+import tools.s437_adjudicate as adj                          # noqa: E402
+
+WARMUP = 200
+CARD = 'XAUUSD-M5'
+CARD_KEY = 'XAUUSD_M5'
+N_TRIALS = 414
+N_PERM = 500
+SEED = 20260811
+OUT = os.path.join(ROOT, 'results', '_s437_clause3')
+
+
+def s355_cfg():
+    """`BUG-CFGKEYS` — پیکربندی **خوانده** می‌شود، رونویسی نمی‌شود."""
+    best = getattr(s333, 'BEST_CFG', None)
+    if not isinstance(best, dict):
+        raise RuntimeError('s333.BEST_CFG یافت نشد')
+    cfg = best.get(CARD_KEY) or best.get(CARD)
+    if cfg is None:
+        raise RuntimeError(f'کلیدِ {CARD_KEY}/{CARD} در BEST_CFG نیست: '
+                           f'{sorted(best)[:8]}')
+    return cfg
+
+
+def s355_mask(df: pd.DataFrame) -> np.ndarray:
+    cfg = s355_cfg()
+    base = s333.build_layer(df, cfg)
+    _, _, state = lpsb_signals(df, CENTRAL['L'], CENTRAL['f'], warmup=WARMUP)
+    return np.asarray(base, bool) & (np.asarray(state) == -1)
+
+
+def day_index(df: pd.DataFrame) -> np.ndarray:
+    """`BUG-DAYDTYPE` — روزها به‌صورتِ `int64`ِ روزِ اپوک."""
+    return df['dt'].dt.normalize().to_numpy().astype('datetime64[D]').astype('int64')
+
+
+def days_of(df: pd.DataFrame, mask: np.ndarray) -> set:
+    return set(int(x) for x in np.unique(day_index(df)[np.asarray(mask, bool)]))
+
+
+def geom_of_s355():
+    """هندسهٔ **خودِ `S355`** — `BUG-NULLUNCOND`."""
+    cfg = s355_cfg()
+    sl = float(cfg.get('sl_pip') or cfg.get('slPip'))
+    tp = float(cfg.get('tp_pip') or cfg.get('tpPip'))
+    mh = int(cfg.get('max_hold') or cfg.get('maxHoldBars') or 96)
+    return sl, tp, mh
+
+
+def judge(df, mask, label, sl, tp, mh, extra=None):
+    z = np.zeros(len(df), bool)
+    tr = se.simulate_trades(df, mask, z, sl, tp, 'XAUUSD',
+                            max_hold=mh, allow_overlap=False)
+    if tr is None or len(tr) < 30:
+        return {'variant': label, 'error': f'n<30 (n={0 if tr is None else len(tr)})'}
+
+    rng = np.random.default_rng(SEED)
+    n_sig = int(np.asarray(mask, bool).sum())
+    pa = []
+    idx_all = np.arange(WARMUP, len(df) - mh)
+    for _ in range(N_PERM):
+        pick = rng.choice(idx_all, size=min(n_sig, len(idx_all)), replace=False)
+        pm = np.zeros(len(df), bool)
+        pm[pick] = True
+        pt = se.simulate_trades(df, pm, z, sl, tp, 'XAUUSD',
+                                max_hold=mh, allow_overlap=False)
+        if pt is not None and len(pt) > 0:
+            pa.append(100.0 * float((pt['pnl_pip'].values > 0).mean()))
+    pa = np.asarray(pa, float)
+    null = {'ref_wr': float(pa.mean()), 'sd': float(pa.std(ddof=1)),
+            'max': float(pa.max()), 'perm_k': int(pa.size)}   # BUG-PERMK
+
+    split = int(len(df) * 0.70)
+    res = compute_rqs2(tr, asset='XAUUSD', sl_pip=sl, tp_pip=tp,
+                       null=null, n_trials=N_TRIALS, split_bar=split,
+                       close=df['close'].to_numpy(), allow_overlap=False)
+    m = res.get('metrics') or {}
+    g = res.get('gates') or {}
+    return {
+        'variant': label, 'card': CARD, 'geometry': dict(sl=sl, tp=tp, mh=mh),
+        'n_trials': N_TRIALS, 'n_perm': N_PERM,
+        'verdict': res.get('verdict'), 'rqs2_score': res.get('rqs2_score'),
+        'gates': {k: g.get(k) for k in sorted(g)},
+        'failed_gates': sorted(k for k, v in g.items() if v is False),
+        'unknown_gates': sorted(k for k, v in g.items() if v is None),
+        'z_luck_bound': m.get('z_luck_bound'),                 # BUG-ZBARNEST
+        'z_margin': m.get('z_margin'),
+        'metrics': {k: m.get(k) for k in (
+            'n_trades', 'n_wins', 'win_rate', 'expectancy_pip', 'cost_pip',
+            'profit_factor', 'net_profit', 'max_dd_pct', 'max_consec_losses',
+            'recovery_factor', 'skill_lift_pp', 'skill_z', 'null_ref_wr',
+            'breakeven_wr_cost', 'rr', 'top_win_share',
+            'z_luck_bound', 'z_margin', 'skill_p_perm', 'perm_k')},
+        'null': null,
+        'extra': extra,
+    }
+
+
+def main() -> int:
+    os.makedirs(OUT, exist_ok=True)
+    df, asset = adj.load_card(CARD)
+    sl, tp, mh = geom_of_s355()
+    print(f'[S437 بندِ ۳] {CARD} · n_trials={N_TRIALS} · هندسهٔ S355 '
+          f'SL={sl}/TP={tp}/mh={mh}')
+
+    live = s355_mask(df)
+    cand = cov.sos_edge(df)
+    if int(live.sum()) == 0:
+        print('  ⛔ شکستِ اندازه‌گیری: لایهٔ زنده صفر سیگنال داد')
+        return 2
+
+    ld, cd = days_of(df, live), days_of(df, cand)
+    inter = ld & cd
+    print(f'  روزها: S355={len(ld)} · نامزد={len(cd)} · مشترک={len(inter)} '
+          f'({100.0*len(inter)/max(1,len(ld)):.1f}% از S355)')
+
+    in_cand = np.isin(day_index(df),
+                      np.fromiter(cd, dtype='int64', count=len(cd)))
+    variants = {'BASE': live, 'CONFIRM': live & in_cand, 'VETO': live & ~in_cand}
+
+    # گاردِ افرازِ صدادار (`BUG-DAYDTYPE`، گامِ ۱۲۱)
+    nb = int(live.sum()); nc = int(variants['CONFIRM'].sum())
+    nv = int(variants['VETO'].sum())
+    if nc + nv != nb:
+        print(f'  ⛔ گاردِ افراز شکست: {nc}+{nv} != {nb}')
+        return 3
+    if len(inter) > 0 and nc == 0:
+        print(f'  ⛔ گاردِ dtype شکست: {len(inter)} روزِ مشترک ولی ۰ میله')
+        return 3
+    print(f'  ✅ گاردِ افراز: {nb} = CONFIRM {nc} + VETO {nv}')
+
+    out = {}
+    for lbl, m in variants.items():
+        r = judge(df, m, lbl, sl, tp, mh, extra={'n_signal_bars': int(m.sum())})
+        out[lbl] = r
+        with open(os.path.join(OUT, f'variant_{lbl}.json'), 'w',
+                  encoding='utf-8') as f:
+            json.dump(r, f, ensure_ascii=False, indent=1)
+        if r.get('error'):
+            print(f'  ⛔ [{lbl}] {r["error"]}')
+        else:
+            mm = r['metrics']
+            print(f'  [{lbl}] n={mm["n_trades"]} WR={mm["win_rate"]} '
+                  f'lift={mm["skill_lift_pp"]} z={mm["skill_z"]} '
+                  f'PF={mm["profit_factor"]} net=${mm["net_profit"]} '
+                  f'RQS2={r["rqs2_score"]}')
+
+    base = out.get('BASE') or {}
+    bq = (base.get('rqs2_score') or 0)
+    bl = ((base.get('metrics') or {}).get('skill_lift_pp') or 0)
+    verdicts = {}
+    for lbl in ('CONFIRM', 'VETO'):
+        r = out.get(lbl) or {}
+        if r.get('error'):
+            verdicts[lbl] = {'useful': False, 'reason': r['error']}
+            continue
+        mm = r['metrics']
+        c1 = (r.get('rqs2_score') or 0) > bq
+        c2 = (mm.get('n_trades') or 0) >= 30
+        c3 = (mm.get('skill_lift_pp') or 0) > bl
+        verdicts[lbl] = {'useful': bool(c1 and c2 and c3),
+                         'cond1_rqs2_up': bool(c1), 'cond2_n_ok': bool(c2),
+                         'cond3_lift_up': bool(c3)}
+    summary = {'card': CARD, 'live_days': len(ld), 'cand_days': len(cd),
+               'overlap_days': len(inter),
+               'overlap_pct_of_live': round(100.0*len(inter)/max(1, len(ld)), 2),
+               'partition': {'base_bars': nb, 'confirm_bars': nc, 'veto_bars': nv},
+               'verdicts': verdicts}
+    with open(os.path.join(OUT, 'clause3_summary.json'), 'w',
+              encoding='utf-8') as f:
+        json.dump(summary, f, ensure_ascii=False, indent=1)
+    print('  حکمِ فیلتر:', json.dumps(verdicts, ensure_ascii=False))
+    print('\n[done]')
+    return 0
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())
