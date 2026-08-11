@@ -147,21 +147,22 @@ def judge(df, mask, label, sl, tp, mh, extra=None):
     if tr is None or len(tr) < 30:
         return {'variant': label, 'error': f'n<30 (n={0 if tr is None else len(tr)})'}
 
-    rng = np.random.default_rng(SEED)
-    n_sig = int(np.asarray(mask, bool).sum())
-    pa = []
-    idx_all = np.arange(WARMUP, len(df) - mh)
-    for _ in range(N_PERM):
-        pick = rng.choice(idx_all, size=min(n_sig, len(idx_all)), replace=False)
-        pm = np.zeros(len(df), bool)
-        pm[pick] = True
-        pt = se.simulate_trades(df, pm, z, sl, tp, 'XAUUSD',
-                                max_hold=mh, allow_overlap=False)
-        if pt is not None and len(pt) > 0:
-            pa.append(100.0 * float((pt['pnl_pip'].values > 0).mean()))
-    pa = np.asarray(pa, float)
-    null = {'ref_wr': float(pa.mean()), 'sd': float(pa.std(ddof=1)),
-            'max': float(pa.max()), 'perm_k': int(pa.size)}   # BUG-PERMK
+    # 🔴 گامِ ۱۴۸ — `BUG-NULLKEYS`. نسخهٔ نخست، دیکشنریِ نال را **از
+    #    حافظه** ساخت: `{'ref_wr','sd','max','perm_k'}`. موتور کلیدهای
+    #    `{'uncond_wr','perm_mean','perm_sd','perm_max','perm_k'}` می‌خواهد
+    #    ⇒ سه کلید غلط و `uncond_wr` اصلاً غایب.
+    #    پیامدِ **بی‌صدا**: موتور خطا نداد، ولی `null_ref_wr=None`،
+    #    `skill_lift_pp=None`، `skill_z=None` و چهار دروازهٔ `H3/H4/H5/H6`
+    #    **نامعلوم** ماندند. یعنی شرطِ ③ِ معیارِ من (لیفت↑) اصلاً
+    #    قابلِ ارزیابی نبود و `None > None` آن را `False` گزارش کرد —
+    #    دقیقاً فروپاشیِ `BUG-SCOREKEY`.
+    #    ⇒ به‌جای تصحیحِ کلیدها، **تابعِ کارآمد** فراخوانی می‌شود تا
+    #      امکانِ واگرایی حذف شود (همان درسِ `BUG-GEOMDRIFT`).
+    null = adj.null_for(df, np.asarray(mask, bool), sl, tp, mh, 'XAUUSD',
+                        n_perm=N_PERM, seed=SEED)['long']
+    if null.get('perm_k', 0) < N_PERM:
+        return {'variant': label,
+                'error': f'perm_k={null.get("perm_k")} < {N_PERM}'}
 
     split = int(len(df) * 0.70)
     res = compute_rqs2(tr, asset='XAUUSD', sl_pip=sl, tp_pip=tp,
