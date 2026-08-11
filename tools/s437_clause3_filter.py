@@ -182,8 +182,22 @@ def judge(df, mask, label, sl, tp, mh, extra=None):
                        close=df['close'].to_numpy(),
                        null=null, n_trials=N_TRIALS, split_bar=split,
                        initial_capital=10000.0, allow_overlap=False)
-    if (res.get('metrics') or {}).get('wr') is None:
-        raise RuntimeError('wr=None ⇒ موتور ورودی را نپذیرفت (BUG-CALLARGS)')
+    # 🔴 گامِ ۱۵۱ — `BUG-GUARDKEY`. گاردی که در گامِ ۱۵۰ برای گرفتنِ
+    #    `BUG-CALLARGS` ساختم، خودش کلیدِ **حدسی** `wr` را می‌خواند.
+    #    موتور چنین کلیدی **ندارد**؛ نامِ واقعی `win_rate` است.
+    #    ⇒ گارد همیشه `None` می‌دید و **همیشه** خطا می‌داد — حتی وقتی
+    #      تعمیرِ گامِ ۱۵۰ **درست کار کرده بود**.
+    #    ⚠️ خطرناک‌ترین شکلِ این خانواده: گاردی که برای گرفتنِ یک باگ
+    #      ساخته شده، خودش قربانیِ همان باگ می‌شود و یک **نتیجهٔ منفیِ
+    #      جعلی** می‌سازد. دقیقاً همان اتفاقی که در `BUG-ZBARNEST` افتاد.
+    #    ⇒ حالا کلیدها از **فهرستِ واقعیِ خروجی** خوانده شده‌اند:
+    #      ['breakeven_wr_cost','cost_pip','expectancy_pip', ... ,'win_rate', ...]
+    _m = res.get('metrics') or {}
+    _need = ('win_rate', 'skill_lift_pp', 'skill_z')
+    _miss = [k for k in _need if _m.get(k) is None]
+    if _miss:
+        raise RuntimeError(f'{_miss} = None ⇒ موتور ورودی را نپذیرفت '
+                           f'(BUG-CALLARGS). کلیدهای موجود: {sorted(_m)}')
     m = res.get('metrics') or {}
     g = res.get('gates') or {}
     return {
