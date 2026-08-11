@@ -168,12 +168,21 @@ def judge(df, mask, label, extra=None):
                        null=null, n_trials=N_TRIALS, split_bar=split,
                        close=df['close'].to_numpy(), allow_overlap=False)
     m = res.get('metrics') or {}
+    # 🔴 گامِ ۱۲۰ — `BUG-SCOREKEY`: اینجا `res.get('score')` نوشته بودم و
+    #    موتور کلیدِ `rqs2_score` برمی‌گرداند ⇒ **`None` بی‌صدا**. همچنین
+    #    `failed`/`unknown` کلیدِ موتور نیستند و از `gates` مشتق می‌شوند.
+    #    ⚠️ چرا خطرناک بود: داورِ سه‌شرطی `(r['rqs2_score'] or 0) > (base or 0)`
+    #    را می‌سنجد؛ با `None` هر دو صفر می‌شوند و شرطِ ۱ **همیشه False**.
+    #    یعنی هر فیلتری، حتی یک فیلترِ عالی، «بی‌فایده» گزارش می‌شد.
+    #    این بار جهتِ خطا **علیهِ** فرضیه‌ام بود — ولی همان‌قدر غلط است.
+    g = res.get('gates') or {}
     return {
         'variant': label, 'card': 'XAUUSD-M5', 'geometry': dict(sl=sl, tp=tp, mh=mh),
         'n_trials': N_TRIALS, 'n_perm': N_PERM,
-        'verdict': res.get('verdict'), 'rqs2_score': res.get('score'),
-        'gates': res.get('gates'), 'failed_gates': res.get('failed'),
-        'unknown_gates': res.get('unknown'),
+        'verdict': res.get('verdict'), 'rqs2_score': res.get('rqs2_score'),
+        'gates': {k: g.get(k) for k in sorted(g)},
+        'failed_gates': sorted(k for k, v in g.items() if v is False),
+        'unknown_gates': sorted(k for k, v in g.items() if v is None),
         'metrics': {k: m.get(k) for k in (
             'n_trades', 'n_wins', 'win_rate', 'expectancy_pip',
             'profit_factor', 'net_profit', 'max_dd_pct', 'max_consec_losses',
