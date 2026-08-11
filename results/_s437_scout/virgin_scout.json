@@ -1,0 +1,200 @@
+{
+ "lift_ref": 7.08,
+ "p0": 0.5,
+ "z_bar": 3.09,
+ "n_required": 476.2,
+ "rows": [
+  {
+   "card": "XAUUSD-M5",
+   "bars": 1089574,
+   "years": 15.59,
+   "n_signal_bars": 17879,
+   "n_trades": 6344,
+   "trades_per_year": 406.87,
+   "power_ratio": 13.3221,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-OK",
+   "geometry": {
+    "sl": 150,
+    "tp": 300,
+    "mh": 96
+   }
+  },
+  {
+   "card": "XAUUSD-M15",
+   "bars": 363778,
+   "years": 15.59,
+   "n_signal_bars": 5182,
+   "n_trades": 2138,
+   "trades_per_year": 137.12,
+   "power_ratio": 4.4897,
+   "battery_rows": 4,
+   "verdict": "SPENT-OK",
+   "geometry": {
+    "sl": 150,
+    "tp": 300,
+    "mh": 96
+   }
+  },
+  {
+   "card": "XAUUSD-M30",
+   "bars": 182145,
+   "years": 15.59,
+   "n_signal_bars": 2398,
+   "n_trades": 1124,
+   "trades_per_year": 72.09,
+   "power_ratio": 2.3603,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-OK",
+   "geometry": {
+    "sl": 150,
+    "tp": 300,
+    "mh": 96
+   }
+  },
+  {
+   "card": "XAUUSD-H1",
+   "bars": 91331,
+   "years": 15.59,
+   "n_signal_bars": 1397,
+   "n_trades": 684,
+   "trades_per_year": 43.87,
+   "power_ratio": 1.4364,
+   "battery_rows": 19,
+   "verdict": "SPENT-OK",
+   "geometry": {
+    "sl": 150,
+    "tp": 300,
+    "mh": 96
+   }
+  },
+  {
+   "card": "XAUUSD-H2",
+   "bars": 47623,
+   "years": 15.59,
+   "n_signal_bars": 709,
+   "n_trades": 422,
+   "trades_per_year": 27.07,
+   "power_ratio": 0.8862,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-LOW",
+   "geometry": {
+    "sl": 150,
+    "tp": 300,
+    "mh": 96
+   }
+  },
+  {
+   "card": "XAUUSD-H3",
+   "bars": 31806,
+   "years": 15.59,
+   "n_signal_bars": 525,
+   "n_trades": 337,
+   "trades_per_year": 21.61,
+   "power_ratio": 0.7077,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-LOW",
+   "geometry": {
+    "sl": 150,
+    "tp": 300,
+    "mh": 96
+   }
+  },
+  {
+   "card": "XAUUSD-H6",
+   "bars": 15966,
+   "years": 15.59,
+   "n_signal_bars": 259,
+   "n_trades": 193,
+   "trades_per_year": 12.38,
+   "power_ratio": 0.4053,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-LOW",
+   "geometry": {
+    "sl": 150,
+    "tp": 300,
+    "mh": 96
+   }
+  },
+  {
+   "card": "EURUSD-M5",
+   "bars": 200000,
+   "years": 2.69,
+   "n_signal_bars": 3519,
+   "n_trades": 1176,
+   "trades_per_year": 437.85,
+   "power_ratio": 2.4695,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-OK",
+   "geometry": {
+    "sl": 50,
+    "tp": 100,
+    "mh": 96
+   }
+  },
+  {
+   "card": "EURUSD-M15",
+   "bars": 200000,
+   "years": 8.09,
+   "n_signal_bars": 2985,
+   "n_trades": 1146,
+   "trades_per_year": 141.7,
+   "power_ratio": 2.4065,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-OK",
+   "geometry": {
+    "sl": 50,
+    "tp": 100,
+    "mh": 96
+   }
+  },
+  {
+   "card": "EURUSD-M30",
+   "bars": 200000,
+   "years": 16.16,
+   "n_signal_bars": 2669,
+   "n_trades": 1229,
+   "trades_per_year": 76.06,
+   "power_ratio": 2.5808,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-OK",
+   "geometry": {
+    "sl": 50,
+    "tp": 100,
+    "mh": 96
+   }
+  },
+  {
+   "card": "EURUSD-H1",
+   "bars": 100070,
+   "years": 16.16,
+   "n_signal_bars": 1323,
+   "n_trades": 693,
+   "trades_per_year": 42.89,
+   "power_ratio": 1.4553,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-OK",
+   "geometry": {
+    "sl": 50,
+    "tp": 100,
+    "mh": 96
+   }
+  },
+  {
+   "card": "EURUSD-H4",
+   "bars": 25133,
+   "years": 16.16,
+   "n_signal_bars": 375,
+   "n_trades": 271,
+   "trades_per_year": 16.77,
+   "power_ratio": 0.5691,
+   "battery_rows": 0,
+   "verdict": "VIRGIN-LOW",
+   "geometry": {
+    "sl": 50,
+    "tp": 100,
+    "mh": 96
+   }
+  }
+ ]
+}
