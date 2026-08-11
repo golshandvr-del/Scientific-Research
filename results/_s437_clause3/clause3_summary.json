@@ -1,0 +1,24 @@
+{
+ "card": "XAUUSD-M5",
+ "live_days": 157,
+ "cand_days": 3815,
+ "overlap_days": 155,
+ "overlap_pct_of_live": 98.73,
+ "partition": {
+  "base_bars": 210,
+  "confirm_bars": 207,
+  "veto_bars": 3
+ },
+ "verdicts": {
+  "CONFIRM": {
+   "useful": false,
+   "cond1_rqs2_up": true,
+   "cond2_n_ok": true,
+   "cond3_lift_up": false
+  },
+  "VETO": {
+   "useful": false,
+   "reason": "n<30 (n=2)"
+  }
+ }
+}
