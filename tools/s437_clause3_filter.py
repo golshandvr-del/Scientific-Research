@@ -194,8 +194,24 @@ def main() -> int:
     os.makedirs(OUT, exist_ok=True)
     df, asset = adj.load_card(CARD)
     sl, tp, mh = geom_of_s355()
+
+    # 🔴 گامِ ۱۴۹ — گاردِ `BUG-DATASETDRIFT` (کشفِ گامِ ۱۴۸c).
+    #    دو ابزار در همین مخزن، کارتِ هم‌نامِ `XAUUSD-M5` را از **دو فایلِ
+    #    متفاوت** می‌خواندند: `s436_adjudicate` از `data/XAUUSD_M5.csv`
+    #    (۲۰۰٬۰۰۰ میله ≈ ۲.۸ سال) و `s437_adjudicate` از
+    #    `data/mt5_full/XAUUSD_M5.csv.gz` (۱٬۰۸۹٬۵۷۴ میله ≈ ۱۵.۶ سال).
+    #    هیچ‌چیز این واگرایی را اعلام نمی‌کرد؛ فقط وقتی دو عددی که
+    #    **باید** توافق کنند (n=47 و n=160) توافق نکردند، دیده شد.
+    #    ⇒ از این پس مسیرِ فایل، تعدادِ ردیف و بازهٔ تاریخ **بلند** چاپ
+    #      می‌شوند تا خواننده هرگز پایهٔ ۱۵.۶ ساله را با ۲.۸ ساله اشتباه
+    #      نگیرد. عددی که فقط در ذهنِ نویسنده «معلوم» است، مستند نیست.
+    ds_rel = adj.CARDS[CARD][0]
+    ds_span = (str(df['dt'].iloc[0])[:10], str(df['dt'].iloc[-1])[:10])
+    ds_years = (df['dt'].iloc[-1] - df['dt'].iloc[0]).days / 365.25
     print(f'[S437 بندِ ۳] {CARD} · n_trials={N_TRIALS} · هندسهٔ S355 '
           f'SL={sl}/TP={tp}/mh={mh}')
+    print(f'  دیتاست: {ds_rel} · ردیف={len(df):,} · '
+          f'{ds_span[0]}→{ds_span[1]} ({ds_years:.1f} سال)')
 
     live = s355_mask(df)
     cand = cov.sos_edge(df)
