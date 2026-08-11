@@ -1,0 +1,55 @@
+{
+ "step": 136,
+ "card": "EURUSD-M30",
+ "asset": "EURUSD",
+ "cost_pip": 1.6,
+ "max_hold": 96,
+ "current_geometry": {
+  "sl": 50.0,
+  "tp": 100.0
+ },
+ "exit_census_current": {
+  "n": 1229,
+  "tp_real": 98.4,
+  "sl_real": -51.6,
+  "tp_hit": 223,
+  "tp_pct": 18.14,
+  "sl_hit": 628,
+  "sl_pct": 51.1,
+  "timeout": 378,
+  "timeout_pct": 30.76,
+  "timeout_mean": 17.81,
+  "timeout_wins": 255,
+  "timeout_losses": 123,
+  "realized_win_mean": 64.652,
+  "realized_loss_mean": -45.775,
+  "realized_rr": 1.4124,
+  "realized_breakeven_pct": 41.45,
+  "win_rate": 38.89,
+  "max_bars_held": 95,
+  "pct_at_horizon": 30.84
+ },
+ "mfe_quantiles_pip": {
+  "q25": 21.8,
+  "q50": 48.4,
+  "q60": 63.04,
+  "q70": 81.2,
+  "q75": 92.2,
+  "q80": 103.54,
+  "q90": 137.04
+ },
+ "mae_quantiles_pip": {
+  "q25": 24.7,
+  "q50": 51.5,
+  "q75": 90.9,
+  "q90": 138.48
+ },
+ "mfe_n": 2669,
+ "pct_mfe_reaching_current_tp": 21.32,
+ "reachable_geometry": {
+  "sl": 30.0,
+  "tp": 63.0,
+  "rr": 2.101,
+  "rule": "TP=q60(MFE) · SL=q30(MAE) — یک عدد، بدونِ جاروب"
+ }
+}
