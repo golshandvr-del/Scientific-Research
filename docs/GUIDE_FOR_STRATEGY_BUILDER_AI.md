@@ -262,24 +262,54 @@ EURUSD:  pip=0.0001 ، contract=100000 ، spread=1.0 pip ، commission=0 ، slip
 ```
 از اعدادِ خودت نساز — از جدولِ `ASSETS` در `scalp_engine.py` بخوان تا با کلِ پروژه سازگار بمانی.
 
-### ۲.۲ اسکلتِ اسکریپتِ پایتونِ یک لایه
+### ۲.۲ اسکلتِ اسکریپتِ پایتونِ یک لایه — روی دادهٔ کامل و با داورِ RQS2
 یک فایل در `strategies/` بساز (مثلِ `strategies/sXXX_myidea.py`). الگو:
 ```python
 import numpy as np, pandas as pd
 from engine import scalp_engine as se
-from engine import rqs
+from engine import rqs2                     # ⚠️ نه `rqs` — آن معیارِ ۶-دروازه‌ایِ منسوخ است
+from tools import s434_fast_data as fd
 
-df = se.load_data('data/XAUUSD_M5.csv')          # از M5 شروع کن
-# --- منطقِ سیگنال (بدونِ look-ahead: سیگنالِ کندلِ i از داده‌ی تا i؛ ورود در open کندلِ i+1) ---
-long_sig  = build_long_signal(df)   # np.bool array هم‌طولِ df
+# --- ۱) دادهٔ کاملِ ۱۵.۶ ساله (نه data/XAUUSD_*.csv کوتاه — تلهٔ E-16) ---
+d  = fd.load_fast('XAUUSD', 'M1')           # از M1 شروع کن؛ بعد کلِ ۱۹ تایم‌فریم
+df = fd.as_dataframe(d)
+print('src =', d['src'])                    # این را در گزارشِ MD بنویس
+
+# --- ۲) منطقِ سیگنال (بدونِ look-ahead: سیگنالِ کندلِ i فقط از دادهٔ تا i؛ ورود در open کندلِ i+1) ---
+long_sig  = build_long_signal(df)           # np.bool آرایهٔ هم‌طولِ df
 short_sig = build_short_signal(df)
-# --- SL/TP مخصوصِ همین TF (اعدادِ غیررند، از اسکن) ---
+
+# --- ۳) SL/TP مخصوصِ همین TF (اعدادِ غیررند، از اسکن — نه 100/200) ---
 trades = se.simulate_trades(df, long_sig, short_sig, sl_pip=190, tp_pip=285,
                             asset='XAUUSD', max_hold=64, allow_overlap=False)
-# --- داوریِ RQS+ (۶ دروازه‌ی veto) ---
-r = rqs.compute_rqs(trades, 'XAUUSD', sl_pip=190, tp_pip=285)
-print(rqs.format_report('SXXX_XAUUSD_M5', r))    # ACCEPT/REJECT + RQS + همه‌ی گیت‌ها
+
+# --- ۴) داوریِ RQS2 v2.6 (۱۱ دروازه + ۵ حکم) ---
+r = rqs2.compute_rqs2(
+        trades, 'XAUUSD',
+        sl_pip=190, tp_pip=285,             # tp_pip اجباری است (H2)
+        bar_time=df['time'].values,         # H6 تقویمی
+        null=my_null,                       # مدلِ صفرِ اندازه‌گیری‌شده — K ≥ 500 (H3)
+        n_trials=n_eff,                     # اندازهٔ واقعیِ فضای جست‌وجو (H5)
+        split_bar=split_idx,                # مرزِ hold-out (H7)
+        close=df['close'].values)           # رانشِ رژیم (H10)
+
+print(r['verdict'], r['rqs2_score'])        # یکی از ۵ حکم + نمرهٔ رتبه‌بندی
+print(r['gates'])                           # کدام دروازه True/False/None است
+print(r['metrics']['skill_p_perm'])         # ⚠️ اجباری در گزارشِ MD
 ```
+> **⚠️ ورودیِ ناقص ⇒ `INCOMPLETE`، نه `ACCEPT`.** اگر `tp_pip` یا `null` یا
+> `n_trials` یا `split_bar` را ندهی، دروازهٔ مربوطه `None` می‌شود و حکم
+> `INCOMPLETE` می‌آید — که «نمی‌دانم» است، نه قبولی. هر پنج ورودیِ بالا را بده.
+>
+> **دو موتور، دو کاربرد — هر دو لازم‌اند:**
+> | موتور | کِی | چرا |
+> |---|---|---|
+> | `se.simulate_trades` (برداری) | اسکنِ سریعِ پارامتر روی ۱۹ کارت | سریع است؛ میلیون‌ها کندل را در ثانیه می‌زند |
+> | `engine/trade_simulator.py` (رویدادمحور) | **داوریِ نهایی + سنجشِ همپوشانی** | یک حساب، یک پوزیشنِ باز، trailing و بستنِ زودهنگام — یعنی همان چیزی که کاربر واقعاً تجربه می‌کند |
+>
+> شبیه‌سازِ رویدادمحور پروتکلِ `advise(ctx)` دارد (`StrategyContext` را می‌گیرد و
+> تصمیم می‌دهد) و از `simulate(df, strategy, asset, tf=...)` اجرا می‌شود؛ خروجی‌اش
+> مستقیماً به `compute_rqs2` پاس داده می‌شود. **همپوشانی فقط با این سنجیده می‌شود.**
 
 ### ۲.۲.۱ جعبه‌ابزار: بانکِ ۴۰۱ اندیکاتور (`engine/indicator_bank.py`) — مهم‌ترین سلاحِ احیا
 منطقِ سیگنال و فیلترهایت را **از این بانک** بساز، نه با کدنویسیِ دستیِ اندیکاتور. این بانک **معادلِ
