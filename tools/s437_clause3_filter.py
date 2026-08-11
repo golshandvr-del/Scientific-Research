@@ -120,12 +120,24 @@ def days_of(df: pd.DataFrame, mask: np.ndarray) -> set:
 
 
 def geom_of_s355():
-    """هندسهٔ **خودِ `S355`** — `BUG-NULLUNCOND`."""
+    """هندسهٔ **خودِ `S355`** — `BUG-NULLUNCOND`.
+
+    🔴 گامِ ۱۴۷ — `BUG-CFGKEYS` **دوباره**. کلیدها را `sl_pip`/`slPip`
+    حدس زده بودم؛ کلیدهای واقعیِ `s333.BEST_CFG` کوتاه‌اند: `sl`/`tp`/`mh`.
+    نسخهٔ باندل (`S333_CFG` در `app.bundle.mjs`) نامِ `slPip`/`tpPip` دارد،
+    و من نامِ **باندل** را در ماژولِ **پایتون** جست‌وجو کردم.
+    ⇒ همان الگو: مقدار از حافظه بازسازی شد، نه از منبع خوانده.
+    خوش‌شانسی: `float(None)` استثنا داد. اگر ماژول تصادفاً `sl_pip`ِ
+    دیگری داشت، هندسهٔ غلط **بی‌صدا** اجرا می‌شد — همان `BUG-GEOMDRIFT`.
+    ⇒ حالا کلیدهای موجود بررسی و در صورتِ نبود، خطای **صریح** با فهرستِ
+      کلیدهای واقعی پرتاب می‌شود تا حدسِ بعدی هم بی‌صدا نماند.
+    """
     cfg = s355_cfg()
-    sl = float(cfg.get('sl_pip') or cfg.get('slPip'))
-    tp = float(cfg.get('tp_pip') or cfg.get('tpPip'))
-    mh = int(cfg.get('max_hold') or cfg.get('maxHoldBars') or 96)
-    return sl, tp, mh
+    miss = [k for k in ('sl', 'tp', 'mh') if cfg.get(k) is None]
+    if miss:
+        raise RuntimeError(f'کلیدهای {miss} در BEST_CFG نیستند. '
+                           f'کلیدهای موجود: {sorted(cfg)}')
+    return float(cfg['sl']), float(cfg['tp']), int(cfg['mh'])
 
 
 def judge(df, mask, label, sl, tp, mh, extra=None):
