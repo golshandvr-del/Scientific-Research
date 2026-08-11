@@ -158,11 +158,22 @@ def judge(df, mask, label, sl, tp, mh, extra=None):
     #    دقیقاً فروپاشیِ `BUG-SCOREKEY`.
     #    ⇒ به‌جای تصحیحِ کلیدها، **تابعِ کارآمد** فراخوانی می‌شود تا
     #      امکانِ واگرایی حذف شود (همان درسِ `BUG-GEOMDRIFT`).
+    #    🔴 گامِ ۱۵۲ — `BUG-NULLUNWRAP`. در گامِ ۱۴۸b تابعِ درست را صدا
+    #    زدم ولی خروجی‌اش را **باز کردم**: `...['long']`. موتور نال را
+    #    **به تفکیکِ سمت** می‌خواهد (`blend_null` در `engine/rqs2.py:812`
+    #    روی `null.get('long')` و `null.get('short')` حلقه می‌زند تا
+    #    مبنا را با سهمِ واقعیِ long/shortِ خودِ لایه وزن کند).
+    #    با بازکردن، موتور `null['long']` را نیافت ⇒ `blend_null` مقدارِ
+    #    `None` برگرداند ⇒ `skill_lift_pp` و `skill_z` هر دو `None`.
+    #    ⇒ سه گامِ متوالی (۱۴۸b, ۱۵۰, ۱۵۱) روی یک نشانه تعمیر کردند و
+    #      هر سه تعمیر **درست** بود؛ علت هر بار یک لایه عمیق‌تر رفت.
+    #      درس: «تعمیرِ درستی که نشانه را برطرف نمی‌کند» یعنی علتِ دیگری
+    #      هم هست — نه اینکه تعمیر اشتباه بوده.
     null = adj.null_for(df, np.asarray(mask, bool), sl, tp, mh, 'XAUUSD',
-                        n_perm=N_PERM, seed=SEED)['long']
-    if null.get('perm_k', 0) < N_PERM:
-        return {'variant': label,
-                'error': f'perm_k={null.get("perm_k")} < {N_PERM}'}
+                        n_perm=N_PERM, seed=SEED)
+    _pk = (null.get('long') or {}).get('perm_k', 0)
+    if _pk < N_PERM:
+        return {'variant': label, 'error': f'perm_k={_pk} < {N_PERM}'}
 
     split = int(len(df) * 0.70)
     # 🔴 گامِ ۱۵۰ — `BUG-CALLARGS`. نسخهٔ قبلی `bar_time` و
