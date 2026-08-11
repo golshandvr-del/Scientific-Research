@@ -200,19 +200,29 @@ def derive_mfe_target(df, mask, mh, asset) -> dict:
         raise RuntimeError(f'pip size for {asset} not readable from engine')
 
     h = df['high'].to_numpy()
+    l = df['low'].to_numpy()
     c = df['close'].to_numpy()
     idx = np.flatnonzero(np.asarray(mask, bool))
-    mfes = []
+    mfes, maes = [], []
     n = len(df)
     for i in idx:
         j0, j1 = i + 1, min(i + 1 + mh, n)
         if j1 <= j0:
             continue
         mfes.append((h[j0:j1].max() - c[i]) / pip)
+        maes.append((c[i] - l[j0:j1].min()) / pip)
     if not mfes:
-        return {'pip': pip, 'p75': None, 'n': 0}
-    return {'pip': float(pip), 'p75': float(np.percentile(mfes, 75)),
-            'n': len(mfes)}
+        return {'pip': pip, 'p75': None, 'tp': None, 'sl': None, 'n': 0}
+    # قاعده‌ای که در گامِ ۱۳۶ **پیش از دیدنِ مقادیر** ثبت شد:
+    #   TP = q60(MFE) ⇒ ~۶۰٪ سیگنال‌ها *امکانِ فیزیکیِ* رسیدن دارند
+    #   SL = q30(MAE) ⇒ ~۷۰٪ سیگنال‌ها هرگز به آن نمی‌رسند
+    tp_q = float(np.percentile(mfes, 60))
+    sl_q = float(np.percentile(maes, 30))
+    return {'pip': float(pip), 'n': len(mfes),
+            'p75': float(np.percentile(mfes, 75)),   # حفظ برای سازگاری
+            'tp': round(tp_q, 1), 'sl': round(sl_q, 1),
+            'rule': 'TP=q60(MFE) · SL=q30(MAE)',
+            'rr': round(tp_q / sl_q, 3) if sl_q else None}
 
 
 def adjudicate(df, mask, label, sl, tp, mh, card, asset,
