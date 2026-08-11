@@ -1,0 +1,28 @@
+{
+ "card": "XAUUSD-M5",
+ "dataset": "data/mt5_full/XAUUSD_M5.csv.gz",
+ "rows": 1089574,
+ "span": [
+  "2011-01-03",
+  "2026-08-07"
+ ],
+ "geometry": {
+  "sl": 120.0,
+  "tp": 120.0,
+  "mh": 96
+ },
+ "n_base": 160,
+ "n_confirm": 158,
+ "n_dropped": 2,
+ "wr_base": 56.875,
+ "wr_confirm": 56.962,
+ "delta_wr_real": 0.087,
+ "null_median": 0.087,
+ "null_sd": 0.4407,
+ "null_p95": 0.7199,
+ "percentile_of_real": 32.3,
+ "percentile_bar_prereg": 95.0,
+ "n_boot": 10000,
+ "seed": 20260811,
+ "verdict": "IDENTITY_OPERATION"
+}
