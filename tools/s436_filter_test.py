@@ -103,8 +103,31 @@ def s355_mask(df: pd.DataFrame) -> np.ndarray:
     return np.asarray(base, bool) & (np.asarray(state) == -1)
 
 
+def day_index(df: pd.DataFrame) -> np.ndarray:
+    """🔴 گامِ ۱۲۱ — `BUG-DAYDTYPE`.
+
+    نسخهٔ قبلی روزها را به‌صورت مجموعه‌ای از `pandas.Timestamp` نگه می‌داشت و
+    سپس `np.isin(day_datetime64, list(timestamps))` می‌زد. `numpy` آن لیست را
+    به آرایهٔ `object` تبدیل می‌کند و مقایسه با `datetime64[ns]` **هیچ‌گاه**
+    تطبیق نمی‌دهد ⇒ `in_cand.sum() == 0` **بدونِ هیچ خطا یا هشداری**.
+
+    پیامدِ دقیق: `CONFIRM = live & in_cand` تهی شد («no trades») و
+    `VETO = live & ~in_cand` **کلِ** لایه را نگه داشت (n=47، دقیقاً برابرِ
+    `BASE`). یعنی هر دو جهتِ فیلتر **جعلی** بودند: یکی هیچ‌چیز و دیگری
+    همه‌چیز. بندِ سومِ قانونِ همپوشانی صوری اجرا می‌شد و پاسخش را یک باگ
+    می‌داد — همان شکلِ خطای `BUG-DAYSET`/`BUG-BUNDLEPATH`: نتیجهٔ
+    مطلوب‌نما بدونِ استثنا.
+
+    درمان: همه‌جا روزها را به‌صورتِ **عددِ صحیحِ روزِ اپوک** (`int64`) نگه
+    می‌داریم، پس هر دو طرفِ `np.isin` هم‌نوع‌اند و تطبیق ممکن است.
+    """
+    ns = df['dt'].dt.normalize().to_numpy().astype('datetime64[D]')
+    return ns.astype('int64')
+
+
 def days_of(df: pd.DataFrame, mask: np.ndarray) -> set:
-    return set(pd.Series(df['dt'].dt.normalize().to_numpy())[mask].unique())
+    """مجموعهٔ روزهای فعالِ یک ماسک، به‌صورتِ `int` (روزِ اپوک)."""
+    return set(int(x) for x in np.unique(day_index(df)[np.asarray(mask, bool)]))
 
 
 def _wr(t):
