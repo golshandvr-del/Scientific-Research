@@ -11,10 +11,10 @@
  },
  "verdicts": {
   "CONFIRM": {
-   "useful": false,
+   "useful": true,
    "cond1_rqs2_up": true,
    "cond2_n_ok": true,
-   "cond3_lift_up": false
+   "cond3_lift_up": true
   },
   "VETO": {
    "useful": false,

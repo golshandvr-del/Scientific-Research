@@ -9,31 +9,30 @@
  "n_trials": 414,
  "n_perm": 500,
  "verdict": "REJECT",
- "rqs2_score": 16.8,
+ "rqs2_score": 21.9,
  "gates": {
   "H0": true,
   "H1": true,
-  "H10": true,
+  "H10": false,
   "H2": true,
-  "H3": null,
-  "H4": null,
-  "H5": null,
-  "H6": null,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": false,
   "H7": true,
   "H8": false,
   "H9": true
  },
  "failed_gates": [
+  "H10",
+  "H3",
+  "H5",
+  "H6",
   "H8"
  ],
- "unknown_gates": [
-  "H3",
-  "H4",
-  "H5",
-  "H6"
- ],
- "z_luck_bound": null,
- "z_margin": null,
+ "unknown_gates": [],
+ "z_luck_bound": 2.995,
+ "z_margin": -0.956,
  "metrics": {
   "n_trades": 158,
   "n_wins": 90,
@@ -45,22 +44,26 @@
   "max_dd_pct": 7.81,
   "max_consec_losses": 8,
   "recovery_factor": 2.27,
-  "skill_lift_pp": null,
-  "skill_z": null,
-  "null_ref_wr": null,
+  "skill_lift_pp": 8.11,
+  "skill_z": 2.04,
+  "null_ref_wr": 48.85,
   "breakeven_wr_cost": 51.38,
   "rr": 1.0,
   "top_win_share": 0.0174,
-  "z_luck_bound": null,
-  "z_margin": null,
-  "skill_p_perm": null,
-  "perm_k": null
+  "z_luck_bound": 2.995,
+  "z_margin": -0.956,
+  "skill_p_perm": 0.020732,
+  "perm_k": 500
  },
  "null": {
-  "ref_wr": 48.678249399813154,
-  "sd": 3.4824926827879956,
-  "max": 59.512195121951216,
-  "perm_k": 500
+  "long": {
+   "uncond_wr": 48.854,
+   "perm_mean": 48.7259729981878,
+   "perm_sd": 3.466974552946383,
+   "perm_max": 58.93719806763285,
+   "perm_k": 500
+  },
+  "short": {}
  },
  "extra": {
   "n_signal_bars": 207
