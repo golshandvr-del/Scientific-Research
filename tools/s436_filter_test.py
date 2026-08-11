@@ -234,14 +234,33 @@ def main() -> int:
     print(f'  روزها: S355={len(ld)} · نامزد={len(cd)} · مشترک={len(inter)} '
           f'({100.0*len(inter)/max(1,len(ld)):.1f}% از S355)')
 
-    day = df['dt'].dt.normalize().to_numpy()
-    in_cand = np.isin(day, list(cd))
+    # هر دو طرف `int64`اند ⇒ تطبیق ممکن (گامِ ۱۲۱، `BUG-DAYDTYPE`)
+    in_cand = np.isin(day_index(df), np.fromiter(cd, dtype='int64', count=len(cd)))
 
     variants = {
         'BASE':    live,
         'CONFIRM': live & in_cand,
         'VETO':    live & ~in_cand,
     }
+
+    # ── گاردِ صدادار (گامِ ۱۲۱) ────────────────────────────────────────
+    # درسِ `BUG-DAYDTYPE`: تفکیکِ خرابْ **بی‌صدا** بود. حالا یک اتحادِ
+    # حسابی را می‌سنجیم که *باید* برقرار باشد و اگر نبود **فریاد** می‌زنیم:
+    #   ۱) افرازِ کامل: `CONFIRM + VETO == BASE` (میله‌به‌میله)
+    #   ۲) هیچ‌کدام تهی نباشند، **مشروط بر اینکه** حسابِ روزها می‌گوید
+    #      هر دو سمت روزِ فعال دارند. اگر روزها مشترک دارند ولی میله‌ها
+    #      صفرند، یعنی همان باگ برگشته است.
+    nb, nc, nv = int(live.sum()), int(variants['CONFIRM'].sum()), int(variants['VETO'].sum())
+    if nc + nv != nb:
+        print(f'  ⛔ گاردِ افراز شکست: {nc}+{nv} != {nb}')
+        return 3
+    if len(inter) > 0 and nc == 0:
+        print(f'  ⛔ گاردِ dtype شکست: {len(inter)} روزِ مشترک ولی ۰ میله در CONFIRM')
+        return 3
+    if len(ld - cd) > 0 and nv == 0:
+        print(f'  ⛔ گاردِ dtype شکست: {len(ld-cd)} روزِ ناهمپوشان ولی ۰ میله در VETO')
+        return 3
+    print(f'  ✅ گاردِ افراز: میله‌ها {nb} = CONFIRM {nc} + VETO {nv}')
     out = {}
     for lbl, m in variants.items():
         r = judge(df, m, lbl, extra={'n_signal_bars': int(m.sum())})
