@@ -1,0 +1,60 @@
+{
+ "variant": "BASE",
+ "card": "XAUUSD-M5",
+ "geometry": {
+  "sl": 120.0,
+  "tp": 120.0,
+  "mh": 96
+ },
+ "n_trials": 1930,
+ "n_perm": 500,
+ "verdict": "REJECT",
+ "rqs2_score": 26.0,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": false,
+  "H8": true,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3",
+  "H5",
+  "H7"
+ ],
+ "unknown_gates": [],
+ "metrics": {
+  "n_trades": 47,
+  "n_wins": 34,
+  "win_rate": 72.34,
+  "expectancy_pip": 56.8106,
+  "profit_factor": 3.951,
+  "net_profit": 2469.0,
+  "max_dd_pct": 1.98,
+  "max_consec_losses": 2,
+  "mcl_allowed": 8,
+  "recovery_factor": 10.01,
+  "skill_lift_pp": 20.25,
+  "skill_z": 2.78,
+  "null_ref_wr": 52.09,
+  "breakeven_wr_cost": 51.38,
+  "rr": 1.0,
+  "top_win_share": 0.0325
+ },
+ "null": {
+  "uncond_wr": 51.814203162712445,
+  "perm_mean": 52.08858814921582,
+  "perm_sd": 6.15060021987716,
+  "perm_max": 69.49152542372882,
+  "perm_k": 500
+ },
+ "extra": {
+  "n_signal_bars": 60
+ }
+}

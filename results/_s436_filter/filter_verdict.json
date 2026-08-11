@@ -1,0 +1,18 @@
+{
+ "step": 118,
+ "base_rqs2": 26.0,
+ "base_lift": 20.25,
+ "base_n": 47,
+ "verdicts": {
+  "CONFIRM": {
+   "useful": false,
+   "reason": "n<30 (n=5)"
+  },
+  "VETO": {
+   "useful": false,
+   "cond1_rqs2_up": false,
+   "cond2_n_ge_30": true,
+   "cond3_lift_up": false
+  }
+ }
+}

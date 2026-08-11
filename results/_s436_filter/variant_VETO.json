@@ -1,0 +1,60 @@
+{
+ "variant": "VETO",
+ "card": "XAUUSD-M5",
+ "geometry": {
+  "sl": 120.0,
+  "tp": 120.0,
+  "mh": 96
+ },
+ "n_trials": 1930,
+ "n_perm": 500,
+ "verdict": "REJECT",
+ "rqs2_score": 25.3,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": false,
+  "H8": true,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3",
+  "H5",
+  "H7"
+ ],
+ "unknown_gates": [],
+ "metrics": {
+  "n_trades": 42,
+  "n_wins": 30,
+  "win_rate": 71.43,
+  "expectancy_pip": 55.3952,
+  "profit_factor": 4.138,
+  "net_profit": 2133.2,
+  "max_dd_pct": 1.83,
+  "max_consec_losses": 3,
+  "mcl_allowed": 8,
+  "recovery_factor": 9.61,
+  "skill_lift_pp": 19.61,
+  "skill_z": 2.54,
+  "null_ref_wr": 51.81,
+  "breakeven_wr_cost": 51.38,
+  "rr": 1.0,
+  "top_win_share": 0.0373
+ },
+ "null": {
+  "uncond_wr": 51.814203162712445,
+  "perm_mean": 51.78743611487148,
+  "perm_sd": 6.8810277961596915,
+  "perm_max": 70.58823529411765,
+  "perm_k": 500
+ },
+ "extra": {
+  "n_signal_bars": 51
+ }
+}

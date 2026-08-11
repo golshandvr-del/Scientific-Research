@@ -1,0 +1,5 @@
+{
+ "variant": "CONFIRM",
+ "error": "n<30 (n=5)",
+ "n_trades": 5
+}
