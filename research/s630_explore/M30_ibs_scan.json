@@ -1,0 +1,138 @@
+{
+ "tf": "M30",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M30.csv",
+ "half_bars": 91072,
+ "sl_pip": 32.72100000000004,
+ "tp_pip": 32.72100000000004,
+ "baseline_wr": 0.4897451833436917,
+ "baseline_n": 1609,
+ "results": [
+  {
+   "k": 3,
+   "thr": 0.145,
+   "n": 1455,
+   "wr": 51.684,
+   "lift_pp": 2.709,
+   "z_rough": 2.07,
+   "mean_pnl_pip": -2.198,
+   "long_n": 680,
+   "long_mean": -3.492,
+   "short_n": 775,
+   "short_mean": -1.062
+  },
+  {
+   "k": 3,
+   "thr": 0.19,
+   "n": 2888,
+   "wr": 51.039,
+   "lift_pp": 2.064,
+   "z_rough": 2.22,
+   "mean_pnl_pip": -2.611,
+   "long_n": 1364,
+   "long_mean": -3.088,
+   "short_n": 1524,
+   "short_mean": -2.184
+  },
+  {
+   "k": 3,
+   "thr": 0.235,
+   "n": 4644,
+   "wr": 50.991,
+   "lift_pp": 2.016,
+   "z_rough": 2.75,
+   "mean_pnl_pip": -2.645,
+   "long_n": 2236,
+   "long_mean": -3.212,
+   "short_n": 2408,
+   "short_mean": -2.118
+  },
+  {
+   "k": 5,
+   "thr": 0.145,
+   "n": 132,
+   "wr": 54.545,
+   "lift_pp": 5.571,
+   "z_rough": 1.28,
+   "mean_pnl_pip": -0.325,
+   "long_n": 55,
+   "long_mean": -0.325,
+   "short_n": 77,
+   "short_mean": -0.325
+  },
+  {
+   "k": 5,
+   "thr": 0.19,
+   "n": 480,
+   "wr": 52.292,
+   "lift_pp": 3.317,
+   "z_rough": 1.45,
+   "mean_pnl_pip": -1.8,
+   "long_n": 217,
+   "long_mean": -2.546,
+   "short_n": 263,
+   "short_mean": -1.185
+  },
+  {
+   "k": 5,
+   "thr": 0.235,
+   "n": 1334,
+   "wr": 53.448,
+   "lift_pp": 4.474,
+   "z_rough": 3.27,
+   "mean_pnl_pip": -1.043,
+   "long_n": 609,
+   "long_mean": -1.205,
+   "short_n": 725,
+   "short_mean": -0.908
+  },
+  {
+   "k": 8,
+   "thr": 0.145,
+   "n_long": 1,
+   "n_short": 7,
+   "note": "too_rare"
+  },
+  {
+   "k": 8,
+   "thr": 0.19,
+   "n_long": 6,
+   "n_short": 25,
+   "note": "too_rare"
+  },
+  {
+   "k": 8,
+   "thr": 0.235,
+   "n": 183,
+   "wr": 53.552,
+   "lift_pp": 4.577,
+   "z_rough": 1.24,
+   "mean_pnl_pip": -0.976,
+   "long_n": 70,
+   "long_mean": 2.309,
+   "short_n": 113,
+   "short_mean": -3.01
+  },
+  {
+   "k": 13,
+   "thr": 0.145,
+   "n_long": 0,
+   "n_short": 0,
+   "note": "too_rare"
+  },
+  {
+   "k": 13,
+   "thr": 0.19,
+   "n_long": 0,
+   "n_short": 1,
+   "note": "too_rare"
+  },
+  {
+   "k": 13,
+   "thr": 0.235,
+   "n_long": 4,
+   "n_short": 8,
+   "note": "too_rare"
+  }
+ ],
+ "elapsed_s": 1.3
+}
