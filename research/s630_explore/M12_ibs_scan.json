@@ -1,0 +1,144 @@
+{
+ "tf": "M12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M12.csv",
+ "half_bars": 227346,
+ "sl_pip": 20.01450000000001,
+ "tp_pip": 20.01450000000001,
+ "baseline_wr": 0.5041369472182596,
+ "baseline_n": 3505,
+ "results": [
+  {
+   "k": 3,
+   "thr": 0.145,
+   "n": 4715,
+   "wr": 51.368,
+   "lift_pp": 0.954,
+   "z_rough": 1.31,
+   "mean_pnl_pip": -2.726,
+   "long_n": 2207,
+   "long_mean": -2.726,
+   "short_n": 2508,
+   "short_mean": -2.726
+  },
+  {
+   "k": 3,
+   "thr": 0.19,
+   "n": 8405,
+   "wr": 51.089,
+   "lift_pp": 0.675,
+   "z_rough": 1.24,
+   "mean_pnl_pip": -2.847,
+   "long_n": 3972,
+   "long_mean": -3.192,
+   "short_n": 4433,
+   "short_mean": -2.537
+  },
+  {
+   "k": 3,
+   "thr": 0.235,
+   "n": 12700,
+   "wr": 50.339,
+   "lift_pp": -0.075,
+   "z_rough": -0.17,
+   "mean_pnl_pip": -3.15,
+   "long_n": 6180,
+   "long_mean": -3.337,
+   "short_n": 6520,
+   "short_mean": -2.973
+  },
+  {
+   "k": 5,
+   "thr": 0.145,
+   "n": 564,
+   "wr": 52.482,
+   "lift_pp": 2.069,
+   "z_rough": 0.98,
+   "mean_pnl_pip": -2.338,
+   "long_n": 259,
+   "long_mean": -2.024,
+   "short_n": 305,
+   "short_mean": -2.605
+  },
+  {
+   "k": 5,
+   "thr": 0.19,
+   "n": 1798,
+   "wr": 53.337,
+   "lift_pp": 2.923,
+   "z_rough": 2.48,
+   "mean_pnl_pip": -1.963,
+   "long_n": 831,
+   "long_mean": -1.702,
+   "short_n": 967,
+   "short_mean": -2.188
+  },
+  {
+   "k": 5,
+   "thr": 0.235,
+   "n": 4296,
+   "wr": 52.304,
+   "lift_pp": 1.891,
+   "z_rough": 2.48,
+   "mean_pnl_pip": -2.364,
+   "long_n": 1986,
+   "long_mean": -2.37,
+   "short_n": 2310,
+   "short_mean": -2.358
+  },
+  {
+   "k": 8,
+   "thr": 0.145,
+   "n_long": 7,
+   "n_short": 17,
+   "note": "too_rare"
+  },
+  {
+   "k": 8,
+   "thr": 0.19,
+   "n": 155,
+   "wr": 47.742,
+   "lift_pp": -2.672,
+   "z_rough": -0.67,
+   "mean_pnl_pip": -4.204,
+   "long_n": 56,
+   "long_mean": -1.87,
+   "short_n": 99,
+   "short_mean": -5.524
+  },
+  {
+   "k": 8,
+   "thr": 0.235,
+   "n": 724,
+   "wr": 50.691,
+   "lift_pp": 0.277,
+   "z_rough": 0.15,
+   "mean_pnl_pip": -3.025,
+   "long_n": 321,
+   "long_mean": -1.741,
+   "short_n": 403,
+   "short_mean": -4.047
+  },
+  {
+   "k": 13,
+   "thr": 0.145,
+   "n_long": 0,
+   "n_short": 0,
+   "note": "too_rare"
+  },
+  {
+   "k": 13,
+   "thr": 0.19,
+   "n_long": 1,
+   "n_short": 1,
+   "note": "too_rare"
+  },
+  {
+   "k": 13,
+   "thr": 0.235,
+   "n_long": 17,
+   "n_short": 31,
+   "note": "too_rare"
+  }
+ ],
+ "elapsed_s": 3.6
+}
