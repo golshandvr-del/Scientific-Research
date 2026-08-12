@@ -1,0 +1,126 @@
+{
+ "tf": "H3",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+ "half_bars": 15903,
+ "sl_pip": 82.58624999999988,
+ "tp_pip": 82.58624999999988,
+ "baseline_wr": 0.4742268041237113,
+ "baseline_n": 291,
+ "results": [
+  {
+   "k": 3,
+   "thr": 0.145,
+   "n": 171,
+   "wr": 42.69,
+   "lift_pp": -4.733,
+   "z_rough": -1.24,
+   "mean_pnl_pip": -15.374,
+   "long_n": 82,
+   "long_mean": -11.357,
+   "short_n": 89,
+   "short_mean": -19.075
+  },
+  {
+   "k": 3,
+   "thr": 0.19,
+   "n": 416,
+   "wr": 46.154,
+   "lift_pp": -1.269,
+   "z_rough": -0.52,
+   "mean_pnl_pip": -9.485,
+   "long_n": 190,
+   "long_mean": -13.732,
+   "short_n": 226,
+   "short_mean": -5.915
+  },
+  {
+   "k": 3,
+   "thr": 0.235,
+   "n": 776,
+   "wr": 46.263,
+   "lift_pp": -1.16,
+   "z_rough": -0.65,
+   "mean_pnl_pip": -9.382,
+   "long_n": 359,
+   "long_mean": -17.333,
+   "short_n": 417,
+   "short_mean": -2.537
+  },
+  {
+   "k": 5,
+   "thr": 0.145,
+   "n_long": 5,
+   "n_short": 7,
+   "note": "too_rare"
+  },
+  {
+   "k": 5,
+   "thr": 0.19,
+   "n": 62,
+   "wr": 41.935,
+   "lift_pp": -5.487,
+   "z_rough": -0.87,
+   "mean_pnl_pip": -16.62,
+   "long_n": 23,
+   "long_mean": -21.254,
+   "short_n": 39,
+   "short_mean": -13.888
+  },
+  {
+   "k": 5,
+   "thr": 0.235,
+   "n": 206,
+   "wr": 45.631,
+   "lift_pp": -1.792,
+   "z_rough": -0.51,
+   "mean_pnl_pip": -10.516,
+   "long_n": 88,
+   "long_mean": -12.685,
+   "short_n": 118,
+   "short_mean": -8.899
+  },
+  {
+   "k": 8,
+   "thr": 0.145,
+   "n_long": 0,
+   "n_short": 0,
+   "note": "too_rare"
+  },
+  {
+   "k": 8,
+   "thr": 0.19,
+   "n_long": 0,
+   "n_short": 2,
+   "note": "too_rare"
+  },
+  {
+   "k": 8,
+   "thr": 0.235,
+   "n_long": 9,
+   "n_short": 13,
+   "note": "too_rare"
+  },
+  {
+   "k": 13,
+   "thr": 0.145,
+   "n_long": 0,
+   "n_short": 0,
+   "note": "too_rare"
+  },
+  {
+   "k": 13,
+   "thr": 0.19,
+   "n_long": 0,
+   "n_short": 0,
+   "note": "too_rare"
+  },
+  {
+   "k": 13,
+   "thr": 0.235,
+   "n_long": 0,
+   "n_short": 0,
+   "note": "too_rare"
+  }
+ ],
+ "elapsed_s": 0.2
+}
