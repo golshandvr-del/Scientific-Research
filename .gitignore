@@ -3,6 +3,9 @@ __pycache__/
 *.log
 /tmp/
 
+# دادهٔ کاملِ ۱۵.۶ سالهٔ استخراج‌شده (۵۷۳MB) — بازتولیدپذیر با gunzip از data/mt5_full/
+data/full/
+
 # web_tool (Node/Cloudflare project)
 web_tool/node_modules/
 web_tool/dist/
