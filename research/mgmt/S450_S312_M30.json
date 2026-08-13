@@ -1,0 +1,91 @@
+{
+ "strategy": "S312_MidMonth_Long",
+ "tf": "M30",
+ "params": {
+  "sl_pip": 295,
+  "tp_pip": 295,
+  "max_hold": 36,
+  "quality_filter": true
+ },
+ "rule": "S450 first-hour-low LONG exit (M1)",
+ "baseline": {
+  "n": 297,
+  "total": 120884.0,
+  "avg": 407.02,
+  "sd": 1683.69,
+  "worst": -3025.0,
+  "best": 2963.0,
+  "maxDD": 12226.0,
+  "pf": 1.861,
+  "wr": 61.6
+ },
+ "treatment": {
+  "n": 900,
+  "total": 85416.0,
+  "avg": 94.91,
+  "sd": 870.36,
+  "worst": -2999.0,
+  "best": 2988.0,
+  "maxDD": 16937.0,
+  "pf": 1.537,
+  "wr": 29.4
+ },
+ "baseline_halves": {
+  "h1": {
+   "n": 125,
+   "total": 5976.0,
+   "avg": 47.81,
+   "sd": 1108.67,
+   "worst": -2990.0,
+   "best": 2945.0,
+   "maxDD": 12226.0,
+   "pf": 1.123,
+   "wr": 59.2
+  },
+  "h2": {
+   "n": 172,
+   "total": 114908.0,
+   "avg": 668.07,
+   "sd": 1962.88,
+   "worst": -3025.0,
+   "best": 2963.0,
+   "maxDD": 8956.0,
+   "pf": 2.254,
+   "wr": 63.4
+  }
+ },
+ "treatment_halves": {
+  "h1": {
+   "n": 438,
+   "total": -7197.0,
+   "avg": -16.43,
+   "sd": 449.36,
+   "worst": -946.0,
+   "best": 2945.0,
+   "maxDD": 12000.0,
+   "pf": 0.874,
+   "wr": 24.7
+  },
+  "h2": {
+   "n": 462,
+   "total": 92613.0,
+   "avg": 200.46,
+   "sd": 1123.8,
+   "worst": -2999.0,
+   "best": 2988.0,
+   "maxDD": 10112.0,
+   "pf": 1.908,
+   "wr": 34.0
+  }
+ },
+ "exit_reasons_treatment": {
+  "strategy_close": 841,
+  "tp": 53,
+  "sl": 6
+ },
+ "exit_reasons_baseline": {
+  "strategy_close": 220,
+  "tp": 56,
+  "sl": 21
+ }
+}

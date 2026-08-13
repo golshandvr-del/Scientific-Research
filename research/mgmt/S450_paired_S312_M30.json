@@ -1,0 +1,135 @@
+{
+ "strategy": "S312_MidMonth_Long",
+ "tf": "M30",
+ "params": {
+  "sl_pip": 295,
+  "tp_pip": 295,
+  "max_hold": 36,
+  "quality_filter": true
+ },
+ "rule": "S450 first-hour-low LONG exit (M1) — paired replay",
+ "n_trades": 297,
+ "n_changed": 181,
+ "baseline": {
+  "n": 297,
+  "total": 120884.0,
+  "avg": 407.02,
+  "sd": 1683.69,
+  "worst": -3025.0,
+  "best": 2963.0,
+  "maxDD": 12226.0,
+  "pf": 1.861,
+  "wr": 61.6
+ },
+ "treatment": {
+  "n": 297,
+  "total": 77872.0,
+  "avg": 262.2,
+  "sd": 1354.48,
+  "worst": -2999.0,
+  "best": 2963.0,
+  "maxDD": 12853.0,
+  "pf": 1.794,
+  "wr": 36.0
+ },
+ "judge_full": {
+  "profit_ok": false,
+  "improves": {
+   "sd": true,
+   "worst": true,
+   "maxDD": false
+  },
+  "worsens_gt5": {
+   "sd": false,
+   "worst": false,
+   "maxDD": true
+  },
+  "risk_ok": false,
+  "verdict": "FAIL"
+ },
+ "halves": {
+  "h1": {
+   "base": {
+    "n": 125,
+    "total": 5976.0,
+    "avg": 47.81,
+    "sd": 1108.67,
+    "worst": -2990.0,
+    "best": 2945.0,
+    "maxDD": 12226.0,
+    "pf": 1.123,
+    "wr": 59.2
+   },
+   "mgmt": {
+    "n": 125,
+    "total": -1721.0,
+    "avg": -13.77,
+    "sd": 712.91,
+    "worst": -1880.0,
+    "best": 2945.0,
+    "maxDD": 9823.0,
+    "pf": 0.941,
+    "wr": 29.6
+   },
+   "judge": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": true,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "FAIL"
+   }
+  },
+  "h2": {
+   "base": {
+    "n": 172,
+    "total": 114908.0,
+    "avg": 668.07,
+    "sd": 1962.88,
+    "worst": -3025.0,
+    "best": 2963.0,
+    "maxDD": 8956.0,
+    "pf": 2.254,
+    "wr": 63.4
+   },
+   "mgmt": {
+    "n": 172,
+    "total": 79593.0,
+    "avg": 462.75,
+    "sd": 1646.52,
+    "worst": -2999.0,
+    "best": 2963.0,
+    "maxDD": 8960.0,
+    "pf": 2.153,
+    "wr": 40.7
+   },
+   "judge": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": true,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "FAIL"
+   }
+  }
+ },
+ "changed_detail": {
+  "avg_pnl_base_of_changed": -122.1,
+  "avg_pnl_mgmt_of_changed": -359.74,
+  "avg_bars_saved": 24.4
+ }
+}
