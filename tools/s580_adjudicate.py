@@ -200,15 +200,71 @@ def adjudicate(df, mask, label, cfg, card, prov, oos_frac=0.30):
     }
 
 
+def median_atr_pip(df) -> float:
+    atr = pd.Series(ib.atr_s(df, 14))
+    pip = se.ASSETS['XAUUSD']['pip']            # گاردِ ⑤ — از موتور
+    return float(atr.median()) / pip
+
+
+def run_c_arm(tf: str, cfg: dict, ratio_sl: float, ratio_tp: float):
+    """بازوی C — پیش‌ثبت §۴: هندسه = مضرب‌های M5 × medianATR14(TF)ِ همان TF.
+    منطق و آستانه‌های رژیم ثابت. هیچ جاروبی. یک آزمون به‌ازای هر TF."""
+    print(f'\n  ── C[{tf}] ──')
+    df, prov = load_full(tf)
+    reg = regime_arrays(df, tf)
+    med = median_atr_pip(df)
+    sl = round(ratio_sl * med, 1)
+    tp = round(ratio_tp * med, 1)
+    ccfg = dict(cfg, sl=sl, tp=tp)
+    print(f'  medianATR14={med:.1f} pip ⇒ SL={sl}/TP={tp} (نسبت‌های منجمدِ M5)')
+    mask = build_mask(df, reg, ccfg)
+    print(f'  سیگنال={int(mask.sum())}')
+    out = adjudicate(df, mask, f'C-{tf}', ccfg, f'XAUUSD-{tf}',
+                     dict(prov, geometry_rule=f'SL={ratio_sl:.4f}·medATR '
+                          f'TP={ratio_tp:.4f}·medATR، medATR={med:.1f}pip'))
+    path = os.path.join(ROOT, OUT, f'arm_C_{tf}.json')
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(out, f, ensure_ascii=False, indent=1, default=float)
+    if out.get('invalid'):
+        print(f'  ⛔ C[{tf}] نامعتبر: {out["error"]} (سیگنال={out.get("n_signals")})')
+    else:
+        m = out['metrics']
+        print(f'  C[{tf}] n={m["n_trades"]} WR={m["win_rate"]} '
+              f'lift={m["skill_lift_pp"]} z={m["skill_z"]} '
+              f'PF={m["profit_factor"]} net=${m["net_profit"]} '
+              f'RQS2={out.get("rqs2_score")} {out.get("verdict")} '
+              f'شکسته={out.get("failed_gates")}')
+    return out
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument('--arms', default='A,B', help='A=بکر، B=کامل')
+    ap.add_argument('--arms', default='A,B',
+                    help='A=بکر، B=کامل، C:TF (مثل C:M15) = بازوی MTF')
     a = ap.parse_args()
 
     os.makedirs(os.path.join(ROOT, OUT), exist_ok=True)
     cfg = frozen_cfg()
     print(f'[S580 داوری] کانفیگِ منجمد از {os.path.basename(FROZEN)}: {cfg}')
     print(f'  n_trials={N_TRIALS} · {N_PERM} جای‌گشت/بازو · seed={SEED}')
+
+    arm_list = [x.strip().upper() for x in a.arms.split(',') if x.strip()]
+    c_tfs = [x.split(':', 1)[1] for x in arm_list if x.startswith('C:')]
+    arm_list = [x for x in arm_list if not x.startswith('C:')]
+
+    if c_tfs:
+        # نسبت‌های منجمدِ هندسه از خودِ M5 (پیش‌ثبت §۴) — یک‌بار محاسبه
+        df5, _ = load_full('M5')
+        med5 = median_atr_pip(df5)
+        ratio_sl, ratio_tp = cfg['sl'] / med5, cfg['tp'] / med5
+        print(f'  [C] medianATR14(M5)={med5:.1f} pip ⇒ '
+              f'ratio_sl={ratio_sl:.4f} ratio_tp={ratio_tp:.4f}')
+        del df5
+        for tf in c_tfs:
+            run_c_arm(tf, cfg, ratio_sl, ratio_tp)
+        if not arm_list:
+            print('[done]')
+            return 0
 
     df, prov = load_full('M5')
     reg = regime_arrays(df, 'M5')
@@ -220,7 +276,7 @@ def main() -> int:
           f'بکر={int(mask_full[:cut].sum())} · '
           f'دیده={int(mask_full[cut:].sum())}')
 
-    for arm in [x.strip().upper() for x in a.arms.split(',') if x.strip()]:
+    for arm in arm_list:
         t0 = _time.time()
         if arm == 'A':
             dfa = df.iloc[:cut].reset_index(drop=True)
