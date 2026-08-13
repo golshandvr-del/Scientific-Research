@@ -1,0 +1,135 @@
+{
+ "strategy": "S356_BrooksTrendResumption",
+ "card": "XAUUSD-H1",
+ "params": {
+  "sl_pip": 50.6,
+  "tp_pip": 101.2,
+  "max_hold": 20,
+  "n_signals": 117
+ },
+ "rule": "S450 first-hour-low LONG exit (M1) — paired replay",
+ "n_trades": 117,
+ "n_changed": 34,
+ "baseline": {
+  "n": 117,
+  "total": 19292.0,
+  "avg": 164.89,
+  "sd": 692.04,
+  "worst": -539.0,
+  "best": 979.0,
+  "maxDD": 2255.0,
+  "pf": 1.69,
+  "wr": 51.3
+ },
+ "treatment": {
+  "n": 117,
+  "total": 14892.0,
+  "avg": 127.28,
+  "sd": 643.69,
+  "worst": -539.0,
+  "best": 979.0,
+  "maxDD": 2196.0,
+  "pf": 1.583,
+  "wr": 47.9
+ },
+ "judge_full": {
+  "profit_ok": false,
+  "improves": {
+   "sd": true,
+   "worst": false,
+   "maxDD": true
+  },
+  "worsens_gt5": {
+   "sd": false,
+   "worst": false,
+   "maxDD": false
+  },
+  "risk_ok": true,
+  "verdict": "FAIL"
+ },
+ "halves": {
+  "h1": {
+   "base": {
+    "n": 45,
+    "total": 9759.0,
+    "avg": 216.87,
+    "sd": 651.37,
+    "worst": -539.0,
+    "best": 979.0,
+    "maxDD": 1954.0,
+    "pf": 2.143,
+    "wr": 55.6
+   },
+   "mgmt": {
+    "n": 45,
+    "total": 7885.0,
+    "avg": 175.22,
+    "sd": 601.96,
+    "worst": -539.0,
+    "best": 979.0,
+    "maxDD": 1319.0,
+    "pf": 2.034,
+    "wr": 51.1
+   },
+   "judge": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "FAIL"
+   }
+  },
+  "h2": {
+   "base": {
+    "n": 72,
+    "total": 9533.0,
+    "avg": 132.4,
+    "sd": 718.85,
+    "worst": -539.0,
+    "best": 979.0,
+    "maxDD": 2255.0,
+    "pf": 1.491,
+    "wr": 48.6
+   },
+   "mgmt": {
+    "n": 72,
+    "total": 7007.0,
+    "avg": 97.32,
+    "sd": 670.84,
+    "worst": -539.0,
+    "best": 979.0,
+    "maxDD": 2196.0,
+    "pf": 1.391,
+    "wr": 45.8
+   },
+   "judge": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "FAIL"
+   }
+  }
+ },
+ "changed_detail": {
+  "avg_base_of_changed": 53.44,
+  "avg_mgmt_of_changed": -75.97,
+  "avg_bars_saved": 7.0
+ }
+}
