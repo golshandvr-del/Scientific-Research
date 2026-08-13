@@ -43,7 +43,11 @@ OUT = os.path.join(ROOT, 'results', '_s720_explore')
 THRS = (1.5, 2.0, 2.5)       # آستانهٔ z
 KS = (0.8, 1.3, 2.1)         # ضریبِ SL نسبت به ATR(89) — غیررند
 RRS = (1.0, 1.5)             # نسبتِ TP/SL — هرگز <1
-HOLD_HOURS = None            # از پنجرهٔ 89 کندل مشتق می‌شود (زیر)
+MODES = ('rev', 'cont')      # rev = بازگشتی (خلافِ کشش) · cont = ادامه‌دهنده
+# ⚠️ افزودنِ بُعدِ جهت پس از دیدنِ نتیجهٔ M15 (گامِ اکتشاف): هر ۱۸ پیکربندیِ
+# بازگشتی منفی بود و WR با عمقِ کشش *بدتر* می‌شد ⇒ فرضیهٔ ادامه‌دهنده.
+# این قانونی است چون هنوز در نیمهٔ اولیم (مسیرِ C)، ولی **کلِ** فضا —
+# هر دو جهت — در n_trials پیش‌ثبت شمرده می‌شود. هیچ چیزی پنهان نمی‌ماند.
 
 
 def zscore(c: np.ndarray, p: int) -> np.ndarray:
@@ -68,8 +72,13 @@ def bars_per_hour(df: pd.DataFrame) -> float:
     return 3600.0 / d if d > 0 else 1.0
 
 
-def stretch_signals(c: np.ndarray, thr: float):
-    """لبهٔ ورود به ناحیهٔ کششِ هم‌نوا. رویداد، نه حالت (درسِ S382)."""
+def stretch_signals(c: np.ndarray, thr: float, mode: str = 'rev'):
+    """لبهٔ ورود به ناحیهٔ کششِ هم‌نوا. رویداد، نه حالت (درسِ S382).
+
+    mode='rev'  : بازگشتی — کششِ مثبت ⇒ SHORT، کششِ منفی ⇒ LONG.
+    mode='cont' : ادامه‌دهنده — کششِ مثبت ⇒ LONG، کششِ منفی ⇒ SHORT.
+    (درسِ S382: بگذار **داده** جهت را تعیین کند، نه پیش‌داوریِ سبک.)
+    """
     zs = [zscore(c, p) for p in FIBS]
     hi = np.ones(len(c), bool)
     lo = np.ones(len(c), bool)
@@ -80,9 +89,11 @@ def stretch_signals(c: np.ndarray, thr: float):
     lo = np.nan_to_num(lo.astype(float)).astype(bool)
     hi_prev = np.roll(hi, 1); hi_prev[0] = False
     lo_prev = np.roll(lo, 1); lo_prev[0] = False
-    short_sig = hi & ~hi_prev      # کششِ مثبتِ افراطی ⇒ SHORT بازگشتی
-    long_sig = lo & ~lo_prev       # کششِ منفیِ افراطی ⇒ LONG بازگشتی
-    return long_sig, short_sig
+    hi_e = hi & ~hi_prev
+    lo_e = lo & ~lo_prev
+    if mode == 'rev':
+        return lo_e, hi_e          # long, short
+    return hi_e, lo_e              # continuation
 
 
 def uncond_wr(df, sl, tp, mh, seed=20260813, n_pick=20000):
@@ -116,34 +127,35 @@ def explore_tf(tf: str):
     mh = max(4, int(round(55)))    # 55 کندلِ همان TF — هم‌مقیاس با سیگنال
     rows = []
     c = df['close'].to_numpy(float)
-    for thr in THRS:
-        ls, ss = stretch_signals(c, thr)
-        n_ev = int(ls.sum() + ss.sum())
-        for k in KS:
-            sl = round(k * atr / pip, 1)
-            if sl <= 6.6:            # SL کمتر از ۲×هزینه = خودکشیِ H9
-                continue
-            for rr in RRS:
-                tp = round(sl * rr, 1)
-                tr = se.simulate_trades(df, ls, ss, sl, tp, ASSET,
-                                        max_hold=mh, allow_overlap=False)
-                if len(tr) < 30:
-                    rows.append(dict(tf=tf, thr=thr, k=k, rr=rr, sl=sl, tp=tp,
-                                     n=len(tr), note='n<30'))
+    for mode in MODES:
+        for thr in THRS:
+            ls, ss = stretch_signals(c, thr, mode)
+            n_ev = int(ls.sum() + ss.sum())
+            for k in KS:
+                sl = round(k * atr / pip, 1)
+                if sl <= 6.6:            # SL کمتر از ۲×هزینه = خودکشیِ H9
                     continue
-                wr = 100.0 * float((tr['pnl_pip'] > 0).mean())
-                exp = float(tr['pnl_pip'].mean())
-                nl = int((tr['direction'] == 'long').sum())
-                ns = int((tr['direction'] == 'short').sum())
-                wl = 100.0 * float((tr.loc[tr['direction'] == 'long', 'pnl_pip'] > 0).mean()) if nl else None
-                ws = 100.0 * float((tr.loc[tr['direction'] == 'short', 'pnl_pip'] > 0).mean()) if ns else None
-                be = 100.0 * (sl + 3.3) / (sl + tp)
-                rows.append(dict(tf=tf, thr=thr, k=k, rr=rr, sl=sl, tp=tp,
-                                 n=len(tr), n_long=nl, n_short=ns,
-                                 wr=round(wr, 2), wr_long=None if wl is None else round(wl, 2),
-                                 wr_short=None if ws is None else round(ws, 2),
-                                 be=round(be, 2), margin=round(wr - be, 2),
-                                 exp_pip=round(exp, 3), n_events=n_ev))
+                for rr in RRS:
+                    tp = round(sl * rr, 1)
+                    tr = se.simulate_trades(df, ls, ss, sl, tp, ASSET,
+                                            max_hold=mh, allow_overlap=False)
+                    if len(tr) < 30:
+                        rows.append(dict(tf=tf, mode=mode, thr=thr, k=k, rr=rr,
+                                         sl=sl, tp=tp, n=len(tr), note='n<30'))
+                        continue
+                    wr = 100.0 * float((tr['pnl_pip'] > 0).mean())
+                    exp = float(tr['pnl_pip'].mean())
+                    nl = int((tr['direction'] == 'long').sum())
+                    ns = int((tr['direction'] == 'short').sum())
+                    wl = 100.0 * float((tr.loc[tr['direction'] == 'long', 'pnl_pip'] > 0).mean()) if nl else None
+                    ws = 100.0 * float((tr.loc[tr['direction'] == 'short', 'pnl_pip'] > 0).mean()) if ns else None
+                    be = 100.0 * (sl + 3.3) / (sl + tp)
+                    rows.append(dict(tf=tf, mode=mode, thr=thr, k=k, rr=rr, sl=sl, tp=tp,
+                                     n=len(tr), n_long=nl, n_short=ns,
+                                     wr=round(wr, 2), wr_long=None if wl is None else round(wl, 2),
+                                     wr_short=None if ws is None else round(ws, 2),
+                                     be=round(be, 2), margin=round(wr - be, 2),
+                                     exp_pip=round(exp, 3), n_events=n_ev))
     return dict(tf=tf, src=src, bars_half=len(df), atr89_med_pip=round(atr / pip, 2),
                 bars_per_hour=round(bph, 2), max_hold=mh, rows=rows)
 
@@ -158,9 +170,9 @@ def main():
               f"ATR89={res['atr89_med_pip']}pip mh={res['max_hold']}", flush=True)
         for r in res['rows']:
             if r.get('note'):
-                print(f"  thr={r['thr']} k={r['k']} rr={r['rr']} SL={r['sl']} → {r['note']} (n={r['n']})")
+                print(f"  {r.get('mode','?')} thr={r['thr']} k={r['k']} rr={r['rr']} SL={r['sl']} → {r['note']} (n={r['n']})")
                 continue
-            print(f"  thr={r['thr']} k={r['k']} rr={r['rr']} SL={r['sl']}/TP={r['tp']} "
+            print(f"  {r.get('mode','?')} thr={r['thr']} k={r['k']} rr={r['rr']} SL={r['sl']}/TP={r['tp']} "
                   f"n={r['n']} (L{r['n_long']}/S{r['n_short']}) WR={r['wr']}% "
                   f"BE={r['be']}% حاشیه={r['margin']}pp exp={r['exp_pip']}pip", flush=True)
         with open(os.path.join(OUT, f'explore_{tf}.json'), 'w', encoding='utf-8') as f:
