@@ -1,0 +1,83 @@
+{
+ "prereg": "results/S530_PREREGISTRATION_S355_FullHistory_Adjudication.md",
+ "prereg_commit": "442f2e0c",
+ "data": {
+  "path": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+  "rows": 1089574,
+  "first": "2011-01-03 00:00:00",
+  "last": "2026-08-07 23:50:00"
+ },
+ "rule": "S355 frozen: s333.build_layer(BEST_CFG[XAUUSD_M5]) & lpsb_state==-1",
+ "geometry": {
+  "sl": 120.0,
+  "tp": 120.0,
+  "mh": 96
+ },
+ "n_signals": 210,
+ "verdict": "REJECT",
+ "rqs2_score": 18.1,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": true,
+  "H6": false,
+  "H7": null,
+  "H8": false,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3",
+  "H6",
+  "H8"
+ ],
+ "null": {
+  "uncond_wr": 48.821999999999996,
+  "perm_mean": 48.524063766840136,
+  "perm_sd": 3.465220420200547,
+  "perm_max": 61.24401913875598,
+  "perm_k": 500
+ },
+ "n_trials": 1,
+ "seed": 20260813,
+ "metrics": {
+  "n_trades": 160,
+  "n_wins": 91,
+  "win_rate": 56.88,
+  "expectancy_pip": 14.6894,
+  "cost_pip": 3.3,
+  "profit_factor": 1.573,
+  "net_profit": 2114.9,
+  "max_dd_pct": 8.26,
+  "max_consec_losses": 9,
+  "recovery_factor": 2.11,
+  "skill_lift_pp": 8.05,
+  "skill_z": 2.04,
+  "null_ref_wr": 48.82,
+  "breakeven_wr_cost": 51.38,
+  "rr": 1.0,
+  "top_win_share": 0.0174,
+  "skill_p_perm": 0.020783,
+  "p_emp": 0.025005,
+  "perm_k": 500,
+  "perm_max": 61.24
+ },
+ "subwindow": {
+  "recent": {
+   "n": 47,
+   "wr": 72.3404255319149,
+   "net_pip": 2670.0999999999917
+  },
+  "pre2023": {
+   "n": 113,
+   "wr": 50.442477876106196,
+   "net_pip": -319.79999999999376
+  }
+ },
+ "notes": [
+  "H7 UNKNOWN: no discovery/holdout split supplied"
+ ]
+}
