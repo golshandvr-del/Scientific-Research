@@ -1,0 +1,10 @@
+[data] data/full/XAUUSD_H12.csv  rows=7998  range=2011-01-03 00:00:00 .. 2026-08-07 12:00:00
+[done] XAUUSD_H12: n=303 wr=47.85 base=42.84 lift=+5.01pp z≈1.76 n_needed=930 (0s)
+[data] data/full/XAUUSD_H8.csv  rows=11978  range=2011-01-03 00:00:00 .. 2026-08-07 16:00:00
+[done] XAUUSD_H8: n=455 wr=49.23 base=42.95 lift=+6.28pp z≈2.71 n_needed=594 (1s)
+[data] data/full/XAUUSD_H6.csv  rows=15966  range=2011-01-03 00:00:00 .. 2026-08-07 18:00:00
+[done] XAUUSD_H6: n=576 wr=46.53 base=42.44 lift=+4.09pp z≈1.99 n_needed=1395 (0s)
+[data] data/full/XAUUSD_H3.csv  rows=31806  range=2011-01-03 00:00:00 .. 2026-08-07 21:00:00
+[done] XAUUSD_H3: n=1156 wr=43.86 base=40.90 lift=+2.96pp z≈2.04 n_needed=2641 (0s)
+[data] data/full/XAUUSD_H2.csv  rows=47623  range=2011-01-03 00:00:00 .. 2026-08-07 22:00:00
+[done] XAUUSD_H2: n=1690 wr=41.30 base=40.29 lift=+1.01pp z≈0.85 n_needed=22343 (1s)
