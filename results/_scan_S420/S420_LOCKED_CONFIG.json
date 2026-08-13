@@ -1,0 +1,16 @@
+{
+ "strategy": "S420_CapitulationDecel",
+ "asset": "XAUUSD",
+ "data": "data/XAUUSD_H1.csv",
+ "W": 5,
+ "q": 0.75,
+ "d": 1.5,
+ "hold": 10,
+ "direction": "long_only",
+ "bracket_pip": 20000.0,
+ "n_trials": 8,
+ "split_utc": "2020-01-01 00:00:00",
+ "confirm_window": "data_start→2019-12-31",
+ "discover_window": "2020-01-01→data_end",
+ "prereg": "results/S420_PREREGISTRATION_CapitulationDecel.md"
+}
