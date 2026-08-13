@@ -301,11 +301,81 @@ def mode_tune(tf='M15'):
     return 0
 
 
+def mode_verdict(tf='M15'):
+    """آزمونِ رسمیِ یک‌بارهٔ RQS2 v2.6 — برندهٔ قفل‌شدهٔ فازِ تنظیم:
+    QW60 · X-BAR · بدونِ فیلتر. کلِ داده + split_bar (الگوی استانداردِ repo:
+    H7 نیمهٔ دوم را جدا می‌سنجد). null = ورودِ بی‌قید در *هر* بارِ اولِ روز با
+    همان هندسه، K=500، seed=400 (پیش‌ثبت §۵)."""
+    from engine import rqs2
+    WIN_FAM, WIN_PAR, WIN_ARM, WIN_KSL = 'QW', 60, 'X-BAR', None   # قفل از step 4
+
+    df = se.load_data(f'data/XAUUSD_{tf}.csv')
+    arrays = (df['open'].values, df['high'].values, df['low'].values, df['close'].values)
+    o, h, l, c = arrays
+    days = build_days(df)
+    atr = daily_atr(days)
+    split = SPLIT_BAR[tf]
+    bar_time = df['dt'].values
+    close = c.astype('float64')
+
+    # ---- معاملاتِ استراتژی روی کلِ داده ----
+    strat = run_combo(arrays, days, atr, WIN_FAM, WIN_PAR, WIN_ARM, WIN_KSL)
+    n_str = len(strat)
+    print(f"strategy trades (full span) n={n_str} · holdout n="
+          f"{int((strat['entry_bar'] >= split).sum())}", flush=True)
+
+    # ---- استخرِ null: ورودِ بی‌قید در هر بارِ اولِ روزِ معتبر (بدونِ شرطِ گپ) ----
+    pool = []
+    for k, d in enumerate(days):
+        a = atr[k - 1] if k >= 1 else np.nan
+        if not np.isfinite(a) or a <= 0:
+            continue
+        tr = sim_trade(arrays, d, a, 'X-BAR')
+        if tr is not None:
+            pool.append(tr['pnl_pip'])
+    pool = np.asarray(pool, dtype='float64')
+    uncond_wr = float((pool > 0).mean() * 100.0)
+    print(f"null pool = {len(pool)} unconditional first-bar longs · uncond_wr={uncond_wr:.2f}%", flush=True)
+
+    rng = np.random.default_rng(SEED)
+    K = 500
+    wrs = np.empty(K)
+    for i in range(K):
+        pick = rng.choice(len(pool), size=n_str, replace=False)
+        wrs[i] = (pool[pick] > 0).mean() * 100.0
+    null = {'long': dict(uncond_wr=uncond_wr,
+                         perm_mean=float(wrs.mean()), perm_sd=float(wrs.std(ddof=1)),
+                         perm_max=float(wrs.max()), perm_k=int(K)),
+            'short': dict(uncond_wr=None, perm_mean=None, perm_sd=None,
+                          perm_max=None, perm_k=None)}
+    print(f"perm(K={K}): mean={wrs.mean():.2f} sd={wrs.std(ddof=1):.3f} max={wrs.max():.2f}", flush=True)
+
+    # ---- tp_pip اندازه‌گیری‌شده: سقفِ عملیِ hold = میانهٔ (high−open) بارِ اولِ
+    #      *بی‌قید* (نه انتخاب‌شده ⇒ ضدِ self-serving) ----
+    fe = [(h[d['fb']] - o[d['fb']]) / PIP for d in days]
+    tp_meas = float(np.median(fe))
+    print(f"measured tp_pip (median uncond first-bar favorable excursion) = {tp_meas:.1f} pip", flush=True)
+
+    r = rqs2.compute_rqs2(strat, 'XAUUSD',
+                          sl_pip=float(np.median(strat['sl_pip'].values)),
+                          tp_pip=tp_meas, bar_time=bar_time, null=null,
+                          n_trials=72, split_bar=split, close=close)
+    print(rqs2.format_rqs2(f'S400 {tf} QW60/X-BAR', r), flush=True)
+    outp = os.path.join(os.path.dirname(__file__), '..', 'results',
+                        f'_s400_verdict_{tf}.json')
+    with open(outp, 'w') as f:
+        json.dump(r, f, indent=1, default=str)
+    print(f"saved → {outp}", flush=True)
+    return 0
+
+
 if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'tune'
     if mode == 'parity':
         sys.exit(mode_parity())
     elif mode == 'tune':
         sys.exit(mode_tune(sys.argv[2] if len(sys.argv) > 2 else 'M15'))
+    elif mode == 'verdict':
+        sys.exit(mode_verdict(sys.argv[2] if len(sys.argv) > 2 else 'M15'))
     else:
         print(__doc__); sys.exit(2)
