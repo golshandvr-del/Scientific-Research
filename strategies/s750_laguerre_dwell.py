@@ -68,32 +68,44 @@ def load_tf(tf):
             'open': g['open'].first(), 'high': g['high'].max(),
             'low': g['low'].min(), 'close': g['close'].last(),
             'volume': g['volume'].sum(),
-        }).dropna().reset_index()
-        df['time'] = (df['index'].astype('int64') // 10 ** 9).astype('int64')
-        df = df[['time', 'open', 'high', 'low', 'close', 'volume']]
+        }).dropna()
+        df.insert(0, 'time',
+                  (df.index.astype('int64') // 10 ** 9).astype('int64'))
+        df = df.reset_index(drop=True)
         src = d1['src'] + ' (resampled H1->H4)'
         return df, src
     d = fd.load_fast(ASSET, tf)
     return fd.as_dataframe(d), d['src']
 
 
-def dwell_signals(close_vals, n_dwell):
-    lr = ib.laguerre_rsi(pd.DataFrame({'close': close_vals}), gamma=GAMMA).values
+def compute_dwells(close_vals):
+    """LR یک‌بار محاسبه می‌شود (بهینه‌سازی حافظه برای M1 با ۵M کندل)."""
+    import gc
+    lr = ib.laguerre_rsi(pd.DataFrame({'close': close_vals}),
+                         gamma=GAMMA).values
     up = lr > THR_HI
     dn = lr < THR_LO
-    # dwell شمارنده‌ی میله‌های متوالی
-    du = np.zeros(len(lr), dtype=np.int32)
-    dd = np.zeros(len(lr), dtype=np.int32)
-    for i in range(1, len(lr)):
-        du[i] = du[i - 1] + 1 if up[i] else 0
-        dd[i] = dd[i - 1] + 1 if dn[i] else 0
-    if up[0]:
-        du[0] = 1
-    if dn[0]:
-        dd[0] = 1
-    long_sig = du == n_dwell     # لبه‌ی ورود به اقامت پایدار — یک سیگنال در هر دوره
-    short_sig = dd == n_dwell
-    return long_sig, short_sig
+    del lr
+    gc.collect()
+    du = _runlen(up)
+    dd = _runlen(dn)
+    del up, dn
+    gc.collect()
+    return du, dd
+
+
+def _runlen(mask):
+    """طول دنباله‌ی متوالی True منتهی به هر اندیس — برداری، بدون حلقه‌ی پایتونی."""
+    n = len(mask)
+    idx = np.arange(n, dtype=np.int64)
+    last_false = np.where(~mask, idx, -1)
+    np.maximum.accumulate(last_false, out=last_false)
+    return np.where(mask, idx - last_false, 0).astype(np.int32)
+
+
+def dwell_signals(du, dd, n_dwell):
+    # لبه‌ی ورود به اقامت پایدار — یک سیگنال به‌ازای هر دوره‌ی اقامت
+    return du == n_dwell, dd == n_dwell
 
 
 def atr_pips(df):
@@ -179,11 +191,10 @@ def main(tf):
 
     # ---------- فاز ۱: کشف — فقط نیمه‌ی اول ----------
     print(f'-- discovery: bars [0,{split}) --', flush=True)
+    du, dd = compute_dwells(df['close'].values)
     disc = []
-    sig_cache = {}
     for N in FAMILY_N:
-        ls, ss = dwell_signals(df['close'].values, N)
-        sig_cache[N] = (ls, ss)
+        ls, ss = dwell_signals(du, dd, N)
         for side in ('long', 'short'):
             ls_d = ls.copy() if side == 'long' else np.zeros(n_bars, bool)
             ss_d = ss.copy() if side == 'short' else np.zeros(n_bars, bool)
@@ -216,7 +227,7 @@ def main(tf):
     out['winner'] = dict(N=win['N'], side=win['side'], crit=win['crit'])
 
     # ---------- فاز ۲: آزمون واحد روی holdout ----------
-    ls, ss = sig_cache[win['N']]
+    ls, ss = dwell_signals(du, dd, win['N'])
     ls_h = ls.copy() if win['side'] == 'long' else np.zeros(n_bars, bool)
     ss_h = ss.copy() if win['side'] == 'short' else np.zeros(n_bars, bool)
     ls_h[:split] = False
