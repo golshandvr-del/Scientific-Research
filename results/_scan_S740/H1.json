@@ -1,0 +1,19 @@
+{
+ "strategy": "S740_Absorption",
+ "asset": "XAUUSD",
+ "tf": "H1",
+ "bars": 91331,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "span_years": 15.59,
+ "split_bar": 54798,
+ "n_trials": 64,
+ "k_perm": 500,
+ "prereg": "results/S740_PREREG_ABSORPTION_PATH_C.md",
+ "grid_summary": {
+  "tested": 64,
+  "with_trades": 0,
+  "eligible": 0
+ },
+ "grid_top5": [],
+ "verdict": "NO_CANDIDATE"
+}
