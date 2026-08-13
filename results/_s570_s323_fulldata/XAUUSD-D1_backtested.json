@@ -1,0 +1,35 @@
+{
+ "session": "S570",
+ "card": "XAUUSD-D1",
+ "asset": "XAUUSD",
+ "tf": "D1",
+ "variant": "backtested",
+ "governing": false,
+ "data_src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars": 4005,
+ "span": [
+  "2011-01-03 00:00:00+00:00",
+  "2026-08-07 00:00:00+00:00"
+ ],
+ "cfg": {
+  "nearMax": 0.55,
+  "roomMin": 1.3,
+  "rsiMax": 55,
+  "slopeMin": 0.0,
+  "adxMin": 30,
+  "golden": true,
+  "hLo": 19,
+  "hHi": 23,
+  "slMult": 1.8,
+  "tpMult": 1.7,
+  "maxHold": 8,
+  "pivotLen": 20,
+  "_source": "inherited:XAUUSD-H1"
+ },
+ "sl_pip": 392.4,
+ "tp_pip": 370.6,
+ "rr": 0.9444,
+ "maxhold": 8,
+ "n_signals": 0,
+ "status": "NO_SIGNAL"
+}
