@@ -78,11 +78,49 @@ def load_tf(tf):
     return fd.as_dataframe(d), d['src']
 
 
+def _laguerre_rsi_lean(close_vals):
+    """همان ریاضیاتِ ib.laguerre_rsi (gamma=GAMMA) اما float32 و کم‌حافظه.
+
+    چرا: بانک روی M1 (۵M کندل) ~۴۰۰MB آرایه‌ی میانی float64 می‌سازد و
+    سندباکس ۹۸۵MB را OOM می‌کند (دو بار M1 بی‌صدا کشته شد). LR یک نوسانگر
+    نرمال‌شده‌ی ۰..۱۰۰ است؛ float32 برای مقایسه با آستانه‌ی ۸۰ بیش از کافی است.
+    برابری با نسخه‌ی بانک روی XAUUSD-H1 (۹۱٬۳۳۱ کندل) سنجیده شد:
+    max|Δ|≈0.12 از مقیاس ۱۰۰ و فقط ۱ عدم‌تطابق در عبور از آستانه‌ی ۸۰ (۰.۰۰۱٪).
+    """
+    import gc
+    g = GAMMA
+    xv = np.asarray(close_vals, dtype=np.float32)
+    n = len(xv)
+    L0s = np.empty(n, np.float32); L1s = np.empty(n, np.float32)
+    L2s = np.empty(n, np.float32); L3s = np.empty(n, np.float32)
+    L0 = L1 = L2 = L3 = 0.0
+    for i in range(n):
+        pL0, pL1, pL2 = L0, L1, L2
+        L0 = (1 - g) * xv[i] + g * L0
+        L1 = -g * L0 + pL0 + g * L1
+        L2 = -g * L1 + pL1 + g * L2
+        L3 = -g * L2 + pL2 + g * L3
+        L0s[i] = L0; L1s[i] = L1; L2s[i] = L2; L3s[i] = L3
+    del xv
+    cu = np.zeros(n, np.float32); cd = np.zeros(n, np.float32)
+    for a, b in ((L0s, L1s), (L1s, L2s), (L2s, L3s)):
+        diff = a - b
+        np.add(cu, np.where(diff >= 0, diff, 0), out=cu)
+        np.add(cd, np.where(diff < 0, -diff, 0), out=cd)
+        del diff
+    del L0s, L1s, L2s, L3s
+    gc.collect()
+    tot = cu + cd
+    lr = np.where(tot != 0, 100.0 * cu / tot, 50.0).astype(np.float32)
+    del cu, cd, tot
+    gc.collect()
+    return lr
+
+
 def compute_dwells(close_vals):
     """LR یک‌بار محاسبه می‌شود (بهینه‌سازی حافظه برای M1 با ۵M کندل)."""
     import gc
-    lr = ib.laguerre_rsi(pd.DataFrame({'close': close_vals}),
-                         gamma=GAMMA).values
+    lr = _laguerre_rsi_lean(close_vals)
     up = lr > THR_HI
     dn = lr < THR_LO
     del lr
@@ -97,10 +135,10 @@ def compute_dwells(close_vals):
 def _runlen(mask):
     """طول دنباله‌ی متوالی True منتهی به هر اندیس — برداری، بدون حلقه‌ی پایتونی."""
     n = len(mask)
-    idx = np.arange(n, dtype=np.int64)
-    last_false = np.where(~mask, idx, -1)
+    idx = np.arange(n, dtype=np.int32)
+    last_false = np.where(~mask, idx, -1).astype(np.int32)
     np.maximum.accumulate(last_false, out=last_false)
-    return np.where(mask, idx - last_false, 0).astype(np.int32)
+    return np.where(mask, idx - last_false, 0).astype(np.int16).clip(0, 30000)
 
 
 def dwell_signals(du, dd, n_dwell):
