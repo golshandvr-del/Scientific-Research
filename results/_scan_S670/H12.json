@@ -1,0 +1,324 @@
+{
+ "tf": "H12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "n_full": 7998,
+ "n_search": 3999,
+ "half_bar": 3999,
+ "seed": 20260812,
+ "n_configs": 360,
+ "max_hold": 32,
+ "elapsed_s": 0.9,
+ "uncond": {
+  "1.0x1.0_long": {
+   "wr": 47.67146486028789,
+   "n": 1181
+  },
+  "1.0x1.0_short": {
+   "wr": 50.55038103302286,
+   "n": 1181
+  },
+  "1.0x1.5_long": {
+   "wr": 38.21871476888388,
+   "n": 887
+  },
+  "1.0x1.5_short": {
+   "wr": 40.993071593533486,
+   "n": 866
+  },
+  "1.5x1.0_long": {
+   "wr": 48.878205128205124,
+   "n": 624
+  },
+  "1.5x1.0_short": {
+   "wr": 50.480769230769226,
+   "n": 624
+  },
+  "1.5x1.5_long": {
+   "wr": 39.13978494623656,
+   "n": 465
+  },
+  "1.5x1.5_short": {
+   "wr": 41.34199134199134,
+   "n": 462
+  },
+  "2.0x1.0_long": {
+   "wr": 48.529411764705884,
+   "n": 408
+  },
+  "2.0x1.0_short": {
+   "wr": 50.73529411764706,
+   "n": 408
+  },
+  "2.0x1.5_long": {
+   "wr": 40.58441558441558,
+   "n": 308
+  },
+  "2.0x1.5_short": {
+   "wr": 42.34527687296417,
+   "n": 307
+  }
+ },
+ "top20": [
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "both",
+   "k_sl": 1.0,
+   "rr": 1.5,
+   "n": 109,
+   "wr": 51.376,
+   "ref_wr": 39.644,
+   "lift": 11.732,
+   "exp_pip": 28.685,
+   "lift_sqrt_n": 122.5
+  },
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "both",
+   "k_sl": 1.0,
+   "rr": 1.0,
+   "n": 109,
+   "wr": 60.55,
+   "ref_wr": 49.151,
+   "lift": 11.4,
+   "exp_pip": 25.203,
+   "lift_sqrt_n": 119.0
+  },
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "both",
+   "k_sl": 1.5,
+   "rr": 1.0,
+   "n": 108,
+   "wr": 61.111,
+   "ref_wr": 49.679,
+   "lift": 11.432,
+   "exp_pip": 35.892,
+   "lift_sqrt_n": 118.8
+  },
+  {
+   "period": 89,
+   "theta": 1.272,
+   "side": "long",
+   "k_sl": 2.0,
+   "rr": 1.5,
+   "n": 16,
+   "wr": 68.75,
+   "ref_wr": 40.584,
+   "lift": 28.166,
+   "exp_pip": 143.112,
+   "lift_sqrt_n": 112.7
+  },
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "both",
+   "k_sl": 2.0,
+   "rr": 1.0,
+   "n": 106,
+   "wr": 60.377,
+   "ref_wr": 49.632,
+   "lift": 10.745,
+   "exp_pip": 38.261,
+   "lift_sqrt_n": 110.6
+  },
+  {
+   "period": 55,
+   "theta": 1.272,
+   "side": "both",
+   "k_sl": 2.0,
+   "rr": 1.0,
+   "n": 51,
+   "wr": 64.706,
+   "ref_wr": 49.697,
+   "lift": 15.009,
+   "exp_pip": 80.542,
+   "lift_sqrt_n": 107.2
+  },
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "both",
+   "k_sl": 1.5,
+   "rr": 1.5,
+   "n": 107,
+   "wr": 50.467,
+   "ref_wr": 40.251,
+   "lift": 10.216,
+   "exp_pip": 39.901,
+   "lift_sqrt_n": 105.7
+  },
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "long",
+   "k_sl": 1.0,
+   "rr": 1.5,
+   "n": 54,
+   "wr": 51.852,
+   "ref_wr": 38.219,
+   "lift": 13.633,
+   "exp_pip": 30.566,
+   "lift_sqrt_n": 100.2
+  },
+  {
+   "period": 89,
+   "theta": 1.618,
+   "side": "long",
+   "k_sl": 2.0,
+   "rr": 1.0,
+   "n": 10,
+   "wr": 80.0,
+   "ref_wr": 48.529,
+   "lift": 31.471,
+   "exp_pip": 135.542,
+   "lift_sqrt_n": 99.5
+  },
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "long",
+   "k_sl": 1.0,
+   "rr": 1.0,
+   "n": 54,
+   "wr": 61.111,
+   "ref_wr": 47.671,
+   "lift": 13.44,
+   "exp_pip": 26.251,
+   "lift_sqrt_n": 98.8
+  },
+  {
+   "period": 89,
+   "theta": 1.618,
+   "side": "long",
+   "k_sl": 1.5,
+   "rr": 1.0,
+   "n": 10,
+   "wr": 80.0,
+   "ref_wr": 48.878,
+   "lift": 31.122,
+   "exp_pip": 100.832,
+   "lift_sqrt_n": 98.4
+  },
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "short",
+   "k_sl": 2.0,
+   "rr": 1.0,
+   "n": 53,
+   "wr": 64.151,
+   "ref_wr": 50.735,
+   "lift": 13.416,
+   "exp_pip": 64.376,
+   "lift_sqrt_n": 97.7
+  },
+  {
+   "period": 89,
+   "theta": 1.618,
+   "side": "long",
+   "k_sl": 1.5,
+   "rr": 1.5,
+   "n": 10,
+   "wr": 70.0,
+   "ref_wr": 39.14,
+   "lift": 30.86,
+   "exp_pip": 121.016,
+   "lift_sqrt_n": 97.6
+  },
+  {
+   "period": 89,
+   "theta": 1.272,
+   "side": "long",
+   "k_sl": 1.5,
+   "rr": 1.5,
+   "n": 16,
+   "wr": 62.5,
+   "ref_wr": 39.14,
+   "lift": 23.36,
+   "exp_pip": 104.674,
+   "lift_sqrt_n": 93.4
+  },
+  {
+   "period": 34,
+   "theta": 2.0,
+   "side": "both",
+   "k_sl": 2.0,
+   "rr": 1.0,
+   "n": 20,
+   "wr": 70.0,
+   "ref_wr": 49.743,
+   "lift": 20.257,
+   "exp_pip": 127.246,
+   "lift_sqrt_n": 90.6
+  },
+  {
+   "period": 55,
+   "theta": 1.618,
+   "side": "long",
+   "k_sl": 1.5,
+   "rr": 1.0,
+   "n": 12,
+   "wr": 75.0,
+   "ref_wr": 48.878,
+   "lift": 26.122,
+   "exp_pip": 88.208,
+   "lift_sqrt_n": 90.5
+  },
+  {
+   "period": 21,
+   "theta": 1.272,
+   "side": "long",
+   "k_sl": 1.5,
+   "rr": 1.0,
+   "n": 54,
+   "wr": 61.111,
+   "ref_wr": 48.878,
+   "lift": 12.233,
+   "exp_pip": 32.91,
+   "lift_sqrt_n": 89.9
+  },
+  {
+   "period": 21,
+   "theta": 2.0,
+   "side": "long",
+   "k_sl": 1.0,
+   "rr": 1.0,
+   "n": 14,
+   "wr": 71.429,
+   "ref_wr": 47.671,
+   "lift": 23.757,
+   "exp_pip": 46.487,
+   "lift_sqrt_n": 88.9
+  },
+  {
+   "period": 55,
+   "theta": 1.272,
+   "side": "long",
+   "k_sl": 2.0,
+   "rr": 1.0,
+   "n": 24,
+   "wr": 66.667,
+   "ref_wr": 48.529,
+   "lift": 18.137,
+   "exp_pip": 67.599,
+   "lift_sqrt_n": 88.9
+  },
+  {
+   "period": 34,
+   "theta": 1.618,
+   "side": "short",
+   "k_sl": 1.0,
+   "rr": 1.0,
+   "n": 20,
+   "wr": 70.0,
+   "ref_wr": 50.55,
+   "lift": 19.45,
+   "exp_pip": 45.357,
+   "lift_sqrt_n": 87.0
+  }
+ ],
+ "n_rows": 360
+}
