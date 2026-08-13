@@ -16,6 +16,7 @@ S620 — فاز جست‌وجو (فقط نیمهٔ نخستِ داده — مس�
 
 اجرا:  python3 strategies/s620_laguerre_exit_search.py M1
 """
+import gc
 import json
 import os
 import sys
@@ -60,12 +61,18 @@ def run_tf(tf):
     df_full = fd.as_dataframe(d)
     n_full = len(df_full)
     half = n_full // 2                      # مرز جست‌وجو/نگه‌داشت (منجمد)
-    df = df_full.iloc[:half].reset_index(drop=True)
+    df = df_full.iloc[:half].reset_index(drop=True).copy()
+    # بهداشت حافظه (سندباکس ۱GB): نسخه‌های کامل را فوراً آزاد کن
+    t_first, t_last = df['time'].iloc[0], df['time'].iloc[-1]
+    del df_full
+    d_src = d['src']
+    d.clear()
+    gc.collect()
     n = len(df)
     mh = MAX_HOLD[tf]
     pip = se.ASSETS['XAUUSD']['pip']
-    print(f"[S620/{tf}] src={d['src']}  n_full={n_full}  search_half={n}  "
-          f"{df['time'].iloc[0]} → {df['time'].iloc[-1]}  max_hold={mh}", flush=True)
+    print(f"[S620/{tf}] src={d_src}  n_full={n_full}  search_half={n}  "
+          f"{t_first} → {t_last}  max_hold={mh}", flush=True)
 
     # --- هندسهٔ ATR-محور (پایه) ---
     atr_price = ib.atr_s(df, ATR_P).values
@@ -107,6 +114,7 @@ def run_tf(tf):
         lag = ib.laguerre_rsi(df, gamma).values
         prev = np.roll(lag, 1)
         prev[0] = 50.0
+        gc.collect()
         for th in THS:
             # خروج از اشباع فروش → LONG؛ خروج از اشباع خرید → SHORT (متقارن)
             long_raw = (prev < th) & (lag >= th) & valid
@@ -149,11 +157,16 @@ def run_tf(tf):
                             lift=None if lift is None else round(lift, 3),
                             exp_pip=round(exp_pip, 3),
                             lift_sqrt_n=None if lift is None
-                            else round(lift * np.sqrt(n_tr), 1)))
+                            else round(float(lift * np.sqrt(n_tr)), 1)))
+                        del tr
+        del lag, prev
+        gc.collect()
+        print(f"[S620/{tf}] gamma={gamma} تمام شد "
+              f"({time.time()-t0:.0f}s)", flush=True)
     dt = time.time() - t0
     rows.sort(key=lambda r: -(r['lift_sqrt_n'] if r['lift_sqrt_n'] is not None
                               else -1e9))
-    out = dict(tf=tf, src=d['src'], n_full=n_full, n_search=n, half_bar=half,
+    out = dict(tf=tf, src=d_src, n_full=n_full, n_search=n, half_bar=half,
                seed=SEED, n_configs=cfg_i, max_hold=mh,
                elapsed_s=round(dt, 1),
                uncond={f"{k[0]}x{k[1]}_{k[2]}": v for k, v in uncond.items()},
