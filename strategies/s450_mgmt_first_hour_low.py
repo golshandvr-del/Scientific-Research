@@ -44,7 +44,14 @@ BEST = {
     'H1':  dict(sl_pip=395, tp_pip=395, max_hold=24, quality_filter=True),
 }
 FIRST_HOUR_BARS = {'M15': 4, 'M30': 2, 'H1': 1}
-GAP_MIN = 30  # مرزِ روزِ XAUUSD: گپ > ۳۰ دقیقه
+TF_MINUTES = {'M15': 15, 'M30': 30, 'H1': 60, 'H4': 240}
+# مرزِ روزِ XAUUSD (اصلاحِ باگِ TF-وابسته — کشفِ اجرای اول):
+#   فاصلهٔ عادیِ دو کندل = خودِ TF؛ وقفهٔ روزانهٔ بروکر ~۶۰ دقیقه ⇒
+#   گپِ مرزِ روز در داده: M15→75، M30→90، H1→120 دقیقه (آخر هفته ~3000).
+#   قانونِ خامِ «گپ>۳۰» برای H1 هر کندل را روزِ جدید می‌کرد (قاعده هرگز فعال
+#   نمی‌شد) و در M30 گپِ تک‌کندلِ جاافتاده (60min، ۳۹۸ مورد) را مرزِ روزِ کاذب
+#   می‌کرد. تعمیمِ صحیحِ همان لنگر: گپ > (TF + ۳۰) دقیقه.
+GAP_EXTRA_MIN = 30
 
 
 # ---------------------------------------------------------------- day anchor
@@ -59,6 +66,7 @@ def day_id_and_first_hour_low(df, tf):
     t = df['dt'].values.astype('datetime64[s]').astype(np.int64)
     low = df['low'].values
     nbars = FIRST_HOUR_BARS[tf]
+    gap_thresh_sec = (TF_MINUTES[tf] + GAP_EXTRA_MIN) * 60
 
     day_id = np.zeros(n, dtype=np.int64)
     fhl = np.full(n, np.nan)
@@ -66,7 +74,7 @@ def day_id_and_first_hour_low(df, tf):
     bar_in_day = 0
     cur_fhl = np.inf
     for i in range(n):
-        if i > 0 and (t[i] - t[i - 1]) > GAP_MIN * 60:
+        if i > 0 and (t[i] - t[i - 1]) > gap_thresh_sec:
             cur_day += 1
             bar_in_day = 0
             cur_fhl = np.inf
