@@ -61,11 +61,15 @@ def build_trading_days(df):
     """
     t = df['time'].values.astype(np.int64)
     gap = np.diff(t)
+    # دورهٔ اسمیِ کندل = میانهٔ شکاف‌ها (H1→3600s، M30→1800s، ...). شکافِ «غیرعادی»
+    # یعنی بیش از دوره + GAP_MINUTES — وقفهٔ روزانهٔ XAUUSD (شکافِ ۲ساعته در H1)
+    # را می‌گیرد، ولی فاصلهٔ عادیِ کندل‌ها را روزِ جدید حساب نمی‌کند.
+    period = float(np.median(gap))
     new_day = np.zeros(len(df), dtype=bool)
     new_day[0] = True
-    # شروعِ روزِ جدید: شکاف > GAP_MINUTES یا تغییرِ تاریخِ UTC (برای بازارهای بی‌وقفه)
+    # شروعِ روزِ جدید: شکافِ غیرعادی یا تغییرِ تاریخِ UTC (DSTِ مارس/بازارِ بی‌وقفه)
     dates = df['dt'].dt.date.values
-    new_day[1:] = (gap > GAP_MINUTES * 60) | (dates[1:] != dates[:-1])
+    new_day[1:] = (gap > period + GAP_MINUTES * 60) | (dates[1:] != dates[:-1])
     day_id = np.cumsum(new_day) - 1
 
     days = []
