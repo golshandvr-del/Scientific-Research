@@ -1,0 +1,42 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "n_bars": 4005,
+ "member": {
+  "k": 2.6,
+  "mode": "continuation",
+  "sl_atr": 1.272,
+  "rr": 1.0,
+  "sl_pip_med": 261.09372134831455,
+  "tp_pip_med": 261.09372134831455
+ },
+ "discovery": {
+  "n": 76,
+  "wr": 60.526315789473685,
+  "be": 50.81317522615409
+ },
+ "verdict": "POWER-LIMITED",
+ "score": 26.5,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": true
+ },
+ "n": 126,
+ "wr": 61.11,
+ "pf": 1.558,
+ "net": 3121.7,
+ "lift": 11.02,
+ "z": 2.48,
+ "p_perm": 0.006661,
+ "notes": [],
+ "sec": 2.6
+}
