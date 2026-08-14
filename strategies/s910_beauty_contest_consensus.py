@@ -193,8 +193,11 @@ def phase_train(tf: str):
     print(json.dumps(out, ensure_ascii=False, indent=1, default=str))
 
 
-def phase_holdout(tf: str, sides: list[str]):
-    """تست نهایی — فقط جهت‌هایی که در train زنده ماندند (حداکثر ۲ اجرا)."""
+def phase_holdout(tf: str, sides: list[str], n_trials: int = N_TRIALS_HOLDOUT):
+    """تست نهایی — فقط جهت‌هایی که در train زنده ماندند.
+
+    کارت M1: n_trials=2 (پیش‌ثبت §۳). کارت غیر-M1: n_trials=19 (پیش‌ثبت §۵).
+    """
     with open(os.path.join(CKPT_DIR, f'train_{tf}.json')) as f:
         trn = json.load(f)
     df = load_df(tf)
@@ -220,7 +223,7 @@ def phase_holdout(tf: str, sides: list[str]):
         res = compute_rqs2(tr, 'XAUUSD', sl_pip=sl, tp_pip=tp,
                            bar_time=pd.to_numeric(df_ho['time']).to_numpy(),
                            close=df_ho['close'].to_numpy(),
-                           null=null, n_trials=N_TRIALS_HOLDOUT,
+                           null=null, n_trials=n_trials,
                            split_bar=inner_split,
                            initial_capital=10000.0, allow_overlap=False)
         g = res.get('gates') or {}
@@ -236,7 +239,7 @@ def phase_holdout(tf: str, sides: list[str]):
                 'z_obs', 'z_luck_bound', 'z_margin', 'skill_p_perm',
                 'p_emp', 'perm_k', 'perm_max', 'top_win_share',
                 'net_pip', 'oos_wr', 'is_wr')},
-            'null': null['long'], 'n_trials': N_TRIALS_HOLDOUT,
+            'null': null['long'], 'n_trials': n_trials,
         }
         save_ckpt(f'holdout_{tf}.json', results)   # اندک اندک
         print(f"[{side}] verdict={res.get('verdict')} score={res.get('rqs2_score')}")
@@ -288,10 +291,11 @@ if __name__ == '__main__':
     ap.add_argument('--phase', required=True, choices=['train', 'holdout', 'family'])
     ap.add_argument('--tf', default='M1')
     ap.add_argument('--sides', default='long,short')
+    ap.add_argument('--n_trials', type=int, default=N_TRIALS_HOLDOUT)
     a = ap.parse_args()
     if a.phase == 'train':
         phase_train(a.tf)
     elif a.phase == 'holdout':
-        phase_holdout(a.tf, [s for s in a.sides.split(',') if s])
+        phase_holdout(a.tf, [s for s in a.sides.split(',') if s], a.n_trials)
     else:
         phase_family()
