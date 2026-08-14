@@ -1,0 +1,122 @@
+{
+ "sib_a1272": {
+  "verdict": "REJECT",
+  "score": 10.4,
+  "failed_gates": [
+   "H1",
+   "H3",
+   "H5",
+   "H7",
+   "H8",
+   "H9",
+   "H10"
+  ],
+  "n": 439,
+  "wr": 54.9,
+  "pf": 1.151,
+  "net": 3825.2,
+  "dd": 12.17,
+  "mcl": 6,
+  "lift": 4.99,
+  "z": 2.09,
+  "p": 0.018283,
+  "recovery": 2.18,
+  "cd": {
+   "n_judgeable": 403,
+   "n_unjudgeable": 36,
+   "n_counter": 200,
+   "n_aligned": 203,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 52.0,
+   "exp_counter": -11.977,
+   "wr_aligned": 58.62,
+   "exp_aligned": 15.361
+  }
+ },
+ "sib_rr1618": {
+  "verdict": "REJECT",
+  "score": 21.2,
+  "failed_gates": [
+   "H3",
+   "H4",
+   "H5"
+  ],
+  "n": 348,
+  "wr": 48.85,
+  "pf": 1.5,
+  "net": 12582.8,
+  "dd": 6.31,
+  "mcl": 8,
+  "lift": -1.06,
+  "z": -0.39,
+  "p": 0.653484,
+  "recovery": 8.73,
+  "cd": {
+   "n_judgeable": 319,
+   "n_unjudgeable": 29,
+   "n_counter": 159,
+   "n_aligned": 160,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 46.54,
+   "exp_counter": 60.704,
+   "wr_aligned": 51.88,
+   "exp_aligned": 83.018
+  }
+ },
+ "drift_aligned": {
+  "verdict": "ACCEPT",
+  "score": 79.9,
+  "failed_gates": [],
+  "n": 224,
+  "wr": 61.16,
+  "pf": 1.522,
+  "net": 6063.0,
+  "dd": 4.92,
+  "mcl": 5,
+  "lift": 11.15,
+  "z": 3.34,
+  "p": 0.000421,
+  "recovery": 7.57,
+  "cd": {
+   "n_judgeable": 206,
+   "n_unjudgeable": 18,
+   "n_counter": 74,
+   "n_aligned": 132,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 63.51,
+   "exp_counter": 35.018,
+   "wr_aligned": 60.61,
+   "exp_aligned": 43.312
+  }
+ },
+ "drift_counter": {
+  "verdict": "REJECT",
+  "score": 20.6,
+  "failed_gates": [
+   "H1",
+   "H3",
+   "H5"
+  ],
+  "n": 189,
+  "wr": 56.08,
+  "pf": 1.266,
+  "net": 2448.1,
+  "dd": 6.31,
+  "mcl": 4,
+  "lift": 6.08,
+  "z": 1.66,
+  "p": 0.048261,
+  "recovery": 3.02,
+  "cd": {
+   "n_judgeable": 173,
+   "n_unjudgeable": 16,
+   "n_counter": 113,
+   "n_aligned": 60,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 53.1,
+   "exp_counter": 6.875,
+   "wr_aligned": 58.33,
+   "exp_aligned": 78.291
+  }
+ }
+}
