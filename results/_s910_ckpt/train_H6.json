@@ -1,0 +1,44 @@
+{
+ "tf": "H6",
+ "split_bar": 9579,
+ "n_train": 9579,
+ "n_long_sig": 317,
+ "n_short_sig": 302,
+ "horizons": [
+  8,
+  21,
+  55,
+  144
+ ],
+ "max_hold": 89,
+ "long": {
+  "geometry": {
+   "tp": 533.0,
+   "sl": 210.1,
+   "n_sig": 317,
+   "rr": 2.537
+  },
+  "train": {
+   "n": 106,
+   "wr": 36.79,
+   "e_pip": 38.36,
+   "e_over_sl_pct": 18.26,
+   "cost_over_sl_pct": 1.57
+  }
+ },
+ "short": {
+  "geometry": {
+   "tp": 407.7,
+   "sl": 179.8,
+   "n_sig": 302,
+   "rr": 2.268
+  },
+  "train": {
+   "n": 110,
+   "wr": 33.64,
+   "e_pip": 2.03,
+   "e_over_sl_pct": 1.13,
+   "cost_over_sl_pct": 1.84
+  }
+ }
+}
