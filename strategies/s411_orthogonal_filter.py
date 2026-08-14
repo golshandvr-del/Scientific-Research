@@ -116,9 +116,106 @@ def tune():
     print(f"[saved] {OUT}/tune.json", flush=True)
 
 
+# ---------------------- فاز نهایی (یک‌ضرب، منجمد) ----------------------
+# برندهٔ ثبت‌شده در commit 59a38ad6 (قبل از این کد): cg_fib_55 >= median
+FROZEN_WINNER = dict(indicator='cg_fib_55', direction='above')
+SEED = 411
+PERM_K = 500
+SPLIT_BAR = 100000
+
+
+def build_null(df, base, sig_n, max_hold, rng):
+    """مدلِ صفرِ پیش‌ثبت‌شده: نمونه‌گیریِ همان-n از رویدادهای پایه (لنگر&F3&F1)
+    با همان هندسهٔ منجمد ⇒ توزیعِ WRِ بی‌مهارت. + uncond_wr روی کلِ پایه."""
+    idx = np.where(base)[0]
+    zeros = np.zeros(len(df), bool)
+
+    all_sig = np.zeros(len(df), bool)
+    all_sig[idx] = True
+    tr_all = se.simulate_trades(df, all_sig, zeros, SL_PIP, TP_PIP, ASSET,
+                                max_hold=max_hold, allow_overlap=False)
+    uncond_wr = float((tr_all['pnl_pip'].values > 0).mean() * 100.0)
+
+    wrs = []
+    for k in range(PERM_K):
+        pick = rng.choice(len(idx), size=min(sig_n, len(idx)), replace=False)
+        s = np.zeros(len(df), bool)
+        s[idx[np.sort(pick)]] = True
+        tr = se.simulate_trades(df, s, zeros, SL_PIP, TP_PIP, ASSET,
+                                max_hold=max_hold, allow_overlap=False)
+        if tr is not None and len(tr) > 0:
+            wrs.append(float((tr['pnl_pip'].values > 0).mean() * 100.0))
+        if (k + 1) % 100 == 0:
+            print(f"    perm {k+1}/{PERM_K}", flush=True)
+    a = np.asarray(wrs, dtype='float64')
+    null_long = dict(uncond_wr=uncond_wr, perm_mean=float(a.mean()),
+                     perm_sd=float(a.std(ddof=1)), perm_max=float(a.max()),
+                     perm_k=int(len(a)))
+    return {'long': null_long,
+            'short': dict(uncond_wr=None, perm_mean=None, perm_sd=None,
+                          perm_max=None, perm_k=None)}
+
+
+def final(tf, data_path):
+    from engine import rqs2
+    df = se.load_data(data_path)
+    bph = bars_per_hour(df)
+    mh = int(round(HOLD_H * bph))
+    base = base_signal(df)
+
+    # آستانهٔ منجمد: میانهٔ اندیکاتور فقط روی نیمهٔ اولِ *M15* (دادهٔ تنظیم).
+    # برای M30/H1 همان مقدارِ عددیِ منجمدشده استفاده می‌شود (بدونِ بازتنظیم).
+    df_m15 = se.load_data(DATA_M15)
+    v_m15 = ib.compute(FROZEN_WINNER['indicator'], df_m15).values.astype(np.float64)
+    med = float(np.nanmedian(v_m15[:SPLIT_BAR]))
+
+    v = ib.compute(FROZEN_WINNER['indicator'], df).values.astype(np.float64)
+    finite = np.isfinite(v)
+    mask = finite & (v >= med) if FROZEN_WINNER['direction'] == 'above' \
+        else finite & (v < med)
+    sig = base & mask
+
+    # مرزِ اکتشاف/خارج‌نمونه: همان لحظهٔ تقویمیِ مرزِ M15 (برای MTF یکسان)
+    t_split = int(df_m15['time'].values[SPLIT_BAR])
+    split_bar_tf = int(np.searchsorted(df['time'].values, t_split, 'left'))
+
+    print(f"[S411 final {tf}] bars={len(df):,} bars/h={bph:.2f} max_hold={mh} "
+          f"signals={int(sig.sum())} median(frozen)={med:.3e} "
+          f"split_bar={split_bar_tf:,}", flush=True)
+
+    tr = se.simulate_trades(df, sig, np.zeros(len(df), bool), SL_PIP, TP_PIP,
+                            ASSET, max_hold=mh, allow_overlap=False)
+    print(f"  trades={len(tr)}", flush=True)
+
+    rng = np.random.default_rng(SEED)
+    null = build_null(df, base, len(tr), mh, rng)
+    print(f"  null={json.dumps(null['long'], ensure_ascii=False)}", flush=True)
+
+    r = rqs2.compute_rqs2(tr, ASSET, sl_pip=SL_PIP, tp_pip=TP_PIP,
+                          bar_time=df['dt'].values, close=df['close'].values,
+                          null=null, n_trials=N_TRIALS,
+                          split_bar=split_bar_tf, allow_overlap=False)
+    print('\n' + rqs2.format_rqs2(f'S411-{tf}', r), flush=True)
+
+    out = dict(tf=tf, frozen=FROZEN_WINNER, median=med, sl=SL_PIP, tp=TP_PIP,
+               hold_h=HOLD_H, max_hold=mh, n_signals=int(sig.sum()),
+               n_trades=len(tr), null=null, n_trials=N_TRIALS,
+               split_bar=split_bar_tf, verdict=r.get('verdict'),
+               rqs2_score=r.get('rqs2_score'), gates=r.get('gates'),
+               metrics=r.get('metrics'), notes=r.get('notes'))
+    with open(os.path.join(OUT, f'final_{tf}.json'), 'w', encoding='utf-8') as fh:
+        json.dump(out, fh, ensure_ascii=False, indent=1, default=str)
+    print(f"[saved] {OUT}/final_{tf}.json", flush=True)
+
+
 if __name__ == '__main__':
     if '--tune' in sys.argv:
         tune()
+    elif '--final' in sys.argv:
+        tf = sys.argv[sys.argv.index('--final') + 1]
+        paths = {'M15': DATA_M15, 'M30': 'data/EURUSD_M30.csv',
+                 'H1': 'data/EURUSD_H1.csv'}
+        final(tf, paths[tf])
     else:
-        print("usage: python strategies/s411_orthogonal_filter.py --tune",
-              flush=True)
+        print("usage: python strategies/s411_orthogonal_filter.py "
+              "--tune | --final M15|M30|H1", flush=True)
