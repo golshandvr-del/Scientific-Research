@@ -26,6 +26,7 @@ S800 — لایهٔ نو: «فشردگی → گشایش» (Squeeze-Expansion Bre
 """
 import sys
 import os
+import gc
 import json
 import argparse
 import time
@@ -61,22 +62,39 @@ N_FAMILY  = (len(DONCH_P) * len(SQZ_Q) * len(SL_K)
 def load(tf):
     d = fd.load_fast(ASSET, tf)
     df = fd.as_dataframe(d)
+    # صرفه‌جویی حافظه (سندباکس ~1GB): فقط ستون‌های لازم، float32
+    keep = ['time', 'open', 'high', 'low', 'close']
+    df = df[[c for c in keep if c in df.columns]].copy()
+    for c in ('open', 'high', 'low', 'close'):
+        df[c] = df[c].astype(np.float32)
+    gc.collect()
     return d, df
 
 
-def base_arrays(df):
-    """اندیکاتورهای مشترک — یک بار برای همهٔ ترکیب‌ها."""
+def base_arrays(df, need_filters=True):
+    """اندیکاتورهای مشترک — یک بار، تک‌به‌تک با آزادسازی حافظه (سندباکس 1GB)."""
     pip = se.ASSETS[ASSET]['pip']
-    atr21 = np.asarray(ib.compute('atr_fib_21', df), dtype=np.float64)
-    atr_pct = np.asarray(ib.compute('atr_pct', df), dtype=np.float64)
-    r2 = np.asarray(ib.compute('r2_fib_34', df), dtype=np.float64)
-    hu = np.asarray(ib.compute('hurst', df), dtype=np.float64)
+    atr21 = np.asarray(ib.compute('atr_fib_21', df), dtype=np.float32)
+    gc.collect()
+    atr_pct = np.asarray(ib.compute('atr_pct', df), dtype=np.float32)
+    gc.collect()
     # فشردگی با تأخیر ۱ کندل (وضعیت در بازشدنِ کندلِ سیگنال معلوم است)
     sqz_raw = np.empty_like(atr_pct)
     sqz_raw[0] = np.nan
     sqz_raw[1:] = atr_pct[:-1]
-    sl_price = atr21                                    # واحد قیمت
-    sl_pip_arr = sl_price / pip                          # واحد pip
+    del atr_pct
+    gc.collect()
+    if need_filters:
+        r2 = np.asarray(ib.compute('r2_fib_34', df), dtype=np.float32)
+        gc.collect()
+        hu = np.asarray(ib.compute('hurst', df), dtype=np.float32)
+        gc.collect()
+    else:
+        r2 = np.full(len(df), np.nan, dtype=np.float32)
+        hu = r2
+    sl_pip_arr = (atr21 / pip).astype(np.float32)        # واحد pip
+    del atr21
+    gc.collect()
     return dict(pip=pip, sl_pip=sl_pip_arr, sqz=sqz_raw, r2=r2, hurst=hu)
 
 
@@ -106,11 +124,14 @@ def apply_filter(base, name):
     return f
 
 
-def run_cfg(df, base, cfg, lo=0, hi=None):
+def run_cfg(df, base, cfg, lo=0, hi=None, donch_cache=None):
     """شبیه‌سازی یک پیکربندی؛ سیگنال‌ها به بازهٔ [lo,hi) محدود می‌شوند."""
     n = len(df)
     hi = n if hi is None else hi
-    long_b, short_b = donch_signals(df, cfg['p'])
+    if donch_cache is not None and cfg['p'] in donch_cache:
+        long_b, short_b = donch_cache[cfg['p']]
+    else:
+        long_b, short_b = donch_signals(df, cfg['p'])
     sqz_ok = base['sqz'] < cfg['q']
     filt = apply_filter(base, cfg['filter'])
     valid_sl = np.isfinite(base['sl_pip']) & (base['sl_pip'] > 0)
@@ -183,6 +204,9 @@ def phase_explore(tf):
     print(f"[S800/{tf}] explore  src={d['src']}  bars={n}  split={split}",
           flush=True)
     base = base_arrays(df)
+    # کشِ سیگنال‌های دانچیان (bool — ارزان)
+    donch_cache = {p: donch_signals(df, p) for p in DONCH_P}
+    gc.collect()
     rows = []
     t0 = time.time()
     done = 0
@@ -194,7 +218,8 @@ def phase_explore(tf):
                         for hold in HOLD:
                             cfg = dict(p=p, q=q, filter=filt, k=k, rr=rr,
                                        hold=hold)
-                            tr, *_ = run_cfg(df, base, cfg, lo=0, hi=split)
+                            tr, *_ = run_cfg(df, base, cfg, lo=0, hi=split,
+                                             donch_cache=donch_cache)
                             s = summarize(tr, cost)
                             done += 1
                             if s is None or s['n'] < 30:
@@ -228,7 +253,8 @@ def phase_explore(tf):
 
     # --- سنجش توان با نول اندازه‌گیری‌شده (فقط نیمهٔ اول) ---
     cfg = best['cfg']
-    tr, ls, ss, sl, tp = run_cfg(df, base, cfg, lo=0, hi=split)
+    tr, ls, ss, sl, tp = run_cfg(df, base, cfg, lo=0, hi=split,
+                                 donch_cache=donch_cache)
     null = build_null_barrier(df, ls, ss, sl, tp, cfg['hold'])
     if null is None:
         print(f"[S800/{tf}] نول ساخته نشد (سیگنال<30) ⇒ POWER-LIMITED",
