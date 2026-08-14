@@ -48,6 +48,8 @@ MAX_HOLD = 34
 SPLIT_FRAC = 0.60
 N_TRIALS = 36                    # 2 × 3 × 3 × 2 سمت
 N_PERM = 600                     # K ≥ 500
+MAX_UNCOND = 50_000              # سقفِ نمونهٔ WR غیرشرطی (بهداشتِ حافظه؛ M1 با
+                                 # 200k در سندباکسِ ۹۸۵MB به OOM-Kill خورد)
 SEED = 20260811
 EXPLORE_MIN_N = 30
 SL_FLOOR_PIP = 5.0
@@ -123,8 +125,8 @@ def build_null(df, atr, k, rr, n_long, n_short, warmup, pip, rng,
         d = dict(uncond_wr=None, perm_mean=None, perm_sd=None,
                  perm_max=None, perm_k=None)
         if n_side >= 1 and len(valid) > n_side:
-            # WR غیرشرطی: نمونهٔ بزرگِ یک‌باره (سقفِ حافظه: ۲۰۰هزار ورود)
-            m = min(len(valid), 200_000)
+            # WR غیرشرطی: نمونهٔ بزرگِ یک‌باره (سقف = MAX_UNCOND، بهداشتِ حافظه)
+            m = min(len(valid), MAX_UNCOND)
             pick0 = np.sort(rng.choice(len(valid), size=m, replace=False))
             s_all = queue_rr(df, valid[pick0],
                              np.full(m, is_long_flag),
@@ -143,6 +145,8 @@ def build_null(df, atr, k, rr, n_long, n_short, warmup, pip, rng,
                 if verbose and (it + 1) % 150 == 0:
                     print(f'      null {side}: perm {it+1}/{N_PERM}',
                           flush=True)
+                if (it + 1) % 50 == 0:
+                    gc.collect()
             if wrs:
                 w = np.asarray(wrs, dtype='float64')
                 d.update(perm_mean=float(w.mean()),
@@ -190,6 +194,10 @@ def run_tf(tf, verbose=True):
     n = len(df)
     close = df['close'].values.astype(np.float64)
     bar_time = d['time']
+    # بهداشتِ حافظه: ستون‌هایی که S850 لازم ندارد آزاد شوند (M1: هر آرایه ~40MB)
+    for _k in ('hour', 'dow', 'volume'):
+        d.pop(_k, None)
+    gc.collect()
     pip = se.ASSETS[ASSET]['pip']
     c_pip = cost_pip(ASSET)
     warmup = max(max(max(s) for s in SCALE_SETS) + 2, ATR_P + 2)
@@ -236,6 +244,11 @@ def run_tf(tf, verbose=True):
     elig.sort(key=lambda g: (g['exp'], g['n']), reverse=True)
     win = elig[0]
     sc_w, k_w, rr_w = tuple(win['scales']), win['k'], win['rr']
+    # بهداشتِ حافظه: سیگنال‌های مجموعه‌مقیاسِ بازنده آزاد شوند
+    for sc in list(sigs.keys()):
+        if tuple(sc) != sc_w:
+            del sigs[sc]
+    gc.collect()
     print(f"\n    ★ winner (exploration only): scales={sc_w} k={k_w} "
           f"rr={rr_w}  exp={win['exp']}pip n={win['n']}", flush=True)
 
