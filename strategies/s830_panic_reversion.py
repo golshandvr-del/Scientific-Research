@@ -110,9 +110,12 @@ def phase_judge(df, ls, sl_pip, tp_pip):
     print(f'[judge] holdout trades={len(hold)}  WR={wr:.2f}%  '
           f'perm_mean={null["long"]["perm_mean"]:.2f}%  '
           f'lift={wr - null["long"]["perm_mean"]:+.2f}pp', flush=True)
+    # compute_rqs2 برای گیت هندسه اسکالر می‌خواهد؛ میانه‌ی براکت‌های واقعی هولد‌اوت
+    med_sl = float(np.median(hold['sl_pip'].values))
+    med_tp = med_sl * RR
     r = rqs2.compute_rqs2(
         hold, 'XAUUSD',
-        sl_pip=sl_pip, tp_pip=tp_pip,
+        sl_pip=med_sl, tp_pip=med_tp,
         bar_time=df['time'].values, null=null, n_trials=1,
         split_bar=SPLIT_IDX, close=df['close'].values)
     with open(lock, 'w') as f:
