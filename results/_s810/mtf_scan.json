@@ -63,5 +63,18 @@
   "lift_pp": -0.03,
   "z": -0.01,
   "pnl_pip": -2349.5
+ },
+ {
+  "tf": "M10",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M10.csv",
+  "n_events": 644,
+  "n_trades": 643,
+  "mh": 48,
+  "wr": 49.3,
+  "perm_mean": 48.0,
+  "perm_sd": 1.83,
+  "lift_pp": 1.3,
+  "z": 0.71,
+  "pnl_pip": -2124.6
  }
 ]
