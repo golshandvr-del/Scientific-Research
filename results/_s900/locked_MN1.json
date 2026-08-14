@@ -1,0 +1,12 @@
+{
+  "tf": "MN1",
+  "split_bar": 112,
+  "n_bars": 188,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+  "n_eff": 96,
+  "criterion": "wr+0.001*net",
+  "min_trades": 60,
+  "best_key": null,
+  "best": null,
+  "score": null
+}
