@@ -15,6 +15,7 @@ n_trials = 24 (خانوادهٔ قفل‌شدهٔ پیش‌ثبت). مدلِ ص�
 """
 import sys
 import os
+import gc
 import json
 import time
 
@@ -119,9 +120,18 @@ def build_null_perm(df, ls, ss, hold, K=K_PERM, seed=SEED):
     if m < 30:
         return None
     base_wins = fwd > 0
-    signs = rng.integers(0, 2, size=(K, m)).astype(bool)
-    w = np.where(signs, base_wins[None, :], ~base_wins[None, :])
-    wrs = w.mean(axis=1) * 100.0
+    # جای‌گشتِ تکه‌تکه (chunked) — هم‌ارزِ ریاضیِ ماتریسِ یک‌جا، اما بدونِ OOM
+    # (همان rng و همان ترتیبِ فراخوانی ⇒ همان توزیع؛ فقط تخصیصِ حافظه تکه‌ای است)
+    wrs = np.empty(K, dtype=np.float64)
+    CH = 50
+    pos = 0
+    while pos < K:
+        kk = min(CH, K - pos)
+        signs = rng.integers(0, 2, size=(kk, m)).astype(bool)
+        w = np.where(signs, base_wins[None, :], ~base_wins[None, :])
+        wrs[pos:pos + kk] = w.mean(axis=1) * 100.0
+        pos += kk
+        del signs, w
     ref = float(np.mean(wrs))
     side = dict(uncond_wr=ref, perm_mean=ref, perm_sd=float(np.std(wrs)),
                 perm_max=float(np.max(wrs)), perm_k=K)
@@ -133,6 +143,8 @@ def judge_tf(tf):
     d = fd.load_fast('XAUUSD', tf)
     df = fd.as_dataframe(d)
     src = d['src']
+    del d
+    gc.collect()
     asset = 'XAUUSD'
     pip = se.ASSETS[asset]['pip']
     n_bars = len(df)
@@ -156,6 +168,9 @@ def judge_tf(tf):
                     z, info = zproxy(tr, sl_med, tp_med)
                     if best is None or z > best['z']:
                         best = dict(k=k, mode=mode, a=a, rr=rr, z=z, info=info)
+    # آزادسازیِ حافظهٔ فازِ کشف پیش از داوری (سندباکسِ ~1GB؛ M1 = ۵M کندل)
+    del df1, r1, s1, a1
+    gc.collect()
     if best is None:
         rec = dict(tf=tf, src=src, verdict='NO-SIGNAL', n_bars=n_bars)
         json.dump(rec, open(f'{OUT}/{tf}.json', 'w'), ensure_ascii=False, indent=1)
