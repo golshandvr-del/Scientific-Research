@@ -345,6 +345,66 @@ def cmd_confirm():
     print(f"[confirm] saved → {out}")
 
 
+def cmd_confirm_eur():
+    """بندِ ۶ پیش‌ثبت: رسپیِ قفل‌شدهٔ XAUUSD، بدونِ هیچ تیون، یک بار روی EURUSD-H1.
+    کلِ تاریخچهٔ EURUSD بکر است (هیچ فازی آن را کاوش نکرده) ⇒ n_trials=1.
+    براکتِ مجازی به مقیاسِ EURUSD: ۲۰۰۰ پیپ (همان نیتِ بدون-سقف؛ راستی‌آزمایی می‌شود).
+    """
+    global ASSET, DATA, VIRTUAL_BRACKET_PIP
+    with open(LOCK_PATH) as f:
+        cfg = json.load(f)
+    q, d, hold = cfg['q'], cfg['d'], cfg['hold']
+    ASSET, DATA = 'EURUSD', 'data/EURUSD_H1.csv'
+    VIRTUAL_BRACKET_PIP = 2000.0
+    df = se.load_data(DATA)
+    days = build_trading_days(df)
+    rets, trend, vol = daily_features(days)
+    lo, hi = 0, len(days)                       # کلِ تاریخچه بکر است
+    print(f"[confirm_eur] VIRGIN window: days[{lo}:{hi}]  "
+          f"({days[lo]['date'].date()} → {days[hi-1]['date'].date()})")
+    print(f"[confirm_eur] locked XAU recipe (no retune): q={q} d={d} hold={hold}")
+    r, trades = run_combo(df, days, rets, trend, vol, q, d, hold, lo, hi)
+    if r is None:
+        print("[confirm_eur] NO TRADES")
+        return
+    hits = verify_no_bracket_hits(trades, df)
+    print(f"[confirm_eur] n={r['n']} WR={r['wr']:.1f}% exp={r['exp_pip']:+.1f}pip "
+          f"t={r['t']:+.2f} net={r['net_pip']:+.0f}pip bracket_hits={hits}")
+    assert hits == 0, "bracket was hit — verification FAILED"
+    null = build_null(df, days, r['n'], hold, lo, hi)
+    print(f"[confirm_eur] null: mean={null['long']['perm_mean']:.2f}% "
+          f"sd={null['long']['perm_sd']:.2f} k={null['long']['perm_k']}")
+    split_bar = days[lo + int((hi - lo) * 0.60)]['first_bar']
+    res = rq.compute_rqs2(
+        trades, ASSET,
+        sl_pip=VIRTUAL_BRACKET_PIP, tp_pip=VIRTUAL_BRACKET_PIP,
+        bar_time=df['time'].values, null=null, n_trials=1,
+        split_bar=split_bar, close=df['close'].values,
+    )
+    os.makedirs(OUT_DIR, exist_ok=True)
+    out = os.path.join(OUT_DIR, 'S420_confirm_eurusd_rqs2.json')
+
+    def _clean(x):
+        if isinstance(x, dict):
+            return {k: _clean(v) for k, v in x.items()}
+        if isinstance(x, (list, tuple)):
+            return [_clean(v) for v in x]
+        if isinstance(x, np.integer):
+            return int(x)
+        if isinstance(x, np.floating):
+            return float(x)
+        if isinstance(x, np.bool_):
+            return bool(x)
+        return x
+
+    with open(out, 'w') as f:
+        json.dump(_clean(dict(result=res, headline=r, null=null)), f,
+                  indent=1, ensure_ascii=False)
+    print(f"[confirm_eur] verdict = {res['verdict']}  score = {res['rqs2_score']}")
+    print(f"[confirm_eur] gates: {res['gates']}")
+    print(f"[confirm_eur] saved → {out}")
+
+
 if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'scan'
     if mode == 'scan':
@@ -354,5 +414,7 @@ if __name__ == '__main__':
         cmd_lock(float(kv['q']), float(kv['d']), int(kv['hold']))
     elif mode == 'confirm':
         cmd_confirm()
+    elif mode == 'confirm_eur':
+        cmd_confirm_eur()
     else:
         raise SystemExit(f"unknown mode {mode!r}")
