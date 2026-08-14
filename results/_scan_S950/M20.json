@@ -1,0 +1,44 @@
+{
+ "tf": "M20",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M20.csv",
+ "n_bars": 272979,
+ "member": {
+  "k": 4.5,
+  "mode": "continuation",
+  "sl_atr": 2.058,
+  "rr": 1.618,
+  "sl_pip_med": 41.76583820224721,
+  "tp_pip_med": 67.57712621123599
+ },
+ "discovery": {
+  "n": 1254,
+  "wr": 43.70015948963317,
+  "be": 41.87732930246484
+ },
+ "verdict": "REJECT",
+ "score": 1.5,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "n": 1949,
+ "wr": 42.18,
+ "pf": 0.994,
+ "net": -978.1,
+ "lift": -7.76,
+ "z": -6.56,
+ "p_perm": 1.0,
+ "notes": [
+  "PF=0.994<1.3"
+ ],
+ "sec": 2.7
+}

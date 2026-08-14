@@ -1,0 +1,41 @@
+{
+ "tf": "W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "n_bars": 813,
+ "member": {
+  "k": 2.6,
+  "mode": "continuation",
+  "sl_atr": 1.272,
+  "rr": 1.0,
+  "sl_pip_med": 484.01243595505616,
+  "tp_pip_med": 484.01243595505616
+ },
+ "discovery": null,
+ "verdict": "REJECT",
+ "score": 17.6,
+ "gates": {
+  "H0": false,
+  "H1": true,
+  "H2": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": true,
+  "H10": true
+ },
+ "n": 22,
+ "wr": 59.09,
+ "pf": 1.355,
+ "net": 335.8,
+ "lift": null,
+ "z": null,
+ "p_perm": null,
+ "notes": [
+  "H3 UNKNOWN: no measured null model supplied — absence of a control is not evidence of skill",
+  "H10 WARN (substitute PASS): only 6 counter-drift trades (<20) but their expectancy is non-negative (+228.465 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+ ],
+ "sec": 0.1
+}

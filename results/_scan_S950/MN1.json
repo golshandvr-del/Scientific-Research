@@ -1,0 +1,6 @@
+{
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "verdict": "NO-SIGNAL",
+ "n_bars": 188
+}
