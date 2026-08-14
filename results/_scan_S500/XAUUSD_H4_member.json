@@ -1,0 +1,31 @@
+{
+ "card": "XAUUSD_H4",
+ "asset": "XAUUSD",
+ "tf": "H4",
+ "lift": 7.572765072765073,
+ "n": 80,
+ "wr": 42.5,
+ "ref_wr": 34.92723492723493,
+ "null": {
+  "long": {
+   "uncond_wr": 34.92723492723493,
+   "perm_mean": 37.51386777565457,
+   "perm_sd": 5.261852123308841,
+   "perm_max": 56.25,
+   "perm_k": 2000
+  },
+  "short": {
+   "uncond_wr": null,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": 0
+  }
+ },
+ "sl_pip": 105.0,
+ "tp_pip": 210.0,
+ "max_hold": 20,
+ "n_signals": 82,
+ "exp_pip": 21.76750000000002,
+ "bars": 23755
+}
