@@ -405,6 +405,78 @@ def cmd_confirm_eur():
     print(f"[confirm_eur] saved → {out}")
 
 
+def cmd_confirm_tf(tf):
+    """بندِ ۵ پیش‌ثبت — MTF به‌عنوانِ لایهٔ اجرا (سیگنال روزانه است، TF فقط دقتِ اجرا).
+
+    • M30: دادهٔ ۲۰۱۱–۲۰۲۶ ⇒ همان پروتکل: رسپیِ قفل‌شده، تأیید روی بکرِ ۲۰۱۱–۲۰۱۹.
+    • M15: داده فقط ۲۰۲۰–۲۰۲۶ (بازهٔ سوخته) ⇒ اجرای in-sample، فقط گزارشی؛
+      هرگز ادعای skill مستقل نمی‌کند (پرچمِ exploratory در خروجی).
+    """
+    global ASSET, DATA, VIRTUAL_BRACKET_PIP
+    tf = tf.upper()
+    assert tf in ('M30', 'M15'), tf
+    with open(LOCK_PATH) as f:
+        cfg = json.load(f)
+    q, d, hold = cfg['q'], cfg['d'], cfg['hold']
+    ASSET, DATA = 'XAUUSD', f'data/XAUUSD_{tf}.csv'
+    VIRTUAL_BRACKET_PIP = 20000.0
+    df = se.load_data(DATA)
+    days = build_trading_days(df)
+    rets, trend, vol = daily_features(days)
+    exploratory = False
+    try:
+        lo, hi = windows(days)['confirm']
+    except StopIteration:
+        lo, hi = 0, len(days)
+    if days[0]['date'] >= SPLIT_UTC:
+        # کلِ داده در بازهٔ سوخته است (M15) ⇒ اجرای گزارشی روی همان بازه
+        lo, hi = 0, len(days)
+        exploratory = True
+    tag = 'EXPLORATORY(burned window)' if exploratory else 'VIRGIN'
+    print(f"[confirm_{tf}] {tag} window: days[{lo}:{hi}]  "
+          f"({days[lo]['date'].date()} → {days[hi-1]['date'].date()})")
+    r, trades = run_combo(df, days, rets, trend, vol, q, d, hold, lo, hi)
+    if r is None:
+        print(f"[confirm_{tf}] NO TRADES")
+        return
+    hits = verify_no_bracket_hits(trades, df)
+    print(f"[confirm_{tf}] n={r['n']} WR={r['wr']:.1f}% exp={r['exp_pip']:+.1f}pip "
+          f"t={r['t']:+.2f} net={r['net_pip']:+.0f}pip bracket_hits={hits}")
+    assert hits == 0
+    null = build_null(df, days, r['n'], hold, lo, hi)
+    split_bar = days[lo + int((hi - lo) * 0.60)]['first_bar']
+    res = rq.compute_rqs2(
+        trades, ASSET,
+        sl_pip=VIRTUAL_BRACKET_PIP, tp_pip=VIRTUAL_BRACKET_PIP,
+        bar_time=df['time'].values, null=null,
+        n_trials=(N_TRIALS if exploratory else 1),
+        split_bar=split_bar, close=df['close'].values,
+    )
+    os.makedirs(OUT_DIR, exist_ok=True)
+    out = os.path.join(OUT_DIR, f'S420_confirm_{tf.lower()}_rqs2.json')
+
+    def _clean(x):
+        if isinstance(x, dict):
+            return {k: _clean(v) for k, v in x.items()}
+        if isinstance(x, (list, tuple)):
+            return [_clean(v) for v in x]
+        if isinstance(x, np.integer):
+            return int(x)
+        if isinstance(x, np.floating):
+            return float(x)
+        if isinstance(x, np.bool_):
+            return bool(x)
+        return x
+
+    with open(out, 'w') as f:
+        json.dump(_clean(dict(result=res, headline=r, null=null,
+                              exploratory=exploratory)), f,
+                  indent=1, ensure_ascii=False)
+    print(f"[confirm_{tf}] verdict = {res['verdict']}  score = {res['rqs2_score']}"
+          + ('  ⚠ exploratory — no skill claim' if exploratory else ''))
+    print(f"[confirm_{tf}] saved → {out}")
+
+
 if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'scan'
     if mode == 'scan':
@@ -416,5 +488,7 @@ if __name__ == '__main__':
         cmd_confirm()
     elif mode == 'confirm_eur':
         cmd_confirm_eur()
+    elif mode == 'confirm_tf':
+        cmd_confirm_tf(sys.argv[2])
     else:
         raise SystemExit(f"unknown mode {mode!r}")
