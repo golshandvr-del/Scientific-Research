@@ -30,10 +30,12 @@ EURUSD عمداً غایب است (استثنای صریحِ کاربر). SEED=9
 """
 import sys
 import os
+import gc
 import json
 import time
 
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -61,27 +63,52 @@ TFS = ['M1', 'M3', 'M4', 'M5', 'M6', 'M10', 'M12', 'M15', 'M20', 'M30',
        'H1', 'H2', 'H3', 'H6', 'H8', 'H12', 'D1', 'W1', 'MN1']
 
 
+def _views_df(d, end=None):
+    """DataFrame با **ارجاع** (copy=False) به برش‌های numpy — بدونِ کپیِ حافظه.
+
+    ⚠️ درسِ OOM (اجرای اول روی M1 با Killed مرد): `df.iloc[:split]` نیمِ
+    ۵ میلیون کندل را کپی می‌کند (~۱۲۰MB اضافه). برشِ numpy «view» است.
+    """
+    sl = slice(None, end)
+    return pd.DataFrame({'time': d['time'][sl], 'open': d['open'][sl],
+                         'high': d['high'][sl], 'low': d['low'][sl],
+                         'close': d['close'][sl], 'volume': d['volume'][sl]},
+                        copy=False)
+
+
 def features(df, p):
     """flow(p)، eff(p)، ATR21 — همگی تا closeِ کندلِ i (causal، ورود i+1)."""
-    o = df['open'].values.astype(np.float64)
-    h = df['high'].values.astype(np.float64)
-    l = df['low'].values.astype(np.float64)
-    c = df['close'].values.astype(np.float64)
-    v = df['volume'].values.astype(np.float64)
+    o = np.asarray(df['open'].values, dtype=np.float64)
+    h = np.asarray(df['high'].values, dtype=np.float64)
+    l = np.asarray(df['low'].values, dtype=np.float64)
+    c = np.asarray(df['close'].values, dtype=np.float64)
+    v = np.asarray(df['volume'].values, dtype=np.float64)
     n = len(c)
 
+    # (ضدِ OOM روی M1: از cumsum به‌جای convolve — بدونِ بافرِ full-mode)
     sgn_vol = np.sign(c - o) * v
-    kern = np.ones(p)
-    num = np.convolve(sgn_vol, kern, mode='full')[:n]      # Σ آخرین p مقدار تا i
-    den = np.convolve(v, kern, mode='full')[:n]
+    cs = np.concatenate(([0.0], np.cumsum(sgn_vol)))
+    cv = np.concatenate(([0.0], np.cumsum(v)))
+    del sgn_vol
+    num = np.empty(n); den = np.empty(n)
+    num[:p - 1] = cs[1:p]; num[p - 1:] = cs[p:] - cs[:n - p + 1]
+    den[:p - 1] = cv[1:p]; den[p - 1:] = cv[p:] - cv[:n - p + 1]
+    del cs, cv
     flow = np.where(den > 0, num / np.maximum(den, 1e-12), 0.0)
+    del num, den
 
     # ATR21 (میانگینِ سادهٔ TR تا و شاملِ کندلِ i — در closeِ i معلوم است)
     tr_arr = np.zeros(n)
     tr_arr[1:] = np.maximum.reduce([h[1:] - l[1:],
                                     np.abs(h[1:] - c[:-1]),
                                     np.abs(l[1:] - c[:-1])])
-    atr = np.convolve(tr_arr, np.ones(ATR_WIN) / ATR_WIN, mode='full')[:n]
+    ct = np.concatenate(([0.0], np.cumsum(tr_arr)))
+    del tr_arr
+    w = ATR_WIN
+    atr = np.empty(n)
+    atr[:w - 1] = ct[1:w] / w
+    atr[w - 1:] = (ct[w:] - ct[:n - w + 1]) / w
+    del ct
 
     eff = np.zeros(n)
     eff[p:] = (c[p:] - c[:-p]) / np.maximum(atr[p:] * np.sqrt(p), 1e-12)
@@ -189,18 +216,18 @@ def build_null(df, ls, ss, sl_arr, tp_arr, mh, asset, seed=SEED, K=K_PERM):
 def judge_tf(tf):
     t0 = time.time()
     d = fd.load_fast('XAUUSD', tf)
-    df = fd.as_dataframe(d)
+    df = _views_df(d)                          # copy=False — ضدِ OOM
     src = d['src']
     asset = 'XAUUSD'
     pip = se.ASSETS[asset]['pip']
     n_bars = len(df)
-    t_arr = df['time'].values.astype(np.int64)
+    t_arr = np.asarray(d['time'], dtype=np.int64)
     # split = نقطهٔ میانیِ محورِ **زمان** (پیش‌ثبت §۳)
     t_mid = (int(t_arr[0]) + int(t_arr[-1])) // 2
     split = int(np.searchsorted(t_arr, t_mid))
 
     # ---------- کشف: فقط نیمهٔ اولِ زمان ----------
-    df1 = df.iloc[:split].reset_index(drop=True)
+    df1 = _views_df(d, end=split)              # view، نه کپی (ضدِ OOM)
     best = None
     for p in P_LIST:
         flow1, eff1, atr1 = features(df1, p)
@@ -211,11 +238,14 @@ def judge_tf(tf):
                         tr, *_ = run_member(df1, flow1, eff1, atr1, F, E,
                                             mode, k_sl, k_tp, p, asset, pip)
                         st = discovery_stat(tr, k_tp / k_sl)
+                        del tr
                         if st is None:
                             continue
                         if best is None or st['stat'] > best['stat']:
                             best = dict(p=p, F=F, E=E, mode=mode,
                                         k_sl=k_sl, k_tp=k_tp, **st)
+        del flow1, eff1, atr1
+        gc.collect()
     if best is None:
         rec = dict(tf=tf, src=src, n_bars=n_bars, split_bar=split,
                    verdict='NO-SURVIVOR',
