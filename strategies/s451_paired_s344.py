@@ -80,7 +80,7 @@ def reproduce_baseline():
     sig = trend_from_open_signals(df, CFG['tf'], CFG['side'],
                                   n_open=CFG['n_open'], f_range=CFG['f_range'],
                                   pull_max=CFG['pull_max'],
-                                  min_spike=CFG['min_spike']) & reg
+                                  min_spike_frac=CFG['min_spike']) & reg
     tr = se.simulate_trades(df, np.zeros(len(df), bool), sig,
                             CFG['sl'], CFG['tp'], CFG['asset'],
                             max_hold=CFG['maxhold'], allow_overlap=False)
