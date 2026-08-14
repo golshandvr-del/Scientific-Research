@@ -1,0 +1,129 @@
+{
+ "strategy": "S382_WilliamsR_Momentum",
+ "card": "XAUUSD-H4",
+ "rule": "S450-H4 variant: first-BAR-low exit — honest caveat: with the gap anchor, H4 day == week (daily brokerage pause absorbed by the normal 240min gap); reported separately per prereg §3",
+ "n_trades": 869,
+ "n_changed": 185,
+ "baseline": {
+  "n": 869,
+  "total": 237722.5,
+  "avg": 273.56,
+  "sd": 1536.19,
+  "worst": -1228.5,
+  "best": 1842.8,
+  "maxDD": 23956.5,
+  "pf": 1.436,
+  "wr": 48.9
+ },
+ "treatment": {
+  "n": 869,
+  "total": 218200.3,
+  "avg": 251.09,
+  "sd": 1404.0,
+  "worst": -1843.0,
+  "best": 1842.8,
+  "maxDD": 20557.9,
+  "pf": 1.471,
+  "wr": 47.3
+ },
+ "judge_full": {
+  "profit_ok": false,
+  "improves": {
+   "sd": true,
+   "worst": false,
+   "maxDD": true
+  },
+  "worsens_gt5": {
+   "sd": false,
+   "worst": true,
+   "maxDD": false
+  },
+  "risk_ok": false,
+  "verdict": "FAIL"
+ },
+ "halves": {
+  "h1": {
+   "base": {
+    "n": 339,
+    "total": 44227.4,
+    "avg": 130.46,
+    "sd": 1527.73,
+    "worst": -1228.5,
+    "best": 1842.8,
+    "maxDD": 23956.5,
+    "pf": 1.19,
+    "wr": 44.2
+   },
+   "mgmt": {
+    "n": 339,
+    "total": 38442.3,
+    "avg": 113.4,
+    "sd": 1308.21,
+    "worst": -1843.0,
+    "best": 1842.8,
+    "maxDD": 20557.9,
+    "pf": 1.216,
+    "wr": 41.9
+   },
+   "judge": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": true,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   }
+  },
+  "h2": {
+   "base": {
+    "n": 530,
+    "total": 193495.1,
+    "avg": 365.09,
+    "sd": 1536.03,
+    "worst": -1228.5,
+    "best": 1842.8,
+    "maxDD": 13513.9,
+    "pf": 1.618,
+    "wr": 51.9
+   },
+   "mgmt": {
+    "n": 530,
+    "total": 179758.0,
+    "avg": 339.17,
+    "sd": 1456.37,
+    "worst": -1228.5,
+    "best": 1842.8,
+    "maxDD": 11670.1,
+    "pf": 1.631,
+    "wr": 50.8
+   },
+   "judge": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "FAIL"
+   }
+  }
+ },
+ "changed_detail": {
+  "avg_base_of_changed": -132.82,
+  "avg_mgmt_of_changed": -238.34,
+  "avg_bars_saved": 10.7
+ }
+}
