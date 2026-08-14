@@ -57,6 +57,7 @@ ATR_P = 14
 W_MED_MULT = 233 * 4          # پنجرهٔ میانهٔ بلند برای ATR نسبی
 SPLIT_FRAC = 0.60
 MIN_TRADES_DISCOVERY = 400    # کف پیش‌ثبت‌شده برای M1
+MIN_TRADES_OTHER_TF = 60      # الحاقیهٔ ۱ پیش‌ثبت — برای TF≠M1
 K_PERM = 1000
 SEED = 900
 
@@ -163,16 +164,17 @@ def phase_discover(tf):
                               f'({el:.0f}s)', flush=True)
 
     # ---- انتخاب طبق معیار پیش‌ثبت‌شده ----
+    floor = MIN_TRADES_DISCOVERY if tf == 'M1' else MIN_TRADES_OTHER_TF
     best_key, best_score = None, -1e18
     for key, r in results.items():
-        if r.get('n', 0) < MIN_TRADES_DISCOVERY:
+        if r.get('n', 0) < floor:
             continue
         score = r['wr'] + 0.001 * r['net']
         if score > best_score:
             best_key, best_score = key, score
     locked = dict(tf=tf, split_bar=split, n_bars=n_all, src=d['src'],
                   n_eff=N_EFF, criterion='wr+0.001*net',
-                  min_trades=MIN_TRADES_DISCOVERY,
+                  min_trades=floor,
                   best_key=best_key,
                   best=results.get(best_key) if best_key else None,
                   score=round(best_score, 4) if best_key else None)
