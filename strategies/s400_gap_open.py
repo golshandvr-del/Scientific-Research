@@ -38,7 +38,18 @@ from engine import scalp_engine as se
 SEED = 400
 SPREAD_PIP = 3.3          # ASSETS['XAUUSD'] — $0.33/oz
 PIP = 0.1
-DAY_BREAK_SEC = 1800      # مرزِ روز = وقفهٔ ≥۳۰ دقیقه (ضد-DST، قفل در پیش‌ثبت)
+# ── BUG-DAYBREAK-TF (کشف در tune M30، پیش از هر holdout) ─────────────────────
+# نسخهٔ اول DAY_BREAK_SEC=1800 ثابت بود. روی M15 (فاصلهٔ بارها 900s) درست است،
+# اما فاصلهٔ عادیِ M30 دقیقاً 1800s و H1 دقیقاً 3600s است ⇒ روی M30/H1 *هر بارِ
+# عادی* «بارِ اولِ روز» حساب می‌شد و ساختارِ روزها فرومی‌پاشید (نشانه: X-BAR و
+# X-LOW عددبه‌عدد یکسان شدند چون هر «روز» یک بار داشت). مفهومِ پیش‌ثبت («وقفهٔ
+# ≥۳۰ دقیقه در بازار») باید نسبت به TF مقیاس شود:
+#     مرزِ روز = diff ≥ 2 × میانهٔ فاصلهٔ بارها
+# روی M15 این دقیقاً همان 1800s قبلی است ⇒ نتایجِ M15 بیت‌به‌بیت دست‌نخورده.
+def day_break_sec(t):
+    """آستانهٔ مرزِ روز، مقیاس‌شده با TF: دو برابرِ فاصلهٔ میانهٔ بارها."""
+    d = np.diff(t.astype('int64'))
+    return 2 * int(np.median(d))
 ROLL_DAYS = 250           # پنجرهٔ صدکِ غلتان (پیش‌ثبت)
 MIN_ROLL_OBS = 60         # warmup: کمتر از این مشاهده ⇒ روز معامله نمی‌شود
 SPLIT_BAR = {'M15': 75000, 'M30': 90691, 'H1': 45475}  # قفل در پیش‌ثبت
@@ -54,7 +65,7 @@ def build_days(df):
     o = df['open'].values; h = df['high'].values
     l = df['low'].values;  c = df['close'].values
     gaps_t = np.diff(t)
-    brk = np.where(gaps_t >= DAY_BREAK_SEC)[0]   # بارِ i ⇒ بارِ i+1 اولِ روز است
+    brk = np.where(gaps_t >= day_break_sec(t))[0]   # بارِ i ⇒ بارِ i+1 اولِ روز است
     starts = np.concatenate(([0], brk + 1))
     ends = np.concatenate((brk, [len(df) - 1]))  # آخرین بارِ هر روز
     days = []
