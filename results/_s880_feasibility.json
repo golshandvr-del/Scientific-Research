@@ -1,0 +1,172 @@
+{
+ "M5": {
+  "n_half": 544787,
+  "years_half": 7.86,
+  "range": [
+   1294012800,
+   1542103800
+  ],
+  "events": {
+   "p21_k8": {
+    "n_events_half": 10157,
+    "per_year": 1292.0
+   },
+   "p21_k13": {
+    "n_events_half": 13706,
+    "per_year": 1743.4
+   },
+   "p34_k8": {
+    "n_events_half": 3955,
+    "per_year": 503.1
+   },
+   "p34_k13": {
+    "n_events_half": 5635,
+    "per_year": 716.8
+   },
+   "p55_k8": {
+    "n_events_half": 1895,
+    "per_year": 241.0
+   },
+   "p55_k13": {
+    "n_events_half": 2513,
+    "per_year": 319.7
+   }
+  }
+ },
+ "M15": {
+  "n_half": 181889,
+  "years_half": 7.85,
+  "range": [
+   1294012800,
+   1541748600
+  ],
+  "events": {
+   "p21_k8": {
+    "n_events_half": 3422,
+    "per_year": 435.9
+   },
+   "p21_k13": {
+    "n_events_half": 4530,
+    "per_year": 577.0
+   },
+   "p34_k8": {
+    "n_events_half": 1320,
+    "per_year": 168.1
+   },
+   "p34_k13": {
+    "n_events_half": 1858,
+    "per_year": 236.7
+   },
+   "p55_k8": {
+    "n_events_half": 695,
+    "per_year": 88.5
+   },
+   "p55_k13": {
+    "n_events_half": 849,
+    "per_year": 108.1
+   }
+  }
+ },
+ "M30": {
+  "n_half": 91072,
+  "years_half": 7.84,
+  "range": [
+   1294012800,
+   1541529000
+  ],
+  "events": {
+   "p21_k8": {
+    "n_events_half": 1593,
+    "per_year": 203.1
+   },
+   "p21_k13": {
+    "n_events_half": 2130,
+    "per_year": 271.6
+   },
+   "p34_k8": {
+    "n_events_half": 690,
+    "per_year": 88.0
+   },
+   "p34_k13": {
+    "n_events_half": 926,
+    "per_year": 118.1
+   },
+   "p55_k8": {
+    "n_events_half": 270,
+    "per_year": 34.4
+   },
+   "p55_k13": {
+    "n_events_half": 343,
+    "per_year": 43.7
+   }
+  }
+ },
+ "H1": {
+  "n_half": 45665,
+  "years_half": 7.83,
+  "range": [
+   1294012800,
+   1540954800
+  ],
+  "events": {
+   "p21_k8": {
+    "n_events_half": 696,
+    "per_year": 88.9
+   },
+   "p21_k13": {
+    "n_events_half": 927,
+    "per_year": 118.5
+   },
+   "p34_k8": {
+    "n_events_half": 286,
+    "per_year": 36.5
+   },
+   "p34_k13": {
+    "n_events_half": 398,
+    "per_year": 50.9
+   },
+   "p55_k8": {
+    "n_events_half": 121,
+    "per_year": 15.5
+   },
+   "p55_k13": {
+    "n_events_half": 166,
+    "per_year": 21.2
+   }
+  }
+ },
+ "H4": {
+  "n_half": 11877,
+  "years_half": 7.84,
+  "range": [
+   1294012800,
+   1541433600
+  ],
+  "events": {
+   "p21_k8": {
+    "n_events_half": 189,
+    "per_year": 24.1
+   },
+   "p21_k13": {
+    "n_events_half": 260,
+    "per_year": 33.2
+   },
+   "p34_k8": {
+    "n_events_half": 78,
+    "per_year": 9.9
+   },
+   "p34_k13": {
+    "n_events_half": 103,
+    "per_year": 13.1
+   },
+   "p55_k8": {
+    "n_events_half": 35,
+    "per_year": 4.5
+   },
+   "p55_k13": {
+    "n_events_half": 48,
+    "per_year": 6.1
+   }
+  }
+ }
+}
