@@ -20,6 +20,7 @@ import json
 import time
 
 import numpy as np
+import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -65,6 +66,7 @@ def features(df):
     # bv[t] باید فقط دادهٔ تا t-1 را ببیند: prod[j] = |r_{j+1}|·|r_j| ⇒ آخرین جفتِ مجاز j+1 = t-1
     bv[2:] = bv_full[:n - 2]
     sigma_bv = np.sqrt(np.maximum(bv * (np.pi / 2.0), 0.0))
+    del absr, prod, bv_full, bv          # آزادسازیِ میانی‌ها (M1: هر کدام 40MB)
     # ATR(89) causal (شیفتِ ۱)
     tr_arr = np.zeros(n)
     tr_arr[1:] = np.maximum.reduce([h[1:] - l[1:],
@@ -73,6 +75,8 @@ def features(df):
     atr = np.convolve(tr_arr, kern, mode='full')[:n]
     atr_causal = np.zeros(n)
     atr_causal[1:] = atr[:-1]
+    del tr_arr, atr
+    gc.collect()
     return r, sigma_bv, atr_causal
 
 
@@ -152,7 +156,11 @@ def judge_tf(tf):
     r, sigma_bv, atr_px = features(df)
 
     # ---------- کشف: فقط ۶۰٪ اول ----------
-    df1 = df.iloc[:split].reset_index(drop=True)
+    # ⚠️ بدونِ کپی: iloc+reset_index روی M1 حدود 200MB کپی می‌ساخت و OOM می‌داد.
+    # برشِ numpy روی آرایه‌ها view است؛ copy=False فقط ارجاع می‌دهد (موتور فقط می‌خواند).
+    df1 = pd.DataFrame({col: df[col].values[:split]
+                        for col in ('time', 'open', 'high', 'low', 'close')},
+                       copy=False)
     r1, s1, a1 = r[:split], sigma_bv[:split], atr_px[:split]
     best = None
     for k in K_JUMP:
