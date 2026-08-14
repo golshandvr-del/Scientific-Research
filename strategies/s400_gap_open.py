@@ -312,13 +312,24 @@ def mode_tune(tf='M15'):
     return 0
 
 
+# برندهٔ قفل‌شدهٔ فازِ تنظیمِ هر TF (قاعدهٔ پیش‌ثبت: max t · n≥100 · PF>1)
+# n_trials تجمعی طبق پیش‌ثبت §۴.۴ (۷۲ به‌ازای هر TF آزموده‌شده).
+WINNERS = {
+    'M15': dict(fam='QW', par=60, arm='X-BAR', k_sl=None, dow_drop=None, n_trials=72),
+    'M30': dict(fam='QW', par=70, arm='X-FILL', k_sl=1.5, dow_drop=0, n_trials=144),
+}
+
+
 def mode_verdict(tf='M15'):
-    """آزمونِ رسمیِ یک‌بارهٔ RQS2 v2.6 — برندهٔ قفل‌شدهٔ فازِ تنظیم:
-    QW60 · X-BAR · بدونِ فیلتر. کلِ داده + split_bar (الگوی استانداردِ repo:
-    H7 نیمهٔ دوم را جدا می‌سنجد). null = ورودِ بی‌قید در *هر* بارِ اولِ روز با
-    همان هندسه، K=500، seed=400 (پیش‌ثبت §۵)."""
+    """آزمونِ رسمیِ یک‌بارهٔ RQS2 v2.6 روی برندهٔ قفل‌شدهٔ فازِ تنظیمِ همان TF.
+    کلِ داده + split_bar (H7 نیمهٔ دومِ دست‌نخورده را جدا می‌سنجد).
+    null (پیش‌ثبت §۵ — تفسیرِ سخت‌گیرانه): ورودِ بی‌قید با *همان هندسهٔ بازوی
+    منتخب*. برای X-FILL هندسهٔ TP=کلوزِ دیروز فقط روی روزهای gap-DOWN
+    تعریف‌پذیر است ⇒ استخر = همهٔ روزهای gap-DOWN بدونِ آستانه/فیلتر؛ یعنی lift
+    فقط ارزشِ افزودهٔ آستانه+فیلتر را می‌سنجد (به نفعِ ما متورم نمی‌شود).
+    K=500، seed=400."""
     from engine import rqs2
-    WIN_FAM, WIN_PAR, WIN_ARM, WIN_KSL = 'QW', 60, 'X-BAR', None   # قفل از step 4
+    w = WINNERS[tf]
 
     df = se.load_data(f'data/XAUUSD_{tf}.csv')
     arrays = (df['open'].values, df['high'].values, df['low'].values, df['close'].values)
@@ -329,24 +340,30 @@ def mode_verdict(tf='M15'):
     bar_time = df['dt'].values
     close = c.astype('float64')
 
-    # ---- معاملاتِ استراتژی روی کلِ داده ----
-    strat = run_combo(arrays, days, atr, WIN_FAM, WIN_PAR, WIN_ARM, WIN_KSL)
+    # ---- معاملاتِ استراتژی روی کلِ داده (با فیلترِ DOW برندهٔ قفل‌شده) ----
+    strat = run_combo(arrays, days, atr, w['fam'], w['par'], w['arm'], w['k_sl'])
+    if w['dow_drop'] is not None:
+        strat = strat[strat['dow'] != w['dow_drop']].reset_index(drop=True)
     n_str = len(strat)
     print(f"strategy trades (full span) n={n_str} · holdout n="
           f"{int((strat['entry_bar'] >= split).sum())}", flush=True)
 
-    # ---- استخرِ null: ورودِ بی‌قید در هر بارِ اولِ روزِ معتبر (بدونِ شرطِ گپ) ----
+    # ---- استخرِ null: ورودِ بی‌قید با همان هندسه (بدونِ آستانه، بدونِ فیلترِ DOW).
+    #      برای X-BAR: همهٔ روزهای معتبر؛ برای X-FILL: همهٔ روزهای gap-DOWN. ----
     pool = []
     for k, d in enumerate(days):
         a = atr[k - 1] if k >= 1 else np.nan
-        if not np.isfinite(a) or a <= 0:
+        if w['arm'] == 'X-FILL' and not (d['gap'] < 0):
             continue
-        tr = sim_trade(arrays, d, a, 'X-BAR')
+        if w['arm'] != 'X-FILL' and (not np.isfinite(a) or a <= 0):
+            continue
+        tr = sim_trade(arrays, d, a, w['arm'], w['k_sl'] if w['k_sl'] else 1.0)
         if tr is not None:
             pool.append(tr['pnl_pip'])
     pool = np.asarray(pool, dtype='float64')
     uncond_wr = float((pool > 0).mean() * 100.0)
-    print(f"null pool = {len(pool)} unconditional first-bar longs · uncond_wr={uncond_wr:.2f}%", flush=True)
+    print(f"null pool = {len(pool)} unconditional entries (same geometry) · "
+          f"uncond_wr={uncond_wr:.2f}%", flush=True)
 
     rng = np.random.default_rng(SEED)
     K = 500
@@ -361,17 +378,24 @@ def mode_verdict(tf='M15'):
                           perm_max=None, perm_k=None)}
     print(f"perm(K={K}): mean={wrs.mean():.2f} sd={wrs.std(ddof=1):.3f} max={wrs.max():.2f}", flush=True)
 
-    # ---- tp_pip اندازه‌گیری‌شده: سقفِ عملیِ hold = میانهٔ (high−open) بارِ اولِ
-    #      *بی‌قید* (نه انتخاب‌شده ⇒ ضدِ self-serving) ----
-    fe = [(h[d['fb']] - o[d['fb']]) / PIP for d in days]
-    tp_meas = float(np.median(fe))
-    print(f"measured tp_pip (median uncond first-bar favorable excursion) = {tp_meas:.1f} pip", flush=True)
+    # ---- tp/sl برای داور ----
+    if w['arm'] == 'X-FILL':
+        # براکتِ واقعی per-trade ⇒ میانهٔ اندازه‌گیری‌شدهٔ خودِ معاملات
+        tp_meas = float(np.median(strat['tp_pip'].values))
+        sl_meas = float(np.median(strat['sl_pip'].values))
+    else:
+        # X-BAR خروجِ زمانی است: tp_pip = میانهٔ (high−open) بارِ اولِ *بی‌قید*
+        fe = [(h[d['fb']] - o[d['fb']]) / PIP for d in days]
+        tp_meas = float(np.median(fe))
+        sl_meas = float(np.median(strat['sl_pip'].values))
+    print(f"judge geometry: sl_pip={sl_meas:.1f} tp_pip={tp_meas:.1f}", flush=True)
 
     r = rqs2.compute_rqs2(strat, 'XAUUSD',
-                          sl_pip=float(np.median(strat['sl_pip'].values)),
-                          tp_pip=tp_meas, bar_time=bar_time, null=null,
-                          n_trials=72, split_bar=split, close=close)
-    print(rqs2.format_rqs2(f'S400 {tf} QW60/X-BAR', r), flush=True)
+                          sl_pip=sl_meas, tp_pip=tp_meas,
+                          bar_time=bar_time, null=null,
+                          n_trials=w['n_trials'], split_bar=split, close=close)
+    tag = f"{w['fam']}{w['par']}/{w['arm']}" + (f"/DOW!={w['dow_drop']}" if w['dow_drop'] is not None else '')
+    print(rqs2.format_rqs2(f'S400 {tf} {tag}', r), flush=True)
     outp = os.path.join(os.path.dirname(__file__), '..', 'results',
                         f'_s400_verdict_{tf}.json')
     with open(outp, 'w') as f:
