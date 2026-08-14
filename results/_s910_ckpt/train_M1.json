@@ -1,0 +1,44 @@
+{
+ "tf": "M1",
+ "split_bar": 3000000,
+ "n_train": 3000000,
+ "n_long_sig": 115136,
+ "n_short_sig": 113239,
+ "horizons": [
+  8,
+  21,
+  55,
+  144
+ ],
+ "max_hold": 89,
+ "long": {
+  "geometry": {
+   "tp": 17.1,
+   "sl": 7.8,
+   "n_sig": 115136,
+   "rr": 2.192
+  },
+  "train": {
+   "n": 44786,
+   "wr": 30.03,
+   "e_pip": -3.71,
+   "e_over_sl_pct": -47.53,
+   "cost_over_sl_pct": 42.31
+  }
+ },
+ "short": {
+  "geometry": {
+   "tp": 17.7,
+   "sl": 7.8,
+   "n_sig": 113239,
+   "rr": 2.269
+  },
+  "train": {
+   "n": 44187,
+   "wr": 30.57,
+   "e_pip": -3.39,
+   "e_over_sl_pct": -43.42,
+   "cost_over_sl_pct": 42.31
+  }
+ }
+}

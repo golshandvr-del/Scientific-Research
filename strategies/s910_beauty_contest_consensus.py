@@ -244,14 +244,18 @@ def phase_holdout(tf: str, sides: list[str]):
 
 
 def phase_family():
-    """اجرای پیکربندی منجمد روی ۱۹ TF — گزارش توصیفی، با چک‌پوینت هر TF."""
+    """اسکن خانواده روی ۱۹ TF — **فقط بخشِ train (۶۰٪ نخست)** هر TF.
+
+    قاعدهٔ هندسه (TP=q60(MFE)·SL=q30(MAE)) منجمد است و بر train همان TF
+    اعمال می‌شود — هولد-اوتِ هیچ TFی لمس نمی‌شود. این جست‌وجوی مجاز در
+    ناحیهٔ train است (مسیر C)؛ اگر کارتی به داوری برود n_trials=19.
+    چک‌پوینت پس از هر TF («اندک اندک»).
+    """
     fam = {}
     fam_path = os.path.join(CKPT_DIR, 'family.json')
     if os.path.exists(fam_path):
         with open(fam_path) as f:
             fam = json.load(f)
-    with open(os.path.join(CKPT_DIR, 'train_M1.json')) as f:
-        trn = json.load(f)
     for tf in GOLD_TFS:
         if tf in fam:
             print(f'[skip] {tf} (checkpointed)')
@@ -262,24 +266,18 @@ def phase_family():
             fam[tf] = {'error': str(e)}
             save_ckpt('family.json', fam)
             continue
-        long_sig, short_sig = consensus_signals(df)
-        row = {'n_bars': len(df), 'span_years': round(df.attrs['span_years'], 2)}
+        split = int(len(df) * TRAIN_FRAC)
+        df_tr = df.iloc[:split].reset_index(drop=True)
+        long_sig, short_sig = consensus_signals(df_tr)
+        row = {'n_bars': len(df), 'n_train': split,
+               'span_years': round(df.attrs['span_years'], 2)}
         for side, sig in (('long', long_sig), ('short', short_sig)):
-            geo = trn[side]['geometry']
+            geo = geometry_from_train(df_tr, sig, side)
             if not geo:
+                row[side] = {'geometry': None, 'note': 'n_sig<30'}
                 continue
-            z = np.zeros(len(df), bool)
-            ls = long_sig if side == 'long' else z
-            ss = short_sig if side == 'short' else z
-            tr = se.simulate_trades(df, ls, ss, geo['sl'], geo['tp'], 'XAUUSD',
-                                    max_hold=MAX_HOLD, allow_overlap=False)
-            if tr is None or len(tr) == 0:
-                row[side] = {'n': 0}
-                continue
-            pnl = tr['pnl_pip'].to_numpy()
-            row[side] = {'n': int(len(tr)),
-                         'wr': round(100.0 * float((pnl > 0).mean()), 2),
-                         'e_pip': round(float(pnl.mean()), 2)}
+            edge = train_edge(df_tr, long_sig, short_sig, geo, side)
+            row[side] = {'geometry': geo, 'train': edge}
         fam[tf] = row
         save_ckpt('family.json', fam)              # اندک اندک — هر TF
         print(f'[family] {tf}: {row}')
