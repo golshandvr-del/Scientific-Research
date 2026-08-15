@@ -127,16 +127,21 @@ def _wr(t):
 
 def scan_tf(tf: str) -> dict:
     t0 = time.time()
+    # ── بارگذاری ناب (پادزهر OOM سندباکس ~1GB؛ درس S570 «M1 solo OOM») ──
+    # به‌جای as_dataframe روی کل داده: برش نیمه روی آرایه‌های خام، سپس
+    # DataFrameِ حداقلی با ۴ ستون. df کامل هرگز ساخته نمی‌شود.
     d = fd.load_fast(ASSET, tf)
-    df = fd.as_dataframe(d)
-    n = len(df)
+    src = d['src']
+    n = len(d['close'])
     half = n // 2                      # مرز مسیر C — نیمهٔ دوم لمس نمی‌شود
-    dfe = df.iloc[:half].reset_index(drop=True)
+    import pandas as pd
+    o = np.ascontiguousarray(d['open'][:half], dtype=np.float64)
+    h = np.ascontiguousarray(d['high'][:half], dtype=np.float64)
+    l = np.ascontiguousarray(d['low'][:half], dtype=np.float64)
+    c = np.ascontiguousarray(d['close'][:half], dtype=np.float64)
+    del d                              # آزادسازی صریح نیمهٔ دوم
+    dfe = pd.DataFrame({'open': o, 'high': h, 'low': l, 'close': c})
     pip = se.ASSETS[ASSET]['pip']      # BUG-PIPGUESS: خوانده می‌شود، حدس نه
-
-    c = dfe['close'].values.astype(np.float64)
-    h = dfe['high'].values.astype(np.float64)
-    l = dfe['low'].values.astype(np.float64)
     ne = len(dfe)
 
     apips = atr_pips(h, l, c, pip)
@@ -204,7 +209,7 @@ def scan_tf(tf: str) -> dict:
                                    net_pip=round(float(tr['pnl_pip'].sum()), 1))
                     cells.append(row)
 
-    res = dict(tf=tf, src=d['src'], n_total=n, half=half, n_explore=ne,
+    res = dict(tf=tf, src=src, n_total=n, half=half, n_explore=ne,
                sl_pip=round(sl_pip, 3), atr_period=ATR_P, max_hold=MAX_HOLD,
                uncond=unc, seed=SEED, k_unc=K_UNC,
                elapsed_s=round(time.time() - t0, 1), cells=cells)
