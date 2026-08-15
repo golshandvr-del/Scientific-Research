@@ -86,10 +86,16 @@ def runlen_true(mask: np.ndarray) -> np.ndarray:
 def explore_card(asset: str, tf: str, verbose: bool = True) -> dict:
     t0 = time.time()
     d = fd.load_fast(asset, tf)
+    src = d['src']
     df_full = fd.as_dataframe(d)
+    # 🔴 صرفه‌جویی حافظه (سندباکس ~1GB): نسخه‌های کامل بلافاصله آزاد شوند —
+    # M1 با ۵M کندل دو بار (dict + DataFrame) = ~۵۶۰MB و پروسه OOM-kill می‌شد.
+    del d
     n_full = len(df_full)
     half = n_full // 2
-    df = df_full.iloc[:half].reset_index(drop=True)   # ← فقط نیمهٔ اول
+    df = df_full.iloc[:half].reset_index(drop=True).copy()  # ← فقط نیمهٔ اول
+    del df_full
+    import gc; gc.collect()
     n = len(df)
 
     cfg = se.ASSETS[asset]
@@ -103,7 +109,7 @@ def explore_card(asset: str, tf: str, verbose: bool = True) -> dict:
         raise ValueError(f'{tf}: SL نامعتبر ({sl})')
 
     if verbose:
-        print(f'[{asset}-{tf}] src={d["src"]} n_full={n_full:,} half={n:,} '
+        print(f'[{asset}-{tf}] src={src} n_full={n_full:,} half={n:,} '
               f'medATR{ATR_PER}={med_atr:.2f}pip SL={sl} mh={mh} '
               f'cost={cost:.2f}pip', flush=True)
 
@@ -165,7 +171,7 @@ def explore_card(asset: str, tf: str, verbose: bool = True) -> dict:
             print(f'  γ(per={per}) تمام شد — سلولِ معتبر تاکنون: {done} '
                   f'({time.time() - t0:.0f}s)', flush=True)
 
-    out = dict(asset=asset, tf=tf, src=d['src'], n_full=n_full, n_half=n,
+    out = dict(asset=asset, tf=tf, src=src, n_full=n_full, n_half=n,
                half_span=[str(df["time"].iloc[0]), str(df["time"].iloc[-1])],
                sl_pip=sl, atr_per=ATR_PER, sl_mult=SL_MULT, max_hold=mh,
                cost_pip=cost, grid_cells=len(cells), cells=cells,
