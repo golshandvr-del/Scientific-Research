@@ -1,0 +1,13 @@
+{
+ "arm": "C-D1",
+ "card": "XAUUSD-D1",
+ "provenance": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+  "rows": 4005,
+  "span": "2011-01-03 00:00:00 → 2026-08-07 00:00:00",
+  "geometry_rule": "SL=11.1724·medATR TP=12.6959·medATR، medATR=218.8pip"
+ },
+ "error": "n<30 (n=2)",
+ "invalid": true,
+ "n_signals": 2
+}
