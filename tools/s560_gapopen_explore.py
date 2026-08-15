@@ -36,9 +36,23 @@ HOLDS = (1, 2, 4, 8)              # خروج زمانی: k کندلِ همین T
 OUT_DIR = os.path.join(ROOT, 'results', '_s560_explore')
 
 
-def day_breaks(t: np.ndarray) -> np.ndarray:
-    """اندیس i که کندل i آخرِ روز است و i+1 اولِ روزِ بعد."""
-    return np.where(np.diff(t) >= 1800)[0]
+TF_SEC = {'M1': 60, 'M5': 300, 'M15': 900, 'M30': 1800, 'H1': 3600}
+
+
+def day_breaks(t: np.ndarray, tf: str) -> np.ndarray:
+    """اندیس i که کندل i آخرِ روز است و i+1 اولِ روزِ بعد.
+
+    🔴 BUG-BRKTHRESH (کشف همین نشست، هنگام اجرای M30): قاعدهٔ Handoff
+    «گپ زمانی > ۳۰ دقیقه» برای M15 نوشته شده بود. در M30 فاصلهٔ *عادی*
+    دو کندل خودش 1800s است ⇒ شرط `>=1800` تقریباً هر کندل را مرز روز
+    می‌شمرد (ده‌ها هزار «روز» جعلی ⇒ حلقهٔ چندکِ علّی منفجر شد و
+    اجرا همیشگی ماند). تعمیم درستِ قاعده: مرز روز = گپِ اکیداً بزرگ‌تر
+    از فاصلهٔ عادی کندل (1.5×) و دست‌کم 1800s. برای M1..M15 رفتار
+    عیناً معادلِ قبلی می‌ماند (نتایج M1/M5/M15 دست‌نخورده معتبرند)؛
+    فقط M30/H1 اصلاح می‌شوند.
+    """
+    thr = max(1800.0, 1.5 * TF_SEC[tf])
+    return np.where(np.diff(t) > thr)[0]
 
 
 def causal_neg_gap_quantile(gaps: np.ndarray, q: float, weekend: np.ndarray,
@@ -77,7 +91,7 @@ def explore(tf: str) -> dict:
     split_bar = int(np.searchsorted(t, split_ts))
     print(f"split_bar={split_bar} ({split_bar/n:.1%} of data)  [مسیر C: فقط قبل از این]")
 
-    brk = day_breaks(t)
+    brk = day_breaks(t, tf)
     first = brk + 1                       # اندیس کندل اول روز
     first = first[first < n - 20]         # حاشیهٔ امن انتها
     prev_close = c[first - 1]
