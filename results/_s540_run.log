@@ -1,0 +1,21 @@
+== S540-POOL | خانوادهٔ لنگردارِ پیش‌ثبت‌شده ==
+[src] data/XAUUSD_H4.csv
+[data] XAUUSD_H4: rows=23755 range=2011-01-03 00:00:00 .. 2026-07-16 08:00:00
+[src] data/full/XAUUSD_H6.csv
+[data] XAUUSD_H6: rows=15966 range=2011-01-03 00:00:00 .. 2026-08-07 18:00:00
+[src] data/full/XAUUSD_H8.csv
+[data] XAUUSD_H8: rows=11978 range=2011-01-03 00:00:00 .. 2026-08-07 16:00:00
+[src] data/full/XAUUSD_H12.csv
+[data] XAUUSD_H12: rows=7998 range=2011-01-03 00:00:00 .. 2026-08-07 12:00:00
+  XAUUSD_H4: n=869 lift=+7.83
+  XAUUSD_H6: n=576 lift=+5.66
+  XAUUSD_H8: n=455 lift=+8.50
+  XAUUSD_H12: n=303 lift=+7.28
+
+[انتخاب] used=['XAUUSD_H8', 'XAUUSD_H4', 'XAUUSD_H12', 'XAUUSD_H6'] dropped=[]
+[FIFO] n_before=2203 n_after=822
+[trace] [{"k": 1, "added": "XAUUSD_H8", "wlift": 8.5, "n": 455, "z_proxy": 181.311, "accepted": true}, {"k": 2, "added": "XAUUSD_H4", "wlift": 8.06, "n": 1324, "z_proxy": 293.287, "accepted": true}, {"k": 3, "added": "XAUUSD_H12", "wlift": 7.915, "n": 1627, "z_proxy": 319.258, "accepted": false}, {"k": 4, "added": "XAUUSD_H6", "wlift": 7.325, "n": 2203, "z_proxy": 343.824, "accepted": true}]
+[هم‌پوشانی/FIFO به تفکیک] {"XAUUSD_H4": {"orig": 869, "kept": 424, "removed_pct": 51.2}, "XAUUSD_H6": {"orig": 576, "kept": 124, "removed_pct": 78.5}, "XAUUSD_H8": {"orig": 455, "kept": 180, "removed_pct": 60.4}, "XAUUSD_H12": {"orig": 303, "kept": 94, "removed_pct": 69.0}}
+
+[C5 سهم] {'XAUUSD_H4': 0.516, 'XAUUSD_H8': 0.219, 'XAUUSD_H6': 0.151, 'XAUUSD_H12': 0.114}
+[C5 نقض] XAUUSD_H4 سهم 51.6% > 50% ⇒ توقف (استخر نامشروع طبقِ پیش‌ثبت §۷ — بدونِ دستکاریِ آستانه).
