@@ -74,7 +74,12 @@ def load_full(tf: str = 'M5'):
     prov = {'src': d['src'], 'rows': int(len(df)),
             'span': f"{df['dt'].iloc[0]} → {df['dt'].iloc[-1]}"}
     print(f"  [داده] {prov['rows']:,} کندل · {prov['span']}\n  src={prov['src']}")
-    assert prov['rows'] > 600000, 'BUG-DATASETDRIFT: این دادهٔ کامل نیست!'
+    # گاردِ BUG-DATASETDRIFT بر مبنای «بازهٔ زمانی» (معیارِ درست) نه تعدادِ سطر:
+    # دادهٔ کوتاهِ data/ فقط ~۲.۸ سال است؛ دادهٔ کامل باید >۱۲ سال باشد.
+    span_years = (df['dt'].iloc[-1] - df['dt'].iloc[0]).days / 365.25
+    assert span_years > 12.0, \
+        f'BUG-DATASETDRIFT: بازه فقط {span_years:.1f} سال — این دادهٔ کامل نیست!'
+    assert 'mt5_full' in str(d['src']), 'BUG-DATASETDRIFT: src خارج از mt5_full!'
     return df, prov
 
 
