@@ -1,0 +1,17 @@
+{
+ "session": "S570",
+ "card": "XAUUSD-M1",
+ "variant": "backtested",
+ "governing": false,
+ "data_src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+ "bars": 5000000,
+ "sl_pip": 8.2,
+ "tp_pip": 5.1,
+ "maxhold": 240,
+ "n_signals": 4786,
+ "n_trades": 2785,
+ "chunked": true,
+ "status": "LITE_STATS_ONLY",
+ "note": "perm-null K=2000 infeasible for M1 in 985MB sandbox; exploratory per PREREG",
+ "wr_obs": 60.07
+}
