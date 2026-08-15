@@ -1,0 +1,209 @@
+{
+ "M30": {
+  "sl_pip": 32.72100000000004,
+  "arms": {
+   "A_long_only": {
+    "n": 629,
+    "long": {
+     "n": 629,
+     "wr": 52.94,
+     "base": 48.62,
+     "lift": 4.32
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -1.375
+   },
+   "B_long_uptrend": {
+    "n": 237,
+    "long": {
+     "n": 237,
+     "wr": 53.59,
+     "base": 48.4,
+     "lift": 5.19
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -0.953
+   },
+   "C_long_downtrend": {
+    "n": 390,
+    "long": {
+     "n": 390,
+     "wr": 52.56,
+     "base": 49.14,
+     "lift": 3.42
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -1.622
+   },
+   "D_short_gated_down": {
+    "n": 875,
+    "long": {
+     "n": 620,
+     "wr": 53.23,
+     "base": 48.62,
+     "lift": 4.61
+    },
+    "short": {
+     "n": 255,
+     "wr": 56.47,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -0.57
+   }
+  }
+ },
+ "H1": {
+  "sl_pip": 47.224500000000106,
+  "arms": {
+   "A_long_only": {
+    "n": 257,
+    "long": {
+     "n": 257,
+     "wr": 53.31,
+     "base": 47.37,
+     "lift": 5.94
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -0.176
+   },
+   "B_long_uptrend": {
+    "n": 86,
+    "long": {
+     "n": 86,
+     "wr": 56.98,
+     "base": 47.77,
+     "lift": 9.21
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": 3.289
+   },
+   "C_long_downtrend": {
+    "n": 169,
+    "long": {
+     "n": 169,
+     "wr": 50.89,
+     "base": 47.1,
+     "lift": 3.79
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -2.462
+   },
+   "D_short_gated_down": {
+    "n": 378,
+    "long": {
+     "n": 251,
+     "wr": 52.99,
+     "base": 47.37,
+     "lift": 5.62
+    },
+    "short": {
+     "n": 127,
+     "wr": 62.99,
+     "base": null,
+     "lift": null
+    },
+    "pnl": 2.697
+   }
+  }
+ },
+ "H2": {
+  "sl_pip": 66.15449999999977,
+  "arms": {
+   "A_long_only": {
+    "n": 152,
+    "long": {
+     "n": 152,
+     "wr": 50.0,
+     "base": 47.79,
+     "lift": 2.21
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -3.3
+   },
+   "B_long_uptrend": {
+    "n": 50,
+    "long": {
+     "n": 50,
+     "wr": 52.0,
+     "base": 48.37,
+     "lift": 3.63
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -0.654
+   },
+   "C_long_downtrend": {
+    "n": 100,
+    "long": {
+     "n": 100,
+     "wr": 48.0,
+     "base": 47.25,
+     "lift": 0.75
+    },
+    "short": {
+     "n": 0,
+     "wr": null,
+     "base": null,
+     "lift": null
+    },
+    "pnl": -5.946
+   },
+   "D_short_gated_down": {
+    "n": 209,
+    "long": {
+     "n": 151,
+     "wr": 49.67,
+     "base": 47.79,
+     "lift": 1.88
+    },
+    "short": {
+     "n": 58,
+     "wr": 62.07,
+     "base": null,
+     "lift": null
+    },
+    "pnl": 0.815
+   }
+  }
+ }
+}
