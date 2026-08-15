@@ -1,0 +1,13 @@
+{
+ "arm": "C-H4",
+ "card": "XAUUSD-H4",
+ "provenance": {
+  "src": "/home/user/webapp/data/XAUUSD_H4.csv",
+  "rows": 23755,
+  "span": "2011-01-03 00:00:00 → 2026-07-16 08:00:00",
+  "geometry_rule": "SL=11.1724·medATR TP=12.6959·medATR، medATR=80.2pip"
+ },
+ "error": "n<30 (n=14)",
+ "invalid": true,
+ "n_signals": 14
+}
