@@ -1,0 +1,22 @@
+{
+ "card": "XAUUSD-H1",
+ "asset": "XAUUSD",
+ "tf": "H1",
+ "n": 37,
+ "wr": 70.27,
+ "ref_wr": 50.1425,
+ "lift": 20.1278,
+ "sl_pip": 69.8,
+ "tp_pip": 66.0,
+ "max_hold": 36,
+ "data_src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "exp_pip": 21.67027027027006,
+ "bars": 91331,
+ "null_long": {
+  "uncond_wr": 48.801409205789994,
+  "perm_mean": 50.142468425396274,
+  "perm_sd": 7.050906014755664,
+  "perm_max": 71.69811320754717,
+  "perm_k": 2000
+ }
+}
