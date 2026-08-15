@@ -83,6 +83,4 @@ data/mt5_full/*.csv
 # ...ولی نسخهٔ فشرده **باید** ردیابی شود (استثنا بر قاعدهٔ بالا):
 !data/mt5_full/*.csv.gz
 
-# S540: دادهٔ کاملِ استخراج‌شده از data/mt5_full (بازتولیدپذیر با gunzip) — حجیم، commit نمی‌شود
-data/full/
 results/_s580_regime_cache/
