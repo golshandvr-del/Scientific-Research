@@ -1,0 +1,26 @@
+{
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "bars": 91331,
+ "checks": [
+  {
+   "P": 13,
+   "value_mismatch": 0,
+   "signal_mismatch": 0
+  },
+  {
+   "P": 21,
+   "value_mismatch": 0,
+   "signal_mismatch": 0
+  },
+  {
+   "P": 34,
+   "value_mismatch": 0,
+   "signal_mismatch": 0
+  },
+  {
+   "P": 55,
+   "value_mismatch": 0,
+   "signal_mismatch": 0
+  }
+ ]
+}
