@@ -30,5 +30,37 @@
   "split_utc": "2018-10-20",
   "src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
   "n_signals": 407
+ },
+ "M1": {
+  "cfg": {
+   "q": 80,
+   "sw": true,
+   "hold": 4
+  },
+  "variants": {
+   "V-BRK": {
+    "sl": 1.0,
+    "tp": 13.1,
+    "mh": 4,
+    "rule": "TP=q60(MFE)·SL=q30(MAE) [first half]",
+    "t_first_half": -0.7582783626303251,
+    "n_first_half": 146,
+    "wr_first_half": 32.19
+   },
+   "V-TIME": {
+    "sl": 48.9,
+    "tp": 48.9,
+    "mh": 4,
+    "rule": "SL=TP=q98(|MFE|∪|MAE|) [first half] — time exit",
+    "t_first_half": 2.978797997190014,
+    "n_first_half": 146,
+    "wr_first_half": 64.38
+   }
+  },
+  "picked": "V-TIME",
+  "split_bar": 2257279,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+  "n_signals": 452
  }
 }
