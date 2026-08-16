@@ -41,7 +41,7 @@
   "H0": true,
   "H1": false,
   "H2": false,
-  "H3": null,
+  "H3": false,
   "H4": true,
   "H5": false,
   "H6": false,
@@ -58,8 +58,7 @@
  "z": 1.37,
  "p_perm": 0.084978,
  "notes": [
-  "PF=0.938<1.3",
-  "H3 UNKNOWN: only 105 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+  "PF=0.938<1.3"
  ],
- "sec": 11.7
+ "sec": 9.4
 }

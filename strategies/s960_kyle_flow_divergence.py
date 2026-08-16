@@ -201,11 +201,16 @@ def build_null(df, ls, ss, sl_arr, tp_arr, mh, asset, seed=SEED, K=K_PERM):
         if w is not None:
             perm_wrs.append(w)
     pa = np.array(perm_wrs, float)
+    # ⚠️ معناشناسیِ perm_k در موتور: engine/rqs2.py خطِ ۱۰۴۰ آن را با
+    #   PERM_K_MIN=500 مقایسه می‌کند و نوتش می‌گوید «only X permutations» —
+    #   یعنی perm_k = **تعدادِ جای‌گشت‌ها**، نه اندازهٔ هر قرعه. (اجرای اولِ
+    #   S960 مقدارِ k=اندازهٔ قرعه را گذاشته بود ⇒ H3 به‌غلط UNKNOWN شد با
+    #   اینکه ۵۰۰ جای‌گشتِ واقعی اجرا شده بود.)
     side = dict(uncond_wr=wr_unc,
                 perm_mean=float(pa.mean()) if pa.size else None,
                 perm_sd=float(pa.std(ddof=1)) if pa.size > 1 else None,
                 perm_max=float(pa.max()) if pa.size else None,
-                perm_k=int(k))
+                perm_k=int(pa.size))
     # لایه دوسویه است ⇒ هر دو سمت همان مبنا (کنترل جهت‌آگنوستیک است؛
     # blend_null با وزنِ معاملاتِ هر سمت ترکیب می‌کند).
     return {'long': dict(side), 'short': dict(side),
