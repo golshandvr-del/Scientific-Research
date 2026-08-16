@@ -1,0 +1,19 @@
+{
+ "strategy": "S742_ObvDivergence",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "bars": 813,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "span_years": 15.58,
+ "split_bar": 487,
+ "n_trials": 144,
+ "k_perm": 500,
+ "prereg": "results/S742_PREREG_OBV_DIVERGENCE_PATH_C.md",
+ "grid_summary": {
+  "tested": 16,
+  "with_trades": 0,
+  "eligible": 0
+ },
+ "grid_top5": [],
+ "verdict": "NO_CANDIDATE"
+}
