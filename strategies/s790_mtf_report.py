@@ -13,7 +13,7 @@ from tools import s434_fast_data as fd
 from engine import scalp_engine as se
 
 CKPT = os.path.join(os.path.dirname(os.path.abspath(__file__)), 's790_mtf_ckpt.json')
-TFS = ['M1','M2','M3','M4','M5','M6','M10','M12','M15','M20','M30','H1','H2','H3','H4','H6','H8','H12']
+TFS = ['M1','M3','M4','M5','M6','M10','M12','M15','M20','M30','H1','H2','H3','H6','H8','H12']
 DTH, RTH, K_GEOM = 1.0, 0.236, 2.618
 MH_HOURS = 48.0
 pip = 0.10
