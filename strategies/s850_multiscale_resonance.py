@@ -50,6 +50,9 @@ N_TRIALS = 36                    # 2 × 3 × 3 × 2 سمت
 N_PERM = 600                     # K ≥ 500
 MAX_UNCOND = 50_000              # سقفِ نمونهٔ WR غیرشرطی (بهداشتِ حافظه؛ M1 با
                                  # 200k در سندباکسِ ۹۸۵MB به OOM-Kill خورد)
+MAX_NULL_POOL = 1_000_000        # سقفِ استخرِ کندل‌های مجاز برای مدلِ صفر —
+                                 # زیرمجموعهٔ تصادفی از تصادفی همچنان تصادفی
+                                 # است؛ فقط قیدِ حافظه (M1: 5M→۱M اندیس)
 SEED = 20260811
 EXPLORE_MIN_N = 30
 SL_FLOOR_PIP = 5.0
@@ -118,6 +121,10 @@ def build_null(df, atr, k, rr, n_long, n_short, warmup, pip, rng,
     a = atr[valid]
     ok = np.isfinite(a) & (a > 0)
     valid, a = valid[ok], a[ok]
+    if len(valid) > MAX_NULL_POOL:       # بهداشتِ حافظه (M1)
+        sub = np.sort(rng.choice(len(valid), size=MAX_NULL_POOL,
+                                 replace=False))
+        valid, a = valid[sub], a[sub]
     sl_all = np.maximum(k * a, SL_FLOOR_PIP * pip)
     null = {}
     for side, is_long_flag, n_side in (('long', True, n_long),
@@ -261,6 +268,9 @@ def run_tf(tf, verbose=True):
                    verdict='NO_TRADES_FULL')
         _save(tf, out)
         return out
+    # بهداشتِ حافظه: سیگنال‌ها دیگر لازم نیستند (معاملاتِ کامل گرفته شد)
+    del sigs, up, dn
+    gc.collect()
     tr = trades_df(st)
     n_long = int((tr['direction'] == 'long').sum())
     n_short = int(len(tr) - n_long)
@@ -293,7 +303,7 @@ def run_tf(tf, verbose=True):
                verdict=r['verdict'], rqs2_score=r['rqs2_score'],
                notes=r['notes'])
     _save(tf, out)
-    del df, d, sigs, atr
+    del df, d, atr
     gc.collect()
     return out
 
