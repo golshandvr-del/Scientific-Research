@@ -1,0 +1,8 @@
+========================================================================
+S890 Reflexive Breakout · XAUUSD-MN1 · path C (prereg 42ee0496)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv  bars=188  split(discovery 70%)=131
+span: 1293840000 → 1785542400
+medATR(discovery)=91.8374  SL=1377.56pip  TP=2066.34pip  BE(cost)=40.10%
+saved → results/_s890/rqs2_XAUUSD-MN1.json
+DISCOVERY EMPTY → INCOMPLETE
