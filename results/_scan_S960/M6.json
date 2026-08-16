@@ -1,0 +1,9 @@
+{
+ "tf": "M6",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M6.csv",
+ "n_bars": 908864,
+ "split_bar": 450907,
+ "verdict": "NO-SURVIVOR",
+ "note": "هیچ عضوی غربالِ کشف (n>=30 و expectancy>0) را نگذراند",
+ "sec": 6.5
+}
