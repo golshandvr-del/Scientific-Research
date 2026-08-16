@@ -1,0 +1,13 @@
+{
+ "strategy": "S742_ObvDivergence",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "span_years": 15.58,
+ "split_bar": 112,
+ "n_trials": 144,
+ "k_perm": 500,
+ "prereg": "results/S742_PREREG_OBV_DIVERGENCE_PATH_C.md",
+ "verdict": "TOO_SHORT"
+}
