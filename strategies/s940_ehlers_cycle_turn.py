@@ -245,6 +245,11 @@ def build_null(high, low, close, sl_abs, n_long, n_short, n_bars,
                k_perm, strides, rng, verbose=True):
     tp_abs = sl_abs * RR
     lo, hi = WARMUP, n_bars - 2
+    # حداقلِ معامله per قرعه: روی کارت‌های ریز (W1: ۸۱۳ کندل) قرعه‌ها
+    # ساختاراً <۳۰ معامله می‌دهند و فیلترِ سختِ ۳۰ همه را حذف می‌کرد ⇒
+    # perm_k=None ⇒ کرَشِ blend_null. این آستانه کیفیتِ قرعه است نه سدِ
+    # معناداری؛ K≥500ِ prereg دست‌نخورده می‌ماند.
+    m_min = 30 if n_bars >= 5000 else 5
     null = {}
     for side, sgn, n_side in (('long', 1, n_long), ('short', -1, n_short)):
         d = dict(uncond_wr=None, perm_mean=None, perm_sd=None,
@@ -256,7 +261,7 @@ def build_null(high, low, close, sl_abs, n_long, n_short, n_bars,
                 dirs = np.zeros(n_bars, dtype=np.int8)
                 dirs[lo:hi:st] = sgn
                 wr, m = _wr_only_nb(high, low, close, dirs, sl_abs, tp_abs)
-                if m >= 30 and (best is None or wr > best):
+                if m >= m_min and (best is None or wr > best):
                     best = wr
                 if verbose:
                     print(f'      uncond {side} stride={st}: wr={wr:.2f}% n={m}',
@@ -271,7 +276,7 @@ def build_null(high, low, close, sl_abs, n_long, n_short, n_bars,
                 dirs = np.zeros(n_bars, dtype=np.int8)
                 dirs[np.sort(pos)] = sgn
                 wr, m = _wr_only_nb(high, low, close, dirs, sl_abs, tp_abs)
-                if m >= 30:
+                if m >= m_min:
                     wrs.append(wr)
             if wrs:
                 a = np.asarray(wrs, float)

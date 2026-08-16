@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S940 EhlersCycleTurn :: XAUUSD_M20  bars=272,979  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_M20.csv  (2011-01-03 00:00:00 → 2026-08-07 23:40:00)
+    geom: SL=33.30pip  TP=49.94pip  rr=1.5  (median ATR(100)×1.5)
+    family events: long=33,133  short=33,222
+    trades=22,668 (L=11,258 S=11,410)  wr=38.44%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=38.63% n=29603
+      uncond long stride=7: wr=39.15% n=20426
+      uncond long stride=13: wr=39.31% n=14362
+      null long  uncond=39.31207352736388 perm_mean=39.11163980623767 sd=0.46502209965509306 k=1000
+      uncond short stride=3: wr=38.40% n=29703
+      uncond short stride=7: wr=38.49% n=20405
+      uncond short stride=13: wr=38.64% n=14380
+      null short uncond=38.63699582753825 perm_mean=39.08358943601408 sd=0.4549398507705018 k=1000
+
+S940_EhlersCycleTurn_XAUUSD_M20 | REJECT     RQS2=  0.0 | n=22668 WR=38.44% PF=0.90 lift=  -0.76pp z=-1.6 | H0:✗ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
