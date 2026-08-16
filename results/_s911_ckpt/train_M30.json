@@ -1,0 +1,23 @@
+{
+ "tf": "M30",
+ "split_bar": 109287,
+ "n_train": 109287,
+ "n_sig": 2710,
+ "lookback": 233,
+ "range_pctl": 89,
+ "body_pos_min": 0.786,
+ "max_hold": 55,
+ "geometry": {
+  "tp": 98.5,
+  "sl": 43.2,
+  "n_sig": 2710,
+  "rr": 2.283
+ },
+ "train": {
+  "n": 2023,
+  "wr": 32.33,
+  "e_pip": -3.72,
+  "e_over_sl_pct": -8.61,
+  "cost_over_sl_pct": 7.64
+ }
+}
