@@ -1,0 +1,14 @@
+{
+ "tf": "W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "n_all": 813,
+ "half_idx": 406,
+ "time_range_half": [
+  1293926400,
+  1539475200
+ ],
+ "atr89_median_pip": 396.03707865168536,
+ "configs": [],
+ "quantiles": {},
+ "skip": "too few bars"
+}
