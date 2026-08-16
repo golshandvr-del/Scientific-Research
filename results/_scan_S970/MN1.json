@@ -1,0 +1,17 @@
+{
+ "strategy": "S970_AbsorptionBreakout",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "span_years": 15.58,
+ "split_bar": 131,
+ "hold": 4,
+ "n_trials": 168,
+ "k_perm": 2000,
+ "seed": 20260814,
+ "tainted": false,
+ "prereg": "results/S970_PREREG_absorption_breakout.md",
+ "addendum": "results/S970_PREREG_ADDENDUM_family_debt.md",
+ "verdict": "TOO_SHORT"
+}
