@@ -1,0 +1,14 @@
+{
+ "strategy": "S422_ExuberanceShort",
+ "asset": "XAUUSD",
+ "data": "data/XAUUSD_H1.csv",
+ "W": 5,
+ "q": 0.75,
+ "a": 1.5,
+ "hold": 8,
+ "direction": "short_only",
+ "bracket_pip": 20000.0,
+ "n_trials": 8,
+ "split_utc": "2020-01-01 00:00:00",
+ "prereg": "results/S422_PREREGISTRATION_ExuberanceShort.md"
+}
