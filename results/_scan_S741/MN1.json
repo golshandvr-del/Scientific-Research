@@ -1,0 +1,13 @@
+{
+ "strategy": "S741_FailedAbsorptionContinuation",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "span_years": 15.58,
+ "split_bar": 112,
+ "n_trials": 128,
+ "k_perm": 500,
+ "prereg": "results/S741_PREREG_FAILED_ABSORPTION_CONTINUATION_PATH_C.md",
+ "verdict": "TOO_SHORT"
+}
