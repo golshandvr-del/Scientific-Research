@@ -1,0 +1,13 @@
+{
+  "layer": "S940",
+  "tf": "D1",
+  "split_bar": 2403,
+  "n_bars": 4005,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+  "n_eff_declared": 3888,
+  "criterion": "max lift*sqrt(n) s.t. n>=150 & net>0",
+  "min_trades": 150,
+  "best_key": null,
+  "best": null,
+  "score": null
+}
