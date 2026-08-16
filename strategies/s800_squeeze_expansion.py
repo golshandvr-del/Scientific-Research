@@ -71,12 +71,35 @@ def load(tf):
     return d, df
 
 
-def base_arrays(df, need_filters=True):
+def ind_path(tf, name):
+    return f'{OUT}/{tf}_ind_{name}.npy'
+
+
+def phase_prep(tf, name):
+    """یک اندیکاتور در فرآیند جداگانه — ضد OOM روی M1 (سندباکس 1GB)."""
+    os.makedirs(OUT, exist_ok=True)
+    p = ind_path(tf, name)
+    if os.path.exists(p):
+        print(f'[prep] {tf}/{name} موجود است — رد می‌شوم', flush=True)
+        return
+    d, df = load(tf)
+    v = np.asarray(ib.compute(name, df), dtype=np.float32)
+    np.save(p, v)
+    print(f'[prep] {tf}/{name} → {p}  ({len(v)})', flush=True)
+
+
+def base_arrays(df, need_filters=True, tf=None):
     """اندیکاتورهای مشترک — یک بار، تک‌به‌تک با آزادسازی حافظه (سندباکس 1GB)."""
     pip = se.ASSETS[ASSET]['pip']
-    atr21 = np.asarray(ib.compute('atr_fib_21', df), dtype=np.float32)
+
+    def get(name):
+        if tf is not None and os.path.exists(ind_path(tf, name)):
+            return np.load(ind_path(tf, name), mmap_mode='r')
+        return np.asarray(ib.compute(name, df), dtype=np.float32)
+
+    atr21 = np.asarray(get('atr_fib_21'), dtype=np.float32)
     gc.collect()
-    atr_pct = np.asarray(ib.compute('atr_pct', df), dtype=np.float32)
+    atr_pct = np.asarray(get('atr_pct'), dtype=np.float32)
     gc.collect()
     # فشردگی با تأخیر ۱ کندل (وضعیت در بازشدنِ کندلِ سیگنال معلوم است)
     sqz_raw = np.empty_like(atr_pct)
@@ -85,9 +108,9 @@ def base_arrays(df, need_filters=True):
     del atr_pct
     gc.collect()
     if need_filters:
-        r2 = np.asarray(ib.compute('r2_fib_34', df), dtype=np.float32)
+        r2 = np.asarray(get('r2_fib_34'), dtype=np.float32)
         gc.collect()
-        hu = np.asarray(ib.compute('hurst', df), dtype=np.float32)
+        hu = np.asarray(get('hurst'), dtype=np.float32)
         gc.collect()
     else:
         r2 = np.full(len(df), np.nan, dtype=np.float32)
@@ -203,7 +226,7 @@ def phase_explore(tf):
     cost = se.ASSETS[ASSET]['spread_pip']
     print(f"[S800/{tf}] explore  src={d['src']}  bars={n}  split={split}",
           flush=True)
-    base = base_arrays(df)
+    base = base_arrays(df, tf=tf)
     # کشِ سیگنال‌های دانچیان (bool — ارزان)
     donch_cache = {p: donch_signals(df, p) for p in DONCH_P}
     gc.collect()
@@ -286,7 +309,7 @@ def phase_judge(tf):
               f"اجرا نمی‌شود.", flush=True)
         return
     d, df = load(tf)
-    base = base_arrays(df)
+    base = base_arrays(df, tf=tf)
     cfg = locked['cfg']
     split = locked['split']
     cost = se.ASSETS[ASSET]['spread_pip']
@@ -319,9 +342,13 @@ def phase_judge(tf):
 if __name__ == '__main__':
     ap = argparse.ArgumentParser()
     ap.add_argument('--tf', required=True)
-    ap.add_argument('--phase', choices=['explore', 'judge', 'both'],
+    ap.add_argument('--phase', choices=['prep', 'explore', 'judge', 'both'],
                     default='both')
+    ap.add_argument('--ind', default=None)
     a = ap.parse_args()
+    if a.phase == 'prep':
+        phase_prep(a.tf, a.ind)
+        sys.exit(0)
     if a.phase in ('explore', 'both'):
         phase_explore(a.tf)
     if a.phase in ('judge', 'both'):
