@@ -1,0 +1,25 @@
+========================================================================
+S890 Reflexive Breakout · XAUUSD-M15 · path C (prereg 42ee0496)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_M15.csv  bars=363778  split(discovery 70%)=254644
+span: 1294012800 → 1786146300
+medATR(discovery)=1.6117  SL=24.18pip  TP=36.26pip  BE(cost)=45.46%
+    L21·follow: n= 15826  WR= 38.66%  net=  -65139.7  score=-26.482
+      L21·fade: n= 15921  WR= 40.34%  net=  -50235.3  score= -9.892
+    L34·follow: n= 13019  WR= 38.87%  net=  -52121.3  score=-13.255
+      L34·fade: n= 13370  WR= 40.30%  net=  -42630.0  score= -2.331
+    L55·follow: n= 10418  WR= 39.19%  net=  -39760.6  score= -0.569
+      L55·fade: n= 10858  WR= 39.98%  net=  -36537.1  score=  3.443
+    L89·follow: n=  7904  WR= 39.63%  net=  -28051.0  score= 11.575
+      L89·fade: n=  8225  WR= 39.49%  net=  -30008.9  score=  9.481
+   L144·follow: n=  6057  WR= 40.43%  net=  -18541.3  score= 21.891
+     L144·fade: n=  6285  WR= 38.89%  net=  -25345.5  score= 13.541
+
+LOCKED: L=144 fade=False  IS: n=6057 WR=40.43% net=-18541.3
+
+FULL: n=9707  WR=39.14%  net=-37276.4pip
+OOS(30%): n=3650  WR=36.99%
+VERDICT: REJECT  score=None
+gates: {'H0': False, 'H1': False, 'H2': False, 'H3': False, 'H4': False, 'H5': False, 'H6': False, 'H7': False, 'H8': False, 'H9': False, 'H10': False}
+notes: ['PF=0.799<1.3']
+saved → results/_s890/rqs2_XAUUSD-M15.json
