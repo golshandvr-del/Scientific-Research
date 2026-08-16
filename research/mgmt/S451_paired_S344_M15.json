@@ -1,0 +1,142 @@
+{
+ "strategy": "S344_BrooksTrendFromOpen",
+ "card": "XAUUSD-M15",
+ "side": "SHORT",
+ "params": {
+  "asset": "XAUUSD",
+  "tf": "M15",
+  "side": "short",
+  "n_open": 4,
+  "f_range": 0.2,
+  "pull_max": 0.62,
+  "min_spike": 0.2,
+  "sl": 220,
+  "tp": 340,
+  "maxhold": 32
+ },
+ "rule": "S451 first-hour-HIGH SHORT exit (independent mirror of M1)",
+ "n_trades": 92,
+ "n_changed": 26,
+ "baseline": {
+  "n": 92,
+  "total": 31428.0,
+  "avg": 341.61,
+  "sd": 1298.93,
+  "worst": -2233.0,
+  "best": 3367.0,
+  "maxDD": 7168.0,
+  "pf": 2.078,
+  "wr": 64.1
+ },
+ "treatment": {
+  "n": 92,
+  "total": 29632.0,
+  "avg": 322.09,
+  "sd": 1276.87,
+  "worst": -2233.0,
+  "best": 3367.0,
+  "maxDD": 6080.0,
+  "pf": 1.995,
+  "wr": 58.7
+ },
+ "judge_full": {
+  "profit_ok": false,
+  "improves": {
+   "sd": true,
+   "worst": false,
+   "maxDD": true
+  },
+  "worsens_gt5": {
+   "sd": false,
+   "worst": false,
+   "maxDD": false
+  },
+  "risk_ok": true,
+  "verdict": "FAIL"
+ },
+ "halves": {
+  "h1": {
+   "base": {
+    "n": 53,
+    "total": 10787.0,
+    "avg": 203.53,
+    "sd": 754.33,
+    "worst": -1716.0,
+    "best": 2159.0,
+    "maxDD": 3951.0,
+    "pf": 2.012,
+    "wr": 64.2
+   },
+   "mgmt": {
+    "n": 53,
+    "total": 6887.0,
+    "avg": 129.94,
+    "sd": 770.24,
+    "worst": -1645.0,
+    "best": 2159.0,
+    "maxDD": 2545.0,
+    "pf": 1.515,
+    "wr": 54.7
+   },
+   "judge": {
+    "profit_ok": false,
+    "improves": {
+     "sd": false,
+     "worst": true,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "FAIL"
+   }
+  },
+  "h2": {
+   "base": {
+    "n": 39,
+    "total": 20641.0,
+    "avg": 529.26,
+    "sd": 1788.59,
+    "worst": -2233.0,
+    "best": 3367.0,
+    "maxDD": 7168.0,
+    "pf": 2.116,
+    "wr": 64.1
+   },
+   "mgmt": {
+    "n": 39,
+    "total": 22745.0,
+    "avg": 583.21,
+    "sd": 1723.67,
+    "worst": -2233.0,
+    "best": 3367.0,
+    "maxDD": 6080.0,
+    "pf": 2.387,
+    "wr": 64.1
+   },
+   "judge": {
+    "profit_ok": true,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "PASS"
+   }
+  }
+ },
+ "changed_detail": {
+  "avg_base_of_changed": -545.69,
+  "avg_mgmt_of_changed": -614.77,
+  "avg_bars_saved": 13.3
+ }
+}
