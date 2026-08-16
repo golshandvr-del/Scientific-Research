@@ -12,7 +12,7 @@
 انتخاب در هر TF: بیشترین lift×√n مشروط به WR > سربه‌سرِ هزینه‌دار و n ≥ 30.
 چک‌پوینت: results/_scan_S880/XAUUSD_<TF>.json پس از هر TF.
 """
-import sys, os, json, time
+import sys, os, json, time, gc
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 from tools import s434_fast_data as fd
@@ -35,7 +35,7 @@ TFS = ['M1', 'M3', 'M4', 'M5', 'M6', 'M10', 'M12', 'M15', 'M20', 'M30',
        'H1', 'H2', 'H3', 'H4', 'H6', 'H8', 'H12', 'D1', 'W1', 'MN1']
 
 
-def entropy_vec(close, p, bins=8, chunk=200_000):
+def entropy_vec(close, p, bins=8, chunk=50_000):
     """آنتروپیِ شانونِ بازده — منطقِ عینِ بانک (indicator_bank.entropy)، برداری‌شده."""
     n = len(close)
     ret = np.zeros(n)
@@ -122,11 +122,16 @@ def scan_tf(tf):
     t0 = time.time()
     d = fd.load_fast('XAUUSD', tf)
     src = d['src']
-    close_all = np.asarray(d['close'], float)
-    n_all = len(close_all)
+    n_all = len(d['close'])
     half = n_all // 2
-    df_all = fd.as_dataframe(d)
-    df1 = df_all.iloc[:half].reset_index(drop=True)
+    # ⚠️ حافظهٔ سندباکس ~1GB است (M1 قبلاً OOM شد): فقط ستون‌های لازم،
+    # فقط نیمهٔ اول، و آزادسازی فوری دیکشنری لودر.
+    import pandas as pd
+    df1 = pd.DataFrame({kcol: np.asarray(d[kcol][:half], dtype=np.float64)
+                        for kcol in ('open', 'high', 'low', 'close')})
+    df1['time'] = np.asarray(d['time'][:half], dtype=np.int64)
+    del d
+    gc.collect()
     close = df1['close'].values
     high = df1['high'].values; low = df1['low'].values
     apip = atr_pip(high, low, close, 89)
@@ -143,6 +148,7 @@ def scan_tf(tf):
 
     for p in P_LIST:
         E = entropy_vec(close, p)
+        gc.collect()
         v = E[~np.isnan(E)]
         if len(v) < 100:
             continue
@@ -185,6 +191,8 @@ def scan_tf(tf):
                                 cfg['lift'] = round(wr - uw, 2)
                                 cfg['score'] = round((wr - uw) * np.sqrt(n), 1)
                         out['configs'].append(cfg)
+        del E, v
+        gc.collect()
     # انتخابِ نامزدِ TF طبق معیارِ منجمد
     valid = [c for c in out['configs']
              if c.get('lift') is not None and c['wr'] > c['be_wr'] and c['n'] >= 30
