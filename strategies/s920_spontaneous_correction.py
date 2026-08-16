@@ -95,15 +95,25 @@ def crsi_fast(close: np.ndarray, rsiP=3, streakP=2, rankP=100) -> np.ndarray:
     rank = np.full(n, np.nan)
     from numpy.lib.stride_tricks import sliding_window_view
     if n > rankP:
-        W = sliding_window_view(ret, rankP)          # پنجرهٔ [i-rankP, i)
-        cur = ret[rankP:]
-        below = (W[:-1] < cur[:, None]).sum(axis=1)
-        rank[rankP:] = 100.0 * below / rankP
+        # چانک‌به‌چانک — همان دلیلِ hurst_fast (پرهیز از OOMِ کلاسِ S850)
+        chunk = 200_000
+        for lo in range(rankP, n, chunk):
+            hi = min(lo + chunk, n)
+            W = sliding_window_view(ret[lo - rankP:hi - 1], rankP)  # [i-rankP, i)
+            cur = ret[lo:hi]
+            below = (W < cur[:, None]).sum(axis=1)
+            rank[lo:hi] = 100.0 * below / rankP
+            del W, below
     return (r + sr + rank) / 3.0
 
 
-def hurst_fast(close: np.ndarray, p=64) -> np.ndarray:
-    """نمای هرست R/S — عینِ بانک، برداری‌شده با پنجره‌های لغزان."""
+def hurst_fast(close: np.ndarray, p=64, chunk=200_000) -> np.ndarray:
+    """نمای هرست R/S — عینِ بانک، برداری‌شده **چانک‌به‌چانک**.
+
+    چرا چانک: روی M1 (۵M کندل) ماتریسِ کاملِ n×p چند گیگابایت می‌شود؛
+    S850 دقیقاً با همین کلاسِ خطا OOM شد (commit d77b682b). سقفِ حافظهٔ
+    هر چانک: 200k×64×8B ≈ 100MB × چند بافر — امن.
+    """
     n = len(close)
     ret = np.zeros(n)
     with np.errstate(divide='ignore', invalid='ignore'):
@@ -113,18 +123,22 @@ def hurst_fast(close: np.ndarray, p=64) -> np.ndarray:
     if n <= p:
         return out
     from numpy.lib.stride_tricks import sliding_window_view
-    W = sliding_window_view(ret, p)                  # پنجرهٔ منتهی به i از i-p+1
-    # بانک: for i in range(p, n): w = ret[i-p+1:i+1]  ⇒ ردیفِ (i-p+1)
-    W = W[1:]                                        # هم‌ترازی با i از p تا n-1
-    m = W.mean(axis=1, keepdims=True)
-    dev = W - m
-    cum = np.cumsum(dev, axis=1)
-    Rng = cum.max(axis=1) - cum.min(axis=1)
-    sd = np.sqrt((dev * dev).mean(axis=1))
     logp = np.log(p)
-    with np.errstate(divide='ignore', invalid='ignore'):
-        h = np.where((sd > 0) & (Rng > 0), np.log(Rng / sd) / logp, 0.5)
-    out[p:] = h
+    # بانک: for i in range(p, n): w = ret[i-p+1:i+1]
+    for lo in range(p, n, chunk):
+        hi = min(lo + chunk, n)
+        # پنجرهٔ منتهی به i نیازمندِ ret[i-p+1 .. i]
+        seg = ret[lo - p + 1:hi]
+        W = sliding_window_view(seg, p)              # ردیفِ j ⇔ i = lo + j
+        m = W.mean(axis=1, keepdims=True)
+        dev = W - m
+        cum = np.cumsum(dev, axis=1)
+        Rng = cum.max(axis=1) - cum.min(axis=1)
+        sd = np.sqrt((dev * dev).mean(axis=1))
+        with np.errstate(divide='ignore', invalid='ignore'):
+            h = np.where((sd > 0) & (Rng > 0), np.log(Rng / sd) / logp, 0.5)
+        out[lo:hi] = h
+        del W, m, dev, cum, Rng, sd, h
     return out
 
 
