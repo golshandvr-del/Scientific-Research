@@ -1,0 +1,19 @@
+{
+ "strategy": "S741_FailedAbsorptionContinuation",
+ "asset": "XAUUSD",
+ "tf": "M20",
+ "bars": 272979,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M20.csv",
+ "span_years": 15.59,
+ "split_bar": 163787,
+ "n_trials": 128,
+ "k_perm": 500,
+ "prereg": "results/S741_PREREG_FAILED_ABSORPTION_CONTINUATION_PATH_C.md",
+ "grid_summary": {
+  "tested": 64,
+  "with_trades": 0,
+  "eligible": 0
+ },
+ "grid_top5": [],
+ "verdict": "NO_CANDIDATE"
+}
