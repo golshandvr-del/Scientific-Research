@@ -317,6 +317,7 @@ def mode_tune(tf='M15'):
 WINNERS = {
     'M15': dict(fam='QW', par=60, arm='X-BAR', k_sl=None, dow_drop=None, n_trials=72),
     'M30': dict(fam='QW', par=70, arm='X-FILL', k_sl=1.5, dow_drop=0, n_trials=144),
+    'H1':  dict(fam='QW', par=80, arm='X-BAR', k_sl=None, dow_drop=0, n_trials=216),
 }
 
 
