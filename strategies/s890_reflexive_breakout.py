@@ -13,7 +13,7 @@
 اجرا:  python3 strategies/s890_reflexive_breakout.py M15
        (هر TF جدا ⇒ کامیتِ تدریجی، مقاوم به بی‌ثباتیِ سندباکس)
 """
-import sys, os, json
+import sys, os, json, gc
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import numpy as np
 import pandas as pd
@@ -101,7 +101,10 @@ def run_tf(tf):
     print('=' * 72)
     d = fd.load_fast(ASSET, tf)
     df = fd.as_dataframe(d)
+    if 'volume' in df.columns:
+        df = df.drop(columns=['volume'])        # کاهشِ حافظه (M1 = 5M کندل)
     src = d.get('src', '?')
+    del d; gc.collect()
     N = len(df)
     split = int(N * 0.70)
     print(f"src={src}  bars={N}  split(discovery 70%)={split}")
@@ -109,13 +112,14 @@ def run_tf(tf):
 
     a = atr_series(df.iloc[:split], 100)
     med_atr = float(np.nanmedian(a))
+    del a; gc.collect()
     sl_pip = SL_ATR_MULT * med_atr / PIP
     tp_pip = RR * sl_pip
     be = (sl_pip + SPREAD_PIP) / (sl_pip + tp_pip) * 100.0
     print(f"medATR(discovery)={med_atr:.4f}  SL={sl_pip:.2f}pip  TP={tp_pip:.2f}pip  BE(cost)={be:.2f}%")
 
     c = df['close'].values
-    dfe = df.iloc[:split].reset_index(drop=True)
+    dfe = df.iloc[:split]        # برشِ view، بدونِ کپیِ reset_index — رفعِ OOMِ M1
 
     # ---------- کشف: فقط ۷۰٪ اول ----------
     best = None
@@ -129,10 +133,11 @@ def run_tf(tf):
             net = float(tr['pnl_pip'].sum())
             score = wr + 0.001 * net
             tag = f"L{L}{'·fade' if fade else '·follow'}"
-            print(f"  {tag:>12}: n={n:>6}  WR={wr:6.2f}%  net={net:>10.1f}  score={score:7.3f}")
+            print(f"  {tag:>12}: n={n:>6}  WR={wr:6.2f}%  net={net:>10.1f}  score={score:7.3f}", flush=True)
             if best is None or score > best['score']:
                 best = dict(L=L, fade=fade, score=score, is_n=n,
                             is_wr=round(wr, 2), is_net=round(net, 1))
+            del tr, ls_e, ss_e; gc.collect()
     if best is None:
         res = dict(card=f'XAUUSD-{tf}', verdict='INCOMPLETE',
                    reason='discovery produced <40 trades for every config', src=src)
