@@ -1,0 +1,13 @@
+{
+ "strategy": "S743_RoundLevelRejection",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "span_years": 15.58,
+ "split_bar": 112,
+ "n_trials": 24,
+ "k_perm": 500,
+ "prereg": "results/S743_PREREG_ROUND_LEVEL_REJECTION_PATH_C.md",
+ "verdict": "TOO_SHORT"
+}
