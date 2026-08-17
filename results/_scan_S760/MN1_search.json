@@ -1,0 +1,1011 @@
+{
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_full": 188,
+ "n_search": 112,
+ "split_bar": 112,
+ "seed": 20260812,
+ "n_configs": 96,
+ "max_hold": 12,
+ "elapsed_s": 0.1,
+ "uncond": {
+  "1.0x1.0_long": {
+   "wr": null,
+   "n": 0
+  },
+  "1.0x1.0_short": {
+   "wr": null,
+   "n": 0
+  },
+  "1.0x1.5_long": {
+   "wr": null,
+   "n": 0
+  },
+  "1.0x1.5_short": {
+   "wr": null,
+   "n": 0
+  },
+  "1.5x1.0_long": {
+   "wr": null,
+   "n": 0
+  },
+  "1.5x1.0_short": {
+   "wr": null,
+   "n": 0
+  },
+  "1.5x1.5_long": {
+   "wr": null,
+   "n": 0
+  },
+  "1.5x1.5_short": {
+   "wr": null,
+   "n": 0
+  }
+ },
+ "best": {
+  "long": null,
+  "short": null
+ },
+ "rows": [
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 25,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 34,
+   "sp": 13,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.272,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.272,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.618,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 1.618,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 2.0,
+   "k": 1.0,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.0,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "long",
+   "n": 0,
+   "skip": true
+  },
+  {
+   "lp": 55,
+   "sp": 21,
+   "th": 2.0,
+   "k": 1.5,
+   "rr": 1.5,
+   "side": "short",
+   "n": 0,
+   "skip": true
+  }
+ ]
+}
