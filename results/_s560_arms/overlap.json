@@ -1,0 +1,26 @@
+{
+ "s560_m5": {
+  "n_entries": 407,
+  "n_days": 406
+ },
+ "s355": {
+  "n_signals": 210,
+  "fire_rate": 0.00019273587659030043
+ },
+ "momentary": {
+  "coincidences_pm1": 0,
+  "expected_by_chance": 0.24,
+  "p_over": 1.0
+ },
+ "daily": {
+  "s355_share_on_s560_days_pct": 16.67,
+  "chance_baseline_pct": 10.14
+ },
+ "filter_test": {
+  "s355_trades_on_s560_days": 22,
+  "wr_on": 68.18,
+  "s355_trades_off": 138,
+  "wr_off": 55.07,
+  "fisher_p": 0.3542
+ }
+}
