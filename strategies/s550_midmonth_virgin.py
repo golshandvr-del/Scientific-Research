@@ -103,6 +103,9 @@ def git_checkpoint(card):
         subprocess.run(['git', 'commit', '-m',
                         f'S550 checkpoint: {card} judged (frozen prereg 06a01087)'],
                        check=True)
+        # remote \u0645\u0645\u06a9\u0646 \u0627\u0633\u062a \u062a\u0648\u0633\u0637 \u062c\u0644\u0633\u0647\u0654 \u0645\u0648\u0627\u0632\u06cc \u062c\u0644\u0648 \u0627\u0641\u062a\u0627\u062f\u0647 \u0628\u0627\u0634\u062f \u2014 rebase \u067e\u06cc\u0634 \u0627\u0632 push
+        subprocess.run(['git', 'pull', '--rebase', 'origin', 'main'],
+                       check=False, timeout=90)
         subprocess.run(['git', 'push', 'origin', 'main'], check=True,
                        timeout=90)
         log(f'    [git] checkpoint {card} pushed')
@@ -110,13 +113,21 @@ def git_checkpoint(card):
         log(f'    [git] WARN checkpoint failed: {e} (فایل روی دیسک هست)')
 
 
+def to_dt64(t):
+    """لودر `time` را به ثانیهٔ epoch (int64) می‌دهد — تبدیلِ صریح، نه حدس.
+    ⚠️ BUG-EPOCH (S550، پیش از اولین حکم): `pd.DatetimeIndex(int64)` ثانیه را
+    **نانوثانیه** می‌پندارد ⇒ همهٔ تاریخ‌ها 1970-01-01 و dom همیشه 1 می‌شد.
+    smoke-test روی H12 این را پیش از هر عدد رسمی برهنه کرد."""
+    return t.astype('datetime64[s]').astype('datetime64[ns]')
+
+
 def slice_window(d, w):
     """برشِ پنجرهٔ بکر روی dict لودر — بدونِ کپیِ اضافه جز خودِ برش."""
     if w is None:
         return d
-    t = d['time']
-    lo = np.datetime64(w[0])
-    hi = np.datetime64(w[1])
+    t = to_dt64(d['time'])
+    lo = np.datetime64(w[0], 'ns')
+    hi = np.datetime64(w[1], 'ns')
     m = (t >= lo) & (t < hi)
     out = {k: (v[m] if isinstance(v, np.ndarray) and len(v) == len(t) else v)
            for k, v in d.items()}
@@ -126,7 +137,7 @@ def slice_window(d, w):
 
 def build_signal(d, df):
     """بازتولیدِ وفادارِ S312 با معناشناسیِ SESSION_OPEN (پیش‌ثبت §2)."""
-    dtidx = pd.DatetimeIndex(d['time'])
+    dtidx = pd.DatetimeIndex(to_dt64(d['time']))
     dom = dtidx.day.to_numpy()
     sess = fd.session_open_signal(d, hours=HOURS, mode='SESSION_OPEN')
     ema = ind.ema(df['close'], EMA_P).to_numpy()
@@ -186,7 +197,8 @@ def run_card(card):
     d = slice_window(d0, window)
     df = fd.as_dataframe(d)
     n = len(df)
-    span_y = (d['time'][-1] - d['time'][0]) / np.timedelta64(1, 'D') / 365.25
+    t64 = to_dt64(d['time'])
+    span_y = float((t64[-1] - t64[0]) / np.timedelta64(1, 'D')) / 365.25
     log(f'  src={src}  bars={n:,}  span={span_y:.2f}y  window={window}  '
         f'geom={sl}/{tp}/mh={mh}')
 
@@ -220,7 +232,7 @@ def run_card(card):
     null = build_null(df, valid, sl * pip, nL, mh, k_perm, rng)
 
     # --- تقسیمِ اکتشاف/خارج‌نمونه: صدکِ ۶۰٪ِ زمانِ ورود (درسِ BUG-OOS) ---
-    te = d['time'][tr['entry_bar'].to_numpy(int)].astype('datetime64[ns]')
+    te = t64[tr['entry_bar'].to_numpy(int)]
     te_ns = te.astype(np.int64)
     split_ns = int(np.quantile(te_ns, SPLIT_FRAC))
     holdout = te_ns >= split_ns
@@ -230,7 +242,7 @@ def run_card(card):
     null_clean = {k: {kk: vv for kk, vv in v.items() if kk != 'uncond_pool'}
                   for k, v in null.items()}
     res = rqs2.compute_rqs2(tr, ASSET, sl_pip=float(sl), tp_pip=float(tp),
-                            bar_time=d['time'], close=df['close'].to_numpy(float),
+                            bar_time=t64, close=df['close'].to_numpy(float),
                             null=null_clean, n_trials=N_TRIALS,
                             holdout_mask=holdout, allow_overlap=False)
     log('')
