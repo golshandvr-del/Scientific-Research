@@ -1,0 +1,96 @@
+{
+ "card": "XAUUSD-M15",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+ "geometry": {
+  "sl_pip": 51.4,
+  "tp_pip": 102.8,
+  "max_hold": 55,
+  "rr": 2.0
+ },
+ "thr": 2.5,
+ "mode": "cont",
+ "windows": [
+  21,
+  55,
+  89
+ ],
+ "n_signals": 3138,
+ "split_bar": 181889,
+ "bars": 363778,
+ "verdict": "REJECT",
+ "rqs2_score": 5.3,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H10": false,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false
+ },
+ "failed_gates": [
+  "H1",
+  "H10",
+  "H3",
+  "H4",
+  "H5",
+  "H6",
+  "H7",
+  "H8",
+  "H9"
+ ],
+ "unknown_gates": [],
+ "null": {
+  "long": {
+   "uncond_wr": 38.87,
+   "perm_mean": 38.52485115062207,
+   "perm_sd": 1.2717535309999684,
+   "perm_max": 42.25352112676056,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 38.7,
+   "perm_mean": 38.02237482736724,
+   "perm_sd": 1.223008120453443,
+   "perm_max": 40.91218515997277,
+   "perm_k": 500
+  }
+ },
+ "n_trials": 2100,
+ "z_luck_bound": 3.46,
+ "z_margin": -1.905,
+ "metrics": {
+  "n_trades": 2762,
+  "n_wins": 1111,
+  "win_rate": 40.22,
+  "expectancy_pip": 0.7097,
+  "cost_pip": 3.3,
+  "profit_factor": 1.005,
+  "net_profit": 1506.3,
+  "max_dd_pct": 66.22,
+  "max_consec_losses": 22,
+  "mcl_allowed": 22,
+  "recovery_factor": 0.07,
+  "skill_lift_pp": 1.44,
+  "skill_z": 1.16,
+  "null_ref_wr": 38.78,
+  "breakeven_wr_cost": 35.47,
+  "rr": 2.0,
+  "top_win_share": 0.0012,
+  "z_obs": 1.556,
+  "z_luck_bound": 3.46,
+  "z_margin": -1.905,
+  "skill_p_perm": 0.123578,
+  "p_emp": 0.06222,
+  "p_adj_bonferroni": 1.0,
+  "perm_k": 500,
+  "perm_max": 41.56
+ },
+ "notes": [
+  "PF=1.005<1.3"
+ ]
+}
