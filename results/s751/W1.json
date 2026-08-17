@@ -1,0 +1,73 @@
+{
+ "card": "S751-XAUUSD-W1",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "bars": 813,
+ "frozen": {
+  "family_gamma": [
+   0.382,
+   0.5,
+   0.618
+  ],
+  "thr_hi": 80.0,
+  "thr_lo": 20.0,
+  "sl_k": 1.45,
+  "atr_p": 89,
+  "rr": 1.618,
+  "hold": 55
+ },
+ "protocol": "C_holdout_prereg_3985897b",
+ "discovery": [
+  {
+   "g": 0.382,
+   "side": "long",
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  },
+  {
+   "g": 0.382,
+   "side": "short",
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  },
+  {
+   "g": 0.5,
+   "side": "long",
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  },
+  {
+   "g": 0.5,
+   "side": "short",
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  },
+  {
+   "g": 0.618,
+   "side": "long",
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  },
+  {
+   "g": 0.618,
+   "side": "short",
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  }
+ ],
+ "verdict": "UNPROVEN",
+ "note": "discovery: no config with n>=30"
+}
