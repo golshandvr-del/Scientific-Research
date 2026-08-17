@@ -228,6 +228,13 @@ def run_c_arm(tf: str, cfg: dict, ratio_sl: float, ratio_tp: float):
     print(f'  medianATR14={med:.1f} pip ⇒ SL={sl}/TP={tp} (نسبت‌های منجمدِ M5)')
     mask = build_mask(df, reg, ccfg)
     print(f'  سیگنال={int(mask.sum())}')
+    # صرفه‌جویی حافظه (M1=۵M کندل در سندباکسِ ~1GB): رژیم دیگر لازم نیست
+    # و موتور فقط open/high/low/close/time می‌خواهد. تغییرِ زیرساختی، نه روشی.
+    import gc
+    del reg
+    keep = [c for c in ('time', 'open', 'high', 'low', 'close') if c in df.columns]
+    df = df[keep].copy()
+    gc.collect()
     out = adjudicate(df, mask, f'C-{tf}', ccfg, f'XAUUSD-{tf}',
                      dict(prov, geometry_rule=f'SL={ratio_sl:.4f}·medATR '
                           f'TP={ratio_tp:.4f}·medATR، medATR={med:.1f}pip'))
