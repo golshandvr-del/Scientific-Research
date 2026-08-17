@@ -218,23 +218,30 @@ def median_atr_pip(df) -> float:
 def run_c_arm(tf: str, cfg: dict, ratio_sl: float, ratio_tp: float):
     """بازوی C — پیش‌ثبت §۴: هندسه = مضرب‌های M5 × medianATR14(TF)ِ همان TF.
     منطق و آستانه‌های رژیم ثابت. هیچ جاروبی. یک آزمون به‌ازای هر TF."""
+    import gc
     print(f'\n  ── C[{tf}] ──')
     df, prov = load_full(tf)
-    reg = regime_arrays(df, tf)
     med = median_atr_pip(df)
     sl = round(ratio_sl * med, 1)
     tp = round(ratio_tp * med, 1)
     ccfg = dict(cfg, sl=sl, tp=tp)
     print(f'  medianATR14={med:.1f} pip ⇒ SL={sl}/TP={tp} (نسبت‌های منجمدِ M5)')
-    mask = build_mask(df, reg, ccfg)
-    print(f'  سیگنال={int(mask.sum())}')
-    # صرفه‌جویی حافظه (M1=۵M کندل در سندباکسِ ~1GB): رژیم دیگر لازم نیست
-    # و موتور فقط open/high/low/close/time می‌خواهد. تغییرِ زیرساختی، نه روشی.
-    import gc
+    # رژیمِ M1 پنج میلیون float64 است (۲×40MB) — بلافاصله به بولینِ ۵MB
+    # فروکاسته و آزاد می‌شود؛ سپس ستون‌های زائد (dt/volume) حذف می‌شوند تا
+    # پیکِ ساختِ سیگنال در سندباکسِ ~1GB جا شود. تغییرِ زیرساختی، نه روشی —
+    # gate دقیقاً همان (hurst<h)&(kurt<k) منجمد است.
+    reg = regime_arrays(df, tf)
+    gate = (reg['hurst'] < ccfg['h']) & (reg['kurt'] < ccfg['k'])
     del reg
     keep = [c for c in ('time', 'open', 'high', 'low', 'close') if c in df.columns]
-    df = df[keep].copy()
+    df = df[keep]
     gc.collect()
+    base = s334.build_short_mr(df, z_win=ccfg['z_win'], z_thr=ccfg['z_thr'],
+                               rsi_thr=ccfg['rsi_thr'])
+    gc.collect()
+    mask = base & gate
+    del base, gate
+    print(f'  سیگنال={int(mask.sum())}')
     out = adjudicate(df, mask, f'C-{tf}', ccfg, f'XAUUSD-{tf}',
                      dict(prov, geometry_rule=f'SL={ratio_sl:.4f}·medATR '
                           f'TP={ratio_tp:.4f}·medATR، medATR={med:.1f}pip'))
