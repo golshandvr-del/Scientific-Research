@@ -159,8 +159,11 @@ def scan_search(tf: str):
                 sl_pip=sl, tp_pip=tp, asset=ASSET,
                 max_hold=mh, allow_overlap=False)
             key = f"{k}x{rr}_{side}"
-            uncond[key] = dict(wr=float((tr['pnl_pip'] > 0).mean() * 100),
-                               n=int(len(tr)))
+            if tr is None or len(tr) == 0 or 'pnl_pip' not in tr:
+                uncond[key] = dict(wr=None, n=0)
+            else:
+                uncond[key] = dict(wr=float((tr['pnl_pip'] > 0).mean() * 100),
+                                   n=int(len(tr)))
 
     # رتبه‌بندی به معیارِ پیش‌ثبت: lift×sqrt(n) در برابرِ مبنای بی‌قیدِ هم‌هندسه
     best = {'long': None, 'short': None}
@@ -168,6 +171,8 @@ def scan_search(tf: str):
         if r.get('skip') or r['n'] < 30:
             continue
         base = uncond[f"{r['k']}x{r['rr']}_{r['side']}"]['wr']
+        if base is None:
+            continue
         lift = r['wr'] - base
         score = lift * np.sqrt(r['n'])
         r['lift_pp'] = round(lift, 3)
