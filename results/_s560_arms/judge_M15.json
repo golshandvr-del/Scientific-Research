@@ -1,0 +1,76 @@
+{
+ "tf": "M15",
+ "arm": "V-TIME",
+ "geometry": {
+  "sl_pip": 50.9,
+  "tp_pip": 50.9,
+  "max_hold": 1,
+  "rr": 1.0,
+  "rule": "SL=TP=q98(|MFE|∪|MAE|) [first half] — time exit"
+ },
+ "cfg": {
+  "q": 70,
+  "sw": true,
+  "hold": 1
+ },
+ "n_signals": 603,
+ "verdict": "REJECT",
+ "rqs2_score": 35.0,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": true,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": false,
+  "H9": true
+ },
+ "failed_gates": [
+  "H8"
+ ],
+ "unknown_gates": [],
+ "null": {
+  "uncond_wr": 35.556,
+  "perm_mean": 35.42255389718077,
+  "perm_sd": 1.9337270516295868,
+  "perm_max": 40.79601990049751,
+  "perm_k": 500
+ },
+ "n_trials": 400,
+ "n_required_for_h3": 21.9,
+ "split_bar": 180578,
+ "split_utc": "2018-10-20",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+ "metrics": {
+  "n_trades": 603,
+  "n_wins": 405,
+  "win_rate": 67.16,
+  "expectancy_pip": 5.7652,
+  "cost_pip": 3.3,
+  "profit_factor": 1.797,
+  "net_profit": 9650.2,
+  "max_dd_pct": 12.4,
+  "max_consec_losses": 10,
+  "mcl_allowed": 9,
+  "recovery_factor": 3.58,
+  "skill_lift_pp": 31.61,
+  "skill_z": 16.21,
+  "null_ref_wr": 35.56,
+  "breakeven_wr_cost": 53.24,
+  "rr": 1.0,
+  "top_win_share": 0.0067,
+  "z_obs": 16.215,
+  "z_luck_bound": 2.985,
+  "z_margin": 13.23,
+  "skill_p_perm": 0.0,
+  "p_emp": 0.0,
+  "p_adj_bonferroni": 0.0,
+  "perm_k": 500,
+  "perm_max": 40.8
+ },
+ "notes": []
+}
