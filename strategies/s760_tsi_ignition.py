@@ -83,12 +83,15 @@ def cross_signals(tsi: np.ndarray, thr_hi: float, thr_lo: float):
 
 
 def scan_search(tf: str):
+    import gc
     t_all = time.time()
     d = fd.load_fast(ASSET, tf)
     df = fd.as_dataframe(d)
     n = len(df)
     split = int(n * SPLIT_FRAC)
     dfs = df.iloc[:split].reset_index(drop=True)
+    del df, d['open'], d['high'], d['low'], d['volume']
+    gc.collect()   # M1: آزادسازیِ نیمهٔ hold-out از RAM — دیوارِ ۱GB سندباکس
     mh = MAX_HOLD[tf]
     atr = atr_pip(dfs, ASSET)
     close_s = pd.Series(dfs['close'].values)
