@@ -1,0 +1,130 @@
+{
+ "strategy": "S743_RoundLevelRejection",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "bars": 813,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "span_years": 15.58,
+ "split_bar": 487,
+ "n_trials": 24,
+ "k_perm": 500,
+ "prereg": "results/S743_PREREG_ROUND_LEVEL_REJECTION_PATH_C.md",
+ "grid_summary": {
+  "tested": 24,
+  "with_trades": 1,
+  "eligible": 1
+ },
+ "grid_top5": [
+  {
+   "step": 50.0,
+   "rej_k": 0.25,
+   "k_sl": 1.5,
+   "rr": 1.0,
+   "n": 31,
+   "wr": 54.84,
+   "pf": 1.328,
+   "z": 0.507,
+   "exp": 81.96,
+   "sl_med": 576.07,
+   "tp_med": 576.07,
+   "be": 50.29,
+   "lift": 4.55
+  }
+ ],
+ "winner_params": {
+  "step": 50.0,
+  "rej_k": 0.25,
+  "k_sl": 1.5,
+  "rr": 1.0
+ },
+ "winner_disc": {
+  "n": 31,
+  "wr": 54.84,
+  "pf": 1.328,
+  "exp": 81.96,
+  "lift": 4.55,
+  "z": 0.507,
+  "sl_med": 576.07,
+  "tp_med": 576.07
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 57.89473684210527,
+   "perm_mean": 56.067521136260844,
+   "perm_sd": 8.251096642154215,
+   "perm_max": 84.0,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 40.78947368421053,
+   "perm_mean": 43.774123963710714,
+   "perm_sd": 10.386801268864629,
+   "perm_max": 72.22222222222221,
+   "perm_k": 500
+  }
+ },
+ "null_pool": "full_valid=697",
+ "verdict": "REJECT",
+ "rqs2_score": 20.6,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": false,
+  "H9": true,
+  "H10": true
+ },
+ "metrics": {
+  "n_trades": 54,
+  "win_rate": 57.41,
+  "net_profit": 863.0,
+  "profit_factor": 1.394,
+  "max_dd_pct": 3.74,
+  "max_consec_losses": 3,
+  "mcl_allowed": 9,
+  "n_wins": 31,
+  "top_win_share": 0.0446,
+  "recovery_factor": 2.07,
+  "expectancy_pip": 108.7824,
+  "expectancy_at_2x_cost": 105.4824,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 699.505,
+  "tp_pip": 699.505,
+  "rr": 1.0,
+  "breakeven_wr_cost": 50.24,
+  "wr_excess_cost": 7.17,
+  "null_ref_wr": 51.88,
+  "skill_lift_pp": 5.53,
+  "skill_z": 0.6,
+  "skill_p_perm": 0.273143,
+  "perm_max": 78.98,
+  "perm_k": 500,
+  "p_emp": 0.249786,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 0.813,
+  "z_luck_bound": 1.98,
+  "z_margin": -1.167,
+  "n_trials": 24,
+  "cal_positive": 3,
+  "cal_occupied": 4,
+  "max_concurrency": 1,
+  "n_required_h3": 780.3
+ },
+ "full": {
+  "n": 54,
+  "n_long": 31,
+  "n_short": 23,
+  "wr": 57.41,
+  "exp_pip": 108.782,
+  "pf": 1.384,
+  "sl_med": 699.5,
+  "tp_med": 699.5
+ },
+ "elapsed_s": 2.8
+}
