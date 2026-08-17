@@ -1,0 +1,84 @@
+{
+ "prereg": "results/S531_PREREG_S355_RegimeGate_PathC.md",
+ "locked": {
+  "winner": {
+   "filter": "r2_34",
+   "thr": 0.5,
+   "n": 40,
+   "removal": 0.2857,
+   "wr": 57.49999999999999,
+   "net_pip": 526.4999999999991,
+   "t": 1.1351,
+   "eligible": true
+  },
+  "locked_at": "2026-08-17 12:41:35",
+  "split_bar": 544787,
+  "seed": 20260814,
+  "n_trials": 20
+ },
+ "rule": "S355 & r2_34 >= 0.5",
+ "data": {
+  "path": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+  "rows": 1089574
+ },
+ "geometry": {
+  "sl": 120.0,
+  "tp": 120.0,
+  "mh": 96
+ },
+ "n_signals": 131,
+ "verdict": "REJECT",
+ "rqs2_score": 19.5,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": false,
+  "H7": true,
+  "H8": false,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3",
+  "H5",
+  "H6",
+  "H8"
+ ],
+ "null": {
+  "uncond_wr": 49.074,
+  "perm_mean": 48.890465071894354,
+  "perm_sd": 4.339276263880376,
+  "perm_max": 59.541984732824424,
+  "perm_k": 500
+ },
+ "n_trials": 20,
+ "seed": 20260814,
+ "split_bar": 544787,
+ "metrics": {
+  "n_trades": 97,
+  "n_wins": 56,
+  "win_rate": 57.73,
+  "expectancy_pip": 11.5866,
+  "profit_factor": 1.425,
+  "net_profit": 977.5,
+  "max_dd_pct": 6.22,
+  "max_consec_losses": 6,
+  "recovery_factor": 1.43,
+  "skill_lift_pp": 8.66,
+  "skill_z": 1.71,
+  "null_ref_wr": 49.07,
+  "breakeven_wr_cost": 51.38,
+  "rr": 1.0,
+  "top_win_share": 0.0312,
+  "skill_p_perm": 0.044031,
+  "p_emp": 0.05421,
+  "p_adj_bonferroni": 1.0,
+  "perm_k": 500,
+  "perm_max": 59.54
+ },
+ "notes": []
+}
