@@ -1,0 +1,22 @@
+========================================================================
+S891 Reflexive Regime · XAUUSD-M10 · path C (prereg 4ae94d8d)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_M10.csv  bars=545488  split=381841
+medATR=1.2818  SL=19.23pip  TP=28.84pip  BE=46.87%
+   q0.72·Ls21·follow: n=  8095  WR= 40.30%  net=  -26093.4  score= 14.203
+     q0.72·Ls21·fade: n=  8096  WR= 39.19%  net=  -29677.2  score=  9.515
+   q0.72·Ls55·follow: n=  8101  WR= 40.25%  net=  -25744.7  score= 14.510
+     q0.72·Ls55·fade: n=  8092  WR= 39.00%  net=  -30896.0  score=  8.105
+   q0.86·Ls21·follow: n=  5094  WR= 39.26%  net=  -18797.2  score= 20.465
+     q0.86·Ls21·fade: n=  5061  WR= 40.17%  net=  -16485.5  score= 23.684
+   q0.86·Ls55·follow: n=  5078  WR= 40.00%  net=  -16862.6  score= 23.133
+     q0.86·Ls55·fade: n=  5068  WR= 39.50%  net=  -18252.5  score= 21.250
+
+LOCKED: q=0.86 thr=0.57042 Ls=21 fade=True  IS: n=5061 WR=40.17%
+
+FULL: n=8178  WR=39.29%  net=-30006.0pip
+OOS: n=3117  WR=37.856913699069615
+VERDICT: REJECT  score=0.0
+gates: {'H0': False, 'H1': False, 'H2': False, 'H3': False, 'H4': False, 'H5': False, 'H6': False, 'H7': False, 'H8': False, 'H9': False, 'H10': False}
+notes: ['PF=0.791<1.3']
+saved → results/_s891/rqs2_XAUUSD-M10.json
