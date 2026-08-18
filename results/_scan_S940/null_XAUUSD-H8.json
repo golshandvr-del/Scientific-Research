@@ -1,0 +1,16 @@
+{
+  "long": {
+    "uncond_wr": 53.66311834690044,
+    "perm_mean": 53.7695652173913,
+    "perm_sd": 4.689114116103418,
+    "perm_max": 67.82608695652173,
+    "perm_k": 1000
+  },
+  "short": {
+    "uncond_wr": NaN,
+    "perm_mean": NaN,
+    "perm_sd": NaN,
+    "perm_max": NaN,
+    "perm_k": 0
+  }
+}
