@@ -1,0 +1,14 @@
+{
+ "strategy": "S423_QuietTrend",
+ "asset": "XAUUSD",
+ "data": "data/XAUUSD_H1.csv",
+ "W": 5,
+ "qlow": 0.3,
+ "m": 0.0,
+ "hold": 5,
+ "direction": "both_symmetric",
+ "bracket_pip": 20000.0,
+ "n_trials": 8,
+ "split_utc": "2020-01-01 00:00:00",
+ "prereg": "results/S423_PREREGISTRATION_QuietTrend.md"
+}
