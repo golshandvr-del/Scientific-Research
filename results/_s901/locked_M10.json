@@ -1,0 +1,17 @@
+{
+  "tf": "M10",
+  "split_bar": 327292,
+  "n_bars": 545488,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M10.csv",
+  "n_eff_local": 48,
+  "n_trials_reported": 144,
+  "criterion": "wr+0.001*net",
+  "min_trades": 60,
+  "best_key": "L34_q0.55_k25.0_rr1.5_h233",
+  "best": {
+    "n": 424,
+    "wr": 47.642,
+    "net": 781.6
+  },
+  "score": 48.4236
+}
