@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S941 EhlersExtremumTurn :: XAUUSD_M20  bars=272,979  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_M20.csv  (2011-01-03 00:00:00 → 2026-08-07 23:40:00)
+    geom: SL=33.30pip  TP=49.94pip  rr=1.5
+    family events: long=25,323  short=25,794
+    trades=19,583 (L=9,836 S=9,747)  wr=38.21%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=38.63% n=29603
+      uncond long stride=7: wr=39.15% n=20426
+      uncond long stride=13: wr=39.31% n=14362
+      null long  uncond=39.31207352736388 perm_mean=39.12023772418983 sd=0.5029255441810861 k=1000
+      uncond short stride=3: wr=38.40% n=29703
+      uncond short stride=7: wr=38.49% n=20405
+      uncond short stride=13: wr=38.64% n=14380
+      null short uncond=38.63699582753825 perm_mean=39.15550314310707 sd=0.5042726367403073 k=1000
+
+S941_EhlersExtremumTurn_XAUUSD_M20 | REJECT     RQS2=  0.0 | n=19583 WR=38.21% PF=0.97 lift=  -1.03pp z=-2.0 | H0:✗ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
