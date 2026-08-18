@@ -96,7 +96,7 @@ def crsi_fast(close: np.ndarray, rsiP=3, streakP=2, rankP=100) -> np.ndarray:
     from numpy.lib.stride_tricks import sliding_window_view
     if n > rankP:
         # چانک‌به‌چانک — همان دلیلِ hurst_fast (پرهیز از OOMِ کلاسِ S850)
-        chunk = 200_000
+        chunk = 50_000
         for lo in range(rankP, n, chunk):
             hi = min(lo + chunk, n)
             W = sliding_window_view(ret[lo - rankP:hi - 1], rankP)  # [i-rankP, i)
@@ -107,12 +107,13 @@ def crsi_fast(close: np.ndarray, rsiP=3, streakP=2, rankP=100) -> np.ndarray:
     return (r + sr + rank) / 3.0
 
 
-def hurst_fast(close: np.ndarray, p=64, chunk=200_000) -> np.ndarray:
+def hurst_fast(close: np.ndarray, p=64, chunk=50_000) -> np.ndarray:
     """نمای هرست R/S — عینِ بانک، برداری‌شده **چانک‌به‌چانک**.
 
     چرا چانک: روی M1 (۵M کندل) ماتریسِ کاملِ n×p چند گیگابایت می‌شود؛
-    S850 دقیقاً با همین کلاسِ خطا OOM شد (commit d77b682b). سقفِ حافظهٔ
-    هر چانک: 200k×64×8B ≈ 100MB × چند بافر — امن.
+    S850 دقیقاً با همین کلاسِ خطا OOM شد (commit d77b682b). با chunk=50k
+    هر بافر ≈ 25MB و با ۴ بافرِ هم‌زمان ≈ 100MB — امن روی سندباکسِ ~1GB
+    (چانکِ 200k با ~400MB بافر + ~360MB داده، خودِ همین نشست OOM شد).
     """
     n = len(close)
     ret = np.zeros(n)
@@ -231,20 +232,31 @@ def measured_null(df, n_long, n_short, sl_pip, tp_pip, hold, k=K_PERM, seed=SEED
     return out
 
 
-def prep(tf):
+def prep(tf, lo=None, hi=None):
+    """بارگذاریِ کم-حافظه: برشِ آرایه‌ها **پیش از** ساختِ DataFrame و با
+    copy=False — درسِ مستندِ گامِ ۴۸ (`as_dataframe`): کپیِ دوم روی M1
+    سندباکس را می‌کُشد (دوبار Killed در تاریخِ پروژه + یک‌بار در همین نشست).
+    """
     d = fd.load_fast('XAUUSD', tf)
-    df = fd.as_dataframe(d)
-    return d, df
+    n_all = int(d['n_bars']) if 'n_bars' in d else len(d['close'])
+    sl_ = slice(lo, hi)
+    df = pd.DataFrame({k: d[k][sl_] for k in
+                       ('time', 'open', 'high', 'low', 'close', 'volume')},
+                      copy=False)
+    meta = dict(src=d['src'], n_all=n_all)
+    # آرایه‌های کاملِ dict را رها کن تا GC آزاد کند (فقط برش‌ها زنده می‌مانند)
+    return meta, df
 
 
 def discover(tf):
     """فاز ۱ — جست‌وجوی شبکهٔ ۴۸تایی فقط روی نیمهٔ اول."""
     os.makedirs(OUT, exist_ok=True)
-    d, df_all = prep(tf)
-    n_all = len(df_all)
+    d, df = prep(tf)
+    n_all = d['n_all']
     half = n_all // 2
-    df = df_all.iloc[:half].reset_index(drop=True)
-    c = df['close'].to_numpy(float)
+    df = df.iloc[:half]           # view — بدونِ کپی
+    c = np.ascontiguousarray(df['close'].to_numpy(float))
+    import gc; gc.collect()
     t0 = time.time()
     C = crsi_fast(c)
     H = hurst_fast(c)
@@ -253,7 +265,7 @@ def discover(tf):
     print(f'[{tf}] bars_all={n_all} half={half} src={d["src"]} '
           f'atr{ATR_P}_med={atr_med:.1f}pip  ind={time.time()-t0:.0f}s', flush=True)
 
-    spread = se.ASSETS['XAUUSD']['spread']
+    spread = se.ASSETS['XAUUSD']['spread_pip']
     results = []
     for thr in GRID_THR:
         for g in GRID_G:
@@ -316,8 +328,8 @@ def final(tf):
         with open(guard) as f:
             return json.load(f)
 
-    d, df = prep(tf)
-    n_all = len(df)
+    d, df = prep(tf)               # سریِ کامل — اندیکاتورها تاریخچه می‌خواهند
+    n_all = d['n_all']
     half = n_all // 2
     c = df['close'].to_numpy(float)
     C = crsi_fast(c)
