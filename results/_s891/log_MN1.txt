@@ -1,0 +1,7 @@
+========================================================================
+S891 Reflexive Regime · XAUUSD-MN1 · path C (prereg 4ae94d8d)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv  bars=188  split=131
+medATR=91.8374  SL=1377.56pip  TP=2066.34pip  BE=40.10%
+saved → results/_s891/rqs2_XAUUSD-MN1.json
+DISCOVERY EMPTY → INCOMPLETE
