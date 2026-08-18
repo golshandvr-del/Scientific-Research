@@ -1,0 +1,45 @@
+{
+ "s950": {
+  "n": 224
+ },
+ "vs": {
+  "S382_H4": {
+   "n_other": 869,
+   "concur_pct": 53.57,
+   "concur_hits": 120,
+   "jac_day": 4.82
+  },
+  "S344_M15": {
+   "n_other": 92,
+   "concur_pct": 3.12,
+   "concur_hits": 7,
+   "jac_day": 0.98
+  },
+  "S356_H1": {
+   "n_other": 117,
+   "concur_pct": 6.25,
+   "concur_hits": 14,
+   "jac_day": 3.1
+  },
+  "S312_M30": {
+   "n_other": 297,
+   "concur_pct": 13.39,
+   "concur_hits": 30,
+   "jac_day": 0.0
+  },
+  "S355_M5": {
+   "n_other": 160,
+   "concur_pct": 8.93,
+   "concur_hits": 20,
+   "jac_day": 3.9
+  }
+ },
+ "overlap_as_filter": {
+  "n_overlap": 133,
+  "n_total": 224,
+  "wr_overlap": 60.9,
+  "wr_nonoverlap": 61.54,
+  "net_pip_overlap": 6877.5,
+  "net_pip_nonoverlap": 2378.1
+ }
+}
