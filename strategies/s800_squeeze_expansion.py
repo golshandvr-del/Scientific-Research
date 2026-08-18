@@ -59,16 +59,23 @@ N_FAMILY  = (len(DONCH_P) * len(SQZ_Q) * len(SL_K)
              * len(RR) * len(HOLD) * len(FILTERS))  # = 972
 
 
-def load(tf):
+def load(tf, hi=None):
+    """بارگذاری کم‌حافظه: برش روی آرایهٔ numpy **پیش از** ساخت DataFrame،
+    سپس DataFrame با copy=False (ارجاع، نه کپی) — درس گام ۴۸ رپو."""
     d = fd.load_fast(ASSET, tf)
-    df = fd.as_dataframe(d)
-    # صرفه‌جویی حافظه (سندباکس ~1GB): فقط ستون‌های لازم، float32
-    keep = ['time', 'open', 'high', 'low', 'close']
-    df = df[[c for c in keep if c in df.columns]].copy()
+    n_all = len(d['close'])
+    hi = n_all if hi is None else min(hi, n_all)
+    cols = {}
     for c in ('open', 'high', 'low', 'close'):
-        df[c] = df[c].astype(np.float32)
+        cols[c] = np.ascontiguousarray(d[c][:hi], dtype=np.float32)
+    cols['time'] = np.ascontiguousarray(d['time'][:hi])
+    meta = dict(src=d['src'], n_all=n_all)
+    del d
     gc.collect()
-    return d, df
+    df = pd.DataFrame(cols, copy=False)
+    del cols
+    gc.collect()
+    return meta, df
 
 
 def ind_path(tf, name):
@@ -220,13 +227,23 @@ def build_null_barrier(df, ls, ss, sl, tp, hold, K=K_PERM, seed=SEED):
 
 def phase_explore(tf):
     os.makedirs(OUT, exist_ok=True)
-    d, df = load(tf)
-    n = len(df)
+    meta_probe = fd.load_fast(ASSET, tf)
+    n = len(meta_probe['close'])
+    src = meta_probe['src']
+    del meta_probe
+    gc.collect()
     split = n // 2
     cost = se.ASSETS[ASSET]['spread_pip']
-    print(f"[S800/{tf}] explore  src={d['src']}  bars={n}  split={split}",
+    print(f"[S800/{tf}] explore  src={src}  bars={n}  split={split}",
           flush=True)
+    # مسیر C فقط نیمهٔ اول را می‌کاود ⇒ فقط نیمهٔ اول بارگذاری می‌شود (ضد OOM)
+    meta, df = load(tf, hi=split)
     base = base_arrays(df, tf=tf)
+    # آرایه‌های کش‌شده کامل‌اند — به طول نیمهٔ اول برش بزن
+    for k in ('sl_pip', 'sqz', 'r2', 'hurst'):
+        if len(base[k]) > split:
+            base[k] = np.ascontiguousarray(base[k][:split])
+    gc.collect()
     # کشِ سیگنال‌های دانچیان (bool — ارزان)
     donch_cache = {p: donch_signals(df, p) for p in DONCH_P}
     gc.collect()
@@ -241,7 +258,7 @@ def phase_explore(tf):
                         for hold in HOLD:
                             cfg = dict(p=p, q=q, filter=filt, k=k, rr=rr,
                                        hold=hold)
-                            tr, *_ = run_cfg(df, base, cfg, lo=0, hi=split,
+                            tr, *_ = run_cfg(df, base, cfg, lo=0, hi=None,
                                              donch_cache=donch_cache)
                             s = summarize(tr, cost)
                             done += 1
@@ -264,7 +281,7 @@ def phase_explore(tf):
     rows.sort(key=lambda r: -r['score'])
     with open(f'{OUT}/{tf}_explore.json', 'w') as f:
         json.dump(dict(tf=tf, done=done, split=split, bars=n,
-                       src=d['src'], rows=rows[:50]), f, indent=1)
+                       src=src, rows=rows[:50]), f, indent=1)
     if not rows:
         print(f"[S800/{tf}] هیچ ترکیب معتبری (n≥30, exp>0) روی نیمهٔ اول "
               f"یافت نشد ⇒ UNPROVEN در این TF", flush=True)
@@ -274,9 +291,9 @@ def phase_explore(tf):
           f"wr={best['wr']:.1f}  lift_be={best['lift_be']:.2f}pp  "
           f"score={best['score']:.1f}", flush=True)
 
-    # --- سنجش توان با نول اندازه‌گیری‌شده (فقط نیمهٔ اول) ---
+    # --- سنجش توان با نول اندازه‌گیری‌شده (فقط نیمهٔ اول — df همان نیمه است) ---
     cfg = best['cfg']
-    tr, ls, ss, sl, tp = run_cfg(df, base, cfg, lo=0, hi=split,
+    tr, ls, ss, sl, tp = run_cfg(df, base, cfg, lo=0, hi=None,
                                  donch_cache=donch_cache)
     null = build_null_barrier(df, ls, ss, sl, tp, cfg['hold'])
     if null is None:
@@ -289,7 +306,7 @@ def phase_explore(tf):
     ok = bool(power >= POWER_MIN)
     locked = dict(tf=tf, cfg=cfg, explore=dict(**s), null_explore=null,
                   lift_vs_null=lift, power=power, power_ok=ok,
-                  split=split, bars=n, src=d['src'], seed=SEED)
+                  split=split, bars=n, src=src, seed=SEED)
     with open(f'{OUT}/{tf}_locked.json', 'w') as f:
         json.dump(locked, f, indent=1)
     print(f"[S800/{tf}] lift(null)={lift:.2f}pp  n={s['n']}  "
@@ -308,7 +325,7 @@ def phase_judge(tf):
         print(f"[S800/{tf}] پیش‌شرط توان برآورده نشده — طبق پیش‌ثبت judge "
               f"اجرا نمی‌شود.", flush=True)
         return
-    d, df = load(tf)
+    meta, df = load(tf)
     base = base_arrays(df, tf=tf)
     cfg = locked['cfg']
     split = locked['split']
@@ -323,7 +340,7 @@ def phase_judge(tf):
                           bar_time=df['time'].values, null=null,
                           n_trials=N_TRIALS_JUDGE, split_bar=split,
                           close=df['close'].values)
-    out = dict(tf=tf, cfg=cfg, src=d['src'], bars=len(df), split=split,
+    out = dict(tf=tf, cfg=cfg, src=meta['src'], bars=len(df), split=split,
                n=s['n'], wr=s['wr'], exp_pip=s['exp_pip'], pf=s['pf'],
                sl_med=sl_med, tp_med=tp_med,
                verdict=r['verdict'], score=r['rqs2_score'],
