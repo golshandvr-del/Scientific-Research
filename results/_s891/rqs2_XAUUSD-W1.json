@@ -1,0 +1,6 @@
+{
+ "card": "XAUUSD-W1",
+ "verdict": "INCOMPLETE",
+ "reason": "discovery <40 trades all configs",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv"
+}

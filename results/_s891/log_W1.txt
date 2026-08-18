@@ -1,0 +1,7 @@
+========================================================================
+S891 Reflexive Regime · XAUUSD-W1 · path C (prereg 4ae94d8d)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_W1.csv  bars=813  split=569
+medATR=39.9719  SL=599.58pip  TP=899.37pip  BE=40.22%
+saved → results/_s891/rqs2_XAUUSD-W1.json
+DISCOVERY EMPTY → INCOMPLETE
