@@ -162,12 +162,27 @@ def build_null(df, ls, ss, sl_arr, tp_arr, mh, asset, seed=SEED, K=K_PERM):
     valid[warmup:n - mh - 1] = True
     z = np.zeros(n, bool)
 
-    tr_unc = se.simulate_trades(df, valid, z, sl_arr, tp_arr, asset,
+    # ⚠️ ضدِ OOM (کشفِ سومِ S961): بی‌قید با allow_overlap=True روی M1 یعنی
+    #   ~۵ میلیون معامله ⇒ چند GB ⇒ Killed. برآوردِ WRِ بی‌قید با نمونه‌ی
+    #   تصادفیِ seeded تا سقف UNC_CAP کندل، آماریِ همان چیز است (SE < 0.1pp
+    #   با 250k) و معناشناسیِ «هر کندلِ واجد» را تغییر نمی‌دهد — فقط
+    #   برآوردگرش کارا می‌شود. برای TFهای کوچک (زیرِ سقف) رفتار عیناً قبلی.
+    UNC_CAP = 250_000
+    rng = np.random.default_rng(seed)
+    vidx_all = np.flatnonzero(valid)
+    if len(vidx_all) > UNC_CAP:
+        unc_mask = np.zeros(n, bool)
+        unc_mask[rng.choice(vidx_all, size=UNC_CAP, replace=False)] = True
+    else:
+        unc_mask = valid
+    tr_unc = se.simulate_trades(df, unc_mask, z, sl_arr, tp_arr, asset,
                                 max_hold=mh, allow_overlap=True)
     wr_unc = _wr_of(tr_unc)
+    unc_n = 0 if tr_unc is None else int(len(tr_unc))
+    del tr_unc, unc_mask
+    gc.collect()
 
-    rng = np.random.default_rng(seed)
-    vidx = np.flatnonzero(valid)
+    vidx = vidx_all
     k = min(sig_n, len(vidx))
     perm_wrs = []
     for _ in range(K):
@@ -177,6 +192,7 @@ def build_null(df, ls, ss, sl_arr, tp_arr, mh, asset, seed=SEED, K=K_PERM):
         tr_p = se.simulate_trades(df, pm, z, sl_arr, tp_arr, asset,
                                   max_hold=mh, allow_overlap=False)
         w = _wr_of(tr_p)
+        del tr_p, pm
         if w is not None:
             perm_wrs.append(w)
     pa = np.array(perm_wrs, float)
@@ -187,12 +203,16 @@ def build_null(df, ls, ss, sl_arr, tp_arr, mh, asset, seed=SEED, K=K_PERM):
                 perm_k=int(pa.size))
     return {'long': dict(side), 'short': dict(side),
             '_meta': {'n_perm': int(pa.size), 'draw_size': int(k),
-                      'uncond_n': 0 if tr_unc is None else int(len(tr_unc))}}
+                      'uncond_n': unc_n}}
 
 
 def judge_tf(tf):
     t0 = time.time()
     d = fd.load_fast('XAUUSD', tf)
+    # ضدِ OOM (درسِ دومِ S961): آرایه‌های بلااستفاده‌ی کش (hour/minute/dow)
+    # روی M1 ده‌ها MB اند و این لایه به آن‌ها نیاز ندارد.
+    for _k in ('hour', 'minute', 'dow'):
+        d.pop(_k, None)
     df = _views_df(d)
     src = d['src']
     asset = 'XAUUSD'
