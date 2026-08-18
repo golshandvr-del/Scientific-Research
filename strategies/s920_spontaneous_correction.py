@@ -295,7 +295,10 @@ def discover(tf):
                   f'done {time.time()-t0:.0f}s', flush=True)
 
     results.sort(key=lambda r: r['score'], reverse=True)
-    best = results[0] if results else None
+    # شرطِ صریحِ پیش‌ثبت §۵.۲: «مشروط به WR > سربه‌سرِ هزینه‌دار».
+    # پیکربندیِ با edge منفی «بهترین» نیست — NO-SURVIVOR است.
+    survivors = [r for r in results if r['edge_pp'] > 0]
+    best = survivors[0] if survivors else None
     payload = dict(tf=tf, src=d['src'], n_all=n_all, half_idx=half,
                    atr_med_pip=atr_med, n_grid=N_GRID, n_trials=N_TRIALS,
                    grid_results=results[:60], best=best,
