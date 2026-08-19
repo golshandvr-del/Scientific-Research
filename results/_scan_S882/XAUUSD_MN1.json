@@ -1,0 +1,16 @@
+{
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_all": 188,
+ "half_idx": 94,
+ "atr89_median_pip": 986.4134831460675,
+ "sl_pip": 1578.3,
+ "quantile_levels": {
+  "qU_pct": 88.6,
+  "qL_pct": 76.4
+ },
+ "quantiles": {},
+ "configs": [],
+ "best": null,
+ "elapsed_s": 0.0
+}
