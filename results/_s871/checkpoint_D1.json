@@ -1,0 +1,10 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars": 4005,
+ "split_bar": 2002,
+ "max_hold": 1,
+ "n_day_anchors": 0,
+ "sl_median_pip": 348.5880375674285,
+ "verdict": "NO_EVENTS"
+}

@@ -1,0 +1,10 @@
+{
+ "tf": "H12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "bars": 7998,
+ "split_bar": 3999,
+ "max_hold": 2,
+ "n_day_anchors": 0,
+ "sl_median_pip": 228.0905604843718,
+ "verdict": "NO_EVENTS"
+}
