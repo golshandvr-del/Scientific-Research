@@ -1,0 +1,159 @@
+{
+ "card": "S752-XAUUSD-D1",
+ "asset": "XAUUSD",
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars": 4005,
+ "frozen": {
+  "family_P": [
+   21,
+   34,
+   55
+  ],
+  "sl_k": 1.45,
+  "atr_p": 89,
+  "rr": 1.618,
+  "hold": 55
+ },
+ "protocol": "C_holdout_prereg_S752",
+ "discovery": [
+  {
+   "P": 21,
+   "n": 36,
+   "wr": 33.33333333333333,
+   "net_pip": -977.9691754428918,
+   "crit": -0.4927064767743069
+  },
+  {
+   "P": 34,
+   "n": 30,
+   "wr": 63.33333333333333,
+   "net_pip": 5691.697018478144,
+   "crit": 3.0548676618980704
+  },
+  {
+   "P": 55,
+   "n": 18,
+   "wr": 16.666666666666664,
+   "net_pip": -2534.4567962457836,
+   "crit": -1000000000.0
+  }
+ ],
+ "winner": {
+  "P": 34,
+  "crit": 3.0548676618980704
+ },
+ "n_holdout_trades": 35,
+ "holdout_wr": 48.57,
+ "holdout_net_pip": 4820.8,
+ "med_sl_pip": 334.70624926062703,
+ "med_tp_pip": 541.5547113036946,
+ "inner_split": 3203,
+ "n_trials": 1,
+ "perm_k": 500,
+ "verdict": "REJECT",
+ "rqs2_score": 14.2,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": true,
+  "H10": false
+ },
+ "metrics": {
+  "n_trades": 35,
+  "win_rate": 48.57,
+  "net_profit": 880.8,
+  "profit_factor": 1.473,
+  "max_dd_pct": 3.71,
+  "max_consec_losses": 4,
+  "mcl_allowed": 11,
+  "n_wins": 17,
+  "top_win_share": 0.1253,
+  "recovery_factor": 2.15,
+  "expectancy_pip": 137.7382,
+  "expectancy_at_2x_cost": 134.4382,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 334.706,
+  "tp_pip": 541.555,
+  "rr": 1.618,
+  "breakeven_wr_cost": 38.57,
+  "wr_excess_cost": 10.0,
+  "null_ref_wr": 49.89,
+  "skill_lift_pp": -1.32,
+  "skill_z": -0.16,
+  "skill_p_perm": 0.561826,
+  "perm_max": 72.97,
+  "perm_k": 500,
+  "side_n": {
+   "long": 19,
+   "short": 16
+  },
+  "side_wr": {
+   "long": 73.68,
+   "short": 18.75
+  },
+  "side_lift_pp": {
+   "long": 23.8,
+   "short": -31.14
+  },
+  "prune_sides": [
+   "short"
+  ],
+  "p_emp": 0.626952,
+  "p_adj_bonferroni": 0.626952,
+  "z_obs": -0.156,
+  "z_luck_bound": 0.52,
+  "z_margin": -0.675,
+  "n_trials": 1,
+  "cal_nets": [
+   0.0,
+   0.0,
+   -20.5,
+   901.4
+  ],
+  "cal_counts": [
+   0,
+   0,
+   18,
+   17
+  ],
+  "cal_positive": 1,
+  "cal_occupied": 2,
+  "half_nets": [
+   0.0,
+   880.8
+  ],
+  "oos": {
+   "n": 14,
+   "wr": 57.14,
+   "pf": 1.884,
+   "net": 557.7,
+   "wr_req": 38.57
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 34,
+   "n_unjudgeable": 1,
+   "n_counter": 13,
+   "n_aligned": 21,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 30.77,
+   "exp_counter": -187.367,
+   "wr_aligned": 61.9,
+   "exp_aligned": 360.295,
+   "h10_substitute": "small-counter-sample-adverse"
+  },
+  "n_required_h3": null
+ },
+ "notes": [
+  "H10 FAIL (substitute): 13 counter-drift trades (<20) and their expectancy is negative (-187.367 pip) — the little adverse-regime evidence there is points against the edge."
+ ]
+}
