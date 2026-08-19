@@ -1,0 +1,46 @@
+{
+ "card": "XAUUSD-D1",
+ "tf": "D1",
+ "n": 87,
+ "wr": 64.37,
+ "ref_wr": 47.6772,
+ "lift": 16.6906,
+ "null": {
+  "long": {
+   "uncond_wr": 58.87445887445888,
+   "perm_mean": 59.68521280534369,
+   "perm_sd": 7.846357302590773,
+   "perm_max": 85.29411764705883,
+   "perm_k": 800
+  },
+  "short": {
+   "uncond_wr": 39.82683982683983,
+   "perm_mean": 39.200923054834725,
+   "perm_sd": 6.581970208505841,
+   "perm_max": 59.57446808510638,
+   "perm_k": 800
+  }
+ },
+ "n_long": 36,
+ "n_short": 51,
+ "sl_pip": 255.938946279143,
+ "tp_pip": 255.938946279143,
+ "hold": 21,
+ "winner": {
+  "z_thr": 2.618,
+  "mode": "follow",
+  "sl_k": 1.272,
+  "rr": 1.0,
+  "n": 42,
+  "wr": 59.52,
+  "exp": 26.7489,
+  "pf": 1.284,
+  "sl_med": 195.95,
+  "tp_med": 195.95,
+  "be": 51.68,
+  "passes_be": true
+ },
+ "data_src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "exp_pip": 66.20752101605198,
+ "bars": 4005
+}

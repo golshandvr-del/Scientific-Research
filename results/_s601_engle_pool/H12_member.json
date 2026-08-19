@@ -1,0 +1,46 @@
+{
+ "card": "XAUUSD-H12",
+ "tf": "H12",
+ "n": 450,
+ "wr": 55.11,
+ "ref_wr": 49.9036,
+ "lift": 5.2075,
+ "null": {
+  "long": {
+   "uncond_wr": 55.968468468468465,
+   "perm_mean": 56.212081832127936,
+   "perm_sd": 3.0564012453506,
+   "perm_max": 66.14583333333334,
+   "perm_k": 800
+  },
+  "short": {
+   "uncond_wr": 43.13063063063063,
+   "perm_mean": 43.249370355174015,
+   "perm_sd": 3.1307125732334464,
+   "perm_max": 51.955307262569825,
+   "perm_k": 800
+  }
+ },
+ "n_long": 231,
+ "n_short": 219,
+ "sl_pip": 190.71258318174569,
+ "tp_pip": 190.71258318174569,
+ "hold": 34,
+ "winner": {
+  "z_thr": 2.058,
+  "mode": "follow",
+  "sl_k": 1.272,
+  "rr": 1.0,
+  "n": 221,
+  "wr": 54.75,
+  "exp": 14.0674,
+  "pf": 1.184,
+  "sl_med": 152.13,
+  "tp_med": 152.13,
+  "be": 52.17,
+  "passes_be": true
+ },
+ "data_src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "exp_pip": 26.09977986550078,
+ "bars": 7998
+}
