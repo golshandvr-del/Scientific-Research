@@ -46,7 +46,8 @@ ATR_P = 100
 
 # max_hold منجمدِ per-TF: ≈۴ ساعتِ بازار روی TFهای دقیقه‌ای؛ ۶۴ کندل روی H1+
 MAX_HOLD = {
-    'M1': 240, 'M3': 80, 'M4': 60, 'M5': 48, 'M6': 40, 'M10': 24,
+    'M1': 240, 'M2': 120, 'M3': 80, 'M4': 60, 'M5': 48, 'M6': 40, 'M10': 24,
+    'H4': 64,
     'M12': 20, 'M15': 16, 'M20': 12, 'M30': 8,
     'H1': 64, 'H2': 64, 'H3': 64, 'H6': 64, 'H8': 64, 'H12': 64,
     'D1': 64, 'W1': 32, 'MN1': 12,
@@ -82,15 +83,46 @@ def cross_signals(tsi: np.ndarray, thr_hi: float, thr_lo: float):
     return np.nan_to_num(long_sig).astype(bool), np.nan_to_num(short_sig).astype(bool)
 
 
+RESAMPLE_SRC = {'M2': ('M1', 2), 'H4': ('H1', 4)}   # طبقِ راهنما: بازنمونه‌گیری
+
+
+def load_card(tf: str):
+    """کارت را می‌خواند؛ M2/H4 از منبعِ ریزتر بازنمونه‌گیری می‌شوند."""
+    if tf not in RESAMPLE_SRC:
+        d = fd.load_fast(ASSET, tf)
+        return d, fd.as_dataframe(d)
+    src_tf, k = RESAMPLE_SRC[tf]
+    d = fd.load_fast(ASSET, src_tf)
+    sec = 120 if tf == 'M2' else 14400
+    t = d['time'].astype(np.int64)
+    bucket = (t // sec) * sec
+    # کندل‌ها مرتب‌اند ⇒ مرزِ سطل‌ها با np.unique (سبک، بدونِ pandas resample)
+    uniq, first_idx = np.unique(bucket, return_index=True)
+    nb = len(uniq)
+    o = d['open']; h = d['high']; l = d['low']; c = d['close']; v = d['volume']
+    O = o[first_idx]
+    C = np.empty(nb); H = np.empty(nb); L = np.empty(nb); V = np.empty(nb)
+    ends = np.r_[first_idx[1:], len(t)]
+    H = np.maximum.reduceat(h, first_idx)
+    L = np.minimum.reduceat(l, first_idx)
+    V = np.add.reduceat(v.astype(np.float64), first_idx)
+    C = c[ends - 1]
+    out = pd.DataFrame(dict(time=uniq, open=O, high=H, low=L, close=C, volume=V))
+    d2 = {'src': d['src'] + f'  (resampled {src_tf}->{tf})'}
+    return d2, out
+
+
 def scan_search(tf: str):
     import gc
     t_all = time.time()
-    d = fd.load_fast(ASSET, tf)
-    df = fd.as_dataframe(d)
+    d, df = load_card(tf)
     n = len(df)
     split = int(n * SPLIT_FRAC)
     dfs = df.iloc[:split].reset_index(drop=True)
-    del df, d['open'], d['high'], d['low'], d['volume']
+    del df
+    for k_ in ('open', 'high', 'low', 'volume', 'close', 'time',
+               'hour', 'minute', 'dow'):
+        d.pop(k_, None)
     gc.collect()   # M1: آزادسازیِ نیمهٔ hold-out از RAM — دیوارِ ۱GB سندباکس
     mh = MAX_HOLD[tf]
     atr = atr_pip(dfs, ASSET)
