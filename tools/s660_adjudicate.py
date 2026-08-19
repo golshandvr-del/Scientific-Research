@@ -108,7 +108,9 @@ def main() -> int:
     vidx = np.flatnonzero(valid)
 
     def _wr01(t):
-        return float((t['pnl_pip'].values > 0).mean()) if len(t) else None
+        # BUGFIX (واحد): ساختار کانونی null «درصد» می‌خواهد (s434 خط ۹۳: ×100).
+        # نسخهٔ اول کسر ۰..۱ برمی‌گرداند ⇒ lift جعلی ۴۳pp و z=165. اصلاح شد.
+        return float(100.0 * (t['pnl_pip'].values > 0).mean()) if len(t) else None
 
     null = {}
     z = np.zeros(n, bool)
