@@ -1,0 +1,210 @@
+{
+ "M5": {
+  "e8s21k13": {
+   "events": 5225,
+   "per_year": 1008.9
+  },
+  "e8s21k21": {
+   "events": 5580,
+   "per_year": 1077.4
+  },
+  "e8s21k34": {
+   "events": 5879,
+   "per_year": 1135.2
+  },
+  "e13s34k13": {
+   "events": 3271,
+   "per_year": 631.6
+  },
+  "e13s34k21": {
+   "events": 3514,
+   "per_year": 678.5
+  },
+  "e13s34k34": {
+   "events": 3624,
+   "per_year": 699.8
+  }
+ },
+ "M15": {
+  "e8s21k13": {
+   "events": 1908,
+   "per_year": 367.8
+  },
+  "e8s21k21": {
+   "events": 2014,
+   "per_year": 388.3
+  },
+  "e8s21k34": {
+   "events": 2123,
+   "per_year": 409.3
+  },
+  "e13s34k13": {
+   "events": 1285,
+   "per_year": 247.7
+  },
+  "e13s34k21": {
+   "events": 1371,
+   "per_year": 264.3
+  },
+  "e13s34k34": {
+   "events": 1395,
+   "per_year": 268.9
+  }
+ },
+ "M30": {
+  "e8s21k13": {
+   "events": 1228,
+   "per_year": 236.4
+  },
+  "e8s21k21": {
+   "events": 1238,
+   "per_year": 238.3
+  },
+  "e8s21k34": {
+   "events": 1256,
+   "per_year": 241.8
+  },
+  "e13s34k13": {
+   "events": 736,
+   "per_year": 141.7
+  },
+  "e13s34k21": {
+   "events": 753,
+   "per_year": 145.0
+  },
+  "e13s34k34": {
+   "events": 760,
+   "per_year": 146.3
+  }
+ },
+ "H1": {
+  "e8s21k13": {
+   "events": 589,
+   "per_year": 113.1
+  },
+  "e8s21k21": {
+   "events": 612,
+   "per_year": 117.5
+  },
+  "e8s21k34": {
+   "events": 674,
+   "per_year": 129.4
+  },
+  "e13s34k13": {
+   "events": 503,
+   "per_year": 96.6
+  },
+  "e13s34k21": {
+   "events": 544,
+   "per_year": 104.4
+  },
+  "e13s34k34": {
+   "events": 617,
+   "per_year": 118.4
+  }
+ },
+ "H2": {
+  "e8s21k13": {
+   "events": 395,
+   "per_year": 72.7
+  },
+  "e8s21k21": {
+   "events": 412,
+   "per_year": 75.8
+  },
+  "e8s21k34": {
+   "events": 445,
+   "per_year": 81.9
+  },
+  "e13s34k13": {
+   "events": 175,
+   "per_year": 32.2
+  },
+  "e13s34k21": {
+   "events": 199,
+   "per_year": 36.6
+  },
+  "e13s34k34": {
+   "events": 215,
+   "per_year": 39.6
+  }
+ },
+ "H4": {
+  "e8s21k13": {
+   "events": 198,
+   "per_year": 36.5
+  },
+  "e8s21k21": {
+   "events": 210,
+   "per_year": 38.7
+  },
+  "e8s21k34": {
+   "events": 235,
+   "per_year": 43.4
+  },
+  "e13s34k13": {
+   "events": 80,
+   "per_year": 14.8
+  },
+  "e13s34k21": {
+   "events": 91,
+   "per_year": 16.8
+  },
+  "e13s34k34": {
+   "events": 98,
+   "per_year": 18.1
+  }
+ },
+ "H8": {
+  "e8s21k13": {
+   "events": 76,
+   "per_year": 13.9
+  },
+  "e8s21k21": {
+   "events": 84,
+   "per_year": 15.4
+  },
+  "e8s21k34": {
+   "events": 95,
+   "per_year": 17.4
+  },
+  "e13s34k13": {
+   "events": 41,
+   "per_year": 7.5
+  },
+  "e13s34k21": {
+   "events": 46,
+   "per_year": 8.4
+  },
+  "e13s34k34": {
+   "events": 49,
+   "per_year": 9.0
+  }
+ },
+ "D1": {
+  "e8s21k13": {
+   "events": 22,
+   "per_year": 4.0
+  },
+  "e8s21k21": {
+   "events": 23,
+   "per_year": 4.2
+  },
+  "e8s21k34": {
+   "events": 23,
+   "per_year": 4.2
+  },
+  "e13s34k13": {
+   "events": 11,
+   "per_year": 2.0
+  },
+  "e13s34k21": {
+   "events": 12,
+   "per_year": 2.2
+  },
+  "e13s34k34": {
+   "events": 12,
+   "per_year": 2.2
+  }
+ }
+}
