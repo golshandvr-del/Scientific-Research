@@ -1,0 +1,16 @@
+
+====================================================================================
+=== S942 VolumeSurgeCont :: XAUUSD_M1  bars=5,000,000  span=14.34y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_M1.csv  (2012-04-04 20:48:00 → 2026-08-07 23:54:00)
+    geom: SL=6.03pip  TP=9.05pip  rr=1.5
+    family events: long=190,856  short=188,494
+    trades=211,991 (L=106,222 S=105,769)  wr=37.65%
+    building null: K=500  strides=(7, 21)  seed=20260814
+      uncond long stride=7: wr=39.31% n=407415
+      uncond long stride=21: wr=39.49% n=193927
+      null long  uncond=39.49321136303867 perm_mean=39.40850285250468 sd=0.15354267926622117 k=500
+      uncond short stride=7: wr=39.62% n=406981
+      uncond short stride=21: wr=39.99% n=194063
+      null short uncond=39.98804511936845 perm_mean=40.072303570871036 sd=0.15764573833164025 k=500
+
+S942_VolumeSurgeCont_XAUUSD_M1 | REJECT     RQS2=  0.0 | n=211991 WR=37.65% PF=0.93 lift=  -2.14pp z=-13.7 | H0:✗ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
