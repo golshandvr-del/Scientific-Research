@@ -58,12 +58,37 @@ ORDER = ('M1', 'M3', 'M4', 'M5', 'M6', 'M10', 'M12', 'M15', 'M20', 'M30',
          'H1', 'H2', 'H3', 'H6', 'H8', 'H12', 'D1')
 
 
+CHUNK = 250_000   # سقفِ رویداد در هر قطعه — فقط بهینه‌سازی حافظه، نه معنا
+
+
+def _barrier_compact(df, idx, flag, atr, cfg):
+    """سدِ دوطرفه برای همهٔ رویدادهای idx، قطعه‌قطعه (ضد OOM).
+
+    خروجی فقط سه آرایهٔ فشرده: entry_bar(int64), exit_off(int16), win(bool).
+    نتیجهٔ هر رویداد مستقل از بقیه است، پس قطعه‌بندی موبه‌مو همان نتیجهٔ
+    محاسبهٔ یکجا را می‌دهد (استدلالِ رسمیِ سرصفحهٔ s346_fast).
+    """
+    ebs, offs, wins = [], [], []
+    for s0 in range(0, len(idx), CHUNK):
+        part = idx[s0:s0 + CHUNK]
+        sl_dist = GEO_SL_K * atr[part]
+        fo = barrier_outcomes(df, part, np.full(len(part), flag),
+                              sl_dist, GEO_RR * sl_dist, GEO_HOLD,
+                              float(cfg['pip']), float(cfg['spread_pip']),
+                              float(cfg.get('slip_pip', 0.0)))
+        ebs.append(fo['entry_bar'].astype(np.int64))
+        offs.append(fo['exit_off'].astype(np.int16))
+        wins.append(fo['win'].astype(bool))
+    if not ebs:
+        return None
+    return (np.concatenate(ebs), np.concatenate(offs), np.concatenate(wins))
+
+
 def build_null(df, atr, valid, n_long, n_short, rng):
     """مدلِ صفرِ اندازه‌گیری‌شده — ساختارِ کانونیِ RQS2 (الگوی s351).
 
-    بهینه‌سازی: سدِ هر رویداد مستقل از صف است ⇒ یک بار برداری محاسبه،
-    سپس هر قرعه فقط زیرمجموعه می‌چیند و صفِ بی‌همپوشانی را اجرا می‌کند
-    (همان استدلالِ رسمیِ سرصفحهٔ s346_fast).
+    سدِ هر رویداد مستقل از صف است ⇒ یک بار (قطعه‌قطعه) محاسبه، سپس هر
+    قرعه فقط زیرمجموعه می‌چیند و صفِ بی‌همپوشانی را اجرا می‌کند.
     """
     cfg = se.ASSETS[ASSET]
     null = {}
@@ -72,31 +97,29 @@ def build_null(df, atr, valid, n_long, n_short, rng):
         d = dict(uncond_wr=None, perm_mean=None, perm_sd=None,
                  perm_max=None, perm_k=None)
         if n_side >= 1 and len(valid) >= 2:
-            sl_dist = GEO_SL_K * atr[valid]
-            fo = barrier_outcomes(df, valid, np.full(len(valid), flag),
-                                  sl_dist, GEO_RR * sl_dist, GEO_HOLD,
-                                  float(cfg['pip']), float(cfg['spread_pip']),
-                                  float(cfg.get('slip_pip', 0.0)))
-            m = len(fo['entry_bar'])
-            if m >= 2:
-                keep = select_non_overlap(fo['entry_bar'], fo['exit_off'])
-                if keep.sum() > 0:
-                    d['uncond_wr'] = float(fo['win'][keep].mean() * 100.0)
-                if m > n_side:
-                    wrs = []
-                    for _ in range(PERM_K):
-                        pick = np.sort(rng.choice(m, size=n_side,
-                                                  replace=False))
-                        k2 = select_non_overlap(fo['entry_bar'][pick],
-                                                fo['exit_off'][pick])
-                        if k2.sum() > 0:
-                            wrs.append(float(fo['win'][pick][k2].mean() * 100.0))
-                    if wrs:
-                        a = np.asarray(wrs)
-                        d.update(perm_mean=float(a.mean()),
-                                 perm_sd=float(a.std(ddof=1)),
-                                 perm_max=float(a.max()),
-                                 perm_k=int(len(a)))
+            fo = _barrier_compact(df, valid, flag, atr, cfg)
+            if fo is not None:
+                eb, off, win = fo
+                m = len(eb)
+                if m >= 2:
+                    keep = select_non_overlap(eb, off)
+                    if keep.sum() > 0:
+                        d['uncond_wr'] = float(win[keep].mean() * 100.0)
+                    if m > n_side:
+                        wrs = []
+                        for _ in range(PERM_K):
+                            pick = np.sort(rng.choice(m, size=n_side,
+                                                      replace=False))
+                            k2 = select_non_overlap(eb[pick], off[pick])
+                            if k2.sum() > 0:
+                                wrs.append(float(win[pick][k2].mean() * 100.0))
+                        if wrs:
+                            a = np.asarray(wrs)
+                            d.update(perm_mean=float(a.mean()),
+                                     perm_sd=float(a.std(ddof=1)),
+                                     perm_max=float(a.max()),
+                                     perm_k=int(len(a)))
+                del eb, off, win, fo
         null[side] = d
         print(f"      null {side:<5} uncond={d['uncond_wr']} "
               f"mean={d['perm_mean']} sd={d['perm_sd']} k={d['perm_k']}",
@@ -115,6 +138,7 @@ def judge_tf(tf):
     half = n_full // 2
     # 🔓 نخستین و آخرین لمسِ نیمهٔ دوم — طبقِ PREREG
     df = df_full.iloc[half:].reset_index(drop=True)
+    del df_full, d          # آزادسازی فوری حافظه (ضد OOM روی M1)
     close = df['close'].values.astype(np.float64)
     h = df['high'].values.astype(np.float64)
     l = df['low'].values.astype(np.float64)
