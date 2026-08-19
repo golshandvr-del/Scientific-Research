@@ -1,0 +1,5 @@
+========================================================================
+S892 Session-Hour Drift · XAUUSD-MN1 · path C (prereg b0f8770a)
+========================================================================
+saved → results/_s892/rqs2_XAUUSD-MN1.json
+TF has no hour structure → INCOMPLETE
