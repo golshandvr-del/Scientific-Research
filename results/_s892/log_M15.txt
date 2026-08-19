@@ -1,0 +1,16 @@
+========================================================================
+S892 Session-Hour Drift · XAUUSD-M15 · path C (prereg b0f8770a)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_M15.csv  bars=363778  split=254644  hold=16 bars
+SL=24.18pip TP=36.26pip BE=45.46%
+  new best: H= 0 long  n=  914 WR= 42.45% net=  -3089.2
+  new best: H= 9 short n= 2791 WR= 44.86% net=  -3893.2
+
+LOCKED: H=9 dir=short  IS: n=2791 WR=44.86%
+
+FULL: n=3986 WR=43.48% net=-7938.6pip
+OOS: n=1195 WR=40.2510460251046
+VERDICT: REJECT  score=0.7
+gates: {'H0': True, 'H1': False, 'H2': False, 'H3': False, 'H4': False, 'H5': False, 'H6': False, 'H7': False, 'H8': False, 'H9': False, 'H10': False}
+notes: ['PF=0.931<1.3']
+saved → results/_s892/rqs2_XAUUSD-M15.json
