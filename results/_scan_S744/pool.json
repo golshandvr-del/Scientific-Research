@@ -1,0 +1,646 @@
+{
+ "strategy": "S744_RoundLevelPool",
+ "asset": "XAUUSD",
+ "members": [
+  "H2",
+  "H3",
+  "H6",
+  "H8",
+  "H12",
+  "D1"
+ ],
+ "step": 50.0,
+ "rej_k": 0.25,
+ "n_trials": 48,
+ "k_perm": 500,
+ "prereg": "results/S744_PREREG_ROUND_LEVEL_POOL_PATH_C.md",
+ "cards": {
+  "H2": {
+   "bars": 47623,
+   "src": "/home/user/webapp/data/mt5_full/XAUUSD_H2.csv",
+   "span_years": 15.59
+  },
+  "H3": {
+   "bars": 31806,
+   "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+   "span_years": 15.59
+  },
+  "H6": {
+   "bars": 15966,
+   "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+   "span_years": 15.59
+  },
+  "H8": {
+   "bars": 11978,
+   "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+   "span_years": 15.59
+  },
+  "H12": {
+   "bars": 7998,
+   "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+   "span_years": 15.59
+  },
+  "D1": {
+   "bars": 4005,
+   "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+   "span_years": 15.59
+  }
+ },
+ "T_star_utc": "2020-06-08T16:00:00",
+ "explore": [
+  {
+   "k_sl": 1.5,
+   "rr": 1.0,
+   "members": {
+    "H2": {
+     "n": 513,
+     "wr": 51.85,
+     "pf": 0.992,
+     "lift": -0.36,
+     "sl_med": 74.58749999999999,
+     "tp_med": 74.58749999999999,
+     "be": 52.21
+    },
+    "H3": {
+     "n": 432,
+     "wr": 52.55,
+     "pf": 1.071,
+     "lift": 0.84,
+     "sl_med": 96.81524999999986,
+     "tp_med": 96.81524999999986,
+     "be": 51.7
+    },
+    "H6": {
+     "n": 293,
+     "wr": 52.9,
+     "pf": 1.134,
+     "lift": 1.7,
+     "sl_med": 137.74199999999982,
+     "tp_med": 137.74199999999982,
+     "be": 51.2
+    },
+    "H8": {
+     "n": 252,
+     "wr": 47.62,
+     "pf": 0.851,
+     "lift": -3.38,
+     "sl_med": 165.0907500000003,
+     "tp_med": 165.0907500000003,
+     "be": 51.0
+    },
+    "H12": {
+     "n": 207,
+     "wr": 50.24,
+     "pf": 0.948,
+     "lift": -0.58,
+     "sl_med": 200.11200000000017,
+     "tp_med": 200.11200000000017,
+     "be": 50.82
+    },
+    "D1": {
+     "n": 132,
+     "wr": 49.24,
+     "pf": 1.003,
+     "lift": -1.36,
+     "sl_med": 273.11024999999984,
+     "tp_med": 273.11024999999984,
+     "be": 50.6
+    }
+   },
+   "pool": {
+    "n": 293,
+    "wr": 52.9,
+    "pf": 1.134,
+    "exp": 10.0,
+    "be": 51.2,
+    "lift": 1.7,
+    "z": 0.583,
+    "sl_med": 137.74,
+    "tp_med": 137.74,
+    "share": {
+     "H6": 1.0
+    },
+    "used": [
+     "H6"
+    ],
+    "dropped": [
+     {
+      "card": "H2",
+      "lift": -0.3603150661974297,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "H8",
+      "lift": -3.3804026832861,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "H12",
+      "lift": -0.582992364855393,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "D1",
+      "lift": -1.3617273776632501,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "H3",
+      "lift": 0.8420193357967847,
+      "reason": "dilutes pool (lowers z_proxy)"
+     }
+    ]
+   }
+  },
+  {
+   "k_sl": 1.5,
+   "rr": 1.5,
+   "members": {
+    "H2": {
+     "n": 490,
+     "wr": 42.24,
+     "pf": 0.945,
+     "lift": 0.49,
+     "sl_med": 75.42149999999998,
+     "tp_med": 113.13224999999997,
+     "be": 41.75
+    },
+    "H3": {
+     "n": 413,
+     "wr": 44.31,
+     "pf": 1.109,
+     "lift": 2.94,
+     "sl_med": 96.26249999999986,
+     "tp_med": 144.39374999999978,
+     "be": 41.37
+    },
+    "H6": {
+     "n": 278,
+     "wr": 44.6,
+     "pf": 1.094,
+     "lift": 3.64,
+     "sl_med": 136.55400000000003,
+     "tp_med": 204.83100000000007,
+     "be": 40.97
+    },
+    "H8": {
+     "n": 235,
+     "wr": 38.72,
+     "pf": 0.776,
+     "lift": -2.1,
+     "sl_med": 159.9975000000001,
+     "tp_med": 239.99625000000015,
+     "be": 40.83
+    },
+    "H12": {
+     "n": 196,
+     "wr": 44.39,
+     "pf": 1.0,
+     "lift": 3.73,
+     "sl_med": 199.41975000000008,
+     "tp_med": 299.12962500000015,
+     "be": 40.66
+    },
+    "D1": {
+     "n": 126,
+     "wr": 46.83,
+     "pf": 1.254,
+     "lift": 6.34,
+     "sl_med": 270.20550000000003,
+     "tp_med": 405.30825000000004,
+     "be": 40.49
+    }
+   },
+   "pool": {
+    "n": 280,
+    "wr": 47.14,
+    "pf": 1.185,
+    "exp": 18.84,
+    "be": 40.75,
+    "lift": 6.39,
+    "z": 2.177,
+    "sl_med": 176.05,
+    "tp_med": 264.08,
+    "share": {
+     "H6": 0.593,
+     "H12": 0.211,
+     "D1": 0.196
+    },
+    "used": [
+     "D1",
+     "H12",
+     "H6"
+    ],
+    "dropped": [
+     {
+      "card": "H8",
+      "lift": -2.1016086355072687,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "H3",
+      "lift": 2.9386768738250737,
+      "reason": "dilutes pool (lowers z_proxy)"
+     },
+     {
+      "card": "H2",
+      "lift": 0.4947338813013715,
+      "reason": "dilutes pool (lowers z_proxy)"
+     }
+    ]
+   }
+  },
+  {
+   "k_sl": 2.5,
+   "rr": 1.0,
+   "members": {
+    "H2": {
+     "n": 438,
+     "wr": 49.77,
+     "pf": 0.973,
+     "lift": -1.52,
+     "sl_med": 127.66375000000008,
+     "tp_med": 127.66375000000008,
+     "be": 51.29
+    },
+    "H3": {
+     "n": 360,
+     "wr": 52.22,
+     "pf": 1.154,
+     "lift": 1.2,
+     "sl_med": 160.63499999999976,
+     "tp_med": 160.63499999999976,
+     "be": 51.03
+    },
+    "H6": {
+     "n": 241,
+     "wr": 50.62,
+     "pf": 1.085,
+     "lift": -0.1,
+     "sl_med": 227.04250000000025,
+     "tp_med": 227.04250000000025,
+     "be": 50.73
+    },
+    "H8": {
+     "n": 200,
+     "wr": 48.5,
+     "pf": 0.902,
+     "lift": -2.12,
+     "sl_med": 265.51125000000025,
+     "tp_med": 265.51125000000025,
+     "be": 50.62
+    },
+    "H12": {
+     "n": 171,
+     "wr": 53.22,
+     "pf": 1.042,
+     "lift": 2.71,
+     "sl_med": 325.9774999999999,
+     "tp_med": 325.9774999999999,
+     "be": 50.51
+    },
+    "D1": {
+     "n": 108,
+     "wr": 50.0,
+     "pf": 1.024,
+     "lift": -0.36,
+     "sl_med": 452.68000000000006,
+     "tp_med": 452.68000000000006,
+     "be": 50.36
+    }
+   },
+   "pool": {
+    "n": 171,
+    "wr": 53.22,
+    "pf": 1.042,
+    "exp": 5.75,
+    "be": 50.51,
+    "lift": 2.71,
+    "z": 0.709,
+    "sl_med": 325.98,
+    "tp_med": 325.98,
+    "share": {
+     "H12": 1.0
+    },
+    "used": [
+     "H12"
+    ],
+    "dropped": [
+     {
+      "card": "H2",
+      "lift": -1.5207682281449948,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "H6",
+      "lift": -0.10432954474999434,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "H8",
+      "lift": -2.1214425942403636,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "D1",
+      "lift": -0.36449589113723135,
+      "reason": "lift<=0 (not co-directional)"
+     },
+     {
+      "card": "H3",
+      "lift": 1.195048816675481,
+      "reason": "dilutes pool (lowers z_proxy)"
+     }
+    ]
+   }
+  },
+  {
+   "k_sl": 2.5,
+   "rr": 1.5,
+   "members": {
+    "H2": {
+     "n": 430,
+     "wr": 46.05,
+     "pf": 1.008,
+     "lift": 5.02,
+     "sl_med": 128.23000000000025,
+     "tp_med": 192.34500000000037,
+     "be": 41.03
+    },
+    "H3": {
+     "n": 349,
+     "wr": 49.0,
+     "pf": 1.198,
+     "lift": 8.17,
+     "sl_med": 159.97499999999994,
+     "tp_med": 239.96249999999992,
+     "be": 40.83
+    },
+    "H6": {
+     "n": 231,
+     "wr": 48.48,
+     "pf": 1.181,
+     "lift": 7.9,
+     "sl_med": 223.90499999999983,
+     "tp_med": 335.85749999999973,
+     "be": 40.59
+    },
+    "H8": {
+     "n": 192,
+     "wr": 45.31,
+     "pf": 0.944,
+     "lift": 4.81,
+     "sl_med": 262.4899999999998,
+     "tp_med": 393.7349999999997,
+     "be": 40.5
+    },
+    "H12": {
+     "n": 163,
+     "wr": 52.76,
+     "pf": 1.114,
+     "lift": 12.36,
+     "sl_med": 325.9774999999999,
+     "tp_med": 488.96624999999983,
+     "be": 40.4
+    },
+    "D1": {
+     "n": 98,
+     "wr": 45.92,
+     "pf": 1.041,
+     "lift": 5.63,
+     "sl_med": 458.7775000000001,
+     "tp_med": 688.1662500000001,
+     "be": 40.29
+    }
+   },
+   "pool": {
+    "n": 333,
+    "wr": 51.65,
+    "pf": 1.337,
+    "exp": 27.98,
+    "be": 40.65,
+    "lift": 11.0,
+    "z": 4.087,
+    "sl_med": 202.55,
+    "tp_med": 303.83,
+    "share": {
+     "H3": 0.739,
+     "H12": 0.129,
+     "H6": 0.078,
+     "D1": 0.054
+    },
+    "used": [
+     "H12",
+     "H3",
+     "H6",
+     "D1"
+    ],
+    "dropped": [
+     {
+      "card": "H2",
+      "lift": 5.017111331564472,
+      "reason": "dilutes pool (lowers z_proxy)"
+     },
+     {
+      "card": "H8",
+      "lift": 4.809623699950471,
+      "reason": "dilutes pool (lowers z_proxy)"
+     }
+    ]
+   }
+  }
+ ],
+ "winner": {
+  "k_sl": 2.5,
+  "rr": 1.5,
+  "members": [
+   "H12",
+   "H3",
+   "H6",
+   "D1"
+  ],
+  "disc": {
+   "n": 333,
+   "wr": 51.65,
+   "pf": 1.337,
+   "exp": 27.98,
+   "be": 40.65,
+   "lift": 11.0,
+   "z": 4.087,
+   "sl_med": 202.55,
+   "tp_med": 303.83,
+   "share": {
+    "H3": 0.739,
+    "H12": 0.129,
+    "H6": 0.078,
+    "D1": 0.054
+   },
+   "used": [
+    "H12",
+    "H3",
+    "H6",
+    "D1"
+   ],
+   "dropped": [
+    {
+     "card": "H2",
+     "lift": 5.017111331564472,
+     "reason": "dilutes pool (lowers z_proxy)"
+    },
+    {
+     "card": "H8",
+     "lift": 4.809623699950471,
+     "reason": "dilutes pool (lowers z_proxy)"
+    }
+   ]
+  }
+ },
+ "final_members": {
+  "H12": {
+   "n": 311,
+   "n_long": 171,
+   "n_short": 140,
+   "wr": 49.2,
+   "ref_wr": 46.91137578721056,
+   "lift": 2.28,
+   "pf": 1.01,
+   "exp": 2.05,
+   "sl_med": 409.2624999999999,
+   "tp_med": 613.8937499999998,
+   "null_pool": "full_valid=7882"
+  },
+  "H3": {
+   "n": 754,
+   "n_long": 371,
+   "n_short": 383,
+   "wr": 47.35,
+   "ref_wr": 45.93914921707353,
+   "lift": 1.41,
+   "pf": 0.952,
+   "exp": -6.19,
+   "sl_med": 215.76375000000002,
+   "tp_med": 323.645625,
+   "null_pool": "full_valid=31690"
+  },
+  "H6": {
+   "n": 484,
+   "n_long": 250,
+   "n_short": 234,
+   "wr": 47.52,
+   "ref_wr": 46.57052948961635,
+   "lift": 0.95,
+   "pf": 1.035,
+   "exp": 5.92,
+   "sl_med": 302.07124999999996,
+   "tp_med": 453.10687499999995,
+   "null_pool": "full_valid=15850"
+  },
+  "D1": {
+   "n": 168,
+   "n_long": 80,
+   "n_short": 88,
+   "wr": 48.21,
+   "ref_wr": 45.993154132689014,
+   "lift": 2.22,
+   "pf": 1.165,
+   "exp": 38.85,
+   "sl_med": 561.1287500000001,
+   "tp_med": 841.693125,
+   "null_pool": "full_valid=3889"
+  }
+ },
+ "final_pool": {
+  "used": [
+   "H12",
+   "D1",
+   "H3",
+   "H6"
+  ],
+  "dropped": [],
+  "n_before": 1717,
+  "n_after": 696
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 49.30215034155664,
+   "perm_mean": 49.58156152606093,
+   "perm_sd": 2.1589857720526626,
+   "perm_max": null,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 42.85296350493297,
+   "perm_mean": 43.593371350652305,
+   "perm_sd": 1.9445506800931716,
+   "perm_max": null,
+   "perm_k": 500
+  }
+ },
+ "full": {
+  "n": 696,
+  "wr": 49.14,
+  "exp_pip": 16.002,
+  "pf": 1.111,
+  "sl_med": 263.81,
+  "tp_med": 395.71,
+  "share": {
+   "H3": 0.746,
+   "H12": 0.115,
+   "H6": 0.086,
+   "D1": 0.053
+  }
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 12.0,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": true,
+  "H7": false,
+  "H8": false,
+  "H9": true,
+  "H10": false
+ },
+ "metrics": {
+  "n_trades": 696,
+  "win_rate": 49.14,
+  "net_profit": 4069.3,
+  "profit_factor": 1.107,
+  "max_dd_pct": 11.35,
+  "max_consec_losses": 7,
+  "mcl_allowed": 15,
+  "n_wins": 342,
+  "top_win_share": 0.0259,
+  "recovery_factor": 2.35,
+  "expectancy_pip": 16.0018,
+  "expectancy_at_2x_cost": 12.7018,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 263.805,
+  "tp_pip": 395.708,
+  "rr": 1.5,
+  "breakeven_wr_cost": 40.5,
+  "wr_excess_cost": 8.64,
+  "null_ref_wr": 46.6,
+  "skill_lift_pp": 2.53,
+  "skill_z": 1.23,
+  "skill_p_perm": 0.108546,
+  "perm_max": 46.6,
+  "perm_k": 500,
+  "p_emp": 0.096503,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 1.34,
+  "z_luck_bound": 2.261,
+  "z_margin": -0.921,
+  "n_trials": 48,
+  "cal_positive": 3,
+  "cal_occupied": 4,
+  "max_concurrency": 1,
+  "n_required_h3": 3702.5
+ },
+ "elapsed_s": 1.8
+}
