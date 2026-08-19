@@ -229,10 +229,143 @@ def scan_search(tf: str):
           flush=True)
 
 
+
+
+# ================= فاز ۲: آزمونِ یگانهٔ hold-out (پس از الحاقیهٔ انجماد) =====
+# پیکربندی‌های منجمد — عیناً از results/S760_PREREG_ADDENDUM_FREEZE.md
+FROZEN = {
+    'H8':  dict(side='short', lp=25, sp=13, thr=-21.729, k=1.0, rr=1.0),
+    'H12': dict(side='short', lp=34, sp=13, thr=-19.536, k=1.0, rr=1.0),
+    'H6':  dict(side='long',  lp=55, sp=21, thr=17.282,  k=1.0, rr=1.0),
+    'H4':  dict(side='short', lp=55, sp=21, thr=-15.838, k=1.5, rr=1.5),
+    'H3':  dict(side='long',  lp=34, sp=13, thr=22.389,  k=1.5, rr=1.0),
+    'H2':  dict(side='long',  lp=55, sp=21, thr=17.939,  k=1.0, rr=1.0),
+    'H1':  dict(side='long',  lp=55, sp=21, thr=27.938,  k=1.5, rr=1.0),
+}
+N_FAMILY_SEARCH = 96   # سدِ سخت‌گیرانه per تعهدِ پیش‌ثبت
+
+
+def build_null_side_s760(dfa, valid, sl_arr, tp_arr, side, n_side, mh, rng,
+                         n_perm=K_PERM):
+    """مبنای اندازه‌گیری‌شده به الگوی s351.build_null_side با هندسهٔ منجمد."""
+    is_long = (side == 'long')
+    d = dict(uncond_wr=None, perm_mean=None, perm_sd=None,
+             perm_max=None, perm_k=None)
+    if n_side < 1 or len(valid) < 2:
+        return {side: d,
+                ('short' if is_long else 'long'): dict(
+                    uncond_wr=None, perm_mean=None, perm_sd=None,
+                    perm_max=None, perm_k=None)}
+    # مبنای بی‌قید: نمونهٔ بزرگ از کندل‌های واجد با همان هندسه
+    samp = valid if len(valid) <= 20000 else np.sort(
+        rng.choice(valid, size=20000, replace=False))
+    sig = np.zeros(len(dfa), bool)
+    sig[samp] = True
+    tr = se.simulate_trades(
+        dfa, sig if is_long else np.zeros(len(dfa), bool),
+        sig if not is_long else np.zeros(len(dfa), bool),
+        sl_pip=sl_arr, tp_pip=tp_arr, asset=ASSET,
+        max_hold=mh, allow_overlap=False)
+    if tr is not None and len(tr) and 'pnl_pip' in tr:
+        d['uncond_wr'] = float((tr['pnl_pip'] > 0).mean() * 100)
+    # جای‌گشت: K زیرمجموعهٔ هم‌اندازه (n_side) از کندل‌های واجد
+    if len(valid) > n_side:
+        wrs = []
+        for _ in range(n_perm):
+            pick = np.sort(rng.choice(len(valid), size=n_side, replace=False))
+            sig = np.zeros(len(dfa), bool)
+            sig[valid[pick]] = True
+            trp = se.simulate_trades(
+                dfa, sig if is_long else np.zeros(len(dfa), bool),
+                sig if not is_long else np.zeros(len(dfa), bool),
+                sl_pip=sl_arr, tp_pip=tp_arr, asset=ASSET,
+                max_hold=mh, allow_overlap=False)
+            if trp is not None and len(trp) and 'pnl_pip' in trp:
+                wrs.append(float((trp['pnl_pip'] > 0).mean() * 100))
+        if wrs:
+            a = np.asarray(wrs)
+            d.update(perm_mean=float(a.mean()), perm_sd=float(a.std(ddof=1)),
+                     perm_max=float(a.max()), perm_k=int(len(a)))
+    other = dict(uncond_wr=None, perm_mean=None, perm_sd=None,
+                 perm_max=None, perm_k=None)
+    return {side: d, ('short' if is_long else 'long'): other}
+
+
+def judge_holdout(tf: str):
+    """آزمونِ یگانهٔ hold-out — هر کارت فقط یک بار."""
+    import gc
+    cfg = FROZEN[tf]
+    guard = os.path.join(OUT_DIR, f"{tf}_JUDGED")
+    if os.path.exists(guard):
+        raise SystemExit(f"{tf} قبلاً داوری شده — آزمونِ دوم ممنوع (مرگِ ابدی).")
+    t0 = time.time()
+    d, df = load_card(tf)
+    n = len(df)
+    split = int(n * SPLIT_FRAC)
+    mh = MAX_HOLD[tf]
+    atr = atr_pip(df, ASSET)
+    close_s = pd.Series(df['close'].values)
+    warm = 4 * (55 + 21) + ATR_P
+    tsi = tsi_series(close_s, cfg['lp'], cfg['sp'])
+    v1 = np.r_[np.nan, tsi[:-1]]
+    v2 = np.r_[np.nan, v1[:-1]]
+    if cfg['side'] == 'long':
+        sig = np.nan_to_num((v2 <= cfg['thr']) & (v1 > cfg['thr'])).astype(bool)
+    else:
+        sig = np.nan_to_num((v2 >= cfg['thr']) & (v1 < cfg['thr'])).astype(bool)
+    sig[:warm] = False
+    ok = np.isfinite(atr) & (atr > 0)
+    sig &= ok
+    sl = cfg['k'] * atr
+    tp = cfg['rr'] * sl
+    is_long = cfg['side'] == 'long'
+    trades = se.simulate_trades(
+        df, sig if is_long else np.zeros(n, bool),
+        sig if not is_long else np.zeros(n, bool),
+        sl_pip=sl, tp_pip=tp, asset=ASSET, max_hold=mh, allow_overlap=False)
+    print(f"=== S760 HOLDOUT {ASSET}-{tf} {cfg['side'].upper()} | src={d['src']}"
+          f" | bars={n:,} split={split:,} | trades(all)={len(trades)}", flush=True)
+    # * نمونهٔ hold-out برای null: شمارِ معاملاتِ پس از مرز
+    ent = trades['entry_bar'].values
+    n_hold = int((ent >= split).sum())
+    n_search_tr = int((ent < split).sum())
+    print(f"    n_search_trades={n_search_tr} n_holdout_trades={n_hold}", flush=True)
+    rng = np.random.default_rng(SEED)
+    valid = np.where(ok)[0]
+    valid = valid[valid >= warm]
+    null = build_null_side_s760(df, valid, sl, tp, cfg['side'],
+                                max(n_hold, 1), mh, rng)
+    med_sl = float(np.median(sl[sig])) if sig.any() else float(np.nanmedian(sl))
+    med_tp = float(np.median(tp[sig])) if sig.any() else float(np.nanmedian(tp))
+    results = {}
+    for n_trials, tag in ((1, 'N1_pathC'), (N_FAMILY_SEARCH, 'N96_strict')):
+        r = rqs2.compute_rqs2(
+            trades, ASSET, sl_pip=med_sl, tp_pip=med_tp,
+            bar_time=df['time'].values, null=null, n_trials=n_trials,
+            split_bar=split, close=df['close'].values)
+        results[tag] = dict(verdict=r['verdict'], rqs2=r.get('rqs2_score'),
+                            gates={k2: v2g for k2, v2g in r['gates'].items()},
+                            skill_p=r['metrics'].get('skill_p_perm'),
+                            metrics={k2: r['metrics'].get(k2) for k2 in
+                                     ('skill_lift_pp', 'skill_z', 'pf', 'wr',
+                                      'n_trades', 'max_dd_pct', 'exp_pip')})
+        print(f"  [{tag}] verdict={r['verdict']} rqs2={r.get('rqs2_score')}"
+              f" p_perm={r['metrics'].get('skill_p_perm')}", flush=True)
+    out = dict(tf=tf, cfg=cfg, src=d['src'], n_full=n, split_bar=split,
+               med_sl_pip=med_sl, med_tp_pip=med_tp, mh=mh,
+               n_search_trades=n_search_tr, n_holdout_trades=n_hold,
+               null=null, results=results, seed=SEED, k_perm=K_PERM,
+               elapsed_s=round(time.time() - t0, 1))
+    with open(os.path.join(OUT_DIR, f"{tf}_holdout.json"), 'w') as f:
+        json.dump(out, f, ensure_ascii=False, indent=1, default=str)
+    open(guard, 'w').write('judged once — second test forbidden\n')
+    print(f"SAVED {tf}_holdout.json", flush=True)
+
+
 if __name__ == '__main__':
     mode = sys.argv[1] if len(sys.argv) > 1 else 'search'
     tf = sys.argv[2] if len(sys.argv) > 2 else 'M1'
     if mode == 'search':
         scan_search(tf)
     else:
-        raise SystemExit('حالتِ holdout فقط پس از الحاقیهٔ انجماد فعال می‌شود.')
+        judge_holdout(tf)
