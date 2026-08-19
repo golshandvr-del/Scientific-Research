@@ -1,0 +1,28 @@
+[
+ {
+  "card": "XAUUSD-M30",
+  "asset": "XAUUSD",
+  "tf": "M30",
+  "sl_pip": 34.7,
+  "tp_pip": 56.0,
+  "mh": 48,
+  "n": 156,
+  "wr": 49.35897435897436,
+  "lift": 12.677389142775702,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M30.csv",
+  "p_emp_23": 0.0004997501249375312
+ },
+ {
+  "card": "XAUUSD-H1",
+  "asset": "XAUUSD",
+  "tf": "H1",
+  "sl_pip": 66.0,
+  "tp_pip": 69.8,
+  "mh": 36,
+  "n": 37,
+  "wr": 70.27027027027027,
+  "lift": 24.610067130842758,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "p_emp_23": 0.0004997501249375312
+ }
+]
