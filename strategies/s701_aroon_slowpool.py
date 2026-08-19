@@ -21,6 +21,11 @@ S701 — استخرِ کارت‌های کندِ Aroon: نجاتِ رسمیِ ل
     یکنواختِ ابرمجموعهٔ افقِ استخر باشد، نه فایلِ هیچ کارتی.
   BUG-SPLITDIR: مرزِ hold-out روی زمانِ معاملات، نه نقطهٔ تقویمیِ خام —
     اینجا از پیش‌ثبت: بیشینهٔ زمانِ کندلِ n//2 اعضای **استفاده‌شده**.
+  BUG-EPOCH (کشفِ این اجرا، با عدد): `df['time']`ِ s434_fast_data ثانیهٔ
+    یونیکس (int64) است؛ `astype('datetime64[ns]')`ِ مستقیم آن را نانوثانیه
+    خواند ⇒ محورِ «۱۹۶۹→۱۹۷۰ با ۴ سطل» ⇒ H0/H6 به‌غلط شکستند. اجرای اول
+    (REJECT با محورِ خراب) **نامعتبر** بود — نه حکمِ لایه. اصلاح:
+    ثانیه → 'datetime64[s]' → 'datetime64[ns]'.
 """
 import sys, os, json, time
 
@@ -81,7 +86,8 @@ def build_member(tf, spec, rng):
     df = fd.as_dataframe(d)
     n = len(df)
     half = n // 2
-    dt = df['time'].values.astype('datetime64[ns]')
+    # BUG-EPOCH: time = ثانیهٔ یونیکس ⇒ نخست [s] سپس [ns]
+    dt = df['time'].values.astype('datetime64[s]').astype('datetime64[ns]')
 
     sl_pip, tp_pip = spec['sl_pip'], RR * spec['sl_pip']
     mh = spec['max_hold']
@@ -263,7 +269,8 @@ def main():
           flush=True)
 
     ref = fd.as_dataframe(fd.load_fast('XAUUSD', 'H1'))
-    ref_t = ref['time'].values.astype('datetime64[ns]').astype(np.int64)
+    ref_t = (ref['time'].values.astype('datetime64[s]')
+             .astype('datetime64[ns]').astype(np.int64))
     ref_c = ref['close'].to_numpy(float)
     pos = np.clip(np.searchsorted(ref_t, axis_t, 'right') - 1, 0, len(ref_c) - 1)
     axis_close = ref_c[pos]

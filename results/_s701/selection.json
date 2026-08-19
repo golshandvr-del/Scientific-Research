@@ -1,0 +1,76 @@
+{
+ "chosen": [
+  {
+   "card": "XAUUSD_H6",
+   "lift": 13.172,
+   "n": 69
+  },
+  {
+   "card": "XAUUSD_H3",
+   "lift": 9.535,
+   "n": 125
+  }
+ ],
+ "rejected_for_dilution": [
+  {
+   "card": "XAUUSD_H8",
+   "lift": 9.13,
+   "n": 49
+  },
+  {
+   "card": "XAUUSD_H12",
+   "lift": 5.615,
+   "n": 33
+  },
+  {
+   "card": "XAUUSD_H1",
+   "lift": 0.972,
+   "n": 355
+  }
+ ],
+ "z_full": 122.552,
+ "z_chosen": 150.825,
+ "add_margin": 0.15,
+ "trace": [
+  {
+   "k": 1,
+   "added": "XAUUSD_H6",
+   "wlift": 13.172,
+   "n": 69,
+   "z_proxy": 109.415,
+   "accepted": true
+  },
+  {
+   "k": 2,
+   "added": "XAUUSD_H3",
+   "wlift": 10.829,
+   "n": 194,
+   "z_proxy": 150.825,
+   "accepted": true
+  },
+  {
+   "k": 3,
+   "added": "XAUUSD_H8",
+   "wlift": 10.486,
+   "n": 243,
+   "z_proxy": 163.462,
+   "accepted": false
+  },
+  {
+   "k": 4,
+   "added": "XAUUSD_H12",
+   "wlift": 9.904,
+   "n": 276,
+   "z_proxy": 164.532,
+   "accepted": false
+  },
+  {
+   "k": 5,
+   "added": "XAUUSD_H1",
+   "wlift": 4.879,
+   "n": 631,
+   "z_proxy": 122.552,
+   "accepted": false
+  }
+ ]
+}

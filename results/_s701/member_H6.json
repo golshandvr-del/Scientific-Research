@@ -1,0 +1,33 @@
+{
+ "card": "XAUUSD_H6",
+ "tf": "H6",
+ "asset": "XAUUSD",
+ "lift": 13.172,
+ "lift_full_info": 4.8783469264018535,
+ "null": {
+  "long": {
+   "uncond_wr": 43.19857615052123,
+   "perm_mean": 43.157051282051285,
+   "perm_sd": 3.9027061112426047,
+   "perm_max": 54.48717948717948,
+   "perm_k": 1000,
+   "n_uncond": 15732
+  },
+  "short": {
+   "uncond_wr": null,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": null
+  }
+ },
+ "n": 156,
+ "wr": 48.07692307692308,
+ "sl_pip": 163.98,
+ "tp_pip": 245.96999999999997,
+ "max_hold": 32,
+ "exp_pip": 23.313333333333574,
+ "bars": 15966,
+ "half_bar": 7983,
+ "half_time_ns": 1542045600000000000
+}
