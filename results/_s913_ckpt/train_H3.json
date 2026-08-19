@@ -1,0 +1,22 @@
+{
+ "tf": "H3",
+ "split_bar": 19083,
+ "n_train": 19083,
+ "n_sig": 723,
+ "rsi_p": 21,
+ "rsi_thr": 55.0,
+ "max_hold": 55,
+ "geometry": {
+  "tp": 263.4,
+  "sl": 100.6,
+  "n_sig": 723,
+  "rr": 2.617
+ },
+ "train": {
+  "n": 368,
+  "wr": 32.61,
+  "e_pip": 5.36,
+  "e_over_sl_pct": 5.32,
+  "cost_over_sl_pct": 3.28
+ }
+}

@@ -1,0 +1,22 @@
+{
+ "tf": "H12",
+ "split_bar": 4798,
+ "n_train": 4798,
+ "n_sig": 176,
+ "rsi_p": 21,
+ "rsi_thr": 55.0,
+ "max_hold": 55,
+ "geometry": {
+  "tp": 599.0,
+  "sl": 240.5,
+  "n_sig": 176,
+  "rr": 2.491
+ },
+ "train": {
+  "n": 82,
+  "wr": 34.15,
+  "e_pip": 30.85,
+  "e_over_sl_pct": 12.83,
+  "cost_over_sl_pct": 1.37
+ }
+}
