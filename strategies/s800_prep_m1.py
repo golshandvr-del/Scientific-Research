@@ -73,21 +73,20 @@ def r2_rolling(c, p):
     st = t.sum()
     stt = (t * t).sum()
     c64 = c.astype(np.float64)
-    csum = np.cumsum(c64)
-    csum2 = np.cumsum(c64 * c64)
-    # sxy نیاز به جمع t*w دارد؛ با هویت جابه‌جایی: در هر گام پنجره یک واحد
-    # می‌لغزد. از فرم مستقیم برداری تکه‌تکه استفاده می‌کنیم تا حافظه محدود بماند.
+    # جمع‌های مستقیم پنجره‌ای (نه cumsum) — خطای تجمعی روی 5M نقطه حذف می‌شود.
+    # O(n·p) با p=34 قابل تحمل است؛ دقت بر سرعت مقدم است.
     CH = 200_000
     for s in range(p - 1, n, CH):
         e = min(s + CH, n)
         idx = np.arange(s, e)
-        # پنجره‌ها: [i-p+1, i]
-        sy = csum[idx] - np.where(idx - p >= 0, csum[idx - p], 0.0)
-        syy = csum2[idx] - np.where(idx - p >= 0, csum2[idx - p], 0.0)
-        # sxy: به‌ناچار حلقهٔ تکه‌ای برداری روی p (p=34 کوچک است)
+        sy = np.zeros(len(idx), dtype=np.float64)
+        syy = np.zeros(len(idx), dtype=np.float64)
         sxy = np.zeros(len(idx), dtype=np.float64)
         for j in range(p):
-            sxy += t[j] * c64[idx - p + 1 + j]
+            w = c64[idx - p + 1 + j]
+            sy += w
+            syy += w * w
+            sxy += t[j] * w
         num = p * sxy - st * sy
         den = (p * stt - st * st) * (p * syy - sy * sy)
         r = np.where(den > 0, num / np.sqrt(np.maximum(den, 1e-300)), 0.0)
