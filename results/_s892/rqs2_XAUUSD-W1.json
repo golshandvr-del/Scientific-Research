@@ -1,0 +1,5 @@
+{
+ "card": "XAUUSD-W1",
+ "verdict": "INCOMPLETE",
+ "reason": "hour-of-day concept undefined at >=D1"
+}
