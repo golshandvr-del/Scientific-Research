@@ -1,0 +1,105 @@
+{
+ "pool_members": [
+  {
+   "card": "XAUUSD_D1",
+   "lift": 5.7,
+   "n": 400
+  },
+  {
+   "card": "XAUUSD_H8",
+   "lift": 4.23,
+   "n": 923
+  },
+  {
+   "card": "XAUUSD_H1",
+   "lift": 2.8,
+   "n": 831
+  },
+  {
+   "card": "XAUUSD_H4",
+   "lift": 2.67,
+   "n": 1287
+  }
+ ],
+ "dropped": [
+  {
+   "card": "XAUUSD_H12",
+   "lift": 2.35,
+   "reason": "dilutes pool (lowers z_proxy)"
+  },
+  {
+   "card": "XAUUSD_H6",
+   "lift": 1.39,
+   "reason": "dilutes pool (lowers z_proxy)"
+  },
+  {
+   "card": "XAUUSD_W1",
+   "lift": 0.81,
+   "reason": "dilutes pool (lowers z_proxy)"
+  }
+ ],
+ "n_before": 3441,
+ "n_after": 1269,
+ "split_idx": 715,
+ "verdict": "REJECT",
+ "score": 18.0,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": true,
+  "H3": true,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": false,
+  "H9": true,
+  "H10": null
+ },
+ "metrics": {
+  "n_trades": 1269.0,
+  "win_rate": 40.43,
+  "net_profit": 38860.7,
+  "profit_factor": 1.24,
+  "max_dd_pct": 12.88,
+  "max_consec_losses": 13.0,
+  "mcl_allowed": 21.0,
+  "n_wins": 513.0,
+  "top_win_share": 0.0185,
+  "recovery_factor": 6.03,
+  "expectancy_pip": 33.2987,
+  "expectancy_at_2x_cost": 29.9987,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 129.614,
+  "tp_pip": 266.746,
+  "rr": 2.058,
+  "breakeven_wr_cost": 33.53,
+  "wr_excess_cost": 6.89,
+  "null_ref_wr": 35.88,
+  "skill_lift_pp": 4.54,
+  "skill_z": 3.37,
+  "skill_p_perm": 0.000373,
+  "perm_max": 35.88,
+  "perm_k": 800.0,
+  "side_n": "{'long': 666, 'short': 603}",
+  "side_wr": "{'long': 42.64, 'short': 37.98}",
+  "side_lift_pp": "{'long': 5.28, 'short': 3.72}",
+  "prune_sides": "[]",
+  "p_emp": 0.000414,
+  "p_adj_bonferroni": 0.124321,
+  "z_obs": 3.372,
+  "z_luck_bound": 2.896,
+  "z_margin": 0.477,
+  "n_trials": 300.0,
+  "cal_nets": "[8615.1, 1577.8, -367.9, 14290.6]",
+  "cal_counts": "[299, 275, 341, 354]",
+  "cal_positive": 3.0,
+  "cal_occupied": 4.0,
+  "half_nets": "[11380.8, 12905.8]",
+  "oos": "{'n': 554, 'wr': 40.61, 'pf': 1.315, 'net': 12307.2, 'wr_req': 33.53}",
+  "max_concurrency": 1.0,
+  "counter_drift": "{}",
+  "n_required_h3": 1065.5
+ }
+}
