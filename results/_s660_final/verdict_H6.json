@@ -15,17 +15,17 @@
  "n_perm": 600,
  "null": {
   "long": {
-   "uncond_wr": 0.4140485312899106,
-   "perm_mean": 0.4100863392611748,
-   "perm_sd": 0.025459286850290627,
-   "perm_max": 0.4873417721518987,
+   "uncond_wr": 41.40485312899106,
+   "perm_mean": 41.00863392611748,
+   "perm_sd": 2.5459286850290628,
+   "perm_max": 48.734177215189874,
    "perm_k": 600
   },
   "short": {
-   "uncond_wr": 0.3773946360153257,
-   "perm_mean": 0.3766063090502593,
-   "perm_sd": 0.026351305723148286,
-   "perm_max": 0.45051194539249145,
+   "uncond_wr": 37.73946360153257,
+   "perm_mean": 37.66063090502593,
+   "perm_sd": 2.635130572314829,
+   "perm_max": 45.051194539249146,
    "perm_k": 600
   }
  },
@@ -36,9 +36,9 @@
     "H0": true,
     "H1": false,
     "H2": true,
-    "H3": true,
+    "H3": false,
     "H4": true,
-    "H5": true,
+    "H5": false,
     "H6": false,
     "H7": false,
     "H8": false,
@@ -65,11 +65,11 @@
     "rr": 1.5,
     "breakeven_wr_cost": 41.01,
     "wr_excess_cost": 3.03,
-    "null_ref_wr": 0.4,
-    "skill_lift_pp": 43.64,
-    "skill_z": 165.84,
-    "skill_p_perm": 0.0,
-    "perm_max": 0.47,
+    "null_ref_wr": 39.62,
+    "skill_lift_pp": 4.41,
+    "skill_z": 1.7,
+    "skill_p_perm": 0.044214,
+    "perm_max": 46.94,
     "perm_k": 600,
     "side_n": {
      "long": 293,
@@ -80,15 +80,15 @@
      "short": 43.32
     },
     "side_lift_pp": {
-     "long": 44.3,
-     "short": 42.94
+     "long": 3.31,
+     "short": 5.58
     },
     "prune_sides": [],
-    "p_emp": 0.0,
-    "p_adj_bonferroni": 0.0,
-    "z_obs": 165.843,
+    "p_emp": 0.017407,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": 2.153,
     "z_luck_bound": 2.991,
-    "z_margin": 162.852,
+    "z_margin": -0.838,
     "n_trials": 408,
     "cal_nets": [
      2507.5,
@@ -127,15 +127,15 @@
      "wr_aligned": 45.68,
      "exp_aligned": 14.658
     },
-    "n_required_h3": 0.2
+    "n_required_h3": 1173.7
    },
    "notes": [
     "PF=1.099<1.3"
    ],
    "passed": false,
-   "rqs2_score": 20.2,
+   "rqs2_score": 10.7,
    "verdict": "REJECT",
-   "n_fail": 4,
+   "n_fail": 6,
    "n_unknown": 0,
    "accepted": false,
    "power_limited": false,
@@ -143,9 +143,9 @@
    "unproven_checks": {
     "G1_lift_floor": true,
     "G2_evidence": true,
-    "G3_efdr": true,
+    "G3_efdr": false,
     "G4_economics": false,
-    "G5_glass_ceiling": false,
+    "G5_glass_ceiling": true,
     "G6_structure": false
    },
    "gate_families": {
@@ -157,12 +157,13 @@
      "H9": true
     },
     "power": {
-     "H3": true,
+     "H3": false,
      "H7": false,
      "H10": true
     },
     "economic_all_pass": false,
     "power_defects": [
+     "H3",
      "H7"
     ]
    },
@@ -175,9 +176,9 @@
     "H0": true,
     "H1": false,
     "H2": true,
-    "H3": true,
+    "H3": false,
     "H4": true,
-    "H5": true,
+    "H5": false,
     "H6": false,
     "H7": false,
     "H8": false,
@@ -204,11 +205,11 @@
     "rr": 1.5,
     "breakeven_wr_cost": 41.01,
     "wr_excess_cost": 3.03,
-    "null_ref_wr": 0.4,
-    "skill_lift_pp": 43.64,
-    "skill_z": 165.84,
-    "skill_p_perm": 0.0,
-    "perm_max": 0.47,
+    "null_ref_wr": 39.62,
+    "skill_lift_pp": 4.41,
+    "skill_z": 1.7,
+    "skill_p_perm": 0.044214,
+    "perm_max": 46.94,
     "perm_k": 600,
     "side_n": {
      "long": 293,
@@ -219,15 +220,15 @@
      "short": 43.32
     },
     "side_lift_pp": {
-     "long": 44.3,
-     "short": 42.94
+     "long": 3.31,
+     "short": 5.58
     },
     "prune_sides": [],
-    "p_emp": 0.0,
-    "p_adj_bonferroni": 0.0,
-    "z_obs": 165.843,
+    "p_emp": 0.017407,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": 2.153,
     "z_luck_bound": 3.128,
-    "z_margin": 162.715,
+    "z_margin": -0.974,
     "n_trials": 644,
     "cal_nets": [
      2507.5,
@@ -266,15 +267,15 @@
      "wr_aligned": 45.68,
      "exp_aligned": 14.658
     },
-    "n_required_h3": 0.2
+    "n_required_h3": 1173.7
    },
    "notes": [
     "PF=1.099<1.3"
    ],
    "passed": false,
-   "rqs2_score": 20.2,
+   "rqs2_score": 10.7,
    "verdict": "REJECT",
-   "n_fail": 4,
+   "n_fail": 6,
    "n_unknown": 0,
    "accepted": false,
    "power_limited": false,
@@ -282,9 +283,9 @@
    "unproven_checks": {
     "G1_lift_floor": true,
     "G2_evidence": true,
-    "G3_efdr": true,
+    "G3_efdr": false,
     "G4_economics": false,
-    "G5_glass_ceiling": false,
+    "G5_glass_ceiling": true,
     "G6_structure": false
    },
    "gate_families": {
@@ -296,12 +297,13 @@
      "H9": true
     },
     "power": {
-     "H3": true,
+     "H3": false,
      "H7": false,
      "H10": true
     },
     "economic_all_pass": false,
     "power_defects": [
+     "H3",
      "H7"
     ]
    },
