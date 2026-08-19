@@ -19,7 +19,7 @@ from engine import rqs2                                  # noqa: E402
 from tools import s434_fast_data as fd                   # noqa: E402
 from strategies.s840_engle_shock import (                # noqa: E402
     ASSET, TF_HOLD, ALL_TFS, ATR_P, MIN_N_IS, SPLIT_FRAC, N_PERM,
-    NULL_POOL_CAP, LAMBDA, cost_pip, atr_series, ewma_z, queue_frozen,
+    NULL_POOL_CAP, LAMBDA, cost_pip, atr_series, queue_frozen,
     build_null_oos, trades_from_st, _slim)
 
 OUT = 'results/_scan_S842'
@@ -35,11 +35,11 @@ N_GRID = len(D_GRID) * len(MODES) * len(SLK_GRID) * len(RR_GRID)   # = 54
 
 
 def drift_stat(close):
-    """D_t = rolling-sum(r, W) / (σ_t·√W). σ از ewma_z (علّی، λ=0.94)."""
-    z, r = ewma_z(close, LAMBDA)          # z را نمی‌خواهیم؛ σ را بازسازی می‌کنیم
-    with np.errstate(divide='ignore', invalid='ignore'):
-        sd = np.where(z != 0, r / z, np.nan)   # σ_t = r_t/z_t (تعریف)
-    # کندل‌های r=0 ⇒ z=0 ⇒ NaN؛ σ را مستقیم از ewma بازسازی امن‌تر:
+    """D_t = rolling-sum(r, W) / (σ_t·√W). σ از EWMA علّی λ=0.94.
+
+    نکتهٔ حافظه (درس OOM روی M1): هیچ آرایهٔ زائدی ساخته نمی‌شود؛ temporaries
+    بلافاصله del می‌شوند. روی ۵M کندل peak < 200MB اضافه.
+    """
     c = np.asarray(close, dtype=np.float64)
     n = len(c)
     rr = np.zeros(n)
@@ -58,10 +58,13 @@ def drift_stat(close):
         v = LAMBDA * v + (1.0 - LAMBDA) * rr[t - 1] * rr[t - 1]
         var[t] = v
     sd = np.sqrt(var)
+    del var
     csum = np.cumsum(rr)
+    del rr
     roll = np.full(n, np.nan)
     roll[W:] = csum[W:] - csum[:-W]
     roll[W - 1] = csum[W - 1]
+    del csum
     with np.errstate(divide='ignore', invalid='ignore'):
         D = np.where(sd > 0, roll / (sd * np.sqrt(W)), np.nan)
     return D
