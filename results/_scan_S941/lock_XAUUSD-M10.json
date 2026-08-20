@@ -1,0 +1,21 @@
+{
+  "layer": "S941",
+  "tf": "M10",
+  "split_bar": 327292,
+  "n_bars": 545488,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M10.csv",
+  "n_eff_declared": 972,
+  "criterion": "max lift*sqrt(n) s.t. n>=150 & net>0",
+  "min_trades": 150,
+  "best_key": "p8_e8_D5_with_k1.7_rr1.0_h48",
+  "best": {
+    "n": 195,
+    "wr": 53.846,
+    "net": 100.2,
+    "sl_med": 20.7,
+    "be": 57.988,
+    "lift": -4.142,
+    "score": -57.84
+  },
+  "score": -57.84
+}
