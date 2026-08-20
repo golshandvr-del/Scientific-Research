@@ -1,0 +1,20 @@
+[M20] src=/home/user/webapp/data/mt5_full/XAUUSD_M20.csv
+[M20] bars_total=272,979  bars_search=136,489 (نیمهٔ اول — مسیر C)
+[M20]   q=0.15 expiry=21 violations=10816  (1s)
+[M20]   q=0.15 expiry=89 violations=14291  (2s)
+[M20]   q=0.4 expiry=21 violations=4947  (3s)
+[M20]   q=0.4 expiry=89 violations=7058  (3s)
+[M20]   q=0.85 expiry=21 violations=1473  (4s)
+[M20]   q=0.85 expiry=89 violations=2399  (4s)
+[M20] arms=48 valid(n>=30)=48 elapsed=4.1s
+[M20] ── ۱۰ بازوی برتر (بر z) ──
+  q=0.85  exp=89  mirr slk=1.8 rr=1.6 n=2112    wr= 41.34% be=42.45% lift= -1.11pp z=  -1.03 net=-2515pip
+  q=0.85  exp=21  mirr slk=1.8 rr=1.6 n=1340    wr= 39.85% be=42.45% lift= -2.59pp z=  -1.92 net=-3328pip
+  q=0.85  exp=89  mirr slk=1.8 rr=1.3 n=2170    wr= 45.48% be=47.98% lift= -2.50pp z=  -2.33 net=-4255pip
+  q=0.85  exp=21  mirr slk=1.8 rr=1.3 n=1367    wr= 44.26% be=47.98% lift= -3.72pp z=  -2.76 net=-3972pip
+  q=0.85  exp=21  main slk=1.8 rr=1.6 n=1363    wr= 38.52% be=42.45% lift= -3.93pp z=  -2.93 net=-4517pip
+  q=0.15  exp=89  mirr slk=1.8 rr=1.6 n=7061    wr= 40.39% be=42.45% lift= -2.05pp z=  -3.49 net=-13306pip
+  q=0.4   exp=21  mirr slk=1.8 rr=1.6 n=3612    wr= 39.34% be=42.45% lift= -3.10pp z=  -3.77 net=-10023pip
+  q=0.4   exp=89  mirr slk=1.8 rr=1.6 n=4834    wr= 39.68% be=42.45% lift= -2.77pp z=  -3.89 net=-12007pip
+  q=0.85  exp=21  main slk=1.8 rr=1.3 n=1383    wr= 42.66% be=47.98% lift= -5.32pp z=  -3.96 net=-5314pip
+  q=0.85  exp=21  mirr slk=1.2 rr=1.6 n=1425    wr= 39.16% be=44.44% lift= -5.28pp z=  -4.01 net=-4154pip

@@ -1,0 +1,13 @@
+[W1] src=/home/user/webapp/data/mt5_full/XAUUSD_W1.csv
+[W1] bars_total=813  bars_search=406 (نیمهٔ اول — مسیر C)
+[W1]   q=0.15 expiry=21 violations=38  (0s)
+[W1]   q=0.15 expiry=89 violations=45  (0s)
+[W1]   q=0.4 expiry=21 violations=21  (0s)
+[W1]   q=0.4 expiry=89 violations=24  (0s)
+[W1]   q=0.85 expiry=21 violations=7  (0s)
+[W1]   q=0.85 expiry=89 violations=8  (0s)
+[W1] arms=48 valid(n>=30)=3 elapsed=0.0s
+[W1] ── ۱۰ بازوی برتر (بر z) ──
+  q=0.15  exp=89  mirr slk=1.2 rr=1.3 n=32      wr= 53.12% be=43.74% lift= +9.39pp z=  +1.07 net=+3550pip
+  q=0.15  exp=89  main slk=1.2 rr=1.6 n=31      wr= 38.71% be=38.69% lift= +0.02pp z=  +0.00 net=+137pip
+  q=0.15  exp=89  main slk=1.2 rr=1.3 n=31      wr= 41.94% be=43.74% lift= -1.80pp z=  -0.20 net=-586pip
