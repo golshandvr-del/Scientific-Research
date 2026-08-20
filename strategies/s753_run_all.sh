@@ -1,7 +1,7 @@
 #!/bin/bash
 # S753 runner — M1 first, then all remaining gold TFs. Per-TF git checkpoint. NO EURUSD.
 cd /home/user/webapp
-TFS="M1 M3 M4 M5 M6 M10 M12 M15 M20 M30 H1 H2 H3 H4 H6 H8 H12 W1 MN1"
+TFS="M1 M3 M4 M5 M6 M10 M12 M15 M20 M30 H1 H2 H3 H4 H6 H8 H12 D1 W1 MN1"
 for TF in $TFS; do
   if [ -f "results/s753/$TF.json" ]; then
     echo "== $TF already done, skip =="
