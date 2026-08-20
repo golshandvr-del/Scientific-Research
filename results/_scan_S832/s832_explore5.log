@@ -1,0 +1,36 @@
+explore bars=54,798  src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv  MED_ATR=30.9pip
+
+===== EMA100  (L=712 S=717) =====
+  slm=1.7 trail=0.7: n=1,428 WR=46.99% lift=+31.75pp exp=  +3.99pip PF=1.250 [E1=1.253 E2=1.245] <<<
+  slm=1.7 trail=1.0: n=1,425 WR=43.58% lift=+28.35pp exp=  +3.86pip PF=1.214 [E1=1.158 E2=1.287] <<<
+  slm=1.7 trail=1.4: n=1,407 WR=41.01% lift=+25.78pp exp=  +3.09pip PF=1.146 [E1=1.109 E2=1.192]
+  slm=2.1 trail=0.7: n=1,426 WR=48.60% lift=+33.54pp exp=  +5.03pip PF=1.326 [E1=1.372 E2=1.265] <<<
+  slm=2.1 trail=1.0: n=1,420 WR=45.21% lift=+30.16pp exp=  +4.88pip PF=1.274 [E1=1.246 E2=1.310] <<<
+  slm=2.1 trail=1.4: n=1,398 WR=42.92% lift=+27.87pp exp=  +4.44pip PF=1.211 [E1=1.185 E2=1.242] <<<
+  slm=2.6 trail=0.7: n=1,420 WR=49.93% lift=+35.02pp exp=  +5.39pip PF=1.342 [E1=1.424 E2=1.239] <<<
+  slm=2.6 trail=1.0: n=1,412 WR=46.46% lift=+31.56pp exp=  +5.29pip PF=1.291 [E1=1.300 E2=1.281] <<<
+  slm=2.6 trail=1.4: n=1,389 WR=44.06% lift=+29.16pp exp=  +4.75pip PF=1.221 [E1=1.224 E2=1.216] <<<
+
+===== EMA200  (L=658 S=637) =====
+  slm=1.7 trail=0.7: n=1,294 WR=47.68% lift=+32.45pp exp=  +4.20pip PF=1.265 [E1=1.233 E2=1.314] <<<
+  slm=1.7 trail=1.0: n=1,293 WR=43.16% lift=+27.92pp exp=  +3.61pip PF=1.200 [E1=1.144 E2=1.275]
+  slm=1.7 trail=1.4: n=1,279 WR=40.34% lift=+25.12pp exp=  +2.67pip PF=1.126 [E1=1.088 E2=1.173]
+  slm=2.1 trail=0.7: n=1,292 WR=49.38% lift=+34.33pp exp=  +5.46pip PF=1.361 [E1=1.357 E2=1.366] <<<
+  slm=2.1 trail=1.0: n=1,289 WR=44.76% lift=+29.71pp exp=  +4.76pip PF=1.270 [E1=1.237 E2=1.313] <<<
+  slm=2.1 trail=1.4: n=1,271 WR=42.25% lift=+27.20pp exp=  +4.21pip PF=1.201 [E1=1.171 E2=1.238] <<<
+  slm=2.6 trail=0.7: n=1,284 WR=50.70% lift=+35.80pp exp=  +5.95pip PF=1.387 [E1=1.430 E2=1.331] <<<
+  slm=2.6 trail=1.0: n=1,279 WR=45.97% lift=+31.07pp exp=  +5.33pip PF=1.298 [E1=1.309 E2=1.283] <<<
+  slm=2.6 trail=1.4: n=1,260 WR=43.33% lift=+28.43pp exp=  +4.72pip PF=1.221 [E1=1.226 E2=1.215] <<<
+
+===== EMA300  (L=627 S=600) =====
+  slm=1.7 trail=0.7: n=1,226 WR=47.23% lift=+31.99pp exp=  +4.67pip PF=1.301 [E1=1.262 E2=1.356] <<<
+  slm=1.7 trail=1.0: n=1,225 WR=42.78% lift=+27.54pp exp=  +4.01pip PF=1.225 [E1=1.160 E2=1.309] <<<
+  slm=1.7 trail=1.4: n=1,213 WR=40.31% lift=+25.09pp exp=  +3.15pip PF=1.151 [E1=1.115 E2=1.194]
+  slm=2.1 trail=0.7: n=1,224 WR=48.94% lift=+33.88pp exp=  +6.07pip PF=1.412 [E1=1.403 E2=1.425] <<<
+  slm=2.1 trail=1.0: n=1,221 WR=44.39% lift=+29.34pp exp=  +5.30pip PF=1.307 [E1=1.266 E2=1.359] <<<
+  slm=2.1 trail=1.4: n=1,205 WR=42.24% lift=+27.19pp exp=  +4.83pip PF=1.235 [E1=1.208 E2=1.267] <<<
+  slm=2.6 trail=0.7: n=1,217 WR=50.29% lift=+35.38pp exp=  +6.65pip PF=1.447 [E1=1.481 E2=1.403] <<<
+  slm=2.6 trail=1.0: n=1,212 WR=45.63% lift=+30.72pp exp=  +5.98pip PF=1.342 [E1=1.345 E2=1.339] <<<
+  slm=2.6 trail=1.4: n=1,195 WR=43.35% lift=+28.45pp exp=  +5.48pip PF=1.262 [E1=1.269 E2=1.255] <<<
+
+[S832 explore-5 complete]
