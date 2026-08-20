@@ -1,0 +1,7 @@
+S541 HA Run-Flip | R=3 frozen | side=long | geometry: sl=1.5xATR(100) rr=1.5 | data=full 15.6y | k=2000 seed=20260819 n_trials=33
+--- XAUUSD_M15 ---
+  [DATA] data/full/XAUUSD_M15.csv rows=363778 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_M15: span=15.59y n=17444 sl=28.59pip wr=39.16 be=44.62 lift=-5.46 unc=39.35 pmax=40.25 z=-0.52 rqs2=0.0 verdict=REJECT
+  saved -> results/_s541/XAUUSD_M15.json
+--- XAUUSD_M20 ---
+  [DATA] data/full/XAUUSD_M20.csv rows=272979 2011-01-03 → 2026-08-07 (15.59y)
