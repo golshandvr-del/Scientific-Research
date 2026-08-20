@@ -123,17 +123,16 @@ def main():
     print('winner:', w)
 
     d = fd.load_fast('XAUUSD', 'M1')
-    df = fd.as_dataframe(d)
     print('src:', d['src'])
     z = np.load(os.path.join(OUT_DIR, 'features_m1.npz'))
     roof = z['roof']
-    n = len(df)
+    n = len(d['open'])
     up = np.zeros(n, bool); dn = np.zeros(n, bool)
     up[1:] = (roof[1:] > 0) & (roof[:-1] <= 0)
     dn[1:] = (roof[1:] < 0) & (roof[:-1] >= 0)
     # برنده: logic=cycle, gate=none
     ls, ss = up, dn
-    t = df['time'].values
+    t = d['time']
     second = t >= SPLIT_EPOCH
     ls2, ss2 = ls & second, ss & second
 
@@ -142,10 +141,10 @@ def main():
     sl_d, tp_d = w['sl'] * pip, w['tp'] * pip
     mh = w['mh']
 
-    o = df['open'].values.astype(np.float64)
-    hi = df['high'].values.astype(np.float64)
-    lo = df['low'].values.astype(np.float64)
-    c = df['close'].values.astype(np.float64)
+    o = np.ascontiguousarray(d['open'], dtype=np.float64)
+    hi = np.ascontiguousarray(d['high'], dtype=np.float64)
+    lo = np.ascontiguousarray(d['low'], dtype=np.float64)
+    c = np.ascontiguousarray(d['close'], dtype=np.float64)
 
     sig = ls2 | ss2
     sig_idx = np.where(sig)[0].astype(np.int64)
@@ -155,17 +154,34 @@ def main():
     win_L, win_S, exit_L, exit_S, valid = precompute_outcomes(
         o, hi, lo, c, sig_idx, sl_d, tp_d, mh, spread, pip)
 
-    # --- اعتبارسنجی مقابل موتور رسمی ---
+    # --- اعتبارسنجی مقابل موتور رسمی: روی برش 400k کندلی (محدودیت RAM/OOM) ---
+    import pandas as pd
+    s0 = int(np.searchsorted(t, SPLIT_EPOCH))
+    s1 = min(s0 + 400_000, n)
+    dfv = pd.DataFrame({'open': o[s0:s1], 'high': hi[s0:s1],
+                        'low': lo[s0:s1], 'close': c[s0:s1]})
+    trv = se.simulate_trades(dfv, ls2[s0:s1], ss2[s0:s1], sl_pip=w['sl'],
+                             tp_pip=w['tp'], asset='XAUUSD', max_hold=mh,
+                             allow_overlap=False)
+    wr_ref = float((trv['outcome'].values == 'win').mean() * 100)
+    del dfv
+    vmask = (sig_idx >= s0) & (sig_idx < s1 - 1)
+    v_idx = (sig_idx[vmask] - s0).astype(np.int64)
+    v_dirs = true_dirs[vmask]
+    wL, wS, eL, eS, vv = precompute_outcomes(
+        o[s0:s1], hi[s0:s1], lo[s0:s1], c[s0:s1], v_idx, sl_d, tp_d, mh,
+        spread, pip)
+    wl_v, nl_v, ws_v, ns_v = nonoverlap_wr(v_idx, v_dirs, wL, wS, eL, eS, vv)
+    wr_fast_v = (wl_v + ws_v) / (nl_v + ns_v) * 100
+    print(f'validation(slice {s1-s0} bars): fast WR={wr_fast_v:.4f} vs '
+          f'engine WR={wr_ref:.4f} (n {nl_v+ns_v} vs {len(trv)})')
+    if abs(wr_fast_v - wr_ref) > 0.05:
+        raise SystemExit('⛔ fast-null diverges from engine — abort')
     wl, nl, ws, ns = nonoverlap_wr(sig_idx, true_dirs, win_L, win_S,
                                    exit_L, exit_S, valid)
     wr_fast = (wl + ws) / (nl + ns) * 100
-    tr = se.simulate_trades(df, ls2, ss2, sl_pip=w['sl'], tp_pip=w['tp'],
-                            asset='XAUUSD', max_hold=mh, allow_overlap=False)
-    wr_ref = float((tr['outcome'].values == 'win').mean() * 100)
-    print(f'validation: fast WR={wr_fast:.4f} vs engine WR={wr_ref:.4f} '
-          f'(n {nl+ns} vs {len(tr)})')
-    if abs(wr_fast - wr_ref) > 0.05:
-        raise SystemExit('⛔ fast-null diverges from engine — abort')
+    print(f'holdout layer (fast engine): WR={wr_fast:.4f} n={nl+ns} '
+          f'(long {nl}, short {ns})')
 
     # --- خط مبنای بی‌قید هر سمت ---
     all_long = np.ones(len(sig_idx), np.int8)
