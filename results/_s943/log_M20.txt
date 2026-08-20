@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S943 VolumeSurgeFADE :: XAUUSD_M20  bars=272,979  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_M20.csv  (2011-01-03 00:00:00 → 2026-08-07 23:40:00)
+    geom: SL=33.30pip  TP=49.94pip  rr=1.5
+    family events: long=8,239  short=7,468
+    trades=8,748 (L=4,627 S=4,121)  wr=39.80%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=38.63% n=29603
+      uncond long stride=7: wr=39.15% n=20426
+      uncond long stride=13: wr=39.31% n=14362
+      null long  uncond=39.31207352736388 perm_mean=39.08774219146407 sd=0.7039096623452147 k=1000
+      uncond short stride=3: wr=38.40% n=29703
+      uncond short stride=7: wr=38.49% n=20405
+      uncond short stride=13: wr=38.64% n=14380
+      null short uncond=38.63699582753825 perm_mean=39.397008420768415 sd=0.7315231298012809 k=1000
+
+S943_VolumeSurgeFade_XAUUSD_M20 | REJECT     RQS2=  2.4 | n=8748 WR=39.80% PF=0.99 lift=  +0.45pp z= 0.6 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗

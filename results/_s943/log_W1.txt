@@ -1,0 +1,30 @@
+
+====================================================================================
+=== S943 VolumeSurgeFADE :: XAUUSD_W1  bars=813  span=15.58y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_W1.csv  (2011-01-02 00:00:00 → 2026-08-02 00:00:00)
+    geom: SL=754.91pip  TP=1132.37pip  rr=1.5
+    family events: long=7  short=13
+    trades=14 (L=3 S=11)  wr=21.43%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=52.94% n=68
+      uncond long stride=7: wr=59.57% n=47
+      uncond long stride=13: wr=47.06% n=34
+      null long  uncond=59.57446808510638 perm_mean=None sd=None k=None
+      uncond short stride=3: wr=26.03% n=73
+      uncond short stride=7: wr=24.49% n=49
+      uncond short stride=13: wr=28.95% n=38
+      null short uncond=28.94736842105263 perm_mean=26.05166305916306 sd=12.966154107312748 k=1000
+Traceback (most recent call last):
+  File "/home/user/webapp/strategies/s943_volume_surge_fade.py", line 139, in <module>
+    run_card(tf)
+    ~~~~~~~~^^^^
+  File "/home/user/webapp/strategies/s943_volume_surge_fade.py", line 113, in run_card
+    res = R.compute_rqs2(tr, ASSET, sl_pip=sl_pip, tp_pip=tp_pip,
+                         bar_time=d['time'], close=close, null=null,
+                         n_trials=N_TRIALS, split_bar=split_bar)
+  File "/home/user/webapp/engine/rqs2.py", line 1011, in compute_rqs2
+    nb = blend_null(null, n_by_side)
+  File "/home/user/webapp/engine/rqs2.py", line 828, in blend_null
+    kmin = int(k) if kmin is None else min(kmin, int(k or 0))
+           ~~~^^^
+TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
