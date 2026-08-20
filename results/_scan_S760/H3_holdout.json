@@ -1,0 +1,94 @@
+{
+ "tf": "H3",
+ "cfg": {
+  "side": "long",
+  "lp": 34,
+  "sp": 13,
+  "thr": 22.389,
+  "k": 1.5,
+  "rr": 1.0
+ },
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+ "n_full": 31806,
+ "split_bar": 19083,
+ "med_sl_pip": 107.59327923519949,
+ "med_tp_pip": 107.59327923519949,
+ "mh": 64,
+ "n_search_trades": 164,
+ "n_holdout_trades": 137,
+ "null": {
+  "long": {
+   "uncond_wr": 50.031921685464994,
+   "perm_mean": 49.76472589409638,
+   "perm_sd": 4.162844193273383,
+   "perm_max": 69.17293233082707,
+   "perm_k": 2000
+  },
+  "short": {
+   "uncond_wr": null,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": null
+  }
+ },
+ "results": {
+  "N1_pathC": {
+   "verdict": "REJECT",
+   "rqs2": 5.4,
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": true,
+    "H5": true,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": false
+   },
+   "skill_p": 0.161105,
+   "metrics": {
+    "skill_lift_pp": 4.12,
+    "skill_z": 0.99,
+    "pf": null,
+    "wr": null,
+    "n_trades": 301,
+    "max_dd_pct": 16.16,
+    "exp_pip": null
+   }
+  },
+  "N96_strict": {
+   "verdict": "REJECT",
+   "rqs2": 4.5,
+   "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": true,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": false
+   },
+   "skill_p": 0.161105,
+   "metrics": {
+    "skill_lift_pp": 4.12,
+    "skill_z": 0.99,
+    "pf": null,
+    "wr": null,
+    "n_trades": 301,
+    "max_dd_pct": 16.16,
+    "exp_pip": null
+   }
+  }
+ },
+ "seed": 20260812,
+ "k_perm": 2000,
+ "elapsed_s": 5.7
+}
