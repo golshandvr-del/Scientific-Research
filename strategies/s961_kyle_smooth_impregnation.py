@@ -206,6 +206,71 @@ def build_null(df, ls, ss, sl_arr, tp_arr, mh, asset, seed=SEED, K=K_PERM):
                       'uncond_n': unc_n}}
 
 
+def discover_one_p(tf, p):
+    """فازِ کشفِ یک p در پردازه‌ی جدا (ضدِ OOMِ نهاییِ M1 — درسِ سومِ S961:
+    حافظه‌ی numpy/pandas بینِ pها به‌طورِ قابلِ اتکا به OS برنمی‌گردد؛ تنها
+    مرزِ اطمینان، مرزِ پردازه است). خروجی: partial JSON بهترین عضوِ این p."""
+    d = fd.load_fast('XAUUSD', tf)
+    for _k in ('hour', 'minute', 'dow'):
+        d.pop(_k, None)
+    t_arr = np.asarray(d['time'], dtype=np.int64)
+    t_mid = (int(t_arr[0]) + int(t_arr[-1])) // 2
+    split = int(np.searchsorted(t_arr, t_mid))
+    df1 = _views_df(d, end=split)
+    pip = se.ASSETS['XAUUSD']['pip']
+    er1, mag1, dir1, atr1 = features(df1, p)
+    best = None
+    for R in R_LIST:
+        for G in G_LIST:
+            for mode in MODES:
+                for (k_sl, k_tp) in GEOMS:
+                    tr, *_ = run_member(df1, er1, mag1, dir1, atr1,
+                                        R, G, mode, k_sl, k_tp,
+                                        p, 'XAUUSD', pip)
+                    st = discovery_stat(tr, k_tp / k_sl)
+                    del tr
+                    gc.collect()
+                    if st is None:
+                        continue
+                    if best is None or st['stat'] > best['stat']:
+                        best = dict(p=p, R=R, G=G, mode=mode,
+                                    k_sl=k_sl, k_tp=k_tp, **st)
+    out = dict(tf=tf, p=p, split_bar=split, best=best)
+    json.dump(out, open(f'{OUT}/partial_{tf}_p{p}.json', 'w'),
+              ensure_ascii=False, indent=1)
+    print(f'[{tf} p={p}] best={None if best is None else round(best["stat"],1)}',
+          flush=True)
+
+
+def adjudicate_from_partials(tf):
+    """داوریِ نهایی از partialها (holdout یک بار — همان پروتکلِ مسیر C)."""
+    t0 = time.time()
+    bests = []
+    split = None
+    for p in P_LIST:
+        fp = f'{OUT}/partial_{tf}_p{p}.json'
+        if not os.path.exists(fp):
+            raise RuntimeError(f'partial missing: {fp}')
+        rec = json.load(open(fp))
+        split = rec['split_bar']
+        if rec['best'] is not None:
+            bests.append(rec['best'])
+    d = fd.load_fast('XAUUSD', tf)
+    for _k in ('hour', 'minute', 'dow'):
+        d.pop(_k, None)
+    src = d['src']
+    n_bars = len(d['close'])
+    if not bests:
+        rec = dict(tf=tf, src=src, n_bars=n_bars, split_bar=split,
+                   verdict='NO-SURVIVOR',
+                   note='هیچ عضوی غربالِ کشف (n>=30 و expectancy>0) را نگذراند',
+                   sec=round(time.time() - t0, 1))
+        json.dump(rec, open(f'{OUT}/{tf}.json', 'w'), ensure_ascii=False, indent=1)
+        return rec
+    best = max(bests, key=lambda b: b['stat'])
+    return _final_judge(tf, d, src, n_bars, split, best, t0)
+
+
 def judge_tf(tf):
     t0 = time.time()
     d = fd.load_fast('XAUUSD', tf)
@@ -251,7 +316,14 @@ def judge_tf(tf):
         json.dump(rec, open(f'{OUT}/{tf}.json', 'w'), ensure_ascii=False, indent=1)
         return rec
 
-    # ---------- داوریِ یک‌باره (holdout یک بار لمس می‌شود) ----------
+    return _final_judge(tf, d, src, n_bars, split, best, t0)
+
+
+def _final_judge(tf, d, src, n_bars, split, best, t0):
+    """داوریِ یک‌باره روی کلِ داده (holdout یک بار لمس می‌شود)."""
+    asset = 'XAUUSD'
+    pip = se.ASSETS[asset]['pip']
+    df = _views_df(d)
     p, R, G = best['p'], best['R'], best['G']
     mode, k_sl, k_tp = best['mode'], best['k_sl'], best['k_tp']
     mh = 3 * p
@@ -293,6 +365,19 @@ def judge_tf(tf):
 
 
 def main():
+    # زیرفرمان‌های ضدِ OOM برای M1 (هر p یک پردازه‌ی جدا):
+    #   discover <TF> <p>   → فقط کشفِ آن p، ذخیره‌ی partial
+    #   adjudicate <TF>     → داوریِ نهایی از partialها
+    if len(sys.argv) >= 3 and sys.argv[1] == 'discover':
+        discover_one_p(sys.argv[2], int(sys.argv[3]))
+        return
+    if len(sys.argv) >= 2 and sys.argv[1] == 'adjudicate':
+        tf = sys.argv[2]
+        rec = adjudicate_from_partials(tf)
+        print(f"[{tf}] verdict={rec.get('verdict')} score={rec.get('score')} "
+              f"n={rec.get('n')} wr={rec.get('wr')} lift={rec.get('lift')} "
+              f"z={rec.get('z')} ({rec.get('sec')}s)", flush=True)
+        return
     only = sys.argv[1:] if len(sys.argv) > 1 else TFS
     for tf in only:
         try:
