@@ -1,0 +1,17 @@
+{
+ "strategy": "S971_RollRegimeOnset",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "bars": 813,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "split_bar": 569,
+ "hold": 4,
+ "n_trials": 24,
+ "k_perm": 2000,
+ "seed": 20260818,
+ "prereg": "results/S971_PREREG_roll_regime_onset.md",
+ "sl_pip": 490.171,
+ "tp_pip": 735.257,
+ "n_signals": 3,
+ "verdict": "NO_TRADES_FULL"
+}
