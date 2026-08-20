@@ -1,0 +1,210 @@
+{
+ "M5": {
+  "m5kc2": {
+   "events": 85895,
+   "per_year": 16585.3
+  },
+  "m5kc3": {
+   "events": 91615,
+   "per_year": 17689.8
+  },
+  "m8kc2": {
+   "events": 57772,
+   "per_year": 11155.1
+  },
+  "m8kc3": {
+   "events": 61520,
+   "per_year": 11878.8
+  },
+  "m13kc2": {
+   "events": 38020,
+   "per_year": 7341.2
+  },
+  "m13kc3": {
+   "events": 40431,
+   "per_year": 7806.8
+  }
+ },
+ "M15": {
+  "m5kc2": {
+   "events": 28566,
+   "per_year": 5506.9
+  },
+  "m5kc3": {
+   "events": 30587,
+   "per_year": 5896.5
+  },
+  "m8kc2": {
+   "events": 19764,
+   "per_year": 3810.0
+  },
+  "m8kc3": {
+   "events": 21142,
+   "per_year": 4075.7
+  },
+  "m13kc2": {
+   "events": 13946,
+   "per_year": 2688.5
+  },
+  "m13kc3": {
+   "events": 14937,
+   "per_year": 2879.5
+  }
+ },
+ "M30": {
+  "m5kc2": {
+   "events": 14345,
+   "per_year": 2761.5
+  },
+  "m5kc3": {
+   "events": 15360,
+   "per_year": 2956.9
+  },
+  "m8kc2": {
+   "events": 10276,
+   "per_year": 1978.2
+  },
+  "m8kc3": {
+   "events": 10993,
+   "per_year": 2116.2
+  },
+  "m13kc2": {
+   "events": 6445,
+   "per_year": 1240.7
+  },
+  "m13kc3": {
+   "events": 6877,
+   "per_year": 1323.9
+  }
+ },
+ "H1": {
+  "m5kc2": {
+   "events": 7196,
+   "per_year": 1381.4
+  },
+  "m5kc3": {
+   "events": 7788,
+   "per_year": 1495.0
+  },
+  "m8kc2": {
+   "events": 4470,
+   "per_year": 858.1
+  },
+  "m8kc3": {
+   "events": 4847,
+   "per_year": 930.4
+  },
+  "m13kc2": {
+   "events": 3216,
+   "per_year": 617.4
+  },
+  "m13kc3": {
+   "events": 3464,
+   "per_year": 665.0
+  }
+ },
+ "H2": {
+  "m5kc2": {
+   "events": 3349,
+   "per_year": 616.5
+  },
+  "m5kc3": {
+   "events": 3595,
+   "per_year": 661.7
+  },
+  "m8kc2": {
+   "events": 2522,
+   "per_year": 464.2
+  },
+  "m8kc3": {
+   "events": 2674,
+   "per_year": 492.2
+  },
+  "m13kc2": {
+   "events": 1383,
+   "per_year": 254.6
+  },
+  "m13kc3": {
+   "events": 1457,
+   "per_year": 268.2
+  }
+ },
+ "H4": {
+  "m5kc2": {
+   "events": 1937,
+   "per_year": 357.4
+  },
+  "m5kc3": {
+   "events": 2099,
+   "per_year": 387.3
+  },
+  "m8kc2": {
+   "events": 1130,
+   "per_year": 208.5
+  },
+  "m8kc3": {
+   "events": 1210,
+   "per_year": 223.3
+  },
+  "m13kc2": {
+   "events": 751,
+   "per_year": 138.6
+  },
+  "m13kc3": {
+   "events": 801,
+   "per_year": 147.8
+  }
+ },
+ "H8": {
+  "m5kc2": {
+   "events": 936,
+   "per_year": 171.3
+  },
+  "m5kc3": {
+   "events": 1004,
+   "per_year": 183.7
+  },
+  "m8kc2": {
+   "events": 606,
+   "per_year": 110.9
+  },
+  "m8kc3": {
+   "events": 653,
+   "per_year": 119.5
+  },
+  "m13kc2": {
+   "events": 402,
+   "per_year": 73.6
+  },
+  "m13kc3": {
+   "events": 434,
+   "per_year": 79.4
+  }
+ },
+ "D1": {
+  "m5kc2": {
+   "events": 319,
+   "per_year": 58.2
+  },
+  "m5kc3": {
+   "events": 333,
+   "per_year": 60.8
+  },
+  "m8kc2": {
+   "events": 217,
+   "per_year": 39.6
+  },
+  "m8kc3": {
+   "events": 228,
+   "per_year": 41.6
+  },
+  "m13kc2": {
+   "events": 137,
+   "per_year": 25.0
+  },
+  "m13kc3": {
+   "events": 143,
+   "per_year": 26.1
+  }
+ }
+}
