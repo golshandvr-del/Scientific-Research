@@ -19,13 +19,13 @@ TF = sys.argv[1] if len(sys.argv) > 1 else 'H3'
 PIP = 0.10; SPREAD = 3.3
 
 d = fd.load_fast('XAUUSD', TF)
-df = d['df'] if isinstance(d, dict) and 'df' in d else d
-src = d['src'] if isinstance(d, dict) else 'unknown'
+df = fd.as_dataframe(d)
+src = d['src']
 o = df['open'].values; h = df['high'].values; l = df['low'].values
-c = df['close'].values; t = pd.to_datetime(df['time']).values
+c = df['close'].values; t = df['time'].values.astype(np.int64)
 n = len(c); split = n // 2
 print(f'src={src} | TF={TF} | bars={n} | discovery=first {split} bars '
-      f'({str(t[0])[:10]} → {str(t[split-1])[:10]})', flush=True)
+      f'({np.datetime64(int(t[0]),"s")} → {np.datetime64(int(t[split-1]),"s")})', flush=True)
 
 # --- causal building blocks ---
 r = np.r_[np.nan, np.diff(np.log(c))]                      # log return of bar t
@@ -52,9 +52,8 @@ def run(k_jump, a_geom, mh):
     long_sig[split:] = False; short_sig[split:] = False   # discovery half only
     sl_arr = np.where(valid, a_geom * atr / PIP, 0.0)
     trades = se.simulate_trades(
-        o, h, l, c, long_sig, short_sig,
-        sl_pip=sl_arr, tp_pip=sl_arr, max_hold=mh,
-        spread_pip=SPREAD, pip=PIP, allow_overlap=False)
+        df, long_sig, short_sig, sl_arr, sl_arr, 'XAUUSD',
+        max_hold=mh, allow_overlap=False)
     if trades is None or len(trades) == 0:
         return dict(n=0, wr=np.nan, net=0.0, exp=np.nan)
     nn = len(trades); w = (trades['pnl_pip'] > 0).sum()
