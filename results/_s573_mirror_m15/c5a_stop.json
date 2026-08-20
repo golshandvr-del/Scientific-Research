@@ -1,0 +1,16 @@
+{
+ "status": "C5A_NEW_MEMBER_DROPPED",
+ "new_member": "XAUUSD-M15",
+ "used": [
+  "XAUUSD-H1",
+  "XAUUSD-M30"
+ ],
+ "dropped": [
+  {
+   "card": "XAUUSD-M15",
+   "lift": 7.312370739457833,
+   "reason": "dilutes pool (lowers z_proxy)"
+  }
+ ],
+ "note": "greedy عضو جدید را حذف کرد ⇒ استخر همان S572 است ⇒ توقف بدون داوری (ضد double-dip، پیش‌ثبت §۳)"
+}
