@@ -1,0 +1,47 @@
+{
+ "card": "S753-XAUUSD-D1",
+ "asset": "XAUUSD",
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars": 4005,
+ "frozen": {
+  "family_P": [
+   14,
+   21,
+   34
+  ],
+  "thr_range": 61.8,
+  "thr_trend": 38.2,
+  "lookback_k": 34,
+  "sl_k": 1.45,
+  "atr_p": 89,
+  "rr": 1.618,
+  "hold": 55
+ },
+ "protocol": "C_holdout_prereg_S753",
+ "discovery": [
+  {
+   "P": 14,
+   "n": 22,
+   "wr": 40.909090909090914,
+   "net_pip": 480.337621665958,
+   "crit": 0.2833353387026221
+  },
+  {
+   "P": 21,
+   "n": 13,
+   "wr": 30.76923076923077,
+   "net_pip": -1087.424427088495,
+   "crit": -1000000000.0
+  },
+  {
+   "P": 34,
+   "n": 3,
+   "wr": 100.0,
+   "net_pip": 1221.3565545726194,
+   "crit": -1000000000.0
+  }
+ ],
+ "verdict": "UNPROVEN",
+ "note": "discovery: no config with n>=30"
+}
