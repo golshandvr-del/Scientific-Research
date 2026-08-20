@@ -7,7 +7,7 @@
  "span_years": 15.59,
  "split_bar": 28573,
  "n_trials": 8,
- "k_perm": 100,
+ "k_perm": 500,
  "prereg": "results/S745_PREREG_KEY_REVERSAL_EXTREME_PATH_C.md",
  "grid_summary": {
   "tested": 8,
