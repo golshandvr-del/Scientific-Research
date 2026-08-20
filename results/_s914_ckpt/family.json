@@ -1,0 +1,339 @@
+{
+ "M1": {
+  "n_bars": 5000000,
+  "n_train": 3000000,
+  "n_sig": 67667,
+  "span_years": 14.34,
+  "geometry": {
+   "tp": 8.3,
+   "sl": 3.6,
+   "n_sig": 67667,
+   "rr": 2.306
+  },
+  "train": {
+   "n": 57978,
+   "wr": 27.87,
+   "e_pip": -3.37,
+   "e_over_sl_pct": -93.64,
+   "cost_over_sl_pct": 91.67
+  }
+ },
+ "M3": {
+  "n_bars": 1815880,
+  "n_train": 1089528,
+  "n_sig": 26629,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 14.6,
+   "sl": 6.4,
+   "n_sig": 26629,
+   "rr": 2.281
+  },
+  "train": {
+   "n": 22403,
+   "wr": 29.88,
+   "e_pip": -3.48,
+   "e_over_sl_pct": -54.36,
+   "cost_over_sl_pct": 51.56
+  }
+ },
+ "M4": {
+  "n_bars": 1362074,
+  "n_train": 817244,
+  "n_sig": 20027,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 17.2,
+   "sl": 7.5,
+   "n_sig": 20027,
+   "rr": 2.293
+  },
+  "train": {
+   "n": 16868,
+   "wr": 30.16,
+   "e_pip": -3.48,
+   "e_over_sl_pct": -46.44,
+   "cost_over_sl_pct": 44.0
+  }
+ },
+ "M5": {
+  "n_bars": 1089574,
+  "n_train": 653744,
+  "n_sig": 16044,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 19.4,
+   "sl": 8.4,
+   "n_sig": 16044,
+   "rr": 2.307
+  },
+  "train": {
+   "n": 13440,
+   "wr": 30.21,
+   "e_pip": -3.56,
+   "e_over_sl_pct": -42.36,
+   "cost_over_sl_pct": 39.29
+  }
+ },
+ "M6": {
+  "n_bars": 908864,
+  "n_train": 545318,
+  "n_sig": 13326,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 21.5,
+   "sl": 9.5,
+   "n_sig": 13326,
+   "rr": 2.263
+  },
+  "train": {
+   "n": 11121,
+   "wr": 31.13,
+   "e_pip": -3.56,
+   "e_over_sl_pct": -37.51,
+   "cost_over_sl_pct": 34.74
+  }
+ },
+ "M10": {
+  "n_bars": 545488,
+  "n_train": 327292,
+  "n_sig": 7770,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 29.6,
+   "sl": 11.8,
+   "n_sig": 7770,
+   "rr": 2.508
+  },
+  "train": {
+   "n": 6530,
+   "wr": 30.87,
+   "e_pip": -3.08,
+   "e_over_sl_pct": -26.09,
+   "cost_over_sl_pct": 27.97
+  }
+ },
+ "M12": {
+  "n_bars": 454692,
+  "n_train": 272815,
+  "n_sig": 6616,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 31.8,
+   "sl": 13.0,
+   "n_sig": 6616,
+   "rr": 2.446
+  },
+  "train": {
+   "n": 5545,
+   "wr": 31.06,
+   "e_pip": -3.27,
+   "e_over_sl_pct": -25.16,
+   "cost_over_sl_pct": 25.38
+  }
+ },
+ "M15": {
+  "n_bars": 363778,
+  "n_train": 218266,
+  "n_sig": 5194,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 36.5,
+   "sl": 15.4,
+   "n_sig": 5194,
+   "rr": 2.37
+  },
+  "train": {
+   "n": 4324,
+   "wr": 31.59,
+   "e_pip": -3.46,
+   "e_over_sl_pct": -22.45,
+   "cost_over_sl_pct": 21.43
+  }
+ },
+ "M20": {
+  "n_bars": 272979,
+  "n_train": 163787,
+  "n_sig": 3845,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 43.1,
+   "sl": 18.3,
+   "n_sig": 3845,
+   "rr": 2.357
+  },
+  "train": {
+   "n": 3179,
+   "wr": 31.74,
+   "e_pip": -3.43,
+   "e_over_sl_pct": -18.76,
+   "cost_over_sl_pct": 18.03
+  }
+ },
+ "M30": {
+  "n_bars": 182145,
+  "n_train": 109287,
+  "n_sig": 2556,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 54.4,
+   "sl": 23.5,
+   "n_sig": 2556,
+   "rr": 2.32
+  },
+  "train": {
+   "n": 2124,
+   "wr": 31.54,
+   "e_pip": -4.06,
+   "e_over_sl_pct": -17.26,
+   "cost_over_sl_pct": 14.04
+  }
+ },
+ "H1": {
+  "n_bars": 91331,
+  "n_train": 54798,
+  "n_sig": 1293,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 80.0,
+   "sl": 34.4,
+   "n_sig": 1293,
+   "rr": 2.328
+  },
+  "train": {
+   "n": 1074,
+   "wr": 31.56,
+   "e_pip": -3.91,
+   "e_over_sl_pct": -11.37,
+   "cost_over_sl_pct": 9.59
+  }
+ },
+ "H2": {
+  "n_bars": 47623,
+  "n_train": 28573,
+  "n_sig": 580,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 122.2,
+   "sl": 48.5,
+   "n_sig": 580,
+   "rr": 2.521
+  },
+  "train": {
+   "n": 482,
+   "wr": 32.57,
+   "e_pip": 0.29,
+   "e_over_sl_pct": 0.6,
+   "cost_over_sl_pct": 6.8
+  }
+ },
+ "H3": {
+  "n_bars": 31806,
+  "n_train": 19083,
+  "n_sig": 397,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 151.9,
+   "sl": 58.3,
+   "n_sig": 397,
+   "rr": 2.605
+  },
+  "train": {
+   "n": 334,
+   "wr": 33.23,
+   "e_pip": 3.1,
+   "e_over_sl_pct": 5.33,
+   "cost_over_sl_pct": 5.66
+  }
+ },
+ "H6": {
+  "n_bars": 15966,
+  "n_train": 9579,
+  "n_sig": 200,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 214.9,
+   "sl": 90.5,
+   "n_sig": 200,
+   "rr": 2.375
+  },
+  "train": {
+   "n": 171,
+   "wr": 31.58,
+   "e_pip": -1.43,
+   "e_over_sl_pct": -1.58,
+   "cost_over_sl_pct": 3.65
+  }
+ },
+ "H8": {
+  "n_bars": 11978,
+  "n_train": 7186,
+  "n_sig": 141,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 280.1,
+   "sl": 78.7,
+   "n_sig": 141,
+   "rr": 3.559
+  },
+  "train": {
+   "n": 115,
+   "wr": 33.04,
+   "e_pip": 23.27,
+   "e_over_sl_pct": 29.56,
+   "cost_over_sl_pct": 4.19
+  }
+ },
+ "H12": {
+  "n_bars": 7998,
+  "n_train": 4798,
+  "n_sig": 107,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 379.1,
+   "sl": 118.1,
+   "n_sig": 107,
+   "rr": 3.209
+  },
+  "train": {
+   "n": 85,
+   "wr": 30.59,
+   "e_pip": 14.84,
+   "e_over_sl_pct": 12.57,
+   "cost_over_sl_pct": 2.79
+  }
+ },
+ "D1": {
+  "n_bars": 4005,
+  "n_train": 2403,
+  "n_sig": 54,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 525.2,
+   "sl": 154.3,
+   "n_sig": 54,
+   "rr": 3.403
+  },
+  "train": {
+   "n": 43,
+   "wr": 39.53,
+   "e_pip": 108.67,
+   "e_over_sl_pct": 70.42,
+   "cost_over_sl_pct": 2.14
+  }
+ },
+ "W1": {
+  "n_bars": 813,
+  "n_train": 487,
+  "n_sig": 15,
+  "span_years": 15.58,
+  "geometry": null
+ },
+ "MN1": {
+  "n_bars": 188,
+  "n_train": 112,
+  "n_sig": 3,
+  "span_years": 15.58,
+  "geometry": null
+ }
+}
