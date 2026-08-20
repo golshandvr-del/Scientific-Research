@@ -1,0 +1,194 @@
+{
+ "M15": {
+  "cfg": {
+   "q": 70,
+   "sw": true,
+   "hold": 1
+  },
+  "variants": {
+   "SYM-q85": {
+    "sl": 21.9,
+    "tp": 21.9,
+    "mh": 1,
+    "rule": "SL=TP=q85(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 3.72911708757536,
+    "n_first_half": 202,
+    "wr_first_half": 64.85,
+    "dd_first_half": 7.65
+   },
+   "SYM-q90": {
+    "sl": 26.7,
+    "tp": 26.7,
+    "mh": 1,
+    "rule": "SL=TP=q90(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 3.5981169813598637,
+    "n_first_half": 202,
+    "wr_first_half": 64.36,
+    "dd_first_half": 7.03
+   },
+   "SYM-q95": {
+    "sl": 36.9,
+    "tp": 36.9,
+    "mh": 1,
+    "rule": "SL=TP=q95(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 3.8347303694507295,
+    "n_first_half": 202,
+    "wr_first_half": 65.35,
+    "dd_first_half": 6.19
+   },
+   "ASYM-sl85": {
+    "sl": 12.8,
+    "tp": 51.0,
+    "mh": 1,
+    "rule": "SL=q85(|MAE|)·TP=q98(|MFE|) [first half]",
+    "t_first_half": 3.7561565201103986,
+    "n_first_half": 202,
+    "wr_first_half": 61.39,
+    "dd_first_half": 8.9
+   },
+   "ASYM-sl90": {
+    "sl": 17.2,
+    "tp": 51.0,
+    "mh": 1,
+    "rule": "SL=q90(|MAE|)·TP=q98(|MFE|) [first half]",
+    "t_first_half": 4.1021386240380355,
+    "n_first_half": 202,
+    "wr_first_half": 63.86,
+    "dd_first_half": 6.1
+   }
+  },
+  "picked": "ASYM-sl90",
+  "split_bar": 180578,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+  "n_signals": 603
+ },
+ "M30": {
+  "cfg": {
+   "q": 80,
+   "sw": true,
+   "hold": 1
+  },
+  "variants": {
+   "SYM-q85": {
+    "sl": 30.3,
+    "tp": 30.3,
+    "mh": 1,
+    "rule": "SL=TP=q85(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 3.425633251892194,
+    "n_first_half": 129,
+    "wr_first_half": 65.89,
+    "dd_first_half": 11.5
+   },
+   "SYM-q90": {
+    "sl": 39.9,
+    "tp": 39.9,
+    "mh": 1,
+    "rule": "SL=TP=q90(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 3.51167456899025,
+    "n_first_half": 129,
+    "wr_first_half": 65.89,
+    "dd_first_half": 5.4
+   },
+   "SYM-q95": {
+    "sl": 51.2,
+    "tp": 51.2,
+    "mh": 1,
+    "rule": "SL=TP=q95(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 3.0630367067847444,
+    "n_first_half": 129,
+    "wr_first_half": 65.12,
+    "dd_first_half": 8.26
+   },
+   "ASYM-sl85": {
+    "sl": 17.1,
+    "tp": 56.3,
+    "mh": 1,
+    "rule": "SL=q85(|MAE|)·TP=q98(|MFE|) [first half]",
+    "t_first_half": 3.456388201172427,
+    "n_first_half": 129,
+    "wr_first_half": 61.24,
+    "dd_first_half": 9.19
+   },
+   "ASYM-sl90": {
+    "sl": 25.4,
+    "tp": 56.3,
+    "mh": 1,
+    "rule": "SL=q90(|MAE|)·TP=q98(|MFE|) [first half]",
+    "t_first_half": 3.2480473937155305,
+    "n_first_half": 129,
+    "wr_first_half": 62.02,
+    "dd_first_half": 10.56
+   }
+  },
+  "picked": "SYM-q90",
+  "split_bar": 90532,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M30.csv",
+  "n_signals": 406
+ },
+ "H1": {
+  "cfg": {
+   "q": 80,
+   "sw": true,
+   "hold": 2
+  },
+  "variants": {
+   "SYM-q85": {
+    "sl": 38.8,
+    "tp": 38.8,
+    "mh": 2,
+    "rule": "SL=TP=q85(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 2.6207437841914176,
+    "n_first_half": 111,
+    "wr_first_half": 63.96,
+    "dd_first_half": 7.15
+   },
+   "SYM-q90": {
+    "sl": 53.4,
+    "tp": 53.4,
+    "mh": 2,
+    "rule": "SL=TP=q90(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 2.1153526059254277,
+    "n_first_half": 111,
+    "wr_first_half": 63.96,
+    "dd_first_half": 8.47
+   },
+   "SYM-q95": {
+    "sl": 71.6,
+    "tp": 71.6,
+    "mh": 2,
+    "rule": "SL=TP=q95(|MFE|∪|MAE|) [first half]",
+    "t_first_half": 2.100839176401454,
+    "n_first_half": 111,
+    "wr_first_half": 63.96,
+    "dd_first_half": 15.3
+   },
+   "ASYM-sl85": {
+    "sl": 30.5,
+    "tp": 116.5,
+    "mh": 2,
+    "rule": "SL=q85(|MAE|)·TP=q98(|MFE|) [first half]",
+    "t_first_half": 2.654847489174293,
+    "n_first_half": 111,
+    "wr_first_half": 62.16,
+    "dd_first_half": 8.97
+   },
+   "ASYM-sl90": {
+    "sl": 36.0,
+    "tp": 116.5,
+    "mh": 2,
+    "rule": "SL=q90(|MAE|)·TP=q98(|MFE|) [first half]",
+    "t_first_half": 2.52019425732026,
+    "n_first_half": 111,
+    "wr_first_half": 62.16,
+    "dd_first_half": 11.06
+   }
+  },
+  "picked": "ASYM-sl85",
+  "split_bar": 45501,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "n_signals": 407
+ }
+}
