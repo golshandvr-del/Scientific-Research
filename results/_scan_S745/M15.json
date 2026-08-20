@@ -1,0 +1,90 @@
+{
+ "strategy": "S745_KeyReversalExtreme",
+ "asset": "XAUUSD",
+ "tf": "M15",
+ "bars": 363778,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+ "span_years": 15.59,
+ "split_bar": 218266,
+ "n_trials": 8,
+ "k_perm": 500,
+ "prereg": "results/S745_PREREG_KEY_REVERSAL_EXTREME_PATH_C.md",
+ "grid_summary": {
+  "tested": 8,
+  "with_trades": 8,
+  "eligible": 0
+ },
+ "grid_top5": [
+  {
+   "look": 21,
+   "k_sl": 2.5,
+   "rr": 1.5,
+   "n": 2006,
+   "wr": 44.32,
+   "pf": 0.887,
+   "z": 0.54,
+   "exp": -1.96,
+   "sl_med": 35.49,
+   "tp_med": 53.23,
+   "be": 43.72,
+   "lift": 0.6
+  },
+  {
+   "look": 55,
+   "k_sl": 2.5,
+   "rr": 1.5,
+   "n": 1054,
+   "wr": 44.5,
+   "pf": 0.924,
+   "z": 0.502,
+   "exp": -1.42,
+   "sl_med": 35.38,
+   "tp_med": 53.07,
+   "be": 43.73,
+   "lift": 0.77
+  },
+  {
+   "look": 55,
+   "k_sl": 1.5,
+   "rr": 1.5,
+   "n": 1097,
+   "wr": 42.3,
+   "pf": 0.843,
+   "z": -2.597,
+   "exp": -2.41,
+   "sl_med": 21.27,
+   "tp_med": 31.9,
+   "be": 46.21,
+   "lift": -3.91
+  },
+  {
+   "look": 55,
+   "k_sl": 2.5,
+   "rr": 1.0,
+   "n": 1064,
+   "wr": 49.34,
+   "pf": 0.899,
+   "z": -3.486,
+   "exp": -1.76,
+   "sl_med": 35.39,
+   "tp_med": 35.39,
+   "be": 54.66,
+   "lift": -5.32
+  },
+  {
+   "look": 21,
+   "k_sl": 1.5,
+   "rr": 1.5,
+   "n": 2095,
+   "wr": 41.67,
+   "pf": 0.828,
+   "z": -4.151,
+   "exp": -2.54,
+   "sl_med": 21.32,
+   "tp_med": 31.98,
+   "be": 46.19,
+   "lift": -4.52
+  }
+ ],
+ "verdict": "NO_CANDIDATE"
+}
