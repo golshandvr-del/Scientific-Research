@@ -1,0 +1,15 @@
+{
+ "tf": "W1",
+ "n_full": 813,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "sl_pip": 662.2,
+ "tp_pip": 1324.4,
+ "max_hold": 8,
+ "n_trades": 62,
+ "n_long_sig": 81,
+ "n_short_sig": 70,
+ "wr": 32.26,
+ "exp_pip": -44.961,
+ "eligible": false,
+ "elapsed_s": 0.0
+}

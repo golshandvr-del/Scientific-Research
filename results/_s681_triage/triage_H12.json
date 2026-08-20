@@ -1,0 +1,15 @@
+{
+ "tf": "H12",
+ "n_full": 7998,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "sl_pip": 189.0,
+ "tp_pip": 378.0,
+ "max_hold": 13,
+ "n_trades": 659,
+ "n_long_sig": 755,
+ "n_short_sig": 754,
+ "wr": 38.69,
+ "exp_pip": 2.979,
+ "eligible": true,
+ "elapsed_s": 0.1
+}
