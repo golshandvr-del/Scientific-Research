@@ -252,6 +252,10 @@ def build_null(high, low, close, sl_abs, n_long, n_short, n_bars,
     m_min = 30 if n_bars >= 5000 else 5
     null = {}
     for side, sgn, n_side in (('long', 1, n_long), ('short', -1, n_short)):
+        # سقفِ فیزیکی: هر قرعه حداکثر n_side معامله می‌دهد؛ اگر m_min > n_side
+        # همهٔ قرعه‌ها حذف و perm_k=None ⇒ کرَشِ blend_null (دیده‌شده در W1ِ
+        # S943 با n_long=3). آستانهٔ مؤثرِ این سمت را به n_side محدود می‌کنیم.
+        m_min_side = max(1, min(m_min, n_side))
         d = dict(uncond_wr=None, perm_mean=None, perm_sd=None,
                  perm_max=None, perm_k=None)
         if n_side >= 1:
@@ -261,7 +265,7 @@ def build_null(high, low, close, sl_abs, n_long, n_short, n_bars,
                 dirs = np.zeros(n_bars, dtype=np.int8)
                 dirs[lo:hi:st] = sgn
                 wr, m = _wr_only_nb(high, low, close, dirs, sl_abs, tp_abs)
-                if m >= m_min and (best is None or wr > best):
+                if m >= m_min_side and (best is None or wr > best):
                     best = wr
                 if verbose:
                     print(f'      uncond {side} stride={st}: wr={wr:.2f}% n={m}',
@@ -276,7 +280,7 @@ def build_null(high, low, close, sl_abs, n_long, n_short, n_bars,
                 dirs = np.zeros(n_bars, dtype=np.int8)
                 dirs[np.sort(pos)] = sgn
                 wr, m = _wr_only_nb(high, low, close, dirs, sl_abs, tp_abs)
-                if m >= m_min:
+                if m >= m_min_side:
                     wrs.append(wr)
             if wrs:
                 a = np.asarray(wrs, float)
