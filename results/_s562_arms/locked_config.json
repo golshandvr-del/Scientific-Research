@@ -1,0 +1,108 @@
+{
+ "M15": {
+  "cfg": {
+   "q": 70,
+   "sw": true,
+   "hold": 1
+  },
+  "arms": {
+   "V-q70": {
+    "qv": 70,
+    "sl": 50.9,
+    "tp": 50.9,
+    "mh": 1,
+    "n_filtered": 320,
+    "t_first_half": 3.0094154095369676,
+    "n_first_half": 110,
+    "wr_first_half": 65.45,
+    "dd_first_half": 5.49
+   },
+   "V-q78": {
+    "qv": 78,
+    "sl": 50.9,
+    "tp": 50.9,
+    "mh": 1,
+    "n_filtered": 377,
+    "t_first_half": 3.550566520368568,
+    "n_first_half": 128,
+    "wr_first_half": 65.62,
+    "dd_first_half": 5.11
+   },
+   "V-q85": {
+    "qv": 85,
+    "sl": 50.9,
+    "tp": 50.9,
+    "mh": 1,
+    "n_filtered": 438,
+    "t_first_half": 3.6097495783966953,
+    "n_first_half": 150,
+    "wr_first_half": 67.33,
+    "dd_first_half": 4.88
+   }
+  },
+  "picked": "V-q85",
+  "geometry": {
+   "sl": 50.9,
+   "tp": 50.9,
+   "mh": 1,
+   "src": "S560 V-TIME frozen"
+  },
+  "split_bar": 180578,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+  "n_base_signals": 603
+ },
+ "H1": {
+  "cfg": {
+   "q": 80,
+   "sw": true,
+   "hold": 2
+  },
+  "arms": {
+   "V-q70": {
+    "qv": 70,
+    "sl": 101.4,
+    "tp": 101.4,
+    "mh": 2,
+    "n_filtered": 214,
+    "t_first_half": 1.5630051092911967,
+    "n_first_half": 73,
+    "wr_first_half": 63.01,
+    "dd_first_half": 17.44
+   },
+   "V-q78": {
+    "qv": 78,
+    "sl": 101.4,
+    "tp": 101.4,
+    "mh": 2,
+    "n_filtered": 255,
+    "t_first_half": 2.0266987674047763,
+    "n_first_half": 83,
+    "wr_first_half": 65.06,
+    "dd_first_half": 18.63
+   },
+   "V-q85": {
+    "qv": 85,
+    "sl": 101.4,
+    "tp": 101.4,
+    "mh": 2,
+    "n_filtered": 297,
+    "t_first_half": 1.6597771242832473,
+    "n_first_half": 91,
+    "wr_first_half": 63.74,
+    "dd_first_half": 17.31
+   }
+  },
+  "picked": "V-q78",
+  "geometry": {
+   "sl": 101.4,
+   "tp": 101.4,
+   "mh": 2,
+   "src": "S560 V-TIME frozen"
+  },
+  "split_bar": 45501,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "n_base_signals": 407
+ }
+}
