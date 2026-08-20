@@ -1,0 +1,23 @@
+explore bars=54,798  src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv
+
+===== EMA200  (L=658 S=637) =====
+  trail=0.5: n=1,292 WR=52.32% lift=+37.27pp exp=  +7.16pip PF=1.533 [E1=1.485 E2=1.608]
+  trail=0.7: n=1,292 WR=49.38% lift=+34.33pp exp=  +5.46pip PF=1.361 [E1=1.357 E2=1.366]
+  trail=1.0: n=1,289 WR=44.76% lift=+29.71pp exp=  +4.76pip PF=1.270 [E1=1.237 E2=1.313]
+
+===== EMA300  (L=627 S=600) =====
+  trail=0.5: n=1,224 WR=52.21% lift=+37.15pp exp=  +7.62pip PF=1.585 [E1=1.536 E2=1.661]
+  trail=0.7: n=1,224 WR=48.94% lift=+33.88pp exp=  +6.07pip PF=1.412 [E1=1.403 E2=1.425]
+  trail=1.0: n=1,221 WR=44.39% lift=+29.34pp exp=  +5.30pip PF=1.307 [E1=1.266 E2=1.359]
+
+===== EMA400  (L=618 S=590) =====
+  trail=0.5: n=1,205 WR=51.62% lift=+36.56pp exp=  +6.87pip PF=1.515 [E1=1.437 E2=1.638]
+  trail=0.7: n=1,205 WR=47.63% lift=+32.57pp exp=  +5.34pip PF=1.354 [E1=1.319 E2=1.405]
+  trail=1.0: n=1,202 WR=43.76% lift=+28.70pp exp=  +4.57pip PF=1.259 [E1=1.203 E2=1.333]
+
+===== EMA500  (L=620 S=596) =====
+  trail=0.5: n=1,213 WR=51.77% lift=+36.71pp exp=  +6.84pip PF=1.517 [E1=1.464 E2=1.597]
+  trail=0.7: n=1,213 WR=47.73% lift=+32.67pp exp=  +5.45pip PF=1.365 [E1=1.349 E2=1.386]
+  trail=1.0: n=1,210 WR=43.72% lift=+28.66pp exp=  +4.77pip PF=1.272 [E1=1.239 E2=1.314]
+
+[S832 explore-6 complete]
