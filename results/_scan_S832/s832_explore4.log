@@ -1,0 +1,20 @@
+explore bars=54,798  src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv  MED_ATR=30.9pip trail=30.9pip
+base events: L=1056 S=1076
+
+===== filter=all  (L=1056 S=1076) =====
+  rr=3.4 hold=21: n=2,124 WR=42.18% lift=+18.25pp exp=  +2.14pip PF=1.120 [E1=1.127 E2=1.112]
+  rr=3.4 hold=34: n=2,123 WR=42.25% lift=+18.32pp exp=  +2.13pip PF=1.119 [E1=1.129 E2=1.107]
+  rr=3.4 hold=55: n=2,122 WR=42.27% lift=+18.34pp exp=  +2.14pip PF=1.120 [E1=1.130 E2=1.107]
+  rr=6.0 hold=21: n=2,124 WR=42.18% lift=+27.14pp exp=  +2.39pip PF=1.134 [E1=1.138 E2=1.129]
+  rr=6.0 hold=34: n=2,122 WR=42.27% lift=+27.23pp exp=  +2.40pip PF=1.134 [E1=1.140 E2=1.127]
+  rr=6.0 hold=55: n=2,120 WR=42.31% lift=+27.27pp exp=  +2.44pip PF=1.137 [E1=1.142 E2=1.130]
+
+===== filter=trend-align  (L=658 S=637) =====
+  rr=3.4 hold=21: n=1,291 WR=44.62% lift=+20.67pp exp=  +4.42pip PF=1.251 [E1=1.220 E2=1.291]
+  rr=3.4 hold=34: n=1,291 WR=44.69% lift=+20.75pp exp=  +4.45pip PF=1.253 [E1=1.222 E2=1.294]
+  rr=3.4 hold=55: n=1,290 WR=44.73% lift=+20.78pp exp=  +4.48pip PF=1.255 [E1=1.225 E2=1.294]
+  rr=6.0 hold=21: n=1,291 WR=44.62% lift=+29.56pp exp=  +4.64pip PF=1.264 [E1=1.233 E2=1.304]
+  rr=6.0 hold=34: n=1,291 WR=44.69% lift=+29.64pp exp=  +4.68pip PF=1.266 [E1=1.234 E2=1.307]
+  rr=6.0 hold=55: n=1,289 WR=44.76% lift=+29.71pp exp=  +4.76pip PF=1.270 [E1=1.237 E2=1.313]
+
+[S832 explore-4 complete]
