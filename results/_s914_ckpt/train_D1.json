@@ -1,0 +1,21 @@
+{
+ "tf": "D1",
+ "split_bar": 2403,
+ "n_train": 2403,
+ "n_sig": 54,
+ "trend_lb": 21,
+ "max_hold": 21,
+ "geometry": {
+  "tp": 525.2,
+  "sl": 154.3,
+  "n_sig": 54,
+  "rr": 3.403
+ },
+ "train": {
+  "n": 43,
+  "wr": 39.53,
+  "e_pip": 108.67,
+  "e_over_sl_pct": 70.42,
+  "cost_over_sl_pct": 2.14
+ }
+}

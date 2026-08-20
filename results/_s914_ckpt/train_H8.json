@@ -1,0 +1,21 @@
+{
+ "tf": "H8",
+ "split_bar": 7186,
+ "n_train": 7186,
+ "n_sig": 141,
+ "trend_lb": 21,
+ "max_hold": 21,
+ "geometry": {
+  "tp": 280.1,
+  "sl": 78.7,
+  "n_sig": 141,
+  "rr": 3.559
+ },
+ "train": {
+  "n": 115,
+  "wr": 33.04,
+  "e_pip": 23.27,
+  "e_over_sl_pct": 29.56,
+  "cost_over_sl_pct": 4.19
+ }
+}
