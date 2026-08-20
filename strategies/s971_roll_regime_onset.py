@@ -82,20 +82,36 @@ def atr_plain(h, l, c, win=ATR_WIN):
     return pd.Series(tr).rolling(win, min_periods=win).mean().values
 
 
-def rolling_rho1(c, w=W):
+def rolling_rho1(c, w=W, chunk=1_000_000):
     """خودهم‌بستگیِ lag-1 بازده روی پنجرهٔ w — کاملاً causal (تا کندلِ i).
 
     ρ_i = corr(r_{i-w+2..i}, r_{i-w+1..i-1}) با فرمولِ کوواریانس/واریانسِ لغزان.
+
+    ⚡ پیاده‌سازیِ قطعه‌قطعه (chunked) — **فقط بهینه‌سازیِ حافظه، نه تغییرِ تعریف**:
+      نسخهٔ یک‌تکه روی M1 (۵M کندل) ~۸ سریِ pandas ×۳۸MB + بافرهای rolling
+      می‌ساخت و در سندباکسِ ۹۸۵MB با سیگنالِ Killed (OOM) مُرد. با پردازش در
+      قطعه‌های ۱M با هم‌پوشانیِ w+2، خروجی **بیت‌به‌بیت یکسان** است:
+      r[start] با prepend=c[start-1] دقیقاً برابرِ نسخهٔ سراسری است و پنجرهٔ
+      rolling در offsetهای ≥ w+2 هرگز به r1[0]ِ NaNشده نمی‌رسد.
     """
-    r = pd.Series(np.diff(c, prepend=c[0]))
-    r1 = r.shift(1)
-    mu = r.rolling(w).mean()
-    mu1 = r1.rolling(w).mean()
-    cov = (r * r1).rolling(w).mean() - mu * mu1
-    sd = r.rolling(w).std(ddof=0)
-    sd1 = r1.rolling(w).std(ddof=0)
-    rho = cov / (sd * sd1)
-    return rho.values
+    n = len(c)
+    out = np.full(n, np.nan)
+    for s in range(0, n, chunk):
+        e = min(n, s + chunk)
+        start = max(0, s - (w + 2))
+        seg = c[start:e]
+        prep = c[start - 1] if start > 0 else seg[0]
+        r = pd.Series(np.diff(seg, prepend=prep))
+        r1 = r.shift(1)
+        mu = r.rolling(w).mean()
+        mu1 = r1.rolling(w).mean()
+        cov = (r * r1).rolling(w).mean() - mu * mu1
+        sd = r.rolling(w).std(ddof=0)
+        sd1 = r1.rolling(w).std(ddof=0)
+        rho = (cov / (sd * sd1)).values
+        out[s:e] = rho[s - start:]
+        del r, r1, mu, mu1, cov, sd, sd1, rho, seg
+    return out
 
 
 def build_signals(df):
