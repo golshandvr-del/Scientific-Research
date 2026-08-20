@@ -50,9 +50,13 @@ def main():
     MTF = _mod('tools/s382_mtf_runner.py', '_mtf')
     MTF.N_TRIALS = N_TRIALS
 
-    # وصلهٔ ۱: دادهٔ کامل
+    # وصلهٔ ۱: دادهٔ کامل. نکته: مجموعهٔ mt5_full عمداً H4 ندارد چون
+    # data/XAUUSD_H4.csv قدیمی خودش کامل است (۱۵.۵۳y، همان کارت لایو).
     def load_full(card):
-        df = pd.read_csv(f'data/full/{card}.csv')
+        path = f'data/full/{card}.csv'
+        if not os.path.exists(path):
+            path = f'data/{card}.csv'
+        df = pd.read_csv(path)
         df['dt'] = pd.to_datetime(df['time'], unit='s')
         return df
 
