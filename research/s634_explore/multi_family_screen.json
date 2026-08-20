@@ -1,0 +1,272 @@
+[
+ {
+  "label": "F4_run3big_H4",
+  "side": "short",
+  "n": 152,
+  "wr": 53.29,
+  "lift": 2.68,
+  "pnl": 3.089,
+  "z_fair": 0.66
+ },
+ {
+  "label": "F1_psar_H4",
+  "side": "short",
+  "n": 450,
+  "wr": 51.78,
+  "lift": 1.17,
+  "pnl": -0.053,
+  "z_fair": 0.5
+ },
+ {
+  "label": "F2_hour15_H1",
+  "side": "long",
+  "n": 1915,
+  "wr": 48.67,
+  "lift": 0.55,
+  "pnl": -4.558,
+  "z_fair": 0.48
+ },
+ {
+  "label": "F4_run5big_H4",
+  "side": "short",
+  "n": 39,
+  "wr": 53.85,
+  "lift": 3.24,
+  "pnl": 4.17,
+  "z_fair": 0.4
+ },
+ {
+  "label": "F4_run5big_H2",
+  "side": "short",
+  "n": 77,
+  "wr": 53.25,
+  "lift": 2.02,
+  "pnl": 0.996,
+  "z_fair": 0.35
+ },
+ {
+  "label": "F1_psar_H8",
+  "side": "long",
+  "n": 232,
+  "wr": 50.0,
+  "lift": 0.88,
+  "pnl": -3.3,
+  "z_fair": 0.27
+ },
+ {
+  "label": "F4_run5big_H2",
+  "side": "long",
+  "n": 50,
+  "wr": 50.0,
+  "lift": 1.94,
+  "pnl": -3.3,
+  "z_fair": 0.27
+ },
+ {
+  "label": "F4_run4big_H2",
+  "side": "short",
+  "n": 136,
+  "wr": 51.47,
+  "lift": 0.24,
+  "pnl": -1.354,
+  "z_fair": 0.06
+ },
+ {
+  "label": "F1_psar_H6",
+  "side": "long",
+  "n": 317,
+  "wr": 48.26,
+  "lift": 0.09,
+  "pnl": -7.568,
+  "z_fair": 0.03
+ },
+ {
+  "label": "F3_Mon_H4",
+  "side": "long",
+  "n": 394,
+  "wr": 49.24,
+  "lift": -0.21,
+  "pnl": -4.819,
+  "z_fair": -0.08
+ },
+ {
+  "label": "F1_psar_H4",
+  "side": "long",
+  "n": 457,
+  "wr": 49.23,
+  "lift": -0.22,
+  "pnl": -4.788,
+  "z_fair": -0.09
+ },
+ {
+  "label": "F4_run3big_H2",
+  "side": "long",
+  "n": 211,
+  "wr": 46.92,
+  "lift": -1.14,
+  "pnl": -7.22,
+  "z_fair": -0.33
+ },
+ {
+  "label": "F4_run4big_H4",
+  "side": "short",
+  "n": 62,
+  "wr": 48.39,
+  "lift": -2.22,
+  "pnl": -6.433,
+  "z_fair": -0.35
+ },
+ {
+  "label": "F1_psar_H8",
+  "side": "short",
+  "n": 229,
+  "wr": 49.78,
+  "lift": -1.29,
+  "pnl": -3.948,
+  "z_fair": -0.39
+ },
+ {
+  "label": "F4_run3big_H2",
+  "side": "short",
+  "n": 263,
+  "wr": 49.81,
+  "lift": -1.42,
+  "pnl": -3.552,
+  "z_fair": -0.46
+ },
+ {
+  "label": "F3_Wed_H4",
+  "side": "long",
+  "n": 398,
+  "wr": 48.24,
+  "lift": -1.21,
+  "pnl": -6.716,
+  "z_fair": -0.48
+ },
+ {
+  "label": "F1_psar_H6",
+  "side": "short",
+  "n": 319,
+  "wr": 49.84,
+  "lift": -1.43,
+  "pnl": -3.686,
+  "z_fair": -0.51
+ },
+ {
+  "label": "F4_run3big_H4",
+  "side": "long",
+  "n": 101,
+  "wr": 46.53,
+  "lift": -2.92,
+  "pnl": -10.031,
+  "z_fair": -0.59
+ },
+ {
+  "label": "F3_Fri_H4",
+  "side": "long",
+  "n": 388,
+  "wr": 47.94,
+  "lift": -1.51,
+  "pnl": -7.104,
+  "z_fair": -0.6
+ },
+ {
+  "label": "F4_run4big_H2",
+  "side": "long",
+  "n": 102,
+  "wr": 45.1,
+  "lift": -2.96,
+  "pnl": -9.786,
+  "z_fair": -0.6
+ },
+ {
+  "label": "F2_hour16_H1",
+  "side": "long",
+  "n": 1918,
+  "wr": 47.18,
+  "lift": -0.93,
+  "pnl": -5.959,
+  "z_fair": -0.82
+ },
+ {
+  "label": "F2_hour01_H1",
+  "side": "long",
+  "n": 1891,
+  "wr": 47.07,
+  "lift": -1.05,
+  "pnl": -6.06,
+  "z_fair": -0.92
+ },
+ {
+  "label": "F2_hour12_H1",
+  "side": "long",
+  "n": 1918,
+  "wr": 46.98,
+  "lift": -1.14,
+  "pnl": -6.156,
+  "z_fair": -1.0
+ },
+ {
+  "label": "F4_run4big_H4",
+  "side": "long",
+  "n": 60,
+  "wr": 41.67,
+  "lift": -7.78,
+  "pnl": -19.486,
+  "z_fair": -1.21
+ },
+ {
+  "label": "F2_hour13_H1",
+  "side": "long",
+  "n": 1918,
+  "wr": 46.66,
+  "lift": -1.46,
+  "pnl": -6.452,
+  "z_fair": -1.27
+ },
+ {
+  "label": "F2_hour14_H1",
+  "side": "long",
+  "n": 1921,
+  "wr": 46.59,
+  "lift": -1.53,
+  "pnl": -6.518,
+  "z_fair": -1.34
+ },
+ {
+  "label": "F3_Tue_H4",
+  "side": "long",
+  "n": 398,
+  "wr": 45.73,
+  "lift": -3.72,
+  "pnl": -11.596,
+  "z_fair": -1.49
+ },
+ {
+  "label": "F3_Thu_H4",
+  "side": "long",
+  "n": 390,
+  "wr": 44.1,
+  "lift": -5.35,
+  "pnl": -14.755,
+  "z_fair": -2.11
+ },
+ {
+  "label": "F2_hour07_H1",
+  "side": "long",
+  "n": 1903,
+  "wr": 44.56,
+  "lift": -3.56,
+  "pnl": -8.437,
+  "z_fair": -3.1
+ },
+ {
+  "label": "F2_hour08_H1",
+  "side": "long",
+  "n": 1904,
+  "wr": 43.7,
+  "lift": -4.42,
+  "pnl": -9.253,
+  "z_fair": -3.86
+ }
+]
