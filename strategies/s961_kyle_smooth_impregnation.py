@@ -171,16 +171,29 @@ def build_null(df, ls, ss, sl_arr, tp_arr, mh, asset, seed=SEED, K=K_PERM):
     rng = np.random.default_rng(seed)
     vidx_all = np.flatnonzero(valid)
     if len(vidx_all) > UNC_CAP:
-        unc_mask = np.zeros(n, bool)
-        unc_mask[rng.choice(vidx_all, size=UNC_CAP, replace=False)] = True
+        unc_idx = np.sort(rng.choice(vidx_all, size=UNC_CAP, replace=False))
     else:
-        unc_mask = valid
-    tr_unc = se.simulate_trades(df, unc_mask, z, sl_arr, tp_arr, asset,
-                                max_hold=mh, allow_overlap=True)
-    wr_unc = _wr_of(tr_unc)
-    unc_n = 0 if tr_unc is None else int(len(tr_unc))
-    del tr_unc, unc_mask
-    gc.collect()
+        unc_idx = vidx_all
+    # ⚠️ ضدِ OOM (درسِ چهارمِ S961 — قاتلِ M1): simulate_trades برای هر
+    #   معامله یک dict می‌سازد؛ ۲۵۰k ورودیِ بی‌قید ⇒ صدها MB ⇒ Killed.
+    #   چون allow_overlap=True یعنی معاملات **مستقل**اند، تکه‌تکه‌کردنِ
+    #   ورودی‌ها نتیجه را ذره‌ای تغییر نمی‌دهد (همان مجموعه‌ی معاملات)؛
+    #   فقط WR را تجمیعی می‌شماریم و بافر هر تکه آزاد می‌شود.
+    unc_wins = 0
+    unc_n = 0
+    CH = 25_000
+    for s0 in range(0, len(unc_idx), CH):
+        pm = np.zeros(n, bool)
+        pm[unc_idx[s0:s0 + CH]] = True
+        tr_c = se.simulate_trades(df, pm, z, sl_arr, tp_arr, asset,
+                                  max_hold=mh, allow_overlap=True)
+        if tr_c is not None and len(tr_c):
+            unc_wins += int((tr_c['outcome'] == 'win').sum())
+            unc_n += int(len(tr_c))
+        del tr_c, pm
+        gc.collect()
+    wr_unc = (unc_wins / unc_n * 100.0) if unc_n else None
+    del unc_idx
 
     vidx = vidx_all
     k = min(sig_n, len(vidx))
