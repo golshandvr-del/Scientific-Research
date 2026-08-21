@@ -1,0 +1,70 @@
+{
+ "m15_vs_h1": {
+  "n_a": 438,
+  "n_b": 254,
+  "days_a": 436,
+  "days_b": 253,
+  "shared_days": 247,
+  "share_of_a_pct": 56.65,
+  "share_of_b_pct": 97.63,
+  "jaccard": 0.5588
+ },
+ "m15_vs_s560m5": {
+  "n_a": 438,
+  "n_b": 407,
+  "days_a": 436,
+  "days_b": 406,
+  "shared_days": 285,
+  "share_of_a_pct": 65.37,
+  "share_of_b_pct": 70.2,
+  "jaccard": 0.5117
+ },
+ "h1_vs_s560m5": {
+  "n_a": 254,
+  "n_b": 407,
+  "days_a": 253,
+  "days_b": 406,
+  "shared_days": 231,
+  "share_of_a_pct": 91.3,
+  "share_of_b_pct": 56.9,
+  "jaccard": 0.5397
+ },
+ "m15_vs_s404m30": {
+  "n_a": 438,
+  "n_b": 406,
+  "days_a": 436,
+  "days_b": 404,
+  "shared_days": 325,
+  "share_of_a_pct": 74.54,
+  "share_of_b_pct": 80.45,
+  "jaccard": 0.6311
+ },
+ "h1_vs_s404m30": {
+  "n_a": 254,
+  "n_b": 406,
+  "days_a": 253,
+  "days_b": 404,
+  "shared_days": 224,
+  "share_of_a_pct": 88.54,
+  "share_of_b_pct": 55.45,
+  "jaccard": 0.5173
+ },
+ "s404_error": null,
+ "note_s355": "momentary overlap S560-family vs S355 measured 0 in S560 audit (chance 0.24); S562 masks are strict subsets of S560 masks => momentary overlap remains 0.",
+ "clause3_filter_test_vs_s404days": {
+  "M15": {
+   "n_on": 327,
+   "wr_on": 72.48,
+   "n_off": 111,
+   "wr_off": 65.77,
+   "fisher_p": 0.1857
+  },
+  "H1": {
+   "n_on": 225,
+   "wr_on": 69.33,
+   "n_off": 29,
+   "wr_off": 65.52,
+   "fisher_p": 0.6742
+  }
+ }
+}
