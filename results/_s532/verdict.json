@@ -1,0 +1,109 @@
+{
+ "prereg": "results/S532_PREREG_S355_ATRScaledGeometry_PathC.md",
+ "locked": {
+  "winner": {
+   "k": 5.5,
+   "n": 56,
+   "wr": 57.14285714285714,
+   "net_pip": 521.7234566480012,
+   "t": 1.188,
+   "med_sl_pip": 50.21,
+   "maxhold_share": 0.0,
+   "breakeven_cost": 53.29,
+   "identity_guard": false,
+   "eligible": true
+  },
+  "locked_at": "2026-08-21 20:12:49",
+  "split_bar": 544787,
+  "seed": 20260816,
+  "n_trials": 25,
+  "mh": 96,
+  "atr_p": 14
+ },
+ "rule": "S355 frozen mask + floating bracket SL=TP=5.5*ATR14, mh=96",
+ "data": {
+  "path": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+  "rows": 1089574
+ },
+ "geometry": {
+  "k": 5.5,
+  "atr_p": 14,
+  "med_sl_pip": 66.78,
+  "rr": 1.0,
+  "mh": 96
+ },
+ "maxhold_share_full": 0.0,
+ "subwindows": {
+  "pre2023": {
+   "n": 113,
+   "wr": 49.557522123893804,
+   "net_pip": -144.7941536483047,
+   "maxhold_share": 0.0
+  },
+  "recent": {
+   "n": 46,
+   "wr": 69.56521739130434,
+   "net_pip": 2905.8432364818527,
+   "maxhold_share": 0.0
+  }
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 15.9,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H10": true,
+  "H2": false,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": true
+ },
+ "failed_gates": [
+  "H1",
+  "H2",
+  "H3",
+  "H5",
+  "H6",
+  "H7",
+  "H8"
+ ],
+ "null": {
+  "uncond_wr": 48.936,
+  "perm_mean": 49.229096974860326,
+  "perm_sd": 3.5441738744156503,
+  "perm_max": 61.83574879227053,
+  "perm_k": 500
+ },
+ "n_trials": 25,
+ "seed": 20260816,
+ "split_bar": 544787,
+ "metrics": {
+  "n_trades": 159,
+  "n_wins": 88,
+  "win_rate": 55.35,
+  "expectancy_pip": 17.3651,
+  "profit_factor": 1.212,
+  "net_profit": 1224.9,
+  "max_dd_pct": 17.28,
+  "max_consec_losses": 6,
+  "recovery_factor": 0.63,
+  "skill_lift_pp": 6.12,
+  "skill_z": 1.54,
+  "null_ref_wr": 49.23,
+  "breakeven_wr_cost": 52.47,
+  "rr": 1.0,
+  "top_win_share": 0.0564,
+  "skill_p_perm": 0.061441,
+  "p_emp": 0.071614,
+  "p_adj_bonferroni": 1.0,
+  "perm_k": 500,
+  "perm_max": 61.84
+ },
+ "notes": [
+  "PF=1.212<1.3"
+ ]
+}
