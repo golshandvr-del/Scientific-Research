@@ -67,7 +67,10 @@ def s602_pool():
 def main():
     print('بازتولیدِ استخرِ S602 {D1,H8}…', flush=True)
     pool = s602_pool()
-    iv602 = list(zip(pool['t_entry'].values, pool['t_exit'].values))
+    # هم‌نوع‌سازی با بازه‌های لایه‌ها (datetime64[ns]) — رفعِ DTypePromotionError
+    te = pd.to_datetime(pool['t_entry'].values).values.astype('datetime64[ns]')
+    tx = pd.to_datetime(pool['t_exit'].values).values.astype('datetime64[ns]')
+    iv602 = list(zip(te, tx))
     days602 = set(pd.DatetimeIndex(pool['t_entry']).normalize())
     pnl = pool['pnl_pip'].values
     print(f'S602 pool: n={len(pool)} (سلامت ✓ = ۳۶۳ معاملهٔ حکم)', flush=True)
@@ -121,7 +124,7 @@ def main():
         # این‌همانیِ ورود با S950 (هم‌کارتِ H8): ورودِ دقیقاً هم‌کندل
         same_entry = None
         if name == 'S950_H8':
-            e602 = set(pool['t_entry'].values.astype('datetime64[ns]'))
+            e602 = set(te)
             eb = np.asarray([x[0] for x in L['iv']], dtype='datetime64[ns]')
             same_entry = int(sum(1 for x in eb if x in e602))
         report['vs'][name] = dict(n_other=L['n'], concur_pct=round(pct, 2),
