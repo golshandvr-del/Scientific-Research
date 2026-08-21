@@ -1,0 +1,50 @@
+[
+ {
+  "k": 2.0,
+  "n": 57,
+  "wr": 54.385964912280706,
+  "net_pip": 8.572089771741418,
+  "t": 0.0395,
+  "med_sl_pip": 18.56,
+  "maxhold_share": 0.0,
+  "breakeven_cost": 58.89,
+  "identity_guard": false,
+  "eligible": true
+ },
+ {
+  "k": 3.3,
+  "n": 57,
+  "wr": 56.14035087719298,
+  "net_pip": 181.02463166633186,
+  "t": 0.5437,
+  "med_sl_pip": 30.63,
+  "maxhold_share": 0.0,
+  "breakeven_cost": 55.39,
+  "identity_guard": false,
+  "eligible": true
+ },
+ {
+  "k": 5.5,
+  "n": 56,
+  "wr": 57.14285714285714,
+  "net_pip": 521.7234566480012,
+  "t": 1.188,
+  "med_sl_pip": 50.21,
+  "maxhold_share": 0.0,
+  "breakeven_cost": 53.29,
+  "identity_guard": false,
+  "eligible": true
+ },
+ {
+  "k": 9.0,
+  "n": 56,
+  "wr": 50.0,
+  "net_pip": 26.98648892749381,
+  "t": 0.0498,
+  "med_sl_pip": 82.16,
+  "maxhold_share": 0.0,
+  "breakeven_cost": 52.01,
+  "identity_guard": false,
+  "eligible": true
+ }
+]

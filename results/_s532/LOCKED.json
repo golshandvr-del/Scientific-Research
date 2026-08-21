@@ -1,0 +1,20 @@
+{
+ "winner": {
+  "k": 5.5,
+  "n": 56,
+  "wr": 57.14285714285714,
+  "net_pip": 521.7234566480012,
+  "t": 1.188,
+  "med_sl_pip": 50.21,
+  "maxhold_share": 0.0,
+  "breakeven_cost": 53.29,
+  "identity_guard": false,
+  "eligible": true
+ },
+ "locked_at": "2026-08-21 20:12:49",
+ "split_bar": 544787,
+ "seed": 20260816,
+ "n_trials": 25,
+ "mh": 96,
+ "atr_p": 14
+}
