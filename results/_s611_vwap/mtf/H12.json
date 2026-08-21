@@ -1,0 +1,7 @@
+{
+ "tf": "H12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "n_bars": 7998,
+ "span_years": 15.59,
+ "n_signals": 0
+}

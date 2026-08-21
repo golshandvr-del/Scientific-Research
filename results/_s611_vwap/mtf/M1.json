@@ -1,0 +1,15 @@
+{
+ "tf": "M1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+ "n_bars": 5000000,
+ "span_years": 14.34,
+ "n_signals": 48993,
+ "n_trades": 48993,
+ "wr": 31.24,
+ "net_pip": -123568.7,
+ "wr_h1": 26.53,
+ "wr_h2": 35.69,
+ "net_h1": -73568.7,
+ "net_h2": -50000.0,
+ "note": "day built from time//86400 (UTC-equivalent); rest bit-identical to s153"
+}

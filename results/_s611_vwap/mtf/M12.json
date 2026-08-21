@@ -1,0 +1,14 @@
+{
+ "tf": "M12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M12.csv",
+ "n_bars": 454692,
+ "span_years": 15.59,
+ "n_signals": 4946,
+ "n_trades": 4946,
+ "wr": 52.99,
+ "net_pip": 12802.5,
+ "wr_h1": 48.54,
+ "wr_h2": 57.05,
+ "net_h1": 1021.9,
+ "net_h2": 11780.6
+}

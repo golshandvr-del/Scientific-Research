@@ -1,0 +1,7 @@
+{
+ "tf": "H3",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+ "n_bars": 31806,
+ "span_years": 15.59,
+ "n_signals": 0
+}

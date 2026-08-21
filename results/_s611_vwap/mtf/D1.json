@@ -1,0 +1,7 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "n_bars": 4005,
+ "span_years": 15.59,
+ "n_signals": 0
+}
