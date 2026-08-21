@@ -200,6 +200,10 @@ import { computeKennedy, KENNEDY_CFG } from './kennedy_break_s374'
 //     منبعِ حقیقت: strategies/s382_williamsr_momentum.py (پورتِ verbatim)
 //     سند: results/S382_WilliamsR_Xauusd_H4_rqs2-83.md
 import { decideS382, S382_CFG } from './williams_momentum_s382'
+// ⭐ S950 — «پس‌لرزهٔ جهش، هم‌راستا با رانش» (Bipower jump + drift alignment) · XAUUSD-H8
+//    RQS2=80 · هر ۱۱ دروازه پاس · پایدار روی ۴ seed · n=224 · WR=61.6% · maxDD=4.92%
+//    سند: results/S950_JumpAftermathDriftAligned_Xauusd_H8_rqs2_80_ACCEPT.md
+import { decideS950, S950_CFG } from './jump_aftermath_s950'
 
 const GOLD_PIP = 0.1
 
@@ -381,9 +385,9 @@ function s312Layer(slPip: number, tpPip: number, maxHold: number): LayerFn {
 //
 // 🧩 **تصمیمِ معمارانهٔ S396 — آداپترها می‌مانند، حتی اگر هیچ کارتی صدایشان نزند.**
 //
-//    پس از پاک‌سازی، فقط ۵ آداپتر از این فهرست در `CARD_LAYERS` استفاده می‌شوند:
+//    پس از پاک‌سازی، آداپترهای فعال در `CARD_LAYERS`:
 //      `s333Layer`+`withLpsbGate` (M5) · `s344Layer` (M15) · `s312Layer` (M30)
-//      `s354Layer` (H1) · `s382Layer` (H4)
+//      `s354Layer` (H1) · `s382Layer` (H4) · `s950Layer` (H8 — افزودهٔ S950)
 //    بقیه (`s313`, `s321`, `s322`, `s323`, `s324`, `s326`, `s327`, `s328`,
 //    `s330`, `s332`, `s334`, `s335`, `s340`, `s345`, `s374`, `s310`) **بی‌مصرفِ
 //    عمدی** هستند — «گرهِ خوابیده» به‌زبانِ ROS2.
@@ -494,6 +498,9 @@ const s335Layer = (cfg: typeof S335_CFG[string]): LayerFn => (ctx) => decideS335
 const s340Layer = (cfg: typeof S340_CFG[string]): LayerFn => (ctx) => decideS340(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐ S382 — مومنتومِ Williams %R (گذر به بالای −۱۳): تنها لایهٔ ۱۱/۱۱ دروازه با **صفر فیلتر**
 const s382Layer = (cfg: typeof S382_CFG[string]): LayerFn => (ctx) => decideS382(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S950 — پس‌لرزهٔ جهشِ هم‌راستا با رانش (H8) — کندل‌های ورودیِ ctx باید H8 باشند
+//    (index.tsx آن‌ها را با aggregateCandles(H1, 8) می‌سازد، عینِ الگوی H4).
+const s950Layer = (cfg: typeof S950_CFG[string]): LayerFn => (ctx) => decideS950(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⚰️ s341Layer حذف شد — S341 زیرِ RQS2 v2.4 مرده است (بالا را ببینید).
 // لایهٔ نوِ این نشست: S344 Brooks Trend-from-Open first-pullback continuation (فصلِ ۲۳) — نخستین SHORT روی XAUUSD-M15
 const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
@@ -680,6 +687,29 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     //    S374 مهم‌ترین حذف است: با RQS+ «ACCEPTED» اعلام شده بود، ولی زیرِ RQS2
     //    هر دو کارتش افتاد (XAUUSD-H4 و EURUSD-H4=15.7) ⇒ کارتِ EURUSD-H4 که
     //    فقط برای آن متولد شده بود، با حذفش از سایت برداشته می‌شود.
+  ],
+  'XAUUSD-H8': [
+    // ⭐ S950 — «پس‌لرزهٔ جهش، هم‌راستا با رانش» (Jump-Aftermath Drift-Aligned)
+    //    RQS2 = **80** · هر ۱۱ دروازه پاس · **پایدار روی ۴ seed** (79.9/80.0/80.1/80.0)
+    //    n=224 · WR 61.6% (LONG 63.6% / SHORT 58.3%) · PF 1.56 · maxDD 4.92%
+    //    lift=+11.15pp · z=3.34–3.37 · p_perm≈0.0004 · n_trials=33 صادقانه
+    //    (سرریزِ چندگانگی تا n_trials=200 هم پاس می‌ماند — حاشیهٔ امن سنجیده شد.)
+    //    قانون: جهشِ H8 (|r| > 2.6·σ_BV(89) با σ_BV واریانسِ Bipower علّی) که با
+    //    رانشِ ۸۹-کندلیِ رژیم هم‌جهت باشد ⇒ ادامه. SL=TP=2.058×ATR(89) برداری
+    //    (میانه ≈۲۴۲ pip) · maxHold=34 کندلِ H8 · تک‌معامله.
+    //    ⓵ ساختارِ MTF یکنواخت: lift از −11pp (M4) تا +11pp (D1) ⇒ پدیدهٔ
+    //       فیزیکیِ مقیاس-وابسته، نه گلچینِ تایم‌فریم. D1 خودش POWER-LIMITED
+    //       (نه ACCEPT) ⇒ فقط H8 وصل می‌شود.
+    //    ⓶ آزمونِ کنترل: فیلترِ مکمل (جهشِ خلافِ رانش) z=1.66 REJECT ⇒ فیلترِ
+    //       رانش اطلاعاتِ واقعی دارد، انتخابِ پس‌ازدیدن نیست.
+    //    ⓷ همپوشانی با هر ۵ لایهٔ سایت اندازه‌گیری شد: جاکاردِ روزانه ≤4.8٪ و
+    //       overlap-as-filter بی‌اطلاع (WR 60.9 در برابرِ 61.5) ⇒ لبهٔ مستقل.
+    //    ⓸ RR=1.0 متقارن ⇒ صفر تورشِ WR-سازی (ضدِ اشتباهِ رایجِ ۸)؛
+    //       k=2.6 و 2.058=1.272×φ نارُند (ضدِ اشتباهِ ۷).
+    //    ⚠️ کندل‌های این کارت از تجمیعِ H1×8 ساخته می‌شوند (Yahoo H8 ندارد) —
+    //       عینِ H1×4ِ کارتِ H4؛ مرزهای UTC 0/8/16 با بک‌تست هم‌ترازند.
+    //    سند: results/S950_JumpAftermathDriftAligned_Xauusd_H8_rqs2_80_ACCEPT.md
+    s950Layer(S950_CFG['XAUUSD-H8']),
   ],
   // ⚰️⚰️ **چهار کارتِ حذف‌شده در S396** (هیچ اتصالِ ACCEPT نداشتند):
   //    'EURUSD-M5'  ← S334 (RQS+ 84.1) — بی‌ACCEPT زیرِ RQS2
