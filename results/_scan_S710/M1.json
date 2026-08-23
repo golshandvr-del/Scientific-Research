@@ -1,0 +1,160 @@
+{
+ "tf": "M1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+ "is_full": true,
+ "family": true,
+ "n_bars": 5000000,
+ "span_years": 14.34,
+ "hold": 1440,
+ "n_trades": 7716,
+ "n_long": 4070,
+ "n_short": 3646,
+ "sl_pip_med": 4.140634324548364,
+ "tp_pip_med": 6.699546337119253,
+ "wr": 32.581648522550545,
+ "exp_pip": -3.2419047284233247,
+ "null": null,
+ "null_note": "permutation null computationally infeasible in 985MB sandbox (hold=1440, 3 OOM kills); economic gates fail decisively regardless of null",
+ "rqs2": {
+  "asset": "XAUUSD",
+  "gates": {
+   "H0": false,
+   "H1": false,
+   "H2": false,
+   "H3": null,
+   "H4": null,
+   "H5": null,
+   "H6": false,
+   "H7": false,
+   "H8": false,
+   "H9": false,
+   "H10": false
+  },
+  "metrics": {
+   "n_trades": 7716,
+   "win_rate": 32.58,
+   "net_profit": -10000.5,
+   "profit_factor": 0.285,
+   "max_dd_pct": 100.0,
+   "max_consec_losses": 32,
+   "mcl_allowed": 31,
+   "n_wins": 2514,
+   "top_win_share": 0.0107,
+   "recovery_factor": -1.0,
+   "expectancy_pip": -3.2419,
+   "expectancy_at_2x_cost": -6.5419,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 4.141,
+   "tp_pip": 6.7,
+   "rr": 1.618,
+   "breakeven_wr_cost": 68.64,
+   "wr_excess_cost": -36.06,
+   "null_ref_wr": null,
+   "skill_lift_pp": null,
+   "skill_z": null,
+   "skill_p_perm": null,
+   "perm_max": null,
+   "perm_k": null,
+   "side_n": {
+    "long": 4070,
+    "short": 3646
+   },
+   "side_wr": {
+    "long": 31.4,
+    "short": 33.9
+   },
+   "side_lift_pp": {},
+   "prune_sides": [],
+   "p_emp": null,
+   "p_adj_bonferroni": null,
+   "z_obs": null,
+   "z_luck_bound": null,
+   "z_margin": null,
+   "n_trials": 7,
+   "cal_nets": [
+    -10000.5,
+    -10000.3,
+    -10002.1,
+    -10000.2
+   ],
+   "cal_counts": [
+    2203,
+    1524,
+    2034,
+    1955
+   ],
+   "cal_positive": 0,
+   "cal_occupied": 4,
+   "half_nets": [
+    -10000.5,
+    -10002.1
+   ],
+   "oos": {
+    "n": 2289,
+    "wr": 40.54,
+    "pf": 0.306,
+    "net": -10000.4,
+    "wr_req": 68.64
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 6613,
+    "n_unjudgeable": 1103,
+    "n_counter": 3253,
+    "n_aligned": 3360,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 33.57,
+    "exp_counter": -3.096,
+    "wr_aligned": 32.83,
+    "exp_aligned": -2.979
+   },
+   "n_required_h3": null
+  },
+  "notes": [
+   "PF=0.285<1.3",
+   "H3 UNKNOWN: no measured null model supplied — absence of a control is not evidence of skill"
+  ],
+  "passed": false,
+  "rqs2_score": 0.0,
+  "verdict": "REJECT",
+  "n_fail": 8,
+  "n_unknown": 3,
+  "accepted": false,
+  "power_limited": false,
+  "unproven": false,
+  "unproven_checks": {
+   "G1_lift_floor": false,
+   "G2_evidence": false,
+   "G3_efdr": false,
+   "G4_economics": false,
+   "G5_glass_ceiling": false,
+   "G6_structure": false
+  },
+  "gate_families": {
+   "economic": {
+    "H0": false,
+    "H1": false,
+    "H2": false,
+    "H8": false,
+    "H9": false
+   },
+   "power": {
+    "H3": null,
+    "H7": false,
+    "H10": false
+   },
+   "economic_all_pass": false,
+   "power_defects": [
+    "H3",
+    "H7",
+    "H10"
+   ]
+  },
+  "admission_rule": "gates_only",
+  "rank_tier": "D"
+ },
+ "n_trials": 7,
+ "seed": 20260805,
+ "lean": true
+}
