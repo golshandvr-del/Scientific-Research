@@ -1,0 +1,14 @@
+{
+ "strategy": "S693",
+ "concept": "pwhl_acceptance",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "hold_bars": 1,
+ "split_bar": 112,
+ "n_trials": 72,
+ "family": "3x3x4=36/side (cum 72)",
+ "cost_pip": 3.3,
+ "verdict": "TOO_SHORT"
+}
