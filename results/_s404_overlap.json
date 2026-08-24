@@ -1,0 +1,19 @@
+{
+ "s404": {
+  "n": 347
+ },
+ "s560_M5": {
+  "n": 103,
+  "shared_days": 34,
+  "s404_share_of_own_days_pct": 9.86,
+  "jaccard_days_pct": 8.21,
+  "momentary_pm30min": 34
+ },
+ "s560_M1": {
+  "n": 452,
+  "shared_days": 207,
+  "s404_share_of_own_days_pct": 60.0,
+  "jaccard_days_pct": 35.2,
+  "momentary_pm30min": 209
+ }
+}
