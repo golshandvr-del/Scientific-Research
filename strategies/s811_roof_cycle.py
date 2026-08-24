@@ -236,7 +236,8 @@ def phase_judge(df, roof, hurst, winner, null):
     split_idx = int(np.searchsorted(df['time'].values, SPLIT_EPOCH))
     up, dn = cross_events(roof)
     gm = gate_mask(hurst, winner['gate'])
-    ls, ss = build_signals(up, dn, gm, winner['logic'])
+    second = df['time'].values >= SPLIT_EPOCH
+    ls, ss = build_signals(up, dn, gm, winner['logic'], second)
     tr = se.simulate_trades(df, ls, ss, sl_pip=winner['sl'], tp_pip=winner['tp'],
                             asset='XAUUSD', max_hold=winner['mh'],
                             allow_overlap=False)

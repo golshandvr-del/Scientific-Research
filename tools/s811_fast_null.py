@@ -212,8 +212,8 @@ def main():
         'short': dict(uncond_wr=uncond_short,
                       perm_mean=float(np.mean(ps)), perm_sd=float(np.std(ps)),
                       perm_max=float(np.max(ps)), perm_k=len(ps)),
-        'validation': dict(wr_fast=wr_fast, wr_engine=wr_ref,
-                           n_fast=int(nl_u + ns_u), n_engine=int(len(tr))),
+        'validation': dict(wr_fast_slice=wr_fast_v, wr_engine_slice=wr_ref,
+                           layer_wr_holdout=wr_fast, layer_n_holdout=int(nl + ns)),
     }
     print(json.dumps(out, indent=1))
     with open(os.path.join(OUT_DIR, 'null_holdout.json'), 'w') as f:
