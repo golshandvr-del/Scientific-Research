@@ -7,7 +7,7 @@
  "span_years": 15.53,
  "split_bar": 14253,
  "n_trials": 16,
- "k_perm": 100,
+ "k_perm": 500,
  "prereg": "results/S746_PREREG_STRONG_CLOSE_EXPANSION_PATH_C.md",
  "grid_summary": {
   "tested": 16,
