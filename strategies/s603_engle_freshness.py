@@ -91,23 +91,20 @@ def base_trades(m):
 
 
 def gated_member(m, mm, arm):
-    """اعمالِ گیتِ تازگی روی سیگنال، سپس صف/معاملاتِ منجمد."""
+    """اعمالِ گیتِ تازگی روی سیگنال، سپس صف/معاملاتِ منجمد.
+    signals_for → (idx: آرایه‌ی اندیس, isl: بولیِ هم‌طولِ idx)."""
     w = m['w']
-    sig, isl = signals_for(m['z'], m['atr'], w['z_thr'], w['mode'], m['warmup'])
+    idx, isl = signals_for(m['z'], m['atr'], w['z_thr'], w['mode'], m['warmup'])
     # رویدادِ خام: |z|>=z_thr (پایه‌ی تعریفِ تازگی — مستقل از mode)
     ev = np.abs(np.nan_to_num(m['z'])) >= w['z_thr']
-    idx = np.where(sig)[0]
-    keep = np.zeros(len(sig), bool)
-    for i in idx:
-        lo = max(0, i - mm)
-        fresh = not ev[lo:i].any()
-        if (arm == 'FRESH') == fresh:
-            keep[i] = True
-    isl2 = isl[keep[sig]] if isl is not None else None
-    if keep.sum() < 5:
+    pos = [j for j, i in enumerate(idx)
+           if (arm == 'FRESH') == (not ev[max(0, i - mm):i].any())]
+    if len(pos) < 5:
         return None
-    st = queue_frozen(m['df'], keep, isl2, m['w']['sl_k'] * m['atr'][keep],
-                      m['hold'], m['w']['rr'])
+    idx2 = idx[pos]
+    isl2 = isl[pos]
+    st = queue_frozen(m['df'], idx2, isl2, w['sl_k'] * m['atr'][idx2],
+                      m['hold'], w['rr'])
     if st is None or st['n'] < 5:
         return None
     tr = trades_from_st(st)

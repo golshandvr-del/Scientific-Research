@@ -1,0 +1,78 @@
+[
+ {
+  "m": 3,
+  "arm": "FRESH",
+  "n_disc": 204,
+  "wr_disc": 62.75,
+  "ref": 49.65,
+  "lift_disc": 13.1,
+  "z_proxy": 187.1,
+  "n_full": 339
+ },
+ {
+  "m": 3,
+  "arm": "ECHO",
+  "n_disc": 17,
+  "note": "underpowered"
+ },
+ {
+  "m": 5,
+  "arm": "FRESH",
+  "n_disc": 196,
+  "wr_disc": 62.24,
+  "ref": 49.71,
+  "lift_disc": 12.53,
+  "z_proxy": 175.5,
+  "n_full": 326
+ },
+ {
+  "m": 5,
+  "arm": "ECHO",
+  "n_disc": 27,
+  "note": "underpowered"
+ },
+ {
+  "m": 8,
+  "arm": "FRESH",
+  "n_disc": 186,
+  "wr_disc": 62.9,
+  "ref": 49.55,
+  "lift_disc": 13.35,
+  "z_proxy": 182.1,
+  "n_full": 307
+ },
+ {
+  "m": 8,
+  "arm": "ECHO",
+  "n_disc": 41,
+  "note": "underpowered"
+ },
+ {
+  "m": 13,
+  "arm": "FRESH",
+  "n_disc": 39,
+  "note": "underpowered"
+ },
+ {
+  "m": 13,
+  "arm": "ECHO",
+  "n_disc": 56,
+  "note": "underpowered"
+ },
+ {
+  "m": 21,
+  "arm": "FRESH",
+  "n_disc": 31,
+  "note": "underpowered"
+ },
+ {
+  "m": 21,
+  "arm": "ECHO",
+  "n_disc": 86,
+  "wr_disc": 60.47,
+  "ref": 50.0,
+  "lift_disc": 10.47,
+  "z_proxy": 97.1,
+  "n_full": 145
+ }
+]

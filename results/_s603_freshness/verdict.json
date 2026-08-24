@@ -1,0 +1,231 @@
+{
+ "session": "S603",
+ "prereg": "results/S603_PREREG_ENGLE_SHOCK_FRESHNESS.md",
+ "winner": {
+  "m": 3,
+  "arm": "FRESH"
+ },
+ "explore": [
+  {
+   "m": 3,
+   "arm": "FRESH",
+   "n_disc": 204,
+   "wr_disc": 62.75,
+   "ref": 49.65,
+   "lift_disc": 13.1,
+   "z_proxy": 187.1,
+   "n_full": 339
+  },
+  {
+   "m": 3,
+   "arm": "ECHO",
+   "n_disc": 17,
+   "note": "underpowered"
+  },
+  {
+   "m": 5,
+   "arm": "FRESH",
+   "n_disc": 196,
+   "wr_disc": 62.24,
+   "ref": 49.71,
+   "lift_disc": 12.53,
+   "z_proxy": 175.5,
+   "n_full": 326
+  },
+  {
+   "m": 5,
+   "arm": "ECHO",
+   "n_disc": 27,
+   "note": "underpowered"
+  },
+  {
+   "m": 8,
+   "arm": "FRESH",
+   "n_disc": 186,
+   "wr_disc": 62.9,
+   "ref": 49.55,
+   "lift_disc": 13.35,
+   "z_proxy": 182.1,
+   "n_full": 307
+  },
+  {
+   "m": 8,
+   "arm": "ECHO",
+   "n_disc": 41,
+   "note": "underpowered"
+  },
+  {
+   "m": 13,
+   "arm": "FRESH",
+   "n_disc": 39,
+   "note": "underpowered"
+  },
+  {
+   "m": 13,
+   "arm": "ECHO",
+   "n_disc": 56,
+   "note": "underpowered"
+  },
+  {
+   "m": 21,
+   "arm": "FRESH",
+   "n_disc": 31,
+   "note": "underpowered"
+  },
+  {
+   "m": 21,
+   "arm": "ECHO",
+   "n_disc": 86,
+   "wr_disc": 60.47,
+   "ref": 50.0,
+   "lift_disc": 10.47,
+   "z_proxy": 97.1,
+   "n_full": 145
+  }
+ ],
+ "reference_s602_disc": {
+  "n": 218,
+  "wr": 61.93
+ },
+ "n_before": 387,
+ "n_after": 339,
+ "fifo_cut_pct": 12.4,
+ "member_share": {
+  "XAUUSD-H8": 0.826,
+  "XAUUSD-D1": 0.174
+ },
+ "sl_pip_med": 200.39,
+ "tp_pip_med": 200.39,
+ "pool_null": {
+  "long": {
+   "uncond_wr": 56.30788999566809,
+   "perm_mean": 56.84923177009318,
+   "perm_sd": 3.4455071180468484,
+   "perm_max": null,
+   "perm_k": 800
+  },
+  "short": {
+   "uncond_wr": 43.188604617218516,
+   "perm_mean": 42.71027334296207,
+   "perm_sd": 3.0443290508593592,
+   "perm_max": null,
+   "perm_k": 800
+  }
+ },
+ "seed": 20260819,
+ "n_trials": 5147,
+ "n_trials_stress": 8000,
+ "split_utc": "2019-12-30T01:36:00.000000000",
+ "official": {
+  "verdict": "ACCEPT",
+  "rqs2_score": 75.7,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": true,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "notes": [],
+  "metrics": {
+   "n_trades": 339,
+   "win_rate": 59.88,
+   "net_profit": 8141.5,
+   "profit_factor": 1.396,
+   "max_dd_pct": 7.2,
+   "max_consec_losses": 7,
+   "mcl_allowed": 11,
+   "n_wins": 203,
+   "top_win_share": 0.0302,
+   "recovery_factor": 6.06,
+   "expectancy_pip": 34.8643,
+   "expectancy_at_2x_cost": 31.5643,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 200.387,
+   "tp_pip": 200.387,
+   "rr": 1.0,
+   "breakeven_wr_cost": 50.82,
+   "wr_excess_cost": 9.06,
+   "null_ref_wr": 49.72,
+   "skill_lift_pp": 10.17,
+   "skill_z": 3.14,
+   "skill_p_perm": 0.000841,
+   "perm_max": 49.72,
+   "perm_k": 800,
+   "p_emp": 0.000113,
+   "p_adj_bonferroni": 0.579363,
+   "z_obs": 3.743,
+   "z_luck_bound": 3.695,
+   "z_margin": 0.048,
+   "n_trials": 5147,
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "max_concurrency": 1,
+   "n_required_h3": 231.0
+  }
+ },
+ "stress": {
+  "verdict": "REJECT",
+  "rqs2_score": 23.7,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": true,
+   "H4": true,
+   "H5": false,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "notes": [],
+  "metrics": {
+   "n_trades": 339,
+   "win_rate": 59.88,
+   "net_profit": 8141.5,
+   "profit_factor": 1.396,
+   "max_dd_pct": 7.2,
+   "max_consec_losses": 7,
+   "mcl_allowed": 11,
+   "n_wins": 203,
+   "top_win_share": 0.0302,
+   "recovery_factor": 6.06,
+   "expectancy_pip": 34.8643,
+   "expectancy_at_2x_cost": 31.5643,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 200.387,
+   "tp_pip": 200.387,
+   "rr": 1.0,
+   "breakeven_wr_cost": 50.82,
+   "wr_excess_cost": 9.06,
+   "null_ref_wr": 49.72,
+   "skill_lift_pp": 10.17,
+   "skill_z": 3.14,
+   "skill_p_perm": 0.000841,
+   "perm_max": 49.72,
+   "perm_k": 800,
+   "p_emp": 0.000113,
+   "p_adj_bonferroni": 0.900505,
+   "z_obs": 3.743,
+   "z_luck_bound": 3.806,
+   "z_margin": -0.062,
+   "n_trials": 8000,
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "max_concurrency": 1,
+   "n_required_h3": 231.0
+  }
+ },
+ "verdict": "ACCEPT",
+ "rqs2_score": 75.7
+}
