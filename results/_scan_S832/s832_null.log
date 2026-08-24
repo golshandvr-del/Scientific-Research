@@ -1,0 +1,14 @@
+src: /home/user/webapp/data/mt5_full/XAUUSD_H1.csv
+events: total L=1152 S=957 | explore L=627 S=600 | holdout L=525 S=357 | trail=21.6pip
+[null] holdout signal bars: n=881
+  [null] perm 50/500
+  [null] perm 100/500
+  [null] perm 150/500
+  [null] perm 200/500
+  [null] perm 250/500
+  [null] perm 300/500
+  [null] perm 350/500
+  [null] perm 400/500
+  [null] perm 450/500
+  [null] perm 500/500
+[null] mean=60.07% sd=1.39 max=64.25% k=500
