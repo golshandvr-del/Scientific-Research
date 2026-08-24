@@ -1,0 +1,90 @@
+{
+ "mission": "S583",
+ "stage": "explore_first_half",
+ "seed": 20260821,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "n_total": 91331,
+ "split": 45665,
+ "span_y": 15.59,
+ "n_e1": 1975,
+ "n_e2": 1981,
+ "med_sl_pip_e1": 32.07,
+ "med_sl_pip_e2": 32.56,
+ "grid": [
+  {
+   "ev": "E1",
+   "name": "short_into_fix",
+   "mh": 1,
+   "sl": 32.07,
+   "tp": 32.07,
+   "n": 1975,
+   "wr": 43.8,
+   "exp_pip": -4.425,
+   "net_pip": -8739.0,
+   "score": -196.64
+  },
+  {
+   "ev": "E1",
+   "name": "short_into_fix",
+   "mh": 2,
+   "sl": 32.07,
+   "tp": 32.07,
+   "n": 1975,
+   "wr": 46.99,
+   "exp_pip": -3.94,
+   "net_pip": -7781.8,
+   "score": -175.1
+  },
+  {
+   "ev": "E1",
+   "name": "short_into_fix",
+   "mh": 4,
+   "sl": 32.07,
+   "tp": 32.07,
+   "n": 1975,
+   "wr": 48.25,
+   "exp_pip": -3.426,
+   "net_pip": -6766.2,
+   "score": -152.25
+  },
+  {
+   "ev": "E2",
+   "name": "long_post_fix",
+   "mh": 1,
+   "sl": 32.56,
+   "tp": 32.56,
+   "n": 1981,
+   "wr": 41.29,
+   "exp_pip": -4.479,
+   "net_pip": -8873.3,
+   "score": -199.36
+  },
+  {
+   "ev": "E2",
+   "name": "long_post_fix",
+   "mh": 2,
+   "sl": 32.56,
+   "tp": 32.56,
+   "n": 1981,
+   "wr": 42.25,
+   "exp_pip": -4.987,
+   "net_pip": -9880.0,
+   "score": -221.98
+  },
+  {
+   "ev": "E2",
+   "name": "long_post_fix",
+   "mh": 4,
+   "sl": 32.56,
+   "tp": 32.56,
+   "n": 1981,
+   "wr": 43.92,
+   "exp_pip": -5.253,
+   "net_pip": -10406.8,
+   "score": -233.82
+  }
+ ],
+ "winner": null,
+ "power_check": null,
+ "elapsed_s": 0.1
+}
