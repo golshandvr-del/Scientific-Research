@@ -88,25 +88,44 @@ def atr_plain(h, l, c, win=ATR_WIN):
     return pd.Series(tr).rolling(win).mean().values
 
 
-def cs_spread(h, l):
+def cs_spread(h, l, chunk=1_000_000):
     """برآوردگرِ اسپردِ Corwin-Schultz (2012) — برداری، بدونِ look-ahead.
 
     S_i از (H,L)ِ کندل‌های i−1 و i ساخته می‌شود (فقط گذشته/حال).
     مقادیرِ منفی به صفر برش می‌خورند (استانداردِ مقاله).
+
+    ⚡ chunked با هم‌پوشانیِ ۱ کندل — فقط بهینه‌سازیِ حافظه، نه تغییرِ تعریف:
+    نسخهٔ یک‌تکه روی M1ِ ۵M حدودِ ۱۲ آرایهٔ موقتِ ۳۸MB می‌ساخت و در سندباکسِ
+    ۹۸۵MB با سیگنالِ Killed (OOM) مُرد. چون S_i فقط به کندل‌های i−1,i وابسته
+    است، هم‌پوشانیِ ۱ کندل خروجی را بیت‌به‌بیت برابر نگه می‌دارد (پاریتی تست می‌شود).
     """
-    lh = np.log(h)
-    ll = np.log(l)
-    hl2 = (lh - ll) ** 2                                   # ln(H/L)²
-    beta = np.full_like(hl2, np.nan)
-    beta[1:] = hl2[:-1] + hl2[1:]
-    hmax = np.maximum.reduce([h, np.roll(h, 1)])
-    lmin = np.minimum.reduce([l, np.roll(l, 1)])
-    gamma = (np.log(hmax) - np.log(lmin)) ** 2
-    gamma[0] = np.nan
-    alpha = (np.sqrt(2.0 * beta) - np.sqrt(beta)) / _C1 - np.sqrt(gamma / _C1)
-    s = 2.0 * (np.exp(alpha) - 1.0) / (1.0 + np.exp(alpha))
-    s = np.where(np.isfinite(s), np.maximum(s, 0.0), np.nan)
-    return s
+    n = len(h)
+    out = np.full(n, np.nan)
+    for s0 in range(0, n, chunk):
+        e = min(n, s0 + chunk)
+        start = max(0, s0 - 1)
+        hh = np.asarray(h[start:e], dtype=np.float64)
+        ll_ = np.asarray(l[start:e], dtype=np.float64)
+        hl2 = np.log(hh / ll_) ** 2                        # ln(H/L)²
+        beta = np.full_like(hl2, np.nan)
+        beta[1:] = hl2[:-1] + hl2[1:]
+        del hl2
+        hmax = np.maximum(hh, np.concatenate(([hh[0]], hh[:-1])))
+        lmin = np.minimum(ll_, np.concatenate(([ll_[0]], ll_[:-1])))
+        del hh, ll_
+        gamma = np.log(hmax / lmin) ** 2
+        del hmax, lmin
+        gamma[0] = np.nan
+        alpha = (np.sqrt(2.0 * beta) - np.sqrt(beta)) / _C1 - np.sqrt(gamma / _C1)
+        del beta, gamma
+        ea = np.exp(alpha)
+        del alpha
+        s = 2.0 * (ea - 1.0) / (1.0 + ea)
+        del ea
+        s = np.where(np.isfinite(s), np.maximum(s, 0.0), np.nan)
+        out[s0:e] = s[s0 - start:]
+        del s
+    return out
 
 
 def rolling_q_causal(x, w=CS_WIN, q=CS_Q, chunk=1_000_000):
@@ -129,13 +148,15 @@ def rolling_q_causal(x, w=CS_WIN, q=CS_Q, chunk=1_000_000):
 
 def build_signals(df):
     """(sig_idx, is_long) — شوکِ CS روی کندلِ i؛ fade دوکندله؛ ورود i+1."""
-    h = df['high'].values.astype(np.float64)
-    l = df['low'].values.astype(np.float64)
-    c = df['close'].values.astype(np.float64)
+    h = np.asarray(df['high'].values, dtype=np.float64)
+    l = np.asarray(df['low'].values, dtype=np.float64)
+    c = np.asarray(df['close'].values, dtype=np.float64)
     s = cs_spread(h, l)
     thr = rolling_q_causal(s)
     shock = np.isfinite(s) & np.isfinite(thr) & (s > thr) & (s > 0.0)
+    del s, thr
     idx = np.flatnonzero(shock)
+    del shock
     idx = idx[idx >= 2]
     move = c[idx] - c[idx - 2]
     keep = move != 0
@@ -234,6 +255,7 @@ def run_tf(tf, k_perm=K_PERM, seed=SEED):
     atr = atr_plain(df['high'].values, df['low'].values, df['close'].values)
     pip = float(se.ASSETS[ASSET]['pip'])
     sl_pip_scalar = float(np.nanmedian(atr)) * SL_K / pip
+    del atr
     tp_pip_scalar = sl_pip_scalar * RR
     out['sl_pip'] = round(sl_pip_scalar, 3)
     out['tp_pip'] = round(tp_pip_scalar, 3)
