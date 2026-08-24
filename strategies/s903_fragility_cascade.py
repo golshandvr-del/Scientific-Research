@@ -82,11 +82,63 @@ def build_signals(d, k):
     return ls, ss
 
 
-def run_combo(df, atr, ls, ss, k_sl, rr, hold):
+def sim_chunked(d, ls, ss, sl, tp, hold, chunk=600_000):
+    """شبیه‌سازی قطعه‌قطعه با معناشناسیِ *دقیقاً* هم‌ارزِ اجرای یکپارچه.
+
+    چرا: سیگنال k=2 روی M1 فوق‌متراکم است (~۲۷۲k یال در ۶۰٪ اول)؛ موتور برای
+    هر معامله dict پایتونی می‌سازد و لیستِ چند صدهزارتایی، سندباکسِ ۹۸۵MB را
+    می‌کُشد (M1 یک بار Killed شد). این تابع همان موتور را روی قطعات اجرا
+    می‌کند و بین قطعات busy_until را حمل می‌کند:
+      • دادهٔ هر قطعه تا hold+2 بار بعد از مرز ادامه دارد ⇒ هر معامله‌ای که
+        سیگنالش داخل قطعه است کامل بسته می‌شود (هیچ برشِ مصنوعی).
+      • سیگنال‌های قطعهٔ بعد که global_idx ≤ busy_until دارند حذف می‌شوند —
+        دقیقاً همان رفتار allow_overlap=False در اجرای یکپارچه.
+    هم‌ارزی روی TF کوچک اثبات شده (تست هم‌ارزی در لاگ کامیت).
+    """
+    n = len(d['close'])
+    frames = []
+    busy_until = -1  # اندیس global آخرین exit_bar
+    a = 0
+    while a < n:
+        b = min(a + chunk, n)
+        ext = min(b + hold + 2, n)
+        dfc = pd.DataFrame({
+            'time': d['time'][a:ext], 'open': d['open'][a:ext],
+            'high': d['high'][a:ext], 'low': d['low'][a:ext],
+            'close': d['close'][a:ext], 'volume': d['volume'][a:ext],
+        }, copy=False)
+        lsc = ls[a:ext].copy(); ssc = ss[a:ext].copy()
+        # فقط سیگنال‌های داخل [a,b) مجازند؛ دنباله فقط برای بستنِ کامل است
+        lsc[b - a:] = False
+        ssc[b - a:] = False
+        # حمل busy از قطعهٔ قبل — موتور سیگنال si را وقتی بلاک می‌کند که
+        # entry_bar=si+1 ≤ busy_until یعنی si ≤ busy_until−1؛ پس سیگنالِ
+        # روی خودِ busy_until مجاز است (entry در بارِ بعد).
+        if busy_until >= a + 1:
+            cut = min(busy_until - a, ext - a)
+            lsc[:cut] = False
+            ssc[:cut] = False
+        if lsc.any() or ssc.any():
+            tr = se.simulate_trades(dfc, lsc, ssc, sl[a:ext], tp[a:ext],
+                                    ASSET, max_hold=hold, allow_overlap=False)
+            if tr is not None and len(tr):
+                for col in ('signal_bar', 'entry_bar', 'exit_bar'):
+                    tr[col] = tr[col] + a
+                busy_until = max(busy_until, int(tr['exit_bar'].max()))
+                frames.append(tr)
+        del dfc, lsc, ssc
+        a = b
+    if not frames:
+        return pd.DataFrame()
+    out = pd.concat(frames, ignore_index=True)
+    del frames
+    return out
+
+
+def run_combo(d, atr, ls, ss, k_sl, rr, hold):
     sl = np.nan_to_num(np.clip(k_sl * atr, 5.0, None), nan=5.0)
     tp = rr * sl
-    tr_ = se.simulate_trades(df, ls, ss, sl, tp, ASSET,
-                             max_hold=hold, allow_overlap=False)
+    tr_ = sim_chunked(d, ls, ss, sl, tp, hold)
     if tr_ is None or len(tr_) == 0:
         return None
     wr = float((tr_['pnl_pip'] > 0).mean() * 100.0)
@@ -104,12 +156,14 @@ def phase_discover(tf):
         print(f'[resume] {len(done)} combos checkpointed')
 
     d = fd.load_fast(ASSET, tf)
-    print(f"DATA src={d['src']} n_bars={d['n_bars']:,} span={d['span_years']}y",
+    src_full = d['src']
+    print(f"DATA src={src_full} n_bars={d['n_bars']:,} span={d['span_years']}y",
           flush=True)
     n_all = int(d['n_bars'])
     split = int(n_all * SPLIT_FRAC)
     d1 = {kk: (v[:split] if isinstance(v, np.ndarray) else v) for kk, v in d.items()}
-    df1 = fd.as_dataframe(d1)
+    del d  # آزادسازی نگاشتِ کامل — فقط ۶۰٪ اول لازم است
+    import gc; gc.collect()
     atr = atr_pip(d1)
 
     t0 = time.time()
@@ -124,11 +178,11 @@ def phase_discover(tf):
                     key = f'c{k}_k{k_sl}_rr{rr}_h{hold}'
                     if key in results:
                         continue
-                    r = run_combo(df1, atr, ls, ss, k_sl, rr, hold)
+                    r = run_combo(d1, atr, ls, ss, k_sl, rr, hold)
                     results[key] = r or dict(n=0)
                     with open(ckpt_fp, 'w') as f:
                         json.dump(dict(tf=tf, split=split, n_bars=n_all,
-                                       src=d['src'], combos=results), f, indent=1)
+                                       src=src_full, combos=results), f, indent=1)
                     v = results[key]
                     print(f'[{i:2d}/{N_EFF}] {key:<22} n={v.get("n",0):>6} '
                           f'wr={v.get("wr","-")} net={v.get("net","-")} '
@@ -142,7 +196,7 @@ def phase_discover(tf):
         score = r['wr'] + 0.001 * r['net']
         if score > best_score:
             best_key, best_score = key, score
-    locked = dict(tf=tf, split_bar=split, n_bars=n_all, src=d['src'],
+    locked = dict(tf=tf, split_bar=split, n_bars=n_all, src=src_full,
                   n_eff=N_EFF, criterion='wr+0.001*net', min_trades=floor,
                   best_key=best_key, best=results.get(best_key) if best_key else None,
                   score=round(best_score, 4) if best_key else None)
@@ -203,21 +257,19 @@ def phase_final(tf):
           f"n_trials={N_EFF} · split_bar={locked['split_bar']}")
     d = fd.load_fast(ASSET, tf)
     assert d['src'] == locked['src'], 'data source changed since lock!'
-    df = fd.as_dataframe(d)
     atr = atr_pip(d)
     ls, ss = build_signals(d, p['k'])
     sl = np.nan_to_num(np.clip(p['k_sl'] * atr, 5.0, None), nan=5.0)
     tp = p['rr'] * sl
-    tr_ = se.simulate_trades(df, ls, ss, sl, tp, ASSET,
-                             max_hold=p['hold'], allow_overlap=False)
+    tr_ = sim_chunked(d, ls, ss, sl, tp, p['hold'])
     print(f'trades total={len(tr_)}')
     null = build_null_perm(d, ls, ss, p['hold'])
     sl_med = float(np.median(tr_['sl_pip'].values))
     tp_med = p['rr'] * sl_med
     r = rqs2.compute_rqs2(tr_, ASSET, sl_pip=sl_med, tp_pip=tp_med,
-                          bar_time=df['time'].values, null=null,
+                          bar_time=d['time'], null=null,
                           n_trials=N_EFF, split_bar=locked['split_bar'],
-                          close=df['close'].values)
+                          close=d['close'])
     out = dict(tf=tf, locked_key=locked['best_key'], src=d['src'],
                n_bars=d['n_bars'], span_years=d['span_years'],
                n_trades=int(len(tr_)), sl_med=round(sl_med, 1),
