@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S944 WyckoffNoSupply :: XAUUSD_H1  bars=91,331  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv  (2011-01-03 00:00:00 → 2026-08-07 23:00:00)
+    geom: SL=59.74pip  TP=89.61pip  rr=1.5
+    family events: long=1,556  short=1,453
+    trades=2,183 (L=1,149 S=1,034)  wr=40.63%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=38.77% n=9748
+      uncond long stride=7: wr=39.08% n=6868
+      uncond long stride=13: wr=39.07% n=4991
+      null long  uncond=39.07979033197437 perm_mean=39.31370898419834 sd=1.3962242330221888 k=1000
+      uncond short stride=3: wr=37.47% n=9875
+      uncond short stride=7: wr=38.41% n=6926
+      uncond short stride=13: wr=37.97% n=4993
+      null short uncond=38.406006352873234 perm_mean=39.164217173039184 sd=1.4677716553368885 k=1000
+
+S944_WyckoffNoSupply_XAUUSD_H1 | REJECT     RQS2=  4.7 | n=2183 WR=40.63% PF=1.02 lift=  +1.39pp z= 1.0 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
