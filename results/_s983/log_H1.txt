@@ -1,0 +1,20 @@
+[H1] src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv
+[H1] bars_total=91,331  bars_search=45,665 (نیمهٔ اول — مسیر C)
+[H1]   W=34 θ=0.9 events=526  (1s)
+[H1]   W=34 θ=1.6 events=139  (1s)
+[H1]   W=34 θ=2.4 events=21  (1s)
+[H1]   W=89 θ=0.9 events=244  (1s)
+[H1]   W=89 θ=1.6 events=61  (1s)
+[H1]   W=89 θ=2.4 events=4  (2s)
+[H1] arms=48 valid(n>=30)=32 elapsed=1.6s
+[H1] ── ۱۰ بازوی برتر (بر z) ──
+  W=89  θ=1.6  mirr slk=1.2 rr=1.6 n=61     wr= 44.26% be=41.79% lift= +2.47pp z= +0.39 net=+149pip
+  W=34  θ=0.9  main slk=1.8 rr=1.6 n=526    wr= 41.25% be=40.68% lift= +0.57pp z= +0.27 net=+272pip
+  W=89  θ=1.6  mirr slk=1.2 rr=1.3 n=61     wr= 45.90% be=47.24% lift= -1.34pp z= -0.21 net=-72pip
+  W=89  θ=1.6  mirr slk=1.8 rr=1.3 n=61     wr= 44.26% be=45.99% lift= -1.73pp z= -0.27 net=-138pip
+  W=89  θ=0.9  mirr slk=1.8 rr=1.3 n=244    wr= 45.08% be=45.99% lift= -0.91pp z= -0.28 net=-291pip
+  W=89  θ=0.9  mirr slk=1.8 rr=1.6 n=244    wr= 39.34% be=40.68% lift= -1.34pp z= -0.43 net=-448pip
+  W=34  θ=1.6  main slk=1.8 rr=1.6 n=139    wr= 38.13% be=40.68% lift= -2.55pp z= -0.61 net=-534pip
+  W=34  θ=0.9  main slk=1.8 rr=1.3 n=526    wr= 44.30% be=45.99% lift= -1.69pp z= -0.78 net=-1206pip
+  W=89  θ=0.9  main slk=1.2 rr=1.3 n=244    wr= 44.67% be=47.24% lift= -2.57pp z= -0.80 net=-550pip
+  W=89  θ=0.9  main slk=1.8 rr=1.3 n=244    wr= 43.44% be=45.99% lift= -2.55pp z= -0.80 net=-788pip
