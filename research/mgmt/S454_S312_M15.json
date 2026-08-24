@@ -1,0 +1,106 @@
+{
+ "patient": "S312_M15",
+ "status": "REJECT_AT_CALIBRATION",
+ "n": 138,
+ "baseline_h1": {
+  "n": 57,
+  "total": 8968.0,
+  "avg": 157.33,
+  "sd": 943.05,
+  "worst": -2986.0,
+  "best": 2912.0,
+  "maxDD": 3556.0,
+  "pf": 1.686,
+  "wr": 56.1
+ },
+ "calibration": {
+  "V23": {
+   "mgmt_h1": {
+    "n": 57,
+    "total": 9051.0,
+    "avg": 158.79,
+    "sd": 942.13,
+    "worst": -2986.0,
+    "best": 2912.0,
+    "maxDD": 3556.0,
+    "pf": 1.697,
+    "wr": 56.1
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 1
+  },
+  "V567": {
+   "mgmt_h1": {
+    "n": 57,
+    "total": -4114.0,
+    "avg": -72.18,
+    "sd": 756.61,
+    "worst": -2986.0,
+    "best": 2901.0,
+    "maxDD": 5488.0,
+    "pf": 0.738,
+    "wr": 28.1
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": true
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 60
+  },
+  "V17": {
+   "mgmt_h1": {
+    "n": 57,
+    "total": 7159.0,
+    "avg": 125.6,
+    "sd": 956.84,
+    "worst": -2986.0,
+    "best": 2912.0,
+    "maxDD": 4358.0,
+    "pf": 1.512,
+    "wr": 52.6
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": true
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 9
+  }
+ },
+ "note": "هیچ واریانت در نیمهٔ اول پاس نشد؛ نیمهٔ دوم هرگز باز نشد (مسیرِ C)."
+}
