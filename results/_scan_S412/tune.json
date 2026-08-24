@@ -1,0 +1,310 @@
+{
+  "seed": 412,
+  "split_idx": 1994,
+  "t_split": "2018-10-24 00:00:00",
+  "bars_per_day": 0.7032,
+  "atr_pip": 183.67,
+  "sl": 367.3,
+  "n_signals_first_half": 98,
+  "cells": [
+    {
+      "hold_d": 5,
+      "rr": 1.0,
+      "mh": 4,
+      "sl": 367.3,
+      "tp": 367.3,
+      "n": 76,
+      "wr": 52.63,
+      "pf": 1.036,
+      "exp": 2.9039,
+      "exp2c": -0.3961,
+      "lift": 1.53,
+      "z": 0.26,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": 13.34,
+      "null_diag": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 47.37,
+          "gated": 51.1
+        }
+      },
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": false,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      }
+    },
+    {
+      "hold_d": 5,
+      "rr": 1.5,
+      "mh": 4,
+      "sl": 367.3,
+      "tp": 551.0,
+      "n": 74,
+      "wr": 52.7,
+      "pf": 1.068,
+      "exp": 5.7757,
+      "exp2c": 2.4757,
+      "lift": 1.57,
+      "z": 0.27,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": 13.51,
+      "null_diag": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 47.49,
+          "gated": 51.13
+        }
+      },
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": true,
+        "H3": false,
+        "H4": false,
+        "H5": false,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": true,
+        "H10": null
+      }
+    },
+    {
+      "hold_d": 8,
+      "rr": 1.0,
+      "mh": 6,
+      "sl": 367.3,
+      "tp": 367.3,
+      "n": 66,
+      "wr": 43.94,
+      "pf": 1.049,
+      "exp": 5.0788,
+      "exp2c": 1.7788,
+      "lift": -8.95,
+      "z": -1.46,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -72.71,
+      "null_diag": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 47.41,
+          "gated": 52.89
+        }
+      },
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": false,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": true,
+        "H10": null
+      }
+    },
+    {
+      "hold_d": 8,
+      "rr": 1.5,
+      "mh": 6,
+      "sl": 367.3,
+      "tp": 551.0,
+      "n": 64,
+      "wr": 43.75,
+      "pf": 0.979,
+      "exp": -2.3094,
+      "exp2c": -5.6094,
+      "lift": -8.49,
+      "z": -1.36,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -67.92,
+      "null_diag": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 47.23,
+          "gated": 52.24
+        }
+      },
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": false,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      }
+    },
+    {
+      "hold_d": 13,
+      "rr": 1.0,
+      "mh": 9,
+      "sl": 367.3,
+      "tp": 367.3,
+      "n": 63,
+      "wr": 46.03,
+      "pf": 0.964,
+      "exp": -4.9667,
+      "exp2c": -8.2667,
+      "lift": -5.33,
+      "z": -0.85,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -42.31,
+      "null_diag": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 48.32,
+          "gated": 51.36
+        }
+      },
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": false,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      }
+    },
+    {
+      "hold_d": 13,
+      "rr": 1.5,
+      "mh": 9,
+      "sl": 367.3,
+      "tp": 551.0,
+      "n": 61,
+      "wr": 44.26,
+      "pf": 0.988,
+      "exp": -1.7115,
+      "exp2c": -5.0115,
+      "lift": -6.39,
+      "z": -0.97,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -49.91,
+      "null_diag": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 46.51,
+          "gated": 50.65
+        }
+      },
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": false,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      }
+    },
+    {
+      "hold_d": 21,
+      "rr": 1.0,
+      "mh": 15,
+      "sl": 367.3,
+      "tp": 367.3,
+      "n": 59,
+      "wr": 49.15,
+      "pf": 0.991,
+      "exp": -1.4373,
+      "exp2c": -4.7373,
+      "lift": -2.5,
+      "z": -0.38,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -19.2,
+      "null_diag": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 46.75,
+          "gated": 51.66
+        }
+      },
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": false,
+        "H3": false,
+        "H4": false,
+        "H5": false,
+        "H6": false,
+        "H7": null,
+        "H8": false,
+        "H9": false,
+        "H10": null
+      }
+    },
+    {
+      "hold_d": 21,
+      "rr": 1.5,
+      "mh": 15,
+      "sl": 367.3,
+      "tp": 551.0,
+      "n": 53,
+      "wr": 50.94,
+      "pf": 1.211,
+      "exp": 32.7302,
+      "exp2c": 29.4302,
+      "lift": 1.23,
+      "z": 0.17,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": 8.95,
+      "null_diag": {
+        "chosen": "gated",
+        "wrs": {
+          "uncond": 43.5,
+          "gated": 49.71
+        }
+      },
+      "gates": {
+        "H0": true,
+        "H1": false,
+        "H2": true,
+        "H3": false,
+        "H4": false,
+        "H5": false,
+        "H6": true,
+        "H7": null,
+        "H8": false,
+        "H9": true,
+        "H10": null
+      }
+    }
+  ],
+  "n_qualified": 0,
+  "winner": null,
+  "stop_rule_fired": true
+}
