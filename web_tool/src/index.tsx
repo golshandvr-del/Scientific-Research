@@ -189,13 +189,14 @@ app.post('/api/trade/advice', async (c) => {
       const { candles } = await fetchGold(mtf.interval, mtf.range)
       // کفِ دادهٔ لازم: H4 پس از تجمیع ۱/۴ کندل دارد ⇒ آستانهٔ آن پایین‌تر است
       // (همان ۶۰ کندلی که مسیرِ تصمیم برای H4 می‌پذیرد).
-      const isH4 = meta_asset.id === 'XAUUSD-H4'
-      const minBars = isH4 ? 240 : 220
+      // H8 (S950) همان الگو: H1×8. کفِ خامِ H1 متناسب با فاکتور (۱۱۰ کندلِ H8 = ۸۸۰ H1).
+      const aggF = meta_asset.id === 'XAUUSD-H4' ? 4 : meta_asset.id === 'XAUUSD-H8' ? 8 : 1
+      const minBars = aggF === 4 ? 240 : aggF === 8 ? 880 : 220
       if (candles.length < minBars) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
       let spot: SpotPrice | null = null
       try { spot = await getSpotGold() } catch {}
       const merged = rebaseFuturesToSpot(candles, spot, mtf.gap)
-      a = analyze(isH4 ? aggregateCandles(merged.candles, 4) : merged.candles)
+      a = analyze(aggF > 1 ? aggregateCandles(merged.candles, aggF) : merged.candles)
     } else {
       const { candles } = await yahooCandles(meta_asset.symbol, '15m', '1mo')
       if (candles.length < 220) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
@@ -302,9 +303,9 @@ async function candlesForScan(asset: string, tf: string, want: number): Promise<
 
   // ۲) fallbackِ زنده.
   if (asset === 'XAUUSD') {
-    const intervalMap: Record<string, string> = { M5: '5m', M15: '15m', M30: '30m', H1: '1h', H4: '1h' }
+    const intervalMap: Record<string, string> = { M5: '5m', M15: '15m', M30: '30m', H1: '1h', H4: '1h', H8: '1h' }
     const interval = intervalMap[tf] || '15m'
-    const range = tf === 'M5' ? '5d' : tf === 'M15' ? '1mo' : '3mo'
+    const range = tf === 'M5' ? '5d' : tf === 'M15' ? '1mo' : tf === 'H8' ? '1y' : '3mo'
     const { candles } = await fetchGold(interval, range)
     return candles
   } else {
@@ -499,6 +500,10 @@ const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: 
   { id: 'XAUUSD-M30', card: 'XAUUSD-M30', name: 'طلا / دلار — M30 (سی‌دقیقه‌ای)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing-m30' },
   { id: 'XAUUSD-H1',  card: 'XAUUSD-H1',  name: 'طلا / دلار — H1 (یک‌ساعته)',      symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
   { id: 'XAUUSD-H4',  card: 'XAUUSD-H4',  name: 'طلا / دلار — H4 (چهارساعته)',     symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
+  // ⭐ کارتِ نوِ S950 — تنها تایم‌فریمِ ACCEPTِ لایهٔ «پس‌لرزهٔ جهش، هم‌راستا با رانش»
+  //    (RQS2=80 · پایدار روی ۴ seed). کندلِ H8 از تجمیعِ H1×8 ساخته می‌شود
+  //    (عینِ الگوی H4؛ Yahoo تایم‌فریمِ ۸ساعته ندارد). مرزهای UTC 0/8/16.
+  { id: 'XAUUSD-H8',  card: 'XAUUSD-H8',  name: 'طلا / دلار — H8 (هشت‌ساعته)',      symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
   // ⚰️ حذف‌شده در S396 — بی‌ACCEPT زیرِ RQS2 v2.4:
   //   { id: 'EURUSD-M15', card: 'EURUSD-M15', … }   ← S326
   //   { id: 'EURUSD-M30', card: 'EURUSD-M30', … }   ← S345 (RQS+ 91.7، ولی بی‌ACCEPT)
@@ -543,6 +548,9 @@ const GOLD_TF: Record<string, { interval: string; range: string; gap: number }> 
   'XAUUSD-M30':{ interval: '30m', range: '1mo', gap: 1800 },
   'XAUUSD-H1': { interval: '1h',  range: '3mo', gap: 3600 },
   'XAUUSD-H4': { interval: '1h',  range: '1y',  gap: 3600 },  // H4 از تجمیعِ H1 ساخته می‌شود
+  // H8 (S950): ۱ سالِ H1 ≈ ۶۲۰۰ کندل ⇒ ≈۷۸۰ کندلِ H8 — برای گرم‌شدنِ ۹۱کندلیِ
+  // σ_BV(89)/ATR(89) و EMA200ِ analyze هر دو کافی است (حاشیه ≈۸× نیازِ لایه).
+  'XAUUSD-H8': { interval: '1h',  range: '1y',  gap: 3600 },  // H8 از تجمیعِ H1×8 ساخته می‌شود
 }
 
 function tfLabelForGold(id: string): string {
@@ -552,6 +560,7 @@ function tfLabelForGold(id: string): string {
     case 'XAUUSD-M30': return 'M30'
     case 'XAUUSD-H1': return 'H1'
     case 'XAUUSD-H4': return 'H4'
+    case 'XAUUSD-H8': return 'H8'
     default: return 'M15'
   }
 }
@@ -584,10 +593,12 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
   if (a.isGold) {
     const tfc = GOLD_TF[a.id] || GOLD_TF['XAUUSD']
     const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range)
-    // H4: Yahoo تایم‌فریمِ ۴ساعته را مستقیم نمی‌دهد ⇒ از تجمیعِ کندل‌های H1 می‌سازیم.
-    const candles = a.id === 'XAUUSD-H4' ? aggregateCandles(rawCandles, 4) : rawCandles
+    // H4/H8: Yahoo تایم‌فریمِ ۴/۸ساعته را مستقیم نمی‌دهد ⇒ از تجمیعِ کندل‌های H1 می‌سازیم.
+    const aggFactor = a.id === 'XAUUSD-H4' ? 4 : a.id === 'XAUUSD-H8' ? 8 : 1
+    const candles = aggFactor > 1 ? aggregateCandles(rawCandles, aggFactor) : rawCandles
     // آستانهٔ حداقلِ کندل بسته به تایم‌فریم (H4 داده کمتری دارد، اما برای EMA200 کافی است).
-    const minBars = a.id === 'XAUUSD-H4' ? 60 : 220
+    // H8: لایهٔ S950 خودش ۹۱+۲ کندل گرم‌شدن می‌خواهد ⇒ کفِ سخت‌گیرانه‌ترِ ۱۱۰.
+    const minBars = a.id === 'XAUUSD-H4' ? 60 : a.id === 'XAUUSD-H8' ? 110 : 220
     if (candles.length < minBars) throw new Error('داده کافی برای تحلیل نیست')
     let spot: SpotPrice | null = null
     try { spot = await getSpotGold() } catch {}
@@ -597,7 +608,12 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     // 🔧 رفعِ باگِ repainting: منطقِ ماشهٔ سیگنال روی «کندل‌های بسته‌شده» اجرا می‌شود
     //   (معادلِ shift(1)ِ بک‌تست)، نه کندلِ زندهٔ در حالِ شکل‌گیری. result.price هم‌چنان قیمتِ
     //   زنده است ⇒ entry روی «open کندلِ بعد» می‌نشیند، اما شرطِ سیگنال روی کندلِ بستهٔ قبلی.
-    const sig = closedBars(useCandles, tfc.gap)
+    // ⚠️ H8 (S950): مرزِ «کندلِ بسته» برای کندلِ تجمیعی باید طولِ واقعیِ سطل (۸h) باشد،
+    //   نه gapِ منبع (۱h) — وگرنه کندلِ H8ِ در حالِ شکل‌گیری پس از ساعتِ اولش
+    //   «بسته» دیده می‌شد و سیگنالِ S950 روی r ناقص می‌نشست (look-ahead نسبت
+    //   به بک‌تستی که فقط کندلِ کامل دید). رفتارِ کارت‌های دیگر دست‌نخورده.
+    const sigGap = a.id === 'XAUUSD-H8' ? tfc.gap * 8 : tfc.gap
+    const sig = closedBars(useCandles, sigGap)
     const lastClosed = sig[sig.length - 1]
     const goldUtcHour = new Date(lastClosed.time * 1000).getUTCHours()
     // 🟦 P2 سایه‌ای: ذخیرهٔ تاریخچهٔ کندل‌های بسته‌شده (بی‌اثر بر تصمیم).
