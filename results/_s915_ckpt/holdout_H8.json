@@ -1,0 +1,54 @@
+{
+ "geometry": {
+  "tp": 420.4,
+  "sl": 165.1,
+  "n_sig": 496,
+  "rr": 2.546
+ },
+ "n_trades": 206,
+ "verdict": "REJECT",
+ "rqs2_score": 22.9,
+ "failed_gates": [
+  "H3",
+  "H5"
+ ],
+ "unknown_gates": [],
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true
+ },
+ "metrics": {
+  "wr": null,
+  "null_ref_wr": 32.53,
+  "breakeven_wr_cost": 28.76,
+  "rr": 2.546,
+  "z_obs": 1.485,
+  "z_luck_bound": 1.901,
+  "z_margin": -0.416,
+  "skill_p_perm": 0.068751,
+  "p_emp": 0.080286,
+  "perm_k": 500,
+  "perm_max": 40.37,
+  "top_win_share": 0.013,
+  "net_pip": null,
+  "oos_wr": null,
+  "is_wr": null
+ },
+ "null": {
+  "uncond_wr": 32.53089049850873,
+  "perm_mean": 32.32495814044546,
+  "perm_sd": 2.5471565916395917,
+  "perm_max": 40.36697247706422,
+  "perm_k": 500
+ },
+ "n_trials": 20
+}
