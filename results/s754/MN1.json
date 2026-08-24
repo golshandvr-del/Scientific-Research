@@ -1,0 +1,24 @@
+{
+ "card": "S754-XAUUSD-MN1",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "bars": 188,
+ "frozen": {
+  "family_W": [
+   34,
+   55,
+   89
+  ],
+  "z_lo": 0.5,
+  "z_hi": 0.618,
+  "leg_k": 2.618,
+  "sl_k": 1.45,
+  "atr_p": 89,
+  "rr": 1.618,
+  "hold": 55
+ },
+ "protocol": "C_holdout_prereg_S754",
+ "verdict": "INCOMPLETE",
+ "note": "TOO_SHORT"
+}
