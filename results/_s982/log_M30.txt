@@ -1,0 +1,14 @@
+[M30] src=/home/user/webapp/data/mt5_full/XAUUSD_M30.csv
+[M30] bars_total=182,145  bars_search=91,072 (نیمهٔ اول — مسیر C)
+[M30]   q=0.5 events=1702  (0s)
+[M30]   q=1.3 events=923  (1s)
+[M30]   q=2.1 events=596  (1s)
+[M30] arms=24 valid(n>=30)=24 elapsed=1.1s
+  q=2.1  mirr slk=1.8 rr=1.6 n=573    wr= 40.14% be=41.67% lift= -1.53pp z= -0.74 net=-1027pip
+  q=2.1  mirr slk=1.8 rr=1.3 n=581    wr= 44.23% be=47.11% lift= -2.87pp z= -1.39 net=-1593pip
+  q=1.3  mirr slk=1.8 rr=1.6 n=780    wr= 38.85% be=41.67% lift= -2.83pp z= -1.60 net=-2437pip
+  q=2.1  main slk=1.8 rr=1.6 n=565    wr= 38.23% be=41.67% lift= -3.44pp z= -1.66 net=-2235pip
+  q=2.1  main slk=1.8 rr=1.3 n=576    wr= 43.40% be=47.11% lift= -3.71pp z= -1.78 net=-1963pip
+  q=0.5  mirr slk=1.8 rr=1.6 n=989    wr= 38.52% be=41.67% lift= -3.15pp z= -2.01 net=-3587pip
+  q=2.1  main slk=1.2 rr=1.6 n=591    wr= 38.58% be=43.28% lift= -4.70pp z= -2.31 net=-1903pip
+  q=2.1  mirr slk=1.2 rr=1.6 n=591    wr= 38.41% be=43.28% lift= -4.87pp z= -2.39 net=-2009pip

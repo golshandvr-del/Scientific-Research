@@ -1,0 +1,6 @@
+[W1] src=/home/user/webapp/data/mt5_full/XAUUSD_W1.csv
+[W1] bars_total=813  bars_search=406 (نیمهٔ اول — مسیر C)
+[W1]   q=0.5 events=0  (0s)
+[W1]   q=1.3 events=0  (0s)
+[W1]   q=2.1 events=0  (0s)
+[W1] arms=24 valid(n>=30)=0 elapsed=0.0s
