@@ -1,0 +1,26 @@
+========================================================================
+S893 Canonical-Null Re-audit · XAUUSD-M20 (prereg 532099e5)
+========================================================================
+repro: n=3986 (S892 3986)  wr=44.63 (S892 44.63)  → OK
+
+[null-1] unconditional geometry-matched (short, SL=28.01 TP=42.02 hold=12):
+  uncond seed=893: n=14770 wr=40.51%
+  uncond seed=1893: n=14739 wr=39.48%
+  uncond seed=2893: n=14711 wr=39.48%
+  => hardest unconditional = 40.51%  (layer 44.63 ⇒ geo-lift +4.12pp)
+
+[null-2] skipped per prereg rule (null-independent gate fails: ['H1', 'H2', 'H6', 'H8', 'H9', 'H10'])
+Traceback (most recent call last):
+  File "/home/user/webapp/strategies/s893_canonical_null.py", line 194, in <module>
+    run_tf(sys.argv[1] if len(sys.argv) > 1 else 'H2')
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/webapp/strategies/s893_canonical_null.py", line 165, in run_tf
+    r = rqs2.compute_rqs2(tr, ASSET, sl_pip=sl_pip, tp_pip=tp_pip,
+                          bar_time=times, null=null,
+                          n_trials=N_TRIALS, split_bar=split, close=c)
+  File "/home/user/webapp/engine/rqs2.py", line 1011, in compute_rqs2
+    nb = blend_null(null, n_by_side)
+  File "/home/user/webapp/engine/rqs2.py", line 828, in blend_null
+    kmin = int(k) if kmin is None else min(kmin, int(k or 0))
+           ~~~^^^
+TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
