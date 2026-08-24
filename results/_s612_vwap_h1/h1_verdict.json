@@ -1,0 +1,175 @@
+{
+ "seed": 20260821,
+ "k_perm": 500,
+ "n_trials": 250,
+ "cfg": {
+  "z_entry": 1.5,
+  "ema_trend": 200,
+  "atr_mult": 0.5,
+  "cooldown": 48,
+  "sl": 80.0,
+  "tp": 700.0,
+  "be": 6.0,
+  "trail": 6.0,
+  "mh": 48
+ },
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "n_bars": 91331,
+ "span_years": 15.59,
+ "n_trades": 1070,
+ "wr": 63.74,
+ "net_pip": 13831.8,
+ "uncond_wr": 62.61,
+ "perm_mean": 62.537,
+ "perm_sd": 1.4974,
+ "perm_max": 67.28,
+ "p_emp": 0.21956087824351297,
+ "split_bar": 63931,
+ "verdict": "REJECT",
+ "rqs2_score": 24.3,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": false,
+  "H9": true,
+  "H10": true
+ },
+ "metrics": {
+  "n_trades": 1070.0,
+  "win_rate": 63.74,
+  "net_profit": 44036.7,
+  "profit_factor": 1.739,
+  "max_dd_pct": 8.26,
+  "max_consec_losses": 9.0,
+  "mcl_allowed": 11.0,
+  "n_wins": 682.0,
+  "top_win_share": 0.0216,
+  "recovery_factor": 9.32,
+  "expectancy_pip": 12.9269,
+  "expectancy_at_2x_cost": 9.6269,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 80.0,
+  "tp_pip": 700.0,
+  "rr": 8.75,
+  "breakeven_wr_cost": 10.68,
+  "wr_excess_cost": 53.06,
+  "null_ref_wr": 62.61,
+  "skill_lift_pp": 1.13,
+  "skill_z": 0.75,
+  "skill_p_perm": 0.225638,
+  "perm_max": 67.28,
+  "perm_k": 500.0,
+  "p_emp": 0.232384,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 0.763,
+  "z_luck_bound": 2.838,
+  "z_margin": -2.075,
+  "n_trials": 250.0,
+  "cal_positive": 4.0,
+  "cal_occupied": 4.0,
+  "max_concurrency": 1.0,
+  "n_required_h3": 17566.8
+ },
+ "notes": [],
+ "regime": {
+  "pre": {
+   "n": 838,
+   "wr": 65.39,
+   "net_pip": 8376.2
+  },
+  "post": {
+   "n": 232,
+   "wr": 57.76,
+   "net_pip": 5455.6
+  }
+ },
+ "yearly": {
+  "2011": {
+   "n": 72,
+   "wr": 61.1,
+   "net": 489.0
+  },
+  "2012": {
+   "n": 73,
+   "wr": 61.6,
+   "net": 476.0
+  },
+  "2013": {
+   "n": 51,
+   "wr": 62.7,
+   "net": 733.0
+  },
+  "2014": {
+   "n": 59,
+   "wr": 67.8,
+   "net": 897.0
+  },
+  "2015": {
+   "n": 54,
+   "wr": 64.8,
+   "net": 240.0
+  },
+  "2016": {
+   "n": 67,
+   "wr": 61.2,
+   "net": 4.0
+  },
+  "2017": {
+   "n": 63,
+   "wr": 73.0,
+   "net": 807.0
+  },
+  "2018": {
+   "n": 63,
+   "wr": 63.5,
+   "net": 634.0
+  },
+  "2019": {
+   "n": 78,
+   "wr": 64.1,
+   "net": 1065.0
+  },
+  "2020": {
+   "n": 81,
+   "wr": 66.7,
+   "net": 623.0
+  },
+  "2021": {
+   "n": 68,
+   "wr": 69.1,
+   "net": 713.0
+  },
+  "2022": {
+   "n": 66,
+   "wr": 66.7,
+   "net": 1402.0
+  },
+  "2023": {
+   "n": 67,
+   "wr": 67.2,
+   "net": 700.0
+  },
+  "2024": {
+   "n": 83,
+   "wr": 63.9,
+   "net": 915.0
+  },
+  "2025": {
+   "n": 84,
+   "wr": 63.1,
+   "net": 3738.0
+  },
+  "2026": {
+   "n": 41,
+   "wr": 31.7,
+   "net": 396.0
+  }
+ }
+}
