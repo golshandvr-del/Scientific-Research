@@ -1,0 +1,175 @@
+{
+ "result": {
+  "asset": "XAUUSD",
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": false,
+   "H5": true,
+   "H6": false,
+   "H7": false,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "metrics": {
+   "n_trades": 66,
+   "win_rate": 56.06,
+   "net_profit": 459.8,
+   "profit_factor": 2.081,
+   "max_dd_pct": 1.16,
+   "max_consec_losses": 8,
+   "mcl_allowed": 10,
+   "n_wins": 37,
+   "top_win_share": 0.1028,
+   "recovery_factor": 3.75,
+   "expectancy_pip": 69.6727,
+   "expectancy_at_2x_cost": 66.3727,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 20000.0,
+   "tp_pip": 20000.0,
+   "rr": 1.0,
+   "breakeven_wr_cost": 50.01,
+   "wr_excess_cost": 6.05,
+   "null_ref_wr": 49.06,
+   "skill_lift_pp": 7.0,
+   "skill_z": 0.85,
+   "skill_p_perm": 0.198725,
+   "perm_max": 72.73,
+   "perm_k": 500,
+   "side_n": {
+    "long": 31,
+    "short": 35
+   },
+   "side_wr": {
+    "long": 45.16,
+    "short": 65.71
+   },
+   "side_lift_pp": {
+    "long": -6.1,
+    "short": 18.61
+   },
+   "prune_sides": [
+    "long"
+   ],
+   "p_emp": 0.155067,
+   "p_adj_bonferroni": 0.465202,
+   "z_obs": 1.138,
+   "z_luck_bound": 0.853,
+   "z_margin": 0.285,
+   "n_trials": 3,
+   "cal_nets": [
+    298.9,
+    199.5,
+    -38.6,
+    0.0
+   ],
+   "cal_counts": [
+    19,
+    37,
+    10,
+    0
+   ],
+   "cal_positive": 2,
+   "cal_occupied": 3,
+   "half_nets": [
+    498.5,
+    -38.6
+   ],
+   "oos": {
+    "n": 44,
+    "wr": 45.45,
+    "pf": 0.987,
+    "net": -4.5,
+    "wr_req": 50.01
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 59,
+    "n_unjudgeable": 7,
+    "n_counter": 29,
+    "n_aligned": 30,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 65.52,
+    "exp_counter": 114.934,
+    "wr_aligned": 50.0,
+    "exp_aligned": 18.053
+   },
+   "n_required_h3": 486.6,
+   "efdr_cross_hypotheses": 0.7949
+  },
+  "notes": [],
+  "passed": false,
+  "rqs2_score": 16.5,
+  "verdict": "REJECT",
+  "n_fail": 4,
+  "n_unknown": 0,
+  "accepted": false,
+  "power_limited": false,
+  "unproven": false,
+  "unproven_checks": {
+   "G1_lift_floor": true,
+   "G2_evidence": false,
+   "G3_efdr": true,
+   "G4_economics": true,
+   "G5_glass_ceiling": true,
+   "G6_structure": false
+  },
+  "gate_families": {
+   "economic": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H8": true,
+    "H9": true
+   },
+   "power": {
+    "H3": false,
+    "H7": false,
+    "H10": true
+   },
+   "economic_all_pass": true,
+   "power_defects": [
+    "H3",
+    "H7"
+   ]
+  },
+  "admission_rule": "gates_only",
+  "rank_tier": "D"
+ },
+ "headline": {
+  "r": 0.7,
+  "n": 66,
+  "n_long": 31,
+  "n_short": 35,
+  "wr": 56.060606060606055,
+  "exp_pip": 69.6727272727271,
+  "t": 2.200724587181755,
+  "net_pip": 4598.399999999989
+ },
+ "complement": {
+  "n": 234,
+  "wr": 48.717948717948715,
+  "exp_pip": 3.3290598290598195,
+  "net_pip": 778.9999999999977
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 51.26451612903226,
+   "perm_mean": 51.26451612903226,
+   "perm_sd": 8.758724504330978,
+   "perm_max": 74.19354838709677,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 47.10285714285715,
+   "perm_mean": 47.10285714285715,
+   "perm_sd": 7.848464818039257,
+   "perm_max": 71.42857142857143,
+   "perm_k": 500
+  }
+ }
+}
