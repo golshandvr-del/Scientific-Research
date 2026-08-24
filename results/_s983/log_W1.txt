@@ -1,0 +1,10 @@
+[W1] src=/home/user/webapp/data/mt5_full/XAUUSD_W1.csv
+[W1] bars_total=813  bars_search=406 (نیمهٔ اول — مسیر C)
+[W1]   W=34 θ=0.9 events=2  (0s)
+[W1]   W=34 θ=1.6 events=0  (0s)
+[W1]   W=34 θ=2.4 events=0  (0s)
+[W1]   W=89 θ=0.9 events=1  (0s)
+[W1]   W=89 θ=1.6 events=0  (0s)
+[W1]   W=89 θ=2.4 events=0  (0s)
+[W1] arms=48 valid(n>=30)=0 elapsed=0.0s
+[W1] ── ۱۰ بازوی برتر (بر z) ──
