@@ -1,0 +1,16 @@
+{
+ "strategy": "S425_QuietTrendBody",
+ "asset": "XAUUSD",
+ "data": "data/XAUUSD_H1.csv",
+ "W": 5,
+ "qlow": 0.3,
+ "m": 0.0,
+ "hold": 5,
+ "r": 0.7,
+ "direction": "both_symmetric",
+ "base_inherited_from": "results/_scan_S420/S423_LOCKED_CONFIG.json",
+ "bracket_pip": 20000.0,
+ "n_trials": 3,
+ "split_utc": "2020-01-01 00:00:00",
+ "prereg": "results/S425_PREREGISTRATION_QuietTrendBody.md"
+}
