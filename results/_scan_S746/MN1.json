@@ -1,0 +1,13 @@
+{
+ "strategy": "S746_StrongCloseExpansion",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "span_years": 15.58,
+ "split_bar": 112,
+ "n_trials": 16,
+ "k_perm": 500,
+ "prereg": "results/S746_PREREG_STRONG_CLOSE_EXPANSION_PATH_C.md",
+ "verdict": "TOO_SHORT"
+}
