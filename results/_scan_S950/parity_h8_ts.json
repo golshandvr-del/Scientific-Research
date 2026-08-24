@@ -1,0 +1,16 @@
+{
+ "n_bars": 3000,
+ "cut": 182,
+ "py": {
+  "long": 40,
+  "short": 16
+ },
+ "ts": {
+  "long": 40,
+  "short": 16
+ },
+ "signals_long_match": true,
+ "signals_short_match": true,
+ "max_rel_err_features": 3.1494676191558316e-15,
+ "verdict": "PARITY-PASS"
+}
