@@ -1,0 +1,66 @@
+{
+ "tf": "H6",
+ "seed": 20260821,
+ "search_half": 7983,
+ "mh": 56,
+ "look": 55,
+ "n_events": 153,
+ "results": [
+  {
+   "k_sl": 1.5,
+   "rr": 1.0,
+   "n": 153,
+   "n_events": 153,
+   "wr": 27.451,
+   "ref_wr": 21.778,
+   "ref_n": 3678,
+   "ref_exp": -11.055,
+   "lift": 5.673,
+   "exp_pip": -8.928,
+   "lift_sqrt_n": 70.2,
+   "n_req": 505
+  },
+  {
+   "k_sl": 1.5,
+   "rr": 1.5,
+   "n": 153,
+   "n_events": 153,
+   "wr": 27.451,
+   "ref_wr": 21.339,
+   "ref_n": 3660,
+   "ref_exp": -9.706,
+   "lift": 6.112,
+   "exp_pip": -6.991,
+   "lift_sqrt_n": 75.6,
+   "n_req": 428
+  },
+  {
+   "k_sl": 2.0,
+   "rr": 1.0,
+   "n": 153,
+   "n_events": 153,
+   "wr": 33.333,
+   "ref_wr": 27.865,
+   "ref_n": 3639,
+   "ref_exp": -11.467,
+   "lift": 5.469,
+   "exp_pip": -9.051,
+   "lift_sqrt_n": 67.6,
+   "n_req": 641
+  },
+  {
+   "k_sl": 2.0,
+   "rr": 1.5,
+   "n": 153,
+   "n_events": 153,
+   "wr": 32.68,
+   "ref_wr": 26.098,
+   "ref_n": 3552,
+   "ref_exp": -9.734,
+   "lift": 6.582,
+   "exp_pip": -6.435,
+   "lift_sqrt_n": 81.4,
+   "n_req": 425
+  }
+ ]
+}
