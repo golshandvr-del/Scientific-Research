@@ -1,0 +1,88 @@
+{
+ "tf": "H8",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 11978,
+ "split": 7186,
+ "base_wr": {
+  "long": 41.09947643979058,
+  "short": 39.94910941475827
+ },
+ "n_family": 96,
+ "rows": [
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 58,
+   "wr": 44.83,
+   "exp_pip": 14.038,
+   "lift": 3.73,
+   "score": 28.39
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "short",
+   "n": 52,
+   "wr": 42.31,
+   "exp_pip": 10.819,
+   "lift": 2.36,
+   "score": 17.01
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "long",
+   "n": 53,
+   "wr": 33.96,
+   "exp_pip": -28.763,
+   "lift": -7.14,
+   "score": -51.96
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "short",
+   "n": 59,
+   "wr": 33.9,
+   "exp_pip": -19.562,
+   "lift": -6.05,
+   "score": -46.48
+  }
+ ],
+ "best": {
+  "long": {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 58,
+   "wr": 44.83,
+   "exp_pip": 14.038,
+   "lift": 3.73,
+   "score": 28.39
+  },
+  "short": {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "short",
+   "n": 52,
+   "wr": 42.31,
+   "exp_pip": 10.819,
+   "lift": 2.36,
+   "score": 17.01
+  }
+ },
+ "barrier": "lift*sqrt(n)>=78",
+ "best_pass": {
+  "long": false,
+  "short": false
+ },
+ "elapsed_s": 0.5
+}
