@@ -1,0 +1,19 @@
+{
+ "M1": {
+  "tf": "M1",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+  "n": 170742,
+  "n_events": 498281,
+  "wr": 39.38,
+  "perm_mean": 39.385,
+  "perm_sd": 0.1114,
+  "perm_k": 200,
+  "lift_pp": -0.005,
+  "z": -0.04,
+  "mh": 60,
+  "sanity_fast_vs_engine": [
+   41.3535,
+   41.3535
+  ]
+ }
+}
