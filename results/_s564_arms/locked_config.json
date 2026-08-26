@@ -1,0 +1,90 @@
+{
+ "M15": {
+  "cfg": {
+   "q": 70,
+   "sw": true,
+   "hold": 1
+  },
+  "qv": 85,
+  "arms": {
+   "SHORT-h1": {
+    "mh": 1,
+    "sl": 25.5,
+    "tp": 25.5,
+    "n_signals": 161,
+    "t_first_half": -4.65048207020515,
+    "n_first_half": 48,
+    "wr_first_half": 22.92,
+    "dd_first_half": 43.28
+   },
+   "SHORT-h2": {
+    "mh": 2,
+    "sl": 28.5,
+    "tp": 28.5,
+    "n_signals": 161,
+    "t_first_half": -4.275336335064124,
+    "n_first_half": 48,
+    "wr_first_half": 25.0,
+    "dd_first_half": 52.82
+   }
+  },
+  "picked": "SHORT-h2",
+  "p1_control_long": {
+   "t_first_half": 0.7896243301787669,
+   "n_first_half": 48,
+   "wr_first_half": 56.25
+  },
+  "split_bar": 180578,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+  "n_base_signals": 603,
+  "n_complement": 161,
+  "stop_check": {
+   "lift_fh_pp": -12.28,
+   "null_uncond_wr_fh": 37.284,
+   "threshold": 4.0,
+   "stopped_dead": true
+  }
+ },
+ "H1": {
+  "cfg": {
+   "q": 80,
+   "sw": true,
+   "hold": 2
+  },
+  "qv": 78,
+  "arms": {
+   "SHORT-h2": {
+    "mh": 2,
+    "sl": 41.6,
+    "tp": 41.6,
+    "n_signals": 152,
+    "t_first_half": null,
+    "n_first_half": 28,
+    "wr_first_half": null,
+    "dd_first_half": null
+   },
+   "SHORT-h4": {
+    "mh": 4,
+    "sl": 73.0,
+    "tp": 73.0,
+    "n_signals": 152,
+    "t_first_half": null,
+    "n_first_half": 28,
+    "wr_first_half": null,
+    "dd_first_half": null
+   }
+  },
+  "picked": null,
+  "p1_control_long": {
+   "t_first_half": null,
+   "n_first_half": 28,
+   "wr_first_half": null
+  },
+  "split_bar": 45501,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "n_base_signals": 407,
+  "n_complement": 152
+ }
+}
