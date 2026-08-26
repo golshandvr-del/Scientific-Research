@@ -117,5 +117,22 @@
    38.0525,
    38.0525
   ]
+ },
+ "M15": {
+  "tf": "M15",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+  "n": 33625,
+  "n_events": 35224,
+  "wr": 36.208,
+  "perm_mean": 37.009,
+  "perm_sd": 0.2274,
+  "perm_k": 200,
+  "lift_pp": -0.801,
+  "z": -3.52,
+  "mh": 4,
+  "sanity_fast_vs_engine": [
+   37.3259,
+   37.3259
+  ]
  }
 }
