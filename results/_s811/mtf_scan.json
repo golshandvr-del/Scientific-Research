@@ -202,5 +202,22 @@
    30.4211,
    30.4211
   ]
+ },
+ "H3": {
+  "tf": "H3",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+  "n": 2994,
+  "n_events": 3007,
+  "wr": 27.923,
+  "perm_mean": 27.261,
+  "perm_sd": 0.6723,
+  "perm_k": 200,
+  "lift_pp": 0.662,
+  "z": 0.98,
+  "mh": 2,
+  "sanity_fast_vs_engine": [
+   27.9318,
+   27.9318
+  ]
  }
 }
