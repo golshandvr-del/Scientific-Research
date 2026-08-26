@@ -1,0 +1,13 @@
+{
+ "strategy": "S747_StrongCloseDriftAligned",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "span_years": 15.58,
+ "split_bar": 112,
+ "n_trials": 24,
+ "k_perm": 500,
+ "prereg": "results/S747_PREREG_STRONG_CLOSE_DRIFT_ALIGNED_PATH_C.md",
+ "verdict": "TOO_SHORT"
+}
