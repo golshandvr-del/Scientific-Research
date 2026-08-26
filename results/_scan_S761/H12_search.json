@@ -1,0 +1,56 @@
+{
+ "tf": "H12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 7998,
+ "split": 4798,
+ "base_wr": {
+  "long": 41.77949709864603,
+  "short": 38.20662768031189
+ },
+ "n_family": 96,
+ "rows": [
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 35,
+   "wr": 48.57,
+   "exp_pip": 9.104,
+   "lift": 6.79,
+   "score": 40.18
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "short",
+   "n": 37,
+   "wr": 37.84,
+   "exp_pip": 2.088,
+   "lift": -0.37,
+   "score": -2.24
+  }
+ ],
+ "best": {
+  "long": {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 35,
+   "wr": 48.57,
+   "exp_pip": 9.104,
+   "lift": 6.79,
+   "score": 40.18
+  },
+  "short": null
+ },
+ "barrier": "lift*sqrt(n)>=78",
+ "best_pass": {
+  "long": false,
+  "short": false
+ },
+ "elapsed_s": 0.5
+}
