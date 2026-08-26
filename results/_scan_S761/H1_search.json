@@ -1,0 +1,264 @@
+{
+ "tf": "H1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 91331,
+ "split": 54798,
+ "base_wr": {
+  "long": 40.05252790544977,
+  "short": 40.26655014201442
+ },
+ "n_family": 96,
+ "rows": [
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 1361,
+   "wr": 40.04,
+   "exp_pip": -3.68,
+   "lift": -0.01,
+   "score": -0.31
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "short",
+   "n": 1327,
+   "wr": 40.47,
+   "exp_pip": -3.675,
+   "lift": 0.2,
+   "score": 7.31
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "long",
+   "n": 1322,
+   "wr": 39.64,
+   "exp_pip": -5.131,
+   "lift": -0.42,
+   "score": -15.11
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "short",
+   "n": 1347,
+   "wr": 41.87,
+   "exp_pip": -2.062,
+   "lift": 1.6,
+   "score": 58.88
+  },
+  {
+   "w": 8,
+   "theta": 0.555,
+   "mode": "cont",
+   "side": "long",
+   "n": 377,
+   "wr": 42.71,
+   "exp_pip": -0.039,
+   "lift": 2.65,
+   "score": 51.51
+  },
+  {
+   "w": 8,
+   "theta": 0.555,
+   "mode": "cont",
+   "side": "short",
+   "n": 371,
+   "wr": 43.67,
+   "exp_pip": 0.744,
+   "lift": 3.4,
+   "score": 65.47
+  },
+  {
+   "w": 8,
+   "theta": 0.555,
+   "mode": "rev",
+   "side": "long",
+   "n": 375,
+   "wr": 38.93,
+   "exp_pip": -6.028,
+   "lift": -1.12,
+   "score": -21.67
+  },
+  {
+   "w": 8,
+   "theta": 0.555,
+   "mode": "rev",
+   "side": "short",
+   "n": 388,
+   "wr": 35.57,
+   "exp_pip": -8.2,
+   "lift": -4.7,
+   "score": -92.57
+  },
+  {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 499,
+   "wr": 38.08,
+   "exp_pip": -5.556,
+   "lift": -1.98,
+   "score": -44.15
+  },
+  {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "short",
+   "n": 495,
+   "wr": 38.99,
+   "exp_pip": -3.37,
+   "lift": -1.28,
+   "score": -28.4
+  },
+  {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "long",
+   "n": 498,
+   "wr": 40.16,
+   "exp_pip": -4.214,
+   "lift": 0.11,
+   "score": 2.41
+  },
+  {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "short",
+   "n": 501,
+   "wr": 42.32,
+   "exp_pip": -1.426,
+   "lift": 2.05,
+   "score": 45.86
+  },
+  {
+   "w": 21,
+   "theta": 0.555,
+   "mode": "cont",
+   "side": "long",
+   "n": 92,
+   "wr": 43.48,
+   "exp_pip": 1.414,
+   "lift": 3.43,
+   "score": 32.86
+  },
+  {
+   "w": 21,
+   "theta": 0.555,
+   "mode": "cont",
+   "side": "short",
+   "n": 82,
+   "wr": 56.1,
+   "exp_pip": 19.731,
+   "lift": 15.83,
+   "score": 143.36
+  },
+  {
+   "w": 21,
+   "theta": 0.555,
+   "mode": "rev",
+   "side": "long",
+   "n": 82,
+   "wr": 26.83,
+   "exp_pip": -27.159,
+   "lift": -13.22,
+   "score": -119.74
+  },
+  {
+   "w": 21,
+   "theta": 0.555,
+   "mode": "rev",
+   "side": "short",
+   "n": 90,
+   "wr": 34.44,
+   "exp_pip": -12.007,
+   "lift": -5.82,
+   "score": -55.23
+  },
+  {
+   "w": 55,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 101,
+   "wr": 47.52,
+   "exp_pip": 5.457,
+   "lift": 7.47,
+   "score": 75.09
+  },
+  {
+   "w": 55,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "short",
+   "n": 108,
+   "wr": 40.74,
+   "exp_pip": 0.12,
+   "lift": 0.47,
+   "score": 4.93
+  },
+  {
+   "w": 55,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "long",
+   "n": 111,
+   "wr": 38.74,
+   "exp_pip": -6.413,
+   "lift": -1.31,
+   "score": -13.84
+  },
+  {
+   "w": 55,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "short",
+   "n": 103,
+   "wr": 32.04,
+   "exp_pip": -16.009,
+   "lift": -8.23,
+   "score": -83.5
+  }
+ ],
+ "best": {
+  "long": {
+   "w": 55,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 101,
+   "wr": 47.52,
+   "exp_pip": 5.457,
+   "lift": 7.47,
+   "score": 75.09
+  },
+  "short": {
+   "w": 21,
+   "theta": 0.555,
+   "mode": "cont",
+   "side": "short",
+   "n": 82,
+   "wr": 56.1,
+   "exp_pip": 19.731,
+   "lift": 15.83,
+   "score": 143.36
+  }
+ },
+ "barrier": "lift*sqrt(n)>=78",
+ "best_pass": {
+  "long": false,
+  "short": true
+ },
+ "elapsed_s": 0.6
+}
