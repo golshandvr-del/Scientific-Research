@@ -1,0 +1,19 @@
+{
+ "layer": "S651",
+ "tf": "W1",
+ "asset": "XAUUSD",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "n_bars_full": 813,
+ "half_idx": 406,
+ "first_half_only": true,
+ "path": "C",
+ "geometry": {
+  "atr_p": 34,
+  "sl_k": 1.618,
+  "rr": 1.0,
+  "hold": 34
+ },
+ "n_combos": 10,
+ "combos": [],
+ "status": "TOO_SHORT"
+}
