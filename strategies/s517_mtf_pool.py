@@ -20,7 +20,8 @@ from strategies.s511_gross_census import (load_fast, cross_above,
                                           SPLIT_FRAC, WARMUP, Q_HI, PIP)
 from strategies.s515_voltime import (sim_vtime, bracket_from_discovery,
                                      IND, Q_BRACKET)
-from engine.indicator_bank import IndicatorBank
+from engine import indicator_bank as ib
+from tools.s434_fast_data import as_dataframe
 import engine.rqs2 as R2
 import engine.rqs2_pool as rp
 
@@ -34,13 +35,6 @@ N_TRIALS = 5019
 N_TRIALS_STRESS = 8000
 OUT = 'results/_scan_S517'
 ASSET = 'XAUUSD'
-
-ib = IndicatorBank()
-
-
-def as_dataframe(d):
-    return pd.DataFrame(d)
-
 
 def member_population(tf):
     """بازتولید کامل قانون منجمد روی یک TF + نول اندازه‌گیری‌شده."""
