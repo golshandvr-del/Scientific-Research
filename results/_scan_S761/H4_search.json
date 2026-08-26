@@ -1,0 +1,165 @@
+{
+ "tf": "H4",
+ "src": "/home/user/webapp/data/XAUUSD_H4.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 23755,
+ "split": 14253,
+ "base_wr": {
+  "long": 40.8825438027255,
+  "short": 39.37994722955145
+ },
+ "n_family": 96,
+ "rows": [
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 207,
+   "wr": 39.61,
+   "exp_pip": -2.674,
+   "lift": -1.27,
+   "score": -18.26
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "short",
+   "n": 172,
+   "wr": 43.02,
+   "exp_pip": -1.344,
+   "lift": 3.64,
+   "score": 47.78
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "long",
+   "n": 172,
+   "wr": 37.79,
+   "exp_pip": -10.113,
+   "lift": -3.09,
+   "score": -40.55
+  },
+  {
+   "w": 8,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "short",
+   "n": 214,
+   "wr": 40.65,
+   "exp_pip": -4.699,
+   "lift": 1.27,
+   "score": 18.64
+  },
+  {
+   "w": 8,
+   "theta": 0.555,
+   "mode": "cont",
+   "side": "long",
+   "n": 40,
+   "wr": 40.0,
+   "exp_pip": -4.49,
+   "lift": -0.88,
+   "score": -5.58
+  },
+  {
+   "w": 8,
+   "theta": 0.555,
+   "mode": "rev",
+   "side": "long",
+   "n": 30,
+   "wr": 26.67,
+   "exp_pip": -42.171,
+   "lift": -14.22,
+   "score": -77.86
+  },
+  {
+   "w": 8,
+   "theta": 0.555,
+   "mode": "rev",
+   "side": "short",
+   "n": 43,
+   "wr": 34.88,
+   "exp_pip": -15.203,
+   "lift": -4.5,
+   "score": -29.48
+  },
+  {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "long",
+   "n": 65,
+   "wr": 38.46,
+   "exp_pip": -16.234,
+   "lift": -2.42,
+   "score": -19.52
+  },
+  {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "short",
+   "n": 38,
+   "wr": 44.74,
+   "exp_pip": 11.975,
+   "lift": 5.36,
+   "score": 33.02
+  },
+  {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "long",
+   "n": 39,
+   "wr": 43.59,
+   "exp_pip": 10.371,
+   "lift": 2.71,
+   "score": 16.91
+  },
+  {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "short",
+   "n": 66,
+   "wr": 37.88,
+   "exp_pip": -6.456,
+   "lift": -1.5,
+   "score": -12.2
+  }
+ ],
+ "best": {
+  "long": {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "rev",
+   "side": "long",
+   "n": 39,
+   "wr": 43.59,
+   "exp_pip": 10.371,
+   "lift": 2.71,
+   "score": 16.91
+  },
+  "short": {
+   "w": 21,
+   "theta": 0.333,
+   "mode": "cont",
+   "side": "short",
+   "n": 38,
+   "wr": 44.74,
+   "exp_pip": 11.975,
+   "lift": 5.36,
+   "score": 33.02
+  }
+ },
+ "barrier": "lift*sqrt(n)>=78",
+ "best_pass": {
+  "long": false,
+  "short": false
+ },
+ "elapsed_s": 0.9
+}
