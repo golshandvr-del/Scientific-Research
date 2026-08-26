@@ -1,0 +1,19 @@
+S787 round 3 — FIFO pool test, streak-5 continuation, k_sl=2.058 RR=1.0 max_hold=21
+Discovery region only (first 60% of full 15.6y mt5_full data). Extra family members this round: 4.
+
+Per-TF (discovery):
+H6 : n=206 alpha=+5.58  z=+1.60 net=+2361
+H8 : n=168 alpha=+2.37  z=+0.61 net=+1750
+H12: n=124 alpha=+13.32 z=+2.97 net=+6386
+
+POOL ['H6','H8','H12'] (FIFO no-overlap by entry_time):
+n=359 wr=55.71 p0~49.40 alpha=+6.31 z=+2.39 net=+7052
+
+Tercile stability (discovery, by time):
+T1: wr=61.3 alpha~+11.9
+T2: wr=55.5 alpha~+6.1
+T3: n=121 wr=50.4 alpha~+1.0 net=+166   <-- monotonic temporal decay
+
+Family accounting: round1=72 + round2=36 + round3=4 = 112 discovery trials.
+Best single config: H12 L=5 cont k=2.058 RR=1.0 -> z=2.97 < 3.09 discipline threshold.
+Decision: close S787 as INCOMPLETE. Hold-out (final 40%) never touched.
