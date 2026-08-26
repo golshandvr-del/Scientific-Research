@@ -1,0 +1,29 @@
+{
+ "card": "XAUUSD-H4",
+ "tf": "H4",
+ "src": "/home/user/webapp/data/XAUUSD_H4.csv",
+ "sl": 147.9,
+ "tp": 147.9,
+ "n": 612,
+ "nL": 0,
+ "nS": 612,
+ "wr": 45.588235294117645,
+ "lift": 2.12269563221907,
+ "exp_pip": -16.351960784313707,
+ "null": {
+  "long": {
+   "uncond_wr": null,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": null
+  },
+  "short": {
+   "uncond_wr": 43.465539661898575,
+   "perm_mean": 44.58056167655507,
+   "perm_sd": 1.8975902974849777,
+   "perm_max": 50.103519668737064,
+   "perm_k": 500
+  }
+ }
+}

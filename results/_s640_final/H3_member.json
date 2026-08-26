@@ -1,0 +1,29 @@
+{
+ "card": "XAUUSD-H3",
+ "tf": "H3",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+ "sl": 127.6,
+ "tp": 127.6,
+ "n": 825,
+ "nL": 0,
+ "nS": 825,
+ "wr": 45.93939393939394,
+ "lift": 2.3815608500820815,
+ "exp_pip": -13.54400000000004,
+ "null": {
+  "long": {
+   "uncond_wr": null,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": null
+  },
+  "short": {
+   "uncond_wr": 43.557833089311856,
+   "perm_mean": 44.822794213085864,
+   "perm_sd": 1.6745944305096334,
+   "perm_max": 49.69418960244648,
+   "perm_k": 500
+  }
+ }
+}
