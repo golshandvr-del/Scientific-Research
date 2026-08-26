@@ -95,7 +95,7 @@ def run_tf(tf):
 
     # شرطِ حجم (مشترک): خشکیِ محلی
     voldry = np.zeros(n, bool)
-    voldry[2:] = (v[2:] < v[1:-2]) & (v[2:] < v[:-3])
+    voldry[2:] = (v[2:] < v[1:-1]) & (v[2:] < v[:-2])
     rng_bar = h - lo
     dn_bar = c < o
     up_bar = c > o
