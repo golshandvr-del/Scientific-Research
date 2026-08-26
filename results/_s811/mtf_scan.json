@@ -270,5 +270,22 @@
    18.1818,
    18.1818
   ]
+ },
+ "H12": {
+  "tf": "H12",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+  "n": 778,
+  "n_events": 778,
+  "wr": 14.781,
+  "perm_mean": 14.048,
+  "perm_sd": 0.9332,
+  "perm_k": 200,
+  "lift_pp": 0.734,
+  "z": 0.79,
+  "mh": 2,
+  "sanity_fast_vs_engine": [
+   14.7815,
+   14.7815
+  ]
  }
 }
