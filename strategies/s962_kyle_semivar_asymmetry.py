@@ -67,9 +67,12 @@ def _views_df(d, end=None):
 
 
 def _rollsum(x, w):
-    """مجموعِ پنجره‌ایِ w-تاییِ انتهایی تا اندیسِ i — با cumsum (ضدِ OOM)."""
+    """مجموعِ پنجره‌ایِ w-تاییِ انتهایی تا اندیسِ i — با cumsum (ضدِ OOM).
+    حالتِ w >= n (مثلاً p=144 روی نیمه‌ی MN1) پوشش داده شد: مجموعِ انباشتی."""
     n = len(x)
     cs = np.concatenate(([0.0], np.cumsum(x)))
+    if w >= n:
+        return cs[1:].copy()
     out = np.empty(n)
     out[:w - 1] = cs[1:w]
     out[w - 1:] = cs[w:] - cs[:n - w + 1]
