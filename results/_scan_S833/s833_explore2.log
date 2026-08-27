@@ -1,0 +1,50 @@
+
+################ TF=H1  explore bars=54,798  src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv ################
+  W=13 th=0.6 cont: n=1,209 WR=39.62% null=36.97%±1.22 INFOlift= +2.65pp z=+2.2 exp=  +2.74 PF=1.065 [E1=1.069 E2=1.059]
+  W=13 th=0.6 rev: n=1,270 WR=35.04% null=37.23%±1.25 INFOlift= -2.19pp z=-1.7 exp=  -8.69 PF=0.813 [E1=0.800 E2=0.829]
+  W=13 th=0.7 cont: n=  708 WR=41.10% null=38.04%±1.64 INFOlift= +3.06pp z=+1.9 exp=  +2.03 PF=1.048 [E1=1.069 E2=1.020]
+  W=13 th=0.7 rev: n=  755 WR=35.89% null=38.22%±1.68 INFOlift= -2.33pp z=-1.4 exp=  -6.09 PF=0.865 [E1=0.907 E2=0.810]
+  W=13 th=0.8 cont: n=  285 WR=39.65% null=37.09%±2.47 INFOlift= +2.56pp z=+1.0 exp=  +2.18 PF=1.051 [E1=0.968 E2=1.172]
+  W=13 th=0.8 rev: n=  292 WR=35.27% null=37.57%±2.73 INFOlift= -2.29pp z=-0.8 exp= -12.59 PF=0.729 [E1=0.744 E2=0.708]
+  W=21 th=0.6 cont: n=  434 WR=36.64% null=38.35%±1.91 INFOlift= -1.71pp z=-0.9 exp=  -6.04 PF=0.868 [E1=0.902 E2=0.823]
+  W=21 th=0.6 rev: n=  473 WR=39.11% null=38.11%±2.21 INFOlift= +1.00pp z=+0.5 exp=  -1.26 PF=0.971 [E1=0.987 E2=0.949]
+  W=21 th=0.7 cont: n=  157 WR=43.31% null=36.62%±3.60 INFOlift= +6.69pp z=+1.9 exp=  +7.62 PF=1.177 [E1=1.200 E2=1.143]
+  W=21 th=0.7 rev: n=  166 WR=30.12% null=36.83%±3.25 INFOlift= -6.71pp z=-2.1 exp= -25.08 PF=0.516 [E1=0.524 E2=0.503]
+  W=21 th=0.8: events=34 — کم، رد
+  W=34 th=0.6 cont: n=   77 WR=41.56% null=34.99%±4.74 INFOlift= +6.57pp z=+1.4 exp=  -3.06 PF=0.940 [E1=0.956 E2=0.919]
+  W=34 th=0.6 rev: n=   84 WR=29.76% null=34.92%±5.12 INFOlift= -5.15pp z=-1.0 exp=  -4.91 PF=0.901 [E1=0.857 E2=0.966]
+  W=34 th=0.7: events=20 — کم، رد
+  W=34 th=0.8: events=1 — کم، رد
+
+################ TF=H2  explore bars=28,573  src=/home/user/webapp/data/mt5_full/XAUUSD_H2.csv ################
+  W=13 th=0.6 cont: n=  647 WR=40.49% null=37.58%±1.86 INFOlift= +2.92pp z=+1.6 exp=  +7.65 PF=1.132 [E1=1.184 E2=1.063]
+  W=13 th=0.6 rev: n=  690 WR=35.22% null=37.77%±1.67 INFOlift= -2.55pp z=-1.5 exp= -10.61 PF=0.837 [E1=0.837 E2=0.836]
+  W=13 th=0.7 cont: n=  365 WR=40.82% null=37.71%±2.13 INFOlift= +3.11pp z=+1.5 exp=  +3.24 PF=1.052 [E1=1.126 E2=0.955]
+  W=13 th=0.7 rev: n=  385 WR=33.77% null=36.98%±2.19 INFOlift= -3.22pp z=-1.5 exp= -12.17 PF=0.818 [E1=0.760 E2=0.906]
+  W=13 th=0.8 cont: n=  158 WR=43.67% null=37.65%±3.48 INFOlift= +6.02pp z=+1.7 exp=  +4.89 PF=1.080 [E1=1.082 E2=1.078]
+  W=13 th=0.8 rev: n=  163 WR=31.90% null=37.70%±3.25 INFOlift= -5.80pp z=-1.8 exp= -25.91 PF=0.632 [E1=0.531 E2=0.757]
+  W=21 th=0.6 cont: n=  232 WR=40.52% null=37.74%±2.80 INFOlift= +2.77pp z=+1.0 exp=  +1.35 PF=1.021 [E1=0.983 E2=1.083]
+  W=21 th=0.6 rev: n=  249 WR=35.34% null=37.93%±2.78 INFOlift= -2.59pp z=-0.9 exp=  -7.79 PF=0.880 [E1=0.800 E2=1.000]
+  W=21 th=0.7 cont: n=   85 WR=41.18% null=34.74%±4.23 INFOlift= +6.44pp z=+1.5 exp=  -4.42 PF=0.932 [E1=0.716 E2=1.197]
+  W=21 th=0.7 rev: n=   97 WR=28.87% null=35.06%±4.25 INFOlift= -6.19pp z=-1.5 exp= -19.80 PF=0.708 [E1=0.758 E2=0.648]
+  W=21 th=0.8: events=18 — کم، رد
+  W=34 th=0.6: events=74 — کم، رد
+  W=34 th=0.7: events=11 — کم، رد
+  W=34 th=0.8: events=0 — کم، رد
+
+################ TF=H3  explore bars=19,083  src=/home/user/webapp/data/mt5_full/XAUUSD_H3.csv ################
+  W=13 th=0.6 cont: n=  471 WR=39.70% null=36.43%±2.00 INFOlift= +3.27pp z=+1.6 exp=  +0.39 PF=1.005 [E1=1.094 E2=0.900]
+  W=13 th=0.6 rev: n=  498 WR=33.94% null=37.11%±1.99 INFOlift= -3.17pp z=-1.6 exp= -13.70 PF=0.827 [E1=0.772 E2=0.902]
+  W=13 th=0.7 cont: n=  286 WR=39.51% null=36.79%±2.43 INFOlift= +2.72pp z=+1.1 exp=  -2.88 PF=0.964 [E1=0.905 E2=1.059]
+  W=13 th=0.7 rev: n=  305 WR=34.43% null=37.09%±2.56 INFOlift= -2.66pp z=-1.0 exp=  -8.13 PF=0.897 [E1=0.894 E2=0.901]
+  W=13 th=0.8 cont: n=  117 WR=41.03% null=37.84%±4.06 INFOlift= +3.18pp z=+0.8 exp= +15.45 PF=1.203 [E1=1.186 E2=1.228]
+  W=13 th=0.8 rev: n=  124 WR=33.06% null=37.22%±4.00 INFOlift= -4.16pp z=-1.0 exp= -18.75 PF=0.782 [E1=0.732 E2=0.856]
+  W=21 th=0.6 cont: n=  171 WR=40.35% null=34.73%±3.33 INFOlift= +5.63pp z=+1.7 exp=  +4.85 PF=1.067 [E1=0.952 E2=1.246]
+  W=21 th=0.6 rev: n=  197 WR=31.47% null=36.32%±3.16 INFOlift= -4.84pp z=-1.5 exp= -14.64 PF=0.815 [E1=1.059 E2=0.552]
+  W=21 th=0.7: events=78 — کم، رد
+  W=21 th=0.8: events=20 — کم، رد
+  W=34 th=0.6: events=58 — کم، رد
+  W=34 th=0.7: events=7 — کم، رد
+  W=34 th=0.8: events=0 — کم، رد
+
+[S833 explore-2 complete]
