@@ -1,0 +1,258 @@
+{
+ "tf": "H2",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H2.csv",
+ "bars": 47623,
+ "split_bar": 28573,
+ "grid": [
+  {
+   "d": 1.618,
+   "k": 1.272,
+   "rr": 1.0,
+   "n": 1711,
+   "exp": -5.2099,
+   "wr": 48.63,
+   "pf": 0.853
+  },
+  {
+   "d": 1.618,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 1569,
+   "exp": -6.8722,
+   "wr": 36.07,
+   "pf": 0.844
+  },
+  {
+   "d": 1.618,
+   "k": 1.618,
+   "rr": 1.0,
+   "n": 1571,
+   "exp": -3.958,
+   "wr": 49.4,
+   "pf": 0.91
+  },
+  {
+   "d": 1.618,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 1368,
+   "exp": -3.4472,
+   "wr": 38.96,
+   "pf": 0.934
+  },
+  {
+   "d": 2.618,
+   "k": 1.272,
+   "rr": 1.0,
+   "n": 881,
+   "exp": -2.9154,
+   "wr": 50.17,
+   "pf": 0.914
+  },
+  {
+   "d": 2.618,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 881,
+   "exp": -4.9858,
+   "wr": 38.02,
+   "pf": 0.883
+  },
+  {
+   "d": 2.618,
+   "k": 1.618,
+   "rr": 1.0,
+   "n": 880,
+   "exp": -2.747,
+   "wr": 50.45,
+   "pf": 0.935
+  },
+  {
+   "d": 2.618,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 858,
+   "exp": -3.2139,
+   "wr": 39.51,
+   "pf": 0.938
+  },
+  {
+   "d": 4.236,
+   "k": 1.272,
+   "rr": 1.0,
+   "n": 455,
+   "exp": -2.2726,
+   "wr": 50.55,
+   "pf": 0.932
+  },
+  {
+   "d": 4.236,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 455,
+   "exp": -1.6973,
+   "wr": 39.12,
+   "pf": 0.959
+  },
+  {
+   "d": 4.236,
+   "k": 1.618,
+   "rr": 1.0,
+   "n": 455,
+   "exp": -1.8875,
+   "wr": 50.55,
+   "pf": 0.955
+  },
+  {
+   "d": 4.236,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 455,
+   "exp": 1.9496,
+   "wr": 41.54,
+   "pf": 1.039
+  }
+ ],
+ "winner": {
+  "d": 4.236,
+  "k": 1.618,
+  "rr": 1.618,
+  "n": 455,
+  "exp": 1.9496,
+  "wr": 41.54,
+  "pf": 1.039
+ },
+ "judged": {
+  "d": 4.236,
+  "k": 1.618,
+  "rr": 1.618,
+  "n": 744,
+  "n_long": 372,
+  "n_short": 372,
+  "wr": 41.13,
+  "exp": 1.7803,
+  "pf": 1.025,
+  "sl_med": 92.34,
+  "tp_med": 149.41
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 39.581107074161146,
+   "perm_mean": 39.459185605215495,
+   "perm_sd": 2.4534270981811273,
+   "perm_max": 46.44970414201183,
+   "perm_k": 600
+  },
+  "short": {
+   "uncond_wr": 37.63051353079054,
+   "perm_mean": 38.52182954166923,
+   "perm_sd": 2.46214871786082,
+   "perm_max": 44.91525423728814,
+   "perm_k": 600
+  }
+ },
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "metrics": {
+  "n_trades": 744,
+  "win_rate": 41.13,
+  "net_profit": 1100.3,
+  "profit_factor": 1.025,
+  "max_dd_pct": 18.69,
+  "max_consec_losses": 9,
+  "mcl_allowed": 19,
+  "n_wins": 306,
+  "top_win_share": 0.0168,
+  "recovery_factor": 0.52,
+  "expectancy_pip": 1.7803,
+  "expectancy_at_2x_cost": -1.5197,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 92.345,
+  "tp_pip": 149.414,
+  "rr": 1.618,
+  "breakeven_wr_cost": 39.56,
+  "wr_excess_cost": 1.57,
+  "null_ref_wr": 39.05,
+  "skill_lift_pp": 2.08,
+  "skill_z": 0.85,
+  "skill_p_perm": 0.198972,
+  "perm_max": 45.68,
+  "perm_k": 600,
+  "side_n": {
+   "long": 372,
+   "short": 372
+  },
+  "side_wr": {
+   "long": 43.55,
+   "short": 38.71
+  },
+  "side_lift_pp": {
+   "long": 3.97,
+   "short": 0.19
+  },
+  "prune_sides": [
+   "short"
+  ],
+  "p_emp": 0.13051,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 1.162,
+  "z_luck_bound": 1.98,
+  "z_margin": -0.818,
+  "n_trials": 24,
+  "cal_nets": [
+   -854.5,
+   -797.6,
+   1688.2,
+   1150.4
+  ],
+  "cal_counts": [
+   190,
+   188,
+   186,
+   180
+  ],
+  "cal_positive": 2,
+  "cal_occupied": 4,
+  "half_nets": [
+   -1592.7,
+   3105.3
+  ],
+  "oos": {
+   "n": 289,
+   "wr": 40.48,
+   "pf": 1.012,
+   "net": 211.4,
+   "wr_req": 39.56
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 681,
+   "n_unjudgeable": 63,
+   "n_counter": 345,
+   "n_aligned": 336,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 42.03,
+   "exp_counter": -2.667,
+   "wr_aligned": 40.18,
+   "exp_aligned": 6.183
+  },
+  "n_required_h3": 5265.1
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 4.2,
+ "notes": [
+  "PF=1.025<1.3"
+ ]
+}

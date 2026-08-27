@@ -1,0 +1,258 @@
+{
+ "tf": "H4",
+ "src": "/home/user/webapp/data/XAUUSD_H4.csv",
+ "bars": 23755,
+ "split_bar": 14253,
+ "grid": [
+  {
+   "d": 1.618,
+   "k": 1.272,
+   "rr": 1.0,
+   "n": 880,
+   "exp": -6.7327,
+   "wr": 48.3,
+   "pf": 0.869
+  },
+  {
+   "d": 1.618,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 819,
+   "exp": -5.486,
+   "wr": 38.22,
+   "pf": 0.911
+  },
+  {
+   "d": 1.618,
+   "k": 1.618,
+   "rr": 1.0,
+   "n": 795,
+   "exp": -8.7931,
+   "wr": 48.43,
+   "pf": 0.866
+  },
+  {
+   "d": 1.618,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 680,
+   "exp": 1.2544,
+   "wr": 41.47,
+   "pf": 1.017
+  },
+  {
+   "d": 2.618,
+   "k": 1.272,
+   "rr": 1.0,
+   "n": 458,
+   "exp": -2.7389,
+   "wr": 50.87,
+   "pf": 0.943
+  },
+  {
+   "d": 2.618,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 456,
+   "exp": -4.3986,
+   "wr": 38.82,
+   "pf": 0.927
+  },
+  {
+   "d": 2.618,
+   "k": 1.618,
+   "rr": 1.0,
+   "n": 457,
+   "exp": -1.3323,
+   "wr": 51.86,
+   "pf": 0.978
+  },
+  {
+   "d": 2.618,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 440,
+   "exp": -4.9801,
+   "wr": 38.86,
+   "pf": 0.933
+  },
+  {
+   "d": 4.236,
+   "k": 1.272,
+   "rr": 1.0,
+   "n": 228,
+   "exp": -5.5029,
+   "wr": 47.37,
+   "pf": 0.892
+  },
+  {
+   "d": 4.236,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 228,
+   "exp": -7.7147,
+   "wr": 34.65,
+   "pf": 0.877
+  },
+  {
+   "d": 4.236,
+   "k": 1.618,
+   "rr": 1.0,
+   "n": 228,
+   "exp": -11.8944,
+   "wr": 44.3,
+   "pf": 0.822
+  },
+  {
+   "d": 4.236,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 228,
+   "exp": -12.2373,
+   "wr": 34.21,
+   "pf": 0.846
+  }
+ ],
+ "winner": {
+  "d": 1.618,
+  "k": 1.618,
+  "rr": 1.618,
+  "n": 680,
+  "exp": 1.2544,
+  "wr": 41.47,
+  "pf": 1.017
+ },
+ "judged": {
+  "d": 1.618,
+  "k": 1.618,
+  "rr": 1.618,
+  "n": 1163,
+  "n_long": 566,
+  "n_short": 597,
+  "wr": 40.24,
+  "exp": -2.8672,
+  "pf": 0.974,
+  "sl_med": 136.31,
+  "tp_med": 220.55
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 41.184096802074336,
+   "perm_mean": 40.639259926944575,
+   "perm_sd": 2.011218556317928,
+   "perm_max": 46.70912951167728,
+   "perm_k": 600
+  },
+  "short": {
+   "uncond_wr": 36.6120218579235,
+   "perm_mean": 37.31653082562593,
+   "perm_sd": 1.8653724434276557,
+   "perm_max": 43.897216274089935,
+   "perm_k": 600
+  }
+ },
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "metrics": {
+  "n_trades": 1163,
+  "win_rate": 40.24,
+  "net_profit": 171.5,
+  "profit_factor": 1.002,
+  "max_dd_pct": 36.36,
+  "max_consec_losses": 14,
+  "mcl_allowed": 21,
+  "n_wins": 468,
+  "top_win_share": 0.0174,
+  "recovery_factor": 0.03,
+  "expectancy_pip": -2.8672,
+  "expectancy_at_2x_cost": -6.1672,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 136.308,
+  "tp_pip": 220.546,
+  "rr": 1.618,
+  "breakeven_wr_cost": 39.12,
+  "wr_excess_cost": 1.12,
+  "null_ref_wr": 39.2,
+  "skill_lift_pp": 1.04,
+  "skill_z": 0.54,
+  "skill_p_perm": 0.295247,
+  "perm_max": 45.27,
+  "perm_k": 600,
+  "side_n": {
+   "long": 566,
+   "short": 597
+  },
+  "side_wr": {
+   "long": 43.46,
+   "short": 37.19
+  },
+  "side_lift_pp": {
+   "long": 2.28,
+   "short": -0.13
+  },
+  "prune_sides": [
+   "short"
+  ],
+  "p_emp": 0.242636,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 0.728,
+  "z_luck_bound": 1.98,
+  "z_margin": -1.252,
+  "n_trials": 24,
+  "cal_nets": [
+   -19.5,
+   2231.5,
+   -1196.0,
+   -35.6
+  ],
+  "cal_counts": [
+   275,
+   285,
+   284,
+   319
+  ],
+  "cal_positive": 1,
+  "cal_occupied": 4,
+  "half_nets": [
+   2223.1,
+   -1499.5
+  ],
+  "oos": {
+   "n": 482,
+   "wr": 38.59,
+   "pf": 0.966,
+   "net": -921.3,
+   "wr_req": 39.12
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 1076,
+   "n_unjudgeable": 87,
+   "n_counter": 555,
+   "n_aligned": 521,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 39.82,
+   "exp_counter": -15.96,
+   "wr_aligned": 41.07,
+   "exp_aligned": 10.329
+  },
+  "n_required_h3": 20959.3
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 1.8,
+ "notes": [
+  "PF=1.002<1.3"
+ ]
+}
