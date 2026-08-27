@@ -29,7 +29,7 @@ def pf_of(p):
     w = p[p > 0].sum(); lo_ = -p[p < 0].sum()
     return w / lo_ if lo_ > 0 else np.inf
 
-for TF in ('H1', 'H4'):
+for TF in ('H1', 'H2', 'H3'):
     d = fd.load_fast('XAUUSD', TF)
     assert 'mt5_full' in d['src'], f'E-16 trap: {d["src"]}'
     df_full = fd.as_dataframe(d)
@@ -54,7 +54,7 @@ for TF in ('H1', 'H4'):
     cs_abs = np.cumsum(np.concatenate([[0.0], dc]))
     print(f'\n################ TF={TF}  explore bars={n:,}  src={d["src"]} ################', flush=True)
 
-    for W in (10, 21):
+    for W in (13, 21, 34):
         net = np.full(n, np.nan)
         net[W:] = c[W:] - c[:-W]
         noise = cs_abs[W+1:] - cs_abs[1:-W]     # Σ|Δc| در W کندل منتهی به t
@@ -64,7 +64,7 @@ for TF in ('H1', 'H4'):
         er[W:][ok] = er_vals[ok] / noise[ok]
         prev_er = np.concatenate([[np.nan], er[:-1]])
 
-        for theta in (0.55, 0.70):
+        for theta in (0.60, 0.70, 0.80):
             x = (er > theta) & ~(prev_er > theta)
             x[:WARMUP] = False
             up = x & (net > 0)
