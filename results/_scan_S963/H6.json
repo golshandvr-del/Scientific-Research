@@ -1,0 +1,65 @@
+{
+ "tf": "H6",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+ "n_bars": 15966,
+ "split_bar": 7920,
+ "member": {
+  "p": 89,
+  "th": 1.618,
+  "gate": "state",
+  "mode": "follow",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "max_hold": 267,
+  "sl_pip_med": 79.57,
+  "tp_pip_med": 128.73
+ },
+ "discovery": {
+  "p": 89,
+  "th": 1.618,
+  "gate": "state",
+  "mode": "follow",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "stat": 50.34,
+  "n": 34,
+  "wr": 50.0,
+  "be_rob": 41.367,
+  "lift": 8.633,
+  "exp_pip": 34.386,
+  "sl_med": 79.567,
+  "tp_med": 128.733
+ },
+ "null_meta": {
+  "n_perm": 500,
+  "draw_size": 238,
+  "uncond_n": 15448
+ },
+ "verdict": "REJECT",
+ "score": 16.4,
+ "gates": {
+  "H0": false,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": null,
+  "H8": false,
+  "H9": true,
+  "H10": true
+ },
+ "n": 34,
+ "wr": 50.0,
+ "pf": 1.523,
+ "net": 990.5,
+ "lift": 9.76,
+ "z": 1.16,
+ "p_perm": 0.123035,
+ "notes": [
+  "H7 UNKNOWN: no discovery/holdout split supplied",
+  "H10 WARN (substitute PASS): only 12 counter-drift trades (<20) but their expectancy is non-negative (+31.934 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+ ],
+ "sec": 1.9
+}
