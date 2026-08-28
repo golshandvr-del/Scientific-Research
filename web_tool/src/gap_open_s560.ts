@@ -306,6 +306,11 @@ export function decideS560(
       value: s.brkIdx < 0 ? '—' : (fresh ? 'باز — همین کندل ✔' : `بسته — ${s.atLatestBar} کندل گذشته ✘`),
       status: s.brkIdx < 0 ? 'neutral' : (fresh ? 'ok' : 'bad'),
     },
+    {
+      name: 'پیوستگیِ فیدِ داده (گاردِ ضدِ گپِ جعلی)',
+      value: s.brkIdx < 0 ? '—' : (s.dataHealthy ? 'سالم ✔' : 'ناپیوسته — مسدود ✘'),
+      status: s.brkIdx < 0 ? 'neutral' : (s.dataHealthy ? 'ok' : 'bad'),
+    },
   ]
 
   const raw: RawSignal = {
