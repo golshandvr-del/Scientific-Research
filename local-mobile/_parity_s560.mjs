@@ -72,6 +72,10 @@ console.log('reference signals (frozen thr):', refSignals.length, '(انتظار
 // ۵) شبیه‌سازیِ زنده روی هر مرزِ روز: پنجره‌ای که به i+1 ختم می‌شود
 const WARM = 400              // پنجرهٔ کافی؛ لایه warm-up ندارد ولی مرزِ روز لازم است
 let checked = 0, mismatchSig = 0, mismatchGap = 0, mismatchWknd = 0, mismatchIdx = 0
+// انحرافِ **عمدیِ اعلام‌شده**: سیگنالی که مرجع داشت و گاردِ سلامتِ فید مسدودش کرد.
+// جدا از mismatchSig شمرده می‌شود تا در حکم با «اختلافِ واقعی» قاطی نشود.
+let guardBlocked = 0
+const guardCases = []
 const badCases = []
 const refSigSet = new Set(refSignals)
 
