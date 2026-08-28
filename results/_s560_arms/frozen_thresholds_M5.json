@@ -1,0 +1,32 @@
+{
+ "tf": "M5",
+ "cfg": {
+  "q": 80.0,
+  "split_weekend": true,
+  "hold": 1
+ },
+ "frozen_threshold_usd": {
+  "weekend": 2.952,
+  "weekday": 1.01
+ },
+ "n_history_used": {
+  "weekend": 777,
+  "weekday": 3201
+ },
+ "n_day_breaks": 4069,
+ "signals_expanding_quantile": 407,
+ "signals_frozen_threshold": 412,
+ "geometry": {
+  "sl": 48.1,
+  "tp": 48.1,
+  "mh": 1,
+  "rule": "SL=TP=q98(|MFE|∪|MAE|) [first half] — time exit",
+  "t_first_half": 3.6811640670207226,
+  "n_first_half": 130,
+  "wr_first_half": 66.15
+ },
+ "picked_arm": "V-TIME",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "first_utc": "2011-01-03 00:00:00",
+ "last_utc": "2026-08-07 23:50:00"
+}
