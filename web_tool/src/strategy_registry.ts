@@ -508,6 +508,10 @@ const s382Layer = (cfg: typeof S382_CFG[string]): LayerFn => (ctx) => decideS382
 // ⭐ S950 — پس‌لرزهٔ جهشِ هم‌راستا با رانش (H8) — کندل‌های ورودیِ ctx باید H8 باشند
 //    (index.tsx آن‌ها را با aggregateCandles(H1, 8) می‌سازد، عینِ الگوی H4).
 const s950Layer = (cfg: typeof S950_CFG[string]): LayerFn => (ctx) => decideS950(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S560 — گپِ منفیِ بازگشایی (M5) — لایه به **زمانِ** کندل‌ها نیاز دارد (مرزِ روز)
+//    که در Candle.time موجود است؛ ctx.candles همان closedBars(...) است ⇒ کندلِ
+//    زندهٔ در حالِ شکل‌گیری (و کندلِ مصنوعیِ rebase با گپِ ذاتاً صفر) داخل نیست.
+const s560Layer = (cfg: typeof S560_CFG[string]): LayerFn => (ctx) => decideS560(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⚰️ s341Layer حذف شد — S341 زیرِ RQS2 v2.4 مرده است (بالا را ببینید).
 // لایهٔ نوِ این نشست: S344 Brooks Trend-from-Open first-pullback continuation (فصلِ ۲۳) — نخستین SHORT روی XAUUSD-M15
 const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
