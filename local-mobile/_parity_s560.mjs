@@ -103,10 +103,32 @@ for (const i of refBrk) {
   }
 
   // ۵-ج) سیگنال
+  //
+  // ⚠️ انحرافِ **عمدی و اعلام‌شده** از مرجعِ پایتون (افزودهٔ همین نشست):
+  //    لایه یک «گاردِ سلامتِ فید» دارد که وقتی کندلِ ماقبلِ مرزِ روز هم با
+  //    وقفه‌ای بزرگ‌تر از حدِ مجاز آمده باشد، سیگنال را مسدود می‌کند — چون در
+  //    آن حالت «بستهٔ روزِ قبل» قیمتی کهنه است و گپ مصنوعِ شکافِ داده.
+  //    مرجعِ پایتون این گارد را ندارد، پس اختلاف **انتظار می‌رود**.
+  //
+  //    این آزمون ضعیف نمی‌شود: اختلاف فقط زمانی پذیرفته است که علتش
+  //    **دقیقاً** ناسالم‌بودنِ داده باشد (s.dataHealthy === false) و جهتش
+  //    فقط «مسدودسازی» باشد (مرجع سیگنال داشته، ما نداریم). هر اختلافِ
+  //    دیگری — از جمله سیگنالی که ما بدهیم و مرجع نداده باشد — شکستِ واقعی است.
   const wantSig = refSigSet.has(i)
   if (s.active !== wantSig) {
-    mismatchSig++
-    if (badCases.length < 8) badCases.push({ kind: 'signal', i, got: s.active, want: wantSig, gap: gapRef, thr: s.thrUsd })
+    const intentional = wantSig && !s.active && s.dataHealthy === false
+    if (intentional) {
+      guardBlocked++
+      if (guardCases.length < 8) guardCases.push({
+        kind: 'guard-block', i,
+        utc: new Date(candles[i + 1].time * 1000).toISOString(),
+        gap: +gapRef.toFixed(3), thr: s.thrUsd,
+        prevBarDt: candles[i].time - candles[i - 1].time,
+      })
+    } else {
+      mismatchSig++
+      if (badCases.length < 8) badCases.push({ kind: 'signal', i, got: s.active, want: wantSig, gap: gapRef, thr: s.thrUsd })
+    }
   }
 }
 
