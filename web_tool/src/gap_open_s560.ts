@@ -198,6 +198,7 @@ export function computeS560Signal(candles: Candle[], cfg: S560Config): S560Signa
     gapHours: dt / 3600,
     atLatestBar: (n - 1) - (brk + 1),   // ۰ ⇒ کندلِ اولِ روزِ نو آخرین کندلِ بسته است
     ratio,
+    dataHealthy,
   }
 }
 
