@@ -204,6 +204,13 @@ import { decideS382, S382_CFG } from './williams_momentum_s382'
 //    RQS2=80 · هر ۱۱ دروازه پاس · پایدار روی ۴ seed · n=224 · WR=61.6% · maxDD=4.92%
 //    سند: results/S950_JumpAftermathDriftAligned_Xauusd_H8_rqs2_80_ACCEPT.md
 import { decideS950, S950_CFG } from './jump_aftermath_s950'
+// ⭐ S560 — «گپِ منفیِ بازگشایی» (GapOpen Negative-Gap) · XAUUSD-M5 · LONG-only
+//    RQS2=**96.0** — بالاترین نمرهٔ لایه‌های وصل‌شده تا امروز · هر ۱۱ دروازه پاس
+//    n=407 · WR=71.5٪ · PF=2.514 · maxDD=2.43٪ · lift=+43.98pp · z=19.87 (z_margin=16.885)
+//    آستانهٔ علّیِ q80 **منجمدشده** از ۱۵.۶ سال داده (results/_s560_arms/frozen_thresholds_M5.json)
+//    parity: صفر اختلاف روی ۴۰۶۹ مرزِ روز (results/_s560_arms/parity_ts_M5.json)
+//    سند: results/S560_GapOpenNegGap_Xauusd_M1M5M15M30H1_rqs2_96_ACCEPT.md
+import { decideS560, S560_CFG } from './gap_open_s560'
 
 const GOLD_PIP = 0.1
 
