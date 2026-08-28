@@ -157,8 +157,7 @@ def run_tf(tf):
     res = R.compute_rqs2(
         tr, 'XAUUSD', sl_pip=med_sl, tp_pip=cfg['rr'] * med_sl,
         bar_time=df['time'].values, close=df['close'].values,
-        null=null, n_trials=N_TRIALS, split_bar=split_bar,
-        strategy_name=f'S672_NoSupplyPullback_XAUUSD_{tf}')
+        null=null, n_trials=N_TRIALS, split_bar=split_bar)
 
     os.makedirs(OUT_DIR, exist_ok=True)
     tr.to_csv(os.path.join(OUT_DIR, f'{tf}_trades.csv'), index=False)
