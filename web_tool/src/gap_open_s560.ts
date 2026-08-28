@@ -176,3 +176,146 @@ export function computeS560Signal(candles: Candle[], cfg: S560Config): S560Signa
     ratio,
   }
 }
+
+// ---------------------------------------------------------------------------
+// decideS560 — RawSignal → RouterDecision (نمایشِ کارت در سایت)
+//
+// ⚠️ **صداقتِ پنجرهٔ معامله** (مهم‌ترین نکتهٔ زندهٔ این لایه):
+//   هندسهٔ قفل‌شده maxHold=۱ کندلِ M5 است ⇒ پنجرهٔ کلِ معامله **۵ دقیقه**
+//   است: ورود در open اولین کندلِ روزِ نو، خروج در close همان کندل.
+//   سایت منطقِ سیگنال را (درست، برای ضدِ repainting) روی **کندل‌های بسته**
+//   اجرا می‌کند. پس وقتی سایت کندلِ اولِ روزِ نو را «بسته» می‌بیند، آن پنجرهٔ
+//   ۵دقیقه‌ای **گذشته** است.
+//
+//   این واقعیت **پنهان نمی‌شود**: با atLatestBar وضعیت اعلام می‌گردد.
+//     • atLatestBar === 0 ⇒ کندلِ اولِ روزِ نو همین حالا بسته شد ⇒ ENTRY نشان
+//       داده می‌شود ولی در متن صریح می‌آید که ورودِ بک‌تستی در open همین کندلِ
+//       تازه‌بسته بود؛ معامله‌گر باید بداند لبه در همین دقیقه‌ها مصرف می‌شود.
+//     • atLatestBar > 0 ⇒ سیگنالِ **تاریخیِ** امروز است (پنجره قطعاً بسته)؛
+//       لایه به NEUTRAL می‌رود و در متن گفته می‌شود چند کندل گذشته است.
+//   هیچ تلاشی برای «بازکردنِ مصنوعیِ» پنجره (مثلاً سنجشِ سیگنال روی کندلِ
+//   در حالِ شکل‌گیری) نمی‌شود — آن کارْ look-ahead/repainting می‌سازد و حکمِ
+//   اندازه‌گیری‌شدهٔ RQS2=96 را بی‌اعتبار می‌کند.
+//
+// این محدودیت **ذاتیِ لایه** است، نه نقصِ پورت: سند هم لایه را «رویدادِ
+// بازگشایی» توصیف می‌کند که عمرِ لبه‌اش یک کندل است.
+// ---------------------------------------------------------------------------
+/** حداکثر شمارِ کندلِ گذشته از پنجره که هنوز «تازه» شمرده می‌شود (۰ = فقط همین کندل) */
+const FRESH_MAX_BARS = 0
+
+export function decideS560(
+  cfg: S560Config, a: AnalysisResult, candles: Candle[],
+  capital = 10000, riskPct = 1.0,
+): RouterDecision {
+  const s = computeS560Signal(candles, cfg)
+  const price = a.price
+
+  const fresh = s.atLatestBar >= 0 && s.atLatestBar <= FRESH_MAX_BARS
+  // ورودِ زنده فقط وقتی مجاز است که سیگنال فعال **و** پنجره تازه باشد.
+  const active = s.active && fresh
+  // اگر سیگنالِ فعال ولی پنجره گذشته: به‌جای ENTRYِ دروغین، «نزدیک» هم نیست ⇒ NEUTRAL.
+  const approaching = (!active && s.approaching && fresh) ? true : false
+
+  const kindFa = s.isWeekend ? 'بازگشاییِ آخرهفته (دوشنبه)' : 'بازگشاییِ روزِ کاری'
+  const gapAbs = Math.abs(s.gapUsd)
+  const gapPip = isFinite(gapAbs) ? gapAbs / GOLD_PIP : NaN
+
+  let reason: string
+  if (active) {
+    reason =
+      `گپِ منفیِ بازگشایی تأیید شد: بازار روزِ نو را ${gapAbs.toFixed(2)}$ ` +
+      `(${gapPip.toFixed(0)} pip) **زیرِ** بستهٔ روزِ قبل باز کرد — بزرگ‌تر از آستانهٔ ` +
+      `منجمدِ ${s.thrUsd.toFixed(3)}$ برای ${kindFa} (نسبت ${s.ratio.toFixed(2)}×). ` +
+      `طبقِ سند (RQS2=۹۶، WR ۷۱.۵٪ روی n=۴۰۷) این «فروشِ هیجانیِ بازگشایی» گرایشِ ` +
+      `قویِ آماری به بازگشتِ رو به بالا در همان کندلِ نخست دارد ⇒ LONG با خروجِ زمانی. ` +
+      `⏱️ پنجره بسیار کوتاه است: ورودِ بک‌تستی در open همین کندلِ تازه‌بسته بود و خروج ` +
+      `در close آن ⇒ لبه در همین دقیقه‌ها مصرف می‌شود.`
+  } else if (s.active && !fresh) {
+    reason =
+      `سیگنالِ گپِ منفی **امروز رخ داد** (گپ ${gapAbs.toFixed(2)}$ در ${kindFa}) ولی ` +
+      `پنجرهٔ ۵دقیقه‌ایِ آن ${s.atLatestBar} کندل پیش بسته شد. هندسهٔ قفل‌شدهٔ لایه ` +
+      `maxHold=۱ کندلِ M5 است ⇒ ورودِ تأخیری هیچ ربطی به حکمِ اندازه‌گیری‌شده ندارد. ` +
+      `صادقانه: این فرصت از دست رفته است، نه یک ورودِ معتبر.`
+  } else if (s.brkIdx < 0) {
+    reason =
+      `هیچ مرزِ روزی در پنجرهٔ کندل‌های موجود نیست (این لایه فقط در لحظهٔ ` +
+      `بازگشاییِ روز معنا دارد). لایه روزی یک‌بار ارزیابی می‌شود.`
+  } else if (s.gapUsd >= 0) {
+    reason =
+      `آخرین بازگشایی (${kindFa}) گپِ **مثبت/صفر** داشت (${s.gapUsd.toFixed(2)}$) — ` +
+      `این لایه فقط گپِ منفی را معامله می‌کند (فروشِ هیجانی)، پس بی‌سیگنال است.`
+  } else {
+    reason =
+      `گپِ منفیِ آخرین بازگشایی کم‌عمق بود: ${gapAbs.toFixed(2)}$ یعنی ` +
+      `${(s.ratio * 100).toFixed(0)}٪ آستانهٔ ${s.thrUsd.toFixed(3)}$ برای ${kindFa}. ` +
+      `لایه کم‌بسامد است (~۴۱۲ سیگنال در ۱۵.۶ سال ≈ ۱۰٪ روزها) و بیشترِ ` +
+      `بازگشایی‌ها هیچ‌اند — همین صداقتِ لایه است.`
+  }
+
+  const indicators: RouterDecision['indicators'] = [
+    {
+      name: 'مرزِ روز (بازگشایی)',
+      value: s.brkIdx >= 0 ? `${kindFa} · وقفهٔ ${s.gapHours.toFixed(1)}h` : '—',
+      status: s.brkIdx >= 0 ? 'ok' : 'neutral',
+    },
+    {
+      name: 'جهتِ گپ (باید منفی باشد)',
+      value: isFinite(s.gapUsd) ? `${s.gapUsd >= 0 ? '+' : ''}${s.gapUsd.toFixed(2)}$` + (s.gapUsd < 0 ? ' ✔' : ' ✘') : '—',
+      status: s.gapUsd < 0 ? 'ok' : 'bad',
+    },
+    {
+      name: `عمقِ گپ > آستانهٔ منجمد (${isFinite(s.thrUsd) ? s.thrUsd.toFixed(3) : '—'}$)`,
+      value: isFinite(gapAbs) ? `${gapAbs.toFixed(2)}$ (${(s.ratio * 100).toFixed(0)}٪)` + (s.active ? ' ✔' : '') : '—',
+      status: s.active ? 'ok' : (s.approaching ? 'warn' : 'bad'),
+    },
+    {
+      name: 'تازگیِ پنجره (maxHold=۱ کندلِ M5)',
+      value: s.brkIdx < 0 ? '—' : (fresh ? 'باز — همین کندل ✔' : `بسته — ${s.atLatestBar} کندل گذشته ✘`),
+      status: s.brkIdx < 0 ? 'neutral' : (fresh ? 'ok' : 'bad'),
+    },
+  ]
+
+  const raw: RawSignal = {
+    active, approaching,
+    direction: 'LONG',                       // لایه LONG-only است (گپِ منفی ⇒ بازگشتِ بالا)
+    slDist: cfg.slPip * GOLD_PIP,            // 48.1 pip ⇒ 4.81$ — براکتِ نادر-فعال
+    tpDist: cfg.tpPip * GOLD_PIP,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching
+      ? `منتظرِ عمیق‌شدنِ گپ تا عبور از ${s.thrUsd.toFixed(3)}$ (اکنون ${(s.ratio * 100).toFixed(0)}٪)`
+      : undefined,
+    indicators,
+  }
+
+  const reg: RegimeInfo = {
+    regime: 'range',                         // رویدادِ بازگشتی، نه روندی
+    efficiencyRatio: 0, trendy: false,
+    adx: 0, activeStream: active ? 'bull' : 'none',
+    bucket: `s560_${cfg.tfFa.toLowerCase()}`,
+  }
+
+  const meta: DecideMeta = {
+    code: 'S560',
+    name: `گپِ منفیِ بازگشایی (${cfg.tfFa})`,
+    kind: 'gap_open' as any,
+    manageStyle: 'fixed-tp-sl',
+    manageNote:
+      `⏱️ **خروجِ زمانی حاکم است، نه استاپِ قیمتی.** هندسهٔ قفل‌شدهٔ بازوِ V-TIME: ` +
+      `در close کندلِ M5ِ ورود خارج شو (maxHold=${cfg.maxHold}). براکتِ ` +
+      `SL=TP=${cfg.slPip} pip فقط **محافظِ نادر-فعال** است (چندکِ ۹۸ دمِ MFE∪MAE ` +
+      `نیمهٔ اول) و در حالتِ عادی نباید فعال شود. درسِ ۱ سند: بازوِ استاپ-قیمتی ` +
+      `(V-BRK) در **هر ۵ تایم‌فریم** مغلوب شد ⇒ استاپ را تنگ نکن و TP را زود نگیر؛ ` +
+      `فقط زمان. ⚠️ قیدِ تک‌معامله (allow_overlap=false در داوری): تا این معامله ` +
+      `بسته نشده، بازگشاییِ بعدی نباید معاملهٔ نو باز کند.`,
+    filters: [
+      `مرزِ روز: وقفهٔ زمانی > ${dayBreakThreshold(cfg.tfSec)}s (قاعدهٔ BUG-BRKTHRESH)`,
+      'گپ = open(کندلِ اولِ روز) − close(آخرین کندلِ روزِ قبل) — باید **منفی** باشد',
+      `عمقِ گپ اکیداً > آستانهٔ منجمدِ q80 (آخرهفته ${cfg.thrWeekendUsd}$ / روزِ کاری ${cfg.thrWeekdayUsd}$)`,
+      'تفکیکِ آخرهفته/میان‌هفته (درسِ ۲ سند: گپِ دوشنبه ≈۸× گپِ روزانه)',
+      `خروجِ زمانیِ خالص پس از ${cfg.maxHold} کندلِ ${cfg.tfFa} · LONG-only · ~۲۶ معامله در سال`,
+    ],
+  }
+
+  return rawToDecision(raw, meta, cfg.id, price, reg, capital, riskPct)
+}
