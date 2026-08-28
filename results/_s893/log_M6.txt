@@ -3,7 +3,7 @@ S893 Canonical-Null Re-audit · XAUUSD-M6 (prereg 532099e5)
 ========================================================================
 repro: n=998 (S892 998)  wr=39.08 (S892 39.28)  → MISMATCH!
 Traceback (most recent call last):
-  File "/home/user/webapp/strategies/s893_canonical_null.py", line 194, in <module>
+  File "/home/user/webapp/strategies/s893_canonical_null.py", line 196, in <module>
     run_tf(sys.argv[1] if len(sys.argv) > 1 else 'H2')
     ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
   File "/home/user/webapp/strategies/s893_canonical_null.py", line 132, in run_tf
