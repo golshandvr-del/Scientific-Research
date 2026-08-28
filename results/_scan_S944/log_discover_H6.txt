@@ -1,0 +1,99 @@
+DATA src=/home/user/webapp/data/mt5_full/XAUUSD_H6.csv  n_bars=15,966  span=15.59y
+discovery bars=9,579 · bars/day(median)=4
+[ 1/72] L0_F2_long_k2.058_rr1.0_hd1        n=  225 wr=52.0 lift=1.018 score=15.27 (0s)
+[ 2/72] L0_F2_long_k2.058_rr1.0_hd2        n=  145 wr=55.862 lift=4.892 score=58.91 (0s)
+[ 3/72] L0_F2_long_k3.141_rr1.0_hd1        n=  225 wr=51.111 lift=0.468 score=7.01 (0s)
+[ 4/72] L0_F2_long_k3.141_rr1.0_hd2        n=  127 wr=55.906 lift=5.257 score=59.25 (0s)
+[ 5/72] L0_F2_short_k2.058_rr1.0_hd1       n=  225 wr=44.0 lift=-6.982 score=-104.73 (0s)
+[ 6/72] L0_F2_short_k2.058_rr1.0_hd2       n=  145 wr=41.379 lift=-9.591 score=-115.49 (0s)
+[ 7/72] L0_F2_short_k3.141_rr1.0_hd1       n=  225 wr=44.889 lift=-5.755 score=-86.32 (0s)
+[ 8/72] L0_F2_short_k3.141_rr1.0_hd2       n=  127 wr=40.157 lift=-10.491 score=-118.22 (0s)
+[ 9/72] L0_F3_long_k2.058_rr1.0_hd1        n=  336 wr=50.298 lift=-0.688 score=-12.61 (0s)
+[10/72] L0_F3_long_k2.058_rr1.0_hd2        n=  235 wr=52.766 lift=1.773 score=27.18 (0s)
+[11/72] L0_F3_long_k3.141_rr1.0_hd1        n=  336 wr=49.702 lift=-0.943 score=-17.29 (0s)
+[12/72] L0_F3_long_k3.141_rr1.0_hd2        n=  227 wr=51.542 lift=0.889 score=13.39 (0s)
+[13/72] L0_F3_short_k2.058_rr1.0_hd1       n=  336 wr=46.131 lift=-4.855 score=-88.99 (0s)
+[14/72] L0_F3_short_k2.058_rr1.0_hd2       n=  235 wr=44.681 lift=-6.312 score=-96.76 (0s)
+[15/72] L0_F3_short_k3.141_rr1.0_hd1       n=  336 wr=46.429 lift=-4.217 score=-77.3 (0s)
+[16/72] L0_F3_short_k3.141_rr1.0_hd2       n=  227 wr=45.374 lift=-5.279 score=-79.53 (0s)
+[17/72] L0_F4_long_k2.058_rr1.0_hd1        n=  448 wr=48.884 lift=-2.106 score=-44.57 (0s)
+[18/72] L0_F4_long_k2.058_rr1.0_hd2        n=  284 wr=51.408 lift=0.413 score=6.97 (0s)
+[19/72] L0_F4_long_k3.141_rr1.0_hd1        n=  448 wr=48.214 lift=-2.434 score=-51.52 (0s)
+[20/72] L0_F4_long_k3.141_rr1.0_hd2        n=  249 wr=50.602 lift=-0.058 score=-0.91 (0s)
+[21/72] L0_F4_short_k2.058_rr1.0_hd1       n=  448 wr=46.429 lift=-4.561 score=-96.54 (0s)
+[22/72] L0_F4_short_k2.058_rr1.0_hd2       n=  284 wr=45.775 lift=-5.22 score=-87.97 (0s)
+[23/72] L0_F4_short_k3.141_rr1.0_hd1       n=  448 wr=46.875 lift=-3.773 score=-79.87 (0s)
+[24/72] L0_F4_short_k3.141_rr1.0_hd2       n=  249 wr=45.382 lift=-5.279 score=-83.29 (0s)
+[25/72] L1_F2_long_k2.058_rr1.0_hd1        n=  338 wr=50.296 lift=-0.685 score=-12.6 (0s)
+[26/72] L1_F2_long_k2.058_rr1.0_hd2        n=  236 wr=52.119 lift=1.138 score=17.48 (0s)
+[27/72] L1_F2_long_k3.141_rr1.0_hd1        n=  338 wr=49.704 lift=-0.939 score=-17.26 (0s)
+[28/72] L1_F2_long_k3.141_rr1.0_hd2        n=  231 wr=50.649 lift=0.006 score=0.09 (0s)
+[29/72] L1_F2_short_k2.058_rr1.0_hd1       n=  338 wr=45.858 lift=-5.123 score=-94.19 (0s)
+[30/72] L1_F2_short_k2.058_rr1.0_hd2       n=  236 wr=44.492 lift=-6.49 score=-99.69 (0s)
+[31/72] L1_F2_short_k3.141_rr1.0_hd1       n=  338 wr=46.45 lift=-4.193 score=-77.09 (0s)
+[32/72] L1_F2_short_k3.141_rr1.0_hd2       n=  231 wr=45.455 lift=-5.189 score=-78.87 (0s)
+[33/72] L1_F3_long_k2.058_rr1.0_hd1        n=  449 wr=49.443 lift=-1.539 score=-32.61 (0s)
+[34/72] L1_F3_long_k2.058_rr1.0_hd2        n=  293 wr=50.853 lift=-0.129 score=-2.21 (0s)
+[35/72] L1_F3_long_k3.141_rr1.0_hd1        n=  449 wr=48.998 lift=-1.646 score=-34.87 (0s)
+[36/72] L1_F3_long_k3.141_rr1.0_hd2        n=  257 wr=48.638 lift=-2.021 score=-32.41 (0s)
+[37/72] L1_F3_short_k2.058_rr1.0_hd1       n=  449 wr=46.993 lift=-3.989 score=-84.52 (0s)
+[38/72] L1_F3_short_k2.058_rr1.0_hd2       n=  293 wr=46.075 lift=-4.907 score=-83.99 (0s)
+[39/72] L1_F3_short_k3.141_rr1.0_hd1       n=  449 wr=47.216 lift=-3.427 score=-72.63 (0s)
+[40/72] L1_F3_short_k3.141_rr1.0_hd2       n=  257 wr=47.471 lift=-3.189 score=-51.12 (0s)
+[41/72] L1_F4_long_k2.058_rr1.0_hd1        n=  561 wr=48.485 lift=-2.501 score=-59.24 (0s)
+[42/72] L1_F4_long_k2.058_rr1.0_hd2        n=  365 wr=50.137 lift=-0.849 score=-16.22 (0s)
+[43/72] L1_F4_long_k3.141_rr1.0_hd1        n=  561 wr=47.95 lift=-2.696 score=-63.85 (0s)
+[44/72] L1_F4_long_k3.141_rr1.0_hd2        n=  346 wr=47.977 lift=-2.678 score=-49.81 (0s)
+[45/72] L1_F4_short_k2.058_rr1.0_hd1       n=  561 wr=47.059 lift=-3.927 score=-93.01 (0s)
+[46/72] L1_F4_short_k2.058_rr1.0_hd2       n=  365 wr=46.575 lift=-4.41 score=-84.26 (0s)
+[47/72] L1_F4_short_k3.141_rr1.0_hd1       n=  561 wr=47.415 lift=-3.231 score=-76.52 (0s)
+[48/72] L1_F4_short_k3.141_rr1.0_hd2       n=  346 wr=47.977 lift=-2.678 score=-49.81 (0s)
+[49/72] L2_F2_long_k2.058_rr1.0_hd1        n=  449 wr=50.111 lift=-0.866 score=-18.35 (0s)
+[50/72] L2_F2_long_k2.058_rr1.0_hd2        n=  280 wr=50.357 lift=-0.619 score=-10.36 (0s)
+[51/72] L2_F2_long_k3.141_rr1.0_hd1        n=  449 wr=49.666 lift=-0.974 score=-20.65 (0s)
+[52/72] L2_F2_long_k3.141_rr1.0_hd2        n=  247 wr=51.822 lift=1.174 score=18.45 (0s)
+[53/72] L2_F2_short_k2.058_rr1.0_hd1       n=  449 wr=45.88 lift=-5.098 score=-108.02 (0s)
+[54/72] L2_F2_short_k2.058_rr1.0_hd2       n=  280 wr=46.786 lift=-4.19 score=-70.12 (0s)
+[55/72] L2_F2_short_k3.141_rr1.0_hd1       n=  449 wr=46.325 lift=-4.315 score=-91.44 (0s)
+[56/72] L2_F2_short_k3.141_rr1.0_hd2       n=  247 wr=44.534 lift=-6.114 score=-96.08 (0s)
+[57/72] L2_F3_long_k2.058_rr1.0_hd1        n=  560 wr=49.464 lift=-1.513 score=-35.8 (0s)
+[58/72] L2_F3_long_k2.058_rr1.0_hd2        n=  363 wr=49.862 lift=-1.127 score=-21.47 (0s)
+[59/72] L2_F3_long_k3.141_rr1.0_hd1        n=  560 wr=49.107 lift=-1.533 score=-36.28 (0s)
+[60/72] L2_F3_long_k3.141_rr1.0_hd2        n=  342 wr=50.585 lift=-0.067 score=-1.24 (0s)
+[61/72] L2_F3_short_k2.058_rr1.0_hd1       n=  560 wr=46.786 lift=-4.192 score=-99.19 (0s)
+[62/72] L2_F3_short_k2.058_rr1.0_hd2       n=  363 wr=47.383 lift=-3.606 score=-68.71 (0s)
+[63/72] L2_F3_short_k3.141_rr1.0_hd1       n=  560 wr=46.964 lift=-3.676 score=-86.99 (0s)
+[64/72] L2_F3_short_k3.141_rr1.0_hd2       n=  342 wr=46.199 lift=-4.453 score=-82.35 (0s)
+[65/72] L2_F4_long_k2.058_rr1.0_hd1        n=  672 wr=48.661 lift=-2.322 score=-60.19 (0s)
+[66/72] L2_F4_long_k2.058_rr1.0_hd2        n=  417 wr=49.4 lift=-1.589 score=-32.44 (0s)
+[67/72] L2_F4_long_k3.141_rr1.0_hd1        n=  672 wr=48.214 lift=-2.43 score=-62.98 (0s)
+[68/72] L2_F4_long_k3.141_rr1.0_hd2        n=  367 wr=50.409 lift=-0.251 score=-4.8 (0s)
+[69/72] L2_F4_short_k2.058_rr1.0_hd1       n=  672 wr=46.875 lift=-4.108 score=-106.48 (0s)
+[70/72] L2_F4_short_k2.058_rr1.0_hd2       n=  417 wr=47.722 lift=-3.267 score=-66.72 (0s)
+[71/72] L2_F4_short_k3.141_rr1.0_hd1       n=  672 wr=47.173 lift=-3.471 score=-89.98 (0s)
+[72/72] L2_F4_short_k3.141_rr1.0_hd2       n=  367 wr=45.777 lift=-4.883 score=-93.54 (0s)
+
+LOCKED -> results/_scan_S944/lock_XAUUSD-H6.json
+{
+  "layer": "S944",
+  "tf": "H6",
+  "split_bar": 9579,
+  "n_bars": 15966,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+  "bpd": 4,
+  "criterion": "max lift*sqrt(n) | long-only | n>=150 & net>0 & power lift*sqrt(n)>=78",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": {
+    "key": "L0_F3_long_k2.058_rr1.0_hd2",
+    "n": 235,
+    "wr": 52.766,
+    "net": 3174.0,
+    "sl_med": 166.2,
+    "be": 50.993,
+    "lift": 1.773,
+    "score": 27.18
+  },
+  "score": 27.18,
+  "power_ok": false
+}
