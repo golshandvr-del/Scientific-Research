@@ -10,17 +10,8 @@ repro: n=3994 (S892 3994)  wr=49.77 (S892 49.77)  → OK
   => hardest unconditional = 47.85%  (layer 49.77 ⇒ geo-lift +1.93pp)
 
 [null-2] skipped per prereg rule (null-independent gate fails: ['H1', 'H2', 'H6', 'H8', 'H9'])
-Traceback (most recent call last):
-  File "/home/user/webapp/strategies/s893_canonical_null.py", line 194, in <module>
-    run_tf(sys.argv[1] if len(sys.argv) > 1 else 'H2')
-    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/user/webapp/strategies/s893_canonical_null.py", line 165, in run_tf
-    r = rqs2.compute_rqs2(tr, ASSET, sl_pip=sl_pip, tp_pip=tp_pip,
-                          bar_time=times, null=null,
-                          n_trials=N_TRIALS, split_bar=split, close=c)
-  File "/home/user/webapp/engine/rqs2.py", line 1011, in compute_rqs2
-    nb = blend_null(null, n_by_side)
-  File "/home/user/webapp/engine/rqs2.py", line 828, in blend_null
-    kmin = int(k) if kmin is None else min(kmin, int(k or 0))
-           ~~~^^^
-TypeError: int() argument must be a string, a bytes-like object or a real number, not 'NoneType'
+
+VERDICT: REJECT  score=7.1
+geo-matched lift = +1.93pp  (S892 prereg-null lift was -0.19pp)
+gates: {'H0': True, 'H1': False, 'H2': False, 'H3': None, 'H4': False, 'H5': False, 'H6': False, 'H7': False, 'H8': False, 'H9': False, 'H10': True}
+saved → results/_s893/rqs2_XAUUSD-H8.json
