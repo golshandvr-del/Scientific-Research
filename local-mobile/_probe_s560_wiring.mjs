@@ -181,15 +181,15 @@ console.log('geometry bad :', geomBad.length ? [...new Set(geomBad)].slice(0, 5)
 console.log(`stale guard  : ${staleEntries} ENTRY out of ${staleChecked} stale windows (must be 0)`)
 
 if (sample) {
-  const e = sample.dec.entry || sample.dec
+  const g = sample.geom
   console.log()
   console.log('--- sample ENTRY ---')
   console.log('  gap        :', sample.gap.toFixed(2), '$ | thr:', sample.thr.toFixed(3), '$ | weekend:', sample.weekend)
-  console.log('  direction  :', e.direction || sample.dec.direction)
-  console.log('  price      :', e.price ?? sample.dec.price)
-  console.log('  SL / TP    :', e.stopLoss ?? e.sl, '/', e.takeProfit ?? e.tp)
-  console.log('  lots/size  :', e.lots ?? e.size ?? e.positionSize ?? '—')
-  console.log('  keys       :', Object.keys(e).join(','))
+  console.log('  direction  :', g.direction)
+  console.log('  entry      :', g.entry)
+  console.log('  SL / TP    :', g.sl, '/', g.tp, `| rr=${g.rr}`)
+  console.log('  distances  :', `SL=${g.slDist.toFixed(2)}$  TP=${g.tpDist.toFixed(2)}$`)
+  console.log('  lots       :', g.lots, '| risk$:', g.riskDollars)
 }
 
 // --- حکم ---
