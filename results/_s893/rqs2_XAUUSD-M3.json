@@ -1,0 +1,214 @@
+{
+ "card": "XAUUSD-M3",
+ "prereg": "532099e5",
+ "s892_prereg": "b0f8770a",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M3.csv",
+ "bars": 1815880,
+ "split": 1271116,
+ "hold": 80,
+ "sl_pip": 9.56,
+ "tp_pip": 14.35,
+ "locked": {
+  "H": 0,
+  "dir": "long",
+  "score": 37.70372362800875,
+  "is_n": 914,
+  "is_wr": 40.59,
+  "is_net": -2887.1
+ },
+ "n": 998,
+ "wr": 41.08,
+ "n_sig": 998,
+ "uncond_draws": [
+  [
+   893,
+   39.083100826084575,
+   18279
+  ],
+  [
+   1893,
+   39.16414627440198,
+   18185
+  ],
+  [
+   2893,
+   39.13925438596491,
+   18240
+  ]
+ ],
+ "uncond_wr": 39.1641,
+ "perm": null,
+ "null": {
+  "long": {
+   "uncond_wr": 39.16414627440198,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": 0
+  },
+  "short": {
+   "uncond_wr": 39.16414627440198,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": 0
+  }
+ },
+ "lift_geo_pp": 1.92,
+ "lift_s892_pp": -8.88,
+ "s892_gates": {
+  "H0": true,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "rqs2": {
+  "asset": "XAUUSD",
+  "gates": {
+   "H0": true,
+   "H1": false,
+   "H2": false,
+   "H3": null,
+   "H4": false,
+   "H5": false,
+   "H6": false,
+   "H7": false,
+   "H8": false,
+   "H9": false,
+   "H10": false
+  },
+  "metrics": {
+   "n_trades": 998,
+   "win_rate": 41.08,
+   "net_profit": -9613.1,
+   "profit_factor": 0.565,
+   "max_dd_pct": 96.45,
+   "max_consec_losses": 11,
+   "mcl_allowed": 20,
+   "n_wins": 410,
+   "top_win_share": 0.0024,
+   "recovery_factor": -0.92,
+   "expectancy_pip": -3.0373,
+   "expectancy_at_2x_cost": -6.3373,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 9.56,
+   "tp_pip": 14.35,
+   "rr": 1.501,
+   "breakeven_wr_cost": 53.79,
+   "wr_excess_cost": -12.7,
+   "null_ref_wr": 39.16,
+   "skill_lift_pp": 1.92,
+   "skill_z": 1.24,
+   "skill_p_perm": 0.107238,
+   "perm_max": 39.16,
+   "perm_k": 0,
+   "side_n": {
+    "long": 998,
+    "short": 0
+   },
+   "side_wr": {
+    "long": 41.08
+   },
+   "side_lift_pp": {
+    "long": 1.92
+   },
+   "prune_sides": [
+    "long"
+   ],
+   "p_emp": 0.113346,
+   "p_adj_bonferroni": 1.0,
+   "z_obs": 1.241,
+   "z_luck_bound": 3.229,
+   "z_margin": -1.987,
+   "n_trials": 912,
+   "cal_nets": [
+    -9376.1,
+    -909.9,
+    -2278.7,
+    -1181.5
+   ],
+   "cal_counts": [
+    774,
+    81,
+    69,
+    74
+   ],
+   "cal_positive": 0,
+   "cal_occupied": 4,
+   "half_nets": [
+    -9433.7,
+    -3190.3
+   ],
+   "oos": {
+    "n": 84,
+    "wr": 46.43,
+    "pf": 0.746,
+    "net": -1489.6,
+    "wr_req": 53.79
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 570,
+    "n_unjudgeable": 428,
+    "n_counter": 334,
+    "n_aligned": 236,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 39.52,
+    "exp_counter": -3.411,
+    "wr_aligned": 44.92,
+    "exp_aligned": -2.121
+   },
+   "n_required_h3": 6183.9
+  },
+  "notes": [
+   "PF=0.565<1.3",
+   "H3 UNKNOWN: only 0 permutations (<500) — the permutation standard deviation has not converged, so the skill z is still seed-dependent. ACTION: rerun the null with at least 500 permutations before judging H3."
+  ],
+  "passed": false,
+  "rqs2_score": 2.2,
+  "verdict": "REJECT",
+  "n_fail": 9,
+  "n_unknown": 1,
+  "accepted": false,
+  "power_limited": false,
+  "unproven": false,
+  "unproven_checks": {
+   "G1_lift_floor": false,
+   "G2_evidence": false,
+   "G3_efdr": false,
+   "G4_economics": false,
+   "G5_glass_ceiling": true,
+   "G6_structure": false
+  },
+  "gate_families": {
+   "economic": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H8": false,
+    "H9": false
+   },
+   "power": {
+    "H3": null,
+    "H7": false,
+    "H10": false
+   },
+   "economic_all_pass": false,
+   "power_defects": [
+    "H3",
+    "H7",
+    "H10"
+   ]
+  },
+  "admission_rule": "gates_only",
+  "rank_tier": "D"
+ }
+}
