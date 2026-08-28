@@ -17,13 +17,13 @@ push_safe() {
 
 for TF in $TFS; do
   echo "=== S904 $TF discover ==="
-  python3 -u strategies/s904_fragility_cascade.py --phase discover --tf "$TF" \
+  python3 -u strategies/s904_counterdrift_jump_fade.py --phase discover --tf "$TF" \
     >> results/_s904/run_all.log 2>&1 || { echo "[err] discover $TF"; continue; }
   git add results/_s904/ && git commit -m "S904 $TF discovery+lock checkpoint" >/dev/null 2>&1
   push_safe
 
   echo "=== S904 $TF final ==="
-  python3 -u strategies/s904_fragility_cascade.py --phase final --tf "$TF" \
+  python3 -u strategies/s904_counterdrift_jump_fade.py --phase final --tf "$TF" \
     >> results/_s904/run_all.log 2>&1 || { echo "[err] final $TF"; continue; }
   git add results/_s904/ && git commit -m "S904 $TF FINAL verdict checkpoint" >/dev/null 2>&1
   push_safe
