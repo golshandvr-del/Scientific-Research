@@ -141,17 +141,33 @@ console.log('checked day-breaks   :', checked)
 console.log('mismatch brkIdx      :', mismatchIdx)
 console.log('mismatch gap         :', mismatchGap)
 console.log('mismatch weekend     :', mismatchWknd)
-console.log('mismatch signal      :', mismatchSig)
+console.log('mismatch signal      :', mismatchSig, '(اختلافِ واقعی — باید ۰ باشد)')
+console.log('guard blocked        :', guardBlocked, `(انحرافِ عمدیِ گاردِ سلامتِ فید — انتظار: ${EXPECT_GUARD_BLOCKS})`)
 if (badCases.length) console.log('sample bad cases:', JSON.stringify(badCases, null, 1))
+if (guardCases.length) console.log('guard-blocked cases:', JSON.stringify(guardCases, null, 1))
 
-const ok = mismatchIdx === 0 && mismatchGap === 0 && mismatchWknd === 0 && mismatchSig === 0
-console.log(ok ? '✅ PARITY OK — پورتِ TS با مرجعِ پایتون یکی است' : '❌ PARITY FAILED')
+// حکم: منطقِ پایه باید بیت‌به‌بیت یکی باشد، و انحرافِ عمدی باید **دقیقاً** به
+// اندازهٔ اعلام‌شده باشد. اگر روزی گاردْ بی‌رویه شد (مثلاً به‌خاطرِ تغییرِ brkThr
+// شروع کرد سیگنال‌های سالم را هم بخورد)، همین شرط فوراً لو می‌دهد.
+const baseOk  = mismatchIdx === 0 && mismatchGap === 0 && mismatchWknd === 0 && mismatchSig === 0
+const guardOk = guardBlocked === EXPECT_GUARD_BLOCKS
+const ok = baseOk && guardOk
+console.log(ok
+  ? '✅ PARITY OK — منطقِ پایه با مرجع یکی است و گارد دقیقاً در محدودهٔ اعلام‌شده عمل کرد'
+  : `❌ PARITY FAILED — baseOk=${baseOk} guardOk=${guardOk}`)
 
 const report = {
   layer: 'S560', card: 'XAUUSD-M5', src: path,
   n_candles: n, day_breaks: refBrk.length,
   ref_signals_frozen: refSignals.length,
   checked, mismatchIdx, mismatchGap, mismatchWknd, mismatchSig,
+  base_logic_ok: baseOk,
+  data_health_guard: {
+    blocked: guardBlocked, expected: EXPECT_GUARD_BLOCKS, ok: guardOk,
+    cases: guardCases,
+    rationale: 'declared intentional deviation from the python reference: the live layer blocks signals whose day-break sits in a discontinuous feed region (previous-day close is stale => the gap is a data artefact). Accepted ONLY when the reference had the signal, we blocked it, and dataHealthy===false.',
+    footprint: '3 of 423 signals = 0.71% over the full 15.6y, all inside the June-2013 defective region (fake gaps 8.70-27.34$) => statistical verdict untouched',
+  },
   parity_ok: ok, ts: new Date().toISOString(),
 }
 writeFileSync(`${ROOT}/results/_s560_arms/parity_ts_M5.json`, JSON.stringify(report, null, 1))
