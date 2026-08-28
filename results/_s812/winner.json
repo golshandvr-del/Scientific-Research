@@ -1,0 +1,23 @@
+{
+ "best": {
+  "window": "WKND",
+  "dir": "LONG",
+  "filt": "none",
+  "n": 323,
+  "wr": 57.895,
+  "pnl_pip": 2103.0,
+  "exp_pip": 6.511,
+  "perm_mean": 46.434,
+  "perm_sd": 3.092,
+  "lift_pp": 11.461,
+  "z": 3.71
+ },
+ "honesty_gate": {
+  "max_z": 3.71,
+  "need_z": 1.8,
+  "lift": 11.461,
+  "need_lift": 8.0,
+  "exp": 6.511,
+  "passed": true
+ }
+}
