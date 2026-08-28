@@ -30,6 +30,12 @@ await build({
 })
 const { computeS560Signal, S560_CFG, dayBreakThreshold } = await import(pathToFileURL(outfile).href)
 const cfg = S560_CFG['XAUUSD-M5']
+// تعدادِ **دقیقِ** سیگنال‌هایی که گاردِ سلامتِ فید مجاز است مسدود کند.
+// اندازه‌گیریِ مستقل روی کلِ ۱۵.۶ سال: ۳ مورد از ۴۲۳ (۰.۷۱٪)، هر سه در ناحیهٔ
+// معیوبِ ژوئنِ ۲۰۱۳ (گپ‌های جعلیِ ۸.۷۰$ / ۸.۹۵$ / ۲۷.۳۴$). این عدد **سقفِ
+// اعلام‌شده** است، نه پارامترِ قابلِ تنظیم: اگر جابه‌جا شد یعنی رفتارِ گارد
+// تغییر کرده و باید دوباره داوری شود.
+const EXPECT_GUARD_BLOCKS = 3
 console.log('cfg:', JSON.stringify(cfg))
 console.log('dayBreakThreshold(300) =', dayBreakThreshold(300), '(باید 1800 باشد)')
 
