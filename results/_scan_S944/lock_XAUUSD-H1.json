@@ -1,0 +1,23 @@
+{
+  "layer": "S944",
+  "tf": "H1",
+  "split_bar": 54798,
+  "n_bars": 91331,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "bpd": 23,
+  "criterion": "max lift*sqrt(n) | long-only | n>=150 & net>0 & power lift*sqrt(n)>=78",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": {
+    "key": "L0_F3_long_k3.141_rr1.0_hd2",
+    "n": 273,
+    "wr": 52.015,
+    "net": 2039.9,
+    "sl_med": 94.1,
+    "be": 51.753,
+    "lift": 0.261,
+    "score": 4.32
+  },
+  "score": 4.32,
+  "power_ok": false
+}
