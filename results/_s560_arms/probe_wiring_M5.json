@@ -1,0 +1,50 @@
+{
+ "layer": "S560",
+ "card": "XAUUSD-M5",
+ "purpose": "prove the wired layer actually reaches ENTRY through the full site path (runCard), not just NEUTRAL",
+ "data": {
+  "src": "data/mt5_full/XAUUSD_M5.csv",
+  "bars": 1089574,
+  "day_breaks": 4069,
+  "warm_window": 400
+ },
+ "ref_signals": 423,
+ "replays": 423,
+ "errors": 0,
+ "s560_visible": 423,
+ "states": {
+  "ENTRY": 423
+ },
+ "entries": 423,
+ "geometry_violations": [],
+ "stale_guard": {
+  "stale_windows_checked": 421,
+  "entries_emitted": 0,
+  "expected": 0,
+  "new_event_skips": 1,
+  "note": "skips are day-breaks where bar b+2 opens ANOTHER day (defective broker-feed regions, 17 spots; worst June 2013 with ~4 days of M5 bars missing) — those are new events, not stale continuations"
+ },
+ "sample_entry": {
+  "gap_usd": -1.1,
+  "thr_usd": 1.01,
+  "weekend": false,
+  "direction": "LONG",
+  "entry": 1377.2,
+  "sl": 1372.39,
+  "tp": 1382.01,
+  "rr": "1:1.00",
+  "sl_dist_usd": 4.81,
+  "tp_dist_usd": 4.81,
+  "lots": 0.21,
+  "risk_dollars": 101.01
+ },
+ "checks": {
+  "visible_in_card": true,
+  "fires_entry": true,
+  "entry_ratio_ok": true,
+  "geometry_ok": true,
+  "stale_guard_ok": true
+ },
+ "verdict": "WIRING OK",
+ "ts": "2026-08-28T10:39:32.041Z"
+}
