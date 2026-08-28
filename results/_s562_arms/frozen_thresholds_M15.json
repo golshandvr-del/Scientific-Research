@@ -1,0 +1,42 @@
+{
+ "tf": "M15",
+ "cfg": {
+  "q": 70.0,
+  "split_weekend": true,
+  "hold": 1,
+  "qv": 85.0
+ },
+ "frozen_threshold_usd": {
+  "weekend": 2.056,
+  "weekday": 0.766
+ },
+ "frozen_vol_threshold_usd": 143.3813,
+ "vol_filter_params": {
+  "vol_n_days": 14,
+  "roll_days": 250,
+  "min_samples": 60
+ },
+ "n_history_used": {
+  "weekend": 777,
+  "weekday": 3199,
+  "vol_rolling": 250
+ },
+ "n_day_breaks": 4067,
+ "n_days": 4068,
+ "base_signals_expanding": 603,
+ "base_signals_frozen": 622,
+ "signals_rolling_volfilter": 438,
+ "signals_frozen_volfilter": 613,
+ "geometry": {
+  "sl": 50.9,
+  "tp": 50.9,
+  "mh": 1,
+  "src": "S560 V-TIME frozen"
+ },
+ "picked_arm": "V-q85",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+ "first_utc": "2011-01-03 00:00:00",
+ "last_utc": "2026-08-07 23:45:00",
+ "n_base_signals_locked": 603,
+ "datasetdrift_ok": true
+}
