@@ -1,0 +1,70 @@
+{
+ "layer": "S560",
+ "card": "XAUUSD-M5",
+ "purpose": "verify the frozen thresholds (derived from broker data/mt5_full) remain valid on the LIVE site feed (Yahoo GC=F futures, rebased to spot)",
+ "broker_feed": {
+  "source": "data/mt5_full/XAUUSD_M5.csv (15.6y, 1089574 bars)",
+  "day_breaks": 4069,
+  "weekday_breaks": 3240,
+  "weekend_breaks": 829,
+  "weekday_break_dt_hours_median": 1.083,
+  "weekend_break_dt_hours_median": 49.167,
+  "weekday_neg_gap_median_usd": 0.47,
+  "weekday_neg_gap_q80_usd": 1.01,
+  "weekend_neg_gap_median_usd": 1.15,
+  "weekend_neg_gap_q80_usd": 2.952,
+  "new_day_hour_utc_mode": "01:00 (2986) then 00:00 (972)",
+  "prev_day_last_bar_hour_utc_mode": "23:00 (2994) then 22:00 (857)"
+ },
+ "live_feed": {
+  "source": "site /api/candles?asset=XAUUSD-M5 (Yahoo GC=F, rebased to spot)",
+  "bars_in_5d_window": 1160,
+  "time_diff_histogram_sec": {
+   "270": 1,
+   "300": 1148,
+   "330": 1,
+   "600": 5,
+   "3900": 4
+  },
+  "day_breaks_found": 4,
+  "day_breaks_detail": [
+   {
+    "from": "2026-08-24 20:55 UTC",
+    "to": "2026-08-24 22:00 UTC",
+    "dt_hours": 1.08,
+    "weekend": false,
+    "gap_usd": 1.8
+   },
+   {
+    "from": "2026-08-25 20:55 UTC",
+    "to": "2026-08-25 22:00 UTC",
+    "dt_hours": 1.08,
+    "weekend": false,
+    "gap_usd": -0.2
+   },
+   {
+    "from": "2026-08-26 20:55 UTC",
+    "to": "2026-08-26 22:00 UTC",
+    "dt_hours": 1.08,
+    "weekend": false,
+    "gap_usd": 0.3
+   },
+   {
+    "from": "2026-08-27 20:55 UTC",
+    "to": "2026-08-27 22:00 UTC",
+    "dt_hours": 1.08,
+    "weekend": false,
+    "gap_usd": -0.6
+   }
+  ]
+ },
+ "findings": [
+  "Day-break STRUCTURE matches: both feeds show exactly one maintenance break per trading day with dt=1.08h -> the BUG-BRKTHRESH rule (diff>1800s) fires once per day on the live feed, zero false breaks.",
+  "No intraday false breaks: the live 5d window contains only 300s (1148), 600s (5), 270/330s (1 each) and 3900s (4) diffs. Only the 3900s ones exceed 1800s, and all 4 are the real daily maintenance break.",
+  "Gap SCALE matches: live weekday gaps observed at 1.80/-0.20/0.30/-0.60 USD sit in the same range as the broker weekday |gap| median of 0.470 USD.",
+  "Frozen thresholds reproduced exactly from the broker feed (weekday q80=1.010, weekend q80=2.952), confirming frozen_thresholds_M5.json.",
+  "rebaseFuturesToSpot subtracts a CONSTANT offset from every bar, and a gap is a DIFFERENCE -> the gap is invariant under rebasing (offset cancels). Futures-vs-spot level therefore cannot bias this layer."
+ ],
+ "verdict": "CALIBRATION OK — the frozen broker-derived thresholds are valid on the live Yahoo feed; day-break detection is clean (1/day, no false positives).",
+ "caveat": "The trade window is 5 minutes (maxHold=1 M5 bar). The site evaluates closed bars, so a live ENTRY is only surfaced during the single refresh cycle right after the new day's first bar closes; otherwise the layer reports NEUTRAL and states how many bars have passed."
+}
