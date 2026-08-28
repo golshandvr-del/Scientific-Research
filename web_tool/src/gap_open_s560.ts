@@ -146,6 +146,7 @@ export function computeS560Signal(candles: Candle[], cfg: S560Config): S560Signa
   const empty: S560Signal = {
     active: false, approaching: false, brkIdx: -1, gapUsd: NaN,
     thrUsd: NaN, isWeekend: false, gapHours: NaN, atLatestBar: -1, ratio: 0,
+    dataHealthy: false,
   }
   const n = candles.length
   if (n < 3) return empty
