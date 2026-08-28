@@ -8,20 +8,20 @@
   "day_breaks": 4069,
   "warm_window": 400
  },
- "ref_signals": 423,
- "replays": 423,
+ "ref_signals": 420,
+ "replays": 420,
  "errors": 0,
- "s560_visible": 423,
+ "s560_visible": 420,
  "states": {
-  "ENTRY": 423
+  "ENTRY": 420
  },
- "entries": 423,
+ "entries": 420,
  "geometry_violations": [],
  "stale_guard": {
-  "stale_windows_checked": 421,
+  "stale_windows_checked": 420,
   "entries_emitted": 0,
   "expected": 0,
-  "new_event_skips": 1,
+  "new_event_skips": 0,
   "note": "skips are day-breaks where bar b+2 opens ANOTHER day (defective broker-feed regions, 17 spots; worst June 2013 with ~4 days of M5 bars missing) — those are new events, not stale continuations"
  },
  "sample_entry": {
@@ -46,5 +46,5 @@
   "stale_guard_ok": true
  },
  "verdict": "WIRING OK",
- "ts": "2026-08-28T10:39:32.041Z"
+ "ts": "2026-08-28T10:55:40.033Z"
 }
