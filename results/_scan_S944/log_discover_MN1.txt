@@ -1,0 +1,19 @@
+[resume] 72 combos checkpointed
+DATA src=/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv  n_bars=188  span=15.58y
+discovery bars=112 · bars/day(median)=1
+
+LOCKED -> results/_scan_S944/lock_XAUUSD-MN1.json
+{
+  "layer": "S944",
+  "tf": "MN1",
+  "split_bar": 112,
+  "n_bars": 188,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+  "bpd": 1,
+  "criterion": "max lift*sqrt(n) | long-only | n>=150 & net>0 & power lift*sqrt(n)>=78",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": null,
+  "score": null,
+  "power_ok": false
+}
