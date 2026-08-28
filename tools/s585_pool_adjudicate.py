@@ -152,8 +152,10 @@ def build_member(tf: str, geo: dict):
     if n < 30:
         print(f'  ⛔ {tf}: n={n}<30 — MEASUREMENT-LIMITED، حذف از استخر', flush=True)
         return None
-    nL = int((tr['direction'].values == 1).sum()) if 'direction' in tr else None
-    nS = n - nL if nL is not None else None
+    # BUG-DIRSTR (شکارشده در همین اجرا): direction رشتهٔ 'long'/'short' است،
+    # نه ۱/−۱. مقایسه با ۱ بی‌صدا صفر می‌داد و وزنِ lift را خراب می‌کرد.
+    nL = int((tr['direction'].values == 'long').sum())
+    nS = n - nL
     # seed قطعیِ هر کارت (hash() تصادفیِ هر-اجرا است — ضدبازتولید!)
     card_off = {'H8': 1, 'H12': 2, 'D1': 3}[tf]
     rng = np.random.default_rng(SEED + card_off)
