@@ -154,11 +154,13 @@ def run_tf(tf):
         print(f"\n[null-2] skipped per prereg rule (null-independent gate fails: "
               f"{[k for k in NULL_INDEP if not g892.get(k, False)]})", flush=True)
 
+    # perm_k=0 (نه None) وقتی perm رد شد: موتور خودش perm_k<PERM_K_MIN را
+    # می‌بیند و H3 را صادقانه UNKNOWN می‌گذارد (int(None) موتور را می‌شکست).
     side = dict(uncond_wr=uncond_wr,
                 perm_mean=perm['mean'] if perm else None,
                 perm_sd=perm['sd'] if perm else None,
                 perm_max=perm['max'] if perm else None,
-                perm_k=perm['k'] if perm else None)
+                perm_k=perm['k'] if perm else 0)
     null = {'long': dict(side), 'short': dict(side)}
 
     # ---------- داوریِ یک‌باره ----------
