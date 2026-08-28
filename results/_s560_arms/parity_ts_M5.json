@@ -1,0 +1,26 @@
+{
+ "layer": "S560",
+ "card": "XAUUSD-M5",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_candles": 1089574,
+ "day_breaks": 4069,
+ "ref_signals_frozen": 423,
+ "checked": 4069,
+ "mismatchIdx": 0,
+ "mismatchGap": 0,
+ "mismatchWknd": 0,
+ "mismatchSig": 0,
+ "parity_ok": true,
+ "ts": "2026-08-28T08:58:55.567Z",
+ "warmup_guard_note": {
+  "observed_js_ref_signals": 423,
+  "freeze_tool_signals": 412,
+  "difference": 11,
+  "cause": "the python freeze tool counts with valid_exp=~isnan(expanding thr), which drops the first 20 samples of each weekend/weekday group (expanding-quantile warm-up). The JS/live reference has no warm-up guard because the threshold is already frozen.",
+  "years_of_extra_signals": [
+   2011
+  ],
+  "live_impact": "none — all 11 extra signals are in 2011, inside the expanding-quantile warm-up window; live trading uses the frozen threshold from day one.",
+  "verified_by": "python cross-check reproducing both counts (412 with guard, 423 without) on data/mt5_full/XAUUSD_M5.csv"
+ }
+}
