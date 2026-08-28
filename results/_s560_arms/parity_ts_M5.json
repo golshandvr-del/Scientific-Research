@@ -10,17 +10,40 @@
  "mismatchGap": 0,
  "mismatchWknd": 0,
  "mismatchSig": 0,
- "parity_ok": true,
- "ts": "2026-08-28T08:58:55.567Z",
- "warmup_guard_note": {
-  "observed_js_ref_signals": 423,
-  "freeze_tool_signals": 412,
-  "difference": 11,
-  "cause": "the python freeze tool counts with valid_exp=~isnan(expanding thr), which drops the first 20 samples of each weekend/weekday group (expanding-quantile warm-up). The JS/live reference has no warm-up guard because the threshold is already frozen.",
-  "years_of_extra_signals": [
-   2011
+ "base_logic_ok": true,
+ "data_health_guard": {
+  "blocked": 3,
+  "expected": 3,
+  "ok": true,
+  "cases": [
+   {
+    "kind": "guard-block",
+    "i": 169839,
+    "utc": "2013-06-11T00:00:00.000Z",
+    "gap": -27.34,
+    "thr": 2.952,
+    "prevBarDt": 55500
+   },
+   {
+    "kind": "guard-block",
+    "i": 169840,
+    "utc": "2013-06-12T00:00:00.000Z",
+    "gap": -8.7,
+    "thr": 1.01,
+    "prevBarDt": 345600
+   },
+   {
+    "kind": "guard-block",
+    "i": 169842,
+    "utc": "2013-06-13T18:35:00.000Z",
+    "gap": -8.95,
+    "thr": 1.01,
+    "prevBarDt": 86400
+   }
   ],
-  "live_impact": "none — all 11 extra signals are in 2011, inside the expanding-quantile warm-up window; live trading uses the frozen threshold from day one.",
-  "verified_by": "python cross-check reproducing both counts (412 with guard, 423 without) on data/mt5_full/XAUUSD_M5.csv"
- }
+  "rationale": "declared intentional deviation from the python reference: the live layer blocks signals whose day-break sits in a discontinuous feed region (previous-day close is stale => the gap is a data artefact). Accepted ONLY when the reference had the signal, we blocked it, and dataHealthy===false.",
+  "footprint": "3 of 423 signals = 0.71% over the full 15.6y, all inside the June-2013 defective region (fake gaps 8.70-27.34$) => statistical verdict untouched"
+ },
+ "parity_ok": true,
+ "ts": "2026-08-28T10:55:06.128Z"
 }
