@@ -106,6 +106,22 @@ function findS560(d) {
   return null
 }
 
+// ⚠️ اصلاحِ باگِ خودِ پروب (اجرای اول): میدان‌های RouterDecision **مسطح**‌اند
+//    (`d.entry` = عددِ قیمتِ ورود، `d.sl`، `d.tp`، `d.rr`، `d.sizing`) — نه یک
+//    آبجکتِ تودرتوی `d.entry.price`. در اجرای اول اشتباه به‌صورتِ آبجکت خوانده
+//    شده بود ⇒ همهٔ مقادیر undefined شدند و چکِ هندسه **کاذب-سبز** گذشت.
+//    منبعِ حقیقت: web_tool/src/router.ts:174 (interface RouterDecision).
+function geomOf(d) {
+  return {
+    direction: d.direction,
+    entry: d.entry, sl: d.sl, tp: d.tp, rr: d.rr,
+    slDist: (isFinite(d.entry) && isFinite(d.sl)) ? Math.abs(d.entry - d.sl) : NaN,
+    tpDist: (isFinite(d.entry) && isFinite(d.tp)) ? Math.abs(d.tp - d.entry) : NaN,
+    lots: d.sizing ? d.sizing.lots : undefined,
+    riskDollars: d.sizing ? d.sizing.riskDollars : undefined,
+  }
+}
+
 // --- ① + ② + ③ + ④ : بازپخشِ همهٔ سیگنال‌ها از مسیرِ کاملِ runCard ---
 const states = {}
 let visible = 0, err = 0, sample = null
