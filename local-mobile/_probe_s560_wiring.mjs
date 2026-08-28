@@ -152,13 +152,20 @@ for (const { sub, s } of refSignals) {
 }
 
 // --- ⑤ گاردِ ضدِ ENTRYِ بیات: همان سیگنال، یک کندل دیرتر ---
-let staleEntries = 0, staleChecked = 0
+// دقتِ لازم (کشفِ اجرای اول): در ۱۷ نقطهٔ دادهٔ تاریخی، کندلِ b+2 خودش **مرزِ
+// روزِ نو** است (شکافِ فیدِ بروکر؛ بدترین نمونه ژوئن ۲۰۱۳ که ۴ روز کندلِ M5
+// گم شده و فقط کندل‌های ۲۴ساعته مانده). در آن نقاط سیگنالِ فعالِ پنجرهٔ دوم
+// یک **رویدادِ نو** است، نه ادامهٔ بیاتِ رویدادِ قبلی ⇒ شمردنش به‌عنوان نشتی
+// اشتباه است. با مقایسهٔ brkIdx مطلق، رویدادِ نو از بیات جدا می‌شود.
+let staleEntries = 0, staleChecked = 0, newEventSkips = 0
 for (const { b, s } of refSignals) {
   if (b + 2 >= m) continue
   const start = Math.max(0, b + 1 - WARM)
   const sub2 = candles.slice(start, b + 3)        // ← یک کندل جلوتر ⇒ atLatestBar=1
   const s2 = M.computeS560Signal(sub2, cfg)
   if (!s2.active) continue                        // مرزِ دیگری وسط آمده
+  // آیا مرزِ پنجرهٔ دوم همان مرزِ اصلی است؟ (اندیسِ مطلق = start + brkIdx)
+  if (start + s2.brkIdx !== b) { newEventSkips++; continue }   // رویدادِ نو، نه بیات
   staleChecked++
   let dec
   try { dec = R.runCard(mkCtx(sub2)) } catch { continue }
