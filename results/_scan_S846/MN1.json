@@ -1,0 +1,13 @@
+{
+ "tf": "MN1",
+ "asset": "XAUUSD",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "span_years": 15.58,
+ "hold": 13,
+ "split_bar": 94,
+ "warmup": 60,
+ "grid": 36,
+ "verdict": "INCOMPLETE",
+ "reason": "TOO_SHORT"
+}

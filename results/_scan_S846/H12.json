@@ -1,0 +1,14 @@
+{
+ "tf": "H12",
+ "asset": "XAUUSD",
+ "bars": 7998,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "span_years": 15.59,
+ "hold": 34,
+ "split_bar": 3999,
+ "warmup": 250,
+ "grid": 36,
+ "is_grid": [],
+ "verdict": "UNPROVEN",
+ "reason": "NO_IS_CANDIDATE"
+}
