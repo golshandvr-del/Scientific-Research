@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S945 AmihudThinMoveFade :: XAUUSD_H1  bars=91,331  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv  (2011-01-03 00:00:00 → 2026-08-07 23:00:00)
+    geom: SL=59.74pip  TP=89.61pip  rr=1.5
+    family events: long=25  short=24
+    trades=49 (L=25 S=24)  wr=36.73%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=38.77% n=9748
+      uncond long stride=7: wr=39.08% n=6868
+      uncond long stride=13: wr=39.07% n=4991
+      null long  uncond=39.07979033197437 perm_mean=39.335476956055736 sd=9.707525271772264 k=933
+      uncond short stride=3: wr=37.47% n=9875
+      uncond short stride=7: wr=38.41% n=6926
+      uncond short stride=13: wr=37.97% n=4993
+      null short uncond=38.406006352873234 perm_mean=38.95022783035401 sd=9.994327613749844 k=951
+
+S945_AmihudThinMoveFade_XAUUSD_H1 | REJECT     RQS2=  6.1 | n=  49 WR=36.73% PF=0.87 lift=  -2.41pp z=-0.2 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✓

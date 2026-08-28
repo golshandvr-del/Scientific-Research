@@ -1,0 +1,6 @@
+
+====================================================================================
+=== S945 AmihudThinMoveFade :: XAUUSD_W1  bars=813  span=15.58y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_W1.csv  (2011-01-02 00:00:00 → 2026-08-02 00:00:00)
+    geom: SL=754.91pip  TP=1132.37pip  rr=1.5
+    family events: long=1  short=1
