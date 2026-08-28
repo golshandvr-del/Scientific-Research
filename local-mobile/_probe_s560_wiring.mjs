@@ -134,15 +134,20 @@ for (const { sub, s } of refSignals) {
   visible++
   states[mine.state] = (states[mine.state] || 0) + 1
   if (mine.state === 'ENTRY') {
-    const e = mine.d.entry || mine.d
-    const dir = e.direction || mine.d.direction
-    const sl = e.stopLoss ?? e.sl, tp = e.takeProfit ?? e.tp, px = e.price ?? mine.d.price
-    const slD = isFinite(sl) && isFinite(px) ? Math.abs(px - sl) : NaN
-    const tpD = isFinite(tp) && isFinite(px) ? Math.abs(tp - px) : NaN
-    if (dir !== 'LONG') geomBad.push(`direction=${dir}`)
-    if (isFinite(slD) && Math.abs(slD - 4.81) > 0.02) geomBad.push(`slDist=${slD.toFixed(3)}`)
-    if (isFinite(tpD) && Math.abs(tpD - 4.81) > 0.02) geomBad.push(`tpDist=${tpD.toFixed(3)}`)
-    if (!sample) sample = { gap: s.gapUsd, thr: s.thrUsd, weekend: s.isWeekend, dec: mine.d }
+    const g = geomOf(mine.d)
+    // هندسهٔ قفل‌شدهٔ بازوِ V-TIME: LONG-only · SL=TP=48.1pip=4.81$ · rr=1.0
+    if (g.direction !== 'LONG') geomBad.push(`direction=${g.direction}`)
+    if (!isFinite(g.entry)) geomBad.push('entry=NaN')
+    if (!isFinite(g.sl)) geomBad.push('sl=NaN')
+    if (!isFinite(g.tp)) geomBad.push('tp=NaN')
+    if (isFinite(g.slDist) && Math.abs(g.slDist - 4.81) > 0.02) geomBad.push(`slDist=${g.slDist.toFixed(3)}`)
+    if (isFinite(g.tpDist) && Math.abs(g.tpDist - 4.81) > 0.02) geomBad.push(`tpDist=${g.tpDist.toFixed(3)}`)
+    // LONG ⇒ SL باید زیرِ ورود و TP بالای آن باشد (ضدِ جابه‌جاییِ علامت)
+    if (isFinite(g.sl) && isFinite(g.entry) && g.sl >= g.entry) geomBad.push('sl>=entry')
+    if (isFinite(g.tp) && isFinite(g.entry) && g.tp <= g.entry) geomBad.push('tp<=entry')
+    // ④ سایزینگ: کارتِ بی‌حجم برای معامله‌گر بی‌فایده است
+    if (!(isFinite(g.lots) && g.lots > 0)) geomBad.push(`lots=${g.lots}`)
+    if (!sample) sample = { gap: s.gapUsd, thr: s.thrUsd, weekend: s.isWeekend, dec: mine.d, geom: g }
   }
 }
 
