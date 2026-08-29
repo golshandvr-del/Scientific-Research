@@ -1,0 +1,221 @@
+{
+  "seed": 413,
+  "tf": "H1",
+  "split_idx": 45665,
+  "t_split": "2018-10-31 04:00:00",
+  "bars_per_hour": 0.6681,
+  "atr_pip": 31.48,
+  "sl": 47.2,
+  "cells": [
+    {
+      "h_start": 17,
+      "hold_h": 4,
+      "mh": 3,
+      "sl": 47.2,
+      "n": 399,
+      "wr": 38.6,
+      "pf": 0.525,
+      "exp": -7.6759,
+      "exp2c": -10.9759,
+      "lift": -5.77,
+      "z": -2.31,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -115.26,
+      "null_diag": {
+        "chosen": "uncond",
+        "wrs": {
+          "uncond": 44.36,
+          "same_hour_other_days": 43.86
+        }
+      }
+    },
+    {
+      "h_start": 17,
+      "hold_h": 8,
+      "mh": 5,
+      "sl": 47.2,
+      "n": 399,
+      "wr": 41.1,
+      "pf": 0.553,
+      "exp": -7.8997,
+      "exp2c": -11.1997,
+      "lift": -5.08,
+      "z": -2.03,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -101.47,
+      "null_diag": {
+        "chosen": "same_hour_other_days",
+        "wrs": {
+          "uncond": 46.0,
+          "same_hour_other_days": 46.18
+        }
+      }
+    },
+    {
+      "h_start": 17,
+      "hold_h": 24,
+      "mh": 16,
+      "sl": 47.2,
+      "n": 399,
+      "wr": 46.37,
+      "pf": 0.7,
+      "exp": -6.993,
+      "exp2c": -10.293,
+      "lift": -1.97,
+      "z": -0.79,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -39.35,
+      "null_diag": {
+        "chosen": "same_hour_other_days",
+        "wrs": {
+          "uncond": 47.21,
+          "same_hour_other_days": 48.33
+        }
+      }
+    },
+    {
+      "h_start": 18,
+      "hold_h": 4,
+      "mh": 3,
+      "sl": 47.2,
+      "n": 396,
+      "wr": 43.43,
+      "pf": 0.71,
+      "exp": -3.9449,
+      "exp2c": -7.2449,
+      "lift": -0.86,
+      "z": -0.35,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -17.11,
+      "null_diag": {
+        "chosen": "same_hour_other_days",
+        "wrs": {
+          "uncond": 44.23,
+          "same_hour_other_days": 44.3
+        }
+      }
+    },
+    {
+      "h_start": 18,
+      "hold_h": 8,
+      "mh": 5,
+      "sl": 47.2,
+      "n": 396,
+      "wr": 41.92,
+      "pf": 0.653,
+      "exp": -5.6134,
+      "exp2c": -8.9134,
+      "lift": -3.94,
+      "z": -1.57,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -78.41,
+      "null_diag": {
+        "chosen": "uncond",
+        "wrs": {
+          "uncond": 45.86,
+          "same_hour_other_days": 45.61
+        }
+      }
+    },
+    {
+      "h_start": 18,
+      "hold_h": 24,
+      "mh": 16,
+      "sl": 47.2,
+      "n": 396,
+      "wr": 47.73,
+      "pf": 0.8,
+      "exp": -4.7232,
+      "exp2c": -8.0232,
+      "lift": -0.13,
+      "z": -0.05,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -2.59,
+      "null_diag": {
+        "chosen": "same_hour_other_days",
+        "wrs": {
+          "uncond": 47.15,
+          "same_hour_other_days": 47.85
+        }
+      }
+    },
+    {
+      "h_start": 19,
+      "hold_h": 4,
+      "mh": 3,
+      "sl": 47.2,
+      "n": 396,
+      "wr": 39.39,
+      "pf": 0.555,
+      "exp": -6.4008,
+      "exp2c": -9.7008,
+      "lift": -5.1,
+      "z": -2.04,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -101.49,
+      "null_diag": {
+        "chosen": "same_hour_other_days",
+        "wrs": {
+          "uncond": 44.39,
+          "same_hour_other_days": 44.49
+        }
+      }
+    },
+    {
+      "h_start": 19,
+      "hold_h": 8,
+      "mh": 5,
+      "sl": 47.2,
+      "n": 396,
+      "wr": 38.64,
+      "pf": 0.54,
+      "exp": -7.2104,
+      "exp2c": -10.5104,
+      "lift": -9.99,
+      "z": -3.98,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -198.8,
+      "null_diag": {
+        "chosen": "same_hour_other_days",
+        "wrs": {
+          "uncond": 45.83,
+          "same_hour_other_days": 48.63
+        }
+      }
+    },
+    {
+      "h_start": 19,
+      "hold_h": 24,
+      "mh": 16,
+      "sl": 47.2,
+      "n": 396,
+      "wr": 44.19,
+      "pf": 0.72,
+      "exp": -6.8947,
+      "exp2c": -10.1947,
+      "lift": -4.74,
+      "z": -1.89,
+      "verdict": "REJECT",
+      "qualified": false,
+      "metric": -94.32,
+      "null_diag": {
+        "chosen": "same_hour_other_days",
+        "wrs": {
+          "uncond": 47.06,
+          "same_hour_other_days": 48.93
+        }
+      }
+    }
+  ],
+  "n_qualified": 0,
+  "winner": null,
+  "stop_rule_fired": true
+}
