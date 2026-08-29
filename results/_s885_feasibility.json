@@ -1,0 +1,184 @@
+{
+ "M15": {
+  "W34k21": {
+   "events": 2633,
+   "long": 1276,
+   "short": 1357,
+   "per_year": 507.6
+  },
+  "W34k34": {
+   "events": 3004,
+   "long": 1471,
+   "short": 1533,
+   "per_year": 579.1
+  },
+  "W55k21": {
+   "events": 1502,
+   "long": 699,
+   "short": 803,
+   "per_year": 289.6
+  },
+  "W55k34": {
+   "events": 1811,
+   "long": 868,
+   "short": 943,
+   "per_year": 349.1
+  }
+ },
+ "M30": {
+  "W34k21": {
+   "events": 1224,
+   "long": 605,
+   "short": 619,
+   "per_year": 235.6
+  },
+  "W34k34": {
+   "events": 1428,
+   "long": 710,
+   "short": 718,
+   "per_year": 274.9
+  },
+  "W55k21": {
+   "events": 566,
+   "long": 292,
+   "short": 274,
+   "per_year": 109.0
+  },
+  "W55k34": {
+   "events": 717,
+   "long": 363,
+   "short": 354,
+   "per_year": 138.0
+  }
+ },
+ "H1": {
+  "W34k21": {
+   "events": 542,
+   "long": 278,
+   "short": 264,
+   "per_year": 104.0
+  },
+  "W34k34": {
+   "events": 687,
+   "long": 352,
+   "short": 335,
+   "per_year": 131.9
+  },
+  "W55k21": {
+   "events": 263,
+   "long": 134,
+   "short": 129,
+   "per_year": 50.5
+  },
+  "W55k34": {
+   "events": 381,
+   "long": 183,
+   "short": 198,
+   "per_year": 73.1
+  }
+ },
+ "H2": {
+  "W34k21": {
+   "events": 279,
+   "long": 136,
+   "short": 143,
+   "per_year": 51.4
+  },
+  "W34k34": {
+   "events": 357,
+   "long": 174,
+   "short": 183,
+   "per_year": 65.7
+  },
+  "W55k21": {
+   "events": 142,
+   "long": 77,
+   "short": 65,
+   "per_year": 26.1
+  },
+  "W55k34": {
+   "events": 215,
+   "long": 113,
+   "short": 102,
+   "per_year": 39.6
+  }
+ },
+ "H4": {
+  "W34k21": {
+   "events": 150,
+   "long": 82,
+   "short": 68,
+   "per_year": 27.7
+  },
+  "W34k34": {
+   "events": 178,
+   "long": 97,
+   "short": 81,
+   "per_year": 32.8
+  },
+  "W55k21": {
+   "events": 79,
+   "long": 43,
+   "short": 36,
+   "per_year": 14.6
+  },
+  "W55k34": {
+   "events": 109,
+   "long": 61,
+   "short": 48,
+   "per_year": 20.1
+  }
+ },
+ "H8": {
+  "W34k21": {
+   "events": 83,
+   "long": 48,
+   "short": 35,
+   "per_year": 15.2
+  },
+  "W34k34": {
+   "events": 102,
+   "long": 55,
+   "short": 47,
+   "per_year": 18.7
+  },
+  "W55k21": {
+   "events": 39,
+   "long": 20,
+   "short": 19,
+   "per_year": 7.1
+  },
+  "W55k34": {
+   "events": 57,
+   "long": 28,
+   "short": 29,
+   "per_year": 10.4
+  }
+ },
+ "D1": {
+  "W34k21": {
+   "events": 24,
+   "long": 11,
+   "short": 13,
+   "per_year": 4.4
+  },
+  "W34k34": {
+   "events": 27,
+   "long": 12,
+   "short": 15,
+   "per_year": 4.9
+  },
+  "W55k21": {
+   "events": 11,
+   "long": 6,
+   "short": 5,
+   "per_year": 2.0
+  },
+  "W55k34": {
+   "events": 15,
+   "long": 7,
+   "short": 8,
+   "per_year": 2.7
+  }
+ }
+}
