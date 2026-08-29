@@ -1,0 +1,1 @@
+{"tf": "D1", "asset": "XAUUSD", "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv", "bars_total": 4005, "bars_search": 2002, "path": "C (search=first half only)", "n_arms": 24, "declared_space": 24, "n_days": 2002, "sl_base_pip": 180.59, "cost_pip": 3.3, "max_hold": 64, "elapsed_s": 0.0, "results": []}
