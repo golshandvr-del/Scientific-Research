@@ -111,12 +111,15 @@ def dump(tf: str):
     thr_wd = fz['frozen_threshold_usd']['weekday']
     vol_thr = fz['frozen_vol_threshold_usd']
 
-    d = load_fast('XAUUSD', tf)
+    # ماسکِ پایه از **خودِ مسیرِ داوری** — نه بازنویسی (تک‌منبعِ حقیقت)
+    d, _df, base_exp, _split_bar, cfg_b = build(tf)
     t = d['time']
     print(f"src={d['src']}  n={len(t)}")
+    # assertِ BUG-GEOMDRIFT: cfgِ build باید همان cfgِ قفل‌شده باشد
+    assert float(cfg_b['q']) == q and bool(cfg_b['sw']) == sw, \
+        f'BUG-GEOMDRIFT: build cfg={cfg_b} vs locked q={q} sw={sw}'
 
     # ① حکمِ داور — انبساطی + رولینگ
-    base_exp = _base_mask_expanding(d, tf, q, sw)
     roll = vol_filter_mask(d, tf, base_exp, qv)
 
     # ② منطقِ سایت — منجمد + منجمد
