@@ -55,23 +55,6 @@ def _frozen(tf: str) -> dict:
     return json.load(open(os.path.join(ARMS, f'frozen_thresholds_{tf}.json')))
 
 
-def _base_mask_expanding(d, tf, q, sw):
-    """ماسکِ پایهٔ S560 با آستانهٔ **انبساطیِ** علّی — عیناً build() داور."""
-    t, o, c = d['time'], d['open'], d['close']
-    n = len(t)
-    brk = day_breaks(t, tf)
-    thr = causal_neg_gap_quantile(t, o, c, brk, q, sw)
-    mask = np.zeros(n, bool)
-    first = brk + 1
-    keep = first < n
-    brk_k, first_k = brk[keep], first[keep]
-    gaps = o[first_k] - c[brk_k]
-    ok = ~np.isnan(thr[keep])
-    cond = (gaps < 0) & (np.abs(gaps) > thr[keep]) & ok
-    mask[brk_k[cond]] = True
-    return mask
-
-
 def _base_mask_frozen(d, tf, thr_we, thr_wd):
     """ماسکِ پایه با آستانهٔ **منجمد** (دو عددِ ثابت) — همان منطقِ ماژولِ TS."""
     t, o, c = d['time'], d['open'], d['close']
