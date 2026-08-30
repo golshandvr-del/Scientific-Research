@@ -1,0 +1,17 @@
+{
+  "tf": "M20",
+  "split_bar": 163787,
+  "n_bars": 272979,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M20.csv",
+  "n_eff": 16,
+  "criterion": "wr+0.001*net",
+  "min_trades": 60,
+  "best_key": "j3.5_k2.058_rr1.0_h34",
+  "best": {
+    "n": 1072,
+    "wr": 48.787,
+    "net": -3816.3,
+    "n_sig": 1077
+  },
+  "score": 44.9707
+}
