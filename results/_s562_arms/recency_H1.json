@@ -1,0 +1,61 @@
+{
+ "tf": "H1",
+ "site_window_days": 65,
+ "frozen": {
+  "gap_weekend": 2.952,
+  "gap_weekday": 0.98,
+  "vol": 132.0466,
+  "qv": 78.0,
+  "q": 80.0
+ },
+ "windows": {
+  "22": {
+   "days": 22,
+   "gap_decisions": 21,
+   "gap_agree_pct": 100.0,
+   "vol_decisions": 5,
+   "vol_agree_pct": 100.0,
+   "final_decisions": 21,
+   "final_agree_pct": 100.0
+  },
+  "65": {
+   "days": 65,
+   "gap_decisions": 64,
+   "gap_agree_pct": 100.0,
+   "vol_decisions": 14,
+   "vol_agree_pct": 100.0,
+   "final_decisions": 64,
+   "final_agree_pct": 100.0
+  },
+  "125": {
+   "days": 125,
+   "gap_decisions": 124,
+   "gap_agree_pct": 100.0,
+   "vol_decisions": 28,
+   "vol_agree_pct": 100.0,
+   "final_decisions": 124,
+   "final_agree_pct": 100.0
+  },
+  "250": {
+   "days": 250,
+   "gap_decisions": 249,
+   "gap_agree_pct": 99.2,
+   "vol_decisions": 45,
+   "vol_agree_pct": 80.0,
+   "final_decisions": 249,
+   "final_agree_pct": 96.39
+  },
+  "500": {
+   "days": 500,
+   "gap_decisions": 499,
+   "gap_agree_pct": 98.0,
+   "vol_decisions": 94,
+   "vol_agree_pct": 68.09,
+   "final_decisions": 499,
+   "final_agree_pct": 93.19
+  }
+ },
+ "n_days_total": 3666,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "last_utc": "2026-08-07 23:00:00"
+}
