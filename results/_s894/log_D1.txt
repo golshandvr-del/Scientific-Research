@@ -1,0 +1,5 @@
+========================================================================
+S894 Calendar-Hour Harvest · XAUUSD-D1 (prereg e083e7ec)
+========================================================================
+saved → results/_s894/rqs2_XAUUSD-D1.json
+no hour structure → INCOMPLETE
