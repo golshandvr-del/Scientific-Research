@@ -85,13 +85,25 @@ for (let i = 0; i < candles.length - 1; i++) {
 console.log(`day_breaks=${breaks.length}  brkThr=${brkThr}s`)
 
 // ۵) پنجرهٔ لغزان روی هر مرز
+//    🔴 اصلاحِ مرحلهٔ ۲۰ (BUG-HARNESSWINDOW): پنجره **با شمارشِ مرزهای روز**
+//    گرفته می‌شود، نه با «۴۰ × کندل‌در‌روزِ نظری». نسخهٔ قبلی
+//    `winBars = 40 * ceil(86400/tfSec)` بود که برای H1 می‌شد ۹۶۰ کندل؛ ولی
+//    فیدِ واقعی در هر روزِ تقویمی ۲۴ کندلِ H1 ندارد (تعطیلیِ آخرهفته + شکافِ
+//    فید)، پس ۹۶۰ کندل در نواحیِ کم‌تراکمِ ۲۰۱۱ فقط ~۹–۱۳ **روزِ کامل** در خود
+//    داشت و میانگینِ دامنهٔ ۱۴روزه ساخته نمی‌شد ⇒ ماژول (درست و محافظه‌کارانه)
+//    رد می‌کرد و parity به‌غلط ۹ اختلاف نشان می‌داد.
+//    شمارشِ مرز، «روزِ معاملاتی» را می‌شمارد نه روزِ تقویمی، پس مستقل از تراکمِ
+//    فید همیشه ≥۱۴ روزِ کامل تحویل می‌دهد. ماژول **دست نخورد** — نقص در
+//    هارنس بود و اصلاح هم باید در هارنس بماند.
 const tsSet = new Set()
-const barsPerDay = Math.ceil(86400 / cfg.tfSec)
-const winBars = WIN_DAYS * barsPerDay
+const brkIdxOf = new Map()
+breaks.forEach((b, i) => brkIdxOf.set(b, i))
 let evaluated = 0
 for (const brk of breaks) {
   if (brk + 1 >= candles.length) continue
-  const from = Math.max(0, brk + 1 - winBars)
+  const bi = brkIdxOf.get(brk)
+  const backBrk = bi - WIN_DAYS >= 0 ? breaks[bi - WIN_DAYS] : -1
+  const from = backBrk >= 0 ? backBrk + 1 : 0
   // برش شامل کندلِ اولِ روزِ نو (brk+1) است و همان آخرین عضو می‌شود ⇒
   // آخرین مرزِ این برش دقیقاً `brk` است (چون کندلِ بعدی وجود ندارد).
   const slice = candles.slice(from, brk + 2)
