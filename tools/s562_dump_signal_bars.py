@@ -36,8 +36,15 @@ import numpy as np
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
 
-from s434_fast_data import load_fast                      # noqa: E402
-from s560_gapopen_explore import day_breaks, causal_neg_gap_quantile  # noqa: E402
+sys.path.insert(0, ROOT)
+
+from s560_gapopen_explore import day_breaks              # noqa: E402
+# ⚠️ ماسکِ پایه **بازنویسی نمی‌شود**: عیناً همان `build` که داور استفاده کرد
+#    import می‌گردد (تک‌منبعِ حقیقت). بازنویسیِ دستیِ آن، نخستین تلاشِ من بود و
+#    بلافاصله با TypeError روی امضای causal_neg_gap_quantile شکست — نشانهٔ خوبی
+#    که چرا نباید منطقِ داوری‌شده را دوباره نوشت: امضای واقعی روی **مرزها**
+#    ایندکس می‌شود نه روی کلِ کندل‌ها، و حاشیهٔ امنِ انتها هم دارد.
+from tools.s560_adjudicate import build                  # noqa: E402
 from s562_volfilter import vol_filter_mask, VOL_N, ROLL_D, MIN_S      # noqa: E402
 
 ARMS = os.path.join(ROOT, 'results', '_s562_arms')
