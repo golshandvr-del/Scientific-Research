@@ -89,7 +89,7 @@ const rows = []
 for (const t of onlyPy) {
   const brk = byTime.get(t)
   if (brk === undefined) { rows.push({ time: iso(t), error: 'کندل یافت نشد' }); continue }
-  const from = Math.max(0, brk + 1 - winBars)
+  const from = winFrom(brk)
   const slice = candles.slice(from, brk + 2)
   const s = computeS562Signal(slice, cfg)
   // فاصلهٔ زمانیِ سمتِ گذشتهٔ مرز — همان چیزی که گارد می‌سنجد
