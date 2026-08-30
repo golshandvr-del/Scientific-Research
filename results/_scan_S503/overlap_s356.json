@@ -1,0 +1,12 @@
+{
+ "H2": {
+  "signals": 63,
+  "overlap_pm1h_vs_S356": 35,
+  "pct": 55.6
+ },
+ "H3": {
+  "signals": 44,
+  "overlap_pm1h_vs_S356": 11,
+  "pct": 25.0
+ }
+}
