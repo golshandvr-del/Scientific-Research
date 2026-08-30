@@ -1,0 +1,93 @@
+{
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_bars": 188,
+ "members": [
+  {
+   "q": 0.5,
+   "W": 21,
+   "mode": "continuation",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "q": 0.5,
+   "W": 21,
+   "mode": "fade",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "q": 0.5,
+   "W": 34,
+   "mode": "continuation",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "q": 0.5,
+   "W": 34,
+   "mode": "fade",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "q": 0.618,
+   "W": 21,
+   "mode": "continuation",
+   "n_sig": 3,
+   "z": -99
+  },
+  {
+   "q": 0.618,
+   "W": 21,
+   "mode": "fade",
+   "n_sig": 3,
+   "z": -99
+  },
+  {
+   "q": 0.618,
+   "W": 34,
+   "mode": "continuation",
+   "n_sig": 3,
+   "z": -99
+  },
+  {
+   "q": 0.618,
+   "W": 34,
+   "mode": "fade",
+   "n_sig": 3,
+   "z": -99
+  },
+  {
+   "q": 0.786,
+   "W": 21,
+   "mode": "continuation",
+   "n_sig": 8,
+   "z": -99
+  },
+  {
+   "q": 0.786,
+   "W": 21,
+   "mode": "fade",
+   "n_sig": 8,
+   "z": -99
+  },
+  {
+   "q": 0.786,
+   "W": 34,
+   "mode": "continuation",
+   "n_sig": 8,
+   "z": -99
+  },
+  {
+   "q": 0.786,
+   "W": 34,
+   "mode": "fade",
+   "n_sig": 8,
+   "z": -99
+  }
+ ],
+ "verdict": "NO-CANDIDATE",
+ "best": null
+}

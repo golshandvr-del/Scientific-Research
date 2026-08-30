@@ -1,0 +1,142 @@
+{
+ "tf": "H8",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "n_bars": 11978,
+ "members": [
+  {
+   "q": 0.5,
+   "W": 21,
+   "mode": "continuation",
+   "n_sig": 25,
+   "z": -99
+  },
+  {
+   "q": 0.5,
+   "W": 21,
+   "mode": "fade",
+   "n_sig": 25,
+   "z": -99
+  },
+  {
+   "q": 0.5,
+   "W": 34,
+   "mode": "continuation",
+   "n_sig": 14,
+   "z": -99
+  },
+  {
+   "q": 0.5,
+   "W": 34,
+   "mode": "fade",
+   "n_sig": 14,
+   "z": -99
+  },
+  {
+   "q": 0.618,
+   "W": 21,
+   "mode": "continuation",
+   "n_sig": 157,
+   "z": -0.09,
+   "n": 64,
+   "wr": 50.0,
+   "be": 50.54
+  },
+  {
+   "q": 0.618,
+   "W": 21,
+   "mode": "fade",
+   "n_sig": 157,
+   "z": -0.34,
+   "n": 64,
+   "wr": 48.44,
+   "be": 50.54
+  },
+  {
+   "q": 0.618,
+   "W": 34,
+   "mode": "continuation",
+   "n_sig": 103,
+   "z": 0.08,
+   "n": 47,
+   "wr": 51.06,
+   "be": 50.51
+  },
+  {
+   "q": 0.618,
+   "W": 34,
+   "mode": "fade",
+   "n_sig": 103,
+   "z": -0.51,
+   "n": 47,
+   "wr": 46.81,
+   "be": 50.51
+  },
+  {
+   "q": 0.786,
+   "W": 21,
+   "mode": "continuation",
+   "n_sig": 636,
+   "z": 0.44,
+   "n": 244,
+   "wr": 52.05,
+   "be": 50.65
+  },
+  {
+   "q": 0.786,
+   "W": 21,
+   "mode": "fade",
+   "n_sig": 636,
+   "z": -0.97,
+   "n": 244,
+   "wr": 47.54,
+   "be": 50.65
+  },
+  {
+   "q": 0.786,
+   "W": 34,
+   "mode": "continuation",
+   "n_sig": 445,
+   "z": 1.02,
+   "n": 180,
+   "wr": 54.44,
+   "be": 50.63
+  },
+  {
+   "q": 0.786,
+   "W": 34,
+   "mode": "fade",
+   "n_sig": 445,
+   "z": -1.51,
+   "n": 180,
+   "wr": 45.0,
+   "be": 50.63
+  }
+ ],
+ "verdict": "REJECT",
+ "rqs2_score": 14.6,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
+  "H6": true,
+  "H7": false,
+  "H8": false,
+  "H9": true,
+  "H10": true
+ },
+ "best": {
+  "q": 0.786,
+  "W": 34,
+  "mode": "continuation",
+  "z_proxy": 1.02,
+  "n": 180,
+  "wr": 54.44,
+  "sl_med": 263.2,
+  "skill_z": null,
+  "lift_pp": null,
+  "p_perm": null
+ }
+}
