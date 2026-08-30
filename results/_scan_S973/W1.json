@@ -1,0 +1,17 @@
+{
+ "strategy": "S973_EarlyExtremeTrendDay",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "bars": 813,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "split_bar": 569,
+ "hold": 4,
+ "n_trials": 24,
+ "k_perm": 2000,
+ "seed": 20260824,
+ "prereg": "results/S973_PREREG_early_extreme_trend_day.md",
+ "sl_pip": 490.171,
+ "tp_pip": 735.257,
+ "n_signals": 0,
+ "verdict": "NO_TRADES_FULL"
+}
