@@ -1,0 +1,23 @@
+{
+ "tf": "M15",
+ "csv": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+ "n_candles": 363778,
+ "brk_thr_sec": 1800,
+ "day_breaks": 4067,
+ "win_days": 40,
+ "n_ts": 622,
+ "n_py_frozen": 627,
+ "n_py_rolling": 438,
+ "only_ts": 0,
+ "only_py": 5,
+ "mismatch": 5,
+ "verdict": "PARITY_FAIL",
+ "sample_only_ts": [],
+ "sample_only_py": [
+  "2011-03-15T23:00:00Z",
+  "2011-03-16T23:00:00Z",
+  "2013-06-07T00:00:00Z",
+  "2013-06-11T00:00:00Z",
+  "2013-06-13T00:00:00Z"
+ ]
+}
