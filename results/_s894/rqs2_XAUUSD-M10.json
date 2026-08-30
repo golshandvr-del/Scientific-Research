@@ -1,0 +1,11 @@
+{
+ "card": "XAUUSD-M10",
+ "prereg": "e083e7ec",
+ "verdict": "UNPROVEN",
+ "reason": "no eligible config in discovery (n>=100 & exp@2x>0) - holdout untouched per prereg stop rule",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M10.csv",
+ "bars": 545488,
+ "split": 381841,
+ "hold": 24,
+ "atr_med_pip": 12.82
+}
