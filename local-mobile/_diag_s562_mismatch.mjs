@@ -60,12 +60,22 @@ const breaks = []
 for (let i = 0; i < candles.length - 1; i++) {
   if (candles[i + 1].time - candles[i].time > brkThr) breaks.push(i)
 }
-const barsPerDay = Math.ceil(86400 / cfg.tfSec)
-const winBars = WIN_DAYS * barsPerDay
+// 🔴 اصلاحِ BUG-HARNESSWINDOW (همان اصلاحِ مرحلهٔ ۲۰ در _parity_s562.mjs):
+//    پنجره با **شمارشِ مرزهای روز** گرفته می‌شود، نه «۴۰ × کندل‌در‌روزِ نظری».
+//    وگرنه در فیدِ کم‌تراکمِ ۲۰۱۱ پنجره <۱۴ روزِ کامل می‌شد و ماژول درست ولی
+//    بی‌ربط رد می‌کرد. هر دو هارنس باید **یک** تعریفِ پنجره داشته باشند، وگرنه
+//    تشخیص و parity دو واقعیتِ متفاوت را گزارش می‌کنند.
+const brkIdxOf = new Map()
+breaks.forEach((b, i) => brkIdxOf.set(b, i))
+const winFrom = (brk) => {
+  const bi = brkIdxOf.get(brk)
+  if (bi === undefined) return Math.max(0, brk + 1 - WIN_DAYS * Math.ceil(86400 / cfg.tfSec))
+  return bi - WIN_DAYS >= 0 ? breaks[bi - WIN_DAYS] + 1 : 0
+}
 const tsSet = new Set()
 for (const brk of breaks) {
   if (brk + 1 >= candles.length) continue
-  const from = Math.max(0, brk + 1 - winBars)
+  const from = winFrom(brk)
   const slice = candles.slice(from, brk + 2)
   if (slice.length < 3) continue
   if (computeS562Signal(slice, cfg).active) tsSet.add(candles[brk].time)
