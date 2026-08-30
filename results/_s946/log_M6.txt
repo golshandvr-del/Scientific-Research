@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S946 ObvDivergence :: XAUUSD_M6  bars=908,864  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_M6.csv  (2011-01-03 00:00:00 → 2026-08-07 23:54:00)
+    geom: SL=17.32pip  TP=25.97pip  rr=1.5
+    family events: long=29,416  short=34,023
+    trades=30,457 (L=14,406 S=16,051)  wr=39.54%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=38.71% n=101484
+      uncond long stride=7: wr=39.09% n=68595
+      uncond long stride=13: wr=39.18% n=47483
+      null long  uncond=39.18244424320283 perm_mean=39.27338368069078 sd=0.40770665873032813 k=1000
+      uncond short stride=3: wr=38.65% n=101901
+      uncond short stride=7: wr=39.05% n=68734
+      uncond short stride=13: wr=39.55% n=47462
+      null short uncond=39.55374826176731 perm_mean=39.643398400132455 sd=0.38896529490388176 k=1000
+
+S946_ObvDivergence_XAUUSD_M6 | REJECT     RQS2=  1.6 | n=30457 WR=39.54% PF=1.00 lift=  +0.07pp z= 0.2 | H0:✗ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
