@@ -1,0 +1,22 @@
+{
+ "tf": "H2",
+ "split_bar": 28573,
+ "n_train": 28573,
+ "n_sig": 192,
+ "trend_lb": 21,
+ "vol_lb": 55,
+ "max_hold": 34,
+ "geometry": {
+  "tp": 173.4,
+  "sl": 59.7,
+  "n_sig": 192,
+  "rr": 2.906
+ },
+ "train": {
+  "n": 176,
+  "wr": 32.39,
+  "e_pip": 5.3,
+  "e_over_sl_pct": 8.87,
+  "cost_over_sl_pct": 5.53
+ }
+}
