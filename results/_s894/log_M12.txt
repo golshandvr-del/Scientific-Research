@@ -1,0 +1,7 @@
+========================================================================
+S894 Calendar-Hour Harvest · XAUUSD-M12 (prereg e083e7ec)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_M12.csv  bars=454692  split=318284  hold=20
+ATRmed=14.23pip  geos: A(SL=21.3,TP=32.0) B(SL=42.7,TP=42.7) C(SL=29.3,TP=14.2)
+saved → results/_s894/rqs2_XAUUSD-M12.json
+NO ELIGIBLE CONFIG → UNPROVEN (holdout untouched)
