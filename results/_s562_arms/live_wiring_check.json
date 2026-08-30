@@ -1,0 +1,79 @@
+{
+ "what": "S562 live-wiring verification on the running site (localhost:3000)",
+ "utc": "2026-08-30T09:53:21.749154+00:00",
+ "endpoint_used": "/api/decision/:asset  (note: /api/decide does NOT exist - my first probe used a wrong path and produced the only 500 in the log; not a layer fault)",
+ "cards_wired": {
+  "XAUUSD-M15": {
+   "asset_id_in_api": "XAUUSD",
+   "cfg_key": "XAUUSD-M15"
+  },
+  "XAUUSD-H1": {
+   "asset_id_in_api": "XAUUSD-H1",
+   "cfg_key": "XAUUSD-H1"
+  }
+ },
+ "live_module_probe": {
+  "XAUUSD-M15": {
+   "n_candles": 1980,
+   "volDaysAvail": 22,
+   "dataHealthy": true,
+   "volPass": true,
+   "volRefUsd": 107.371,
+   "volThrUsd": 143.3813,
+   "thrUsd_selected": 2.056,
+   "isWeekend": true,
+   "gapUsd": 0.0,
+   "active": false
+  },
+  "XAUUSD-H1": {
+   "n_candles": 1461,
+   "volDaysAvail": 66,
+   "dataHealthy": true,
+   "volPass": true,
+   "volRefUsd": 107.371,
+   "volThrUsd": 132.0466,
+   "thrUsd_selected": 2.952,
+   "isWeekend": true,
+   "gapUsd": 0.0,
+   "active": false
+  }
+ },
+ "site_decision_observed": {
+  "XAUUSD-H1": {
+   "bucket": "s562_h1",
+   "state": "NEUTRAL",
+   "lastCandleTime_utc": "2026-08-30T09:00:00Z",
+   "reported_thr_usd": 0.98,
+   "reported_volRef": 99.3,
+   "reported_volThr": 132.0
+  },
+  "XAUUSD-M15": {
+   "bucket": "s344_m15",
+   "state": "APPROACHING",
+   "explanation": "S562 is FIRST in the M15 layer list and did evaluate, but returned NEUTRAL (no gap), so the ROS2-style priority chain fell through to S344 which was APPROACHING. NEUTRAL layers do not appear in council.votes - absence there is not absence of execution."
+  }
+ },
+ "apparent_contradiction_resolved": {
+  "observation": "the direct module probe selected the WEEKEND threshold (2.952$ on H1) while the site reported the WEEKDAY one (0.980$)",
+  "cause": "the site strips the in-progress candle and decides on the last CLOSED bar (09:00Z), so its last day-break is the previous weekday open; my probe used the raw feed including the 09:45Z forming bar, whose break is the 132303s Fri-20:59 -> Sat-09:45 weekend gap",
+  "verdict": "same logic, different (and correct) input slice - the site's closed-bar-only behaviour is the causal one. NOT a wiring defect."
+ },
+ "smoke_test_all_routes": {
+  "/": 200,
+  "/api/analysis": 200,
+  "/api/scanner": 200,
+  "/api/mtf": 200,
+  "/api/context": 200,
+  "/api/assets": 200,
+  "/api/decision/XAUUSD-M30": 200,
+  "/api/decision/XAUUSD-H4": 200,
+  "/api/decision/XAUUSD-H8": 200
+ },
+ "build": {
+  "modules": 115,
+  "modules_before": 114,
+  "worker_kb": 188.85,
+  "worker_kb_before": 180.66,
+  "tsc": "no error in gap_open_volfilter_s562.ts or strategy_registry.ts; all reported tsc errors are pre-existing in other files"
+ }
+}
