@@ -19,7 +19,7 @@
    "volPass": true,
    "volRefUsd": 17.71,
    "volThrUsd": 143.3813,
-   "volDaysAvail": 47,
+   "volDaysAvail": 40,
    "active": false
   },
   {
@@ -35,7 +35,7 @@
    "volPass": true,
    "volRefUsd": 16.59,
    "volThrUsd": 143.3813,
-   "volDaysAvail": 48,
+   "volDaysAvail": 40,
    "active": false
   },
   {
@@ -51,7 +51,7 @@
    "volPass": true,
    "volRefUsd": 25.46,
    "volThrUsd": 143.3813,
-   "volDaysAvail": 44,
+   "volDaysAvail": 40,
    "active": false
   },
   {
@@ -67,7 +67,7 @@
    "volPass": true,
    "volRefUsd": 22.47,
    "volThrUsd": 143.3813,
-   "volDaysAvail": 45,
+   "volDaysAvail": 40,
    "active": false
   },
   {
@@ -83,7 +83,7 @@
    "volPass": true,
    "volRefUsd": 15.25,
    "volThrUsd": 143.3813,
-   "volDaysAvail": 47,
+   "volDaysAvail": 40,
    "active": false
   }
  ],
