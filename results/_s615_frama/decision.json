@@ -1,0 +1,9 @@
+{
+ "decision": "death",
+ "reason": "no_eligible_point",
+ "rule": "n>=100 AND net>0 AND lift>=3.84*perm_sd",
+ "verdict": "REJECT",
+ "score": 0,
+ "holdout": "VIRGIN",
+ "elapsed_s": 1.3
+}
