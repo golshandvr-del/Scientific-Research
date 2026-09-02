@@ -1,0 +1,38 @@
+{
+ "card": "XAUUSD_H2",
+ "span_years": 15.59,
+ "n_signals": 5778,
+ "n_trades": 2776,
+ "per_year": 178.0,
+ "sl_pip": 84.56,
+ "tp_pip": 126.83,
+ "wr": 39.55,
+ "be": 41.56,
+ "lift": -2.01,
+ "pf": 0.964,
+ "net": -3931.8,
+ "uncond_wr": 40.08,
+ "perm_mean": 39.92,
+ "perm_max": 42.0,
+ "perm_sd": 0.64,
+ "beats_perm_max": false,
+ "z": -0.57,
+ "rqs2": 1.5,
+ "verdict": "REJECT",
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "notes": [
+  "PF=0.964<1.3"
+ ]
+}

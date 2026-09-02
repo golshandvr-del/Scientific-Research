@@ -1,0 +1,38 @@
+{
+ "card": "XAUUSD_W1",
+ "span_years": 15.58,
+ "n_signals": 98,
+ "n_trades": 51,
+ "per_year": 3.3,
+ "sl_pip": 784.31,
+ "tp_pip": 1176.46,
+ "wr": 58.82,
+ "be": 40.17,
+ "lift": 18.66,
+ "pf": 2.022,
+ "net": 1843.1,
+ "uncond_wr": 50.91,
+ "perm_mean": 54.47,
+ "perm_max": 70.73,
+ "perm_sd": 5.27,
+ "beats_perm_max": false,
+ "z": 0.62,
+ "rqs2": 26.6,
+ "verdict": "REJECT",
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": true
+ },
+ "notes": [
+  "H10 WARN (substitute PASS): only 14 counter-drift trades (<20) but their expectancy is non-negative (+336.132 "
+ ]
+}

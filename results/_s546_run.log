@@ -1,0 +1,50 @@
+
+===== S546 [HEADLINE] XAUUSD_M15 =====
+  [DATA] data/full/XAUUSD_M15.csv rows=363778 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_M15.json
+
+===== S546 [HEADLINE] XAUUSD_M20 =====
+  [DATA] data/full/XAUUSD_M20.csv rows=272979 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_M20.json
+
+===== S546 [HEADLINE] XAUUSD_M30 =====
+  [DATA] data/full/XAUUSD_M30.csv rows=182145 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_M30.json
+
+===== S546 [HEADLINE] XAUUSD_H1 =====
+  [DATA] data/full/XAUUSD_H1.csv rows=91331 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_H1.json
+
+===== S546 [HEADLINE] XAUUSD_H2 =====
+  [DATA] data/full/XAUUSD_H2.csv rows=47623 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_H2.json
+
+===== S546 [HEADLINE] XAUUSD_H3 =====
+  [DATA] data/full/XAUUSD_H3.csv rows=31806 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_H3.json
+
+===== S546 [HEADLINE] XAUUSD_H4 =====
+  [DATA] data/XAUUSD_H4.csv rows=23755 2011-01-03 → 2026-07-16 (15.53y)
+  [SAVED] results/_s546/XAUUSD_H4.json
+
+===== S546 [HEADLINE] XAUUSD_H6 =====
+  [DATA] data/full/XAUUSD_H6.csv rows=15966 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_H6.json
+
+===== S546 [HEADLINE] XAUUSD_H8 =====
+  [DATA] data/full/XAUUSD_H8.csv rows=11978 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_H8.json
+
+===== S546 [HEADLINE] XAUUSD_H12 =====
+  [DATA] data/full/XAUUSD_H12.csv rows=7998 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_H12.json
+
+===== S546 [HEADLINE] XAUUSD_D1 =====
+  [DATA] data/full/XAUUSD_D1.csv rows=4005 2011-01-03 → 2026-08-07 (15.59y)
+  [SAVED] results/_s546/XAUUSD_D1.json
+
+===== S546 [REPORT-ONLY] XAUUSD_W1 =====
+  [DATA] data/full/XAUUSD_W1.csv rows=813 2011-01-02 → 2026-08-02 (15.58y)
+  [SAVED] results/_s546/XAUUSD_W1.json
+
+S546 ALL CARDS DONE
