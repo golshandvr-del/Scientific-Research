@@ -486,6 +486,7 @@ app.get('/api/context', async (c) => {
 //   XAUUSD-H1    S562 ⭐نو        96.0    254   68.90%   LONG   (پیش از S356/S431/S432)
 //   XAUUSD-H4    S382            79.2    869   48.22%   LONG/SHORT
 //   XAUUSD-H8    S950            80.0     —      —      LONG
+//                S965 ⭐نو        82.2    146   54.79%   LONG/SHORT (دومین لایهٔ این کارت)
 //   XAUUSD-H12   S800 ⭐نو        83.6    183   54.60%   LONG/SHORT
 //   XAUUSD-D1    S800 ⭐نو        91.1     81   70.37%   LONG/SHORT
 //
