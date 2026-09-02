@@ -1,0 +1,146 @@
+{
+ "tf": "H4",
+ "src": "/home/user/webapp/data/XAUUSD_H4.csv",
+ "bars_first_half": 11877,
+ "sl_pip": 97.1,
+ "cost_to_sl_pct": 3.4,
+ "blind_long_wr": 47.71,
+ "blind_short_wr": 50.17,
+ "n_break_up": 273,
+ "n_break_dn": 303,
+ "cells": [
+  {
+   "variant": "plain",
+   "mode": "cont",
+   "side": "long",
+   "n": 212,
+   "wr": 48.58,
+   "blind": 47.71,
+   "lift": 0.88,
+   "exp_pip": -5.78,
+   "lsn": 12.8
+  },
+  {
+   "variant": "plain",
+   "mode": "cont",
+   "side": "short",
+   "n": 237,
+   "wr": 48.52,
+   "blind": 50.17,
+   "lift": -1.64,
+   "exp_pip": -5.82,
+   "lsn": -25.3
+  },
+  {
+   "variant": "plain",
+   "mode": "fade",
+   "side": "long",
+   "n": 237,
+   "wr": 48.95,
+   "blind": 47.71,
+   "lift": 1.24,
+   "exp_pip": -5.7,
+   "lsn": 19.1
+  },
+  {
+   "variant": "plain",
+   "mode": "fade",
+   "side": "short",
+   "n": 212,
+   "wr": 51.42,
+   "blind": 50.17,
+   "lift": 1.25,
+   "exp_pip": -0.82,
+   "lsn": 18.2
+  },
+  {
+   "variant": "tk",
+   "mode": "cont",
+   "side": "long",
+   "n": 130,
+   "wr": 53.85,
+   "blind": 47.71,
+   "lift": 6.14,
+   "exp_pip": 4.63,
+   "lsn": 70.0
+  },
+  {
+   "variant": "tk",
+   "mode": "cont",
+   "side": "short",
+   "n": 154,
+   "wr": 48.05,
+   "blind": 50.17,
+   "lift": -2.11,
+   "exp_pip": -7.08,
+   "lsn": -26.2
+  },
+  {
+   "variant": "tk",
+   "mode": "fade",
+   "side": "long",
+   "n": 154,
+   "wr": 48.7,
+   "blind": 47.71,
+   "lift": 0.99,
+   "exp_pip": -5.82,
+   "lsn": 12.3
+  },
+  {
+   "variant": "tk",
+   "mode": "fade",
+   "side": "short",
+   "n": 130,
+   "wr": 46.15,
+   "blind": 50.17,
+   "lift": -4.01,
+   "exp_pip": -11.23,
+   "lsn": -45.8
+  },
+  {
+   "variant": "chikou",
+   "mode": "cont",
+   "side": "long",
+   "n": 166,
+   "wr": 50.6,
+   "blind": 47.71,
+   "lift": 2.9,
+   "exp_pip": -2.13,
+   "lsn": 37.3
+  },
+  {
+   "variant": "chikou",
+   "mode": "cont",
+   "side": "short",
+   "n": 192,
+   "wr": 47.92,
+   "blind": 50.17,
+   "lift": -2.25,
+   "exp_pip": -7.35,
+   "lsn": -31.2
+  },
+  {
+   "variant": "chikou",
+   "mode": "fade",
+   "side": "long",
+   "n": 192,
+   "wr": 49.48,
+   "blind": 47.71,
+   "lift": 1.77,
+   "exp_pip": -4.31,
+   "lsn": 24.6
+  },
+  {
+   "variant": "chikou",
+   "mode": "fade",
+   "side": "short",
+   "n": 166,
+   "wr": 49.4,
+   "blind": 50.17,
+   "lift": -0.77,
+   "exp_pip": -4.47,
+   "lsn": -9.9
+  }
+ ],
+ "sec": 0.1
+}

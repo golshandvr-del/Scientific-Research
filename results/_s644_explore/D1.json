@@ -1,0 +1,146 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars_first_half": 2002,
+ "sl_pip": 275.1,
+ "cost_to_sl_pct": 1.2,
+ "blind_long_wr": 48.03,
+ "blind_short_wr": 50.28,
+ "n_break_up": 55,
+ "n_break_dn": 53,
+ "cells": [
+  {
+   "variant": "plain",
+   "mode": "cont",
+   "side": "long",
+   "n": 38,
+   "wr": 57.89,
+   "blind": 48.03,
+   "lift": 9.86,
+   "exp_pip": 35.19,
+   "lsn": 60.8
+  },
+  {
+   "variant": "plain",
+   "mode": "cont",
+   "side": "short",
+   "n": 36,
+   "wr": 47.22,
+   "blind": 50.28,
+   "lift": -3.06,
+   "exp_pip": -18.58,
+   "lsn": -18.4
+  },
+  {
+   "variant": "plain",
+   "mode": "fade",
+   "side": "long",
+   "n": 36,
+   "wr": 52.78,
+   "blind": 48.03,
+   "lift": 4.74,
+   "exp_pip": 11.98,
+   "lsn": 28.5
+  },
+  {
+   "variant": "plain",
+   "mode": "fade",
+   "side": "short",
+   "n": 38,
+   "wr": 42.11,
+   "blind": 50.28,
+   "lift": -8.18,
+   "exp_pip": -41.79,
+   "lsn": -50.4
+  },
+  {
+   "variant": "tk",
+   "mode": "cont",
+   "side": "long",
+   "n": 21,
+   "wr": 66.67,
+   "blind": 48.03,
+   "lift": 18.63,
+   "exp_pip": 79.46,
+   "lsn": 85.4
+  },
+  {
+   "variant": "tk",
+   "mode": "cont",
+   "side": "short",
+   "n": 21,
+   "wr": 52.38,
+   "blind": 50.28,
+   "lift": 2.1,
+   "exp_pip": 9.8,
+   "lsn": 9.6
+  },
+  {
+   "variant": "tk",
+   "mode": "fade",
+   "side": "long",
+   "n": 21,
+   "wr": 47.62,
+   "blind": 48.03,
+   "lift": -0.41,
+   "exp_pip": -16.4,
+   "lsn": -1.9
+  },
+  {
+   "variant": "tk",
+   "mode": "fade",
+   "side": "short",
+   "n": 21,
+   "wr": 33.33,
+   "blind": 50.28,
+   "lift": -16.95,
+   "exp_pip": -86.06,
+   "lsn": -77.7
+  },
+  {
+   "variant": "chikou",
+   "mode": "cont",
+   "side": "long",
+   "n": 27,
+   "wr": 62.96,
+   "blind": 48.03,
+   "lift": 14.93,
+   "exp_pip": 61.07,
+   "lsn": 77.6
+  },
+  {
+   "variant": "chikou",
+   "mode": "cont",
+   "side": "short",
+   "n": 25,
+   "wr": 56.0,
+   "blind": 50.28,
+   "lift": 5.72,
+   "exp_pip": 29.71,
+   "lsn": 28.6
+  },
+  {
+   "variant": "chikou",
+   "mode": "fade",
+   "side": "long",
+   "n": 25,
+   "wr": 44.0,
+   "blind": 48.03,
+   "lift": -4.03,
+   "exp_pip": -36.31,
+   "lsn": -20.2
+  },
+  {
+   "variant": "chikou",
+   "mode": "fade",
+   "side": "short",
+   "n": 27,
+   "wr": 37.04,
+   "blind": 50.28,
+   "lift": -13.24,
+   "exp_pip": -67.67,
+   "lsn": -68.8
+  }
+ ],
+ "sec": 0.0
+}
