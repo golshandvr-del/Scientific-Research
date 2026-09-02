@@ -43,12 +43,27 @@ TF, SIDE, K, RR, MH, NT, SEED = (cfg[x] for x in ('tf', 'side', 'k', 'rr', 'mh',
 t0 = time.time()
 
 d = fd.load_fast('XAUUSD', TF)
+for _k in ('hour', 'minute', 'dow'):
+    d.pop(_k, None)                      # RAM: ستون‌های مشتق لازم نیستند
 df = fd.as_dataframe(d)
 n = len(df); half = n // 2
-op = df['open'].values.astype(np.float64); hi = df['high'].values.astype(np.float64)
-lo = df['low'].values.astype(np.float64); cl = df['close'].values.astype(np.float64)
-atr_price = ib.atr_s(df, 100).values.astype(np.float64)  # واحد قیمت (دلار) — ADDENDUM-1
-atr_pip = atr_price / PIP                                   # pip = ×10
+op = df['open'].values; hi = df['high'].values; lo = df['low'].values; cl = df['close'].values  # ارجاع، بی‌کپی
+
+
+def atr_lowmem(p=100):
+    """بیت‌به‌بیت برابر `ib.atr_s(df,p)` (تأیید: max|diff|=0 روی H1) ولی بدونِ pd.concat
+    سه‌ستونیِ M1 که ۳۷۰MB می‌گرفت و سندباکس ۱GB را می‌کشت (دو بار Killed)."""
+    tr_ = hi - lo
+    pc = np.empty(n); pc[0] = np.nan; pc[1:] = cl[:-1]
+    np.maximum(tr_, np.abs(hi - pc), out=tr_); np.maximum(tr_, np.abs(lo - pc), out=tr_)
+    tr_[0] = hi[0] - lo[0]
+    del pc
+    return pd.Series(tr_).ewm(alpha=1.0 / p, adjust=False).mean().values
+
+
+atr_price = atr_lowmem(100)               # واحد قیمت (دلار) — ADDENDUM-1
+atr_pip = atr_price / PIP                 # pip = ×10
+gc.collect()
 valid = np.isfinite(atr_pip) & (atr_pip > 0)
 valid[:101] = False
 print(f'[{layer}] {cfg["name"]} TF={TF} src={d["src"]} n_full={n} split_bar={half} mh={MH} k={K} rr={RR}', flush=True)
