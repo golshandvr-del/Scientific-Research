@@ -32,6 +32,7 @@ def r2_slope(c, w):
 # ---------------- قواعد منجمد ----------------
 CFG = {
  's990': dict(name='R2TrendBirthLong', tf='H1', side='long', mh=48, nt=27, seed=990990),
+ 's991': dict(name='AutocorrMomLong',  tf='H8', side='long', mh=21, nt=159, seed=991991),
 }
 
 def rule_s990(df):
@@ -43,6 +44,16 @@ def rule_s990(df):
     edge = edge & ~edge.shift(1, fill_value=False)
     gate = (sg > 0).fillna(False).astype(bool)
     sig = (edge & gate)
+    return sig, gate, sl, sl
+
+def rule_s991(df):
+    h,l,c = df['high'].values, df['low'].values, df['close'].values
+    sl = med_atr(h,l,c,100)*1.5/0.1
+    r = pd.Series(np.r_[0.0, np.diff(np.log(c))])
+    rho = r.rolling(34).corr(r.shift(1)).shift(1)
+    gate = (rho > 0.20).fillna(False).astype(bool)
+    big = (r.abs() > r.abs().rolling(34).quantile(0.5).shift(1)).fillna(False)
+    sig = (gate & big & (r > 0)).astype(bool)
     return sig, gate, sl, sl
 
 # ---------------- اجرا ----------------
