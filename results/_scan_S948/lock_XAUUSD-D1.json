@@ -1,0 +1,21 @@
+{
+  "layer": "S948",
+  "tf": "D1",
+  "base": {
+    "L": 0,
+    "F": 2,
+    "k_sl": 3.141,
+    "hd": 1
+  },
+  "rr": 1.0,
+  "split_bar": 2403,
+  "n_bars": 4005,
+  "bpd": 1,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+  "criterion": "max lift*sqrt(n) | n>=150 & net>0 & power>=78.0",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": null,
+  "score": null,
+  "power_ok": false
+}

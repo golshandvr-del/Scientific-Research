@@ -1,0 +1,30 @@
+{
+  "layer": "S948",
+  "tf": "H12",
+  "base": {
+    "L": 0,
+    "F": 3,
+    "k_sl": 3.141,
+    "hd": 2
+  },
+  "rr": 1.0,
+  "split_bar": 4798,
+  "n_bars": 7998,
+  "bpd": 2,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+  "criterion": "max lift*sqrt(n) | n>=150 & net>0 & power>=78.0",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": {
+    "key": "calm70",
+    "n": 159,
+    "wr": 54.088,
+    "net": 1853.2,
+    "sl_med": 334.2,
+    "be": 50.494,
+    "lift": 3.594,
+    "score": 45.32
+  },
+  "score": 45.32,
+  "power_ok": false
+}

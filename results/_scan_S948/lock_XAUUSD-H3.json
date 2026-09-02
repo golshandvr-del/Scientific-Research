@@ -1,0 +1,30 @@
+{
+  "layer": "S948",
+  "tf": "H3",
+  "base": {
+    "L": 0,
+    "F": 3,
+    "k_sl": 3.141,
+    "hd": 1
+  },
+  "rr": 1.0,
+  "split_bar": 19083,
+  "n_bars": 31806,
+  "bpd": 8,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+  "criterion": "max lift*sqrt(n) | n>=150 & net>0 & power>=78.0",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": {
+    "key": "drift8",
+    "n": 162,
+    "wr": 56.173,
+    "net": 1165.7,
+    "sl_med": 178.9,
+    "be": 50.922,
+    "lift": 5.25,
+    "score": 66.83
+  },
+  "score": 66.83,
+  "power_ok": false
+}
