@@ -1,0 +1,142 @@
+{
+ "M5": {
+  "arms": {
+   "BARE-h12": {
+    "filt": "BARE",
+    "mh": 12,
+    "sl": 67.3,
+    "tp": 67.3,
+    "n_signals": 2339,
+    "t_first_half": -5.505754237043634,
+    "n_first_half": 1146,
+    "wr_first_half": 37.52,
+    "dd_first_half": 390.45
+   },
+   "BARE-h24": {
+    "filt": "BARE",
+    "mh": 24,
+    "sl": 98.0,
+    "tp": 98.0,
+    "n_signals": 2339,
+    "t_first_half": -3.1256366138129525,
+    "n_first_half": 1146,
+    "wr_first_half": 43.8,
+    "dd_first_half": 289.42
+   },
+   "V78-h12": {
+    "filt": "V78",
+    "mh": 12,
+    "sl": 57.9,
+    "tp": 57.9,
+    "n_signals": 1726,
+    "t_first_half": -6.468572528220084,
+    "n_first_half": 882,
+    "wr_first_half": 35.26,
+    "dd_first_half": 352.09
+   },
+   "V78-h24": {
+    "filt": "V78",
+    "mh": 24,
+    "sl": 79.9,
+    "tp": 79.9,
+    "n_signals": 1726,
+    "t_first_half": -4.1509105878601895,
+    "n_first_half": 882,
+    "wr_first_half": 42.63,
+    "dd_first_half": 317.64
+   }
+  },
+  "picked": "BARE-h24",
+  "densities": {
+   "BARE": {
+    "days_eligible": 4034,
+    "days_event": 2339,
+    "event_rate": 58.0
+   },
+   "V78": {
+    "days_eligible": 2908,
+    "days_event": 1726,
+    "event_rate": 59.4
+   }
+  },
+  "split_bar": 540287,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+  "stop_check": {
+   "lift_fh_pp": 0.28,
+   "null_uncond_wr_fh": 43.524,
+   "threshold": 4.0,
+   "stopped_dead": true
+  }
+ },
+ "M15": {
+  "arms": {
+   "BARE-h4": {
+    "filt": "BARE",
+    "mh": 4,
+    "sl": 72.0,
+    "tp": 72.0,
+    "n_signals": 2150,
+    "t_first_half": -5.827538277502892,
+    "n_first_half": 1056,
+    "wr_first_half": 37.97,
+    "dd_first_half": 425.15
+   },
+   "BARE-h8": {
+    "filt": "BARE",
+    "mh": 8,
+    "sl": 98.1,
+    "tp": 98.1,
+    "n_signals": 2150,
+    "t_first_half": -3.933789843927551,
+    "n_first_half": 1056,
+    "wr_first_half": 43.37,
+    "dd_first_half": 366.12
+   },
+   "V78-h4": {
+    "filt": "V78",
+    "mh": 4,
+    "sl": 55.9,
+    "tp": 55.9,
+    "n_signals": 1602,
+    "t_first_half": -6.313251005071912,
+    "n_first_half": 816,
+    "wr_first_half": 36.15,
+    "dd_first_half": 325.99
+   },
+   "V78-h8": {
+    "filt": "V78",
+    "mh": 8,
+    "sl": 83.4,
+    "tp": 83.4,
+    "n_signals": 1602,
+    "t_first_half": -4.7408669024368955,
+    "n_first_half": 816,
+    "wr_first_half": 41.91,
+    "dd_first_half": 350.36
+   }
+  },
+  "picked": "BARE-h8",
+  "densities": {
+   "BARE": {
+    "days_eligible": 4031,
+    "days_event": 2150,
+    "event_rate": 53.3
+   },
+   "V78": {
+    "days_eligible": 2905,
+    "days_event": 1602,
+    "event_rate": 55.1
+   }
+  },
+  "split_bar": 180578,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+  "stop_check": {
+   "lift_fh_pp": -0.0,
+   "null_uncond_wr_fh": 43.374,
+   "threshold": 4.0,
+   "stopped_dead": true
+  }
+ }
+}
