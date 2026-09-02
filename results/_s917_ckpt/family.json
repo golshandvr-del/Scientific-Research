@@ -1,0 +1,364 @@
+{
+ "M1": {
+  "n_bars": 5000000,
+  "n_train": 3000000,
+  "n_sig_long": 77397,
+  "n_sig_short": 78129,
+  "span_years": 14.34,
+  "geometry": {
+   "tp": 11.0,
+   "sl": 5.0,
+   "n_sig": 155526,
+   "rr": 2.2
+  },
+  "train": {
+   "n": 109493,
+   "wr": 28.82,
+   "e_pip": -3.54,
+   "e_over_sl_pct": -70.87,
+   "cost_over_sl_pct": 66.0
+  }
+ },
+ "M3": {
+  "n_bars": 1815880,
+  "n_train": 1089528,
+  "n_sig_long": 30134,
+  "n_sig_short": 30645,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 20.8,
+   "sl": 9.3,
+   "n_sig": 60779,
+   "rr": 2.237
+  },
+  "train": {
+   "n": 40722,
+   "wr": 30.63,
+   "e_pip": -3.62,
+   "e_over_sl_pct": -38.87,
+   "cost_over_sl_pct": 35.48
+  }
+ },
+ "M4": {
+  "n_bars": 1362074,
+  "n_train": 817244,
+  "n_sig_long": 23607,
+  "n_sig_short": 24066,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 25.0,
+   "sl": 11.1,
+   "n_sig": 47672,
+   "rr": 2.252
+  },
+  "train": {
+   "n": 31027,
+   "wr": 30.93,
+   "e_pip": -3.69,
+   "e_over_sl_pct": -33.24,
+   "cost_over_sl_pct": 29.73
+  }
+ },
+ "M5": {
+  "n_bars": 1089574,
+  "n_train": 653744,
+  "n_sig_long": 18780,
+  "n_sig_short": 19284,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 28.4,
+   "sl": 12.5,
+   "n_sig": 38064,
+   "rr": 2.272
+  },
+  "train": {
+   "n": 24856,
+   "wr": 31.07,
+   "e_pip": -3.66,
+   "e_over_sl_pct": -29.31,
+   "cost_over_sl_pct": 26.4
+  }
+ },
+ "M6": {
+  "n_bars": 908864,
+  "n_train": 545318,
+  "n_sig_long": 16212,
+  "n_sig_short": 16506,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 31.4,
+   "sl": 13.7,
+   "n_sig": 32718,
+   "rr": 2.292
+  },
+  "train": {
+   "n": 21070,
+   "wr": 31.2,
+   "e_pip": -3.68,
+   "e_over_sl_pct": -26.89,
+   "cost_over_sl_pct": 24.09
+  }
+ },
+ "M10": {
+  "n_bars": 545488,
+  "n_train": 327292,
+  "n_sig_long": 10495,
+  "n_sig_short": 10856,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 42.8,
+   "sl": 17.7,
+   "n_sig": 21351,
+   "rr": 2.418
+  },
+  "train": {
+   "n": 13256,
+   "wr": 31.97,
+   "e_pip": -2.98,
+   "e_over_sl_pct": -16.83,
+   "cost_over_sl_pct": 18.64
+  }
+ },
+ "M12": {
+  "n_bars": 454692,
+  "n_train": 272815,
+  "n_sig_long": 9254,
+  "n_sig_short": 9605,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 50.1,
+   "sl": 20.4,
+   "n_sig": 18859,
+   "rr": 2.456
+  },
+  "train": {
+   "n": 11039,
+   "wr": 32.38,
+   "e_pip": -2.53,
+   "e_over_sl_pct": -12.41,
+   "cost_over_sl_pct": 16.18
+  }
+ },
+ "M15": {
+  "n_bars": 363778,
+  "n_train": 218266,
+  "n_sig_long": 7418,
+  "n_sig_short": 7776,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 56.9,
+   "sl": 23.5,
+   "n_sig": 15194,
+   "rr": 2.421
+  },
+  "train": {
+   "n": 8896,
+   "wr": 32.05,
+   "e_pip": -3.03,
+   "e_over_sl_pct": -12.88,
+   "cost_over_sl_pct": 14.04
+  }
+ },
+ "M20": {
+  "n_bars": 272979,
+  "n_train": 163787,
+  "n_sig_long": 5793,
+  "n_sig_short": 5974,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 65.5,
+   "sl": 26.7,
+   "n_sig": 11767,
+   "rr": 2.453
+  },
+  "train": {
+   "n": 6935,
+   "wr": 32.37,
+   "e_pip": -2.29,
+   "e_over_sl_pct": -8.56,
+   "cost_over_sl_pct": 12.36
+  }
+ },
+ "M30": {
+  "n_bars": 182145,
+  "n_train": 109287,
+  "n_sig_long": 3976,
+  "n_sig_short": 4175,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 75.3,
+   "sl": 31.6,
+   "n_sig": 8151,
+   "rr": 2.383
+  },
+  "train": {
+   "n": 5046,
+   "wr": 31.09,
+   "e_pip": -3.58,
+   "e_over_sl_pct": -11.33,
+   "cost_over_sl_pct": 10.44
+  }
+ },
+ "H1": {
+  "n_bars": 91331,
+  "n_train": 54798,
+  "n_sig_long": 2196,
+  "n_sig_short": 2339,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 113.0,
+   "sl": 45.1,
+   "n_sig": 4535,
+   "rr": 2.505
+  },
+  "train": {
+   "n": 2668,
+   "wr": 33.25,
+   "e_pip": 0.71,
+   "e_over_sl_pct": 1.58,
+   "cost_over_sl_pct": 7.32
+  }
+ },
+ "H2": {
+  "n_bars": 47623,
+  "n_train": 28573,
+  "n_sig_long": 567,
+  "n_sig_short": 520,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 161.7,
+   "sl": 64.6,
+   "n_sig": 1087,
+   "rr": 2.503
+  },
+  "train": {
+   "n": 847,
+   "wr": 33.18,
+   "e_pip": 1.16,
+   "e_over_sl_pct": 1.79,
+   "cost_over_sl_pct": 5.11
+  }
+ },
+ "H3": {
+  "n_bars": 31806,
+  "n_train": 19083,
+  "n_sig_long": 435,
+  "n_sig_short": 422,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 188.0,
+   "sl": 82.3,
+   "n_sig": 857,
+   "rr": 2.284
+  },
+  "train": {
+   "n": 667,
+   "wr": 31.93,
+   "e_pip": -6.14,
+   "e_over_sl_pct": -7.46,
+   "cost_over_sl_pct": 4.01
+  }
+ },
+ "H6": {
+  "n_bars": 15966,
+  "n_train": 9579,
+  "n_sig_long": 238,
+  "n_sig_short": 175,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 302.8,
+   "sl": 107.1,
+   "n_sig": 413,
+   "rr": 2.826
+  },
+  "train": {
+   "n": 319,
+   "wr": 30.72,
+   "e_pip": 2.63,
+   "e_over_sl_pct": 2.46,
+   "cost_over_sl_pct": 3.08
+  }
+ },
+ "H8": {
+  "n_bars": 11978,
+  "n_train": 7186,
+  "n_sig_long": 178,
+  "n_sig_short": 150,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 321.8,
+   "sl": 138.4,
+   "n_sig": 328,
+   "rr": 2.325
+  },
+  "train": {
+   "n": 243,
+   "wr": 37.86,
+   "e_pip": 18.52,
+   "e_over_sl_pct": 13.38,
+   "cost_over_sl_pct": 2.38
+  }
+ },
+ "H12": {
+  "n_bars": 7998,
+  "n_train": 4798,
+  "n_sig_long": 122,
+  "n_sig_short": 106,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 484.3,
+   "sl": 130.1,
+   "n_sig": 228,
+   "rr": 3.722
+  },
+  "train": {
+   "n": 165,
+   "wr": 33.94,
+   "e_pip": 48.33,
+   "e_over_sl_pct": 37.15,
+   "cost_over_sl_pct": 2.54
+  }
+ },
+ "D1": {
+  "n_bars": 4005,
+  "n_train": 2403,
+  "n_sig_long": 69,
+  "n_sig_short": 66,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 690.2,
+   "sl": 234.5,
+   "n_sig": 135,
+   "rr": 2.944
+  },
+  "train": {
+   "n": 85,
+   "wr": 29.41,
+   "e_pip": 2.12,
+   "e_over_sl_pct": 0.9,
+   "cost_over_sl_pct": 1.41
+  }
+ },
+ "W1": {
+  "n_bars": 813,
+  "n_train": 487,
+  "n_sig_long": 18,
+  "n_sig_short": 16,
+  "span_years": 15.58,
+  "geometry": {
+   "tp": 1368.0,
+   "sl": 433.8,
+   "n_sig": 34,
+   "rr": 3.154
+  },
+  "train": null
+ },
+ "MN1": {
+  "n_bars": 188,
+  "n_train": 112,
+  "n_sig_long": 4,
+  "n_sig_short": 5,
+  "span_years": 15.58,
+  "geometry": null
+ }
+}
