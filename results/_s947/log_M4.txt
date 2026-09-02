@@ -1,0 +1,16 @@
+
+====================================================================================
+=== S947 MfiExhaustionPullback :: XAUUSD_M4  bars=1,362,074  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_M4.csv  (2011-01-03 00:00:00 → 2026-08-07 23:52:00)
+    geom: SL=13.80pip  TP=20.70pip  rr=1.5
+    family events: long=45,181  short=39,981
+    trades=33,446 (L=17,656 S=15,790)  wr=40.03%
+    building null: K=1000  strides=(7, 21)  seed=20260814
+      uncond long stride=7: wr=39.35% n=104162
+      uncond long stride=21: wr=39.73% n=51141
+      null long  uncond=39.7254648911832 perm_mean=39.362077333527466 sd=0.36002045278573147 k=1000
+      uncond short stride=7: wr=39.27% n=104165
+      uncond short stride=21: wr=39.58% n=51199
+      null short uncond=39.584757514795214 perm_mean=39.72936660197118 sd=0.3892331656270478 k=1000
+
+S947_MfiExhaustionPullback_XAUUSD_M4 | REJECT     RQS2=  2.7 | n=33446 WR=40.03% PF=1.00 lift=  +0.30pp z= 0.8 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗

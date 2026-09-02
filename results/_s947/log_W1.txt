@@ -1,0 +1,4 @@
+
+====================================================================================
+=== S947 MfiExhaustionPullback :: XAUUSD_W1  bars=813  span=15.58y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_W1.csv  (2011-01-02 00:00:00 → 2026-08-02 00:00:00)
