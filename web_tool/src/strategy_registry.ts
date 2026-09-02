@@ -204,6 +204,10 @@ import { decideS382, S382_CFG } from './williams_momentum_s382'
 //    RQS2=80 · هر ۱۱ دروازه پاس · پایدار روی ۴ seed · n=224 · WR=61.6% · maxDD=4.92%
 //    سند: results/S950_JumpAftermathDriftAligned_Xauusd_H8_rqs2_80_ACCEPT.md
 import { decideS950, S950_CFG } from './jump_aftermath_s950'
+// ⭐ S965 — «ماندگاریِ درون-کندلیِ اثرِ قیمتیِ کایل» · XAUUSD-H8 (تنها کارتِ ACCEPT)
+//    RQS2=82.2 · هر ۱۱ دروازه سبز · n=146 · WR=54.79% · lift=+12.84pp · z=3.14 · PF=1.81
+//    سند: results/S965_KyleIntrabarPermanence_Xauusd_H8_rqs2_82_ACCEPT.md
+import { decideS965, S965_CFG } from './kyle_intrabar_s965'
 // ⭐⭐ S800 — «فشردگی → گشایش» (Squeeze-Expansion Breakout) · XAUUSD-D1 **و** XAUUSD-H12
 //    دو حکمِ **مستقلِ تک-کارتی** (نه استخری): D1 = RQS2 **91.1** · H12 = RQS2 **83.6**
 //    هر کارت جداگانه با مسیر C (hold-out فیزیکی، n_trials=1) داوری شد و هر دو
@@ -543,6 +547,8 @@ const s382Layer = (cfg: typeof S382_CFG[string]): LayerFn => (ctx) => decideS382
 // ⭐ S950 — پس‌لرزهٔ جهشِ هم‌راستا با رانش (H8) — کندل‌های ورودیِ ctx باید H8 باشند
 //    (index.tsx آن‌ها را با aggregateCandles(H1, 8) می‌سازد، عینِ الگوی H4).
 const s950Layer = (cfg: typeof S950_CFG[string]): LayerFn => (ctx) => decideS950(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S965 — ماندگاریِ درون-کندلیِ شوکِ کایل (H8) — همان مسیرِ کندلِ H8 (H1×8).
+const s965Layer = (cfg: typeof S965_CFG[string]): LayerFn => (ctx) => decideS965(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐⭐ S800 — فشردگی → گشایش (D1 و H12) — کندل‌های ورودیِ ctx باید هم‌تایم‌فریمِ کارت باشند
 //    (index.tsx آن‌ها را با aggregateCandles(H1, 24) و aggregateCandles(H1, 12)
 //     می‌سازد، عینِ الگوی H4=×4 و H8=×8؛ چون Yahoo کندلِ روزانهٔ GC=F را در ساعتِ
@@ -813,6 +819,29 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     //       عینِ H1×4ِ کارتِ H4؛ مرزهای UTC 0/8/16 با بک‌تست هم‌ترازند.
     //    سند: results/S950_JumpAftermathDriftAligned_Xauusd_H8_rqs2_80_ACCEPT.md
     s950Layer(S950_CFG['XAUUSD-H8']),
+    // ⭐ S965 ⭐نو — «ماندگاریِ درون-کندلیِ اثرِ قیمتیِ کایل» (Kyle 1985) · دوسویه
+    //    RQS2 = **82.2** · هر ۱۱ دروازهٔ H0..H10 سبز · notes خالی
+    //    n=146 · WR 54.79٪ · BE_rob 40.4٪ · lift=+12.84pp · z=3.14 · p_perm=8.33e−04
+    //    PF=1.81 · net=+$7,113 · نول: K=500 جایگشت · draw=146 · uncond_n=11,711
+    //    قانون: کندلِ شوک (high−low ≥ 2.618×ATR21[i−1]، ATR علّی) **که** ماندگاریِ
+    //      درون-کندلی ρ=|close−open|÷(high−low) ≥ 0.618 داشته باشد ⇒ ادامه هم‌جهتِ بدنه.
+    //      SL=1.272×ATR21[i−1] / TP=2.058×ATR21[i−1] (میانه ≈۱۳۸/۲۲۳ pip، TP>SL) · hold=16.
+    //    ⓵ **آزمونِ تفکیک‌گرِ P1 پاس شد** (درسِ S603/S964): پایهٔ θ-only بدونِ شرطِ ρ
+    //       lift=+11.81pp داشت؛ با شرطِ ρ به **+18.16pp** رسید ⇒ فیلترِ **اطلاعات‌افزا**،
+    //       نه توان‌سوز. این دقیقاً وارونهٔ مرگِ S964 است.
+    //    ⓶ قانونِ MTF رعایت شد: هر ۱۹ TF داوری و منتشر شد — H8 تنها ACCEPT؛ D1 با
+    //       z=−3.40 و H12 با z=−2.13 لیفتِ **منفی** دارند (REJECT صریح)، H6/H3/H2/H1
+    //       REJECT، و ۱۲ کارت NO-SURVIVOR ⇒ **صفر تعمیم**، فقط همین یک کارت وصل شد.
+    //    ⓷ پنجمین لبهٔ مستقلِ «رویدادِ لحظه‌ای × TF درشت» روی H8، کنارِ
+    //       S602/S770/S950/S526 — و نخستین ACCEPTِ بلوکِ کایل پس از ۵ REJECT (S960–S964).
+    //    ⓸ مکمل بودن با S950 روی همین کارت: S950 ماشه‌اش **بازدهِ لگاریتمی** در برابرِ
+    //       σ_BV است با فیلترِ رانشِ ۸۹کندلی و هندسهٔ **متقارن**؛ S965 ماشه‌اش **رنج و
+    //       شکلِ درون-کندلی** است بدونِ هیچ فیلترِ رژیم و با هندسهٔ **نامتقارن TP>SL**
+    //       ⇒ دو سنجهٔ متفاوت از یک خانوادهٔ فیزیکی (شوک)، نه دو نسخه از یک قانون.
+    //       ⚠️ چون هر دو رویدادِ شوک‌اند، ممکن است گاهی هم‌زمان شلیک کنند ⇒ روی
+    //          حسابِ واقعی سایزِ مشترک بگیرید (هر دو قیدِ allow_overlap=false دارند).
+    //    سند: results/S965_KyleIntrabarPermanence_Xauusd_H8_rqs2_82_ACCEPT.md
+    s965Layer(S965_CFG['XAUUSD-H8']),
   ],
   'XAUUSD-H12': [
     // ⭐⭐ S800 — «فشردگی → گشایش» (Squeeze-Expansion Breakout) · **کارتِ نو**
