@@ -26,15 +26,15 @@ STRIDES = (3, 7, 13)
 
 CFG = {
  's620': dict(name='LaguerreExit',          tf='M1', side='both',  k=2.0,  rr=1.0, mh=240, nt=3672, seed=620620),
- 's621': dict(name='LaguerreMtfShort',      tf='H3', side='short', k=1.5,  rr=1.5, mh=64,  nt=192,  seed=621621),
+ 's621': dict(name='LaguerreMtfShort',      tf='H3', side='short', k=1.5,  rr=1.5, mh=64,  nt=193,  seed=621621),
  's622': dict(name='RoundNumberRejection',  tf='M1', side='both',  k=1.5,  rr=1.0, mh=240, nt=192,  seed=622622),
  's623': dict(name='RoundRejectionCoarse',  tf='M1', side='long',  k=16.0, rr=1.5, mh=960, nt=48,   seed=623623),
- 's624': dict(name='EmaPullbackLong',       tf='H2', side='long',  k=2.0,  rr=1.0, mh=64,  nt=48,   seed=624624),
+ 's624': dict(name='EmaPullbackLong',       tf='H2', side='long',  k=2.0,  rr=1.0, mh=64,  nt=49,   seed=624624),
  's625': dict(name='WickDominanceLong',     tf='M5', side='long',  k=2.0,  rr=1.0, mh=240, nt=24,   seed=625625),
- 's626': dict(name='RoundNativeDriftLong',  tf='H1', side='long',  k=1.5,  rr=1.5, mh=96,  nt=48,   seed=626626),
- 's627': dict(name='DriftResumptionCross',  tf='H2', side='long',  k=2.0,  rr=1.0, mh=64,  nt=12,   seed=627627),
- 's628': dict(name='RollingSupportHold',    tf='H2', side='long',  k=1.5,  rr=1.5, mh=64,  nt=24,   seed=628628),
- 's629': dict(name='FreshHighContinuation', tf='H6', side='long',  k=2.0,  rr=1.5, mh=56,  nt=12,   seed=629629),
+ 's626': dict(name='RoundNativeDriftLong',  tf='H1', side='long',  k=1.5,  rr=1.5, mh=96,  nt=49,   seed=626626),
+ 's627': dict(name='DriftResumptionCross',  tf='H2', side='long',  k=2.0,  rr=1.0, mh=64,  nt=13,   seed=627627),
+ 's628': dict(name='RollingSupportHold',    tf='H2', side='long',  k=1.5,  rr=1.5, mh=64,  nt=25,   seed=628628),
+ 's629': dict(name='FreshHighContinuation', tf='H6', side='long',  k=2.0,  rr=1.5, mh=56,  nt=13,   seed=629629),
 }
 
 layer = sys.argv[1]
@@ -47,8 +47,8 @@ df = fd.as_dataframe(d)
 n = len(df); half = n // 2
 op = df['open'].values.astype(np.float64); hi = df['high'].values.astype(np.float64)
 lo = df['low'].values.astype(np.float64); cl = df['close'].values.astype(np.float64)
-atr_pip = ib.atr_s(df, 100).values.astype(np.float64)   # pip units
-atr_price = atr_pip * PIP
+atr_price = ib.atr_s(df, 100).values.astype(np.float64)  # واحد قیمت (دلار) — ADDENDUM-1
+atr_pip = atr_price / PIP                                   # pip = ×10
 valid = np.isfinite(atr_pip) & (atr_pip > 0)
 valid[:101] = False
 print(f'[{layer}] {cfg["name"]} TF={TF} src={d["src"]} n_full={n} split_bar={half} mh={MH} k={K} rr={RR}', flush=True)
@@ -221,7 +221,7 @@ md_name = f"S{num}_{cfg['name']}_Xauusd_{TF}_rqs2_{score}_{vtag}.md"
 md = f"""# S{num} — {cfg['name']} · XAUUSD-{TF} · حکم رسمی موتور: {verdict} (RQS2={score})
 
 **دانشمند:** اقلیدس (بلوک S620–S629) · **تاریخ:** 2026-09-02
-**پیش‌ثبت:** `results/S620-S629_PREREG2_OFFICIAL_ENGINE_ADJUDICATION.md` (commit 31bc0c61، قبل از اجرا) · n_trials={NT} · seed={SEED}
+**پیش‌ثبت:** `results/S620-S629_PREREG2_OFFICIAL_ENGINE_ADJUDICATION.md` (commit 31bc0c61 + ADDENDUM-1 9ba370d7، قبل از اجرا) · n_trials={NT} · seed={SEED}
 **پیش‌ثبت اصلی جست‌وجو:** `results/S{num}_PREREG_*.md`
 
 > **حکم موتور RQS2 v2.6 — کلمهٔ نهایی، دست‌نخورده:**
