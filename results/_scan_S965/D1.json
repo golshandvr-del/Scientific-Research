@@ -1,0 +1,68 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "n_bars": 4005,
+ "split_bar": 1992,
+ "member": {
+  "th": 1.618,
+  "arm": "hi",
+  "R": 0.75,
+  "mode": "against",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "max_hold": 16,
+  "sl_pip_med": 252.72,
+  "tp_pip_med": 408.89
+ },
+ "discovery": {
+  "th": 1.618,
+  "arm": "hi",
+  "R": 0.75,
+  "mode": "against",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "stat": 11.56,
+  "n": 61,
+  "wr": 40.984,
+  "be_rob": 39.503,
+  "lift": 1.48,
+  "exp_pip": 11.698,
+  "sl_med": 193.144,
+  "tp_med": 312.493
+ },
+ "p1_baseline": {
+  "1.618": null,
+  "2.618": null
+ },
+ "null_meta": {
+  "n_perm": 500,
+  "draw_size": 153,
+  "uncond_n": 3738
+ },
+ "verdict": "REJECT",
+ "score": 0.7,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "n": 144,
+ "wr": 31.94,
+ "pf": 0.694,
+ "net": -2828.3,
+ "lift": -14.11,
+ "z": -3.4,
+ "p_perm": 0.999659,
+ "notes": [
+  "PF=0.694<1.3"
+ ],
+ "sec": 2.3
+}
