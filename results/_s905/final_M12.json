@@ -1,0 +1,115 @@
+{
+  "tf": "M12",
+  "locked_key": "j3_k2.058_rr2.0_h34",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M12.csv",
+  "n_bars": 454692,
+  "span_years": 15.59,
+  "n_trades": 13181,
+  "sl_med": 34.7,
+  "tp_med": 69.3,
+  "verdict": "REJECT",
+  "score": 0.4,
+  "gates": {
+    "H0": false,
+    "H1": false,
+    "H2": false,
+    "H3": false,
+    "H4": false,
+    "H5": false,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": false,
+    "H10": false
+  },
+  "metrics": {
+    "n_trades": 13181,
+    "win_rate": 38.65,
+    "net_profit": -10001.7,
+    "profit_factor": 0.942,
+    "max_dd_pct": 100.01,
+    "max_consec_losses": 20,
+    "mcl_allowed": 27,
+    "n_wins": 5095,
+    "top_win_share": 0.0064,
+    "recovery_factor": -0.82,
+    "expectancy_pip": -0.8734,
+    "expectancy_at_2x_cost": -4.1734,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 34.651,
+    "tp_pip": 69.301,
+    "rr": 2.0,
+    "breakeven_wr_cost": 36.51,
+    "wr_excess_cost": 2.15,
+    "null_ref_wr": 50.01,
+    "skill_lift_pp": -11.35,
+    "skill_z": -26.07,
+    "skill_p_perm": 1.0,
+    "perm_max": 51.34,
+    "perm_k": 1000,
+    "side_n": {
+      "long": 6857,
+      "short": 6324
+    },
+    "side_wr": {
+      "long": 38.95,
+      "short": 38.33
+    },
+    "side_lift_pp": {
+      "long": -11.06,
+      "short": -11.68
+    },
+    "prune_sides": [
+      "long",
+      "short"
+    ],
+    "p_emp": 1.0,
+    "p_adj_bonferroni": 1.0,
+    "z_obs": -26.072,
+    "z_luck_bound": 1.8,
+    "z_margin": -27.873,
+    "n_trials": 16,
+    "cal_nets": [
+      -7134.9,
+      -10000.1,
+      -9666.2,
+      -6380.6
+    ],
+    "cal_counts": [
+      3283,
+      3277,
+      3297,
+      3324
+    ],
+    "cal_positive": 0,
+    "cal_occupied": 4,
+    "half_nets": [
+      -10001.7,
+      -10003.4
+    ],
+    "oos": {
+      "n": 5229,
+      "wr": 38.94,
+      "pf": 0.896,
+      "net": -7983.4,
+      "wr_req": 36.51
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+      "n_judgeable": 12158,
+      "n_unjudgeable": 1023,
+      "n_counter": 5841,
+      "n_aligned": 6317,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 38.04,
+      "exp_counter": -0.149,
+      "wr_aligned": 38.83,
+      "exp_aligned": -2.066
+    },
+    "n_required_h3": null
+  },
+  "notes": [
+    "PF=0.942<1.3"
+  ]
+}
