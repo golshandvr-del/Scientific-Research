@@ -92,7 +92,7 @@ tr.to_csv(os.path.join(OUTD,f'{TF}_trades.csv'), index=False)
 
 g = res.get('gates',{}); gs = ' '.join(f"H{i}:{'✓' if g.get(f'H{i}') else '✗'}" for i in range(11))
 m = res.get('metrics',{}); v = res.get('verdict'); sc = res.get('rqs2_score')
-lift = m.get('lift_pp', m.get('lift')); z = m.get('z', m.get('skill_z')); pp = m.get('p_perm', m.get('skill_p_perm')); pf = m.get('pf', m.get('profit_factor'))
+lift = m.get('skill_lift_pp'); z = m.get('z', m.get('skill_z')); pp = m.get('p_perm', m.get('skill_p_perm')); pf = m.get('pf', m.get('profit_factor'))
 line = f"S{layer[1:]}_{cfg['name']}_{TF} | {v} RQS2={sc} | n={n} WR={wr:.2f}% PF={pf} lift={lift} z={z} p_perm={pp} | {gs}"
 print("\n"+line, flush=True)
 md_name = f"S{layer[1:]}_{cfg['name']}_Xauusd_{TF}_rqs2_{sc}_{v}.md"
