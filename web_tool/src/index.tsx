@@ -190,8 +190,13 @@ app.post('/api/trade/advice', async (c) => {
       // کفِ دادهٔ لازم: H4 پس از تجمیع ۱/۴ کندل دارد ⇒ آستانهٔ آن پایین‌تر است
       // (همان ۶۰ کندلی که مسیرِ تصمیم برای H4 می‌پذیرد).
       // H8 (S950) همان الگو: H1×8. کفِ خامِ H1 متناسب با فاکتور (۱۱۰ کندلِ H8 = ۸۸۰ H1).
-      const aggF = meta_asset.id === 'XAUUSD-H4' ? 4 : meta_asset.id === 'XAUUSD-H8' ? 8 : 1
-      const minBars = aggF === 4 ? 240 : aggF === 8 ? 880 : 220
+      // S800 کارت‌های D1/H12 را افزود: H1×24 و H1×12 (Yahoo هیچ‌کدام را مستقیم
+      // نمی‌دهد و کندلِ ۱-روزهٔ GC=F در ۰۴:۰۰ UTC باز می‌شود — ناهم‌تراز با D1ِ
+      // نیمه‌شبِ MT5). کفِ خام = ۱۰۲ کندلِ گرم‌شدنِ لایه × فاکتورِ تجمیع.
+      const aggF = meta_asset.id === 'XAUUSD-H4' ? 4 : meta_asset.id === 'XAUUSD-H8' ? 8
+        : meta_asset.id === 'XAUUSD-H12' ? 12 : meta_asset.id === 'XAUUSD-D1' ? 24 : 1
+      const minBars = aggF === 4 ? 240 : aggF === 8 ? 880
+        : aggF === 12 ? 1300 : aggF === 24 ? 2500 : 220
       if (candles.length < minBars) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
       let spot: SpotPrice | null = null
       try { spot = await getSpotGold() } catch {}
@@ -510,6 +515,13 @@ const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: 
   //    (RQS2=80 · پایدار روی ۴ seed). کندلِ H8 از تجمیعِ H1×8 ساخته می‌شود
   //    (عینِ الگوی H4؛ Yahoo تایم‌فریمِ ۸ساعته ندارد). مرزهای UTC 0/8/16.
   { id: 'XAUUSD-H8',  card: 'XAUUSD-H8',  name: 'طلا / دلار — H8 (هشت‌ساعته)',      symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
+  // ⭐⭐ دو کارتِ نوی S800 — «فشردگی → گشایش». این لایه **دو حکمِ مستقلِ
+  //    تک-کارتی** دارد (نه یک حکمِ استخری)، پس طبقِ قانونِ MTF هر دو
+  //    تایم‌فریم باید روی سایت باشند: D1 (RQS2 91.1) و H12 (RQS2 83.6).
+  //    هر دو از تجمیعِ H1 ساخته می‌شوند (×12 و ×24) — مرزهای UTC 00/12
+  //    و نیمه‌شبِ UTC، عیناً هم‌تراز با کندل‌های MT5ِ بک‌تست.
+  { id: 'XAUUSD-H12', card: 'XAUUSD-H12', name: 'طلا / دلار — H12 (دوازده‌ساعته)', symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
+  { id: 'XAUUSD-D1',  card: 'XAUUSD-D1',  name: 'طلا / دلار — D1 (روزانه)',        symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
   // ⚰️ حذف‌شده در S396 — بی‌ACCEPT زیرِ RQS2 v2.4:
   //   { id: 'EURUSD-M15', card: 'EURUSD-M15', … }   ← S326
   //   { id: 'EURUSD-M30', card: 'EURUSD-M30', … }   ← S345 (RQS+ 91.7، ولی بی‌ACCEPT)
@@ -557,6 +569,14 @@ const GOLD_TF: Record<string, { interval: string; range: string; gap: number }> 
   // H8 (S950): ۱ سالِ H1 ≈ ۶۲۰۰ کندل ⇒ ≈۷۸۰ کندلِ H8 — برای گرم‌شدنِ ۹۱کندلیِ
   // σ_BV(89)/ATR(89) و EMA200ِ analyze هر دو کافی است (حاشیه ≈۸× نیازِ لایه).
   'XAUUSD-H8': { interval: '1h',  range: '1y',  gap: 3600 },  // H8 از تجمیعِ H1×8 ساخته می‌شود
+  // S800 (H12 و D1): لایه ۱۰۲ کندلِ گرم‌شدن می‌خواهد (پنجرهٔ ۱۰۱کندلیِ رتبهٔ
+  // چندکیِ ATR + کانالِ دانچیانِ ۵۵) و analyze هم EMA200 می‌خواهد. با بازهٔ
+  // **۲ سالهٔ H1** (≈۱۴۵۰۰ کندل): H12 ≈۱۳۳۰ کندل و D1 ≈۷۲۰ کندل ⇒ برای D1
+  // حاشیهٔ ≈۷× نیازِ لایه و ≈۳.۶× نیازِ EMA200. با range='1y' کارتِ D1 فقط
+  // ≈۳۶۱ کندل داشت — هنوز کافی، ولی حاشیهٔ امنیتیِ کمتری برای تعطیلی‌ها
+  // و حفرهٔ دادهٔ منبع.
+  'XAUUSD-H12': { interval: '1h', range: '2y', gap: 3600 },  // H12 از تجمیعِ H1×12
+  'XAUUSD-D1':  { interval: '1h', range: '2y', gap: 3600 },  // D1 از تجمیعِ H1×24
 }
 
 function tfLabelForGold(id: string): string {
@@ -567,6 +587,8 @@ function tfLabelForGold(id: string): string {
     case 'XAUUSD-H1': return 'H1'
     case 'XAUUSD-H4': return 'H4'
     case 'XAUUSD-H8': return 'H8'
+    case 'XAUUSD-H12': return 'H12'
+    case 'XAUUSD-D1': return 'D1'
     default: return 'M15'
   }
 }
@@ -600,11 +622,17 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     const tfc = GOLD_TF[a.id] || GOLD_TF['XAUUSD']
     const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range)
     // H4/H8: Yahoo تایم‌فریمِ ۴/۸ساعته را مستقیم نمی‌دهد ⇒ از تجمیعِ کندل‌های H1 می‌سازیم.
-    const aggFactor = a.id === 'XAUUSD-H4' ? 4 : a.id === 'XAUUSD-H8' ? 8 : 1
+    // S800: H12 = H1×12 و D1 = H1×24 (همان الگوی اثبات‌شدهٔ H4/H8).
+    const aggFactor = a.id === 'XAUUSD-H4' ? 4 : a.id === 'XAUUSD-H8' ? 8
+      : a.id === 'XAUUSD-H12' ? 12 : a.id === 'XAUUSD-D1' ? 24 : 1
     const candles = aggFactor > 1 ? aggregateCandles(rawCandles, aggFactor) : rawCandles
     // آستانهٔ حداقلِ کندل بسته به تایم‌فریم (H4 داده کمتری دارد، اما برای EMA200 کافی است).
     // H8: لایهٔ S950 خودش ۹۱+۲ کندل گرم‌شدن می‌خواهد ⇒ کفِ سخت‌گیرانه‌ترِ ۱۱۰.
-    const minBars = a.id === 'XAUUSD-H4' ? 60 : a.id === 'XAUUSD-H8' ? 110 : 220
+    // H12/D1 (S800): لایه خودش ۱۰۲ کندلِ گرم‌شدن می‌خواهد (پنجرهٔ ۱۰۱ +
+    // تأخیرِ ۱) ⇒ کفِ ۱۱۰ کندل، عینِ منطقِ H8. پایین‌تر از این، خودِ لایه پیامِ
+    // «دادهٔ ناکافی» می‌دهد و هیچ سیگنالی صادر نمی‌کند (رفتارِ ایمن).
+    const minBars = a.id === 'XAUUSD-H4' ? 60
+      : (a.id === 'XAUUSD-H8' || a.id === 'XAUUSD-H12' || a.id === 'XAUUSD-D1') ? 110 : 220
     if (candles.length < minBars) throw new Error('داده کافی برای تحلیل نیست')
     let spot: SpotPrice | null = null
     try { spot = await getSpotGold() } catch {}
@@ -618,7 +646,13 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     //   نه gapِ منبع (۱h) — وگرنه کندلِ H8ِ در حالِ شکل‌گیری پس از ساعتِ اولش
     //   «بسته» دیده می‌شد و سیگنالِ S950 روی r ناقص می‌نشست (look-ahead نسبت
     //   به بک‌تستی که فقط کندلِ کامل دید). رفتارِ کارت‌های دیگر دست‌نخورده.
-    const sigGap = a.id === 'XAUUSD-H8' ? tfc.gap * 8 : tfc.gap
+    // ⚠️ همان منطق برای H12/D1 (S800): مرزِ «کندلِ بسته» باید طولِ واقعیِ سطل
+    //   (۱۲h / ۲۴h) باشد، وگرنه کندلِ در حالِ شکل‌گیری پس از ساعتِ اولش «بسته»
+    //   دیده می‌شد و شرطِ شکستِ دانچیان روی closeِ ناقص می‌نشست ⇒ look-ahead
+    //   نسبت به بک‌تستی که فقط کندلِ کامل دید (درست مانندِ اشتباهِ رفع‌شدهٔ H8).
+    const sigGap = a.id === 'XAUUSD-H8' ? tfc.gap * 8
+      : a.id === 'XAUUSD-H12' ? tfc.gap * 12
+      : a.id === 'XAUUSD-D1' ? tfc.gap * 24 : tfc.gap
     const sig = closedBars(useCandles, sigGap)
     const lastClosed = sig[sig.length - 1]
     const goldUtcHour = new Date(lastClosed.time * 1000).getUTCHours()
