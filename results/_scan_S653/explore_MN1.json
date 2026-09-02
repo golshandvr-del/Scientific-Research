@@ -1,0 +1,21 @@
+{
+ "layer": "S653",
+ "tf": "MN1",
+ "asset": "XAUUSD",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_bars_full": 188,
+ "half_idx": 94,
+ "first_half_only": true,
+ "path": "C",
+ "geometry": {
+  "atr_p": 21,
+  "sl_k": 1.272,
+  "tp_k": 2.058,
+  "rr": 1.6179,
+  "hold": 16,
+  "single_bar_cap": 1.618
+ },
+ "n_combos": 6,
+ "combos": [],
+ "status": "TOO_SHORT"
+}
