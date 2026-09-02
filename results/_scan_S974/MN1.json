@@ -1,0 +1,14 @@
+{
+ "strategy": "S974_RoundLevelBreakthrough",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "split_bar": 131,
+ "hold": 4,
+ "n_trials": 24,
+ "k_perm": 2000,
+ "seed": 20260830,
+ "prereg": "results/S974_PREREG_round_level_breakthrough.md",
+ "verdict": "TOO_SHORT"
+}
