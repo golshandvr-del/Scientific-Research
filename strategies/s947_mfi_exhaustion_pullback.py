@@ -99,10 +99,11 @@ def family_dir(high: np.ndarray, low: np.ndarray, close: np.ndarray,
                vol: np.ndarray) -> np.ndarray:
     """ادغامِ ۲ عضو (OR)؛ کمینه/بیشینهٔ تازهٔ MFI در جهتِ روندِ EMA233."""
     n = close.shape[0]
-    h = high.astype(np.float64)
-    lo = low.astype(np.float64)
-    c = close.astype(np.float64)
-    v = vol.astype(np.float64)
+    # load_fast خروجی float64 می‌دهد؛ کپیِ astype حذف شد (صرفه‌جویی حافظه در M1 با 5M بار)
+    h = np.ascontiguousarray(high, dtype=np.float64)
+    lo = np.ascontiguousarray(low, dtype=np.float64)
+    c = np.ascontiguousarray(close, dtype=np.float64)
+    v = np.ascontiguousarray(vol, dtype=np.float64)
     mfi = _mfi_nb(h, lo, c, v, MFI_P)
     ema = _ema_nb(c, EMA_P)
     up_trend = c > ema
