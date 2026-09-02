@@ -1,0 +1,50 @@
+{
+ "layer": "S965",
+ "card": "XAUUSD-H8",
+ "module": "web_tool/src/kyle_intrabar_s965.ts",
+ "reference": "strategies/s965_kyle_intrabar_permanence.py",
+ "fixture": "results/_scan_S965/parity_h8_fixture.json",
+ "harness": "web_tool/parity_s965_signal.mjs",
+ "bars_tail": 3000,
+ "bars_full": 11978,
+ "cut": 44,
+ "signals": {
+  "long": {
+   "py": 11,
+   "ts": 11,
+   "match": true
+  },
+  "short": {
+   "py": 14,
+   "ts": 14,
+   "match": true
+  }
+ },
+ "max_rel_err": {
+  "atr_prev": 2.56e-13,
+  "rho": 0.0,
+  "sl_pip": 1.86e-13,
+  "tp_pip": 1.86e-13
+ },
+ "live_replay": {
+  "ok": 25,
+  "bad": 0
+ },
+ "negative_control": {
+  "false_positives": 0,
+  "checked": 200
+ },
+ "tolerance": 1e-09,
+ "verdict": "PARITY_PASS",
+ "stdout": [
+  "── S965 parity (python ↔ TS) ─────────────────────────────",
+  "  bars=3000 (tail of 11978)  cut=44  src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+  "  ① signals  LONG  py=11 ts=11 → OK",
+  "             SHORT py=14 ts=14 → OK",
+  "  ② features maxRelErr atr_prev=2.56e-13 rho=0.00e+0",
+  "  ③ geometry maxRelErr sl=1.86e-13 tp=1.86e-13",
+  "  ④ live     computeS965 on window: ok=25 bad=0 · falsePos=0/200",
+  "✅ PARITY PASS — پورت بیت‌به‌بیت"
+ ],
+ "date": "2026-09-02"
+}
