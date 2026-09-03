@@ -222,6 +222,19 @@ import { decideS965, S965_CFG } from './kyle_intrabar_s965'
 //    پیکربندیِ قفل‌شده: results/_scan_S800/{D1,H12}_locked.json
 //    سند: results/S800_SqueezeExpansion_Xauusd_M1toMN1_rqs2_91_ACCEPT.md
 import { decideS800, S800_CFG } from './squeeze_expansion_s800'
+// ⭐⭐ S770 — «انبساطِ دامنه نسبت به ADR با تداوم» · XAUUSD · استخرِ **{D1 + H8}** · دوسویه
+//    RQS2 = **82.4** · هر ۱۱ دروازهٔ H0..H10 پاس · n=689 · WR=44.70٪ · PF=1.398
+//    lift=+7.23pp · z=3.91 (سد 2.897 با n_trials=**301** صادقانه) · p_perm=4.5e−05
+//    maxDD=5.83٪ · net=+$29,077 · holdout: PF=1.502 (**بهتر** از نیمهٔ کشف)
+//    هر دو سو لبه دارند: long +9.06pp (n=358) · short +5.25pp (n=331)
+//    ⚠️ حکم روی **استخرِ دوکارتی** است (D1=266 + H8=423 معامله پس از FIFO تقویمی
+//       با همزمانیِ حداکثر ۱). هر کارتِ تکی به‌تنهایی REJECT بود (D1=21.0 · H8=19.3)
+//       — علتش کمبودِ n بود نه نبودِ لبه ⇒ طبقِ قانونِ MTF **هر دو** وصل می‌شوند و
+//       حذفِ یکی، جمعیتی که حکم بر آن صادر شده را نابود می‌کند.
+//    قاعده: frac=(close−openِ روزِ UTC)÷ADR21 و **عبورِ** آن از ±0.65 ⇒ تداوم هم‌جهت.
+//    parity: mismatch=0 روی هر دو کارت (۶۳۷ سیگنال) — results/_scan_S770/parity_s770_PASS.txt
+//    سند: results/S770_AdrExpansionPool_Xauusd_D1H8_rqs2_82_ACCEPT.md
+import { decideS770, S770_CFG } from './adr_expansion_s770'
 // ⭐ S560 — «گپِ منفیِ بازگشایی» (GapOpen Negative-Gap) · XAUUSD-M5 · LONG-only
 //    RQS2=**96.0** — بالاترین نمرهٔ لایه‌های وصل‌شده تا امروز · هر ۱۱ دروازه پاس
 //    n=407 · WR=71.5٪ · PF=2.514 · maxDD=2.43٪ · lift=+43.98pp · z=19.87 (z_margin=16.885)
