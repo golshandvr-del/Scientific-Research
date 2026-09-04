@@ -133,12 +133,15 @@ def geometry(df, tf, h):
     return sl_dist, max(1, hold)
 
 
-def run_side(df, idx, sl_dist, hold, is_long):
+def run_side(df, idx, sl_dist_arr, hold, is_long):
+    """idx = کندلِ ساعت h (ورود در open آن). قراردادِ barrier_outcomes:
+    sig_idx = کندلِ سیگنال و ورود در sig_idx+1 ⇒ sig_idx = idx−1.
+    ATR نیز از کندلِ سیگنال (idx−1) خوانده می‌شود — علّی."""
     if len(idx) == 0:
         return None
-    sig = np.zeros(len(df), dtype=bool)
-    sig[idx] = True
-    return queue_rr(df, sig, is_long, sl_dist, ASSET, hold, RR)
+    sig = idx - 1
+    return queue_rr(df, sig, np.full(len(sig), is_long, dtype=bool),
+                    sl_dist_arr[sig], ASSET, hold, RR)
 
 
 def merge_sides(stl, sts):
@@ -171,8 +174,9 @@ def build_null(df, all_idx, sl_dist, hold, n_long, n_short, rng, k_perm=K_PERM):
         # queue_rr غیرهم‌پوشان است، پس pnl per-event از barrier_outcomes مستقیم:
         from strategies.s346_fast import barrier_outcomes
         cfg = se.ASSETS[ASSET]
-        sig = np.zeros(len(df), dtype=bool); sig[all_idx] = True
-        fo = barrier_outcomes(df, sig, is_long, sl_dist, np.maximum(RR * sl_dist, sl_dist),
+        sig = all_idx - 1
+        fo = barrier_outcomes(df, sig, np.full(len(sig), is_long, dtype=bool),
+                              sl_dist[sig], np.maximum(RR * sl_dist[sig], sl_dist[sig]),
                               hold, float(cfg['pip']), float(cfg['spread_pip']),
                               float(cfg.get('slip_pip', 0.0)))
         pnl_u = fo['pnl_pip']
