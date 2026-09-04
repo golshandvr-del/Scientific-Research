@@ -1,0 +1,63 @@
+{
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_full": 188,
+ "n_search": 94,
+ "half_bar": 94,
+ "seed": 20260824,
+ "n_configs": 0,
+ "max_hold": 8,
+ "elapsed_s": 0.0,
+ "uncond": {
+  "1.0x1.5_long": {
+   "wr": null,
+   "n": 0
+  },
+  "1.0x1.5_short": {
+   "wr": null,
+   "n": 0
+  },
+  "1.0x2.0_long": {
+   "wr": null,
+   "n": 0
+  },
+  "1.0x2.0_short": {
+   "wr": null,
+   "n": 0
+  },
+  "1.5x1.5_long": {
+   "wr": null,
+   "n": 0
+  },
+  "1.5x1.5_short": {
+   "wr": null,
+   "n": 0
+  },
+  "1.5x2.0_long": {
+   "wr": null,
+   "n": 0
+  },
+  "1.5x2.0_short": {
+   "wr": null,
+   "n": 0
+  },
+  "2.0x1.5_long": {
+   "wr": null,
+   "n": 0
+  },
+  "2.0x1.5_short": {
+   "wr": null,
+   "n": 0
+  },
+  "2.0x2.0_long": {
+   "wr": null,
+   "n": 0
+  },
+  "2.0x2.0_short": {
+   "wr": null,
+   "n": 0
+  }
+ },
+ "top30": [],
+ "n_rows": 0
+}
