@@ -170,16 +170,46 @@ sides = [s for s in ('long', 'short') if (long_sig if s == 'long' else short_sig
 n_side = {s: int((long_sig if s == 'long' else short_sig).sum()) for s in sides}
 
 # ---- null ①: سخت‌ترین stride درون گیت، هر سمت ----
+# RAM (S622 سندباکس را دو بار فریز کرد): stride=3 روی M1 ≈ ۱.۶M سیگنال ⇒ موتور لیستِ
+# دیکشنریِ صدها هزار معامله می‌سازد (>600MB). برای n>1.5M، شبیه‌سازی قطعه‌ای (CHUNK بار
+# + MH+2 بار سرریز برای خروج). انحراف: busy_until در ابتدای هر قطعه صفر می‌شود ⇒ حداکثر
+# یک هم‌پوشانی اضافه در هر مرز قطعه (≈ n/CHUNK معامله از صدها هزار) — بی‌اثر روی WR.
+STRIDE_CHUNK = 400_000
+
+
+def stride_wr(ls, ss):
+    """WR هر سمت (درصد) برای سیگنال‌های stride؛ قطعه‌ای اگر داده بزرگ باشد."""
+    if n <= 1_500_000:
+        t = se.simulate_trades(df, ls, ss, sl_arr, tp_arr, 'XAUUSD', max_hold=MH, allow_overlap=False)
+        out = {s: wr_side(t, s)[0] for s in sides}
+        del t; return out
+    cnt = {s: [0, 0] for s in sides}   # [wins, total]
+    for a in range(0, n, STRIDE_CHUNK):
+        core = min(STRIDE_CHUNK, n - a); b = min(n, a + core + MH + 2)
+        l2 = ls[a:b].copy(); s2 = ss[a:b].copy(); l2[core:] = False; s2[core:] = False
+        if not (l2.any() or s2.any()): continue
+        t = se.simulate_trades(df.iloc[a:b].reset_index(drop=True), l2, s2, sl_arr[a:b], tp_arr[a:b],
+                               'XAUUSD', max_hold=MH, allow_overlap=False)
+        for s in sides:
+            t2 = t[t['direction'] == s]
+            cnt[s][0] += int((t2['outcome'] == 'win').sum()); cnt[s][1] += int(len(t2))
+        del t, l2, s2; gc.collect()
+    return {s: (100.0 * c[0] / c[1] if c[1] else None) for s, c in cnt.items()}
+
+
 uncond = {s: [] for s in sides}
 for st in STRIDES:
     b = np.zeros(n, bool); b[::st] = True; b &= gate
-    ls = b if 'long' in sides else np.zeros(n, bool)
-    ss = b if 'short' in sides else np.zeros(n, bool)
-    t = se.simulate_trades(df, ls, ss, sl_arr, tp_arr, 'XAUUSD', max_hold=MH, allow_overlap=False)
     for s in sides:
-        w, _ = wr_side(t, s)
-        if w is not None: uncond[s].append(w)
-    del t; gc.collect()
+        # هر سمت جدا: موتور در تلاقی long|short، long را مقدم می‌گیرد؛ اگر هر دو سمت
+        # همان b باشند، سمت short هیچ معامله‌ای نمی‌گیرد (نقص نسخهٔ قبلی برای side=both).
+        ls = b if s == 'long' else np.zeros(n, bool)
+        ss = b if s == 'short' else np.zeros(n, bool)
+        w = stride_wr(ls, ss)
+        if w[s] is not None: uncond[s].append(w[s])
+        print(f'[{layer}] stride {st} {s}={w[s]} ({time.time()-t0:.0f}s)', flush=True)
+        del ls, ss; gc.collect()
+    del b
 print(f'[{layer}] stride-uncond per side: ' + ' '.join(f'{s}=max{max(v):.2f}' for s, v in uncond.items()), flush=True)
 
 # ---- null ②: جای‌گشت درون گیت K=500 با همان تعداد سیگنال (سقف PERM_CAP) ----
