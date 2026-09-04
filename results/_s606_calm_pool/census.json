@@ -1,0 +1,38 @@
+{
+ "H8": {
+  "W": 233,
+  "n_sig": 343,
+  "n_calm": 227,
+  "n_storm": 113,
+  "n_nan": 3,
+  "pass_rate": 0.6676,
+  "n_member": 224,
+  "wr": 62.05,
+  "lift": 12.6029,
+  "lift_raw": 9.2639
+ },
+ "H12": {
+  "W": 89,
+  "n_sig": 467,
+  "n_calm": 297,
+  "n_storm": 170,
+  "n_nan": 0,
+  "pass_rate": 0.636,
+  "n_member": 283,
+  "wr": 57.24,
+  "lift": 7.2612,
+  "lift_raw": 5.2075
+ },
+ "H6": {
+  "W": 233,
+  "n_sig": 488,
+  "n_calm": 341,
+  "n_storm": 146,
+  "n_nan": 1,
+  "pass_rate": 0.7002,
+  "n_member": 327,
+  "wr": 51.68,
+  "lift": 7.0871,
+  "lift_raw": 5.8666
+ }
+}

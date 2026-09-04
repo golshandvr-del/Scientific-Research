@@ -1,0 +1,210 @@
+{
+ "session": "S606",
+ "prereg": "results/S606_PREREG_ENGLE_CALM_POOL.md",
+ "frozen_W": {
+  "H8": 233,
+  "H12": 89,
+  "H6": 233
+ },
+ "census": {
+  "H8": {
+   "W": 233,
+   "n_sig": 343,
+   "n_calm": 227,
+   "n_storm": 113,
+   "n_nan": 3,
+   "pass_rate": 0.6676,
+   "n_member": 224,
+   "wr": 62.05,
+   "lift": 12.6029,
+   "lift_raw": 9.2639
+  },
+  "H12": {
+   "W": 89,
+   "n_sig": 467,
+   "n_calm": 297,
+   "n_storm": 170,
+   "n_nan": 0,
+   "pass_rate": 0.636,
+   "n_member": 283,
+   "wr": 57.24,
+   "lift": 7.2612,
+   "lift_raw": 5.2075
+  },
+  "H6": {
+   "W": 233,
+   "n_sig": 488,
+   "n_calm": 341,
+   "n_storm": 146,
+   "n_nan": 1,
+   "pass_rate": 0.7002,
+   "n_member": 327,
+   "wr": 51.68,
+   "lift": 7.0871,
+   "lift_raw": 5.8666
+  }
+ },
+ "veto_trace": [
+  {
+   "removed": "XAUUSD-H6",
+   "strongest_share": 0.1008
+  }
+ ],
+ "members": [
+  {
+   "card": "XAUUSD-D1",
+   "n": 87,
+   "wr": 64.37,
+   "lift": 16.6906
+  },
+  {
+   "card": "XAUUSD-H8",
+   "n": 224,
+   "wr": 62.05,
+   "lift": 12.6029
+  }
+ ],
+ "n_before": 311,
+ "n_after": 276,
+ "fifo_cut_pct": 11.25,
+ "member_share": {
+  "XAUUSD-H8": 0.7319,
+  "XAUUSD-D1": 0.2681
+ },
+ "sl_pip_med": 197.4,
+ "tp_pip_med": 197.4,
+ "pool_null": {
+  "long": {
+   "uncond_wr": 56.60021581439372,
+   "perm_mean": 57.172242964092604,
+   "perm_sd": 3.504670851217519,
+   "perm_max": null,
+   "perm_k": 800
+  },
+  "short": {
+   "uncond_wr": 42.80570795980505,
+   "perm_mean": 42.31056706402707,
+   "perm_sd": 3.0595596912456813,
+   "perm_max": null,
+   "perm_k": 800
+  }
+ },
+ "seed": 20260822,
+ "n_trials": 5176,
+ "n_trials_stress": 8000,
+ "split_utc": "2019-12-03T16:00:00.000000000",
+ "P1_z_beats_parent": true,
+ "P2_lift_beats_parent": true,
+ "official": {
+  "verdict": "ACCEPT",
+  "rqs2_score": 80.1,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": true,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "notes": [],
+  "metrics": {
+   "n_trades": 276,
+   "win_rate": 61.96,
+   "net_profit": 8328.0,
+   "profit_factor": 1.542,
+   "max_dd_pct": 5.66,
+   "max_consec_losses": 7,
+   "mcl_allowed": 10,
+   "n_wins": 171,
+   "top_win_share": 0.0385,
+   "recovery_factor": 7.81,
+   "expectancy_pip": 48.9707,
+   "expectancy_at_2x_cost": 45.6707,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 197.4,
+   "tp_pip": 197.4,
+   "rr": 1.0,
+   "breakeven_wr_cost": 50.84,
+   "wr_excess_cost": 11.12,
+   "null_ref_wr": 49.47,
+   "skill_lift_pp": 12.49,
+   "skill_z": 3.82,
+   "skill_p_perm": 6.6e-05,
+   "perm_max": 49.47,
+   "perm_k": 800,
+   "p_emp": 2e-05,
+   "p_adj_bonferroni": 0.104284,
+   "z_obs": 4.15,
+   "z_luck_bound": 3.697,
+   "z_margin": 0.453,
+   "n_trials": 5176,
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "max_concurrency": 1,
+   "n_required_h3": 153.0
+  }
+ },
+ "stress": {
+  "verdict": "ACCEPT",
+  "rqs2_score": 79.9,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": true,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "notes": [],
+  "metrics": {
+   "n_trades": 276,
+   "win_rate": 61.96,
+   "net_profit": 8328.0,
+   "profit_factor": 1.542,
+   "max_dd_pct": 5.66,
+   "max_consec_losses": 7,
+   "mcl_allowed": 10,
+   "n_wins": 171,
+   "top_win_share": 0.0385,
+   "recovery_factor": 7.81,
+   "expectancy_pip": 48.9707,
+   "expectancy_at_2x_cost": 45.6707,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 197.4,
+   "tp_pip": 197.4,
+   "rr": 1.0,
+   "breakeven_wr_cost": 50.84,
+   "wr_excess_cost": 11.12,
+   "null_ref_wr": 49.47,
+   "skill_lift_pp": 12.49,
+   "skill_z": 3.82,
+   "skill_p_perm": 6.6e-05,
+   "perm_max": 49.47,
+   "perm_k": 800,
+   "p_emp": 2e-05,
+   "p_adj_bonferroni": 0.161181,
+   "z_obs": 4.15,
+   "z_luck_bound": 3.806,
+   "z_margin": 0.344,
+   "n_trials": 8000,
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "max_concurrency": 1,
+   "n_required_h3": 153.0
+  }
+ },
+ "verdict": "ACCEPT",
+ "rqs2_score": 80.1
+}
