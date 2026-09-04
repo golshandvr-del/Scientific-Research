@@ -1,0 +1,4 @@
+
+====================================================================================
+=== S948 ObvConfirmedBreakout :: XAUUSD_MN1  bars=188  span=15.58y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv  (2011-01-01 00:00:00 → 2026-08-01 00:00:00)

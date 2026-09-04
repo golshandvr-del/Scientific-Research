@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S948 ObvConfirmedBreakout :: XAUUSD_M30  bars=182,145  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_M30.csv  (2011-01-03 00:00:00 → 2026-08-07 23:30:00)
+    geom: SL=41.36pip  TP=62.04pip  rr=1.5
+    family events: long=5,179  short=3,940
+    trades=4,334 (L=2,353 S=1,981)  wr=40.47%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=38.68% n=19563
+      uncond long stride=7: wr=39.02% n=13566
+      uncond long stride=13: wr=39.09% n=9591
+      null long  uncond=39.08872901678657 perm_mean=39.18315762598302 sd=0.940318079928708 k=1000
+      uncond short stride=3: wr=38.52% n=19577
+      uncond short stride=7: wr=38.43% n=13602
+      uncond short stride=13: wr=39.29% n=9696
+      null short uncond=39.29455445544554 perm_mean=39.66867358014202 sd=1.094444090286386 k=1000
+
+S948_ObvConfirmedBreakout_XAUUSD_M30 | REJECT     RQS2=  5.0 | n=4334 WR=40.47% PF=1.01 lift=  +1.07pp z= 1.1 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
