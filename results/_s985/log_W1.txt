@@ -1,0 +1,10 @@
+[W1] src=/home/user/webapp/data/mt5_full/XAUUSD_W1.csv
+[W1] bars_total=813  bars_search=406 (نیمهٔ اول — مسیر C)
+[W1]   L=21 κ=1.5 θ=0.5945 tox_mean=0.3653 events=2  (0s)
+[W1]   L=21 κ=2.5 θ=0.6575 tox_mean=0.3653 events=0  (0s)
+[W1]   L=21 κ=3.5 θ=0.7205 tox_mean=0.3653 events=0  (0s)
+[W1]   L=55 κ=1.5 θ=0.5584 tox_mean=0.3813 events=0  (0s)
+[W1]   L=55 κ=2.5 θ=0.5973 tox_mean=0.3813 events=0  (0s)
+[W1]   L=55 κ=3.5 θ=0.6362 tox_mean=0.3813 events=0  (0s)
+[W1] arms=48 valid(n>=30)=0 vol_zero=0.000 elapsed=0.0s
+[W1] ── ۱۰ بازوی برتر (بر z) ──
