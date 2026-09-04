@@ -1,0 +1,186 @@
+{
+ "tf": "M5",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 1089574,
+ "split_bar": 544787,
+ "winner": {
+  "h": 19,
+  "q": 78.6
+ },
+ "geometry": {
+  "atr_p": 34,
+  "k": 2.618,
+  "rr": 1.0,
+  "hold_bars": 48
+ },
+ "n_trials": 10,
+ "seed": 20260826,
+ "k_perm": 500,
+ "stats": {
+  "n": 1039,
+  "wr": 50.14436958614053,
+  "exp": -1.4398810018243784,
+  "pf": 0.9594980405112047,
+  "n_long": 573,
+  "n_short": 466
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 47.171234598943926,
+   "perm_mean": 47.264921465968584,
+   "perm_sd": 1.8235868037166232,
+   "perm_max": 52.18150087260035,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 47.92557203922554,
+   "perm_mean": 47.92403433476395,
+   "perm_sd": 2.151417316508536,
+   "perm_max": 54.29184549356223,
+   "perm_k": 500
+  }
+ },
+ "rqs2": {
+  "asset": "XAUUSD",
+  "gates": {
+   "H0": true,
+   "H1": false,
+   "H2": false,
+   "H3": false,
+   "H4": false,
+   "H5": true,
+   "H6": false,
+   "H7": false,
+   "H8": false,
+   "H9": false,
+   "H10": false
+  },
+  "metrics": {
+   "n_trades": 1039,
+   "win_rate": 50.14,
+   "net_profit": -2645.2,
+   "profit_factor": 0.931,
+   "max_dd_pct": 42.2,
+   "max_consec_losses": 8,
+   "mcl_allowed": 15,
+   "n_wins": 521,
+   "top_win_share": 0.0208,
+   "recovery_factor": -0.52,
+   "expectancy_pip": -1.4399,
+   "expectancy_at_2x_cost": -4.7399,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 63.992,
+   "tp_pip": 63.992,
+   "rr": 1.0,
+   "breakeven_wr_cost": 52.58,
+   "wr_excess_cost": -2.43,
+   "null_ref_wr": 47.56,
+   "skill_lift_pp": 2.58,
+   "skill_z": 1.31,
+   "skill_p_perm": 0.094958,
+   "perm_max": 53.13,
+   "perm_k": 500,
+   "side_n": {
+    "long": 573,
+    "short": 466
+   },
+   "side_wr": {
+    "long": 49.39,
+    "short": 51.07
+   },
+   "side_lift_pp": {
+    "long": 2.12,
+    "short": 3.15
+   },
+   "prune_sides": [
+    "long"
+   ],
+   "p_emp": 0.050899,
+   "p_adj_bonferroni": 0.50899,
+   "z_obs": 1.667,
+   "z_luck_bound": 1.575,
+   "z_margin": 0.093,
+   "n_trials": 10,
+   "cal_nets": [
+    1660.1,
+    -733.3,
+    -2284.8,
+    -1145.1
+   ],
+   "cal_counts": [
+    173,
+    91,
+    274,
+    501
+   ],
+   "cal_positive": 1,
+   "cal_occupied": 4,
+   "half_nets": [
+    795.6,
+    -3109.6
+   ],
+   "oos": {
+    "n": 773,
+    "wr": 48.9,
+    "pf": 0.874,
+    "net": -3098.1,
+    "wr_req": 52.58
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 978,
+    "n_unjudgeable": 61,
+    "n_counter": 436,
+    "n_aligned": 542,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 49.08,
+    "exp_counter": -0.81,
+    "wr_aligned": 50.18,
+    "exp_aligned": -3.632
+   },
+   "n_required_h3": 3568.8
+  },
+  "notes": [
+   "PF=0.931<1.3"
+  ],
+  "passed": false,
+  "rqs2_score": 3.0,
+  "verdict": "REJECT",
+  "n_fail": 9,
+  "n_unknown": 0,
+  "accepted": false,
+  "power_limited": false,
+  "unproven": false,
+  "unproven_checks": {
+   "G1_lift_floor": false,
+   "G2_evidence": true,
+   "G3_efdr": true,
+   "G4_economics": false,
+   "G5_glass_ceiling": true,
+   "G6_structure": false
+  },
+  "gate_families": {
+   "economic": {
+    "H0": true,
+    "H1": false,
+    "H2": false,
+    "H8": false,
+    "H9": false
+   },
+   "power": {
+    "H3": false,
+    "H7": false,
+    "H10": false
+   },
+   "economic_all_pass": false,
+   "power_defects": [
+    "H3",
+    "H7",
+    "H10"
+   ]
+  },
+  "admission_rule": "gates_only",
+  "rank_tier": "D"
+ }
+}
