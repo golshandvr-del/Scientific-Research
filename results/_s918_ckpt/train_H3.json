@@ -1,0 +1,23 @@
+{
+ "tf": "H3",
+ "split_bar": 19083,
+ "n_train": 19083,
+ "n_sig_long": 192,
+ "n_sig_short": 214,
+ "trend_lb": 21,
+ "rng_lb": 34,
+ "max_hold": 34,
+ "geometry": {
+  "tp": 211.5,
+  "sl": 77.0,
+  "n_sig": 406,
+  "rr": 2.747
+ },
+ "train": {
+  "n": 378,
+  "wr": 33.33,
+  "e_pip": 3.35,
+  "e_over_sl_pct": 4.35,
+  "cost_over_sl_pct": 4.29
+ }
+}
