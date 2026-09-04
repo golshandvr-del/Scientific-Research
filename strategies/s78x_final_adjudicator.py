@@ -227,7 +227,9 @@ out = {'layer': LAYER, 'tf': TF, 'null': null, 'verdict': res['verdict'],
                    for k, vv in res['metrics'].items()},
        'notes': res['notes'], 'n_trades': int(len(trades)),
        'src': d['src'], 'split_bar': int(split), 'n_trials': CFG['n_trials']}
-json.dump(out, open(os.path.join(HERE, f's{LAYER}_final_result_{TF}.json'), 'w'),
+OUTD = os.path.join(os.path.dirname(HERE), 'results', f'_s{LAYER}'); os.makedirs(OUTD, exist_ok=True)
+trades.to_csv(os.path.join(OUTD, f's{LAYER}_trades_{TF}.csv'), index=False)
+json.dump(out, open(os.path.join(OUTD, f's{LAYER}_final_result_{TF}.json'), 'w'),
           indent=1, default=str)
 print('\n================= VERDICT =================', flush=True)
 print(f'S{LAYER} verdict:', res['verdict'], ' score:', res['rqs2_score'], flush=True)
