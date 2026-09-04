@@ -1,0 +1,35 @@
+========================================================================
+S895 Turn-of-Month Flow · XAUUSD-H8 (prereg ee86cd6c)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv  bars=11978  split=8384  hold=3
+ATRmed=103.22pip  k1.0(SL=TP=103.2) k1.5(SL=TP=154.8) k2.058(SL=TP=212.4)
+events: FULL/ALL=824 FULL/ASIA=821 LATE/ALL=450 LATE/ASIA=450 EARLY/ALL=562 EARLY/ASIA=559
+           FULL /ALL /k1.0    n= 577 exp=   -6.32 exp2x=   -9.62 t=-1.90
+           FULL /ALL /k1.5    n= 577 exp=   -7.85 exp2x=  -11.15 t=-1.99
+           FULL /ALL /k2.058  n= 577 exp=   -5.75 exp2x=   -9.05 t=-1.33
+           FULL /ASIA/k1.0    n= 575 exp=   -3.76 exp2x=   -7.06 t=-1.07
+           FULL /ASIA/k1.5    n= 574 exp=   -1.79 exp2x=   -5.09 t=-0.41
+           FULL /ASIA/k2.058  n= 574 exp=   -2.57 exp2x=   -5.87 t=-0.54
+           LATE /ALL /k1.0    n= 315 exp=   -4.96 exp2x=   -8.26 t=-1.11
+           LATE /ALL /k1.5    n= 315 exp=   -0.37 exp2x=   -3.67 t=-0.07
+  ELIGIBLE LATE /ALL /k2.058  n= 315 exp=   +3.76 exp2x=   +0.46 t=+0.66
+           LATE /ASIA/k1.0    n= 316 exp=   +0.66 exp2x=   -2.64 t=+0.14
+           LATE /ASIA/k1.5    n= 316 exp=   +2.59 exp2x=   -0.71 t=+0.45
+           LATE /ASIA/k2.058  n= 316 exp=   -1.66 exp2x=   -4.96 t=-0.26
+           EARLY/ALL /k1.0    n= 394 exp=   -4.47 exp2x=   -7.77 t=-1.10
+           EARLY/ALL /k1.5    n= 394 exp=   -8.09 exp2x=  -11.39 t=-1.68
+           EARLY/ALL /k2.058  n= 394 exp=   -6.41 exp2x=   -9.71 t=-1.20
+           EARLY/ASIA/k1.0    n= 391 exp=   -4.52 exp2x=   -7.82 t=-1.04
+           EARLY/ASIA/k1.5    n= 390 exp=   -1.05 exp2x=   -4.35 t=-0.20
+           EARLY/ASIA/k2.058  n= 390 exp=   -0.93 exp2x=   -4.23 t=-0.16
+
+LOCKED: LATE/ALL/k2.058 t=0.659  IS: n=315 WR=49.52 exp2x=0.465
+  perm 100/500 …
+  perm 200/500 …
+  perm 300/500 …
+  perm 400/500 …
+  perm 500/500 …
+
+FULL: n=448 WR=50.22  OOS: n=133 WR=51.8796992481203
+geo-lift=+0.16pp  VERDICT: REJECT score=3.4
+gates: {'H0': True, 'H1': False, 'H2': False, 'H3': False, 'H4': False, 'H5': False, 'H6': False, 'H7': False, 'H8': False, 'H9': False, 'H10': False}
