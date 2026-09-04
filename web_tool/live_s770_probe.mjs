@@ -36,7 +36,11 @@ for (const card of CARDS) {
   // ③ خودِ لایه را با همان دادهٔ زنده صدا می‌زنیم.
   const cfg = S770_CFG[card]
   if (!cfg) { console.log(`❌ S770_CFG برای ${card} وجود ندارد!`); continue }
-  const sig = computeS770(cfg, candles)
+  // ⚠️ ترتیبِ آرگومان‌ها (candles, cfg) است — نه (cfg, candles). نسخهٔ اولِ همین
+  //    probe جابه‌جا صدا زده بود و استثنا خورد؛ ثبتش می‌کنم چون همان تلهٔ
+  //    ترتیب-آرگومان است که اگر در آداپتورِ رجیستری رخ می‌داد، پریتی سبز
+  //    می‌ماند و سایت خاموش (و تستِ یکپارچگی همان را می‌گیرد).
+  const sig = computeS770(candles, cfg)
 
   console.log(`پیکربندی: theta=±${cfg.theta} · ADR=${cfg.adrP} · ATR=${cfg.atrP} · SL=${cfg.slK}×ATR · RR=${cfg.rr} · hold=${cfg.hold}`)
   console.log(`وضعیتِ زندهٔ S770:`)
