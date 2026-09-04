@@ -1,0 +1,220 @@
+{
+ "tf": "H6",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 15966,
+ "split": 9579,
+ "base_wr": {
+  "long": 39.59778085991678,
+  "short": 37.6454483230664
+ },
+ "n_family": 40,
+ "rows": [
+  {
+   "tau": 0.75,
+   "gate": "none",
+   "mode": "cont",
+   "side": "long",
+   "n": 502,
+   "wr": 40.24,
+   "exp_pip": 1.307,
+   "lift": 0.64,
+   "score": 14.37
+  },
+  {
+   "tau": 0.75,
+   "gate": "none",
+   "mode": "cont",
+   "side": "short",
+   "n": 514,
+   "wr": 37.94,
+   "exp_pip": -5.493,
+   "lift": 0.29,
+   "score": 6.63
+  },
+  {
+   "tau": 0.75,
+   "gate": "none",
+   "mode": "rev",
+   "side": "long",
+   "n": 512,
+   "wr": 38.67,
+   "exp_pip": -3.028,
+   "lift": -0.93,
+   "score": -20.95
+  },
+  {
+   "tau": 0.75,
+   "gate": "none",
+   "mode": "rev",
+   "side": "short",
+   "n": 526,
+   "wr": 38.21,
+   "exp_pip": -3.375,
+   "lift": 0.57,
+   "score": 13.01
+  },
+  {
+   "tau": 0.75,
+   "gate": "drift",
+   "mode": "cont",
+   "side": "long",
+   "n": 379,
+   "wr": 41.95,
+   "exp_pip": 5.049,
+   "lift": 2.35,
+   "score": 45.84
+  },
+  {
+   "tau": 0.75,
+   "gate": "drift",
+   "mode": "cont",
+   "side": "short",
+   "n": 317,
+   "wr": 42.59,
+   "exp_pip": 4.412,
+   "lift": 4.94,
+   "score": 87.98
+  },
+  {
+   "tau": 0.75,
+   "gate": "drift",
+   "mode": "rev",
+   "side": "long",
+   "n": 335,
+   "wr": 37.61,
+   "exp_pip": -6.123,
+   "lift": -1.99,
+   "score": -36.35
+  },
+  {
+   "tau": 0.75,
+   "gate": "drift",
+   "mode": "rev",
+   "side": "short",
+   "n": 407,
+   "wr": 37.84,
+   "exp_pip": -4.403,
+   "lift": 0.19,
+   "score": 3.88
+  },
+  {
+   "tau": 0.875,
+   "gate": "none",
+   "mode": "cont",
+   "side": "long",
+   "n": 382,
+   "wr": 40.05,
+   "exp_pip": 1.156,
+   "lift": 0.45,
+   "score": 8.88
+  },
+  {
+   "tau": 0.875,
+   "gate": "none",
+   "mode": "cont",
+   "side": "short",
+   "n": 372,
+   "wr": 36.83,
+   "exp_pip": -6.186,
+   "lift": -0.82,
+   "score": -15.77
+  },
+  {
+   "tau": 0.875,
+   "gate": "none",
+   "mode": "rev",
+   "side": "long",
+   "n": 379,
+   "wr": 39.31,
+   "exp_pip": 1.262,
+   "lift": -0.28,
+   "score": -5.52
+  },
+  {
+   "tau": 0.875,
+   "gate": "none",
+   "mode": "rev",
+   "side": "short",
+   "n": 382,
+   "wr": 38.22,
+   "exp_pip": -1.587,
+   "lift": 0.57,
+   "score": 11.23
+  },
+  {
+   "tau": 0.875,
+   "gate": "drift",
+   "mode": "cont",
+   "side": "long",
+   "n": 276,
+   "wr": 41.67,
+   "exp_pip": 5.979,
+   "lift": 2.07,
+   "score": 34.37
+  },
+  {
+   "tau": 0.875,
+   "gate": "drift",
+   "mode": "cont",
+   "side": "short",
+   "n": 206,
+   "wr": 39.81,
+   "exp_pip": -4.135,
+   "lift": 2.16,
+   "score": 31.01
+  },
+  {
+   "tau": 0.875,
+   "gate": "drift",
+   "mode": "rev",
+   "side": "long",
+   "n": 218,
+   "wr": 38.53,
+   "exp_pip": 4.677,
+   "lift": -1.07,
+   "score": -15.73
+  },
+  {
+   "tau": 0.875,
+   "gate": "drift",
+   "mode": "rev",
+   "side": "short",
+   "n": 287,
+   "wr": 36.93,
+   "exp_pip": -4.682,
+   "lift": -0.71,
+   "score": -12.06
+  }
+ ],
+ "best": {
+  "long": {
+   "tau": 0.75,
+   "gate": "drift",
+   "mode": "cont",
+   "side": "long",
+   "n": 379,
+   "wr": 41.95,
+   "exp_pip": 5.049,
+   "lift": 2.35,
+   "score": 45.84
+  },
+  "short": {
+   "tau": 0.75,
+   "gate": "drift",
+   "mode": "cont",
+   "side": "short",
+   "n": 317,
+   "wr": 42.59,
+   "exp_pip": 4.412,
+   "lift": 4.94,
+   "score": 87.98
+  }
+ },
+ "barrier": "lift*sqrt(n)>=78 & exp>0 & n>=30 & mode=cont",
+ "best_pass": {
+  "long": false,
+  "short": true
+ },
+ "elapsed_s": 0.9
+}
