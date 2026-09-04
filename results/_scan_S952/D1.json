@@ -1,0 +1,199 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "n_bars": 4005,
+ "members": [
+  {
+   "k": 2.0,
+   "L": 34,
+   "m": 2,
+   "mode": "continuation",
+   "n_sig": 90,
+   "z": 0.16,
+   "n": 80,
+   "wr": 51.25,
+   "be": 50.38
+  },
+  {
+   "k": 2.0,
+   "L": 34,
+   "m": 2,
+   "mode": "fade",
+   "n_sig": 90,
+   "z": -0.29,
+   "n": 80,
+   "wr": 48.75,
+   "be": 50.38
+  },
+  {
+   "k": 2.0,
+   "L": 34,
+   "m": 3,
+   "mode": "continuation",
+   "n_sig": 35,
+   "z": -1.07,
+   "n": 34,
+   "wr": 41.18,
+   "be": 50.36
+  },
+  {
+   "k": 2.0,
+   "L": 34,
+   "m": 3,
+   "mode": "fade",
+   "n_sig": 35,
+   "z": 0.99,
+   "n": 34,
+   "wr": 58.82,
+   "be": 50.36
+  },
+  {
+   "k": 2.0,
+   "L": 89,
+   "m": 2,
+   "mode": "continuation",
+   "n_sig": 64,
+   "z": 0.21,
+   "n": 56,
+   "wr": 51.79,
+   "be": 50.39
+  },
+  {
+   "k": 2.0,
+   "L": 89,
+   "m": 2,
+   "mode": "fade",
+   "n_sig": 64,
+   "z": -0.59,
+   "n": 56,
+   "wr": 46.43,
+   "be": 50.39
+  },
+  {
+   "k": 2.0,
+   "L": 89,
+   "m": 3,
+   "mode": "continuation",
+   "n_sig": 62,
+   "z": -0.33,
+   "n": 56,
+   "wr": 48.21,
+   "be": 50.41
+  },
+  {
+   "k": 2.0,
+   "L": 89,
+   "m": 3,
+   "mode": "fade",
+   "n_sig": 62,
+   "z": 0.21,
+   "n": 56,
+   "wr": 51.79,
+   "be": 50.41
+  },
+  {
+   "k": 2.6,
+   "L": 34,
+   "m": 2,
+   "mode": "continuation",
+   "n_sig": 34,
+   "z": 0.82,
+   "n": 33,
+   "wr": 57.58,
+   "be": 50.41
+  },
+  {
+   "k": 2.6,
+   "L": 34,
+   "m": 2,
+   "mode": "fade",
+   "n_sig": 34,
+   "z": -0.92,
+   "n": 33,
+   "wr": 42.42,
+   "be": 50.41
+  },
+  {
+   "k": 2.6,
+   "L": 34,
+   "m": 3,
+   "mode": "continuation",
+   "n_sig": 13,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "L": 34,
+   "m": 3,
+   "mode": "fade",
+   "n_sig": 13,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "L": 89,
+   "m": 2,
+   "mode": "continuation",
+   "n_sig": 36,
+   "z": 2.29,
+   "n": 36,
+   "wr": 69.44,
+   "be": 50.36
+  },
+  {
+   "k": 2.6,
+   "L": 89,
+   "m": 2,
+   "mode": "fade",
+   "n_sig": 36,
+   "z": -2.38,
+   "n": 36,
+   "wr": 30.56,
+   "be": 50.36
+  },
+  {
+   "k": 2.6,
+   "L": 89,
+   "m": 3,
+   "mode": "continuation",
+   "n_sig": 23,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "L": 89,
+   "m": 3,
+   "mode": "fade",
+   "n_sig": 23,
+   "z": -99
+  }
+ ],
+ "verdict": "REJECT",
+ "rqs2_score": 15.3,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
+  "H6": true,
+  "H7": false,
+  "H8": true,
+  "H9": true,
+  "H10": false
+ },
+ "best": {
+  "k": 2.6,
+  "L": 89,
+  "m": 2,
+  "mode": "continuation",
+  "z_proxy": 2.29,
+  "n": 36,
+  "wr": 69.44,
+  "sl_med": 461.2,
+  "skill_z": null,
+  "lift_pp": null,
+  "p_perm": null
+ }
+}
