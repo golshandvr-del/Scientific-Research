@@ -1,0 +1,12 @@
+[MN1] src=/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv
+[MN1] bars_total=188  bars_search=94 (نیمهٔ اول — مسیر C)
+/usr/local/lib/python3.13/site-packages/numpy/lib/_nanfunctions_impl.py:1214: RuntimeWarning: Mean of empty slice
+  return np.nanmean(a, axis, out=out, keepdims=keepdims)
+[MN1]   L=21 κ=1.5 θ=0.5945 tox_mean=0.0000 events=0  (0s)
+[MN1]   L=21 κ=2.5 θ=0.6575 tox_mean=0.0000 events=0  (0s)
+[MN1]   L=21 κ=3.5 θ=0.7205 tox_mean=0.0000 events=0  (0s)
+[MN1]   L=55 κ=1.5 θ=0.5584 tox_mean=0.0000 events=0  (0s)
+[MN1]   L=55 κ=2.5 θ=0.5973 tox_mean=0.0000 events=0  (0s)
+[MN1]   L=55 κ=3.5 θ=0.6362 tox_mean=0.0000 events=0  (0s)
+[MN1] arms=48 valid(n>=30)=0 vol_zero=0.000 elapsed=0.0s
+[MN1] ── ۱۰ بازوی برتر (بر z) ──
