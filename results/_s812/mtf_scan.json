@@ -38,5 +38,25 @@
   "gates": {},
   "pf": 1.331,
   "exp_pip": 11.1377
+ },
+ "M5": {
+  "tf": "M5",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+  "n_events": 762,
+  "mh": 84,
+  "n": 762,
+  "wr": 54.987,
+  "pnl_pip": 7784.1,
+  "uncond_long": 49.343,
+  "perm_mean": 49.031,
+  "perm_sd": 2.568,
+  "perm_max": 58.182,
+  "lift_pp": 5.644,
+  "z": 2.2,
+  "verdict": "POWER-LIMITED",
+  "rqs2": 22.8,
+  "gates": {},
+  "pf": 1.303,
+  "exp_pip": 10.2153
  }
 }
