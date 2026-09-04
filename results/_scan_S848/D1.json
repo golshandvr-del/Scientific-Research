@@ -1,0 +1,16 @@
+{
+ "tf": "D1",
+ "asset": "XAUUSD",
+ "bars": 4005,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "span_years": 15.59,
+ "hold": 21,
+ "split_bar": 2002,
+ "warmup": 400,
+ "grid": 8,
+ "z_shock": 2.618,
+ "vol_win": 89,
+ "is_grid": [],
+ "verdict": "UNPROVEN",
+ "reason": "NO_IS_CANDIDATE"
+}
