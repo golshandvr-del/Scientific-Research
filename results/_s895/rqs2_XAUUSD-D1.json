@@ -1,0 +1,6 @@
+{
+ "card": "XAUUSD-D1",
+ "prereg": "ee86cd6c",
+ "verdict": "INCOMPLETE",
+ "reason": "intraday TOM day-entry undefined at >=D1 per prereg"
+}
