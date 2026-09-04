@@ -1,0 +1,211 @@
+{
+ "patient": "S382_H4",
+ "status": "JUDGED",
+ "variant_winner": "R20",
+ "n": 869,
+ "baseline_full": {
+  "n": 869,
+  "total": 237722.5,
+  "avg": 273.56,
+  "sd": 1536.19,
+  "worst": -1228.5,
+  "best": 1842.8,
+  "maxDD": 23956.5,
+  "pf": 1.436,
+  "wr": 48.9
+ },
+ "treatment_full": {
+  "n": 869,
+  "total": 233312.8,
+  "avg": 268.48,
+  "sd": 1479.87,
+  "worst": -1228.5,
+  "best": 1842.8,
+  "maxDD": 21462.9,
+  "pf": 1.461,
+  "wr": 46.1
+ },
+ "judge_full": {
+  "profit_ok": true,
+  "improves": {
+   "sd": true,
+   "worst": false,
+   "maxDD": true
+  },
+  "worsens_gt5": {
+   "sd": false,
+   "worst": false,
+   "maxDD": false
+  },
+  "risk_ok": true,
+  "verdict": "PASS"
+ },
+ "h1": {
+  "base": {
+   "n": 339,
+   "total": 44227.4,
+   "avg": 130.46,
+   "sd": 1527.73,
+   "worst": -1228.5,
+   "best": 1842.8,
+   "maxDD": 23956.5,
+   "pf": 1.19,
+   "wr": 44.2
+  },
+  "mgmt": {
+   "n": 339,
+   "total": 50892.2,
+   "avg": 150.12,
+   "sd": 1437.67,
+   "worst": -1228.5,
+   "best": 1842.8,
+   "maxDD": 21462.9,
+   "pf": 1.25,
+   "wr": 40.7
+  },
+  "judge": {
+   "profit_ok": true,
+   "improves": {
+    "sd": true,
+    "worst": false,
+    "maxDD": true
+   },
+   "worsens_gt5": {
+    "sd": false,
+    "worst": false,
+    "maxDD": false
+   },
+   "risk_ok": true,
+   "verdict": "PASS"
+  }
+ },
+ "h2": {
+  "base": {
+   "n": 530,
+   "total": 193495.1,
+   "avg": 365.09,
+   "sd": 1536.03,
+   "worst": -1228.5,
+   "best": 1842.8,
+   "maxDD": 13513.9,
+   "pf": 1.618,
+   "wr": 51.9
+  },
+  "mgmt": {
+   "n": 530,
+   "total": 182420.5,
+   "avg": 344.19,
+   "sd": 1502.7,
+   "worst": -1228.5,
+   "best": 1842.8,
+   "maxDD": 12854.4,
+   "pf": 1.604,
+   "wr": 49.6
+  },
+  "judge": {
+   "profit_ok": false,
+   "improves": {
+    "sd": true,
+    "worst": false,
+    "maxDD": true
+   },
+   "worsens_gt5": {
+    "sd": false,
+    "worst": false,
+    "maxDD": false
+   },
+   "risk_ok": true,
+   "verdict": "FAIL"
+  }
+ },
+ "final_verdict": "FAIL",
+ "calibration": {
+  "R15": {
+   "mgmt_h1": {
+    "n": 339,
+    "total": 35094.7,
+    "avg": 103.52,
+    "sd": 1294.42,
+    "worst": -1228.5,
+    "best": 1842.8,
+    "maxDD": 14435.4,
+    "pf": 1.201,
+    "wr": 33.6
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "FAIL"
+   },
+   "n_changed": 205
+  },
+  "R20": {
+   "mgmt_h1": {
+    "n": 339,
+    "total": 50892.2,
+    "avg": 150.12,
+    "sd": 1437.67,
+    "worst": -1228.5,
+    "best": 1842.8,
+    "maxDD": 21462.9,
+    "pf": 1.25,
+    "wr": 40.7
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": true,
+    "verdict": "PASS"
+   },
+   "n_changed": 79
+  },
+  "R30": {
+   "mgmt_h1": {
+    "n": 339,
+    "total": 43648.7,
+    "avg": 128.76,
+    "sd": 1522.19,
+    "worst": -1228.5,
+    "best": 1842.8,
+    "maxDD": 23956.5,
+    "pf": 1.189,
+    "wr": 44.0
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 6
+  }
+ }
+}
