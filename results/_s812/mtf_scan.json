@@ -242,5 +242,12 @@
  "H4": {
   "tf": "H4",
   "note": "error: "
+ },
+ "H6": {
+  "tf": "H6",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+  "n_events": 0,
+  "mh": 1,
+  "note": "NA \u2014 too few Friday>=21h bars on this TF"
  }
 }
