@@ -1,0 +1,95 @@
+{
+ "prereg": "results/S587_PREREG_RVI_H12_DRIFT_REVIVAL.md",
+ "provenance": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+  "rows": 7998,
+  "span": "2011-01-03 00:00:00 → 2026-08-07 12:00:00"
+ },
+ "seed": 20260828,
+ "k_perm": 500,
+ "n_trials": 18,
+ "geometry": {
+  "sl_pip": 151.09,
+  "tp_pip": 244.46,
+  "mh": 34,
+  "rr": 1.618
+ },
+ "k_drift_bars": 120,
+ "n_raw": {
+  "L": 266,
+  "S": 211
+ },
+ "n_gated": {
+  "L": 180,
+  "S": 121
+ },
+ "n_trades": 251,
+ "n_long": 153,
+ "n_short": 98,
+ "lift_gated_pp": 9.238,
+ "lift_ungated_ref_pp": 7.95,
+ "null": {
+  "long": {
+   "uncond_wr": 41.96610169491525,
+   "perm_mean": 41.22912342041194,
+   "perm_sd": 3.495486091043971,
+   "perm_max": 52.22929936305732,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 38.97170672345604,
+   "perm_mean": 38.50126520032925,
+   "perm_sd": 4.420767616931921,
+   "perm_max": 52.42718446601942,
+   "perm_k": 500
+  }
+ },
+ "verdict": "POWER-LIMITED",
+ "rqs2_score": 28.1,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true
+ },
+ "failed_gates": [
+  "H3"
+ ],
+ "z_luck_bound": 1.854,
+ "z_margin": 0.92,
+ "metrics": {
+  "n_trades": 251,
+  "n_wins": 124,
+  "win_rate": 49.4,
+  "expectancy_pip": 40.9094,
+  "cost_pip": 3.3,
+  "profit_factor": 1.556,
+  "net_profit": 9414.8,
+  "max_dd_pct": 4.83,
+  "max_consec_losses": 7,
+  "mcl_allowed": 14,
+  "recovery_factor": 9.8,
+  "skill_lift_pp": 8.61,
+  "skill_z": 2.23,
+  "null_ref_wr": 40.8,
+  "breakeven_wr_cost": 39.03,
+  "rr": 1.618,
+  "top_win_share": 0.0081,
+  "z_obs": 2.774,
+  "z_luck_bound": 1.854,
+  "z_margin": 0.92,
+  "skill_p_perm": 0.012832,
+  "p_emp": 0.003562,
+  "p_adj_bonferroni": 0.064118,
+  "perm_k": 500,
+  "perm_max": 52.31
+ },
+ "notes": []
+}
