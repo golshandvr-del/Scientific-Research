@@ -33,6 +33,7 @@ def r2_slope(c, w):
 CFG = {
  's990': dict(name='R2TrendBirthLong', tf='H1', side='long', mh=48, nt=27, seed=990990),
  's991': dict(name='AutocorrMomLong',  tf='H8', side='long', mh=21, nt=159, seed=991991),
+ 's992': dict(name='ErShockLong',      tf='H1', side='long', mh=48, nt=146, seed=992992),
 }
 
 def rule_s990(df):
@@ -55,6 +56,16 @@ def rule_s991(df):
     big = (r.abs() > r.abs().rolling(34).quantile(0.5).shift(1)).fillna(False)
     sig = (gate & big & (r > 0)).astype(bool)
     return sig, gate, sl, sl
+
+def rule_s992(df):
+    h,l,c = df['high'].values, df['low'].values, df['close'].values
+    sl = med_atr(h,l,c,100)*1.5/0.1
+    cs = pd.Series(c); net = cs - cs.shift(13); path = cs.diff().abs().rolling(13).sum()
+    er = net.abs()/path.replace(0,np.nan)
+    edge = ((er > 0.70) & (er.shift(1).rolling(3).min() < 0.30)).fillna(False).astype(bool)
+    edge = edge & ~edge.shift(1, fill_value=False)
+    gate = (net > 0).fillna(False).astype(bool)
+    return (edge & gate), gate, sl, sl*1.5
 
 # ---------------- اجرا ----------------
 layer = sys.argv[1]; cfg = CFG[layer]
