@@ -1,0 +1,93 @@
+{
+ "card": "XAUUSD_M20",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M20.csv",
+ "bars": 272979,
+ "split": 163787,
+ "cells": [
+  {
+   "tf": "M20",
+   "theta": 0.35,
+   "hold": 16,
+   "n": 553,
+   "status": "OK",
+   "wr": 34.54,
+   "exp_net": -4.074,
+   "g1": -3.003,
+   "g2": -4.705,
+   "lift_pp": 1.84,
+   "zproxy": 0.432,
+   "stable": false
+  },
+  {
+   "tf": "M20",
+   "theta": 0.35,
+   "hold": 32,
+   "n": 536,
+   "status": "OK",
+   "wr": 32.46,
+   "exp_net": -3.756,
+   "g1": -3.522,
+   "g2": -3.89,
+   "lift_pp": -0.24,
+   "zproxy": -0.055,
+   "stable": false
+  },
+  {
+   "tf": "M20",
+   "theta": 0.5,
+   "hold": 16,
+   "n": 458,
+   "status": "OK",
+   "wr": 33.84,
+   "exp_net": -4.643,
+   "g1": -5.003,
+   "g2": -4.475,
+   "lift_pp": 1.14,
+   "zproxy": 0.244,
+   "stable": false
+  },
+  {
+   "tf": "M20",
+   "theta": 0.5,
+   "hold": 32,
+   "n": 444,
+   "status": "OK",
+   "wr": 31.53,
+   "exp_net": -5.155,
+   "g1": -6.1,
+   "g2": -4.706,
+   "lift_pp": -1.17,
+   "zproxy": -0.246,
+   "stable": false
+  },
+  {
+   "tf": "M20",
+   "theta": 0.65,
+   "hold": 16,
+   "n": 294,
+   "status": "OK",
+   "wr": 37.07,
+   "exp_net": -1.377,
+   "g1": -2.94,
+   "g2": -0.547,
+   "lift_pp": 4.37,
+   "zproxy": 0.75,
+   "stable": false
+  },
+  {
+   "tf": "M20",
+   "theta": 0.65,
+   "hold": 32,
+   "n": 288,
+   "status": "OK",
+   "wr": 34.72,
+   "exp_net": -1.073,
+   "g1": -2.672,
+   "g2": -0.235,
+   "lift_pp": 2.02,
+   "zproxy": 0.343,
+   "stable": false
+  }
+ ],
+ "best": null
+}
