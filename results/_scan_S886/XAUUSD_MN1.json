@@ -1,0 +1,11 @@
+{
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_all": 188,
+ "half_idx": 94,
+ "atr89_median_pip": 986.4134831460675,
+ "sl_pip": 1578.3,
+ "configs": [],
+ "best": null,
+ "elapsed_s": 0.0
+}
