@@ -1,0 +1,185 @@
+{
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_full": 188,
+ "n_half": 94,
+ "sl_pip": NaN,
+ "atr_per": 34,
+ "sl_mult": 1.618,
+ "max_hold": 5,
+ "cost_pip": 3.3,
+ "warm": 100,
+ "grid_cells": 24,
+ "cells": [
+  {
+   "L": 13,
+   "th": 0.618,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 13,
+   "th": 0.618,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 13,
+   "th": 0.618,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 13,
+   "th": 0.786,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 13,
+   "th": 0.786,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 13,
+   "th": 0.786,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 21,
+   "th": 0.618,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 21,
+   "th": 0.618,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 21,
+   "th": 0.618,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 21,
+   "th": 0.786,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 21,
+   "th": 0.786,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 21,
+   "th": 0.786,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 34,
+   "th": 0.618,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 34,
+   "th": 0.618,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 34,
+   "th": 0.618,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 34,
+   "th": 0.786,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 34,
+   "th": 0.786,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 34,
+   "th": 0.786,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 55,
+   "th": 0.618,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 55,
+   "th": 0.618,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 55,
+   "th": 0.618,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 55,
+   "th": 0.786,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 55,
+   "th": 0.786,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "L": 55,
+   "th": 0.786,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  }
+ ],
+ "elapsed_s": 0.0
+}
