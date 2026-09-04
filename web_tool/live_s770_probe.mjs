@@ -9,11 +9,40 @@
 // صدا می‌زند و وضعیتِ واقعی‌اش را چاپ می‌کند.
 //
 // اجرا: cd web_tool && node --import tsx live_s770_probe.mjs
-import { CARD_LAYERS } from './src/strategy_registry.ts'
+import { CARD_LAYERS, runCard } from './src/strategy_registry.ts'
 import { computeS770, S770_CFG } from './src/adr_expansion_s770.ts'
 
 const BASE = 'http://localhost:3000'
-const CARDS = ['XAUUSD-D1', 'XAUUSD-H8']
+// ⚠️ کندل‌ها را باید **عیناً مثلِ خودِ سایت** بسازیم: `/api/candles` دادهٔ پایهٔ
+//    H1 می‌دهد و index.tsx آن را با aggregateCandles(·, mult) به کارت تبدیل
+//    می‌کند. بی این تجمیع، probe به لایه دادهٔ H1 می‌داد و «روزِ تقویمی» را
+//    ۲۴ برابر ریزتر می‌دید ⇒ اندازه‌گیریِ بی‌معنا. mult همان ضریبِ سایت است.
+const CARDS = [
+  { card: 'XAUUSD-D1', mult: 24 },
+  { card: 'XAUUSD-H8', mult: 8 },
+]
+
+// تجمیعِ کندل با مرزِ ثابتِ UTC (t % (3600*mult) == 0) — همان قاعدهٔ سایت.
+function aggregate(h1, mult) {
+  if (mult <= 1) return h1
+  const sec = 3600 * mult
+  const out = []
+  let cur = null
+  for (const c of h1) {
+    const bucket = Math.floor(c.time / sec) * sec
+    if (!cur || cur.time !== bucket) {
+      if (cur) out.push(cur)
+      cur = { time: bucket, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume || 0 }
+    } else {
+      cur.high = Math.max(cur.high, c.high)
+      cur.low = Math.min(cur.low, c.low)
+      cur.close = c.close
+      cur.volume += (c.volume || 0)
+    }
+  }
+  if (cur) out.push(cur)
+  return out
+}
 
 for (const card of CARDS) {
   console.log(`\n══════ ${card} ══════`)
