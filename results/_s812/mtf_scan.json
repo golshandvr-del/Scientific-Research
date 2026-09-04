@@ -158,5 +158,25 @@
   "gates": {},
   "pf": 1.298,
   "exp_pip": 9.3459
+ },
+ "M30": {
+  "tf": "M30",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M30.csv",
+  "n_events": 762,
+  "mh": 14,
+  "n": 762,
+  "wr": 54.068,
+  "pnl_pip": 6445.9,
+  "uncond_long": 48.97,
+  "perm_mean": 48.854,
+  "perm_sd": 2.599,
+  "perm_max": 57.182,
+  "lift_pp": 5.098,
+  "z": 1.96,
+  "verdict": "REJECT",
+  "rqs2": 21.4,
+  "gates": {},
+  "pf": 1.241,
+  "exp_pip": 8.4591
  }
 }
