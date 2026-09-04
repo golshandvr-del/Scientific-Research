@@ -54,18 +54,23 @@ B.OUT = OUT
 
 
 def sigma_series(cl):
-    """σ_t همان σ فریزِ ewma_z (RiskMetrics λ=0.94) — بازسازیِ عینیِ فرمول S840."""
+    """σ_t عیناً همان σ درونِ ewma_z فریزِ S840 (بدون بازنویسیِ فرمول):
+    ewma_z برمی‌گرداند z=r/σ و r ⇒ σ = r/z هر جا z≠0 است؛ در کندل‌های r=0
+    (z=0) از بازسازیِ هم‌ارزِ فرمول (var[k0]=v0؛ v_t=λv_{t-1}+(1−λ)r²_{t-1}) استفاده
+    می‌شود و سلامتش با max|Δz| در main سنجیده می‌شود."""
+    z, r = ewma_z(cl)
     c = np.asarray(cl, float)
-    r = np.zeros(len(c))
-    r[1:] = np.diff(np.log(c))
     var = np.full(len(c), np.nan)
     k0 = min(50, len(c) - 1)
     if k0 < 5:
         return var
     v = float(np.var(r[1:k0 + 1]))
+    if v <= 0:
+        v = 1e-12
+    var[k0] = v
     for t in range(k0 + 1, len(c)):
+        v = LAMBDA * v + (1.0 - LAMBDA) * r[t - 1] * r[t - 1]
         var[t] = v
-        v = LAMBDA * v + (1 - LAMBDA) * r[t] ** 2
     return np.sqrt(var)
 
 
