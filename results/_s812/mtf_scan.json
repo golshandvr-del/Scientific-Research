@@ -1,0 +1,22 @@
+{
+ "M3": {
+  "tf": "M3",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M3.csv",
+  "n_events": 762,
+  "mh": 140,
+  "n": 762,
+  "wr": 54.724,
+  "pnl_pip": 8110.7,
+  "perm_mean": 54.72,
+  "perm_sd": 1.761,
+  "perm_max": 59.664,
+  "lift_pp": 0.004,
+  "z": 0.0,
+  "uncond_short_wr": 39.633,
+  "verdict": "REJECT",
+  "rqs2": 17.8,
+  "gates": {},
+  "pf": 1.313,
+  "exp_pip": 10.6439
+ }
+}
