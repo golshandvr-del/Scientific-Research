@@ -71,7 +71,7 @@ def adjudicate(tf: str) -> dict:
         'mode': MODE,
         'n_signals': int(ls.sum() + ss.sum()),
         'split_bar': split, 'bars': len(df),
-        'verdict': res['verdict'], 'rqs2_score': res['score'],
+        'verdict': res.get('verdict'), 'rqs2_score': res.get('rqs2_score'),
         'gates': res['gates'],
         'failed_gates': sorted([k for k, v in res['gates'].items() if v is False]),
         'unknown_gates': sorted([k for k, v in res['gates'].items() if v is None]),
