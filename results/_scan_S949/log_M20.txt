@@ -1,0 +1,120 @@
+DATA src=/home/user/webapp/data/mt5_full/XAUUSD_M20.csv  n_bars=272,979  span=15.59y
+[ 1/96] P14_th20_withdi_k2.058_rr1.0_hd34    n=  2722 wr=50.184 lift=-4.561 score=-237.96 (0s)
+[ 2/96] P14_th20_withdi_k2.058_rr1.0_hd55    n=  2702 wr=50.37 lift=-4.381 score=-227.71 (1s)
+[ 3/96] P14_th20_withdi_k2.058_rr1.5_hd34    n=  2654 wr=41.824 lift=-1.967 score=-101.35 (1s)
+[ 4/96] P14_th20_withdi_k2.058_rr1.5_hd55    n=  2596 wr=41.294 lift=-2.506 score=-127.7 (1s)
+[ 5/96] P14_th20_withdi_k3.141_rr1.0_hd34    n=  2497 wr=49.099 lift=-4.012 score=-200.48 (1s)
+[ 6/96] P14_th20_withdi_k3.141_rr1.0_hd55    n=  2342 wr=50.854 lift=-2.257 score=-109.24 (1s)
+[ 7/96] P14_th20_withdi_k3.141_rr1.5_hd34    n=  2438 wr=44.135 lift=1.638 score=80.86 (1s)
+[ 8/96] P14_th20_withdi_k3.141_rr1.5_hd55    n=  2219 wr=44.344 lift=1.852 score=87.23 (1s)
+[ 9/96] P14_th20_antidi_k2.058_rr1.0_hd34    n=  2722 wr=48.898 lift=-5.847 score=-305.04 (1s)
+[10/96] P14_th20_antidi_k2.058_rr1.0_hd55    n=  2702 wr=49.038 lift=-5.713 score=-296.97 (1s)
+[11/96] P14_th20_antidi_k2.058_rr1.5_hd34    n=  2601 wr=40.754 lift=-3.05 score=-155.54 (1s)
+[12/96] P14_th20_antidi_k2.058_rr1.5_hd55    n=  2516 wr=39.149 lift=-4.642 score=-232.82 (1s)
+[13/96] P14_th20_antidi_k3.141_rr1.0_hd34    n=  2497 wr=48.939 lift=-4.172 score=-208.48 (1s)
+[14/96] P14_th20_antidi_k3.141_rr1.0_hd55    n=  2342 wr=48.121 lift=-4.99 score=-241.49 (1s)
+[15/96] P14_th20_antidi_k3.141_rr1.5_hd34    n=  2304 wr=45.486 lift=3.006 score=144.31 (1s)
+[16/96] P14_th20_antidi_k3.141_rr1.5_hd55    n=  2086 wr=42.474 lift=-0.006 score=-0.28 (1s)
+[17/96] P14_th25_withdi_k2.058_rr1.0_hd34    n=  2619 wr=50.477 lift=-4.207 score=-215.31 (1s)
+[18/96] P14_th25_withdi_k2.058_rr1.0_hd55    n=  2594 wr=50.964 lift=-3.726 score=-189.75 (1s)
+[19/96] P14_th25_withdi_k2.058_rr1.5_hd34    n=  2576 wr=42.935 lift=-0.813 score=-41.25 (1s)
+[20/96] P14_th25_withdi_k2.058_rr1.5_hd55    n=  2521 wr=42.919 lift=-0.819 score=-41.14 (1s)
+[21/96] P14_th25_withdi_k3.141_rr1.0_hd34    n=  2486 wr=49.839 lift=-3.241 score=-161.61 (1s)
+[22/96] P14_th25_withdi_k3.141_rr1.0_hd55    n=  2364 wr=51.861 lift=-1.212 score=-58.94 (1s)
+[23/96] P14_th25_withdi_k3.141_rr1.5_hd34    n=  2419 wr=44.316 lift=1.849 score=90.95 (1s)
+[24/96] P14_th25_withdi_k3.141_rr1.5_hd55    n=  2244 wr=44.251 lift=1.796 score=85.07 (1s)
+[25/96] P14_th25_antidi_k2.058_rr1.0_hd34    n=  2619 wr=48.225 lift=-6.46 score=-330.6 (1s)
+[26/96] P14_th25_antidi_k2.058_rr1.0_hd55    n=  2594 wr=48.574 lift=-6.116 score=-311.48 (2s)
+[27/96] P14_th25_antidi_k2.058_rr1.5_hd34    n=  2563 wr=40.07 lift=-3.686 score=-186.61 (2s)
+[28/96] P14_th25_antidi_k2.058_rr1.5_hd55    n=  2501 wr=38.904 lift=-4.851 score=-242.6 (2s)
+[29/96] P14_th25_antidi_k3.141_rr1.0_hd34    n=  2486 wr=47.104 lift=-5.977 score=-298.0 (2s)
+[30/96] P14_th25_antidi_k3.141_rr1.0_hd55    n=  2364 wr=46.785 lift=-6.288 score=-305.75 (2s)
+[31/96] P14_th25_antidi_k3.141_rr1.5_hd34    n=  2380 wr=42.815 lift=0.342 score=16.7 (2s)
+[32/96] P14_th25_antidi_k3.141_rr1.5_hd55    n=  2201 wr=40.3 lift=-2.161 score=-101.4 (2s)
+[33/96] P14_th30_withdi_k2.058_rr1.0_hd34    n=  2121 wr=51.108 lift=-3.584 score=-165.04 (2s)
+[34/96] P14_th30_withdi_k2.058_rr1.0_hd55    n=  2113 wr=51.727 lift=-2.962 score=-136.17 (2s)
+[35/96] P14_th30_withdi_k2.058_rr1.5_hd34    n=  2089 wr=43.705 lift=-0.044 score=-2.02 (2s)
+[36/96] P14_th30_withdi_k2.058_rr1.5_hd55    n=  2067 wr=43.251 lift=-0.494 score=-22.46 (2s)
+[37/96] P14_th30_withdi_k3.141_rr1.0_hd34    n=  2042 wr=50.539 lift=-2.535 score=-114.54 (2s)
+[38/96] P14_th30_withdi_k3.141_rr1.0_hd55    n=  1989 wr=52.288 lift=-0.785 score=-35.02 (2s)
+[39/96] P14_th30_withdi_k3.141_rr1.5_hd34    n=  1991 wr=45.203 lift=2.747 score=122.56 (2s)
+[40/96] P14_th30_withdi_k3.141_rr1.5_hd55    n=  1902 wr=44.795 lift=2.343 score=102.17 (2s)
+[41/96] P14_th30_antidi_k2.058_rr1.0_hd34    n=  2121 wr=47.478 lift=-7.214 score=-332.24 (2s)
+[42/96] P14_th30_antidi_k2.058_rr1.0_hd55    n=  2113 wr=48.036 lift=-6.654 score=-305.85 (2s)
+[43/96] P14_th30_antidi_k2.058_rr1.5_hd34    n=  2085 wr=39.856 lift=-3.899 score=-178.02 (2s)
+[44/96] P14_th30_antidi_k2.058_rr1.5_hd55    n=  2067 wr=38.8 lift=-4.954 score=-225.21 (2s)
+[45/96] P14_th30_antidi_k3.141_rr1.0_hd34    n=  2042 wr=46.082 lift=-6.991 score=-315.92 (2s)
+[46/96] P14_th30_antidi_k3.141_rr1.0_hd55    n=  1989 wr=46.053 lift=-7.019 score=-313.05 (2s)
+[47/96] P14_th30_antidi_k3.141_rr1.5_hd34    n=  2009 wr=42.061 lift=-0.398 score=-17.86 (2s)
+[48/96] P14_th30_antidi_k3.141_rr1.5_hd55    n=  1918 wr=40.25 lift=-2.207 score=-96.66 (2s)
+[49/96] P34_th20_withdi_k2.058_rr1.0_hd34    n=   933 wr=51.018 lift=-3.648 score=-111.43 (3s)
+[50/96] P34_th20_withdi_k2.058_rr1.0_hd55    n=   932 wr=51.931 lift=-2.727 score=-83.24 (3s)
+[51/96] P34_th20_withdi_k2.058_rr1.5_hd34    n=   932 wr=43.133 lift=-0.6 score=-18.32 (3s)
+[52/96] P34_th20_withdi_k2.058_rr1.5_hd55    n=   929 wr=43.38 lift=-0.353 score=-10.77 (3s)
+[53/96] P34_th20_withdi_k3.141_rr1.0_hd34    n=   918 wr=50.545 lift=-2.519 score=-76.32 (3s)
+[54/96] P34_th20_withdi_k3.141_rr1.0_hd55    n=   909 wr=52.915 lift=-0.142 score=-4.29 (3s)
+[55/96] P34_th20_withdi_k3.141_rr1.5_hd34    n=   910 wr=46.044 lift=3.593 score=108.39 (3s)
+[56/96] P34_th20_withdi_k3.141_rr1.5_hd55    n=   897 wr=45.373 lift=2.927 score=87.67 (3s)
+[57/96] P34_th20_antidi_k2.058_rr1.0_hd34    n=   933 wr=46.517 lift=-8.15 score=-248.93 (3s)
+[58/96] P34_th20_antidi_k2.058_rr1.0_hd55    n=   932 wr=47.21 lift=-7.448 score=-227.37 (3s)
+[59/96] P34_th20_antidi_k2.058_rr1.5_hd34    n=   920 wr=38.478 lift=-5.257 score=-159.47 (3s)
+[60/96] P34_th20_antidi_k2.058_rr1.5_hd55    n=   915 wr=37.268 lift=-6.465 score=-195.57 (3s)
+[61/96] P34_th20_antidi_k3.141_rr1.0_hd34    n=   918 wr=45.534 lift=-7.53 score=-228.14 (3s)
+[62/96] P34_th20_antidi_k3.141_rr1.0_hd55    n=   909 wr=45.765 lift=-7.293 score=-219.88 (3s)
+[63/96] P34_th20_antidi_k3.141_rr1.5_hd34    n=   914 wr=41.575 lift=-0.875 score=-26.46 (3s)
+[64/96] P34_th20_antidi_k3.141_rr1.5_hd55    n=   902 wr=39.911 lift=-2.535 score=-76.13 (3s)
+[65/96] P34_th25_withdi_k2.058_rr1.0_hd34    n=   626 wr=52.556 lift=-1.973 score=-49.38 (3s)
+[66/96] P34_th25_withdi_k2.058_rr1.0_hd55    n=   624 wr=53.365 lift=-1.16 score=-28.98 (3s)
+[67/96] P34_th25_withdi_k2.058_rr1.5_hd34    n=   625 wr=43.84 lift=0.217 score=5.43 (3s)
+[68/96] P34_th25_withdi_k2.058_rr1.5_hd55    n=   622 wr=43.408 lift=-0.203 score=-5.05 (3s)
+[69/96] P34_th25_withdi_k3.141_rr1.0_hd34    n=   620 wr=50.645 lift=-2.312 score=-57.57 (3s)
+[70/96] P34_th25_withdi_k3.141_rr1.0_hd55    n=   614 wr=51.954 lift=-0.987 score=-24.46 (3s)
+[71/96] P34_th25_withdi_k3.141_rr1.5_hd34    n=   615 wr=44.228 lift=1.857 score=46.05 (3s)
+[72/96] P34_th25_withdi_k3.141_rr1.5_hd55    n=   606 wr=43.564 lift=1.211 score=29.81 (3s)
+[73/96] P34_th25_antidi_k2.058_rr1.0_hd34    n=   626 wr=46.486 lift=-8.044 score=-201.26 (3s)
+[74/96] P34_th25_antidi_k2.058_rr1.0_hd55    n=   624 wr=46.154 lift=-8.372 score=-209.13 (3s)
+[75/96] P34_th25_antidi_k2.058_rr1.5_hd34    n=   623 wr=39.326 lift=-4.297 score=-107.25 (3s)
+[76/96] P34_th25_antidi_k2.058_rr1.5_hd55    n=   619 wr=36.995 lift=-6.608 score=-164.41 (3s)
+[77/96] P34_th25_antidi_k3.141_rr1.0_hd34    n=   620 wr=46.129 lift=-6.828 score=-170.02 (3s)
+[78/96] P34_th25_antidi_k3.141_rr1.0_hd55    n=   614 wr=46.254 lift=-6.688 score=-165.71 (3s)
+[79/96] P34_th25_antidi_k3.141_rr1.5_hd34    n=   617 wr=41.977 lift=-0.393 score=-9.77 (3s)
+[80/96] P34_th25_antidi_k3.141_rr1.5_hd55    n=   610 wr=39.344 lift=-3.013 score=-74.42 (3s)
+[81/96] P34_th30_withdi_k2.058_rr1.0_hd34    n=   370 wr=50.541 lift=-3.782 score=-72.75 (3s)
+[82/96] P34_th30_withdi_k2.058_rr1.0_hd55    n=   370 wr=51.351 lift=-2.971 score=-57.16 (3s)
+[83/96] P34_th30_withdi_k2.058_rr1.5_hd34    n=   369 wr=42.818 lift=-0.632 score=-12.14 (3s)
+[84/96] P34_th30_withdi_k2.058_rr1.5_hd55    n=   368 wr=43.207 lift=-0.243 score=-4.66 (3s)
+[85/96] P34_th30_withdi_k3.141_rr1.0_hd34    n=   366 wr=49.454 lift=-3.379 score=-64.64 (3s)
+[86/96] P34_th30_withdi_k3.141_rr1.0_hd55    n=   364 wr=50.824 lift=-2.001 score=-38.18 (3s)
+[87/96] P34_th30_withdi_k3.141_rr1.5_hd34    n=   363 wr=42.975 lift=0.715 score=13.61 (3s)
+[88/96] P34_th30_withdi_k3.141_rr1.5_hd55    n=   358 wr=42.458 lift=0.201 score=3.8 (3s)
+[89/96] P34_th30_antidi_k2.058_rr1.0_hd34    n=   370 wr=48.649 lift=-5.674 score=-109.14 (3s)
+[90/96] P34_th30_antidi_k2.058_rr1.0_hd55    n=   370 wr=48.378 lift=-5.944 score=-114.34 (3s)
+[91/96] P34_th30_antidi_k2.058_rr1.5_hd34    n=   368 wr=41.848 lift=-1.619 score=-31.05 (3s)
+[92/96] P34_th30_antidi_k2.058_rr1.5_hd55    n=   368 wr=39.946 lift=-3.521 score=-67.54 (3s)
+[93/96] P34_th30_antidi_k3.141_rr1.0_hd34    n=   366 wr=48.087 lift=-4.745 score=-90.78 (3s)
+[94/96] P34_th30_antidi_k3.141_rr1.0_hd55    n=   364 wr=47.527 lift=-5.298 score=-101.08 (4s)
+[95/96] P34_th30_antidi_k3.141_rr1.5_hd34    n=   366 wr=44.262 lift=1.996 score=38.19 (4s)
+[96/96] P34_th30_antidi_k3.141_rr1.5_hd55    n=   363 wr=39.945 lift=-2.316 score=-44.12 (4s)
+
+LOCKED -> results/_scan_S949/lock_XAUUSD-M20.json
+{
+  "layer": "S949",
+  "tf": "M20",
+  "split_bar": 163787,
+  "n_bars": 272979,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M20.csv",
+  "criterion": "max lift*sqrt(n) | withdi-only | n>=150 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": "P34_th20_withdi_k3.141_rr1.5_hd34",
+  "best": {
+    "n": 910,
+    "wr": 46.044,
+    "net": 1992.5,
+    "sl_med": 53.9,
+    "be": 42.451,
+    "lift": 3.593,
+    "score": 108.39
+  },
+  "best_unpowered": null,
+  "score": 108.39,
+  "power_ok": true
+}
