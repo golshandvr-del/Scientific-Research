@@ -1,0 +1,35 @@
+========================================================================
+S895 Turn-of-Month Flow · XAUUSD-H6 (prereg ee86cd6c)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_H6.csv  bars=15966  split=11176  hold=4
+ATRmed=86.54pip  k1.0(SL=TP=86.5) k1.5(SL=TP=129.8) k2.058(SL=TP=178.1)
+events: FULL/ALL=824 FULL/ASIA=822 LATE/ALL=450 LATE/ASIA=450 EARLY/ALL=562 EARLY/ASIA=560
+           FULL /ALL /k1.0    n= 578 exp=   -5.82 exp2x=   -9.12 t=-1.94
+           FULL /ALL /k1.5    n= 575 exp=   -5.01 exp2x=   -8.31 t=-1.34
+           FULL /ALL /k2.058  n= 575 exp=   -4.38 exp2x=   -7.68 t=-1.06
+           FULL /ASIA/k1.0    n= 577 exp=   -3.13 exp2x=   -6.43 t=-1.00
+           FULL /ASIA/k1.5    n= 575 exp=   -1.26 exp2x=   -4.56 t=-0.32
+           FULL /ASIA/k2.058  n= 575 exp=   -0.07 exp2x=   -3.37 t=-0.02
+           LATE /ALL /k1.0    n= 316 exp=   -1.81 exp2x=   -5.11 t=-0.45
+           LATE /ALL /k1.5    n= 313 exp=   -0.10 exp2x=   -3.40 t=-0.02
+           LATE /ALL /k2.058  n= 313 exp=   +3.08 exp2x=   -0.22 t=+0.55
+  ELIGIBLE LATE /ASIA/k1.0    n= 316 exp=   +4.75 exp2x=   +1.45 t=+1.13
+  ELIGIBLE LATE /ASIA/k1.5    n= 314 exp=   +6.37 exp2x=   +3.07 t=+1.24
+  ELIGIBLE LATE /ASIA/k2.058  n= 314 exp=   +6.74 exp2x=   +3.44 t=+1.18
+           EARLY/ALL /k1.0    n= 394 exp=   -5.38 exp2x=   -8.68 t=-1.48
+           EARLY/ALL /k1.5    n= 394 exp=   -3.70 exp2x=   -7.00 t=-0.81
+           EARLY/ALL /k2.058  n= 394 exp=   -4.14 exp2x=   -7.44 t=-0.82
+           EARLY/ASIA/k1.0    n= 393 exp=   -3.80 exp2x=   -7.10 t=-1.00
+           EARLY/ASIA/k1.5    n= 393 exp=   -0.64 exp2x=   -3.94 t=-0.13
+           EARLY/ASIA/k2.058  n= 393 exp=   +0.60 exp2x=   -2.70 t=+0.11
+
+LOCKED: LATE/ASIA/k1.5 t=1.243  IS: n=314 WR=53.82 exp2x=3.072
+  perm 100/500 …
+  perm 200/500 …
+  perm 300/500 …
+  perm 400/500 …
+  perm 500/500 …
+
+FULL: n=447 WR=51.23  OOS: n=133 WR=45.11278195488722
+geo-lift=+2.43pp  VERDICT: REJECT score=7.3
+gates: {'H0': True, 'H1': False, 'H2': False, 'H3': False, 'H4': False, 'H5': False, 'H6': False, 'H7': False, 'H8': False, 'H9': False, 'H10': True}
