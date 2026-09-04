@@ -1,0 +1,10 @@
+{
+ "tf": "MN1",
+ "cfg": null,
+ "power_ok": false,
+ "reason": "no_valid",
+ "split": 94,
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "seed": 20260828
+}
