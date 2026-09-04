@@ -1,0 +1,358 @@
+{
+ "M1": {
+  "n_bars": 5000000,
+  "n_train": 3000000,
+  "n_sig_long": 34474,
+  "n_sig_short": 35425,
+  "span_years": 14.34,
+  "geometry": {
+   "tp": 11.5,
+   "sl": 5.1,
+   "n_sig": 69899,
+   "rr": 2.255
+  },
+  "train": {
+   "n": 60122,
+   "wr": 28.81,
+   "e_pip": -3.48,
+   "e_over_sl_pct": -68.26,
+   "cost_over_sl_pct": 64.71
+  }
+ },
+ "M3": {
+  "n_bars": 1815880,
+  "n_train": 1089528,
+  "n_sig_long": 13381,
+  "n_sig_short": 14068,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 22.3,
+   "sl": 10.0,
+   "n_sig": 27449,
+   "rr": 2.23
+  },
+  "train": {
+   "n": 22776,
+   "wr": 30.78,
+   "e_pip": -3.64,
+   "e_over_sl_pct": -36.43,
+   "cost_over_sl_pct": 33.0
+  }
+ },
+ "M4": {
+  "n_bars": 1362074,
+  "n_train": 817244,
+  "n_sig_long": 10341,
+  "n_sig_short": 10952,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 26.6,
+   "sl": 11.8,
+   "n_sig": 21293,
+   "rr": 2.254
+  },
+  "train": {
+   "n": 17572,
+   "wr": 31.34,
+   "e_pip": -3.56,
+   "e_over_sl_pct": -30.15,
+   "cost_over_sl_pct": 27.97
+  }
+ },
+ "M5": {
+  "n_bars": 1089574,
+  "n_train": 653744,
+  "n_sig_long": 8428,
+  "n_sig_short": 9166,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 30.5,
+   "sl": 13.1,
+   "n_sig": 17594,
+   "rr": 2.328
+  },
+  "train": {
+   "n": 14523,
+   "wr": 31.86,
+   "e_pip": -3.36,
+   "e_over_sl_pct": -25.65,
+   "cost_over_sl_pct": 25.19
+  }
+ },
+ "M6": {
+  "n_bars": 908864,
+  "n_train": 545318,
+  "n_sig_long": 7222,
+  "n_sig_short": 7870,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 33.9,
+   "sl": 14.3,
+   "n_sig": 15092,
+   "rr": 2.371
+  },
+  "train": {
+   "n": 12311,
+   "wr": 31.85,
+   "e_pip": -3.25,
+   "e_over_sl_pct": -22.71,
+   "cost_over_sl_pct": 23.08
+  }
+ },
+ "M10": {
+  "n_bars": 545488,
+  "n_train": 327292,
+  "n_sig_long": 4393,
+  "n_sig_short": 4924,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 47.2,
+   "sl": 19.8,
+   "n_sig": 9317,
+   "rr": 2.384
+  },
+  "train": {
+   "n": 7589,
+   "wr": 32.13,
+   "e_pip": -3.08,
+   "e_over_sl_pct": -15.57,
+   "cost_over_sl_pct": 16.67
+  }
+ },
+ "M12": {
+  "n_bars": 454692,
+  "n_train": 272815,
+  "n_sig_long": 3685,
+  "n_sig_short": 4087,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 54.1,
+   "sl": 22.1,
+   "n_sig": 7772,
+   "rr": 2.446
+  },
+  "train": {
+   "n": 6237,
+   "wr": 32.92,
+   "e_pip": -2.53,
+   "e_over_sl_pct": -11.45,
+   "cost_over_sl_pct": 14.93
+  }
+ },
+ "M15": {
+  "n_bars": 363778,
+  "n_train": 218266,
+  "n_sig_long": 3029,
+  "n_sig_short": 3475,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 59.3,
+   "sl": 25.5,
+   "n_sig": 6504,
+   "rr": 2.325
+  },
+  "train": {
+   "n": 5150,
+   "wr": 33.17,
+   "e_pip": -2.72,
+   "e_over_sl_pct": -10.68,
+   "cost_over_sl_pct": 12.94
+  }
+ },
+ "M20": {
+  "n_bars": 272979,
+  "n_train": 163787,
+  "n_sig_long": 2321,
+  "n_sig_short": 2665,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 63.9,
+   "sl": 27.4,
+   "n_sig": 4986,
+   "rr": 2.332
+  },
+  "train": {
+   "n": 4048,
+   "wr": 32.31,
+   "e_pip": -3.0,
+   "e_over_sl_pct": -10.93,
+   "cost_over_sl_pct": 12.04
+  }
+ },
+ "M30": {
+  "n_bars": 182145,
+  "n_train": 109287,
+  "n_sig_long": 1435,
+  "n_sig_short": 1714,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 72.4,
+   "sl": 30.5,
+   "n_sig": 3149,
+   "rr": 2.375
+  },
+  "train": {
+   "n": 2730,
+   "wr": 31.65,
+   "e_pip": -3.1,
+   "e_over_sl_pct": -10.18,
+   "cost_over_sl_pct": 10.82
+  }
+ },
+ "H1": {
+  "n_bars": 91331,
+  "n_train": 54798,
+  "n_sig_long": 614,
+  "n_sig_short": 704,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 106.4,
+   "sl": 43.6,
+   "n_sig": 1318,
+   "rr": 2.438
+  },
+  "train": {
+   "n": 1174,
+   "wr": 33.22,
+   "e_pip": -0.89,
+   "e_over_sl_pct": -2.03,
+   "cost_over_sl_pct": 7.57
+  }
+ },
+ "H2": {
+  "n_bars": 47623,
+  "n_train": 28573,
+  "n_sig_long": 327,
+  "n_sig_short": 332,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 159.0,
+   "sl": 63.0,
+   "n_sig": 659,
+   "rr": 2.524
+  },
+  "train": {
+   "n": 589,
+   "wr": 32.77,
+   "e_pip": 2.23,
+   "e_over_sl_pct": 3.54,
+   "cost_over_sl_pct": 5.24
+  }
+ },
+ "H3": {
+  "n_bars": 31806,
+  "n_train": 19083,
+  "n_sig_long": 192,
+  "n_sig_short": 214,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 211.5,
+   "sl": 77.0,
+   "n_sig": 406,
+   "rr": 2.747
+  },
+  "train": {
+   "n": 378,
+   "wr": 33.33,
+   "e_pip": 3.35,
+   "e_over_sl_pct": 4.35,
+   "cost_over_sl_pct": 4.29
+  }
+ },
+ "H6": {
+  "n_bars": 15966,
+  "n_train": 9579,
+  "n_sig_long": 112,
+  "n_sig_short": 95,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 319.9,
+   "sl": 119.9,
+   "n_sig": 207,
+   "rr": 2.668
+  },
+  "train": {
+   "n": 180,
+   "wr": 35.0,
+   "e_pip": 11.46,
+   "e_over_sl_pct": 9.55,
+   "cost_over_sl_pct": 2.75
+  }
+ },
+ "H8": {
+  "n_bars": 11978,
+  "n_train": 7186,
+  "n_sig_long": 80,
+  "n_sig_short": 69,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 451.0,
+   "sl": 96.7,
+   "n_sig": 149,
+   "rr": 4.666
+  },
+  "train": {
+   "n": 124,
+   "wr": 37.1,
+   "e_pip": 73.61,
+   "e_over_sl_pct": 76.12,
+   "cost_over_sl_pct": 3.41
+  }
+ },
+ "H12": {
+  "n_bars": 7998,
+  "n_train": 4798,
+  "n_sig_long": 45,
+  "n_sig_short": 50,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 469.0,
+   "sl": 146.4,
+   "n_sig": 95,
+   "rr": 3.204
+  },
+  "train": {
+   "n": 86,
+   "wr": 32.56,
+   "e_pip": 25.86,
+   "e_over_sl_pct": 17.66,
+   "cost_over_sl_pct": 2.25
+  }
+ },
+ "D1": {
+  "n_bars": 4005,
+  "n_train": 2403,
+  "n_sig_long": 24,
+  "n_sig_short": 26,
+  "span_years": 15.59,
+  "geometry": {
+   "tp": 645.5,
+   "sl": 218.9,
+   "n_sig": 50,
+   "rr": 2.949
+  },
+  "train": {
+   "n": 44,
+   "wr": 36.36,
+   "e_pip": 50.7,
+   "e_over_sl_pct": 23.16,
+   "cost_over_sl_pct": 1.51
+  }
+ },
+ "W1": {
+  "n_bars": 813,
+  "n_train": 487,
+  "n_sig_long": 6,
+  "n_sig_short": 6,
+  "span_years": 15.58,
+  "geometry": null
+ },
+ "MN1": {
+  "n_bars": 188,
+  "n_train": 112,
+  "n_sig_long": 0,
+  "n_sig_short": 1,
+  "span_years": 15.58,
+  "geometry": null
+ }
+}
