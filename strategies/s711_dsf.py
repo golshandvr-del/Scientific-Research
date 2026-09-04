@@ -260,9 +260,9 @@ def judge(tfs):
         nl = int(st['is_long'].sum()); ns = int(st['n'] - nl)
         null = build_null(df, idx, sl_dist, hold, nl, ns, rng)
         tr = trades_df(st)
-        r = rqs2.compute_rqs2(tr, ASSET, sl_pip=tr['sl_pip'].to_numpy(),
-                              tp_pip=tr['tp_pip'].to_numpy(),
-                              bar_time=df['time'].to_numpy().astype('int64').astype('datetime64[s]'),
+        sl_med = float(np.median(tr['sl_pip'])); tp_med = float(np.median(tr['tp_pip']))
+        r = rqs2.compute_rqs2(tr, ASSET, sl_pip=sl_med, tp_pip=tp_med,
+                              bar_time=df['time'].to_numpy(),
                               close=df['close'].to_numpy(), null=null,
                               n_trials=N_TRIALS, split_bar=split, allow_overlap=False)
         log(rqs2.format_rqs2(f'S711_DSF_{tf}', r))
