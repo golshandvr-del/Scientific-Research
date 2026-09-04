@@ -1,3 +1,34 @@
+# S788 — DrawdownThresholdCross (XAUUSD, H2) — REJECT 2.4
+
+**حکم رسمی موتور (`rqs2.compute_rqs2`, RQS2 v2.6) — دست‌نخورده:**
+
+```
+S788 verdict: REJECT  score: 2.4
+H0 ✓ H1 ✗ H2 ✗ H3 ✗ H4 ✗ H5 ✗ H6 ✗ H7 ✗ H8 ✗ H9 ✗ H10 ✗
+```
+
+| مقدار | |
+|---|---|
+| قاعدهٔ منجمد (پیش‌ثبت دسته‌ای a14c73b9) | نخستین عبور افت-از-قلهٔ غلتان W=89 از 2.618·ATR89 → ادامهٔ آبشار (short-only) · SL=2.058·ATR89(t) TP=SL · hold 21 |
+| داده | mt5_full کامل ۱۵.۶ سال · split_bar=28573 (مرز ۶۰٪ اکتشاف) |
+| n_trades | 385 · side_n={'long': 0, 'short': 385} |
+| WR / lift | 50.65% / +1.6pp نسبت به نول 49.0% |
+| H3 | skill_z=0.65, p_perm=0.2584 (K=500, seed=788) |
+| چندگانگی | n_trials=240 · p_emp=0.275154 · z_obs=0.648 vs z_luck=2.825 |
+| اقتصاد | PF 0.973 · net $-530 · maxDD 21.17% · expectancy -15.9 pip · MCL 9/14 |
+| OOS | n=170 · WR 44.12% (نیاز 51.44) · PF 0.805 · net $-1675.5 |
+| تقویم | 2.0/4.0 دوره مثبت · nets=[-76.1, 364.8, 1029.6, -1494.9] |
+| پای‌ها | side_wr={'short': 50.65} · lift={'short': 1.65} |
+
+**تفسیر ابن هیثم:** همان‌طور که در پیش‌ثبت انتظار می‌رفت، این لایه حکم موتور
+گرفت تا قانون «هر شماره یک حکم رسمی» رعایت شود؛ نتیجه REJECT است و لایه بسته
+و hold-out آن سوخته محسوب می‌شود. هیچ تعمیر یا تکراری انجام نشد.
+
+فایل‌ها: `results/_s788/s788_final_result_H2.json` · `s788_trades_H2.csv` · `strategies/s78x_final_adjudicator.py`
+
+---
+## پیشینهٔ اکتشاف (سند قبلی، بدون تغییر)
+
 # S788 — DrawdownThresholdCross (XAUUSD, H2–D1) — INCOMPLETE
 
 **وضعیت: INCOMPLETE — بسته‌شده در فاز اکتشاف؛ هرگز به آزمون تأییدی نرسید. hold-out لمس نشد.**
