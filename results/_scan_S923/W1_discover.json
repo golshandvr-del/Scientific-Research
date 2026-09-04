@@ -1,0 +1,1 @@
+{"tf": "W1", "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv", "n_all": 813, "half_idx": 406, "atr_med_pip": 418.55088277302525, "n_grid": 8, "n_trials": 24, "m1_baselines": {}, "grid_results": [], "best": null, "phase": "discover", "ts": 1788504232.973984}
