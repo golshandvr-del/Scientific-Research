@@ -1,0 +1,102 @@
+{
+ "tf": "H3",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+ "bars_first_half": 15903,
+ "sl_pip": 82.6,
+ "cost_to_sl_pct": 4.0,
+ "blind_long_wr": 48.04,
+ "blind_short_wr": 49.56,
+ "n_bull_events": 646,
+ "n_bear_events": 645,
+ "cells": [
+  {
+   "variant": "plain",
+   "mode": "cont",
+   "side": "long",
+   "n": 616,
+   "wr": 49.03,
+   "blind": 48.04,
+   "lift": 0.98,
+   "exp_pip": -4.91,
+   "lsn": 24.4
+  },
+  {
+   "variant": "plain",
+   "mode": "cont",
+   "side": "short",
+   "n": 614,
+   "wr": 52.12,
+   "blind": 49.56,
+   "lift": 2.56,
+   "exp_pip": 0.2,
+   "lsn": 63.4
+  },
+  {
+   "variant": "plain",
+   "mode": "fade",
+   "side": "long",
+   "n": 614,
+   "wr": 47.56,
+   "blind": 48.04,
+   "lift": -0.49,
+   "exp_pip": -7.34,
+   "lsn": -12.1
+  },
+  {
+   "variant": "plain",
+   "mode": "fade",
+   "side": "short",
+   "n": 616,
+   "wr": 48.86,
+   "blind": 49.56,
+   "lift": -0.69,
+   "exp_pip": -5.18,
+   "lsn": -17.2
+  },
+  {
+   "variant": "aged",
+   "mode": "cont",
+   "side": "long",
+   "n": 278,
+   "wr": 48.92,
+   "blind": 48.04,
+   "lift": 0.88,
+   "exp_pip": -5.08,
+   "lsn": 14.6
+  },
+  {
+   "variant": "aged",
+   "mode": "cont",
+   "side": "short",
+   "n": 282,
+   "wr": 51.06,
+   "blind": 49.56,
+   "lift": 1.51,
+   "exp_pip": -1.54,
+   "lsn": 25.3
+  },
+  {
+   "variant": "aged",
+   "mode": "fade",
+   "side": "long",
+   "n": 282,
+   "wr": 48.58,
+   "blind": 48.04,
+   "lift": 0.54,
+   "exp_pip": -5.64,
+   "lsn": 9.0
+  },
+  {
+   "variant": "aged",
+   "mode": "fade",
+   "side": "short",
+   "n": 278,
+   "wr": 48.56,
+   "blind": 49.56,
+   "lift": -1.0,
+   "exp_pip": -5.68,
+   "lsn": -16.6
+  }
+ ],
+ "sec": 0.1
+}
