@@ -241,7 +241,7 @@
  },
  "H4": {
   "tf": "H4",
-  "note": "error: "
+  "note": "NA \u2014 XAUUSD_H4 absent from data/mt5_full (only data/XAUUSD_H4.csv 15.53y non-canonical); structurally H4 bars are 20:00/00:00 so no Friday>=21h bar exists -> event undefined"
  },
  "H6": {
   "tf": "H6",
