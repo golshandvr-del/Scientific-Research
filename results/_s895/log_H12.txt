@@ -1,0 +1,35 @@
+========================================================================
+S895 Turn-of-Month Flow · XAUUSD-H12 (prereg ee86cd6c)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_H12.csv  bars=7998  split=5598  hold=2
+ATRmed=128.26pip  k1.0(SL=TP=128.3) k1.5(SL=TP=192.4) k2.058(SL=TP=264.0)
+events: FULL/ALL=823 FULL/ASIA=820 LATE/ALL=449 LATE/ASIA=448 EARLY/ALL=562 EARLY/ASIA=560
+           FULL /ALL /k1.0    n= 577 exp=   -2.51 exp2x=   -5.81 t=-0.65
+           FULL /ALL /k1.5    n= 577 exp=   -0.78 exp2x=   -4.08 t=-0.18
+           FULL /ALL /k2.058  n= 577 exp=   -0.05 exp2x=   -3.35 t=-0.01
+           FULL /ASIA/k1.0    n= 575 exp=   -5.93 exp2x=   -9.23 t=-1.51
+           FULL /ASIA/k1.5    n= 575 exp=   -6.35 exp2x=   -9.65 t=-1.33
+           FULL /ASIA/k2.058  n= 575 exp=   -7.54 exp2x=  -10.84 t=-1.43
+  ELIGIBLE LATE /ALL /k1.0    n= 315 exp=   +5.21 exp2x=   +1.91 t=+1.02
+  ELIGIBLE LATE /ALL /k1.5    n= 315 exp=   +5.74 exp2x=   +2.44 t=+1.01
+  ELIGIBLE LATE /ALL /k2.058  n= 315 exp=   +7.47 exp2x=   +4.17 t=+1.24
+           LATE /ASIA/k1.0    n= 315 exp=   -8.52 exp2x=  -11.82 t=-1.58
+           LATE /ASIA/k1.5    n= 315 exp=   -9.74 exp2x=  -13.04 t=-1.48
+           LATE /ASIA/k2.058  n= 315 exp=  -11.83 exp2x=  -15.13 t=-1.64
+           EARLY/ALL /k1.0    n= 394 exp=   -2.43 exp2x=   -5.73 t=-0.51
+           EARLY/ALL /k1.5    n= 394 exp=   -0.24 exp2x=   -3.54 t=-0.04
+           EARLY/ALL /k2.058  n= 394 exp=   -0.76 exp2x=   -4.06 t=-0.14
+           EARLY/ASIA/k1.0    n= 392 exp=   -2.71 exp2x=   -6.01 t=-0.57
+           EARLY/ASIA/k1.5    n= 392 exp=   -4.55 exp2x=   -7.85 t=-0.78
+           EARLY/ASIA/k2.058  n= 392 exp=   -4.19 exp2x=   -7.49 t=-0.64
+
+LOCKED: LATE/ALL/k2.058 t=1.236  IS: n=315 WR=53.65 exp2x=4.171
+  perm 100/500 …
+  perm 200/500 …
+  perm 300/500 …
+  perm 400/500 …
+  perm 500/500 …
+
+FULL: n=448 WR=51.56  OOS: n=133 WR=46.616541353383454
+geo-lift=+0.86pp  VERDICT: REJECT score=2.4
+gates: {'H0': True, 'H1': False, 'H2': False, 'H3': False, 'H4': False, 'H5': False, 'H6': False, 'H7': False, 'H8': False, 'H9': False, 'H10': False}
