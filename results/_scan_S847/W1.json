@@ -1,0 +1,15 @@
+{
+ "tf": "W1",
+ "asset": "XAUUSD",
+ "bars": 810,
+ "src": "/home/user/webapp/data/XAUUSD_W1.csv",
+ "span_years": 15.52,
+ "hold": 13,
+ "split_bar": 405,
+ "warmup": 81,
+ "grid": 16,
+ "z_primary": 2.618,
+ "is_grid": [],
+ "verdict": "UNPROVEN",
+ "reason": "NO_IS_CANDIDATE"
+}
