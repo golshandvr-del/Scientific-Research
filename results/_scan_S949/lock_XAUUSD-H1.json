@@ -1,0 +1,21 @@
+{
+  "layer": "S949",
+  "tf": "H1",
+  "split_bar": 54798,
+  "n_bars": 91331,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "criterion": "max lift*sqrt(n) | withdi-only | n>=150 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": "P14_th20_withdi_k3.141_rr1.5_hd34",
+  "best": {
+    "n": 775,
+    "wr": 47.355,
+    "net": 3242.8,
+    "sl_med": 98.9,
+    "be": 41.335,
+    "lift": 6.02,
+    "score": 167.59
+  },
+  "best_unpowered": null,
+  "score": 167.59,
+  "power_ok": true
+}
