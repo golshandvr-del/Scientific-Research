@@ -1,0 +1,25 @@
+========================================================================
+S895 Turn-of-Month Flow · XAUUSD-M10 (prereg ee86cd6c)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_M10.csv  bars=545488  split=381841  hold=144
+ATRmed=12.82pip  k1.0(SL=TP=12.8) k1.5(SL=TP=19.2) k2.058(SL=TP=26.4)
+events: FULL/ALL=940 FULL/ASIA=936 LATE/ALL=564 LATE/ASIA=561 EARLY/ALL=564 EARLY/ASIA=562
+           FULL /ALL /k1.0    n= 658 exp=   -3.88 exp2x=   -7.18 t=-7.78
+           FULL /ALL /k1.5    n= 657 exp=   -4.03 exp2x=   -7.33 t=-5.37
+           FULL /ALL /k2.058  n= 656 exp=   -4.29 exp2x=   -7.59 t=-4.16
+           FULL /ASIA/k1.0    n= 655 exp=   -3.63 exp2x=   -6.93 t=-7.25
+           FULL /ASIA/k1.5    n= 655 exp=   -4.33 exp2x=   -7.63 t=-5.76
+           FULL /ASIA/k2.058  n= 653 exp=   -3.93 exp2x=   -7.23 t=-3.80
+           LATE /ALL /k1.0    n= 394 exp=   -3.89 exp2x=   -7.19 t=-6.02
+           LATE /ALL /k1.5    n= 393 exp=   -4.03 exp2x=   -7.33 t=-4.16
+           LATE /ALL /k2.058  n= 392 exp=   -4.95 exp2x=   -8.25 t=-3.72
+           LATE /ASIA/k1.0    n= 392 exp=   -3.82 exp2x=   -7.12 t=-5.90
+           LATE /ASIA/k1.5    n= 392 exp=   -4.58 exp2x=   -7.88 t=-4.72
+           LATE /ASIA/k2.058  n= 390 exp=   -4.69 exp2x=   -7.99 t=-3.51
+           EARLY/ALL /k1.0    n= 396 exp=   -4.34 exp2x=   -7.64 t=-6.74
+           EARLY/ALL /k1.5    n= 396 exp=   -4.76 exp2x=   -8.06 t=-4.93
+           EARLY/ALL /k2.058  n= 396 exp=   -5.17 exp2x=   -8.47 t=-3.90
+           EARLY/ASIA/k1.0    n= 395 exp=   -4.05 exp2x=   -7.35 t=-6.28
+           EARLY/ASIA/k1.5    n= 395 exp=   -4.61 exp2x=   -7.91 t=-4.77
+           EARLY/ASIA/k2.058  n= 395 exp=   -4.44 exp2x=   -7.74 t=-3.34
+NO ELIGIBLE CONFIG → UNPROVEN (holdout untouched)
