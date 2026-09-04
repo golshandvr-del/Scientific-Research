@@ -1,0 +1,85 @@
+{
+ "card": "XAUUSD_W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "bars": 813,
+ "split": 487,
+ "cells": [
+  {
+   "tf": "W1",
+   "theta": 0.35,
+   "hold": 16,
+   "n": 36,
+   "status": "OK",
+   "wr": 41.67,
+   "exp_net": 51.898,
+   "g1": 124.04,
+   "g2": 20.155,
+   "lift_pp": 8.97,
+   "zproxy": 0.538,
+   "stable": true
+  },
+  {
+   "tf": "W1",
+   "theta": 0.35,
+   "hold": 32,
+   "n": 31,
+   "status": "OK",
+   "wr": 35.48,
+   "exp_net": 23.473,
+   "g1": 179.421,
+   "g2": -40.324,
+   "lift_pp": 2.78,
+   "zproxy": 0.155,
+   "stable": false
+  },
+  {
+   "tf": "W1",
+   "theta": 0.5,
+   "hold": 16,
+   "n": 32,
+   "status": "OK",
+   "wr": 34.38,
+   "exp_net": -23.206,
+   "g1": 31.198,
+   "g2": -47.935,
+   "lift_pp": 1.67,
+   "zproxy": 0.095,
+   "stable": false
+  },
+  {
+   "tf": "W1",
+   "theta": 0.5,
+   "hold": 32,
+   "n": 29,
+   "status": "LOW_SIGNAL"
+  },
+  {
+   "tf": "W1",
+   "theta": 0.65,
+   "hold": 16,
+   "n": 27,
+   "status": "LOW_SIGNAL"
+  },
+  {
+   "tf": "W1",
+   "theta": 0.65,
+   "hold": 32,
+   "n": 24,
+   "status": "LOW_SIGNAL"
+  }
+ ],
+ "best": {
+  "tf": "W1",
+  "theta": 0.35,
+  "hold": 16,
+  "n": 36,
+  "status": "OK",
+  "wr": 41.67,
+  "exp_net": 51.898,
+  "g1": 124.04,
+  "g2": 20.155,
+  "lift_pp": 8.97,
+  "zproxy": 0.538,
+  "stable": true
+ }
+}
