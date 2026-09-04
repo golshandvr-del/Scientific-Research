@@ -1,0 +1,19 @@
+{
+ "strategy": "S748_StrongCloseDualDrift",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "bars": 813,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "span_years": 15.58,
+ "split_bar": 487,
+ "n_trials": 32,
+ "k_perm": 500,
+ "prereg": "results/S748_PREREG_STRONG_CLOSE_DUAL_DRIFT_PATH_C.md",
+ "grid_summary": {
+  "tested": 8,
+  "with_trades": 0,
+  "eligible": 0
+ },
+ "grid_top5": [],
+ "verdict": "NO_CANDIDATE"
+}
