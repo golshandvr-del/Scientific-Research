@@ -1,0 +1,19 @@
+{
+ "card": "XAUUSD-M20",
+ "prereg": "ee86cd6c",
+ "verdict": "UNPROVEN",
+ "reason": "no eligible config in discovery (n>=100 & exp@2x>0) - holdout untouched per prereg stop rule",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M20.csv",
+ "bars": 272979,
+ "split": 191085,
+ "hold": 72,
+ "events": {
+  "FULL/ALL": 940,
+  "FULL/ASIA": 935,
+  "LATE/ALL": 564,
+  "LATE/ASIA": 560,
+  "EARLY/ALL": 564,
+  "EARLY/ASIA": 562
+ },
+ "atr_med_pip": 18.67
+}
