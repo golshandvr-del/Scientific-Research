@@ -1,0 +1,124 @@
+{
+ "layer": 787,
+ "tf": "H12",
+ "null": {
+  "long": {
+   "uncond_wr": 52.82604246416113,
+   "perm_mean": 51.27648625499434,
+   "perm_sd": 4.301313223987044,
+   "perm_max": 65.0485436893204,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 45.68305816492891,
+   "perm_mean": 45.83067094704039,
+   "perm_sd": 5.237895841094941,
+   "perm_max": 64.55696202531645,
+   "perm_k": 500
+  }
+ },
+ "verdict": "POWER-LIMITED",
+ "rqs2_score": 22.8,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": true
+ },
+ "metrics": {
+  "n_trades": 215.0,
+  "win_rate": 60.0,
+  "net_profit": 4184.6,
+  "profit_factor": 1.4,
+  "max_dd_pct": 6.99,
+  "max_consec_losses": 5.0,
+  "mcl_allowed": 10.0,
+  "n_wins": 129.0,
+  "top_win_share": 0.0083,
+  "recovery_factor": 3.93,
+  "expectancy_pip": 41.366,
+  "expectancy_at_2x_cost": 38.066,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 247.7,
+  "tp_pip": 247.7,
+  "rr": 1.0,
+  "breakeven_wr_cost": 50.67,
+  "wr_excess_cost": 9.33,
+  "null_ref_wr": 49.8,
+  "skill_lift_pp": 10.2,
+  "skill_z": 2.17,
+  "skill_p_perm": 0.015109,
+  "perm_max": 64.84,
+  "perm_k": 500.0,
+  "side_n": {
+   "long": 122,
+   "short": 93
+  },
+  "side_wr": {
+   "long": 66.39,
+   "short": 51.61
+  },
+  "side_lift_pp": {
+   "long": 13.57,
+   "short": 5.78
+  },
+  "prune_sides": [],
+  "p_emp": 0.001689,
+  "p_adj_bonferroni": 0.189221,
+  "z_obs": 2.991,
+  "z_luck_bound": 2.57,
+  "z_margin": 0.421,
+  "n_trials": 112.0,
+  "cal_nets": [
+   1495.0,
+   880.0,
+   686.2,
+   486.6
+  ],
+  "cal_counts": [
+   53,
+   50,
+   55,
+   57
+  ],
+  "cal_positive": 4.0,
+  "cal_occupied": 4.0,
+  "half_nets": [
+   2626.4,
+   1141.2
+  ],
+  "oos": {
+   "n": 91,
+   "wr": 56.04,
+   "pf": 1.247,
+   "net": 1030.3,
+   "wr_req": 50.67
+  },
+  "max_concurrency": 1.0,
+  "counter_drift": {
+   "n_judgeable": 196,
+   "n_unjudgeable": 19,
+   "n_counter": 90,
+   "n_aligned": 106,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 58.89,
+   "exp_counter": 35.879,
+   "wr_aligned": 59.43,
+   "exp_aligned": 42.575
+  },
+  "n_required_h3": 229.4
+ },
+ "notes": [],
+ "n_trades": 215,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "split_bar": 4798,
+ "n_trials": 112
+}

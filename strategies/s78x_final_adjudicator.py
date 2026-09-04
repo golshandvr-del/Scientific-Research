@@ -157,7 +157,7 @@ trades = se.simulate_trades(df, long_sig, short_sig, sl_pip=sl_arr, tp_pip=tp_ar
                             asset='XAUUSD', max_hold=MH, allow_overlap=False)
 p = trades['pnl_pip'].values
 print(f'TRADES n={len(trades)}  WR={np.mean(p > 0)*100:.2f}%  net={np.sum(p):+.0f}pip', flush=True)
-trades.to_json(os.path.join(HERE, f's{LAYER}_trades_{TF}.json'), orient='records')
+pass
 
 valid = np.arange(n)
 valid = valid[(valid > 300) & (valid < n - MH - 2)]
