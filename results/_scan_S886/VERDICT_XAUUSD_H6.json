@@ -1,0 +1,147 @@
+{
+ "tf": "H6",
+ "candidate": {
+  "theta": 0.236,
+  "gate": "drift90",
+  "side": "both",
+  "b": 1.0,
+  "hold": 55,
+  "sl_pip": 129.9,
+  "tp_pip": 129.9,
+  "be_wr": 51.27,
+  "n": 182,
+  "wr": 51.65,
+  "nL_sig": 109,
+  "nS_sig": 90,
+  "wr_long": 49.02,
+  "wr_short": 55.0,
+  "uncond_wr": 43.86,
+  "lift": 7.78,
+  "score": 105.0
+ },
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+ "n_long_sig": 211,
+ "n_short_sig": 76,
+ "oos_n": 271,
+ "oos_wr": 52.02952029520295,
+ "oos_wr_long": 53.54,
+ "oos_wr_short": 47.95,
+ "null": {
+  "long": {
+   "uncond_wr": 46.03333333333333,
+   "perm_mean": 50.88498608225795,
+   "perm_sd": 3.5043885240016963,
+   "perm_max": 60.84656084656085,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 42.4,
+   "perm_mean": 43.324887263303,
+   "perm_sd": 5.656817615621136,
+   "perm_max": 64.28571428571429,
+   "perm_k": 500
+  }
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 5.4,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "metrics": {
+  "n_trades": 271.0,
+  "win_rate": 52.03,
+  "net_profit": 298.0,
+  "profit_factor": 1.021,
+  "max_dd_pct": 14.6,
+  "max_consec_losses": 6.0,
+  "mcl_allowed": 13.0,
+  "n_wins": 141.0,
+  "top_win_share": 0.0071,
+  "recovery_factor": 0.17,
+  "expectancy_pip": 1.9727,
+  "expectancy_at_2x_cost": -1.3273,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 129.9,
+  "tp_pip": 129.9,
+  "rr": 1.0,
+  "breakeven_wr_cost": 51.27,
+  "wr_excess_cost": 0.76,
+  "null_ref_wr": 48.85,
+  "skill_lift_pp": 3.18,
+  "skill_z": 0.78,
+  "skill_p_perm": 0.218031,
+  "perm_max": 61.77,
+  "perm_k": 500.0,
+  "side_n": {
+   "long": 198,
+   "short": 73
+  },
+  "side_wr": {
+   "long": 53.54,
+   "short": 47.95
+  },
+  "side_lift_pp": {
+   "long": 2.65,
+   "short": 4.62
+  },
+  "prune_sides": [
+   "short"
+  ],
+  "p_emp": 0.16186,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 1.048,
+  "z_luck_bound": 2.261,
+  "z_margin": -1.213,
+  "n_trials": 48.0,
+  "cal_nets": [
+   565.4,
+   -477.8,
+   888.0,
+   -610.0
+  ],
+  "cal_counts": [
+   47,
+   53,
+   81,
+   90
+  ],
+  "cal_positive": 2.0,
+  "cal_occupied": 4.0,
+  "half_nets": [
+   113.7,
+   202.3
+  ],
+  "oos": {
+   "n": 171,
+   "wr": 52.05,
+   "pf": 1.022,
+   "net": 202.3,
+   "wr_req": 51.27
+  },
+  "max_concurrency": 1.0,
+  "counter_drift": {
+   "n_judgeable": 247,
+   "n_unjudgeable": 24,
+   "n_counter": 65,
+   "n_aligned": 182,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 49.23,
+   "exp_counter": -5.298,
+   "wr_aligned": 52.2,
+   "exp_aligned": 2.41
+  },
+  "n_required_h3": 2357.7
+ },
+ "elapsed_s": 1.9
+}
