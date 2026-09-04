@@ -1,0 +1,142 @@
+{
+ "M15": {
+  "th0.0": {
+   "events": 636,
+   "long": 312,
+   "short": 324,
+   "per_year": 81.0
+  },
+  "th0.236": {
+   "events": 13219,
+   "long": 6655,
+   "short": 6564,
+   "per_year": 1683.9
+  },
+  "th0.382": {
+   "events": 26961,
+   "long": 13548,
+   "short": 13413,
+   "per_year": 3434.4
+  }
+ },
+ "M30": {
+  "th0.0": {
+   "events": 152,
+   "long": 69,
+   "short": 83,
+   "per_year": 19.4
+  },
+  "th0.236": {
+   "events": 5710,
+   "long": 2894,
+   "short": 2816,
+   "per_year": 728.0
+  },
+  "th0.382": {
+   "events": 12364,
+   "long": 6251,
+   "short": 6113,
+   "per_year": 1576.4
+  }
+ },
+ "H1": {
+  "th0.0": {
+   "events": 98,
+   "long": 57,
+   "short": 41,
+   "per_year": 12.5
+  },
+  "th0.236": {
+   "events": 2558,
+   "long": 1319,
+   "short": 1239,
+   "per_year": 326.9
+  },
+  "th0.382": {
+   "events": 5623,
+   "long": 2853,
+   "short": 2770,
+   "per_year": 718.6
+  }
+ },
+ "H2": {
+  "th0.0": {
+   "events": 40,
+   "long": 25,
+   "short": 15,
+   "per_year": 5.1
+  },
+  "th0.236": {
+   "events": 1213,
+   "long": 636,
+   "short": 577,
+   "per_year": 154.1
+  },
+  "th0.382": {
+   "events": 2843,
+   "long": 1443,
+   "short": 1400,
+   "per_year": 361.2
+  }
+ },
+ "H4": {
+  "th0.0": {
+   "events": 15,
+   "long": 8,
+   "short": 7,
+   "per_year": 1.9
+  },
+  "th0.236": {
+   "events": 618,
+   "long": 346,
+   "short": 272,
+   "per_year": 78.8
+  },
+  "th0.382": {
+   "events": 1452,
+   "long": 774,
+   "short": 678,
+   "per_year": 185.2
+  }
+ },
+ "H8": {
+  "th0.0": {
+   "events": 7,
+   "long": 3,
+   "short": 4,
+   "per_year": 0.9
+  },
+  "th0.236": {
+   "events": 307,
+   "long": 171,
+   "short": 136,
+   "per_year": 39.1
+  },
+  "th0.382": {
+   "events": 702,
+   "long": 379,
+   "short": 323,
+   "per_year": 89.3
+  }
+ },
+ "D1": {
+  "th0.0": {
+   "events": 2,
+   "long": 2,
+   "short": 0,
+   "per_year": 0.3
+  },
+  "th0.236": {
+   "events": 75,
+   "long": 42,
+   "short": 33,
+   "per_year": 9.6
+  },
+  "th0.382": {
+   "events": 212,
+   "long": 111,
+   "short": 101,
+   "per_year": 27.1
+  }
+ }
+}
