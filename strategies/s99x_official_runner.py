@@ -34,6 +34,7 @@ CFG = {
  's990': dict(name='R2TrendBirthLong', tf='H1', side='long', mh=48, nt=27, seed=990990),
  's991': dict(name='AutocorrMomLong',  tf='H8', side='long', mh=21, nt=159, seed=991991),
  's992': dict(name='ErShockLong',      tf='H1', side='long', mh=48, nt=146, seed=992992),
+ 's993': dict(name='ErShockCalmShort', tf='H1', side='short', mh=48, nt=200, seed=993993),
 }
 
 def rule_s990(df):
@@ -65,6 +66,19 @@ def rule_s992(df):
     edge = ((er > 0.70) & (er.shift(1).rolling(3).min() < 0.30)).fillna(False).astype(bool)
     edge = edge & ~edge.shift(1, fill_value=False)
     gate = (net > 0).fillna(False).astype(bool)
+    return (edge & gate), gate, sl, sl*1.5
+
+def rule_s993(df):
+    h,l,c = df['high'].values, df['low'].values, df['close'].values
+    sl = med_atr(h,l,c,100)*1.5/0.1
+    cs = pd.Series(c); net = cs - cs.shift(13); path = cs.diff().abs().rolling(13).sum()
+    er = net.abs()/path.replace(0,np.nan)
+    edge = ((er > 0.70) & (er.shift(1).rolling(3).min() < 0.30)).fillna(False).astype(bool)
+    edge = edge & ~edge.shift(1, fill_value=False)
+    tr_ = np.maximum(h-l, np.maximum(abs(h-np.roll(c,1)), abs(l-np.roll(c,1)))); tr_[0]=h[0]-l[0]
+    atr13 = pd.Series(tr_).rolling(13).mean()
+    calm = (atr13 <= atr13.shift(1).rolling(233).median()).fillna(False).astype(bool)
+    gate = ((net < 0).fillna(False).astype(bool)) & calm
     return (edge & gate), gate, sl, sl*1.5
 
 # ---------------- اجرا ----------------
