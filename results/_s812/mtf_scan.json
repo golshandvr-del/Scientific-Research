@@ -263,5 +263,12 @@
   "n_events": 0,
   "mh": 1,
   "note": "NA \u2014 too few Friday>=21h bars on this TF"
+ },
+ "D1": {
+  "tf": "D1",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+  "n_events": 0,
+  "mh": 1,
+  "note": "NA \u2014 too few Friday>=21h bars on this TF"
  }
 }
