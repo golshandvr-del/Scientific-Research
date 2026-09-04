@@ -1,0 +1,311 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars": 4005,
+ "split_bar": 2403,
+ "grid": [
+  {
+   "W": 21,
+   "m": 3,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 30,
+   "exp": -50.481,
+   "wr": 33.33,
+   "pf": 0.685
+  },
+  {
+   "W": 21,
+   "m": 3,
+   "k": 1.272,
+   "rr": 2.058,
+   "n": 26,
+   "exp": -86.7512,
+   "wr": 26.92,
+   "pf": 0.498
+  },
+  {
+   "W": 21,
+   "m": 3,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 21,
+   "exp": -50.4167,
+   "wr": 38.1,
+   "pf": 0.717
+  },
+  {
+   "W": 21,
+   "m": 3,
+   "k": 1.618,
+   "rr": 2.058,
+   "n": 19,
+   "exp": -37.4708,
+   "wr": 36.84,
+   "pf": 0.792
+  },
+  {
+   "W": 21,
+   "m": 5,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 17,
+   "exp": -89.1415,
+   "wr": 29.41,
+   "pf": 0.488
+  },
+  {
+   "W": 21,
+   "m": 5,
+   "k": 1.272,
+   "rr": 2.058,
+   "n": 17,
+   "exp": -65.7925,
+   "wr": 29.41,
+   "pf": 0.622
+  },
+  {
+   "W": 21,
+   "m": 5,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 15,
+   "exp": -28.0998,
+   "wr": 40.0,
+   "pf": 0.844
+  },
+  {
+   "W": 21,
+   "m": 5,
+   "k": 1.618,
+   "rr": 2.058,
+   "n": 13,
+   "exp": -12.1037,
+   "wr": 38.46,
+   "pf": 0.933
+  },
+  {
+   "W": 55,
+   "m": 3,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 31,
+   "exp": -56.977,
+   "wr": 32.26,
+   "pf": 0.651
+  },
+  {
+   "W": 55,
+   "m": 3,
+   "k": 1.272,
+   "rr": 2.058,
+   "n": 27,
+   "exp": -90.8486,
+   "wr": 25.93,
+   "pf": 0.484
+  },
+  {
+   "W": 55,
+   "m": 3,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 22,
+   "exp": -60.2743,
+   "wr": 36.36,
+   "pf": 0.674
+  },
+  {
+   "W": 55,
+   "m": 3,
+   "k": 1.618,
+   "rr": 2.058,
+   "n": 20,
+   "exp": -48.9615,
+   "wr": 35.0,
+   "pf": 0.739
+  },
+  {
+   "W": 55,
+   "m": 5,
+   "k": 1.272,
+   "rr": 1.618,
+   "n": 20,
+   "exp": -38.0161,
+   "wr": 35.0,
+   "pf": 0.759
+  },
+  {
+   "W": 55,
+   "m": 5,
+   "k": 1.272,
+   "rr": 2.058,
+   "n": 19,
+   "exp": -82.2724,
+   "wr": 26.32,
+   "pf": 0.538
+  },
+  {
+   "W": 55,
+   "m": 5,
+   "k": 1.618,
+   "rr": 1.618,
+   "n": 16,
+   "exp": -13.3997,
+   "wr": 43.75,
+   "pf": 0.917
+  },
+  {
+   "W": 55,
+   "m": 5,
+   "k": 1.618,
+   "rr": 2.058,
+   "n": 14,
+   "exp": 3.4814,
+   "wr": 42.86,
+   "pf": 1.022
+  }
+ ],
+ "winner": {
+  "W": 21,
+  "m": 3,
+  "k": 1.272,
+  "rr": 1.618,
+  "n": 30,
+  "exp": -50.481,
+  "wr": 33.33,
+  "pf": 0.685
+ },
+ "judged": {
+  "W": 21,
+  "m": 3,
+  "k": 1.272,
+  "rr": 1.618,
+  "n": 79,
+  "n_long": 66,
+  "n_short": 13,
+  "wr": 48.1,
+  "exp": 156.0279,
+  "pf": 1.793,
+  "sl_med": 337.75,
+  "tp_med": 546.47
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 43.41372912801484,
+   "perm_mean": 42.89329650857115,
+   "perm_sd": 5.862200640014579,
+   "perm_max": 57.6271186440678,
+   "perm_k": 600
+  },
+  "short": {
+   "uncond_wr": 33.96880415944541,
+   "perm_mean": 34.45747863247863,
+   "perm_sd": 13.922254605440747,
+   "perm_max": 83.33333333333334,
+   "perm_k": 600
+  }
+ },
+ "gates": {
+  "H0": false,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": true,
+  "H8": false,
+  "H9": true,
+  "H10": true
+ },
+ "metrics": {
+  "n_trades": 79,
+  "win_rate": 48.1,
+  "net_profit": 2225.2,
+  "profit_factor": 1.552,
+  "max_dd_pct": 7.82,
+  "max_consec_losses": 8,
+  "mcl_allowed": 12,
+  "n_wins": 38,
+  "top_win_share": 0.0657,
+  "recovery_factor": 2.31,
+  "expectancy_pip": 156.0279,
+  "expectancy_at_2x_cost": 152.7279,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 337.745,
+  "tp_pip": 546.472,
+  "rr": 1.618,
+  "breakeven_wr_cost": 38.57,
+  "wr_excess_cost": 9.53,
+  "null_ref_wr": 41.94,
+  "skill_lift_pp": 6.16,
+  "skill_z": 0.86,
+  "skill_p_perm": 0.195693,
+  "perm_max": 61.86,
+  "perm_k": 600,
+  "side_n": {
+   "long": 66,
+   "short": 13
+  },
+  "side_wr": {
+   "long": 51.52,
+   "short": 30.77
+  },
+  "side_lift_pp": {
+   "long": 8.1,
+   "short": -3.69
+  },
+  "prune_sides": [
+   "short"
+  ],
+  "p_emp": 0.159655,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 1.11,
+  "z_luck_bound": 2.1,
+  "z_margin": -0.99,
+  "n_trials": 32,
+  "cal_nets": [
+   -129.7,
+   -256.9,
+   63.6,
+   2486.6
+  ],
+  "cal_counts": [
+   4,
+   13,
+   25,
+   37
+  ],
+  "cal_positive": 2,
+  "cal_occupied": 4,
+  "half_nets": [
+   -449.6,
+   2616.8
+  ],
+  "oos": {
+   "n": 46,
+   "wr": 60.87,
+   "pf": 2.569,
+   "net": 3021.5,
+   "wr_req": 38.57
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 77,
+   "n_unjudgeable": 2,
+   "n_counter": 0,
+   "n_aligned": 77,
+   "regime_lookback_days": 280.0,
+   "wr_aligned": 46.75,
+   "exp_aligned": 124.184,
+   "h10_substitute": "no-counter-trades-selective"
+  },
+  "n_required_h3": 612.4
+ },
+ "verdict": "REJECT",
+ "rqs2_score": 15.3,
+ "notes": [
+  "H10 WARN (substitute PASS): 0 counter-drift trades (<20). The layer is selective by design and has essentially no adverse-regime exposure; there is no evidence against the edge. Conditional pass — not a full counter-drift confirmation. Report as WARN, never as proof."
+ ]
+}
