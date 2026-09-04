@@ -1,0 +1,64 @@
+{
+ "tf": "H8",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "n_bars": 11978,
+ "split_bar": 5943,
+ "member": {
+  "gate": "aligned",
+  "K": 180,
+  "th": 2.618,
+  "rho": 0.618,
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "max_hold": 16,
+  "sl_pip_med": 135.52,
+  "tp_pip_med": 219.26
+ },
+ "discovery": {
+  "gate": "aligned",
+  "K": 180,
+  "stat": 154.298,
+  "n": 46,
+  "wr": 63.043,
+  "be_rob": 40.294,
+  "lift": 22.75,
+  "exp_pip": 70.131,
+  "sl_med": 120.319,
+  "tp_med": 194.667
+ },
+ "p1_baseline": {
+  "n": 82,
+  "wr": 58.54,
+  "lift": 18.155
+ },
+ "p1_pass": true,
+ "null_meta": {
+  "n_perm": 500,
+  "draw_size": 73,
+  "uncond_n": 11711
+ },
+ "verdict": "ACCEPT",
+ "score": 85.8,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": true,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": true
+ },
+ "n": 73,
+ "wr": 61.64,
+ "pf": 2.466,
+ "net": 5054.3,
+ "lift": 19.32,
+ "z": 3.21,
+ "p_perm": 0.000661,
+ "notes": [],
+ "sec": 3.9
+}
