@@ -44,43 +44,72 @@ function aggregate(h1, mult) {
   return out
 }
 
-for (const card of CARDS) {
+let fail = 0
+
+for (const { card, mult } of CARDS) {
   console.log(`\n══════ ${card} ══════`)
 
   // ① آزمونِ ثبت در گرافِ ROS2-گونه: لایه باید در CARD_LAYERS باشد.
   const n = (CARD_LAYERS[card] || []).length
   console.log(`لایه‌های ثبت‌شده در CARD_LAYERS: ${n}`)
 
-  // ② کندل‌های **زندهٔ** همان کارت را از خودِ API سایت می‌گیریم (نه fixture).
-  const r = await fetch(`${BASE}/api/candles?asset=${card}&limit=600`)
+  // ② کندل‌های **زندهٔ** پایه را از خودِ API سایت می‌گیریم (نه fixture)، سپس
+  //    عیناً مثلِ سایت به تایم‌فریمِ کارت تجمیع می‌کنیم.
+  const r = await fetch(`${BASE}/api/candles?asset=${card}&limit=3000`)
   const j = await r.json()
-  const candles = j.candles || j.data || j
-  if (!Array.isArray(candles) || candles.length < 150) {
-    console.log(`⚠️ کندلِ کافی از API نیامد (${Array.isArray(candles) ? candles.length : 'غیرآرایه'}) — از این کارت رد می‌شوم`)
-    continue
+  const base = j.candles || j.data || j
+  if (!Array.isArray(base) || base.length < 150) {
+    console.log(`⚠️ کندلِ کافی از API نیامد — رد می‌شوم`); fail++; continue
   }
+  const candles = aggregate(base, mult)
   const last = candles[candles.length - 1]
-  console.log(`کندلِ زنده: ${candles.length} · آخرین close=${last.close} · زمان=${new Date(last.time * 1000).toISOString()}`)
+  console.log(`کندلِ پایه=${base.length} ⇒ پس از تجمیعِ ×${mult} = ${candles.length} کندلِ ${card}`)
+  console.log(`آخرین کندل: close=${last.close.toFixed(2)} · زمان=${new Date(last.time * 1000).toISOString()}`)
+  // صحتِ مرزِ تجمیع: باید روی مرزِ ثابتِ تایم‌فریم بنشیند.
+  const boundaryOk = last.time % (3600 * mult) === 0
+  console.log(`مرزِ UTC درست؟ ${boundaryOk ? 'بله ✅' : 'خیر ❌'} (t % ${3600 * mult} = ${last.time % (3600 * mult)})`)
+  if (!boundaryOk) fail++
 
   // ③ خودِ لایه را با همان دادهٔ زنده صدا می‌زنیم.
   const cfg = S770_CFG[card]
-  if (!cfg) { console.log(`❌ S770_CFG برای ${card} وجود ندارد!`); continue }
+  if (!cfg) { console.log(`❌ S770_CFG برای ${card} وجود ندارد!`); fail++; continue }
   // ⚠️ ترتیبِ آرگومان‌ها (candles, cfg) است — نه (cfg, candles). نسخهٔ اولِ همین
   //    probe جابه‌جا صدا زده بود و استثنا خورد؛ ثبتش می‌کنم چون همان تلهٔ
   //    ترتیب-آرگومان است که اگر در آداپتورِ رجیستری رخ می‌داد، پریتی سبز
   //    می‌ماند و سایت خاموش (و تستِ یکپارچگی همان را می‌گیرد).
   const sig = computeS770(candles, cfg)
 
-  console.log(`پیکربندی: theta=±${cfg.theta} · ADR=${cfg.adrP} · ATR=${cfg.atrP} · SL=${cfg.slK}×ATR · RR=${cfg.rr} · hold=${cfg.hold}`)
+  console.log(`پیکربندی: θ=±${cfg.theta} · ADR=${cfg.adrP} · ATR=${cfg.atrP} · SL=${cfg.slK}×ATR · RR=${cfg.rr} · maxHold=${cfg.maxHold}`)
   console.log(`وضعیتِ زندهٔ S770:`)
-  console.log(`   · frac (کسری از ADR) = ${sig.frac?.toFixed(4)}  (آستانه ±${cfg.theta})`)
-  console.log(`   · فاصله تا ماشه      = ${(cfg.theta - Math.abs(sig.frac ?? 0)).toFixed(4)}`)
-  console.log(`   · ENTRY فعال؟        = ${sig.active ? `بله (${sig.direction})` : 'خیر'}`)
-  console.log(`   · نزدیکِ ماشه؟        = ${sig.approaching ? 'بله' : 'خیر'}`)
-  console.log(`   ⇒ لایه **اجرا شد و پاسخ داد** ✅ (خروجیِ محاسبه‌شده دارد)`)
+  console.log(`   · ENTRY فعال؟   = ${sig.active ? `بله (${sig.direction})` : 'خیر'}`)
+  console.log(`   · نزدیکِ ماشه؟   = ${sig.approaching ? 'بله' : 'خیر'}`)
+  console.log(`   · SL/TP محاسبه‌شده = ${(sig.slDist / 0.10).toFixed(1)} / ${(sig.tpDist / 0.10).toFixed(1)} pip`)
+  // اندیکاتورهای لایه = پنجرهٔ شفافیت؛ اگر لایه اجرا نشده بود، خالی می‌ماند.
+  const inds = sig.indicators || []
+  console.log(`   · اندیکاتورهای گزارش‌شده (${inds.length}):`)
+  for (const it of inds) console.log(`       – ${it.name}: ${it.value}`)
+
+  // ④ اثباتِ اینکه از مسیرِ **runCard واقعیِ سایت** هم عبور می‌کند.
+  const ctx = {
+    cardId: card, a: { price: last.close, adx: 0, ema: {}, rsi: 50 },
+    candles, utcHour: new Date(last.time * 1000).getUTCHours(),
+    times: candles.map(c => c.time), capital: 10000, riskPct: 1.0,
+  }
+  const dec = runCard(ctx)
+  console.log(`   · runCard() ⇒ لایهٔ اصلی=${dec?.sourceLayer?.code} state=${dec?.state}`)
+
+  // بررسیِ سلامتِ هندسه: TP باید از SL بزرگ‌تر باشد (قانونِ بودجه).
+  const ok = sig.tpDist > sig.slDist && isFinite(sig.slDist) && sig.slDist > 0 && inds.length > 0
+  console.log(`   ⇒ ${ok ? 'لایه زنده، محاسبه‌گر و با هندسهٔ سالم ✅' : 'مشکل ❌'}`)
+  if (!ok) fail++
 }
 
 console.log('\n════════════════════════════════════════════════')
-console.log('✅ S770 روی هر دو کارتِ ACCEPT با دادهٔ زندهٔ سایت اجرا می‌شود.')
-console.log('   نکته: NEUTRAL بودن ایراد نیست — این لایه کم‌بسامد است')
-console.log('   (۶۸۹ معامله در ۱۵.۶ سال روی کلِ استخر) و بیشترِ کندل‌ها هیچ‌اند.')
+if (fail === 0) {
+  console.log('✅ S770 روی هر دو کارتِ ACCEPT با دادهٔ زندهٔ سایت اجرا می‌شود.')
+  console.log('   نکته: NEUTRAL بودن ایراد نیست — این لایه کم‌بسامد است')
+  console.log('   (۶۸۹ معامله در ۱۵.۶ سال روی کلِ استخر) و بیشترِ کندل‌ها هیچ‌اند.')
+} else {
+  console.log(`❌ ${fail} مشکل در probeِ زنده.`)
+  process.exit(1)
+}
