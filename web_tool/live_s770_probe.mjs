@@ -21,6 +21,9 @@ const CARDS = [
   { card: 'XAUUSD-D1', mult: 24 },
   { card: 'XAUUSD-H8', mult: 8 },
 ]
+// بازهٔ دادهٔ هر کارت — عیناً از جدولِ GOLD_TF در src/index.tsx (منبعِ حقیقت).
+// اگر روزی آن جدول تغییر کرد، این probe باید همان لحظه هم‌گام شود.
+const RANGE = { 'XAUUSD-D1': '2y', 'XAUUSD-H8': '1y' }
 
 // تجمیعِ کندل با مرزِ ثابتِ UTC (t % (3600*mult) == 0) — همان قاعدهٔ سایت.
 function aggregate(h1, mult) {
