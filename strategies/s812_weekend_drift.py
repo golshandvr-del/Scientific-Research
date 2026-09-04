@@ -267,12 +267,16 @@ def phase_judge(df, ev, day, adr_map, vref_map, qv_map):
                           bar_time=df['time'].values, null=null,
                           n_trials=1, split_bar=split_bar,
                           close=df['close'].values)
-    json.dump(dict(winner=b, verdict=r['verdict'], score=r['score'],
-                   gates=r.get('gates'), metrics=r.get('metrics')),
+    json.dump(dict(winner=b, verdict=r['verdict'], score=r['rqs2_score'],
+                   full=r),
               open(os.path.join(OUTDIR, 'judgment_m1.json'), 'w'),
               indent=1, default=str)
     open(lock, 'w').write('holdout spent — one test only (path C)')
-    print('VERDICT:', r['verdict'], 'SCORE:', r['score'], flush=True)
+    print('VERDICT:', r['verdict'], 'SCORE:', r['rqs2_score'], flush=True)
+    try:
+        print(rqs2.format_rqs2('S812-M1', r))
+    except Exception as e:
+        print('format_rqs2 skipped:', e)
 
 
 def main():
