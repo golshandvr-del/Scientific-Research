@@ -1,0 +1,120 @@
+DATA src=/home/user/webapp/data/mt5_full/XAUUSD_H12.csv  n_bars=7,998  span=15.59y
+[ 1/96] G25_W34_follow_k2.058_rr1.0_hd34     n=   196 wr=54.592 lift=3.952 score=55.32 (0s)
+[ 2/96] G25_W34_follow_k2.058_rr1.0_hd55     n=   195 wr=54.872 lift=4.229 score=59.06 (0s)
+[ 3/96] G25_W34_follow_k2.058_rr1.5_hd34     n=   169 wr=48.521 lift=8.016 score=104.2 (0s)
+[ 4/96] G25_W34_follow_k2.058_rr1.5_hd55     n=   166 wr=46.386 lift=5.88 score=75.76 (0s)
+[ 5/96] G25_W34_follow_k3.141_rr1.0_hd34     n=   156 wr=56.41 lift=5.988 score=74.79 (0s)
+[ 6/96] G25_W34_follow_k3.141_rr1.0_hd55     n=   150 wr=54.667 lift=4.242 score=51.96 (0s)
+[ 7/96] G25_W34_follow_k3.141_rr1.5_hd34     n=   130 wr=50.0 lift=9.66 score=110.14 (0s)
+[ 8/96] G25_W34_follow_k3.141_rr1.5_hd55     n=   119 wr=41.176 lift=0.825 score=9.0 (0s)
+[ 9/96] G25_W34_fade_k2.058_rr1.0_hd34       n=   196 wr=43.367 lift=-7.273 score=-101.82 (0s)
+[10/96] G25_W34_fade_k2.058_rr1.0_hd55       n=   195 wr=43.077 lift=-7.566 score=-105.65 (0s)
+[11/96] G25_W34_fade_k2.058_rr1.5_hd34       n=   185 wr=35.135 lift=-5.384 score=-73.23 (0s)
+[12/96] G25_W34_fade_k2.058_rr1.5_hd55       n=   183 wr=36.066 lift=-4.455 score=-60.26 (0s)
+[13/96] G25_W34_fade_k3.141_rr1.0_hd34       n=   156 wr=41.667 lift=-8.755 score=-109.35 (0s)
+[14/96] G25_W34_fade_k3.141_rr1.0_hd55       n=   150 wr=43.333 lift=-7.091 score=-86.85 (0s)
+[15/96] G25_W34_fade_k3.141_rr1.5_hd34       n=   149 wr=40.268 lift=-0.072 score=-0.87 (0s)
+[16/96] G25_W34_fade_k3.141_rr1.5_hd55       n=   136 wr=39.706 lift=-0.639 score=-7.45 (0s)
+[17/96] G25_W89_follow_k2.058_rr1.0_hd34     n=   124 wr=54.032 lift=3.379 score=37.63 (0s)
+[18/96] G25_W89_follow_k2.058_rr1.0_hd55     n=   123 wr=55.285 lift=4.631 score=51.37 (0s)
+[19/96] G25_W89_follow_k2.058_rr1.5_hd34     n=   105 wr=48.571 lift=8.052 score=82.51 (0s)
+[20/96] G25_W89_follow_k2.058_rr1.5_hd55     n=   103 wr=47.573 lift=7.054 score=71.59 (0s)
+[21/96] G25_W89_follow_k3.141_rr1.0_hd34     n=    98 wr=58.163 lift=7.732 score=76.55 (0s)
+[22/96] G25_W89_follow_k3.141_rr1.0_hd55     n=    95 wr=54.737 lift=4.309 score=42.0 (0s)
+[23/96] G25_W89_follow_k3.141_rr1.5_hd34     n=    80 wr=50.0 lift=9.647 score=86.28 (0s)
+[24/96] G25_W89_follow_k3.141_rr1.5_hd55     n=    75 wr=42.667 lift=2.311 score=20.02 (0s)
+[25/96] G25_W89_fade_k2.058_rr1.0_hd34       n=   124 wr=44.355 lift=-6.298 score=-70.13 (0s)
+[26/96] G25_W89_fade_k2.058_rr1.0_hd55       n=   123 wr=43.089 lift=-7.564 score=-83.89 (0s)
+[27/96] G25_W89_fade_k2.058_rr1.5_hd34       n=   119 wr=36.134 lift=-4.396 score=-47.95 (0s)
+[28/96] G25_W89_fade_k2.058_rr1.5_hd55       n=   118 wr=35.593 lift=-4.943 score=-53.69 (0s)
+[29/96] G25_W89_fade_k3.141_rr1.0_hd34       n=    98 wr=41.837 lift=-8.594 score=-85.08 (0s)
+[30/96] G25_W89_fade_k3.141_rr1.0_hd55       n=    95 wr=45.263 lift=-5.165 score=-50.34 (0s)
+[31/96] G25_W89_fade_k3.141_rr1.5_hd34       n=    97 wr=39.175 lift=-1.172 score=-11.54 (0s)
+[32/96] G25_W89_fade_k3.141_rr1.5_hd55       n=    94 wr=39.362 lift=-0.983 score=-9.53 (0s)
+[33/96] G50_W34_follow_k2.058_rr1.0_hd34     n=   122 wr=49.18 lift=-1.443 score=-15.94 (0s)
+[34/96] G50_W34_follow_k2.058_rr1.0_hd55     n=   121 wr=50.413 lift=-0.213 score=-2.34 (0s)
+[35/96] G50_W34_follow_k2.058_rr1.5_hd34     n=   114 wr=47.368 lift=6.862 score=73.27 (0s)
+[36/96] G50_W34_follow_k2.058_rr1.5_hd55     n=   113 wr=46.903 lift=6.396 score=67.99 (0s)
+[37/96] G50_W34_follow_k3.141_rr1.0_hd34     n=   113 wr=58.407 lift=7.992 score=84.96 (0s)
+[38/96] G50_W34_follow_k3.141_rr1.0_hd55     n=   110 wr=54.545 lift=4.128 score=43.29 (0s)
+[39/96] G50_W34_follow_k3.141_rr1.5_hd34     n=   100 wr=51.0 lift=10.661 score=106.61 (0s)
+[40/96] G50_W34_follow_k3.141_rr1.5_hd55     n=    92 wr=40.217 lift=-0.129 score=-1.24 (0s)
+[41/96] G50_W34_fade_k2.058_rr1.0_hd34       n=   122 wr=48.361 lift=-2.263 score=-24.99 (0s)
+[42/96] G50_W34_fade_k2.058_rr1.0_hd55       n=   121 wr=47.107 lift=-3.518 score=-38.7 (0s)
+[43/96] G50_W34_fade_k2.058_rr1.5_hd34       n=   120 wr=38.333 lift=-2.169 score=-23.76 (0s)
+[44/96] G50_W34_fade_k2.058_rr1.5_hd55       n=   118 wr=38.136 lift=-2.369 score=-25.73 (0s)
+[45/96] G50_W34_fade_k3.141_rr1.0_hd34       n=   113 wr=39.823 lift=-10.592 score=-112.59 (0s)
+[46/96] G50_W34_fade_k3.141_rr1.0_hd55       n=   110 wr=43.636 lift=-6.781 score=-71.12 (0s)
+[47/96] G50_W34_fade_k3.141_rr1.5_hd34       n=   112 wr=36.607 lift=-3.727 score=-39.44 (0s)
+[48/96] G50_W34_fade_k3.141_rr1.5_hd55       n=   105 wr=40.952 lift=0.615 score=6.3 (0s)
+[49/96] G50_W89_follow_k2.058_rr1.0_hd34     n=    73 wr=49.315 lift=-1.317 score=-11.26 (0s)
+[50/96] G50_W89_follow_k2.058_rr1.0_hd55     n=    72 wr=51.389 lift=0.756 score=6.42 (0s)
+[51/96] G50_W89_follow_k2.058_rr1.5_hd34     n=    69 wr=47.826 lift=7.312 score=60.74 (0s)
+[52/96] G50_W89_follow_k2.058_rr1.5_hd55     n=    68 wr=48.529 lift=8.015 score=66.09 (0s)
+[53/96] G50_W89_follow_k3.141_rr1.0_hd34     n=    68 wr=58.824 lift=8.402 score=69.28 (0s)
+[54/96] G50_W89_follow_k3.141_rr1.0_hd55     n=    67 wr=58.209 lift=7.787 score=63.74 (0s)
+[55/96] G50_W89_follow_k3.141_rr1.5_hd34     n=    61 wr=49.18 lift=8.843 score=69.06 (0s)
+[56/96] G50_W89_follow_k3.141_rr1.5_hd55     n=    58 wr=44.828 lift=4.488 score=34.18 (0s)
+[57/96] G50_W89_fade_k2.058_rr1.0_hd34       n=    73 wr=47.945 lift=-2.687 score=-22.96 (0s)
+[58/96] G50_W89_fade_k2.058_rr1.0_hd55       n=    72 wr=45.833 lift=-4.799 score=-40.72 (0s)
+[59/96] G50_W89_fade_k2.058_rr1.5_hd34       n=    72 wr=37.5 lift=-3.006 score=-25.51 (0s)
+[60/96] G50_W89_fade_k2.058_rr1.5_hd55       n=    71 wr=35.211 lift=-5.295 score=-44.62 (0s)
+[61/96] G50_W89_fade_k3.141_rr1.0_hd34       n=    68 wr=41.176 lift=-9.245 score=-76.24 (0s)
+[62/96] G50_W89_fade_k3.141_rr1.0_hd55       n=    67 wr=41.791 lift=-8.631 score=-70.65 (0s)
+[63/96] G50_W89_fade_k3.141_rr1.5_hd34       n=    68 wr=38.235 lift=-2.102 score=-17.33 (0s)
+[64/96] G50_W89_fade_k3.141_rr1.5_hd55       n=    67 wr=38.806 lift=-1.532 score=-12.54 (0s)
+[65/96] G100_W34_follow_k2.058_rr1.0_hd34    n=    60 wr=53.333 lift=2.701 score=20.92 (0s)
+[66/96] G100_W34_follow_k2.058_rr1.0_hd55    n=    60 wr=55.0 lift=4.367 score=33.83 (0s)
+[67/96] G100_W34_follow_k2.058_rr1.5_hd34    n=    60 wr=50.0 lift=9.494 score=73.54 (0s)
+[68/96] G100_W34_follow_k2.058_rr1.5_hd55    n=    59 wr=50.847 lift=10.332 score=79.36 (0s)
+[69/96] G100_W34_follow_k3.141_rr1.0_hd34    n=    60 wr=60.0 lift=9.586 score=74.25 (0s)
+[70/96] G100_W34_follow_k3.141_rr1.0_hd55    n=    57 wr=59.649 lift=9.227 score=69.66 (0s)
+[71/96] G100_W34_follow_k3.141_rr1.5_hd34    n=    60 wr=53.333 lift=13.002 score=100.71 (0s)
+[72/96] G100_W34_follow_k3.141_rr1.5_hd55    n=    54 wr=46.296 lift=5.957 score=43.78 (0s)
+[73/96] G100_W34_fade_k2.058_rr1.0_hd34      n=    60 wr=43.333 lift=-7.299 score=-56.54 (0s)
+[74/96] G100_W34_fade_k2.058_rr1.0_hd55      n=    60 wr=41.667 lift=-8.966 score=-69.45 (0s)
+[75/96] G100_W34_fade_k2.058_rr1.5_hd34      n=    60 wr=35.0 lift=-5.506 score=-42.65 (0s)
+[76/96] G100_W34_fade_k2.058_rr1.5_hd55      n=    60 wr=31.667 lift=-8.839 score=-68.47 (0s)
+[77/96] G100_W34_fade_k3.141_rr1.0_hd34      n=    60 wr=36.667 lift=-13.748 score=-106.49 (0s)
+[78/96] G100_W34_fade_k3.141_rr1.0_hd55      n=    57 wr=36.842 lift=-13.58 score=-102.53 (0s)
+[79/96] G100_W34_fade_k3.141_rr1.5_hd34      n=    60 wr=33.333 lift=-6.998 score=-54.21 (0s)
+[80/96] G100_W34_fade_k3.141_rr1.5_hd55      n=    56 wr=33.929 lift=-6.403 score=-47.92 (0s)
+[81/96] G100_W89_follow_k2.058_rr1.0_hd34    n=    33 wr=66.667 lift=16.059 score=92.25 (0s)
+[82/96] G100_W89_follow_k2.058_rr1.0_hd55    n=    33 wr=69.697 lift=19.09 score=109.66 (0s)
+[83/96] G100_W89_follow_k2.058_rr1.5_hd34    n=    33 wr=63.636 lift=23.151 score=132.99 (0s)
+[84/96] G100_W89_follow_k2.058_rr1.5_hd55    n=    33 wr=63.636 lift=23.151 score=132.99 (0s)
+[85/96] G100_W89_follow_k3.141_rr1.0_hd34    n=    33 wr=66.667 lift=16.269 score=93.46 (0s)
+[86/96] G100_W89_follow_k3.141_rr1.0_hd55    n=    33 wr=66.667 lift=16.269 score=93.46 (0s)
+[87/96] G100_W89_follow_k3.141_rr1.5_hd34    n=    33 wr=57.576 lift=17.257 score=99.14 (0s)
+[88/96] G100_W89_follow_k3.141_rr1.5_hd55    n=    33 wr=54.545 lift=14.227 score=81.73 (0s)
+[89/96] G100_W89_fade_k2.058_rr1.0_hd34      n=    33 wr=30.303 lift=-20.304 score=-116.64 (0s)
+[90/96] G100_W89_fade_k2.058_rr1.0_hd55      n=    33 wr=27.273 lift=-23.334 score=-134.05 (0s)
+[91/96] G100_W89_fade_k2.058_rr1.5_hd34      n=    33 wr=27.273 lift=-13.213 score=-75.9 (0s)
+[92/96] G100_W89_fade_k2.058_rr1.5_hd55      n=    33 wr=21.212 lift=-19.274 score=-110.72 (0s)
+[93/96] G100_W89_fade_k3.141_rr1.0_hd34      n=    33 wr=33.333 lift=-17.064 score=-98.03 (0s)
+[94/96] G100_W89_fade_k3.141_rr1.0_hd55      n=    33 wr=33.333 lift=-17.064 score=-98.03 (0s)
+[95/96] G100_W89_fade_k3.141_rr1.5_hd34      n=    33 wr=30.303 lift=-10.015 score=-57.53 (0s)
+[96/96] G100_W89_fade_k3.141_rr1.5_hd55      n=    33 wr=30.303 lift=-10.015 score=-57.53 (0s)
+
+LOCKED -> results/_scan_S1940/lock_XAUUSD-H12.json
+{
+  "layer": "S1940",
+  "tf": "H12",
+  "split_bar": 4798,
+  "n_bars": 7998,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+  "criterion": "max lift*sqrt(n) | follow-only | n>=150 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": "G25_W34_follow_k2.058_rr1.5_hd34",
+  "best": {
+    "n": 169,
+    "wr": 48.521,
+    "net": 5477.3,
+    "sl_med": 261.3,
+    "be": 40.505,
+    "lift": 8.016,
+    "score": 104.2
+  },
+  "best_unpowered": null,
+  "score": 104.2,
+  "power_ok": true
+}
