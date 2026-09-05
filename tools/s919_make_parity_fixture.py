@@ -84,7 +84,8 @@ def main() -> None:
                 'entry_bar': loc(int(r['entry_bar'])),
                 'event_bar': loc(sb - 1),
                 'direction': str(r['direction']),
-                'sl_pip': round(float(r['sl_pip']), 6),
+                # بدونِ گردکردن — آزمونِ ⑥ پریتی آستانهٔ ۱e−۹ دارد (همان دلیلِ geom).
+                'sl_pip': float(r['sl_pip']),
             })
 
     tail = df.iloc[off:]
