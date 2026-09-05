@@ -1,0 +1,21 @@
+{
+  "layer": "S1940",
+  "tf": "M6",
+  "split_bar": 545318,
+  "n_bars": 908864,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M6.csv",
+  "criterion": "max lift*sqrt(n) | follow-only | n>=150 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": "G100_W89_follow_k2.058_rr1.5_hd34",
+  "best": {
+    "n": 385,
+    "wr": 50.39,
+    "net": 313.9,
+    "sl_med": 20.8,
+    "be": 46.352,
+    "lift": 4.038,
+    "score": 79.23
+  },
+  "best_unpowered": null,
+  "score": 79.23,
+  "power_ok": true
+}
