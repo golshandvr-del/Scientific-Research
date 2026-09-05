@@ -1,0 +1,39 @@
+{
+ "tf": "M4",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M4.csv",
+ "n_bars": 1362074,
+ "split_bar": 675411,
+ "verdict": "NO-SURVIVOR",
+ "controls": {
+  "1.0/1.618": {
+   "base": {
+    "n": 10658,
+    "wr": 35.17,
+    "lift": -44.521,
+    "exp_pip": -3.85
+   },
+   "delay": {
+    "n": 10469,
+    "wr": 35.72,
+    "lift": -43.995,
+    "exp_pip": -3.73
+   }
+  },
+  "1.272/2.058": {
+   "base": {
+    "n": 10653,
+    "wr": 36.12,
+    "lift": -34.696,
+    "exp_pip": -3.86
+   },
+   "delay": {
+    "n": 10376,
+    "wr": 37.08,
+    "lift": -33.792,
+    "exp_pip": -3.57
+   }
+  }
+ },
+ "note": "هیچ عضوی غربالِ کشف (n>=30 و expectancy>0) را نگذراند",
+ "sec": 8.6
+}

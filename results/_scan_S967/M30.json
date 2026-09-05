@@ -1,0 +1,39 @@
+{
+ "tf": "M30",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M30.csv",
+ "n_bars": 182145,
+ "split_bar": 90532,
+ "verdict": "NO-SURVIVOR",
+ "controls": {
+  "1.0/1.618": {
+   "base": {
+    "n": 1987,
+    "wr": 40.01,
+    "lift": -11.593,
+    "exp_pip": -2.58
+   },
+   "delay": {
+    "n": 1951,
+    "wr": 37.01,
+    "lift": -14.624,
+    "exp_pip": -4.51
+   }
+  },
+  "1.272/2.058": {
+   "base": {
+    "n": 1985,
+    "wr": 40.81,
+    "lift": -7.932,
+    "exp_pip": -2.22
+   },
+   "delay": {
+    "n": 1918,
+    "wr": 37.9,
+    "lift": -10.867,
+    "exp_pip": -3.66
+   }
+  }
+ },
+ "note": "هیچ عضوی غربالِ کشف (n>=30 و expectancy>0) را نگذراند",
+ "sec": 1.3
+}
