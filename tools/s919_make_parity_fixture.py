@@ -66,10 +66,13 @@ def main() -> None:
     mask_short = [loc(t) for t in np.flatnonzero(sm) if t >= off]
 
     # هندسهٔ هر ماسک (پایتون sl_arr را در ایندکسِ ماسک می‌خواند)
+    # ⚠️ **بدونِ گردکردن**: پریتی آستانهٔ ۱e−۹ دارد و round(·,6) روی عددی مثل
+    #    ۲۳۰.۸۰۹۶ خطای نسبیِ ~۲e−۹ می‌سازد ⇒ آستانه را از دقتِ fixture سخت‌تر
+    #    نمی‌کنیم؛ دقتِ کامل ذخیره می‌شود تا آزمون واقعاً سخت بماند.
     geom = {}
     for t in list(np.flatnonzero(lm)) + list(np.flatnonzero(sm)):
         if t >= off:
-            geom[str(loc(t))] = [round(float(sl_arr[t]), 6), round(float(tp_arr[t]), 6)]
+            geom[str(loc(t))] = [float(sl_arr[t]), float(tp_arr[t])]
 
     # ورودِ واقعیِ موتور برای معاملاتِ داخلِ پنجره
     entries = []
