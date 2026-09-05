@@ -209,7 +209,7 @@ def run_tf(tf):
     n_sig = int(sig.sum())
     tr = simulate(df, sig if best['side'] == 'long' else z,
                   sig if best['side'] == 'short' else z, sl_arr, tp_arr)
-    sl_med = float(np.median(tr['sl_pip'].values)); tp_med = float(np.median(tr['tp_pip'].values))
+    sl_med = float(np.median(tr['sl_pip'].values)); tp_med = sl_med * best['kt'] / best['ks']  # simulator stores sl_pip only; TP/SL ratio fixed
     null, unc_rows, perm = canonical_null(df, best['side'], sl_arr, tp_arr, n_sig)
     r = rqs2.compute_rqs2(tr, ASSET, sl_pip=sl_med, tp_pip=tp_med, bar_time=times,
                           null=null, n_trials=N_TRIALS, split_bar=split, close=close)
