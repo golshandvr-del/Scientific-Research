@@ -604,6 +604,12 @@ const s965Layer = (cfg: typeof S965_CFG[string]): LayerFn => (ctx) => decideS965
 //    در index.tsx (۱۱۰ کندل) کمتر از این است، پس لایه در فیدِ کم‌عمق صادقانه
 //    پیامِ «دادهٔ ناکافی» می‌دهد و هرگز سیگنالِ جعلی نمی‌سازد (خودِ ماژول گارد دارد).
 const s966Layer = (cfg: typeof S966_CFG[string]): LayerFn => (ctx) => decideS966(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐⭐ S919 — شوکِ مطلعِ هم‌راستا با قرارداد (H6) — کندل‌های ورودیِ ctx باید H6 باشند
+//    (index.tsx آن‌ها را با aggregateCandles(H1, 6) می‌سازد، عینِ الگوی H4/H8).
+// ⚠️ کفِ داده: گیتِ قرارداد به close[t−1−240] با t = n−2 نگاه می‌کند ⇒ کفِ ۲۴۳
+//    کندلِ H6. اگر فیدِ کم‌عمق باشد، خودِ ماژول صادقانه «دادهٔ ناکافی» می‌دهد و
+//    هرگز سیگنالِ جعلی نمی‌سازد (گاردِ minBars در computeS919).
+const s919Layer = (cfg: typeof S919_CFG[string]): LayerFn => (ctx) => decideS919(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐⭐ S800 — فشردگی → گشایش (D1 و H12) — کندل‌های ورودیِ ctx باید هم‌تایم‌فریمِ کارت باشند
 //    (index.tsx آن‌ها را با aggregateCandles(H1, 24) و aggregateCandles(H1, 12)
 //     می‌سازد، عینِ الگوی H4=×4 و H8=×8؛ چون Yahoo کندلِ روزانهٔ GC=F را در ساعتِ
