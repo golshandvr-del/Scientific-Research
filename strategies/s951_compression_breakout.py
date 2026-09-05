@@ -109,37 +109,40 @@ def zproxy(tr, sl_med, tp_med, cost=3.3):
 
 
 def build_null_perm(df, ls, ss, hold, K=K_PERM, seed=SEED, CH=50):
-    """مدلِ صفرِ جایگشتی — چانکی (درسِ حافظهٔ S950 روی M1)."""
+    """مدلِ صفرِ جایگشتِ جهت روی همان کندل‌های ورود — **ساختارِ کانونیِ RQS2**.
+
+    ⚠️ ERRATUM (2026-09-05): نسخهٔ اول این تابع `{kind,K,seed,stats}` برمی‌گرداند
+    که موتور rqs2 آن را نمی‌خوانَد (`null.get('long')` ⇒ None) ⇒ گیت‌های H3/H4/H5
+    در همهٔ TFهای S951 و S952 که به rqs2 رسیدند None ماندند. این نسخه عینِ الگوی
+    پذیرفته‌شدهٔ S950 (s346_holdout_c) است: {'long':{uncond_wr,perm_mean,perm_sd,
+    perm_max,perm_k}, 'short':{...}}. TFهای متأثر با همین تابع بازداوری شدند.
+    """
+    sig_idx = np.where(ls | ss)[0]
+    if len(sig_idx) < 30:
+        return None
     c = df['close'].values.astype(np.float64)
-    n = len(c)
-    idx_l = np.where(ls)[0]
-    idx_s = np.where(ss)[0]
     rng = np.random.default_rng(seed)
-    fwd = np.zeros(n)
-    e = np.minimum(np.arange(n) + hold, n - 1)
-    fwd = c[e] - c
-    pool = np.arange(WARM, n - hold - 1)
-    stats = []
-    for side, idx, sgn in (('L', idx_l, 1.0), ('S', idx_s, -1.0)):
-        m = len(idx)
-        if m == 0:
-            continue
-        real = float(np.mean(sgn * fwd[idx]))
-        null_means = np.empty(K)
-        done = 0
-        while done < K:
-            b = min(CH, K - done)
-            samp = rng.choice(pool, size=(b, m), replace=True)
-            null_means[done:done + b] = (sgn * fwd[samp]).mean(axis=1)
-            del samp
-            done += b
-        p = float((null_means >= real).mean())
-        stats.append(dict(side=side, m=m, real=real, p=p,
-                          null_mu=float(null_means.mean()),
-                          null_sd=float(null_means.std())))
-        del null_means
+    end = np.minimum(sig_idx + hold, len(c) - 1)
+    fwd = c[end] - c[sig_idx]
+    fwd = fwd[np.isfinite(fwd)]
+    m = len(fwd)
+    if m < 30:
+        return None
+    base_wins = fwd > 0
+    wrs = np.empty(K, dtype=np.float64)
+    pos = 0
+    while pos < K:                       # چانکی — بدون OOM روی M1
+        kk = min(CH, K - pos)
+        signs = rng.integers(0, 2, size=(kk, m)).astype(bool)
+        w = np.where(signs, base_wins[None, :], ~base_wins[None, :])
+        wrs[pos:pos + kk] = w.mean(axis=1) * 100.0
+        pos += kk
+        del signs, w
+    ref = float(np.mean(wrs))
+    side = dict(uncond_wr=ref, perm_mean=ref, perm_sd=float(np.std(wrs)),
+                perm_max=float(np.max(wrs)), perm_k=K)
     gc.collect()
-    return dict(kind='perm', K=K, seed=seed, stats=stats)
+    return {'long': dict(side), 'short': dict(side)}
 
 
 def judge_tf(tf):
