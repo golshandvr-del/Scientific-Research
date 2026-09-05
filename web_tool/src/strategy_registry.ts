@@ -208,6 +208,14 @@ import { decideS950, S950_CFG } from './jump_aftermath_s950'
 //    RQS2=82.2 · هر ۱۱ دروازه سبز · n=146 · WR=54.79% · lift=+12.84pp · z=3.14 · PF=1.81
 //    سند: results/S965_KyleIntrabarPermanence_Xauusd_H8_rqs2_82_ACCEPT.md
 import { decideS965, S965_CFG } from './kyle_intrabar_s965'
+// ⭐ S966 ⭐نو — «ماندگاریِ کایل × هم‌راستاییِ درفت» · XAUUSD-H8 (تنها کارتِ ACCEPT؛
+//    H6 با RQS2=۷.۸ رد شد ⇒ قانونِ MTF: هیچ تعمیمی به کارتِ دیگر نمی‌شود)
+//    RQS2=85.8 · هر ۱۱ دروازه سبز · n=74 · WR=55.41% · lift=+11.99pp · z=3.21 · PF=1.87
+//    ⚠️ **زیرمجموعهٔ ساختاریِ ۱۰۰٪ِ S965** (اندازه‌گیری‌شده، نه ادعا):
+//       results/_scan_S966/overlap_s950_s965_s966_h8.json — ارزشش فیلترِ کیفیت است
+//       (lift ۲.۶۱ → ۱۱.۹۹pp)، نه پوششِ نو ⇒ در CARD_LAYERS **زیرِ** S965/S950 می‌آید.
+//    سند: results/S966_KylePermanenceDriftAligned_Xauusd_H8_rqs2_86_ACCEPT.md
+import { decideS966, S966_CFG } from './kyle_permanence_drift_s966'
 // ⭐⭐ S800 — «فشردگی → گشایش» (Squeeze-Expansion Breakout) · XAUUSD-D1 **و** XAUUSD-H12
 //    دو حکمِ **مستقلِ تک-کارتی** (نه استخری): D1 = RQS2 **91.1** · H12 = RQS2 **83.6**
 //    هر کارت جداگانه با مسیر C (hold-out فیزیکی، n_trials=1) داوری شد و هر دو
