@@ -1,0 +1,43 @@
+========================================================================
+S896 Record-after-Drought · XAUUSD-M30 (prereg d7338160)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_M30.csv  bars=182145  split=127501
+record edges: high=4980 low=3958  ATR21med=26.5pip
+           long /D30 /G1 n= 813 WR=45.02 exp=   +1.67 exp2x=   -1.63 t=+1.19
+           long /D90 /G1 n= 457 WR=43.98 exp=   +1.52 exp2x=   -1.78 t=+0.79
+           long /D180/G1 n= 206 WR=43.69 exp=   +1.73 exp2x=   -1.57 t=+0.55
+           short/D30 /G1 n= 803 WR=41.10 exp=   -3.02 exp2x=   -6.32 t=-2.06
+           short/D90 /G1 n= 477 WR=40.04 exp=   -4.60 exp2x=   -7.90 t=-2.32
+           short/D180/G1 n= 224 WR=38.84 exp=   -5.63 exp2x=   -8.93 t=-1.87
+           long /D30 /G2 n= 813 WR=46.37 exp=   +2.00 exp2x=   -1.30 t=+1.29
+           long /D90 /G2 n= 457 WR=45.30 exp=   +2.39 exp2x=   -0.91 t=+1.13
+  ELIGIBLE long /D180/G2 n= 206 WR=45.63 exp=   +3.39 exp2x=   +0.09 t=+0.98
+           short/D30 /G2 n= 803 WR=42.22 exp=   -3.53 exp2x=   -6.83 t=-2.18
+           short/D90 /G2 n= 477 WR=41.72 exp=   -5.22 exp2x=   -8.52 t=-2.40
+           short/D180/G2 n= 224 WR=41.07 exp=   -5.58 exp2x=   -8.88 t=-1.71
+
+LOCKED: long/D180/G2 t=0.983 IS n=206 WR=45.63 exp2x=0.092  P1 base WR=44.77 → True
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3805, in get_loc
+    return self._engine.get_loc(casted_key)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7081, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7089, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'tp_pip'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/webapp/strategies/s896_record_drought.py", line 234, in <module>
+    run_tf(sys.argv[1])
+    ~~~~~~^^^^^^^^^^^^^
+  File "/home/user/webapp/strategies/s896_record_drought.py", line 212, in run_tf
+    sl_med = float(np.median(tr['sl_pip'].values)); tp_med = float(np.median(tr['tp_pip'].values))
+                                                                             ~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/pandas/core/frame.py", line 4102, in __getitem__
+    indexer = self.columns.get_loc(key)
+  File "/usr/local/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    raise KeyError(key) from err
+KeyError: 'tp_pip'
