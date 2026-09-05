@@ -1,0 +1,6 @@
+========================================================================
+S896 Record-after-Drought · XAUUSD-H8 (prereg d7338160)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv  bars=11978  split=8384
+record edges: high=361 low=255  ATR21med=118.8pip
+NO ELIGIBLE CONFIG → UNPROVEN (holdout untouched)
