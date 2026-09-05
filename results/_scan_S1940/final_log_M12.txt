@@ -1,0 +1,5 @@
+FINAL ONE-SHOT S1940 M12 · locked=G50_W34_follow_k3.141_rr1.5_hd34 · holdout=[272,815,454,692) · n_trials=1
+holdout trades = 1127
+
+VERDICT=REJECT  score=18.9
+skill_p_perm=0.012933
