@@ -1,0 +1,224 @@
+{
+ "M15": {
+  "arms": {
+   "BOTH-BARE": {
+    "side": "BOTH",
+    "filt": "BARE",
+    "mh": 16,
+    "sl": 234.6,
+    "tp": 234.6,
+    "n_long": 290,
+    "n_short": 194,
+    "n_signals": 484,
+    "t_first_half": -0.1389831889824922,
+    "n_first_half": 190,
+    "n_long_fh": 107,
+    "n_short_fh": 83,
+    "wr_first_half": 53.68,
+    "dd_first_half": 88.14
+   },
+   "BOTH-RHO": {
+    "side": "BOTH",
+    "filt": "RHO",
+    "mh": 16,
+    "sl": 243.3,
+    "tp": 243.3,
+    "n_long": 148,
+    "n_short": 61,
+    "n_signals": 209,
+    "t_first_half": -0.5567970203654982,
+    "n_first_half": 91,
+    "n_long_fh": 56,
+    "n_short_fh": 35,
+    "wr_first_half": 50.55,
+    "dd_first_half": 64.88
+   },
+   "LONG-BARE": {
+    "side": "LONG",
+    "filt": "BARE",
+    "mh": 16,
+    "sl": 248.1,
+    "tp": 248.1,
+    "n_long": 290,
+    "n_short": 0,
+    "n_signals": 290,
+    "t_first_half": 0.6629070820083838,
+    "n_first_half": 107,
+    "n_long_fh": 107,
+    "n_short_fh": 0,
+    "wr_first_half": 56.07,
+    "dd_first_half": 55.57
+   },
+   "LONG-RHO": {
+    "side": "LONG",
+    "filt": "RHO",
+    "mh": 16,
+    "sl": 280.7,
+    "tp": 280.7,
+    "n_long": 148,
+    "n_short": 0,
+    "n_signals": 148,
+    "t_first_half": -1.0613569140587835,
+    "n_first_half": 56,
+    "n_long_fh": 56,
+    "n_short_fh": 0,
+    "wr_first_half": 46.43,
+    "dd_first_half": 92.63
+   }
+  },
+  "picked": "LONG-BARE",
+  "densities": {
+   "BARE": {
+    "days_known": 4008,
+    "days_event": 485,
+    "event_rate": 12.1,
+    "rho_pass_of_events": 43.1
+   },
+   "RHO": {
+    "days_known": 4008,
+    "days_event": 485,
+    "event_rate": 12.1,
+    "rho_pass_of_events": 43.1
+   }
+  },
+  "f1_coevent": {
+   "n_event_days": 484,
+   "n_gap_target_days": 603,
+   "co_days": 124,
+   "co_share_pct": 25.6,
+   "co_long": 83,
+   "co_short": 41
+  },
+  "split_bar": 180578,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+  "stop_check": {
+   "lift_fh_pp": 10.48,
+   "per_side": {
+    "n": {
+     "long": 107,
+     "short": 0
+    },
+    "wr": {
+     "long": 56.074766355140184
+    },
+    "null_uncond_wr": {
+     "long": 45.59
+    }
+   },
+   "threshold": 4.0,
+   "stopped_dead": false
+  }
+ },
+ "H1": {
+  "arms": {
+   "BOTH-BARE": {
+    "side": "BOTH",
+    "filt": "BARE",
+    "mh": 4,
+    "sl": 157.7,
+    "tp": 157.7,
+    "n_long": 239,
+    "n_short": 184,
+    "n_signals": 423,
+    "t_first_half": -1.322133526726765,
+    "n_first_half": 127,
+    "n_long_fh": 68,
+    "n_short_fh": 59,
+    "wr_first_half": 39.37,
+    "dd_first_half": 101.18
+   },
+   "BOTH-RHO": {
+    "side": "BOTH",
+    "filt": "RHO",
+    "mh": 4,
+    "sl": 156.7,
+    "tp": 156.7,
+    "n_long": 94,
+    "n_short": 48,
+    "n_signals": 142,
+    "t_first_half": -1.0924397853618268,
+    "n_first_half": 55,
+    "n_long_fh": 35,
+    "n_short_fh": 20,
+    "wr_first_half": 41.82,
+    "dd_first_half": 74.75
+   },
+   "LONG-BARE": {
+    "side": "LONG",
+    "filt": "BARE",
+    "mh": 4,
+    "sl": 142.5,
+    "tp": 142.5,
+    "n_long": 239,
+    "n_short": 0,
+    "n_signals": 239,
+    "t_first_half": -1.0518876636509216,
+    "n_first_half": 68,
+    "n_long_fh": 68,
+    "n_short_fh": 0,
+    "wr_first_half": 42.65,
+    "dd_first_half": 68.74
+   },
+   "LONG-RHO": {
+    "side": "LONG",
+    "filt": "RHO",
+    "mh": 4,
+    "sl": 335.1,
+    "tp": 335.1,
+    "n_long": 94,
+    "n_short": 0,
+    "n_signals": 94,
+    "t_first_half": -0.7027740467015794,
+    "n_first_half": 35,
+    "n_long_fh": 35,
+    "n_short_fh": 0,
+    "wr_first_half": 42.86,
+    "dd_first_half": 57.4
+   }
+  },
+  "picked": "LONG-RHO",
+  "densities": {
+   "BARE": {
+    "days_known": 3606,
+    "days_event": 423,
+    "event_rate": 11.73,
+    "rho_pass_of_events": 33.6
+   },
+   "RHO": {
+    "days_known": 3606,
+    "days_event": 423,
+    "event_rate": 11.73,
+    "rho_pass_of_events": 33.6
+   }
+  },
+  "f1_coevent": {
+   "n_event_days": 423,
+   "n_gap_target_days": 407,
+   "co_days": 89,
+   "co_share_pct": 21.0,
+   "co_long": 57,
+   "co_short": 32
+  },
+  "split_bar": 45501,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "stop_check": {
+   "lift_fh_pp": -3.01,
+   "per_side": {
+    "n": {
+     "long": 35,
+     "short": 0
+    },
+    "wr": {
+     "long": 42.857142857142854
+    },
+    "null_uncond_wr": {
+     "long": 45.86703797020731
+    }
+   },
+   "threshold": 4.0,
+   "stopped_dead": true
+  }
+ }
+}
