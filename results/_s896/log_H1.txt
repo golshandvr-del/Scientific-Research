@@ -1,0 +1,41 @@
+========================================================================
+S896 Record-after-Drought · XAUUSD-H1 (prereg d7338160)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv  bars=91331  split=63931
+record edges: high=2641 low=1989  ATR21med=38.7pip
+  ELIGIBLE long /D30 /G1 n= 399 WR=47.12 exp=   +4.32 exp2x=   +1.02 t=+1.48
+           long /D90 /G1 n= 236 WR=45.76 exp=   +2.34 exp2x=   -0.96 t=+0.61
+           short/D30 /G1 n= 396 WR=44.19 exp=   +2.36 exp2x=   -0.94 t=+0.77
+           short/D90 /G1 n= 228 WR=41.67 exp=   +0.78 exp2x=   -2.52 t=+0.19
+  ELIGIBLE short/D180/G1 n= 102 WR=47.06 exp=   +3.31 exp2x=   +0.01 t=+0.53
+  ELIGIBLE long /D30 /G2 n= 399 WR=48.62 exp=   +4.46 exp2x=   +1.16 t=+1.40
+           long /D90 /G2 n= 236 WR=47.03 exp=   +2.52 exp2x=   -0.78 t=+0.61
+           short/D30 /G2 n= 396 WR=44.95 exp=   +3.16 exp2x=   -0.14 t=+0.92
+           short/D90 /G2 n= 228 WR=41.67 exp=   -0.57 exp2x=   -3.87 t=-0.12
+           short/D180/G2 n= 102 WR=44.12 exp=   -1.95 exp2x=   -5.25 t=-0.28
+
+LOCKED: long/D30/G1 t=1.475 IS n=399 WR=47.12 exp2x=1.02  P1 base WR=43.21 → True
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3805, in get_loc
+    return self._engine.get_loc(casted_key)
+           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
+  File "index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7081, in pandas._libs.hashtable.PyObjectHashTable.get_item
+  File "pandas/_libs/hashtable_class_helper.pxi", line 7089, in pandas._libs.hashtable.PyObjectHashTable.get_item
+KeyError: 'tp_pip'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/webapp/strategies/s896_record_drought.py", line 234, in <module>
+    run_tf(sys.argv[1])
+    ~~~~~~^^^^^^^^^^^^^
+  File "/home/user/webapp/strategies/s896_record_drought.py", line 212, in run_tf
+    sl_med = float(np.median(tr['sl_pip'].values)); tp_med = float(np.median(tr['tp_pip'].values))
+                                                                             ~~^^^^^^^^^^
+  File "/usr/local/lib/python3.13/site-packages/pandas/core/frame.py", line 4102, in __getitem__
+    indexer = self.columns.get_loc(key)
+  File "/usr/local/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
+    raise KeyError(key) from err
+KeyError: 'tp_pip'
