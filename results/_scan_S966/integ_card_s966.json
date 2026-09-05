@@ -1,0 +1,30 @@
+{
+ "what": "آزمونِ یکپارچگیِ کارت: آیا runCard(XAUUSD-H8) واقعاً S966 را اجرا می‌کند؟",
+ "why": "یک لایه می‌تواند بی‌عیب ولی وصل‌نشده باشد؛ آن حالت در UI شبیهِ «سیگنالی نیست» دیده می‌شود و بی‌صدا پنهان می‌ماند (درسِ S382).",
+ "card": "XAUUSD-H8",
+ "card_layer_count": 4,
+ "card_layers_expected": [
+  "S950",
+  "S965",
+  "S770",
+  "S966"
+ ],
+ "data_floor_bars": 182,
+ "signal_bars": 11,
+ "s966_present": 11,
+ "s966_entry": 11,
+ "direction_ok": 11,
+ "gate_control": {
+  "blocked_bars": 13,
+  "entry_leak": 0
+ },
+ "negative_control": {
+  "checked": 120,
+  "false_entry": 0
+ },
+ "shallow_feed_guard": {
+  "false_entry": 0
+ },
+ "verdict": "PASS",
+ "date": "2026-09-05"
+}
