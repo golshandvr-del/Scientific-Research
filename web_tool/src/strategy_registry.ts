@@ -570,6 +570,12 @@ const s382Layer = (cfg: typeof S382_CFG[string]): LayerFn => (ctx) => decideS382
 const s950Layer = (cfg: typeof S950_CFG[string]): LayerFn => (ctx) => decideS950(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐ S965 — ماندگاریِ درون-کندلیِ شوکِ کایل (H8) — همان مسیرِ کندلِ H8 (H1×8).
 const s965Layer = (cfg: typeof S965_CFG[string]): LayerFn => (ctx) => decideS965(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S966 — ماندگاریِ کایل × هم‌راستاییِ درفتِ ۱۸۰کندلی (H8) — همان مسیرِ کندلِ H8 (H1×8).
+//    ⚠️ نیازِ دادهٔ این لایه از همهٔ هم‌کارتی‌هایش بیشتر است: دروازهٔ درفت به
+//    close[t−1] و close[t−181] نگاه می‌کند ⇒ کفِ ۱۸۲ کندلِ H8. کفِ فعلیِ کارتِ H8
+//    در index.tsx (۱۱۰ کندل) کمتر از این است، پس لایه در فیدِ کم‌عمق صادقانه
+//    پیامِ «دادهٔ ناکافی» می‌دهد و هرگز سیگنالِ جعلی نمی‌سازد (خودِ ماژول گارد دارد).
+const s966Layer = (cfg: typeof S966_CFG[string]): LayerFn => (ctx) => decideS966(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐⭐ S800 — فشردگی → گشایش (D1 و H12) — کندل‌های ورودیِ ctx باید هم‌تایم‌فریمِ کارت باشند
 //    (index.tsx آن‌ها را با aggregateCandles(H1, 24) و aggregateCandles(H1, 12)
 //     می‌سازد، عینِ الگوی H4=×4 و H8=×8؛ چون Yahoo کندلِ روزانهٔ GC=F را در ساعتِ
