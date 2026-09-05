@@ -1,0 +1,117 @@
+{
+  "layer": "S1940",
+  "tf": "M4",
+  "locked_key": "G100_W89_follow_k3.141_rr1.5_hd55",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M4.csv",
+  "n_bars": 1362074,
+  "span_years": 15.59,
+  "holdout_from": 817244,
+  "nested_split": 1144142,
+  "hold_bars": 55,
+  "n_trades": 632,
+  "sl_med": 74.3,
+  "tp_med": 111.5,
+  "n_trials": 1,
+  "verdict": "REJECT",
+  "score": 15.9,
+  "gates": {
+    "H0": true,
+    "H1": false,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": true,
+    "H6": false,
+    "H7": false,
+    "H8": true,
+    "H9": true,
+    "H10": true
+  },
+  "metrics": {
+    "n_trades": 632,
+    "win_rate": 46.04,
+    "net_profit": 5806.2,
+    "profit_factor": 1.138,
+    "max_dd_pct": 7.97,
+    "max_consec_losses": 7,
+    "mcl_allowed": 16,
+    "n_wins": 291,
+    "top_win_share": 0.0339,
+    "recovery_factor": 4.25,
+    "expectancy_pip": 9.3485,
+    "expectancy_at_2x_cost": 6.0485,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 74.335,
+    "tp_pip": 111.502,
+    "rr": 1.5,
+    "breakeven_wr_cost": 41.78,
+    "wr_excess_cost": 4.27,
+    "null_ref_wr": 42.36,
+    "skill_lift_pp": 3.68,
+    "skill_z": 1.32,
+    "skill_p_perm": 0.09317,
+    "perm_max": 51.34,
+    "perm_k": 1000,
+    "side_n": {
+      "long": 309,
+      "short": 323
+    },
+    "side_wr": {
+      "long": 47.9,
+      "short": 44.27
+    },
+    "side_lift_pp": {
+      "long": 4.51,
+      "short": 2.88
+    },
+    "prune_sides": [],
+    "p_emp": 0.033452,
+    "p_adj_bonferroni": 0.033452,
+    "z_obs": 1.873,
+    "z_luck_bound": 0.52,
+    "z_margin": 1.353,
+    "n_trials": 1,
+    "cal_nets": [
+      0.0,
+      0.0,
+      1006.2,
+      4584.1
+    ],
+    "cal_counts": [
+      0,
+      0,
+      158,
+      474
+    ],
+    "cal_positive": 2,
+    "cal_occupied": 2,
+    "half_nets": [
+      0.0,
+      5806.2
+    ],
+    "oos": {
+      "n": 409,
+      "wr": 46.45,
+      "pf": 1.194,
+      "net": 5444.9,
+      "wr_req": 41.78
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+      "n_judgeable": 628,
+      "n_unjudgeable": 4,
+      "n_counter": 315,
+      "n_aligned": 313,
+      "regime_lookback_days": 280.0,
+      "wr_counter": 44.44,
+      "exp_counter": 14.503,
+      "wr_aligned": 47.92,
+      "exp_aligned": 4.5
+    },
+    "n_required_h3": 1720.9
+  },
+  "notes": [
+    "PF=1.138<1.3"
+  ]
+}
