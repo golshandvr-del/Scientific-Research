@@ -1,0 +1,6 @@
+{
+ "card": "XAUUSD-W1",
+ "prereg": "d7338160",
+ "verdict": "INCOMPLETE",
+ "reason": "90-bar record at >=W1 spans ~2y; n structurally < 100 (pre-declared)"
+}
