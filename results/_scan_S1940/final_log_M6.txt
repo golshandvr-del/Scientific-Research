@@ -1,0 +1,5 @@
+FINAL ONE-SHOT S1940 M6 · locked=G100_W89_follow_k2.058_rr1.5_hd34 · holdout=[545,318,908,864) · n_trials=1
+holdout trades = 540
+
+VERDICT=REJECT  score=15.5
+skill_p_perm=0.023445
