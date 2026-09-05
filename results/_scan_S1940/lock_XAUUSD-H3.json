@@ -1,0 +1,21 @@
+{
+  "layer": "S1940",
+  "tf": "H3",
+  "split_bar": 19083,
+  "n_bars": 31806,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+  "criterion": "max lift*sqrt(n) | follow-only | n>=150 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": "G25_W89_follow_k3.141_rr1.5_hd34",
+  "best": {
+    "n": 240,
+    "wr": 49.167,
+    "net": 1628.4,
+    "sl_med": 181.3,
+    "be": 40.728,
+    "lift": 8.439,
+    "score": 130.73
+  },
+  "best_unpowered": null,
+  "score": 130.73,
+  "power_ok": true
+}
