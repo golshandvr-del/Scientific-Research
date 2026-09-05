@@ -1,0 +1,17 @@
+{
+  "tf": "H4",
+  "split_bar": 14253,
+  "n_bars": 23755,
+  "src": "/home/user/webapp/data/XAUUSD_H4.csv",
+  "n_eff": 16,
+  "criterion": "wr+0.001*net",
+  "min_trades": 60,
+  "best_key": "L34_t2.058_k2.058_rr1.618_h13",
+  "best": {
+    "n": 88,
+    "wr": 53.409,
+    "net": 1548.2,
+    "n_sig": 88
+  },
+  "score": 54.9572
+}
