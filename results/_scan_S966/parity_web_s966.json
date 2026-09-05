@@ -1,0 +1,49 @@
+{
+ "layer": "S966",
+ "card": "XAUUSD-H8",
+ "module": "web_tool/src/kyle_permanence_drift_s966.ts",
+ "reference": "strategies/s966_kyle_permanence_drift.py",
+ "fixture": "results/_scan_S966/parity_h8_fixture.json",
+ "harness": "web_tool/parity_s966_signal.mjs",
+ "member": {
+  "gate": "aligned",
+  "K": 180,
+  "th": 2.618,
+  "rho": 0.618
+ },
+ "bars_tail": 3000,
+ "bars_full": 11978,
+ "cut": 362,
+ "signals": {
+  "long": {
+   "py": 8,
+   "ts": 8,
+   "match": true
+  },
+  "short": {
+   "py": 2,
+   "ts": 2,
+   "match": true
+  }
+ },
+ "drift_vector_mismatch": 0,
+ "max_rel_err": {
+  "atr_prev": 2.557e-13,
+  "rho": 0,
+  "sl_pip": 1.86e-13,
+  "tp_pip": 1.858e-13
+ },
+ "live_replay": {
+  "ok": 10,
+  "bad": 0
+ },
+ "negative_control": {
+  "checked": 200,
+  "false_positives": 0
+ },
+ "gate_control": {
+  "s965_base_blocked_by_drift": 13,
+  "leaks": 0
+ },
+ "verdict": "PASS"
+}
