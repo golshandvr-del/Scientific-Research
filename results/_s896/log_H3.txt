@@ -9,27 +9,12 @@ record edges: high=1004 low=677  ATR21med=67.5pip
   ELIGIBLE short/D30 /G2 n= 130 WR=46.92 exp=   +9.52 exp2x=   +6.22 t=+0.83
 
 LOCKED: long/D30/G2 t=2.501 IS n=145 WR=57.24 exp2x=18.659  P1 base WR=47.78 → True
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3805, in get_loc
-    return self._engine.get_loc(casted_key)
-           ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
-  File "index.pyx", line 167, in pandas._libs.index.IndexEngine.get_loc
-  File "index.pyx", line 196, in pandas._libs.index.IndexEngine.get_loc
-  File "pandas/_libs/hashtable_class_helper.pxi", line 7081, in pandas._libs.hashtable.PyObjectHashTable.get_item
-  File "pandas/_libs/hashtable_class_helper.pxi", line 7089, in pandas._libs.hashtable.PyObjectHashTable.get_item
-KeyError: 'tp_pip'
+  perm 100/500 …
+  perm 200/500 …
+  perm 300/500 …
+  perm 400/500 …
+  perm 500/500 …
 
-The above exception was the direct cause of the following exception:
-
-Traceback (most recent call last):
-  File "/home/user/webapp/strategies/s896_record_drought.py", line 234, in <module>
-    run_tf(sys.argv[1])
-    ~~~~~~^^^^^^^^^^^^^
-  File "/home/user/webapp/strategies/s896_record_drought.py", line 212, in run_tf
-    sl_med = float(np.median(tr['sl_pip'].values)); tp_med = float(np.median(tr['tp_pip'].values))
-                                                                             ~~^^^^^^^^^^
-  File "/usr/local/lib/python3.13/site-packages/pandas/core/frame.py", line 4102, in __getitem__
-    indexer = self.columns.get_loc(key)
-  File "/usr/local/lib/python3.13/site-packages/pandas/core/indexes/base.py", line 3812, in get_loc
-    raise KeyError(key) from err
-KeyError: 'tp_pip'
+FULL: n=216 WR=54.17  OOS: n=71 WR=47.88732394366197
+geo-lift=+10.00pp  VERDICT: REJECT score=24.9
+gates: {'H0': True, 'H1': True, 'H2': True, 'H3': False, 'H4': True, 'H5': True, 'H6': True, 'H7': True, 'H8': False, 'H9': True, 'H10': True}
