@@ -1,0 +1,29 @@
+{
+ "vs_S526": {
+  "n_589": 159,
+  "n_526": 200,
+  "same_entry": 144,
+  "share_of_589": 90.6
+ },
+ "vs_S1520": {
+  "n_589": 159,
+  "n_1520": 147,
+  "same_entry": 97,
+  "share_of_589": 61.0,
+  "overlap_sub": {
+   "n": 97,
+   "wr": 60.82,
+   "lift_vs_be": 20.09
+  },
+  "non_overlap_sub": {
+   "n": 62,
+   "wr": 50.0,
+   "lift_vs_be": 9.27
+  }
+ },
+ "halves_wr": [
+  51.9,
+  61.25
+ ],
+ "note_S382H4": "S1520 measured 57.1% calendar overlap vs S382-H4 for the same base event; S589 shares the base event — see vs_S1520.overlap_sub"
+}
