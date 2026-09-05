@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S949 EmvExtremumContinuation :: XAUUSD_H4  bars=23,755  span=15.53y
+    src=/home/user/webapp/data/XAUUSD_H4.csv  (2011-01-03 00:00:00 → 2026-07-16 08:00:00)
+    geom: SL=122.85pip  TP=184.28pip  rr=1.5
+    family events: long=1,132  short=1,120
+    trades=852 (L=421 S=431)  wr=36.74%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=40.57% n=2608
+      uncond long stride=7: wr=40.75% n=1929
+      uncond long stride=13: wr=41.75% n=1363
+      null long  uncond=41.746148202494496 perm_mean=41.22939304419106 sd=2.2916618712265104 k=1000
+      uncond short stride=3: wr=37.77% n=2642
+      uncond short stride=7: wr=37.75% n=1947
+      uncond short stride=13: wr=37.97% n=1372
+      null short uncond=37.97376093294461 perm_mean=38.211875259094484 sd=2.23754882216879 k=1000
+
+S949_EmvExtremumContinuation_XAUUSD_H4 | REJECT     RQS2=  0.7 | n= 852 WR=36.74% PF=0.89 lift=  -3.22pp z=-1.4 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗

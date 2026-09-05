@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S949 EmvExtremumContinuation :: XAUUSD_H1  bars=91,331  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv  (2011-01-03 00:00:00 → 2026-08-07 23:00:00)
+    geom: SL=59.74pip  TP=89.61pip  rr=1.5
+    family events: long=4,284  short=4,530
+    trades=3,403 (L=1,625 S=1,778)  wr=38.23%
+    building null: K=1000  strides=(3, 7, 13)  seed=20260814
+      uncond long stride=3: wr=38.77% n=9748
+      uncond long stride=7: wr=39.08% n=6868
+      uncond long stride=13: wr=39.07% n=4991
+      null long  uncond=39.07979033197437 perm_mean=39.27772399803217 sd=1.2084491880150225 k=1000
+      uncond short stride=3: wr=37.47% n=9875
+      uncond short stride=7: wr=38.41% n=6926
+      uncond short stride=13: wr=37.97% n=4993
+      null short uncond=38.406006352873234 perm_mean=38.97587110244503 sd=1.1250460238601618 k=1000
+
+S949_EmvExtremumContinuation_XAUUSD_H1 | REJECT     RQS2=  0.0 | n=3403 WR=38.23% PF=0.94 lift=  -0.89pp z=-0.8 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
