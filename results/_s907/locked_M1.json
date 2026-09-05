@@ -1,0 +1,17 @@
+{
+  "tf": "M1",
+  "split_bar": 3000000,
+  "n_bars": 5000000,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+  "n_eff": 16,
+  "criterion": "wr+0.001*net",
+  "min_trades": 400,
+  "best_key": "L21_m1.5_k2.058_rr1.618_h34",
+  "best": {
+    "n": 1402,
+    "wr": 35.521,
+    "net": -4296.9,
+    "n_sig": 1409
+  },
+  "score": 31.2241
+}
