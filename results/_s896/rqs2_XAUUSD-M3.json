@@ -1,0 +1,39 @@
+{
+ "card": "XAUUSD-M3",
+ "prereg": "d7338160",
+ "verdict": "UNPROVEN",
+ "reason": "no eligible config in discovery (n>=100 & exp@2x>0) - holdout untouched",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M3.csv",
+ "bars": 1815880,
+ "split": 1271116,
+ "events": {
+  "long/D30": 11688,
+  "long/D90": 6829,
+  "long/D180": 2901,
+  "short/D30": 11365,
+  "short/D90": 6834,
+  "short/D180": 3060
+ },
+ "p1_base_is": {
+  "long/G1": {
+   "n": 21774,
+   "wr": 36.89,
+   "exp": -3.54
+  },
+  "short/G1": {
+   "n": 20908,
+   "wr": 36.83,
+   "exp": -3.53
+  },
+  "long/G2": {
+   "n": 20551,
+   "wr": 38.07,
+   "exp": -3.65
+  },
+  "short/G2": {
+   "n": 19733,
+   "wr": 38.15,
+   "exp": -3.63
+  }
+ }
+}
