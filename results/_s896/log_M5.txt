@@ -1,0 +1,18 @@
+========================================================================
+S896 Record-after-Drought · XAUUSD-M5 (prereg d7338160)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_M5.csv  bars=1089574  split=762701
+record edges: high=28379 low=24982  ATR21med=9.7pip
+           long /D30 /G1 n=4894 WR=38.76 exp=   -3.22 exp2x=   -6.52 t=-13.03
+           long /D90 /G1 n=2817 WR=37.70 exp=   -3.27 exp2x=   -6.57 t=-10.02
+           long /D180/G1 n=1199 WR=35.95 exp=   -3.61 exp2x=   -6.91 t=-7.07
+           short/D30 /G1 n=4831 WR=36.82 exp=   -3.59 exp2x=   -6.89 t=-13.85
+           short/D90 /G1 n=2881 WR=36.86 exp=   -3.73 exp2x=   -7.03 t=-11.42
+           short/D180/G1 n=1279 WR=36.75 exp=   -3.98 exp2x=   -7.28 t=-7.88
+           long /D30 /G2 n=4894 WR=40.23 exp=   -3.18 exp2x=   -6.48 t=-11.65
+           long /D90 /G2 n=2817 WR=39.47 exp=   -3.22 exp2x=   -6.52 t=-8.94
+           long /D180/G2 n=1199 WR=38.28 exp=   -3.41 exp2x=   -6.71 t=-6.04
+           short/D30 /G2 n=4831 WR=38.73 exp=   -3.42 exp2x=   -6.72 t=-11.79
+           short/D90 /G2 n=2881 WR=38.46 exp=   -3.56 exp2x=   -6.86 t=-9.73
+           short/D180/G2 n=1279 WR=38.31 exp=   -3.92 exp2x=   -7.22 t=-6.92
+NO ELIGIBLE CONFIG → UNPROVEN (holdout untouched)
