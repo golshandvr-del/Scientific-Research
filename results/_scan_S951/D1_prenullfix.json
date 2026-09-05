@@ -101,14 +101,14 @@
   }
  ],
  "verdict": "REJECT",
- "rqs2_score": 28.5,
+ "rqs2_score": 24.8,
  "gates": {
   "H0": true,
   "H1": true,
   "H2": true,
-  "H3": false,
-  "H4": false,
-  "H5": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
   "H6": true,
   "H7": false,
   "H8": true,
@@ -123,8 +123,8 @@
   "n": 59,
   "wr": 62.71,
   "sl_med": 482.2,
-  "skill_z": 1.95,
-  "lift_pp": 12.67,
-  "p_perm": 0.025811
+  "skill_z": null,
+  "lift_pp": null,
+  "p_perm": null
  }
 }

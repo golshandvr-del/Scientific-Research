@@ -1,116 +1,122 @@
 {
- "tf": "D1",
- "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
- "n_bars": 4005,
+ "tf": "H12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "n_bars": 7998,
  "members": [
   {
    "q": 0.5,
    "W": 21,
    "mode": "continuation",
-   "n_sig": 13,
+   "n_sig": 20,
    "z": -99
   },
   {
    "q": 0.5,
    "W": 21,
    "mode": "fade",
-   "n_sig": 13,
+   "n_sig": 20,
    "z": -99
   },
   {
    "q": 0.5,
    "W": 34,
    "mode": "continuation",
-   "n_sig": 12,
+   "n_sig": 11,
    "z": -99
   },
   {
    "q": 0.5,
    "W": 34,
    "mode": "fade",
-   "n_sig": 12,
+   "n_sig": 11,
    "z": -99
   },
   {
    "q": 0.618,
    "W": 21,
    "mode": "continuation",
-   "n_sig": 50,
-   "z": -99.0
+   "n_sig": 102,
+   "z": 0.89,
+   "n": 40,
+   "wr": 57.5,
+   "be": 50.43
   },
   {
    "q": 0.618,
    "W": 21,
    "mode": "fade",
-   "n_sig": 50,
-   "z": -99.0
+   "n_sig": 102,
+   "z": -1.0,
+   "n": 40,
+   "wr": 42.5,
+   "be": 50.43
   },
   {
    "q": 0.618,
    "W": 34,
    "mode": "continuation",
-   "n_sig": 41,
+   "n_sig": 66,
    "z": -99.0
   },
   {
    "q": 0.618,
    "W": 34,
    "mode": "fade",
-   "n_sig": 41,
+   "n_sig": 66,
    "z": -99.0
   },
   {
    "q": 0.786,
    "W": 21,
    "mode": "continuation",
-   "n_sig": 208,
-   "z": 1.67,
-   "n": 75,
-   "wr": 60.0,
-   "be": 50.34
+   "n_sig": 441,
+   "z": 1.22,
+   "n": 176,
+   "wr": 55.11,
+   "be": 50.52
   },
   {
    "q": 0.786,
    "W": 21,
    "mode": "fade",
-   "n_sig": 208,
-   "z": -1.79,
-   "n": 75,
-   "wr": 40.0,
-   "be": 50.34
+   "n_sig": 441,
+   "z": -1.5,
+   "n": 176,
+   "wr": 44.89,
+   "be": 50.52
   },
   {
    "q": 0.786,
    "W": 34,
    "mode": "continuation",
-   "n_sig": 164,
-   "z": 1.9,
-   "n": 59,
-   "wr": 62.71,
-   "be": 50.34
+   "n_sig": 312,
+   "z": 2.3,
+   "n": 134,
+   "wr": 60.45,
+   "be": 50.52
   },
   {
    "q": 0.786,
    "W": 34,
    "mode": "fade",
-   "n_sig": 164,
-   "z": -2.01,
-   "n": 59,
-   "wr": 37.29,
-   "be": 50.34
+   "n_sig": 312,
+   "z": -2.54,
+   "n": 134,
+   "wr": 39.55,
+   "be": 50.52
   }
  ],
- "verdict": "REJECT",
- "rqs2_score": 28.5,
+ "verdict": "INCOMPLETE",
+ "rqs2_score": 20.6,
  "gates": {
   "H0": true,
   "H1": true,
   "H2": true,
-  "H3": false,
-  "H4": false,
-  "H5": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
   "H6": true,
-  "H7": false,
+  "H7": true,
   "H8": true,
   "H9": true,
   "H10": true
@@ -119,12 +125,12 @@
   "q": 0.786,
   "W": 34,
   "mode": "continuation",
-  "z_proxy": 1.9,
-  "n": 59,
-  "wr": 62.71,
-  "sl_med": 482.2,
-  "skill_z": 1.95,
-  "lift_pp": 12.67,
-  "p_perm": 0.025811
+  "z_proxy": 2.3,
+  "n": 134,
+  "wr": 60.45,
+  "sl_med": 318.9,
+  "skill_z": null,
+  "lift_pp": null,
+  "p_perm": null
  }
 }

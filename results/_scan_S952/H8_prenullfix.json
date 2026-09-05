@@ -180,15 +180,15 @@
    "be": 50.64
   }
  ],
- "verdict": "POWER-LIMITED",
- "rqs2_score": 28.2,
+ "verdict": "INCOMPLETE",
+ "rqs2_score": 23.5,
  "gates": {
   "H0": true,
   "H1": true,
   "H2": true,
-  "H3": false,
-  "H4": true,
-  "H5": true,
+  "H3": null,
+  "H4": null,
+  "H5": null,
   "H6": true,
   "H7": true,
   "H8": true,
@@ -204,8 +204,8 @@
   "n": 122,
   "wr": 60.66,
   "sl_med": 244.9,
-  "skill_z": 2.37,
-  "lift_pp": 10.72,
-  "p_perm": 0.008918
+  "skill_z": null,
+  "lift_pp": null,
+  "p_perm": null
  }
 }
