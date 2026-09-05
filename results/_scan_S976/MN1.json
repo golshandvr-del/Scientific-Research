@@ -1,0 +1,14 @@
+{
+ "strategy": "S976_TransitoryShockDip",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "bars": 188,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "split_bar": 131,
+ "hold": 16,
+ "n_trials": 24,
+ "k_perm": 2000,
+ "seed": 20260905,
+ "prereg": "results/S976_PREREG_transitory_shock_dip.md",
+ "verdict": "TOO_SHORT"
+}
