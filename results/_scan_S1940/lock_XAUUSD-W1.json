@@ -1,0 +1,13 @@
+{
+  "layer": "S1940",
+  "tf": "W1",
+  "split_bar": 487,
+  "n_bars": 813,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+  "criterion": "max lift*sqrt(n) | follow-only | n>=150 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": null,
+  "score": null,
+  "power_ok": false
+}
