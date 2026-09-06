@@ -1,0 +1,37 @@
+{
+ "ts": "2026-09-06T11:59:23.329Z",
+ "card": "XAUUSD-M15",
+ "base": "http://localhost:3000",
+ "feed_bars": 1973,
+ "card_layers": 5,
+ "signal": {
+  "active": false,
+  "approaching": false,
+  "baseActive": false,
+  "volPass": true,
+  "dowPass": true,
+  "atrPrevUsd": 119.86422293526786,
+  "volThrUsd": 132.3252,
+  "volRatio": 0.9058306576167492,
+  "daysAvail": 22,
+  "brkIdx": 1971,
+  "gapUsd": 0,
+  "thrUsd": 6.402,
+  "isWeekend": true,
+  "dow": 6,
+  "gapHours": 38.75055555555556,
+  "atLatestBar": 0,
+  "ratio": 0,
+  "dataHealthy": true,
+  "tpDistUsd": 0,
+  "slDistUsd": 0,
+  "barsLeftInDay": 32
+ },
+ "wake": {
+  "daysAvail": true,
+  "atrFinite": true,
+  "brkFound": true,
+  "feedHealthy": true
+ },
+ "awake": true
+}
