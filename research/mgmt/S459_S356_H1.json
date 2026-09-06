@@ -1,0 +1,112 @@
+{
+ "patient": "S356_H1",
+ "status": "REJECT_AT_CALIBRATION",
+ "n": 119,
+ "data_source": "data/mt5_full (H4 resampled from H1)",
+ "n_bars": 91331,
+ "span": [
+  "2011-01-03 00:00:00",
+  "2026-08-07 23:00:00"
+ ],
+ "baseline_h1": {
+  "n": 45,
+  "total": 9777.0,
+  "avg": 217.27,
+  "sd": 652.59,
+  "worst": -540.0,
+  "best": 981.0,
+  "maxDD": 1957.0,
+  "pf": 2.143,
+  "wr": 55.6
+ },
+ "calibration": {
+  "V_FH1": {
+   "mgmt_h1": {
+    "n": 45,
+    "total": 9088.0,
+    "avg": 201.96,
+    "sd": 625.97,
+    "worst": -540.0,
+    "best": 981.0,
+    "maxDD": 1957.0,
+    "pf": 2.158,
+    "wr": 48.9
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 16
+  },
+  "V_FH2": {
+   "mgmt_h1": {
+    "n": 45,
+    "total": 9777.0,
+    "avg": 217.27,
+    "sd": 652.59,
+    "worst": -540.0,
+    "best": 981.0,
+    "maxDD": 1957.0,
+    "pf": 2.143,
+    "wr": 55.6
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 0
+  },
+  "V_FHW": {
+   "mgmt_h1": {
+    "n": 45,
+    "total": 9906.0,
+    "avg": 220.13,
+    "sd": 640.97,
+    "worst": -540.0,
+    "best": 981.0,
+    "maxDD": 1957.0,
+    "pf": 2.236,
+    "wr": 51.1
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 10
+  }
+ },
+ "note": "هیچ واریانت در نیمهٔ اول پاس نشد؛ نیمهٔ دوم هرگز باز نشد (مسیرِ C)."
+}
