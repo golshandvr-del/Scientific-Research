@@ -1,0 +1,67 @@
+{
+ "card": "S759-XAUUSD-W1",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "bars": 813,
+ "frozen": {
+  "family_L": [
+   3,
+   5,
+   8
+  ],
+  "rho_min": 0.618,
+  "leg_k": 1.0,
+  "sl_k": 1.45,
+  "atr_p": 89,
+  "rr": 1.618,
+  "hold": 55,
+  "side": "LONG-only",
+  "n_trials": 2,
+  "null": "uncond same-bracket long + perm K=500"
+ },
+ "protocol": "C_holdout_prereg_S759",
+ "discovery": [
+  {
+   "L": 3,
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0,
+   "ungated_n": 0,
+   "ungated_wr": null,
+   "ungated_net": null,
+   "gate_pass_rate_pct": null,
+   "n_sig_gated": 0,
+   "n_sig_ungated": 0
+  },
+  {
+   "L": 5,
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0,
+   "ungated_n": 0,
+   "ungated_wr": null,
+   "ungated_net": null,
+   "gate_pass_rate_pct": null,
+   "n_sig_gated": 0,
+   "n_sig_ungated": 0
+  },
+  {
+   "L": 8,
+   "n": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0,
+   "ungated_n": 0,
+   "ungated_wr": null,
+   "ungated_net": null,
+   "gate_pass_rate_pct": null,
+   "n_sig_gated": 0,
+   "n_sig_ungated": 0
+  }
+ ],
+ "verdict": "UNPROVEN",
+ "note": "discovery: no config with n>=30"
+}
