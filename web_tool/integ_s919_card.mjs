@@ -121,7 +121,7 @@ for (const i of blockedMaskBars) {
 console.log(`③ CONVENTION-GATE control via card: base-fired-but-drift-opposed = ${blockedMaskBars.length} · S919 ENTRY leak = ${leak}`)
 
 // ---- ④ کنترلِ منفی: بارهای بی‌سیگنال ⇒ S919 نباید ENTRY باشد ---------------
-const allMask = new Set([...py.mask_long, ...py.mask_short])
+const allMask = new Set([...py.idx_mask_long, ...py.idx_mask_short])
 const allBaseMask = new Set(baseAll.map(x => x.i + 1))
 let checked = 0, falsePos = 0
 for (let i = FX.candles.length - 1; i >= FLOOR && checked < 120; i -= 7) {
