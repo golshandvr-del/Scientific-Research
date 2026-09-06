@@ -1,0 +1,39 @@
+{
+ "S408_n_days": 493,
+ "window_note": "S404/S562 restricted to S408 data window [first,last] for fair comparison",
+ "vs_S404_M30_window": {
+  "n_a": 493,
+  "n_b": 345,
+  "shared": 343,
+  "share_of_a": 69.6,
+  "share_of_b": 99.4,
+  "jaccard": 69.3
+ },
+ "vs_S562_M15_rolling_window": {
+  "n_a": 493,
+  "n_b": 432,
+  "shared": 103,
+  "share_of_a": 20.9,
+  "share_of_b": 23.8,
+  "jaccard": 12.5
+ },
+ "S408_first": "2011-04-12",
+ "S408_last": "2026-07-23",
+ "vs_S404_M30": {
+  "n_a": 493,
+  "n_b": 345,
+  "shared": 343,
+  "share_of_a": 69.6,
+  "share_of_b": 99.4,
+  "jaccard": 69.3
+ },
+ "vs_S562_M15_rolling": {
+  "n_a": 493,
+  "n_b": 435,
+  "shared": 103,
+  "share_of_a": 20.9,
+  "share_of_b": 23.7,
+  "jaccard": 12.5
+ },
+ "note": "day-level overlap; S562 times from frozen read-only artifact (Leibniz block untouched)"
+}
