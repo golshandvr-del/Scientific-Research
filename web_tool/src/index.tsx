@@ -651,7 +651,10 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range)
     // H4/H8: Yahoo تایم‌فریمِ ۴/۸ساعته را مستقیم نمی‌دهد ⇒ از تجمیعِ کندل‌های H1 می‌سازیم.
     // S800: H12 = H1×12 و D1 = H1×24 (همان الگوی اثبات‌شدهٔ H4/H8).
-    const aggFactor = a.id === 'XAUUSD-H4' ? 4 : a.id === 'XAUUSD-H8' ? 8
+    // S919: H6 = H1×6 (مرزهای UTC 0/6/12/18) — همان الگو، و عددی تأیید شد که
+    // با کندل‌های XAUUSD_H6ِ MT5ِ بک‌تست دقیقاً هم‌تراز است.
+    const aggFactor = a.id === 'XAUUSD-H4' ? 4 : a.id === 'XAUUSD-H6' ? 6
+      : a.id === 'XAUUSD-H8' ? 8
       : a.id === 'XAUUSD-H12' ? 12 : a.id === 'XAUUSD-D1' ? 24 : 1
     const candles = aggFactor > 1 ? aggregateCandles(rawCandles, aggFactor) : rawCandles
     // آستانهٔ حداقلِ کندل بسته به تایم‌فریم (H4 داده کمتری دارد، اما برای EMA200 کافی است).
