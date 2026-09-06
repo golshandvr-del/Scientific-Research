@@ -687,7 +687,13 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     //   (۱۲h / ۲۴h) باشد، وگرنه کندلِ در حالِ شکل‌گیری پس از ساعتِ اولش «بسته»
     //   دیده می‌شد و شرطِ شکستِ دانچیان روی closeِ ناقص می‌نشست ⇒ look-ahead
     //   نسبت به بک‌تستی که فقط کندلِ کامل دید (درست مانندِ اشتباهِ رفع‌شدهٔ H8).
-    const sigGap = a.id === 'XAUUSD-H8' ? tfc.gap * 8
+    // ⚠️ همان منطق برای H6 (S919) — و این‌جا **حتی حساس‌تر** است: قاعدهٔ شوکِ
+    //   S919 روی range=high−low و ρ=|close−open|÷range می‌نشیند. اگر کندلِ H6ِ
+    //   نیم‌ساخته «بسته» دیده شود، هر دو کمیت روی سطلِ ناقص محاسبه می‌شوند و
+    //   لایه شوکی را می‌بیند که هنوز کامل نشده ⇒ دقیقاً همان look-aheadی که در
+    //   H8 رفع شد. پس مرزِ «کندلِ بسته» = ۶h، نه gapِ منبع (۱h).
+    const sigGap = a.id === 'XAUUSD-H6' ? tfc.gap * 6
+      : a.id === 'XAUUSD-H8' ? tfc.gap * 8
       : a.id === 'XAUUSD-H12' ? tfc.gap * 12
       : a.id === 'XAUUSD-D1' ? tfc.gap * 24 : tfc.gap
     const sig = closedBars(useCandles, sigGap)
