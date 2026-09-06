@@ -1,0 +1,67 @@
+{
+ "cards": {
+  "XAUUSD-D1": {
+   "layer_count": 3,
+   "event_found": true,
+   "event_index": 4002,
+   "event_time_utc": "2026-08-05 00:00",
+   "on": {
+    "state": "ENTRY",
+    "primary": "S770",
+    "others": [
+     "S607"
+    ]
+   },
+   "off": {
+    "state": "NEUTRAL",
+    "primary": "S800",
+    "others": []
+   },
+   "s607_visible": true
+  },
+  "XAUUSD-H8": {
+   "layer_count": 5,
+   "event_found": true,
+   "event_index": 11848,
+   "event_time_utc": "2026-06-09 16:00",
+   "on": {
+    "state": "ENTRY",
+    "primary": "S950",
+    "others": [
+     "S770",
+     "S607",
+     "S965",
+     "S966"
+    ]
+   },
+   "off": {
+    "state": "NEUTRAL",
+    "primary": "S950",
+    "others": []
+   },
+   "s607_visible": true
+  },
+  "XAUUSD-H6": {
+   "layer_count": 2,
+   "event_found": true,
+   "event_index": 15784,
+   "event_time_utc": "2026-06-05 12:00",
+   "on": {
+    "state": "ENTRY",
+    "primary": "S607",
+    "others": [
+     "S919"
+    ]
+   },
+   "off": {
+    "state": "NEUTRAL",
+    "primary": "S919",
+    "others": []
+   },
+   "s607_visible": true
+  }
+ },
+ "negative_control": {
+  "h12_in_cfg": false
+ }
+}
