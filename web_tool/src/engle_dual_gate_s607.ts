@@ -118,7 +118,9 @@ export const S607_CFG: Record<string, S607Config> = {
   'XAUUSD-D1': {
     id: 'XAUUSD-D1', tfFa: 'D1',
     zThr: 2.618, lam: 0.94, atrP: 34,
-    slK: 1.272, rr: 1.0, maxHold: 21, warm: 250,
+    // warm=400 (نه ۲۵۰) — بازتولیدِ `max(60, 4005//10)` روی دادهٔ کاملِ D1؛
+    // تنها کارتی از سه‌گانه که زیرِ ۵۰۰۰ کندل است (دامِ ⑥).
+    slK: 1.272, rr: 1.0, maxHold: 21, warm: 400,
     driftK: null, sigmaW: null, barsPerDay: 1,
     approachFrac: 0.85,
     memberN: 87, memberWr: 64.37, memberLift: 16.6906,
