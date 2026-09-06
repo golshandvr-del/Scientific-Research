@@ -25,7 +25,7 @@
 //
 // اجرا: cd web_tool && node --import tsx parity_s408_signal.mjs
 import fs from 'node:fs'
-import { computeS408Signal, dailyBarsAtr, S408_CFG } from './src/gap_fill_m15_s408.ts'
+import { computeS408Signal, dailyBarsAtr, s408DayBreakSec, S408_CFG } from './src/gap_fill_m15_s408.ts'
 
 const fx = JSON.parse(fs.readFileSync('../results/_s408_arms/parity_m15_fixture.json', 'utf8'))
 const cfg = S408_CFG['XAUUSD-M15']
@@ -66,9 +66,28 @@ const bad = { gap: [], wk: [], dow: [], atr: [], gapok: [], volok: [], dec: [], 
 let nDecPy = 0, nDecTs = 0, nBaseOnly = 0, nBaseOnlyFired = 0
 const relTol = 1e-6
 
+// 🔴 دامِ سنجشِ D — **نامتقارنیِ گرم‌شدن.** مرجعِ پایتون ATR را از تمامِ
+//   ۴۰۸۸ روزِ تاریخ دارد، ولی TS فقط برشِ fixture را می‌بیند. پس برای
+//   روزهای ابتدایی پنجره، TS ذاتاً ۱۴ روزِ قبلی ندارد ⇒ ATR=NaN و مقایسه
+//   بی‌معنا می‌شود (این ۲۱۶ ناهمخوانیِ اولیه را ساخت، که ۲۰۳ موردش
+//   مصنوعِ سنجش بود و ۱۳ موردش واقعی).
+//   قاعدهٔ منصفانه: رکورد فقط وقتی مقایسه شود که برشِ TS **حداقل
+//   ATR_N+1 = ۱۵ روزِ کامل** داشته باشد. کمتر از آن، ماژول طبقِ دامِ ⑥
+//   عامدانه رد می‌کند و این رفتارِ درستِ زنده است، نه ناهمخوانی.
+const ATR_WARM_DAYS = 15
+const dayEndsAll = []
+for (let i = 0; i < n - 1; i++) {
+  if (candles[i + 1].time - candles[i].time >= s408DayBreakSec(candles)) dayEndsAll.push(i)
+}
+let nSkipWarm = 0
+
 for (const r of fx.records) {
   const fbRel = r.fb_rel
   if (fbRel < 30 || fbRel >= n) continue        // نیاز به کمی گرم‌شدن در برشِ fixture
+  // چند مرزِ روزِ کامل قبل از این نقطه در برش هست؟
+  let daysInSlice = 0
+  for (const e of dayEndsAll) { if (e < fbRel) daysInSlice++; else break }
+  if (daysInSlice + 1 < ATR_WARM_DAYS) { nSkipWarm++; continue }
   const win = candles.slice(0, fbRel + 1)
   const s = computeS408Signal(win, cfg)
   if (s.brkIdx !== fbRel - 1) {                 // TS مرز را جای دیگری دید
@@ -123,7 +142,7 @@ console.log(`② gap mismatches      : ${bad.gap.length}`)
 console.log(`③ weekend/dow mismatch: ${bad.wk.length} / ${bad.dow.length}`)
 console.log(`④ atr_prev mismatches : ${bad.atr.length}`)
 console.log(`⑤ gap_ok/vol_ok mism. : ${bad.gapok.length} / ${bad.volok.length}`)
-console.log(`⑥ DECISION mismatches : ${bad.dec.length}   (py_active=${nDecPy} ts_active=${nDecTs} compared=${cmp})`)
+console.log(`⑥ DECISION mismatches : ${bad.dec.length}   (py_active=${nDecPy} ts_active=${nDecTs} compared=${cmp} skipped_warmup=${nSkipWarm})`)
 console.log(`⑦ geometry mismatches : ${bad.geom.length}`)
 console.log(`⑧ negative control    : base-only days=${nBaseOnly} · wrongly fired=${nBaseOnlyFired}`)
 
