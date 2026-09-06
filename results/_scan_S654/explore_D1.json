@@ -1,0 +1,36 @@
+{
+ "layer": "S654",
+ "tf": "D1",
+ "asset": "XAUUSD",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "n_bars_full": 4005,
+ "half_idx": 2002,
+ "first_half_only": true,
+ "path": "C",
+ "geometry": {
+  "atr_p": 21,
+  "sl_k": 1.272,
+  "tp_k": 2.058,
+  "rr": 1.6179,
+  "hold": 16,
+  "rho_min": 0.618
+ },
+ "slots": {
+  "ASIA": [
+   0,
+   8
+  ],
+  "LONDON": [
+   8,
+   16
+  ],
+  "NY": [
+   16,
+   24
+  ]
+ },
+ "n_combos": 6,
+ "combos": [],
+ "ungated": [],
+ "status": "NO_SLOT (session undefined at this TF)"
+}
