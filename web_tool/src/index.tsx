@@ -193,9 +193,13 @@ app.post('/api/trade/advice', async (c) => {
       // S800 کارت‌های D1/H12 را افزود: H1×24 و H1×12 (Yahoo هیچ‌کدام را مستقیم
       // نمی‌دهد و کندلِ ۱-روزهٔ GC=F در ۰۴:۰۰ UTC باز می‌شود — ناهم‌تراز با D1ِ
       // نیمه‌شبِ MT5). کفِ خام = ۱۰۲ کندلِ گرم‌شدنِ لایه × فاکتورِ تجمیع.
-      const aggF = meta_asset.id === 'XAUUSD-H4' ? 4 : meta_asset.id === 'XAUUSD-H8' ? 8
+      // S919 کارتِ H6 را افزود: H1×6. کفِ خامِ آن = ۲۶۰ کندلِ H6 × ۶ = **۱۵۶۰**
+      // کندلِ H1 — بزرگ‌ترین کفِ خامِ نسبت‌به‌فاکتور در سایت، چون گیتِ قراردادِ
+      // کینزی ۲۴۰ کندلِ H6 عقب را می‌خواند (نه ۱۰۲ کندلِ الگوی S800).
+      const aggF = meta_asset.id === 'XAUUSD-H4' ? 4 : meta_asset.id === 'XAUUSD-H6' ? 6
+        : meta_asset.id === 'XAUUSD-H8' ? 8
         : meta_asset.id === 'XAUUSD-H12' ? 12 : meta_asset.id === 'XAUUSD-D1' ? 24 : 1
-      const minBars = aggF === 4 ? 240 : aggF === 8 ? 880
+      const minBars = aggF === 4 ? 240 : aggF === 6 ? 1560 : aggF === 8 ? 880
         : aggF === 12 ? 1300 : aggF === 24 ? 2500 : 220
       if (candles.length < minBars) return c.json({ ok: false, error: 'داده کافی برای تحلیل نیست' }, 400)
       let spot: SpotPrice | null = null
