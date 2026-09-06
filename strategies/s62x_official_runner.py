@@ -272,6 +272,12 @@ for st in STRIDES:
     del b
 print(f'[{layer}] stride-uncond per side: ' + ' '.join(f'{s}=max{max(v):.2f}' for s, v in uncond.items()), flush=True)
 
+# RAM: معاملات اصلی (S620: ۳۱۹k سطر با ستون‌های object) تا پایان null به دیسک می‌روند
+OUTD = os.path.join(ROOT, 'results', f'_official_{layer.upper()}')
+os.makedirs(OUTD, exist_ok=True)
+_TRP = os.path.join(OUTD, f'{TF}_trades.csv')
+tr.to_csv(_TRP, index=False); del tr; gc.collect()
+
 # ---- null ②: جای‌گشت درون گیت K=500 با همان تعداد سیگنال (سقف PERM_CAP) ----
 def _rss_mb():
     try: return int(open('/proc/self/statm').read().split()[1]) * 4 // 1024
@@ -303,8 +309,7 @@ for s in sides:
                    perm_sd=float(a.std(ddof=1)), perm_max=float(a.max()), perm_k=int(len(a)))
     print(f'[{layer}] null[{s}]: uncond={null[s]["uncond_wr"]:.2f} perm_mean={a.mean():.2f} sd={a.std(ddof=1):.2f} max={a.max():.2f} k={len(a)}', flush=True)
 
-OUTD = os.path.join(ROOT, 'results', f'_official_{layer.upper()}')
-os.makedirs(OUTD, exist_ok=True)
+tr = pd.read_csv(_TRP)
 json.dump(dict(null=null, perm_cap=PERM_CAP, n_side=n_side, seed=SEED), open(os.path.join(OUTD, 'null_model.json'), 'w'), indent=1)
 
 # موتور SL/TP اسکالر می‌خواهد؛ SL متغیر (k×ATR) ⇒ نمایندهٔ صادق = میانهٔ SL معاملات واقعی
