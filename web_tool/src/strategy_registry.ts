@@ -630,6 +630,8 @@ const s770Layer = (cfg: typeof S770_CFG[string]): LayerFn => (ctx) => decideS770
 const s560Layer = (cfg: typeof S560_CFG[string]): LayerFn => (ctx) => decideS560(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // لایهٔ نوِ این نشست: S562 «گپِ منفی + فیلترِ نوسانِ علّی» — دو ACCEPT (M15 و H1)
 const s562Layer = (cfg: typeof S562_CFG[string]): LayerFn => (ctx) => decideS562(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// لایهٔ نوِ این نشست: S408 «گپ‌فیلِ M15 با V ثابت» روی دادهٔ کاملِ ۱۵.۶ ساله
+const s408Layer = (cfg: typeof S408_CFG[string]): LayerFn => (ctx) => decideS408(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⚰️ s341Layer حذف شد — S341 زیرِ RQS2 v2.4 مرده است (بالا را ببینید).
 // لایهٔ نوِ این نشست: S344 Brooks Trend-from-Open first-pullback continuation (فصلِ ۲۳) — نخستین SHORT روی XAUUSD-M15
 const s344Layer = (cfg: typeof S344_CFG[string]): LayerFn => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
