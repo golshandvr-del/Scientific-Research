@@ -75,12 +75,42 @@ def drift90():
     return g
 
 
+def _lag_rsi_lowmem(xv, g):
+    """بیت‌به‌بیت برابر `ib.laguerre_rsi` (همان ترتیب عمل‌ها، بی fastmath؛ تأیید روی H1:
+    max|diff|=0) ولی تک‌گذر و بی‌آرایه‌های میانیِ L0..L3/cu/cd که روی M1 ~۴۰۰MB می‌شد."""
+    try:
+        from numba import njit
+    except ImportError:            # fallback: مسیر رسمی بانک اندیکاتور
+        return None
+    @njit(cache=False)
+    def _k(xv, g):
+        n = len(xv); out = np.empty(n)
+        L0 = L1 = L2 = L3 = 0.0
+        for i in range(n):
+            pL0, pL1, pL2 = L0, L1, L2
+            L0 = (1 - g) * xv[i] + g * L0
+            L1 = -g * L0 + pL0 + g * L1
+            L2 = -g * L1 + pL1 + g * L2
+            L3 = -g * L2 + pL2 + g * L3
+            cu = 0.0; cd = 0.0
+            for a, b in ((L0, L1), (L1, L2), (L2, L3)):
+                if a >= b: cu += a - b
+                else: cd += b - a
+            tot = cu + cd
+            out[i] = 100 * cu / tot if tot != 0 else 50.0
+        return out
+    return _k(xv, g)
+
+
 def lag_edge(gamma, th):
-    lag = ib.laguerre_rsi(df, gamma).values
-    prev = np.roll(lag, 1); prev[0] = np.nan
-    long_raw = (prev < th) & (lag >= th)
-    short_raw = (prev > 100.0 - th) & (lag <= 100.0 - th)
-    return np.nan_to_num(long_raw.astype(bool)), np.nan_to_num(short_raw.astype(bool))
+    lag = _lag_rsi_lowmem(cl, gamma)
+    if lag is None:
+        lag = ib.laguerre_rsi(df, gamma).values
+    long_raw = np.zeros(n, bool); short_raw = np.zeros(n, bool)
+    long_raw[1:] = (lag[:-1] < th) & (lag[1:] >= th)
+    short_raw[1:] = (lag[:-1] > 100.0 - th) & (lag[1:] <= 100.0 - th)
+    del lag; gc.collect()
+    return long_raw, short_raw
 
 
 def round_reject(G, q):
