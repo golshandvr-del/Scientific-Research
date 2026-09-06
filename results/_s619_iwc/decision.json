@@ -1,0 +1,26 @@
+{
+ "primary": {
+  "n": 215,
+  "n_long": 121,
+  "n_short": 94,
+  "wr": 48.84,
+  "wr_long_arm": 51.24,
+  "wr_short_arm": 45.74,
+  "net_pip": -1166.9,
+  "uncond": 50.0,
+  "perm_mean": 50.04,
+  "perm_sd": 3.394,
+  "perm_max": 61.86,
+  "ref": 50.04,
+  "lift": -1.2,
+  "z": -0.35,
+  "tf": "M30",
+  "k": 1.272,
+  "primary": true
+ },
+ "rule": "n>=60 AND net>0 AND lift>=2.0*perm_sd",
+ "need_lift": 6.79,
+ "confirm_pass": false,
+ "verdict": "REJECT",
+ "score": 0
+}
