@@ -1,0 +1,112 @@
+{
+ "patient": "S312_M15",
+ "status": "REJECT_AT_CALIBRATION",
+ "n": 310,
+ "data_source": "data/mt5_full (H4 resampled from H1)",
+ "n_bars": 363778,
+ "span": [
+  "2011-01-03 00:00:00",
+  "2026-08-07 23:45:00"
+ ],
+ "baseline_h1": {
+  "n": 138,
+  "total": -14691.0,
+  "avg": -106.46,
+  "sd": 797.8,
+  "worst": -2996.0,
+  "best": 2412.0,
+  "maxDD": 14610.0,
+  "pf": 0.688,
+  "wr": 41.3
+ },
+ "calibration": {
+  "V_FH1": {
+   "mgmt_h1": {
+    "n": 138,
+    "total": -14801.0,
+    "avg": -107.25,
+    "sd": 797.87,
+    "worst": -2996.0,
+    "best": 2412.0,
+    "maxDD": 14720.0,
+    "pf": 0.686,
+    "wr": 41.3
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 3
+  },
+  "V_FH2": {
+   "mgmt_h1": {
+    "n": 138,
+    "total": -14691.0,
+    "avg": -106.46,
+    "sd": 797.8,
+    "worst": -2996.0,
+    "best": 2412.0,
+    "maxDD": 14610.0,
+    "pf": 0.688,
+    "wr": 41.3
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 1
+  },
+  "V_FHW": {
+   "mgmt_h1": {
+    "n": 138,
+    "total": -14801.0,
+    "avg": -107.25,
+    "sd": 797.87,
+    "worst": -2996.0,
+    "best": 2412.0,
+    "maxDD": 14720.0,
+    "pf": 0.686,
+    "wr": 41.3
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 3
+  }
+ },
+ "note": "هیچ واریانت در نیمهٔ اول پاس نشد؛ نیمهٔ دوم هرگز باز نشد (مسیرِ C)."
+}
