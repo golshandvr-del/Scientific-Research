@@ -185,7 +185,37 @@ sl_arr = K * atr_pip; tp_arr = RR * sl_arr
 n_sig = int(long_sig.sum() + short_sig.sum())
 print(f'[{layer}] signals long={int(long_sig.sum())} short={int(short_sig.sum())} gate_bars={int(gate.sum())}', flush=True)
 
-tr = se.simulate_trades(df, long_sig, short_sig, sl_arr, tp_arr, 'XAUUSD', max_hold=MH, allow_overlap=False)
+MAIN_CHUNK = 250_000
+
+
+def simulate_exact_chunked(ls, ss):
+    """معادلِ دقیقِ `se.simulate_trades(...)` روی کل داده، ولی قطعه‌ای برای RAM.
+    بیت‌به‌بیت: busy_until بین قطعه‌ها حمل می‌شود (سیگنال‌های درون بازهٔ اشغالِ آخرین
+    معاملهٔ قطعهٔ قبل حذف)، هر قطعه MH+2 کندلِ سرریز برای خروج دارد، و اندیس‌ها به
+    مختصات کامل برگردانده می‌شوند. برای n≤1.5M همان تماسِ مستقیم موتور."""
+    if n <= 1_500_000:
+        return se.simulate_trades(df, ls, ss, sl_arr, tp_arr, 'XAUUSD', max_hold=MH, allow_overlap=False)
+    parts = []; busy_until = -1
+    for a in range(0, n, MAIN_CHUNK):
+        core = min(MAIN_CHUNK, n - a); b = min(n, a + core + MH + 2)
+        l2 = ls[a:b].copy(); s2 = ss[a:b].copy(); l2[core:] = False; s2[core:] = False
+        # حذف سیگنال‌هایی که کندل ورودشان (si+1) هنوز در اشغالِ معاملهٔ قطعهٔ قبل است
+        cut = busy_until - a          # آخرین اندیسِ محلیِ اشغال‌شده (entry_bar ≤ cut ⇒ رد)
+        if cut >= 0:
+            l2[:min(cut, core)] = False; s2[:min(cut, core)] = False
+        if l2.any() or s2.any():
+            t = se.simulate_trades(df.iloc[a:b].reset_index(drop=True), l2, s2, sl_arr[a:b], tp_arr[a:b],
+                                   'XAUUSD', max_hold=MH, allow_overlap=False)
+            if len(t):
+                for col in ('signal_bar', 'entry_bar', 'exit_bar'):
+                    t[col] = t[col] + a
+                busy_until = int(t['exit_bar'].iloc[-1])
+                parts.append(t)
+        del l2, s2; gc.collect()
+    return pd.concat(parts, ignore_index=True) if parts else pd.DataFrame()
+
+
+tr = simulate_exact_chunked(long_sig, short_sig)
 ntr = len(tr); wr = 100 * float((tr['outcome'] == 'win').mean()) if ntr else 0.0
 exp_pip = float(tr['pnl_pip'].mean()) if ntr else 0.0
 print(f'[{layer}] trades n={ntr} WR={wr:.2f}% exp={exp_pip:+.3f} pip ({time.time()-t0:.0f}s)', flush=True)
