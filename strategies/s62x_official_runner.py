@@ -273,6 +273,10 @@ for st in STRIDES:
 print(f'[{layer}] stride-uncond per side: ' + ' '.join(f'{s}=max{max(v):.2f}' for s, v in uncond.items()), flush=True)
 
 # ---- null ②: جای‌گشت درون گیت K=500 با همان تعداد سیگنال (سقف PERM_CAP) ----
+def _rss_mb():
+    try: return int(open('/proc/self/statm').read().split()[1]) * 4 // 1024
+    except Exception: return -1
+print(f'[{layer}] RSS before perm: {_rss_mb()} MB', flush=True)
 rs = np.random.RandomState(SEED)
 pool = np.where(gate)[0]
 perm = {s: [] for s in sides}
@@ -280,15 +284,17 @@ for kk in range(PERM_K):
     ls = np.zeros(n, bool); ss = np.zeros(n, bool)
     for s in sides:
         m = min(n_side[s], PERM_CAP, len(pool))
-        pick = rs.choice(pool, size=m, replace=False)
+        # بی‌جای‌گذاری، ولی بدونِ permutation کاملِ pool (روی M1: ۵M×int64 ×۲ در هر قرعه ⇒ OOM S620)
+        pick = np.unique(rs.randint(0, len(pool), size=int(m * 1.02) + 16))
+        rs.shuffle(pick); pick = pool[pick[:m]]
         (ls if s == 'long' else ss)[pick] = True
     t = se.simulate_trades(df, ls, ss, sl_arr, tp_arr, 'XAUUSD', max_hold=MH, allow_overlap=False)
     for s in sides:
         w, _ = wr_side(t, s)
         if w is not None: perm[s].append(w)
-    del t
+    del t, ls, ss
     if kk % 100 == 99:
-        gc.collect(); print(f'[{layer}] perm {kk+1}/{PERM_K} ({time.time()-t0:.0f}s)', flush=True)
+        gc.collect(); print(f'[{layer}] perm {kk+1}/{PERM_K} ({time.time()-t0:.0f}s) RSS={_rss_mb()}MB', flush=True)
 
 null = {}
 for s in sides:
