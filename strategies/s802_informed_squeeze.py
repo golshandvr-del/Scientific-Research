@@ -39,7 +39,7 @@ RHO = 0.618                       # منجمد S965
 N_TRIALS = 16                     # پیش‌ثبت §۳
 N_TRIALS_STRESS = 50
 CARDS = ['H1', 'H2', 'H3', 'H6', 'H8', 'H12', 'D1']
-POOL_CARDS = ['H2', 'H3', 'H6', 'H8']
+POOL_CARDS = ['H3', 'H6', 'H8']   # H2 در S800 power_ok نداشت (power 73.1<78) — خطای پیش‌ثبت، ثبت شد
 
 
 def frozen_cfg(tf):
@@ -184,6 +184,9 @@ def run_pool():
         m = run_card(tf, want_member=True)
         if m is not None:
             members.append(m)
+    if not members:
+        print('[S802/POOL] هیچ عضوی.', flush=True)
+        return
     res = pool_cards(members)
     if res is None:
         print('[S802/POOL] هیچ عضو معتبری (lift>0) نماند.', flush=True)
