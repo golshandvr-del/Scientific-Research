@@ -1,0 +1,53 @@
+{
+ "layer": "S408",
+ "tf": "M15",
+ "frozen_src": "results/_s408_arms/frozen_thresholds_M15.json",
+ "site_window_days": 22,
+ "note": "انجماد فقط برای پنجرهٔ زنده مجاز است، نه بازپخشِ تاریخی — علتِ واگراییِ تاریخی جهشِ رژیمِ قیمت/نوسانِ طلاست، نه نقصِ پورت (پریتیِ داور در ابزارِ انجماد سبز بود: 496=496).",
+ "windows": {
+  "last_22_days": {
+   "neg_gap_days": 8,
+   "agree_gap_pct": 100.0,
+   "agree_vol_pct": 100.0,
+   "agree_joint_pct": 100.0,
+   "signals_rolling": 1,
+   "signals_frozen": 1
+  },
+  "last_45_days": {
+   "neg_gap_days": 14,
+   "agree_gap_pct": 92.9,
+   "agree_vol_pct": 100.0,
+   "agree_joint_pct": 92.9,
+   "signals_rolling": 4,
+   "signals_frozen": 3
+  },
+  "last_90_days": {
+   "neg_gap_days": 28,
+   "agree_gap_pct": 89.3,
+   "agree_vol_pct": 100.0,
+   "agree_joint_pct": 92.9,
+   "signals_rolling": 7,
+   "signals_frozen": 5
+  },
+  "last_180_days": {
+   "neg_gap_days": 50,
+   "agree_gap_pct": 86.0,
+   "agree_vol_pct": 90.0,
+   "agree_joint_pct": 92.0,
+   "signals_rolling": 9,
+   "signals_frozen": 7
+  },
+  "last_250_days": {
+   "neg_gap_days": 79,
+   "agree_gap_pct": 78.5,
+   "agree_vol_pct": 74.7,
+   "agree_joint_pct": 89.9,
+   "signals_rolling": 12,
+   "signals_frozen": 10
+  }
+ },
+ "vol_params": {
+  "q": 0.78,
+  "roll": 250
+ }
+}
