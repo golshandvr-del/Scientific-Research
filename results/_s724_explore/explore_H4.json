@@ -1,0 +1,551 @@
+{
+ "tf": "H4",
+ "src": "/home/user/webapp/data/XAUUSD_H4.csv",
+ "bars_half": 11877,
+ "atr89_med_pip": 67.0,
+ "max_hold": 34,
+ "n_uncond": 6000,
+ "seed": 20260904,
+ "rows": [
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 87.1,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 130.6,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 174.2,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 140.7,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 211.0,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 281.4,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 227.8,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 341.7,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 455.6,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 87.1,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 130.6,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 174.2,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 140.7,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 211.0,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 281.4,
+   "n": 13,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 227.8,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 341.7,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.0,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 455.6,
+   "n": 12,
+   "n_events": 13,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 87.1,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 130.6,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 174.2,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 140.7,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 211.0,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 281.4,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 227.8,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 341.7,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 455.6,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 87.1,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 130.6,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 174.2,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 140.7,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 211.0,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 281.4,
+   "n": 5,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 227.8,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 341.7,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.1,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 455.6,
+   "n": 4,
+   "n_events": 5,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 87.1,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 130.6,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 87.1,
+   "tp": 174.2,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 140.7,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 211.0,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 140.7,
+   "tp": 281.4,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 227.8,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 341.7,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "with",
+   "sl": 227.8,
+   "tp": 455.6,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 87.1,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 130.6,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 87.1,
+   "tp": 174.2,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 140.7,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 211.0,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 140.7,
+   "tp": 281.4,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 227.8,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 341.7,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "H4",
+   "gmin": 0.25,
+   "mode": "against",
+   "sl": 227.8,
+   "tp": 455.6,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  }
+ ]
+}
