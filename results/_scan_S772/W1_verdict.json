@@ -1,0 +1,5 @@
+{
+ "card": "XAUUSD_W1",
+ "verdict": "REJECT_BY_RULE",
+ "reason": "no stable positive cell in exploration"
+}
