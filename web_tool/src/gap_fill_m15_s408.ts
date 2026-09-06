@@ -119,12 +119,41 @@ import type { Candle } from './indicators'
 import type { AnalysisResult } from './signal'
 import type { RouterDecision, RegimeInfo } from './router'
 import { type RawSignal, type DecideMeta, rawToDecision } from './revived_strategies'
-import { dayBreakThreshold } from './gap_open_s560'
-
 const GOLD_PIP = 0.1
 
 /** دورهٔ ATR روزانه — `period=14` در strategies/s400_gap_open.py::daily_atr */
 const ATR_N = 14
+
+// ---------------------------------------------------------------------------
+// 🔴 دامِ پورتِ A — آستانهٔ مرزِ روز **باید** عیناً `s400_gap_open.day_break_sec`
+//    باشد، نه `dayBreakThreshold` سایت (که `max(1800, 1.5×tf)` است).
+//    پایتون: `2 * int(median(diff(t)))` و مقایسه با **`>=`** (نه `>`).
+//    هارنسِ پریتی این را لو داد: `missing_in_ts=1` — یک مرزِ روز که پایتون
+//    می‌دید و پورتِ اولیه نمی‌دید. برای M15 هر دو ۱۸۰۰ ثانیه می‌دهند، ولی
+//    عملگرِ مقایسه تفاوت می‌سازد: وقفهٔ **دقیقاً** ۱۸۰۰s در پایتون مرز است
+//    و با `>` نبود. پس هم فرمول و هم عملگر پورت می‌شوند.
+// ---------------------------------------------------------------------------
+export function s408DayBreakSec(candles: Candle[]): number {
+  const n = candles.length
+  if (n < 3) return 1800
+  const d: number[] = []
+  for (let i = 0; i < n - 1; i++) d.push(candles[i + 1].time - candles[i].time)
+  d.sort((a, b) => a - b)
+  const m = d.length
+  // np.median: میانگینِ دو عضوِ میانی در طولِ زوج
+  const med = m % 2 === 1 ? d[(m - 1) / 2] : (d[m / 2 - 1] + d[m / 2]) / 2
+  return 2 * Math.trunc(med)          // عیناً `2 * int(np.median(d))`
+}
+
+/**
+ * 🔴 دامِ پورتِ B — آستانهٔ «آخرهفته» در پایتون **۱۰۰٬۰۰۰ ثانیه** است
+ * (`s400_gap_open.build_days`: `t[fb] - t[fb-1] > 100000`)، نه ۸۶٬۴۰۰.
+ * تفاوت واقعی است: وقفهٔ ۸۶٬۴۰۰..۱۰۰٬۰۰۰ ثانیه (مثلاً تعطیلیِ میانِ هفته)
+ * در پایتون **روزِ عادی** است و آستانهٔ گپِ weekday می‌گیرد، ولی با ۸۶٤۰۰
+ * اشتباهاً آستانهٔ weekend (۶.۴۰$ در برابر ۱.۳۰$) می‌گرفت ⇒ سیگنال گم می‌شد.
+ * هارنس این را در `k=3933` گرفت.
+ */
+const WEEKEND_GAP_SEC = 100000
 
 export interface S408Config {
   id: string             // شناسهٔ کارت (XAUUSD-M15)
@@ -218,13 +247,13 @@ export interface S408Signal {
 // مرزها ساخته می‌شوند و ATR روی همان دنباله محاسبه می‌گردد ⇒ هم‌ارز.
 // ---------------------------------------------------------------------------
 export function dailyBarsAtr(
-  candles: Candle[], tfSec: number,
+  candles: Candle[], _tfSec: number,
 ): { ends: number[]; starts: number[]; atr: number[] } {
   const n = candles.length
-  const brkThr = dayBreakThreshold(tfSec)
+  const brkThr = s408DayBreakSec(candles)          // دامِ A
   const brk: number[] = []
   for (let i = 0; i < n - 1; i++) {
-    if (candles[i + 1].time - candles[i].time > brkThr) brk.push(i)
+    if (candles[i + 1].time - candles[i].time >= brkThr) brk.push(i)   // دامِ A: `>=`
   }
   const starts = [0, ...brk.map(b => b + 1)]
   const ends = [...brk, n - 1]
@@ -275,12 +304,12 @@ export function computeS408Signal(candles: Candle[], cfg: S408Config): S408Signa
   const n = candles.length
   if (n < 3) return empty
 
-  const brkThr = dayBreakThreshold(cfg.tfSec)
+  const brkThr = s408DayBreakSec(candles)          // دامِ A
 
   // --- آخرین مرزِ روز (i و i+1 هر دو در آرایه) — عیناً منطقِ S560/S562 -------
   let brk = -1
   for (let i = n - 2; i >= 1; i--) {
-    if (candles[i + 1].time - candles[i].time > brkThr) { brk = i; break }
+    if (candles[i + 1].time - candles[i].time >= brkThr) { brk = i; break }   // دامِ A
   }
   if (brk < 0) return empty
 
@@ -288,14 +317,14 @@ export function computeS408Signal(candles: Candle[], cfg: S408Config): S408Signa
   const first = candles[brk + 1]   // اولین کندلِ روزِ نو  ⇒ ورود در open همین
 
   const dt = first.time - prev.time
-  const isWeekend = dt > 86400                        // عیناً پایتون: > 86400s
+  const isWeekend = dt > WEEKEND_GAP_SEC              // دامِ B: عیناً پایتون > 100000s
   const gapUsd = first.open - prev.close              // علامت‌دار
   const thrUsd = isWeekend ? cfg.thrWeekendUsd : cfg.thrWeekdayUsd
   const absGap = Math.abs(gapUsd)
   const ratio = thrUsd > 0 ? absGap / thrUsd : 0
 
   // --- گاردِ سلامتِ فید (ارثی از S560؛ علّی، فقط سمتِ گذشته) -----------------
-  const dataHealthy = (candles[brk].time - candles[brk - 1].time) <= brkThr
+  const dataHealthy = (candles[brk].time - candles[brk - 1].time) < brkThr
 
   // --- DOW: روزِ هفتهٔ کندلِ اولِ روزِ نو · ۰=دوشنبه (pandas dayofweek) -------
   //   JS getUTCDay(): ۰=یک‌شنبه ⇒ تبدیل به مقیاسِ pandas: (d+6)%7
@@ -309,17 +338,30 @@ export function computeS408Signal(candles: Candle[], cfg: S408Config): S408Signa
   // --- فیلترِ V: ATR14ِ روزِ **قبل** ≤ آستانهٔ منجمد (دامِ ⑤: `<=`) ----------
   //   روزِ مرز = روزی که آخرین کندلش brk است ⇒ k. پایتون شرط را روی
   //   atr[k−1] می‌گذارد (ATR روزِ قبل، علّی برای ورودِ روزِ k+1).
+  // 🔴 دامِ پورتِ C — **ایندکسِ روز دو طرف یک معنا ندارد.**
+  //   پایتون `build_days` از `range(1, len(starts))` شروع می‌کند («روزِ صفر
+  //   prev_close ندارد») ⇒ `days[0]` = **دومین** روزِ تقویمی و در نتیجه
+  //   `atr[j]` هم روی همان آرایهٔ جابه‌جا‌شده سوار است. اما `dailyBarsAtr`
+  //   از روزِ صفرِ تقویمی می‌شمارد. پس نگاشتِ درست:
+  //         days_py[j]  ≡  calDay[j + 1]
+  //   و شرطِ پایتون `a_prev = atr_py[k-1]` با `k` \u2261 ایندکسِ روزِ **ورود**
+  //   (روزِ نو، یعنی calDay[kDay+1]) برابر است با `atrCal[kDay]` — نه
+  //   `atrCal[kDay-1]`. پروبِ عددی همین را نشان داد: پورتِ اولیه یک روز
+  //   عقب‌تر بود (ts=79.6464 در برابر py=87.2207 و همان 87.2207 روزِ بعدِ ts).
+  //
+  //   ⚠️ چرا این خطا بی‌خطر به‌نظر می‌رسید ولی نبود: ATR روزانهٔ طلا هم‌بستهٔ
+  //      بالایی دارد، پس یک‌روز-جابه‌جایی اغلب همان سمتِ آستانه می‌افتد و فقط
+  //      در روزهای گذر (نزدیکِ ۱۳۲.۳۳$) تصمیم را برمی‌گردانَد — یعنی دقیقاً
+  //      روی مرزی‌ترین معاملات. بی‌هارنس هرگز دیده نمی‌شد.
   const { ends, atr } = dailyBarsAtr(candles, cfg.tfSec)
   let kDay = -1
   for (let k = 0; k < ends.length; k++) { if (ends[k] === brk) { kDay = k; break } }
 
   let atrPrevUsd = NaN
   let daysAvail = 0
-  if (kDay >= 1) {
+  if (kDay >= 0) {
     daysAvail = kDay + 1
-    atrPrevUsd = atr[kDay - 1]
-  } else if (kDay === 0) {
-    daysAvail = 1
+    atrPrevUsd = atr[kDay]          // دامِ C: ATR تا پایانِ روزِ قبل = روزِ مرزی
   }
   // دامِ ⑥: نبودِ تاریخچه ⇒ رد (نه عبور)
   const volPass = isFinite(atrPrevUsd) && atrPrevUsd <= cfg.volThrUsd
