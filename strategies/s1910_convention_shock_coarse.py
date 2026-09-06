@@ -26,7 +26,9 @@ sys.path.insert(0, ROOT)
 
 from engine import scalp_engine as se                              # noqa: E402
 from engine.rqs2 import compute_rqs2                               # noqa: E402
-from engine.rqs2_pool import pool_cards, blend_pool_null           # noqa: E402
+from engine.rqs2_pool import pool_cards                            # noqa: E402
+# blend_pool_null در موتور نیست؛ نسخهٔ منتشرشدهٔ s431 (وزن پس-از-FIFO) عیناً به ارث می‌رسد
+from strategies.s431_lpsb_multicard_pool import blend_pool_null    # noqa: E402
 from tools import s434_fast_data as fd                             # noqa: E402
 
 SEED = 1910
