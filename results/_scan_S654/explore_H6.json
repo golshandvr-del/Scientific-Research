@@ -1,0 +1,204 @@
+{
+ "layer": "S654",
+ "tf": "H6",
+ "asset": "XAUUSD",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+ "n_bars_full": 15966,
+ "half_idx": 7983,
+ "first_half_only": true,
+ "path": "C",
+ "geometry": {
+  "atr_p": 21,
+  "sl_k": 1.272,
+  "tp_k": 2.058,
+  "rr": 1.6179,
+  "hold": 16,
+  "rho_min": 0.618
+ },
+ "slots": {
+  "ASIA": [
+   0,
+   8
+  ],
+  "LONDON": [
+   8,
+   16
+  ],
+  "NY": [
+   16,
+   24
+  ]
+ },
+ "n_combos": 6,
+ "combos": [
+  {
+   "theta": 2.058,
+   "slot": "ASIA",
+   "long": {
+    "n": 11
+   },
+   "short": {
+    "n": 16
+   },
+   "z_min": -9.0,
+   "z_max": -9.0,
+   "z_sum": 0.0
+  },
+  {
+   "theta": 2.058,
+   "slot": "LONDON",
+   "long": {
+    "n": 75,
+    "wr": 45.333,
+    "exp": 8.901,
+    "lift": 6.716,
+    "z_est": 1.195
+   },
+   "short": {
+    "n": 85,
+    "wr": 45.882,
+    "exp": 9.155,
+    "lift": 4.459,
+    "z_est": 0.835
+   },
+   "z_min": 0.835,
+   "z_max": 1.195,
+   "z_sum": 2.029
+  },
+  {
+   "theta": 2.058,
+   "slot": "NY",
+   "long": {
+    "n": 28
+   },
+   "short": {
+    "n": 25
+   },
+   "z_min": -9.0,
+   "z_max": -9.0,
+   "z_sum": 0.0
+  },
+  {
+   "theta": 2.618,
+   "slot": "ASIA",
+   "long": {
+    "n": 6
+   },
+   "short": {
+    "n": 6
+   },
+   "z_min": -9.0,
+   "z_max": -9.0,
+   "z_sum": 0.0
+  },
+  {
+   "theta": 2.618,
+   "slot": "LONDON",
+   "long": {
+    "n": 40,
+    "wr": 45.0,
+    "exp": 16.3,
+    "lift": 6.383,
+    "z_est": 0.829
+   },
+   "short": {
+    "n": 46,
+    "wr": 52.174,
+    "exp": 34.082,
+    "lift": 10.75,
+    "z_est": 1.48
+   },
+   "z_min": 0.829,
+   "z_max": 1.48,
+   "z_sum": 2.309
+  },
+  {
+   "theta": 2.618,
+   "slot": "NY",
+   "long": {
+    "n": 15
+   },
+   "short": {
+    "n": 13
+   },
+   "z_min": -9.0,
+   "z_max": -9.0,
+   "z_sum": 0.0
+  }
+ ],
+ "ungated": [
+  {
+   "theta": 2.058,
+   "slot": "UNGATED",
+   "long": {
+    "n": 112,
+    "wr": 41.964,
+    "exp": -1.394,
+    "lift": 3.347,
+    "z_est": 0.728
+   },
+   "short": {
+    "n": 126,
+    "wr": 46.825,
+    "exp": 11.889,
+    "lift": 5.402,
+    "z_est": 1.231
+   },
+   "z_min": 0.728
+  },
+  {
+   "theta": 2.618,
+   "slot": "UNGATED",
+   "long": {
+    "n": 61,
+    "wr": 40.984,
+    "exp": 2.059,
+    "lift": 2.366,
+    "z_est": 0.38
+   },
+   "short": {
+    "n": 65,
+    "wr": 53.846,
+    "exp": 35.042,
+    "lift": 12.422,
+    "z_est": 2.033
+   },
+   "z_min": 0.38
+  }
+ ],
+ "baseline": {
+  "long": {
+   "n": 1186,
+   "wr": 38.61720067453626,
+   "exp": -6.019468601117366
+  },
+  "short": {
+   "n": 1166,
+   "wr": 41.42367066895369,
+   "exp": 0.8838841035123153
+  }
+ },
+ "best_by_zmin": {
+  "theta": 2.058,
+  "slot": "LONDON",
+  "long": {
+   "n": 75,
+   "wr": 45.333,
+   "exp": 8.901,
+   "lift": 6.716,
+   "z_est": 1.195
+  },
+  "short": {
+   "n": 85,
+   "wr": 45.882,
+   "exp": 9.155,
+   "lift": 4.459,
+   "z_est": 0.835
+  },
+  "z_min": 0.835,
+  "z_max": 1.195,
+  "z_sum": 2.029
+ },
+ "status": "OK",
+ "elapsed_s": 0.1
+}
