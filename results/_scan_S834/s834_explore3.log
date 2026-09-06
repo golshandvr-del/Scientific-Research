@@ -1,0 +1,51 @@
+explore bars=54,798 src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv
+
+===== s=13 win=144 k=2.0 (L=608 S=633) =====
+  RR=1.3 hold=21: n=1,114 WR=47.85% null=44.35%±1.43 INFOlift= +3.49pp z=+2.4 pw=  117 PF=1.096 [PF_L=1.12 PF_S=1.08] exp= +3.40 [R1= +4.0 R2= +4.1 R3= +2.8]
+  RR=1.3 hold=34: n=1,097 WR=47.31% null=44.16%±1.60 INFOlift= +3.16pp z=+2.0 pw=  105 PF=1.054 [PF_L=1.08 PF_S=1.03] exp= +2.17 [R1= +5.0 R2= +2.4 R3= +2.8]
+  RR=2.0 hold=21: n=1,053 WR=43.49% null=40.80%±1.35 INFOlift= +2.70pp z=+2.0 pw=   88 PF=1.126 [PF_L=1.10 PF_S=1.15] exp= +4.70 [R1= +3.9 R2= +4.1 R3= +1.1]
+  RR=2.0 hold=34: n=1,017 WR=39.53% null=37.49%±1.51 INFOlift= +2.04pp z=+1.3 pw=   65 PF=1.044 [PF_L=1.03 PF_S=1.05] exp= +1.96 [R1= +3.0 R2= +1.4 R3= +2.0]
+
+===== s=13 win=144 k=2.5 (L=435 S=439) =====
+  RR=1.3 hold=21: n=  815 WR=46.01% null=44.08%±1.66 INFOlift= +1.94pp z=+1.2 pw=   55 PF=1.038 [PF_L=1.08 PF_S=1.00] exp= +1.42 [R1= +2.6 R2= +1.2 R3= +2.2]
+  RR=1.3 hold=34: n=  811 WR=46.73% null=44.15%±1.70 INFOlift= +2.58pp z=+1.5 pw=   74 PF=1.015 [PF_L=1.10 PF_S=0.95] exp= +0.64 [R1= +4.1 R2= +0.4 R3= +3.4]
+  RR=2.0 hold=21: n=  783 WR=41.76% null=40.19%±1.61 INFOlift= +1.57pp z=+1.0 pw=   44 PF=1.102 [PF_L=1.13 PF_S=1.08] exp= +3.93 [R1= +1.8 R2= +2.0 R3= +1.1]
+  RR=2.0 hold=34: n=  767 WR=40.16% null=37.91%±1.50 INFOlift= +2.24pp z=+1.5 pw=   62 PF=1.059 [PF_L=1.15 PF_S=0.98] exp= +2.68 [R1= +2.7 R2= +0.7 R3= +3.1]
+
+===== s=13 win=377 k=2.0 (L=507 S=535) =====
+  RR=1.3 hold=21: n=  928 WR=46.23% null=44.17%±1.50 INFOlift= +2.06pp z=+1.4 pw=   63 PF=1.044 [PF_L=1.12 PF_S=0.98] exp= +1.67 [R1= +2.5 R2= +2.2 R3= +1.8]
+  RR=1.3 hold=34: n=  926 WR=44.92% null=43.95%±1.38 INFOlift= +0.98pp z=+0.7 pw=   30 PF=0.955 [PF_L=1.05 PF_S=0.88] exp= -2.00 [R1= -0.2 R2= +0.3 R3= +2.0]
+  RR=2.0 hold=21: n=  879 WR=41.87% null=40.33%±1.51 INFOlift= +1.53pp z=+1.0 pw=   45 PF=1.117 [PF_L=1.16 PF_S=1.08] exp= +4.57 [R1= +2.2 R2= +2.4 R3= +0.6]
+  RR=2.0 hold=34: n=  863 WR=38.24% null=37.54%±1.39 INFOlift= +0.70pp z=+0.5 pw=   21 PF=1.010 [PF_L=1.08 PF_S=0.95] exp= +0.48 [R1= -1.3 R2= +1.3 R3= +1.3]
+
+===== s=13 win=377 k=2.5 (L=337 S=384) =====
+  RR=1.3 hold=21: n=  663 WR=47.51% null=44.48%±1.89 INFOlift= +3.04pp z=+1.6 pw=   78 PF=1.107 [PF_L=1.12 PF_S=1.10] exp= +4.09 [R1= +6.2 R2= +3.0 R3= +1.6]
+  RR=1.3 hold=34: n=  660 WR=47.12% null=44.32%±1.75 INFOlift= +2.80pp z=+1.6 pw=   72 PF=1.052 [PF_L=1.04 PF_S=1.07] exp= +2.25 [R1= +7.1 R2= +1.3 R3= +1.9]
+  RR=2.0 hold=21: n=  627 WR=42.74% null=40.82%±1.72 INFOlift= +1.92pp z=+1.1 pw=   48 PF=1.120 [PF_L=1.09 PF_S=1.15] exp= +4.83 [R1= +4.4 R2= +3.7 R3= -0.5]
+  RR=2.0 hold=34: n=  618 WR=39.48% null=37.97%±1.78 INFOlift= +1.51pp z=+0.8 pw=   38 PF=1.054 [PF_L=1.00 PF_S=1.10] exp= +2.58 [R1= +5.2 R2= +1.2 R3= +0.0]
+
+===== s=21 win=144 k=2.0 (L=543 S=523) =====
+  RR=1.3 hold=21: n=  945 WR=46.56% null=44.63%±1.65 INFOlift= +1.93pp z=+1.2 pw=   59 PF=1.067 [PF_L=1.02 PF_S=1.11] exp= +2.41 [R1= +1.8 R2= +2.2 R3= +1.8]
+  RR=1.3 hold=34: n=  938 WR=45.95% null=44.16%±1.64 INFOlift= +1.79pp z=+1.1 pw=   55 PF=1.005 [PF_L=0.99 PF_S=1.02] exp= +0.18 [R1= +2.9 R2= +0.5 R3= +2.1]
+  RR=2.0 hold=21: n=  895 WR=42.23% null=40.74%±1.40 INFOlift= +1.50pp z=+1.1 pw=   45 PF=1.117 [PF_L=1.01 PF_S=1.22] exp= +4.39 [R1= +0.5 R2= +2.4 R3= +1.4]
+  RR=2.0 hold=34: n=  878 WR=38.38% null=37.49%±1.47 INFOlift= +0.90pp z=+0.6 pw=   27 PF=1.029 [PF_L=0.99 PF_S=1.06] exp= +1.31 [R1= +1.9 R2= -0.6 R3= +1.4]
+
+===== s=21 win=144 k=2.5 (L=382 S=365) =====
+  RR=1.3 hold=21: n=  688 WR=46.22% null=44.16%±1.54 INFOlift= +2.06pp z=+1.3 pw=   54 PF=1.016 [PF_L=1.05 PF_S=0.99] exp= +0.60 [R1= +2.6 R2= +0.6 R3= +2.8]
+  RR=1.3 hold=34: n=  686 WR=46.21% null=43.95%±1.77 INFOlift= +2.26pp z=+1.3 pw=   59 PF=0.985 [PF_L=1.05 PF_S=0.93] exp= -0.65 [R1= +3.4 R2= -0.1 R3= +3.4]
+  RR=2.0 hold=21: n=  657 WR=41.86% null=40.76%±1.79 INFOlift= +1.10pp z=+0.6 pw=   28 PF=1.080 [PF_L=1.09 PF_S=1.07] exp= +3.20 [R1= +0.5 R2= +1.6 R3= +1.1]
+  RR=2.0 hold=34: n=  648 WR=39.81% null=37.79%±1.59 INFOlift= +2.03pp z=+1.3 pw=   52 PF=1.046 [PF_L=1.13 PF_S=0.98] exp= +2.14 [R1= +1.1 R2= +1.2 R3= +3.0]
+
+===== s=21 win=377 k=2.0 (L=392 S=444) =====
+  RR=1.3 hold=21: n=  749 WR=46.19% null=44.82%±1.63 INFOlift= +1.38pp z=+0.8 pw=   38 PF=1.072 [PF_L=1.16 PF_S=1.00] exp= +2.69 [R1= +3.7 R2= +0.9 R3= +0.6]
+  RR=1.3 hold=34: n=  746 WR=45.98% null=44.74%±2.05 INFOlift= +1.24pp z=+0.6 pw=   34 PF=1.031 [PF_L=1.08 PF_S=0.99] exp= +1.31 [R1= +5.0 R2= -0.6 R3= +0.7]
+  RR=2.0 hold=21: n=  711 WR=41.63% null=40.80%±1.55 INFOlift= +0.83pp z=+0.5 pw=   22 PF=1.142 [PF_L=1.16 PF_S=1.13] exp= +5.56 [R1= +3.5 R2= +1.1 R3= -0.6]
+  RR=2.0 hold=34: n=  696 WR=39.37% null=38.27%±1.68 INFOlift= +1.10pp z=+0.7 pw=   29 PF=1.099 [PF_L=1.11 PF_S=1.09] exp= +4.55 [R1= +5.5 R2= -1.2 R3= +0.5]
+
+===== s=21 win=377 k=2.5 (L=268 S=294) =====
+  RR=1.3 hold=21: n=  514 WR=48.44% null=44.96%±2.19 INFOlift= +3.49pp z=+1.6 pw=   79 PF=1.074 [PF_L=1.19 PF_S=0.99] exp= +2.92 [R1= +8.1 R2= +4.7 R3= +0.4]
+  RR=1.3 hold=34: n=  513 WR=47.76% null=44.69%±1.85 INFOlift= +3.07pp z=+1.7 pw=   69 PF=1.045 [PF_L=1.16 PF_S=0.96] exp= +1.96 [R1= +7.9 R2= +3.1 R3= +0.7]
+  RR=2.0 hold=21: n=  494 WR=44.53% null=41.03%±1.96 INFOlift= +3.50pp z=+1.8 pw=   78 PF=1.148 [PF_L=1.14 PF_S=1.15] exp= +5.98 [R1= +6.7 R2= +5.8 R3= +0.5]
+  RR=2.0 hold=34: n=  488 WR=40.37% null=37.73%±1.86 INFOlift= +2.63pp z=+1.4 pw=   58 PF=1.058 [PF_L=1.12 PF_S=1.01] exp= +2.79 [R1= +6.2 R2= +3.8 R3= +0.2]
+
+[S834 explore-3 complete]
