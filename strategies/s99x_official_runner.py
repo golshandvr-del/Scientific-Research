@@ -36,6 +36,7 @@ CFG = {
  's992': dict(name='ErShockLong',      tf='H1', side='long', mh=48, nt=146, seed=992992),
  's993': dict(name='ErShockCalmShort', tf='H1', side='short', mh=48, nt=200, seed=993993),
  's994': dict(name='SeasonalVolumeShockLong', tf='M30', side='long', mh=64, nt=64, seed=994994),
+ 's995': dict(name='SeasonalRangeShockLong', tf='H2', side='long', mh=40, nt=160, seed=995995),
 }
 
 def rule_s990(df):
@@ -92,6 +93,20 @@ def rule_s994(df):
         med = vs.shift(1).rolling(20, min_periods=10).median()
         rv.iloc[idx] = (vs/med.replace(0,np.nan)).values
     sig = ((rv >= 3.0) & pd.Series(c > o)).fillna(False).astype(bool)
+    gate = pd.Series(True, index=df.index)
+    return sig, gate, sl, sl*1.5
+
+def rule_s995(df):
+    h,l,c,o = df['high'].values, df['low'].values, df['close'].values, df['open'].values
+    sl = med_atr(h,l,c,100)*1.5/0.1
+    t = df['time'].values.astype(np.int64); slot = t % 86400
+    v = pd.Series((h-l).astype(float)); rr = pd.Series(np.nan, index=df.index)
+    for s_ in np.unique(slot):
+        idx = np.where(slot==s_)[0]; vs = v.iloc[idx]
+        med = vs.shift(1).rolling(20, min_periods=10).median()
+        rr.iloc[idx] = (vs/med.replace(0,np.nan)).values
+    rng = np.where((h-l)>0, h-l, np.nan); rho = pd.Series(np.abs(c-o)/rng).fillna(0)
+    sig = ((rr >= 3.5) & (rho >= 0.618) & pd.Series(c > o)).fillna(False).astype(bool)
     gate = pd.Series(True, index=df.index)
     return sig, gate, sl, sl*1.5
 
