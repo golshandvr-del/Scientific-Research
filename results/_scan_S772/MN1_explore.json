@@ -1,0 +1,51 @@
+{
+ "card": "XAUUSD_MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "bars": 188,
+ "split": 112,
+ "cells": [
+  {
+   "tf": "MN1",
+   "theta": 0.35,
+   "hold": 16,
+   "n": 2,
+   "status": "LOW_SIGNAL"
+  },
+  {
+   "tf": "MN1",
+   "theta": 0.35,
+   "hold": 32,
+   "n": 2,
+   "status": "LOW_SIGNAL"
+  },
+  {
+   "tf": "MN1",
+   "theta": 0.5,
+   "hold": 16,
+   "n": 1,
+   "status": "LOW_SIGNAL"
+  },
+  {
+   "tf": "MN1",
+   "theta": 0.5,
+   "hold": 32,
+   "n": 1,
+   "status": "LOW_SIGNAL"
+  },
+  {
+   "tf": "MN1",
+   "theta": 0.65,
+   "hold": 16,
+   "n": 1,
+   "status": "LOW_SIGNAL"
+  },
+  {
+   "tf": "MN1",
+   "theta": 0.65,
+   "hold": 32,
+   "n": 1,
+   "status": "LOW_SIGNAL"
+  }
+ ],
+ "best": null
+}
