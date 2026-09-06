@@ -1,0 +1,147 @@
+{
+ "card": "XAUUSD-H1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "geometry": {
+  "sl_pip": 66.6,
+  "tp_pip": 66.6,
+  "max_hold": 34,
+  "rr": 1.0,
+  "gmin": 0.1
+ },
+ "mode": "with",
+ "n_signals": 45,
+ "split_bar": 45665,
+ "bars": 91331,
+ "verdict": "REJECT",
+ "rqs2_score": 23.7,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": true,
+  "H7": false,
+  "H8": false,
+  "H9": true,
+  "H10": true
+ },
+ "failed_gates": [
+  "H3",
+  "H4",
+  "H5",
+  "H7",
+  "H8"
+ ],
+ "unknown_gates": [],
+ "null": {
+  "long": {
+   "uncond_wr": 48.620000000000005,
+   "perm_mean": 48.55577940577941,
+   "perm_sd": 9.290135372089898,
+   "perm_max": 74.07407407407408,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 48.525,
+   "perm_mean": 47.15220588235294,
+   "perm_sd": 12.105640734953033,
+   "perm_max": 82.35294117647058,
+   "perm_k": 500
+  }
+ },
+ "n_trials": 324,
+ "z_luck_bound": 2.92,
+ "z_margin": -1.089,
+ "metrics": {
+  "n_trades": 45,
+  "win_rate": 62.22,
+  "net_profit": 856.2,
+  "profit_factor": 1.486,
+  "max_dd_pct": 6.16,
+  "max_consec_losses": 4,
+  "mcl_allowed": 8,
+  "n_wins": 28,
+  "top_win_share": 0.036,
+  "recovery_factor": 1.28,
+  "expectancy_pip": 12.6556,
+  "expectancy_at_2x_cost": 9.3556,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 66.6,
+  "tp_pip": 66.6,
+  "rr": 1.0,
+  "breakeven_wr_cost": 52.48,
+  "wr_excess_cost": 9.74,
+  "null_ref_wr": 48.58,
+  "skill_lift_pp": 13.64,
+  "skill_z": 1.32,
+  "skill_p_perm": 0.093884,
+  "perm_max": 77.2,
+  "perm_k": 500,
+  "side_n": {
+   "long": 28,
+   "short": 17
+  },
+  "side_wr": {
+   "long": 67.86,
+   "short": 52.94
+  },
+  "side_lift_pp": {
+   "long": 19.24,
+   "short": 4.42
+  },
+  "prune_sides": [
+   "short"
+  ],
+  "p_emp": 0.046048,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": 1.83,
+  "z_luck_bound": 2.92,
+  "z_margin": -1.089,
+  "n_trials": 324,
+  "cal_nets": [
+   282.3,
+   471.2,
+   95.0,
+   -9.9
+  ],
+  "cal_counts": [
+   35,
+   7,
+   1,
+   2
+  ],
+  "cal_positive": 3,
+  "cal_occupied": 4,
+  "half_nets": [
+   765.5,
+   85.1
+  ],
+  "oos": {
+   "n": 3,
+   "wr": 66.67,
+   "pf": 1.811,
+   "net": 85.1,
+   "wr_req": 52.48
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 24,
+   "n_unjudgeable": 21,
+   "n_counter": 14,
+   "n_aligned": 10,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 92.86,
+   "exp_counter": 53.786,
+   "wr_aligned": 60.0,
+   "exp_aligned": 10.02,
+   "h10_substitute": "small-counter-sample-nonnegative"
+  },
+  "n_required_h3": 128.2
+ },
+ "notes": [
+  "H10 WARN (substitute PASS): only 14 counter-drift trades (<20) but their expectancy is non-negative (+53.786 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+ ]
+}
