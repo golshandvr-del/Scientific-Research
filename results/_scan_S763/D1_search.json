@@ -1,0 +1,131 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "n_bars": 4005,
+ "split": 2403,
+ "base_wr": {
+  "long": 41.38817480719794,
+  "short": 38.50267379679144
+ },
+ "n_family": 30,
+ "rows": [
+  {
+   "e_star": 0.0,
+   "gate": "none",
+   "side": "long",
+   "n": 84,
+   "wr": 40.48,
+   "exp_pip": -6.269,
+   "lift": -0.91,
+   "score": -8.36
+  },
+  {
+   "e_star": 0.0,
+   "gate": "none",
+   "side": "short",
+   "n": 89,
+   "wr": 43.82,
+   "exp_pip": 11.969,
+   "lift": 5.32,
+   "score": 50.17
+  },
+  {
+   "e_star": 0.0,
+   "gate": "drift",
+   "side": "long",
+   "n": 58,
+   "wr": 48.28,
+   "exp_pip": 43.319,
+   "lift": 6.89,
+   "score": 52.46
+  },
+  {
+   "e_star": 0.0,
+   "gate": "drift",
+   "side": "short",
+   "n": 46,
+   "wr": 43.48,
+   "exp_pip": 5.373,
+   "lift": 4.98,
+   "score": 33.75
+  },
+  {
+   "e_star": 0.5,
+   "gate": "none",
+   "side": "long",
+   "n": 46,
+   "wr": 34.78,
+   "exp_pip": -72.24,
+   "lift": -6.61,
+   "score": -44.8,
+   "ctrl_lift": -0.91,
+   "p1_beats_ctrl": false
+  },
+  {
+   "e_star": 0.5,
+   "gate": "none",
+   "side": "short",
+   "n": 44,
+   "wr": 50.0,
+   "exp_pip": 75.209,
+   "lift": 11.5,
+   "score": 76.26,
+   "ctrl_lift": 5.32,
+   "p1_beats_ctrl": true
+  },
+  {
+   "e_star": 0.5,
+   "gate": "drift",
+   "side": "long",
+   "n": 31,
+   "wr": 45.16,
+   "exp_pip": -20.025,
+   "lift": 3.77,
+   "score": 21.01,
+   "ctrl_lift": 6.89,
+   "p1_beats_ctrl": false
+  },
+  {
+   "e_star": 0.5,
+   "gate": "drift",
+   "side": "short",
+   "n": 30,
+   "wr": 46.67,
+   "exp_pip": 44.96,
+   "lift": 8.16,
+   "score": 44.72,
+   "ctrl_lift": 4.98,
+   "p1_beats_ctrl": true
+  }
+ ],
+ "best": {
+  "long": null,
+  "short": {
+   "e_star": 0.5,
+   "gate": "none",
+   "side": "short",
+   "n": 44,
+   "wr": 50.0,
+   "exp_pip": 75.209,
+   "lift": 11.5,
+   "score": 76.26,
+   "ctrl_lift": 5.32,
+   "p1_beats_ctrl": true
+  }
+ },
+ "jaccard_vs_s965": {
+  "0.0|none": 0.117,
+  "0.0|drift": 0.11,
+  "0.5|none": 0.168,
+  "0.5|drift": 0.158,
+  "0.618|none": 0.127,
+  "0.618|drift": 0.118
+ },
+ "barrier": "lift*sqrt(n)>=78 & exp>0 & n>=30 & E*>0 & P1(beats control)",
+ "best_pass": {
+  "long": false,
+  "short": false
+ },
+ "elapsed_s": 0.4
+}

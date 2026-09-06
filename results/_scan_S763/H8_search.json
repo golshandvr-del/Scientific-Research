@@ -1,0 +1,72 @@
+{
+ "tf": "H8",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 11978,
+ "split": 7186,
+ "base_wr": {
+  "long": 40.73426573426573,
+  "short": 39.42807625649913
+ },
+ "n_family": 30,
+ "rows": [
+  {
+   "e_star": 0.0,
+   "gate": "none",
+   "side": "long",
+   "n": 299,
+   "wr": 40.13,
+   "exp_pip": -10.279,
+   "lift": -0.6,
+   "score": -10.38
+  },
+  {
+   "e_star": 0.0,
+   "gate": "none",
+   "side": "short",
+   "n": 329,
+   "wr": 37.99,
+   "exp_pip": -7.12,
+   "lift": -1.43,
+   "score": -26.01
+  },
+  {
+   "e_star": 0.0,
+   "gate": "drift",
+   "side": "long",
+   "n": 188,
+   "wr": 39.89,
+   "exp_pip": -9.048,
+   "lift": -0.84,
+   "score": -11.53
+  },
+  {
+   "e_star": 0.0,
+   "gate": "drift",
+   "side": "short",
+   "n": 189,
+   "wr": 40.74,
+   "exp_pip": -1.161,
+   "lift": 1.31,
+   "score": 18.05
+  }
+ ],
+ "best": {
+  "long": null,
+  "short": null
+ },
+ "jaccard_vs_s965": {
+  "0.0|none": 0.117,
+  "0.0|drift": 0.115,
+  "0.5|none": 0.021,
+  "0.5|drift": 0.011,
+  "0.618|none": 0.0,
+  "0.618|drift": 0.0
+ },
+ "barrier": "lift*sqrt(n)>=78 & exp>0 & n>=30 & E*>0 & P1(beats control)",
+ "best_pass": {
+  "long": false,
+  "short": false
+ },
+ "elapsed_s": 0.5
+}

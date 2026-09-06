@@ -1,0 +1,95 @@
+{
+ "tf": "H4",
+ "src": "/home/user/webapp/data/XAUUSD_H4.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 23755,
+ "split": 14253,
+ "base_wr": {
+  "long": 40.25184541901867,
+  "short": 39.46910356832028
+ },
+ "n_family": 30,
+ "rows": [
+  {
+   "e_star": 0.0,
+   "gate": "none",
+   "side": "long",
+   "n": 684,
+   "wr": 39.18,
+   "exp_pip": -3.487,
+   "lift": -1.07,
+   "score": -28.0
+  },
+  {
+   "e_star": 0.0,
+   "gate": "none",
+   "side": "short",
+   "n": 704,
+   "wr": 39.35,
+   "exp_pip": -2.611,
+   "lift": -0.12,
+   "score": -3.25
+  },
+  {
+   "e_star": 0.0,
+   "gate": "drift",
+   "side": "long",
+   "n": 410,
+   "wr": 42.2,
+   "exp_pip": 7.672,
+   "lift": 1.94,
+   "score": 39.35
+  },
+  {
+   "e_star": 0.0,
+   "gate": "drift",
+   "side": "short",
+   "n": 374,
+   "wr": 41.44,
+   "exp_pip": -1.422,
+   "lift": 1.97,
+   "score": 38.19
+  },
+  {
+   "e_star": 0.5,
+   "gate": "none",
+   "side": "long",
+   "n": 36,
+   "wr": 58.33,
+   "exp_pip": 33.181,
+   "lift": 18.08,
+   "score": 108.49,
+   "ctrl_lift": -1.07,
+   "p1_beats_ctrl": true
+  }
+ ],
+ "best": {
+  "long": {
+   "e_star": 0.5,
+   "gate": "none",
+   "side": "long",
+   "n": 36,
+   "wr": 58.33,
+   "exp_pip": 33.181,
+   "lift": 18.08,
+   "score": 108.49,
+   "ctrl_lift": -1.07,
+   "p1_beats_ctrl": true
+  },
+  "short": null
+ },
+ "jaccard_vs_s965": {
+  "0.0|none": 0.137,
+  "0.0|drift": 0.13,
+  "0.5|none": 0.143,
+  "0.5|drift": 0.108,
+  "0.618|none": 0.054,
+  "0.618|drift": 0.037
+ },
+ "barrier": "lift*sqrt(n)>=78 & exp>0 & n>=30 & E*>0 & P1(beats control)",
+ "best_pass": {
+  "long": true,
+  "short": false
+ },
+ "elapsed_s": 1.1
+}
