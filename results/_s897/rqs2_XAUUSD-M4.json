@@ -1,0 +1,70 @@
+{
+ "card": "XAUUSD-M4",
+ "prereg": "7c6b8f16",
+ "verdict": "UNPROVEN",
+ "reason": "no eligible config in discovery (n_IS>=60 & exp@2x>0) - holdout untouched",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M4.csv",
+ "bars": 1362074,
+ "split": 953451,
+ "events": {
+  "H8/A_win": 5793,
+  "H8/A_loss": 11576,
+  "H16/A_win": 6111,
+  "H16/A_loss": 11098
+ },
+ "discovery": [
+  {
+   "cfg": "H8/A_win",
+   "n_is": 4474,
+   "wr": 35.92,
+   "exp": -4.01,
+   "exp2x": -7.31,
+   "t": -17.792,
+   "eligible": false
+  },
+  {
+   "cfg": "H8/A_loss",
+   "n_is": 9161,
+   "wr": 36.21,
+   "exp": -3.94,
+   "exp2x": -7.24,
+   "t": -25.001,
+   "eligible": false
+  },
+  {
+   "cfg": "H16/A_win",
+   "n_is": 4725,
+   "wr": 35.68,
+   "exp": -4.02,
+   "exp2x": -7.32,
+   "t": -17.845,
+   "eligible": false
+  },
+  {
+   "cfg": "H16/A_loss",
+   "n_is": 8813,
+   "wr": 36.36,
+   "exp": -3.94,
+   "exp2x": -7.24,
+   "t": -24.918,
+   "eligible": false
+  }
+ ],
+ "p1_base_is": {
+  "n": 14569,
+  "wr": 36.06,
+  "exp": -3.93
+ },
+ "p2": {
+  "H8": {
+   "win_wr": 35.92,
+   "loss_wr": 36.21,
+   "reflexive_direction_ok": false
+  },
+  "H16": {
+   "win_wr": 35.68,
+   "loss_wr": 36.36,
+   "reflexive_direction_ok": false
+  }
+ }
+}
