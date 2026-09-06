@@ -1,0 +1,42 @@
+{
+ "card": "XAUUSD-M15",
+ "checks": {
+  "wired": {
+   "pass": true,
+   "msg": "کارت XAUUSD-M15 دارای 5 لایه است"
+  },
+  "cfg": {
+   "pass": true,
+   "msg": "rqs2=93.8 n=496 wr=89.11% pf=2.36"
+  },
+  "frozen": {
+   "pass": true,
+   "msg": "we=6.402 wd=1.296 vol=132.3252 · judge parity 496==496 ✓"
+  },
+  "site_depth": {
+   "pass": true,
+   "msg": "عمقِ 1989 کندل کافی است — ATR14=88.40$ · روزهای موجود=21"
+  },
+  "alive": {
+   "pass": true,
+   "msg": "8 ENTRY و 7 APPROACHING در 219 مرزِ روز"
+  },
+  "geometry": {
+   "pass": true,
+   "msg": "همهٔ 8 ENTRY هندسهٔ معتبر دارند (TP>0 · SL=2×|گپ|)"
+  },
+  "robust": {
+   "pass": true,
+   "msg": "ورودی‌های مرزی (۰/۱/۲/۴۰ کندل) بدونِ throw رد شدند"
+  }
+ },
+ "summary": {
+  "pass": true,
+  "n_entry_history": 8,
+  "n_approaching": 7,
+  "n_day_boundaries": 219,
+  "site_depth_bars": 1989,
+  "site_atr_usd": 88.39928571428565,
+  "site_days": 21
+ }
+}
