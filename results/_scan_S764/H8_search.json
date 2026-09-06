@@ -1,0 +1,179 @@
+{
+ "tf": "H8",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 11978,
+ "split": 7186,
+ "base_wr": {
+  "long": 40.27777777777778,
+  "short": 40.4572564612326
+ },
+ "n_family": 30,
+ "rows": [
+  {
+   "e_star": 0.0,
+   "gate": "none",
+   "side": "long",
+   "n": 272,
+   "wr": 39.71,
+   "exp_pip": -13.661,
+   "lift": -0.57,
+   "score": -9.43
+  },
+  {
+   "e_star": 0.0,
+   "gate": "none",
+   "side": "short",
+   "n": 283,
+   "wr": 38.16,
+   "exp_pip": -7.864,
+   "lift": -2.29,
+   "score": -38.6
+  },
+  {
+   "e_star": 0.0,
+   "gate": "drift",
+   "side": "long",
+   "n": 165,
+   "wr": 37.58,
+   "exp_pip": -24.363,
+   "lift": -2.7,
+   "score": -34.71
+  },
+  {
+   "e_star": 0.0,
+   "gate": "drift",
+   "side": "short",
+   "n": 176,
+   "wr": 40.34,
+   "exp_pip": -4.176,
+   "lift": -0.12,
+   "score": -1.54
+  },
+  {
+   "e_star": 0.5,
+   "gate": "none",
+   "side": "long",
+   "n": 150,
+   "wr": 38.67,
+   "exp_pip": -15.923,
+   "lift": -1.61,
+   "score": -19.73,
+   "ctrl_lift": -0.57,
+   "p1_beats_ctrl": false
+  },
+  {
+   "e_star": 0.5,
+   "gate": "none",
+   "side": "short",
+   "n": 169,
+   "wr": 37.87,
+   "exp_pip": -8.148,
+   "lift": -2.59,
+   "score": -33.64,
+   "ctrl_lift": -2.29,
+   "p1_beats_ctrl": false
+  },
+  {
+   "e_star": 0.5,
+   "gate": "drift",
+   "side": "long",
+   "n": 92,
+   "wr": 38.04,
+   "exp_pip": -20.435,
+   "lift": -2.23,
+   "score": -21.43,
+   "ctrl_lift": -2.7,
+   "p1_beats_ctrl": true
+  },
+  {
+   "e_star": 0.5,
+   "gate": "drift",
+   "side": "short",
+   "n": 111,
+   "wr": 41.44,
+   "exp_pip": -1.991,
+   "lift": 0.98,
+   "score": 10.37,
+   "ctrl_lift": -0.12,
+   "p1_beats_ctrl": true
+  },
+  {
+   "e_star": 0.75,
+   "gate": "none",
+   "side": "long",
+   "n": 79,
+   "wr": 39.24,
+   "exp_pip": -19.353,
+   "lift": -1.04,
+   "score": -9.22,
+   "ctrl_lift": -0.57,
+   "p1_beats_ctrl": false
+  },
+  {
+   "e_star": 0.75,
+   "gate": "none",
+   "side": "short",
+   "n": 90,
+   "wr": 46.67,
+   "exp_pip": 11.671,
+   "lift": 6.21,
+   "score": 58.91,
+   "ctrl_lift": -2.29,
+   "p1_beats_ctrl": true
+  },
+  {
+   "e_star": 0.75,
+   "gate": "drift",
+   "side": "long",
+   "n": 52,
+   "wr": 40.38,
+   "exp_pip": -17.414,
+   "lift": 0.11,
+   "score": 0.77,
+   "ctrl_lift": -2.7,
+   "p1_beats_ctrl": true
+  },
+  {
+   "e_star": 0.75,
+   "gate": "drift",
+   "side": "short",
+   "n": 59,
+   "wr": 50.85,
+   "exp_pip": 19.929,
+   "lift": 10.39,
+   "score": 79.81,
+   "ctrl_lift": -0.12,
+   "p1_beats_ctrl": true
+  }
+ ],
+ "best": {
+  "long": null,
+  "short": {
+   "e_star": 0.75,
+   "gate": "drift",
+   "side": "short",
+   "n": 59,
+   "wr": 50.85,
+   "exp_pip": 19.929,
+   "lift": 10.39,
+   "score": 79.81,
+   "ctrl_lift": -0.12,
+   "p1_beats_ctrl": true
+  }
+ },
+ "jaccard_vs_s965": {
+  "0.0|none": 0.115,
+  "0.0|drift": 0.12,
+  "0.5|none": 0.22,
+  "0.5|drift": 0.193,
+  "0.75|none": 0.279,
+  "0.75|drift": 0.22
+ },
+ "barrier": "lift*sqrt(n)>=78 & exp>0 & n>=30 & q*>0 & P1(beats control)",
+ "best_pass": {
+  "long": false,
+  "short": true
+ },
+ "elapsed_s": 0.4
+}
