@@ -8,7 +8,7 @@ for tf in $TFS; do
     echo "$tf: exists, skip"
     continue
   fi
-  python3 strategies/s706_adr_budget_scan.py "$tf" || exit 1
+  python3 strategies/s706_renko_scan.py "$tf" || exit 1
   git add results/_s706/ -A
   git commit -q -m "S706 scan checkpoint: ${tf} (search-half only)" || true
   git pull --rebase -q origin main 2>/dev/null || true
