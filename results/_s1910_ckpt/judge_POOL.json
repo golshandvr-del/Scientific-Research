@@ -1,0 +1,84 @@
+{
+ "members": [
+  {
+   "card": "H12",
+   "n": 50,
+   "lift": 9.9
+  },
+  {
+   "card": "D1",
+   "n": 18,
+   "lift": 14.68487693839807
+  }
+ ],
+ "n_trials": 3,
+ "used": [
+  "D1",
+  "H12"
+ ],
+ "dropped": [],
+ "n_before": 68,
+ "n_after": 58,
+ "sl_pip_med": 185.2,
+ "tp_pip_med": 299.6,
+ "pool_stat": {
+  "n": 58,
+  "wr": 51.72,
+  "e_pip": 69.37,
+  "net_pip": 4023.5
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 40.219178474037896,
+   "perm_mean": 39.85195379797644,
+   "perm_sd": 5.955262075454052,
+   "perm_max": null,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 40.219178474037896,
+   "perm_mean": 39.85195379797644,
+   "perm_sd": 5.955262075454052,
+   "perm_max": null,
+   "perm_k": 500
+  }
+ },
+ "verdict": "POWER-LIMITED",
+ "rqs2_score": 26.9,
+ "failed_gates": [
+  "H3"
+ ],
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H10": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true
+ },
+ "metrics": {
+  "win_rate": 51.72,
+  "null_ref_wr": 40.22,
+  "breakeven_wr_cost": 38.88,
+  "rr": 1.618,
+  "z_obs": 1.787,
+  "z_luck_bound": 0.853,
+  "z_margin": 0.934,
+  "skill_p_perm": 0.036976,
+  "skill_lift_pp": 11.5,
+  "p_emp": 0.050259,
+  "perm_k": 500,
+  "perm_max": 40.22,
+  "top_win_share": 0.1112,
+  "profit_factor": 1.756,
+  "max_dd_pct": 4.76,
+  "oos_wr": null,
+  "is_wr": null
+ },
+ "notes": []
+}

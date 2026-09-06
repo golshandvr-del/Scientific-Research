@@ -182,10 +182,17 @@ def pool():
         df = load_df(tf)
         lm, sm, sl, tp, warm = signals(df, tf, 'gated')
         tr = run(df, lm, sm, sl, tp)
-        lift = j['metrics'].get('skill_lift_pp') if 'metrics' in j else None
-        members.append(dict(card=tf, tr=tr, dt=df.attrs['dt'], lift=lift,
-                            null=null_for(df, lm, sm, sl, tp, warm),
-                            sl_pip=j['sl_pip_med'], tp_pip=j['tp_pip_med'], asset='XAUUSD'))
+        null = null_for(df, lm, sm, sl, tp, warm)
+        if 'metrics' in j and j['metrics'].get('skill_lift_pp') is not None:
+            lift = j['metrics']['skill_lift_pp']; sl_med, tp_med = j['sl_pip_med'], j['tp_pip_med']
+        else:
+            # کارت NO-TRADES (n<30): موتور فراخوانی نشده؛ lift توصیفی = WR − نول غیرشرطی
+            # فقط برای شرط ۲ pool_cards (هم‌جهتی). هیچ داوری مجددی روی این کارت انجام نمی‌شود.
+            p_ = tr['pnl_pip'].to_numpy(); wr = 100.0 * float((p_ > 0).mean())
+            lift = wr - (null['long']['uncond_wr'] or 0.0)
+            sl_med = float(np.median(tr['sl_pip'])); tp_med = sl_med * (K_TP / K_SL)
+        members.append(dict(card=tf, tr=tr, dt=df.attrs['dt'], lift=lift, null=null,
+                            sl_pip=sl_med, tp_pip=tp_med, asset='XAUUSD'))
         print(f'[member] {tf}: n={len(tr)} lift={lift}')
     res = pool_cards(members)
     out = {'members': [dict(card=m['card'], n=int(len(m['tr'])), lift=m['lift']) for m in members],

@@ -1,0 +1,32 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "n_bars": 4005,
+ "drift_K": 60,
+ "gated": {
+  "n": 18,
+  "wr": 55.56,
+  "e_pip": 102.67,
+  "net_pip": 1848.1,
+  "n_long": 9,
+  "n_short": 9
+ },
+ "p1_p4_ungated": {
+  "n": 40,
+  "wr": 50.0,
+  "e_pip": 23.61,
+  "net_pip": 944.2,
+  "n_long": 15,
+  "n_short": 25
+ },
+ "p3_against": {
+  "n": 22,
+  "wr": 45.45,
+  "e_pip": -41.09,
+  "net_pip": -903.9,
+  "n_long": 6,
+  "n_short": 16
+ },
+ "n_trials": 3,
+ "verdict": "NO-TRADES"
+}
