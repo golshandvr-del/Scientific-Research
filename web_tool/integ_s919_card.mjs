@@ -148,7 +148,7 @@ console.log(`⑤ shallow-feed guard (i < ${FLOOR}): false ENTRY = ${shallowEntry
 //   سیگنال رویداد+۱). اگر این‌جا شلیک شود یعنی سیم‌کشی یک کندل زود است ⇒
 //   لبه از WR=55.66٪ به 48.11٪ سقوط می‌کند و آزمون باید FAIL بدهد.
 let earlyFire = 0, earlyChecked = 0
-for (const t of [...py.event_long, ...py.event_short]) {
+for (const t of [...py.idx_event_long, ...py.idx_event_short]) {
   if (t < FLOOR) continue
   earlyChecked++
   const dec = runAt(t)
