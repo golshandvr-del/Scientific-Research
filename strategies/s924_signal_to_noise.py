@@ -38,7 +38,7 @@ SEED = 20260905
 K_PERM = 2000
 ATR_P = 21
 HOLD = 55                                      # منجمد در پیش‌ثبت
-MIN_SPAN_YEARS = 15.0                          # E-16 guard
+MIN_SPAN_YEARS = 14.0                          # E-16 guard (mt5_full M1 = 5,000,000 bars = 14.34y — MT5 export cap; the short trap files are 2.8y/6.4y)
 
 # ---------------- شبکهٔ قفل‌شدهٔ پیش‌ثبت ----------------
 GRID_K = [55, 144]
