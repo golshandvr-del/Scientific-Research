@@ -1,0 +1,308 @@
+{
+ "tf": "H8",
+ "cfg": {
+  "side": "short",
+  "e_star": 0.75,
+  "gate": "drift"
+ },
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "sub_src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "n_bars": 11978,
+ "split": 7186,
+ "n_total_trades": 83,
+ "n_holdout": 24,
+ "sl_med": 132.714,
+ "tp_med": 214.731252,
+ "null": {
+  "short": {
+   "uncond_wr": 34.77157360406091,
+   "perm_mean": 34.53704568981743,
+   "perm_sd": 9.73914581618259,
+   "perm_max": 72.72727272727273,
+   "perm_k": 2000
+  },
+  "long": {
+   "uncond_wr": null,
+   "perm_mean": null,
+   "perm_sd": null,
+   "perm_max": null,
+   "perm_k": null
+  }
+ },
+ "verdicts": {
+  "N1_pathC": {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": true,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": true,
+    "H10": false
+   },
+   "metrics": {
+    "n_trades": 83,
+    "win_rate": 48.19,
+    "net_profit": 1661.5,
+    "profit_factor": 1.344,
+    "max_dd_pct": 6.38,
+    "max_consec_losses": 5,
+    "mcl_allowed": 12,
+    "n_wins": 40,
+    "top_win_share": 0.0474,
+    "recovery_factor": 2.14,
+    "expectancy_pip": 7.06,
+    "expectancy_at_2x_cost": 3.76,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 132.714,
+    "tp_pip": 214.731,
+    "rr": 1.618,
+    "breakeven_wr_cost": 39.15,
+    "wr_excess_cost": 9.05,
+    "null_ref_wr": 34.77,
+    "skill_lift_pp": 13.42,
+    "skill_z": 1.38,
+    "skill_p_perm": 0.084091,
+    "perm_max": 72.73,
+    "perm_k": 2000,
+    "side_n": {
+     "long": 0,
+     "short": 83
+    },
+    "side_wr": {
+     "short": 48.19
+    },
+    "side_lift_pp": {
+     "short": 13.42
+    },
+    "prune_sides": [],
+    "p_emp": 0.008011,
+    "p_adj_bonferroni": 0.008011,
+    "z_obs": 2.567,
+    "z_luck_bound": 0.52,
+    "z_margin": 2.048,
+    "n_trials": 1,
+    "cal_nets": [
+     588.9,
+     1040.3,
+     104.5,
+     -120.8
+    ],
+    "cal_counts": [
+     32,
+     24,
+     21,
+     6
+    ],
+    "cal_positive": 3,
+    "cal_occupied": 4,
+    "half_nets": [
+     1651.9,
+     -16.3
+    ],
+    "oos": {
+     "n": 24,
+     "wr": 41.67,
+     "pf": 1.032,
+     "net": 44.4,
+     "wr_req": 39.15
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 80,
+     "n_unjudgeable": 3,
+     "n_counter": 28,
+     "n_aligned": 52,
+     "regime_lookback_days": 280.0,
+     "wr_counter": 46.43,
+     "exp_counter": -6.224,
+     "wr_aligned": 48.08,
+     "exp_aligned": 10.568
+    },
+    "n_required_h3": 120.2
+   },
+   "notes": [],
+   "passed": false,
+   "rqs2_score": 13.5,
+   "verdict": "REJECT",
+   "n_fail": 5,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": true,
+    "G2_evidence": true,
+    "G3_efdr": true,
+    "G4_economics": true,
+    "G5_glass_ceiling": true,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": true,
+     "H2": true,
+     "H8": false,
+     "H9": true
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": false
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7",
+     "H10"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D"
+  },
+  "N60_strict": {
+   "asset": "XAUUSD",
+   "gates": {
+    "H0": true,
+    "H1": true,
+    "H2": true,
+    "H3": false,
+    "H4": true,
+    "H5": true,
+    "H6": false,
+    "H7": false,
+    "H8": false,
+    "H9": true,
+    "H10": false
+   },
+   "metrics": {
+    "n_trades": 83,
+    "win_rate": 48.19,
+    "net_profit": 1661.5,
+    "profit_factor": 1.344,
+    "max_dd_pct": 6.38,
+    "max_consec_losses": 5,
+    "mcl_allowed": 12,
+    "n_wins": 40,
+    "top_win_share": 0.0474,
+    "recovery_factor": 2.14,
+    "expectancy_pip": 7.06,
+    "expectancy_at_2x_cost": 3.76,
+    "cost_pip": 3.3,
+    "spread_pip": 3.3,
+    "sl_pip": 132.714,
+    "tp_pip": 214.731,
+    "rr": 1.618,
+    "breakeven_wr_cost": 39.15,
+    "wr_excess_cost": 9.05,
+    "null_ref_wr": 34.77,
+    "skill_lift_pp": 13.42,
+    "skill_z": 1.38,
+    "skill_p_perm": 0.084091,
+    "perm_max": 72.73,
+    "perm_k": 2000,
+    "side_n": {
+     "long": 0,
+     "short": 83
+    },
+    "side_wr": {
+     "short": 48.19
+    },
+    "side_lift_pp": {
+     "short": 13.42
+    },
+    "prune_sides": [],
+    "p_emp": 0.008011,
+    "p_adj_bonferroni": 0.480686,
+    "z_obs": 2.567,
+    "z_luck_bound": 2.345,
+    "z_margin": 0.222,
+    "n_trials": 60,
+    "cal_nets": [
+     588.9,
+     1040.3,
+     104.5,
+     -120.8
+    ],
+    "cal_counts": [
+     32,
+     24,
+     21,
+     6
+    ],
+    "cal_positive": 3,
+    "cal_occupied": 4,
+    "half_nets": [
+     1651.9,
+     -16.3
+    ],
+    "oos": {
+     "n": 24,
+     "wr": 41.67,
+     "pf": 1.032,
+     "net": 44.4,
+     "wr_req": 39.15
+    },
+    "max_concurrency": 1,
+    "counter_drift": {
+     "n_judgeable": 80,
+     "n_unjudgeable": 3,
+     "n_counter": 28,
+     "n_aligned": 52,
+     "regime_lookback_days": 280.0,
+     "wr_counter": 46.43,
+     "exp_counter": -6.224,
+     "wr_aligned": 48.08,
+     "exp_aligned": 10.568
+    },
+    "n_required_h3": 120.2
+   },
+   "notes": [],
+   "passed": false,
+   "rqs2_score": 11.7,
+   "verdict": "REJECT",
+   "n_fail": 5,
+   "n_unknown": 0,
+   "accepted": false,
+   "power_limited": false,
+   "unproven": false,
+   "unproven_checks": {
+    "G1_lift_floor": true,
+    "G2_evidence": true,
+    "G3_efdr": true,
+    "G4_economics": true,
+    "G5_glass_ceiling": true,
+    "G6_structure": false
+   },
+   "gate_families": {
+    "economic": {
+     "H0": true,
+     "H1": true,
+     "H2": true,
+     "H8": false,
+     "H9": true
+    },
+    "power": {
+     "H3": false,
+     "H7": false,
+     "H10": false
+    },
+    "economic_all_pass": false,
+    "power_defects": [
+     "H3",
+     "H7",
+     "H10"
+    ]
+   },
+   "admission_rule": "gates_only",
+   "rank_tier": "D"
+  }
+ }
+}
