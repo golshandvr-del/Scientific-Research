@@ -1,0 +1,53 @@
+{
+ "layer": "S408",
+ "tf": "M15",
+ "doc": "results/S408_GapFillM15FullData_Xauusd_M15_rqs2_94_ACCEPT.md",
+ "cfg": {
+  "q_gap": 60,
+  "family": "QW",
+  "k_sl": 2.0,
+  "dow_excluded": 0,
+  "vol_q": 0.78,
+  "vol_roll": 250,
+  "roll_days_gap": 500,
+  "min_roll_obs": 60,
+  "atr_period": 14,
+  "pip": 0.1,
+  "spread_pip": 3.3
+ },
+ "frozen_gap_threshold_usd": {
+  "weekend": 6.402,
+  "weekday": 1.296
+ },
+ "frozen_vol_threshold_usd": 132.3252,
+ "frozen_at_day_index": {
+  "weekend": 4083,
+  "weekday": 4087,
+  "vol": 4087,
+  "vol_hist_n": 250
+ },
+ "day_break_sec": 1800,
+ "n_days": 4088,
+ "parity": {
+  "signals_rolling": 496,
+  "judged_n_trades": 496,
+  "ok": true,
+  "signals_frozen_all_history": 212
+ },
+ "geometry_judged": {
+  "sl_pip_median": 18.2,
+  "tp_pip_median": 9.1,
+  "rr": 0.5
+ },
+ "judged_metrics": {
+  "rqs2": 93.8,
+  "n": 496,
+  "wr": 89.11,
+  "pf": 2.36,
+  "max_dd_pct": 5.19,
+  "z": 16.38
+ },
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+ "first_utc": "2011-01-03 00:00:00",
+ "last_utc": "2026-08-07 23:45:00"
+}
