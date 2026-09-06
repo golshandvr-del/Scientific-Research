@@ -299,6 +299,7 @@ import { decideS560, S560_CFG } from './gap_open_s560'
 //      حساب می‌شوند (سند §۵).
 //    سند: results/S562_GapOpenVolFilter_Xauusd_M15H1_rqs2_96_ACCEPT.md
 import { decideS562, S562_CFG } from './gap_open_volfilter_s562'
+import { decideS408, S408_CFG } from './gap_fill_m15_s408'
 
 const GOLD_PIP = 0.1
 
