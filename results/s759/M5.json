@@ -1,0 +1,216 @@
+{
+ "card": "S759-XAUUSD-M5",
+ "asset": "XAUUSD",
+ "tf": "M5",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M5.csv",
+ "bars": 1089574,
+ "frozen": {
+  "family_L": [
+   3,
+   5,
+   8
+  ],
+  "rho_min": 0.618,
+  "leg_k": 1.0,
+  "sl_k": 1.45,
+  "atr_p": 89,
+  "rr": 1.618,
+  "hold": 55,
+  "side": "LONG-only",
+  "n_trials": 2,
+  "null": "uncond same-bracket long + perm K=500"
+ },
+ "protocol": "C_holdout_prereg_S759",
+ "discovery": [
+  {
+   "L": 3,
+   "n": 5660,
+   "wr": 36.71378091872792,
+   "net_pip": -21751.2599626931,
+   "crit": -14.438093548037008,
+   "ungated_n": 7944,
+   "ungated_wr": 36.83282980866062,
+   "ungated_net": -30440.94040290407,
+   "gate_pass_rate_pct": 61.61715875437495,
+   "n_sig_gated": 6866,
+   "n_sig_ungated": 11143
+  },
+  {
+   "L": 5,
+   "n": 4252,
+   "wr": 36.75917215428034,
+   "net_pip": -16215.354459521719,
+   "crit": -12.591544217605467,
+   "ungated_n": 6004,
+   "ungated_wr": 36.54230512991339,
+   "ungated_net": -23392.122757894915,
+   "gate_pass_rate_pct": 61.36363636363637,
+   "n_sig_gated": 5103,
+   "n_sig_ungated": 8316
+  },
+  {
+   "L": 8,
+   "n": 3300,
+   "wr": 36.96969696969697,
+   "net_pip": -12638.417989578636,
+   "crit": -11.508402754613607,
+   "ungated_n": 4598,
+   "ungated_wr": 37.84254023488473,
+   "ungated_net": -16148.166474016663,
+   "gate_pass_rate_pct": 61.72477630361,
+   "n_sig_gated": 4001,
+   "n_sig_ungated": 6482
+  }
+ ],
+ "winner": {
+  "L": 8,
+  "crit": -11.508402754613607
+ },
+ "P1_first_half": {
+  "gated_wr": 36.96969696969697,
+  "ungated_wr": 37.84254023488473,
+  "delta_pp": -0.87,
+  "passed": false
+ },
+ "n_holdout_trades": 3544,
+ "holdout_wr": 39.79,
+ "holdout_net_pip": -6707.7,
+ "n_sig_gated": 4403,
+ "n_sig_ungated": 7170,
+ "gate_pass_rate_holdout_pct": 61.408647140864716,
+ "med_sl_pip": 15.110361540600756,
+ "med_tp_pip": 24.448564972692026,
+ "null": {
+  "long": {
+   "uncond_wr": 38.629599999999996,
+   "perm_mean": 38.63388598682716,
+   "perm_sd": 0.6983756680506211,
+   "perm_max": 40.97206450147627,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 38.0852,
+   "perm_mean": 38.0852,
+   "perm_sd": null,
+   "perm_max": 38.0852,
+   "perm_k": 0
+  },
+  "_meta": {
+   "long": {
+    "uncond_n": 250000,
+    "draw": 4403,
+    "n_perm": 500
+   },
+   "short": {
+    "uncond_n": 250000,
+    "draw": 0,
+    "n_perm": 0
+   }
+  }
+ },
+ "inner_split": 871659,
+ "n_trials": 2,
+ "perm_k": 500,
+ "verdict": "REJECT",
+ "rqs2_score": 3.3,
+ "gates": {
+  "H0": false,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": true,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "metrics": {
+  "n_trades": 3544,
+  "win_rate": 39.79,
+  "net_profit": -10000.4,
+  "profit_factor": 0.6,
+  "max_dd_pct": 100.0,
+  "max_consec_losses": 16,
+  "mcl_allowed": 23,
+  "n_wins": 1410,
+  "top_win_share": 0.0087,
+  "recovery_factor": -0.94,
+  "expectancy_pip": -1.8927,
+  "expectancy_at_2x_cost": -5.1927,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 15.11,
+  "tp_pip": 24.449,
+  "rr": 1.618,
+  "breakeven_wr_cost": 46.54,
+  "wr_excess_cost": -6.75,
+  "null_ref_wr": 38.63,
+  "skill_lift_pp": 1.15,
+  "skill_z": 1.41,
+  "skill_p_perm": 0.079555,
+  "perm_max": 40.97,
+  "perm_k": 500,
+  "side_n": {
+   "long": 3544,
+   "short": 0
+  },
+  "side_wr": {
+   "long": 39.79
+  },
+  "side_lift_pp": {
+   "long": 1.15
+  },
+  "prune_sides": [
+   "long"
+  ],
+  "p_emp": 0.082139,
+  "p_adj_bonferroni": 0.164279,
+  "z_obs": 1.408,
+  "z_luck_bound": 0.52,
+  "z_margin": 0.888,
+  "n_trials": 2,
+  "cal_nets": [
+   0.0,
+   0.0,
+   -9873.0,
+   -7570.0
+  ],
+  "cal_counts": [
+   0,
+   0,
+   1743,
+   1801
+  ],
+  "cal_positive": 0,
+  "cal_occupied": 2,
+  "half_nets": [
+   0.0,
+   -10000.4
+  ],
+  "oos": {
+   "n": 1457,
+   "wr": 41.39,
+   "pf": 0.898,
+   "net": -5676.4,
+   "wr_req": 46.54
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 3482,
+   "n_unjudgeable": 62,
+   "n_counter": 702,
+   "n_aligned": 2780,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 41.17,
+   "exp_counter": -1.887,
+   "wr_aligned": 39.35,
+   "exp_aligned": -1.91
+  },
+  "n_required_h3": 17067.1
+ },
+ "notes": [
+  "PF=0.600<1.3"
+ ]
+}
