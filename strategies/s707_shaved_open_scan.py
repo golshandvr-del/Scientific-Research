@@ -96,10 +96,16 @@ def unit_test():
 def scan_tf(tf):
     t0 = time.time()
     d = fd.load_fast('XAUUSD', tf)
-    df_full = fd.as_dataframe(d)
-    n_full = len(df_full)
+    n_full = int(d['n_bars'])
     half = n_full // 2
-    df = df_full.iloc[:half].reset_index(drop=True)
+    # حافظه (سندباکس ۹۸۵MB؛ M1 = ۵M کندل): فقط نیمهٔ جست‌وجو را نگه می‌داریم؛
+    # هیچ تغییری در منطق — همان iloc[:half] قبلی، فقط بدونِ نگه‌داشتنِ کل.
+    d_half = {k: (v[:half] if isinstance(v, np.ndarray) and len(v) == n_full else v)
+              for k, v in d.items()}
+    src_path = d['src']
+    del d
+    import gc; gc.collect()
+    df = fd.as_dataframe(d_half).reset_index(drop=True)
     max_hold = MAX_HOLD[tf]
     pip = 0.1
 
@@ -111,7 +117,7 @@ def scan_tf(tf):
     atr55_med_pip = atr55_med / pip
 
     rng = np.random.default_rng(SEED)
-    out = {'tf': tf, 'src': d['src'], 'n_full': int(n_full), 'half_bar': int(half),
+    out = {'tf': tf, 'src': src_path, 'n_full': int(n_full), 'half_bar': int(half),
            'seed': SEED, 'atr55_med_pip': atr55_med_pip, 'rr': RR,
            'k_perm': K_PERM, 'cells': []}
 
