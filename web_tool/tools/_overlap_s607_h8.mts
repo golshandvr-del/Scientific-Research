@@ -34,7 +34,14 @@ type Candle = { time: number; open: number; high: number; low: number; close: nu
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 const CSV = path.join(ROOT, 'data/mt5_full/XAUUSD_H8.csv')
-const WINDOW = 3000
+// پنجرهٔ اندازه‌گیری. ⚠️ ۳۰۰۰ (عددِ سندِ S966) با اجرای غلتانِ **پنج** لایه
+// عملاً اجرا نمی‌شود: هر گام یک برشِ تاریخِ کامل می‌سازد ⇒ ۵×۳۰۰۰ برش با طولِ
+// میانگینِ ~۹۰۰۰ کندل ⇒ O(n²) و تایم‌اوت (سنجیده شد، نه حدس).
+// راهِ حل: پنجره را به ۱۲۰۰ کندلِ H8 (**≈۱.۳ سالِ معاملاتی**) کم می‌کنیم که
+// هم برای شمارشِ هم‌پوشانی آماری کافی است و هم در چند دقیقه تمام می‌شود.
+// ⚠️ در نتیجه اعداد با سندِ S966 (پنجرهٔ ۳۰۰۰) **مستقیماً مقایسه‌پذیر نیستند**
+// و این محدودیت در خودِ artifact ثبت می‌شود (صداقتِ دامنه).
+const WINDOW = 1200
 
 function loadCsv(p: string): Candle[] {
   const txt = fs.readFileSync(p, 'utf8').trim().split('\n')
