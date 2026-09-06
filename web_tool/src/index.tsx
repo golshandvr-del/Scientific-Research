@@ -614,6 +614,7 @@ function tfLabelForGold(id: string): string {
     case 'XAUUSD-M30': return 'M30'
     case 'XAUUSD-H1': return 'H1'
     case 'XAUUSD-H4': return 'H4'
+    case 'XAUUSD-H6': return 'H6'   // S919
     case 'XAUUSD-H8': return 'H8'
     case 'XAUUSD-H12': return 'H12'
     case 'XAUUSD-D1': return 'D1'
