@@ -1,0 +1,538 @@
+{
+ "tf": "D1",
+ "asset": "XAUUSD",
+ "bars": 4005,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "span_years": 15.59,
+ "hold": 21,
+ "split_bar": 2002,
+ "warmup": 400,
+ "grid": 24,
+ "is_grid": [
+  {
+   "z_up": 2.058,
+   "z_dn": 2.058,
+   "K": 89,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 61,
+   "wr": 59.02,
+   "exp": 24.4038,
+   "pf": 1.256,
+   "sl_med": 198.05,
+   "tp_med": 198.05,
+   "be": 51.67,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.058,
+   "K": 89,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 58,
+   "wr": 53.45,
+   "exp": 13.1066,
+   "pf": 1.102,
+   "sl_med": 259.92,
+   "tp_med": 259.92,
+   "be": 51.27,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.058,
+   "K": 144,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 55,
+   "wr": 65.45,
+   "exp": 54.8651,
+   "pf": 1.676,
+   "sl_med": 210.62,
+   "tp_med": 210.62,
+   "be": 51.57,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.058,
+   "K": 144,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 52,
+   "wr": 59.62,
+   "exp": 40.4698,
+   "pf": 1.336,
+   "sl_med": 283.1,
+   "tp_med": 283.1,
+   "be": 51.17,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.058,
+   "K": 233,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 50,
+   "wr": 62.0,
+   "exp": 35.8814,
+   "pf": 1.386,
+   "sl_med": 222.56,
+   "tp_med": 222.56,
+   "be": 51.48,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.058,
+   "K": 233,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 48,
+   "wr": 54.17,
+   "exp": 15.1135,
+   "pf": 1.113,
+   "sl_med": 288.99,
+   "tp_med": 288.99,
+   "be": 51.14,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.618,
+   "K": 89,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 49,
+   "wr": 57.14,
+   "exp": 19.5836,
+   "pf": 1.204,
+   "sl_med": 196.06,
+   "tp_med": 196.06,
+   "be": 51.68,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.618,
+   "K": 89,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 47,
+   "wr": 51.06,
+   "exp": 5.468,
+   "pf": 1.042,
+   "sl_med": 249.39,
+   "tp_med": 249.39,
+   "be": 51.32,
+   "passes_be": false
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.618,
+   "K": 144,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 39,
+   "wr": 61.54,
+   "exp": 40.5938,
+   "pf": 1.47,
+   "sl_med": 209.79,
+   "tp_med": 209.79,
+   "be": 51.57,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.618,
+   "K": 144,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 38,
+   "wr": 52.63,
+   "exp": 6.4797,
+   "pf": 1.049,
+   "sl_med": 267.39,
+   "tp_med": 267.39,
+   "be": 51.23,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.618,
+   "K": 233,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 36,
+   "wr": 55.56,
+   "exp": 12.0733,
+   "pf": 1.117,
+   "sl_med": 215.71,
+   "tp_med": 215.71,
+   "be": 51.53,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.058,
+   "z_dn": 2.618,
+   "K": 233,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 35,
+   "wr": 45.71,
+   "exp": -23.8804,
+   "pf": 0.84,
+   "sl_med": 280.85,
+   "tp_med": 280.85,
+   "be": 51.18,
+   "passes_be": false
+  },
+  {
+   "z_up": 2.618,
+   "z_dn": 2.058,
+   "K": 89,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 44,
+   "wr": 68.18,
+   "exp": 60.2761,
+   "pf": 1.763,
+   "sl_med": 195.95,
+   "tp_med": 195.95,
+   "be": 51.68,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.618,
+   "z_dn": 2.058,
+   "K": 89,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 43,
+   "wr": 58.14,
+   "exp": 34.8655,
+   "pf": 1.287,
+   "sl_med": 249.39,
+   "tp_med": 249.39,
+   "be": 51.32,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.618,
+   "z_dn": 2.058,
+   "K": 144,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 41,
+   "wr": 73.17,
+   "exp": 83.2066,
+   "pf": 2.174,
+   "sl_med": 230.04,
+   "tp_med": 230.04,
+   "be": 51.43,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.618,
+   "z_dn": 2.058,
+   "K": 144,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 40,
+   "wr": 62.5,
+   "exp": 54.2024,
+   "pf": 1.46,
+   "sl_med": 293.62,
+   "tp_med": 293.62,
+   "be": 51.12,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.618,
+   "z_dn": 2.058,
+   "K": 233,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 38,
+   "wr": 71.05,
+   "exp": 72.7569,
+   "pf": 1.921,
+   "sl_med": 233.97,
+   "tp_med": 233.97,
+   "be": 51.41,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.618,
+   "z_dn": 2.058,
+   "K": 233,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 37,
+   "wr": 59.46,
+   "exp": 40.8307,
+   "pf": 1.318,
+   "sl_med": 300.42,
+   "tp_med": 300.42,
+   "be": 51.1,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.618,
+   "z_dn": 2.618,
+   "K": 89,
+   "sl_k": 1.272,
+   "rr": 1.0,
+   "n": 32,
+   "wr": 68.75,
+   "exp": 66.3473,
+   "pf": 1.893,
+   "sl_med": 195.3,
+   "tp_med": 195.3,
+   "be": 51.69,
+   "passes_be": true
+  },
+  {
+   "z_up": 2.618,
+   "z_dn": 2.618,
+   "K": 89,
+   "sl_k": 1.618,
+   "rr": 1.0,
+   "n": 32,
+   "wr": 56.25,
+   "exp": 31.1259,
+   "pf": 1.26,
+   "sl_med": 248.42,
+   "tp_med": 248.42,
+   "be": 51.33,
+   "passes_be": true
+  }
+ ],
+ "is_winner": {
+  "z_up": 2.618,
+  "z_dn": 2.058,
+  "K": 144,
+  "sl_k": 1.272,
+  "rr": 1.0,
+  "n": 41,
+  "wr": 73.17,
+  "exp": 83.2066,
+  "pf": 2.174,
+  "sl_med": 230.04,
+  "tp_med": 230.04,
+  "be": 51.43,
+  "passes_be": true
+ },
+ "diag_is": {
+  "null_is": {
+   "long": 46.3,
+   "short": 53.09
+  },
+  "arms": {
+   "base_sym": {
+    "card": {
+     "n": 42,
+     "wr": 59.52,
+     "exp": 26.7489,
+     "pf": 1.284
+    },
+    "sides": {
+     "long": {
+      "n": 17,
+      "wr": 58.82
+     },
+     "short": {
+      "n": 25,
+      "wr": 60.0
+     }
+    }
+   },
+   "aligned_sym": {
+    "card": {
+     "n": 25,
+     "wr": 72.0,
+     "exp": 79.082,
+     "pf": 2.094
+    },
+    "sides": {
+     "long": {
+      "n": 7,
+      "wr": 85.71
+     },
+     "short": {
+      "n": 18,
+      "wr": 66.67
+     }
+    }
+   },
+   "counter_sym": {
+    "card": {
+     "n": 17,
+     "wr": 41.18,
+     "exp": -50.2116,
+     "pf": 0.604
+    },
+    "sides": {
+     "long": {
+      "n": 10,
+      "wr": 40.0
+     },
+     "short": {
+      "n": 7,
+      "wr": 42.86
+     }
+    }
+   }
+  },
+  "lift_base": 9.18,
+  "lift_aligned": 20.81,
+  "side_lift_gap_base": 5.61,
+  "P1_drift_adds_lift": true,
+  "P2_asymmetry_consistent": true,
+  "P3_counter_worse": true
+ },
+ "full": {
+  "n": 70,
+  "n_long": 21,
+  "n_short": 49,
+  "n_oos": 28,
+  "wr": 65.71,
+  "exp": 45.6282,
+  "pf": 1.41,
+  "sl_med": 253.18,
+  "tp_med": 253.18
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 58.87445887445888,
+   "perm_mean": 59.55746228315888,
+   "perm_sd": 10.721873220839127,
+   "perm_max": 89.47368421052632,
+   "perm_k": 800
+  },
+  "short": {
+   "uncond_wr": 39.82683982683983,
+   "perm_mean": 39.2807780118505,
+   "perm_sd": 6.941902813984794,
+   "perm_max": 63.41463414634146,
+   "perm_k": 800
+  }
+ },
+ "rqs2_official": {
+  "verdict": "POWER-LIMITED",
+  "rqs2_score": 26.1,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "notes": [
+   "H10 WARN (substitute PASS): only 14 counter-drift trades (<20) but their expectancy is non-negative (+4.244 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+  ],
+  "metrics": {
+   "n_trades": 70,
+   "win_rate": 65.71,
+   "net_profit": 2341.9,
+   "profit_factor": 1.857,
+   "max_dd_pct": 3.12,
+   "max_consec_losses": 3,
+   "mcl_allowed": 8,
+   "n_wins": 46,
+   "top_win_share": 0.0533,
+   "recovery_factor": 6.02,
+   "expectancy_pip": 45.6282,
+   "expectancy_at_2x_cost": 42.3282,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 253.178,
+   "tp_pip": 253.178,
+   "rr": 1.0,
+   "breakeven_wr_cost": 50.65,
+   "wr_excess_cost": 15.06,
+   "null_ref_wr": 45.75,
+   "skill_lift_pp": 19.97,
+   "skill_z": 2.47,
+   "skill_p_perm": 0.006707,
+   "perm_max": 71.23,
+   "perm_k": 800,
+   "p_emp": 0.000602,
+   "p_adj_bonferroni": 0.000602,
+   "z_obs": 3.353,
+   "z_luck_bound": 0.52,
+   "z_margin": 2.834,
+   "n_trials": 1,
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "max_concurrency": 1,
+   "n_required_h3": 59.4
+  }
+ },
+ "rqs2_sensitivity": {
+  "verdict": "POWER-LIMITED",
+  "rqs2_score": 25.5,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "notes": [
+   "H10 WARN (substitute PASS): only 14 counter-drift trades (<20) but their expectancy is non-negative (+4.244 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+  ],
+  "metrics": {
+   "n_trades": 70,
+   "win_rate": 65.71,
+   "net_profit": 2341.9,
+   "profit_factor": 1.857,
+   "max_dd_pct": 3.12,
+   "max_consec_losses": 3,
+   "mcl_allowed": 8,
+   "n_wins": 46,
+   "top_win_share": 0.0533,
+   "recovery_factor": 6.02,
+   "expectancy_pip": 45.6282,
+   "expectancy_at_2x_cost": 42.3282,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 253.178,
+   "tp_pip": 253.178,
+   "rr": 1.0,
+   "breakeven_wr_cost": 50.65,
+   "wr_excess_cost": 15.06,
+   "null_ref_wr": 45.75,
+   "skill_lift_pp": 19.97,
+   "skill_z": 2.47,
+   "skill_p_perm": 0.006707,
+   "perm_max": 71.23,
+   "perm_k": 800,
+   "p_emp": 0.000602,
+   "p_adj_bonferroni": 0.014441,
+   "z_obs": 3.353,
+   "z_luck_bound": 1.98,
+   "z_margin": 1.374,
+   "n_trials": 24,
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "max_concurrency": 1,
+   "n_required_h3": 59.4
+  }
+ },
+ "verdict": "POWER-LIMITED"
+}
