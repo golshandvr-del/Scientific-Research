@@ -1,0 +1,112 @@
+{
+ "patient": "S382_H4",
+ "status": "REJECT_AT_CALIBRATION",
+ "n": 878,
+ "data_source": "data/mt5_full (H4 resampled from H1)",
+ "n_bars": 23854,
+ "span": [
+  "2011-01-03 00:00:00",
+  "2026-08-07 20:00:00"
+ ],
+ "baseline_h1": {
+  "n": 340,
+  "total": 43052.8,
+  "avg": 126.63,
+  "sd": 1529.17,
+  "worst": -1230.1,
+  "best": 1845.1,
+  "maxDD": 23986.5,
+  "pf": 1.184,
+  "wr": 44.1
+ },
+ "calibration": {
+  "V_FH1": {
+   "mgmt_h1": {
+    "n": 340,
+    "total": 22575.4,
+    "avg": 66.4,
+    "sd": 1436.38,
+    "worst": -1230.1,
+    "best": 1845.1,
+    "maxDD": 27115.6,
+    "pf": 1.104,
+    "wr": 38.2
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": true
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 74
+  },
+  "V_FH2": {
+   "mgmt_h1": {
+    "n": 340,
+    "total": 39923.9,
+    "avg": 117.42,
+    "sd": 1508.92,
+    "worst": -1230.1,
+    "best": 1845.1,
+    "maxDD": 23986.5,
+    "pf": 1.174,
+    "wr": 42.9
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 16
+  },
+  "V_FHW": {
+   "mgmt_h1": {
+    "n": 340,
+    "total": 31212.8,
+    "avg": 91.8,
+    "sd": 1483.95,
+    "worst": -1230.1,
+    "best": 1845.1,
+    "maxDD": 25199.6,
+    "pf": 1.137,
+    "wr": 41.2
+   },
+   "judge_h1": {
+    "profit_ok": false,
+    "improves": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": true
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 44
+  }
+ },
+ "note": "هیچ واریانت در نیمهٔ اول پاس نشد؛ نیمهٔ دوم هرگز باز نشد (مسیرِ C)."
+}
