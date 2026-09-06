@@ -1,0 +1,230 @@
+{
+ "session": "S607",
+ "prereg": "results/S607_PREREG_ENGLE_DUAL_GATE.md",
+ "frozen": {
+  "H8": {
+   "K": 60,
+   "W": 233
+  },
+  "H12": {
+   "K": 30,
+   "W": 89
+  },
+  "H6": {
+   "K": 60,
+   "W": 233
+  }
+ },
+ "census": {
+  "H8": {
+   "n_sig": 343,
+   "n_valid": 340,
+   "pr_drift": 0.5382,
+   "pr_calm": 0.6676,
+   "pr_dual": 0.3853,
+   "collinearity_ratio": 1.072,
+   "n_dual": 131,
+   "K": 60,
+   "W": 233,
+   "n_member": 131,
+   "wr": 66.41,
+   "lift": 16.6104,
+   "lift_raw": 9.2639
+  },
+  "H12": {
+   "n_sig": 467,
+   "n_valid": 467,
+   "pr_drift": 0.5482,
+   "pr_calm": 0.636,
+   "pr_dual": 0.364,
+   "collinearity_ratio": 1.044,
+   "n_dual": 170,
+   "K": 30,
+   "W": 89,
+   "n_member": 167,
+   "wr": 62.28,
+   "lift": 11.8073,
+   "lift_raw": 5.2075
+  },
+  "H6": {
+   "n_sig": 488,
+   "n_valid": 487,
+   "pr_drift": 0.499,
+   "pr_calm": 0.7002,
+   "pr_dual": 0.3532,
+   "collinearity_ratio": 1.011,
+   "n_dual": 172,
+   "K": 60,
+   "W": 233,
+   "n_member": 166,
+   "wr": 60.84,
+   "lift": 15.7416,
+   "lift_raw": 5.8666
+  }
+ },
+ "veto_trace": [],
+ "members": [
+  {
+   "card": "XAUUSD-D1",
+   "n": 87,
+   "wr": 64.37,
+   "lift": 16.6906
+  },
+  {
+   "card": "XAUUSD-H8",
+   "n": 131,
+   "wr": 66.41,
+   "lift": 16.6104
+  },
+  {
+   "card": "XAUUSD-H6",
+   "n": 166,
+   "wr": 60.84,
+   "lift": 15.7416
+  }
+ ],
+ "n_before": 384,
+ "n_after": 283,
+ "fifo_cut_pct": 26.3,
+ "member_share": {
+  "XAUUSD-H6": 0.4594,
+  "XAUUSD-H8": 0.3004,
+  "XAUUSD-D1": 0.2403
+ },
+ "sl_pip_med": 179.82,
+ "tp_pip_med": 197.55,
+ "pool_null": {
+  "long": {
+   "uncond_wr": 53.91056828027057,
+   "perm_mean": 54.492140390529926,
+   "perm_sd": 2.6165203995721704,
+   "perm_max": null,
+   "perm_k": 800
+  },
+  "short": {
+   "uncond_wr": 40.19614388156178,
+   "perm_mean": 39.95525790934107,
+   "perm_sd": 2.361272532999661,
+   "perm_max": null,
+   "perm_k": 800
+  }
+ },
+ "seed": 20260823,
+ "n_trials": 5177,
+ "n_trials_stress": 8000,
+ "split_utc": "2020-02-19T08:00:00.000000000",
+ "P1_lift_beats_parents": true,
+ "P2_n_ge_150": true,
+ "official": {
+  "verdict": "ACCEPT",
+  "rqs2_score": 83.1,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": true,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "notes": [],
+  "metrics": {
+   "n_trades": 283,
+   "win_rate": 60.07,
+   "net_profit": 10217.0,
+   "profit_factor": 1.609,
+   "max_dd_pct": 7.47,
+   "max_consec_losses": 8,
+   "mcl_allowed": 10,
+   "n_wins": 170,
+   "top_win_share": 0.0409,
+   "recovery_factor": 6.63,
+   "expectancy_pip": 43.4652,
+   "expectancy_at_2x_cost": 40.1652,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 179.824,
+   "tp_pip": 197.547,
+   "rr": 1.099,
+   "breakeven_wr_cost": 48.53,
+   "wr_excess_cost": 11.54,
+   "null_ref_wr": 47.57,
+   "skill_lift_pp": 12.5,
+   "skill_z": 4.21,
+   "skill_p_perm": 1.3e-05,
+   "perm_max": 47.57,
+   "perm_k": 800,
+   "p_emp": 1.6e-05,
+   "p_adj_bonferroni": 0.084152,
+   "z_obs": 4.21,
+   "z_luck_bound": 3.697,
+   "z_margin": 0.514,
+   "n_trials": 5177,
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "max_concurrency": 1,
+   "n_required_h3": 152.4
+  }
+ },
+ "stress": {
+  "verdict": "ACCEPT",
+  "rqs2_score": 82.9,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": true,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "notes": [],
+  "metrics": {
+   "n_trades": 283,
+   "win_rate": 60.07,
+   "net_profit": 10217.0,
+   "profit_factor": 1.609,
+   "max_dd_pct": 7.47,
+   "max_consec_losses": 8,
+   "mcl_allowed": 10,
+   "n_wins": 170,
+   "top_win_share": 0.0409,
+   "recovery_factor": 6.63,
+   "expectancy_pip": 43.4652,
+   "expectancy_at_2x_cost": 40.1652,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 179.824,
+   "tp_pip": 197.547,
+   "rr": 1.099,
+   "breakeven_wr_cost": 48.53,
+   "wr_excess_cost": 11.54,
+   "null_ref_wr": 47.57,
+   "skill_lift_pp": 12.5,
+   "skill_z": 4.21,
+   "skill_p_perm": 1.3e-05,
+   "perm_max": 47.57,
+   "perm_k": 800,
+   "p_emp": 1.6e-05,
+   "p_adj_bonferroni": 0.130039,
+   "z_obs": 4.21,
+   "z_luck_bound": 3.806,
+   "z_margin": 0.405,
+   "n_trials": 8000,
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "max_concurrency": 1,
+   "n_required_h3": 152.4
+  }
+ },
+ "verdict": "ACCEPT",
+ "rqs2_score": 83.1
+}
