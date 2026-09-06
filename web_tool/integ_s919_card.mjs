@@ -70,8 +70,8 @@ const py = FX.py
 const FLOOR = cfg.driftK + 3
 
 // 🔴 بارهای سیگنال = **ماسک** (رویداد+۱)، نه خودِ رویداد.
-const sigBars = [...py.mask_long.map(i => ({ i, dir: 'LONG' })),
-                 ...py.mask_short.map(i => ({ i, dir: 'SHORT' }))]
+const sigBars = [...py.idx_mask_long.map(i => ({ i, dir: 'LONG' })),
+                 ...py.idx_mask_short.map(i => ({ i, dir: 'SHORT' }))]
   .filter(x => x.i >= FLOOR)
   .sort((a, b) => a.i - b.i)
 
