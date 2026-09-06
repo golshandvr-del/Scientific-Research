@@ -525,6 +525,13 @@ const ASSETS: { id: string; card: string; name: string; symbol: string; isGold: 
   { id: 'XAUUSD-M30', card: 'XAUUSD-M30', name: 'طلا / دلار — M30 (سی‌دقیقه‌ای)',  symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'swing-m30' },
   { id: 'XAUUSD-H1',  card: 'XAUUSD-H1',  name: 'طلا / دلار — H1 (یک‌ساعته)',      symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
   { id: 'XAUUSD-H4',  card: 'XAUUSD-H4',  name: 'طلا / دلار — H4 (چهارساعته)',     symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
+  // ⭐⭐ کارتِ نوِ S919 — «شوکِ مطلعِ هم‌راستا با قراردادِ بازار» (کینز)
+  //    تنها تایم‌فریمِ ACCEPT این لایه **H6** است (RQS2=88.9 · n=106 · WR=55.66٪).
+  //    کارتِ H3 با RQS2=16.0 رد شد ⇒ فقط همین یک کارت اضافه می‌شود (تعمیم ممنوع).
+  //    کندلِ H6 از تجمیعِ H1×6 ساخته می‌شود (Yahoo تایم‌فریمِ ۶ساعته ندارد) —
+  //    مرزهای UTC 0/6/12/18 که با کندل‌های MT5ِ بک‌تست دقیقاً هم‌تراز است
+  //    (تأییدِ عددی: هر ۱۵۹۶۶ کندلِ XAUUSD_H6.csv مضربِ ۲۱۶۰۰ ثانیه‌اند).
+  { id: 'XAUUSD-H6',  card: 'XAUUSD-H6',  name: 'طلا / دلار — H6 (شش‌ساعته)',      symbol: 'GC=F',     isGold: true,  decimals: 2, layer: 'htf' },
   // ⭐ کارتِ نوِ S950 — تنها تایم‌فریمِ ACCEPTِ لایهٔ «پس‌لرزهٔ جهش، هم‌راستا با رانش»
   //    (RQS2=80 · پایدار روی ۴ seed). کندلِ H8 از تجمیعِ H1×8 ساخته می‌شود
   //    (عینِ الگوی H4؛ Yahoo تایم‌فریمِ ۸ساعته ندارد). مرزهای UTC 0/8/16.
