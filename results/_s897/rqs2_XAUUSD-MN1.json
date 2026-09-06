@@ -1,0 +1,6 @@
+{
+ "card": "XAUUSD-MN1",
+ "prereg": "7c6b8f16",
+ "verdict": "INCOMPLETE",
+ "reason": "pre-declared: W=200 lookback + hold 16 at >=W1 leaves n structurally < 60"
+}
