@@ -99,9 +99,15 @@ console.log(`   S919 present=${seen}/${sigBars.length} · ENTRY=${entry}/${sigBa
 // ---- ③ کنترلِ گیتِ قرارداد از مسیرِ کارت ----------------------------------
 //   بارهایی که پایهٔ S965 (شوک+ماندگاری) شلیک کرد ولی درفتِ قرارداد مخالف بود
 //   ⇒ کارت نباید ENTRY بسازد. ماسکِ این‌ها هم رویداد+۱ است.
-const baseAll = [...py.base_long.map(i => ({ i, dir: 'LONG' })),
-                 ...py.base_short.map(i => ({ i, dir: 'SHORT' }))]
-const alignedEvents = new Set([...py.event_long, ...py.event_short])
+//   پایهٔ S965 از بردارهای خودِ فیکسچر بازسازی می‌شود (shock ∧ ρ≥0.618 ∧ sgn≠0)
+//   — بی هیچ گیتِ درفت. سپس آن‌هایی که گیتِ قرارداد ردشان کرد جدا می‌شوند.
+const baseAll = []
+for (let t = 0; t < FX.candles.length; t++) {
+  if (py.shock[t] && py.rho[t] >= cfg.rhoMin && py.body_sgn[t] !== 0) {
+    baseAll.push({ i: t, dir: py.body_sgn[t] > 0 ? 'LONG' : 'SHORT' })
+  }
+}
+const alignedEvents = new Set([...py.idx_event_long, ...py.idx_event_short])
 const blockedMaskBars = baseAll
   .filter(x => !alignedEvents.has(x.i))
   .map(x => x.i + 1)                 // ماسکِ متناظر با آن رویداد
