@@ -34,12 +34,34 @@ else if (cfg.rqs2 !== 93.8 || cfg.nTrades !== 496) {
 
 // ── ③ آستانه‌های منجمد با آرتیفکت یکی‌اند؟ (گاردِ رانشِ عدد) ────────────────
 const fr = JSON.parse(fs.readFileSync('../results/_s408_arms/frozen_thresholds_M15.json', 'utf8'))
+// نامِ کلیدها عیناً همان است که tools/s408_freeze_thresholds.py می‌نویسد —
+// نه حدس. (نسخهٔ اولِ این تست `fr.gap`/`fr.vol` حدس زده بود و می‌ترکید.)
+const frGap = fr.frozen_gap_threshold_usd
+const frVol = fr.frozen_vol_threshold_usd
 const drift = []
-if (Math.abs(cfg.thrWeekendUsd - fr.gap.weekend) > 1e-9) drift.push(`weekend ${cfg.thrWeekendUsd}≠${fr.gap.weekend}`)
-if (Math.abs(cfg.thrWeekdayUsd - fr.gap.weekday) > 1e-9) drift.push(`weekday ${cfg.thrWeekdayUsd}≠${fr.gap.weekday}`)
-if (Math.abs(cfg.volThrUsd - fr.vol) > 1e-9) drift.push(`vol ${cfg.volThrUsd}≠${fr.vol}`)
+if (!frGap || !Number.isFinite(frVol)) {
+  drift.push(`ساختارِ آرتیفکت ناشناخته است: keys=${Object.keys(fr).join(',')}`)
+} else {
+  if (Math.abs(cfg.thrWeekendUsd - frGap.weekend) > 1e-9) drift.push(`weekend ${cfg.thrWeekendUsd}≠${frGap.weekend}`)
+  if (Math.abs(cfg.thrWeekdayUsd - frGap.weekday) > 1e-9) drift.push(`weekday ${cfg.thrWeekdayUsd}≠${frGap.weekday}`)
+  if (Math.abs(cfg.volThrUsd - frVol) > 1e-9) drift.push(`vol ${cfg.volThrUsd}≠${frVol}`)
+  // گاردِ اضافه ①: پریتیِ **داور** باید در خودِ آرتیفکت سبز باشد، وگرنه عددِ
+  //   منجمد از یک اجرای بی‌اعتبار آمده و کارت روی شن ساخته می‌شود.
+  if (!fr.parity?.ok || fr.parity.signals_rolling !== fr.parity.judged_n_trades) {
+    drift.push(`judge parity در آرتیفکت سبز نیست: ${JSON.stringify(fr.parity)}`)
+  }
+  // گاردِ اضافه ②: اعدادِ کارت باید با judged_metrics همان آرتیفکت بخوانند
+  //   ⇒ آرتیفکتِ کهنه یا دست‌کاری‌شده نمی‌تواند بی‌صدا پاس شود.
+  if (cfg.rqs2 !== fr.judged_metrics?.rqs2 || cfg.nTrades !== fr.judged_metrics?.n) {
+    drift.push(`اعدادِ کارت با judged_metrics نمی‌خوانند: کارت(${cfg.rqs2}/${cfg.nTrades}) ≠ آرتیفکت(${fr.judged_metrics?.rqs2}/${fr.judged_metrics?.n})`)
+  }
+  // گاردِ اضافه ③: سندِ ACCEPT ارجاع‌شده باید همان سندِ S408 باشد
+  if (!String(fr.doc || '').includes('S408_GapFillM15FullData')) {
+    drift.push(`آرتیفکت به سندِ دیگری ارجاع می‌دهد: ${fr.doc}`)
+  }
+}
 if (drift.length) fail('frozen', drift.join(' · '))
-else pass('frozen', `we=${fr.gap.weekend} wd=${fr.gap.weekday} vol=${fr.vol}`)
+else pass('frozen', `we=${frGap.weekend} wd=${frGap.weekday} vol=${frVol} · judge parity ${fr.parity.signals_rolling}==${fr.parity.judged_n_trades} ✓`)
 
 // ── ④ لایه روی دادهٔ واقعیِ کارت اجرا می‌شود و NEUTRALِ ابدی نیست؟ ──────────
 // دادهٔ واقعیِ کارت را از fixture می‌گیریم (همان شکلِ Candle که سایت می‌سازد)
