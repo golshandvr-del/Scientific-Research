@@ -1,0 +1,131 @@
+{
+ "layer": "S654",
+ "tf": "H12",
+ "asset": "XAUUSD",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "locked": {
+  "theta": 2.058,
+  "slot": "PM",
+  "slot_utc": [
+   12,
+   24
+  ],
+  "rho_min": 0.618,
+  "atr_p": 21,
+  "sl_k": 1.272,
+  "tp_k": 2.058,
+  "rr": 1.6179245283018866,
+  "hold": 16
+ },
+ "test_half": "second",
+ "n_bars_test": 3999,
+ "n_trades": 108,
+ "n_long": 50,
+ "n_short": 58,
+ "seed": 654654,
+ "perm_k": 600,
+ "n_trials": 16,
+ "verdict": "UNPROVEN",
+ "rqs2_score": 21.2,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": true
+ },
+ "metrics": {
+  "n_trades": 108,
+  "win_rate": 48.15,
+  "net_profit": 2788.7,
+  "profit_factor": 1.451,
+  "max_dd_pct": 4.9,
+  "max_consec_losses": 6,
+  "mcl_allowed": 13,
+  "n_wins": 52,
+  "top_win_share": 0.075,
+  "recovery_factor": 4.4,
+  "expectancy_pip": 63.1355,
+  "expectancy_at_2x_cost": 59.8355,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 226.352,
+  "tp_pip": 366.22,
+  "rr": 1.618,
+  "breakeven_wr_cost": 38.76,
+  "wr_excess_cost": 9.39,
+  "null_ref_wr": 39.86,
+  "skill_lift_pp": 8.28,
+  "skill_z": 1.25,
+  "skill_p_perm": 0.10579,
+  "perm_max": 58.2,
+  "perm_k": 600,
+  "side_n": {
+   "long": 50,
+   "short": 58
+  },
+  "side_wr": {
+   "long": 52.0,
+   "short": 44.83
+  },
+  "side_lift_pp": {
+   "long": 4.05,
+   "short": 11.94
+  },
+  "prune_sides": [],
+  "p_emp": 0.049363,
+  "p_adj_bonferroni": 0.789804,
+  "z_obs": 1.758,
+  "z_luck_bound": 1.8,
+  "z_margin": -0.042,
+  "n_trials": 16,
+  "cal_nets": [
+   546.4,
+   659.5,
+   1173.4,
+   332.8
+  ],
+  "cal_counts": [
+   24,
+   28,
+   33,
+   23
+  ],
+  "cal_positive": 4,
+  "cal_occupied": 4,
+  "half_nets": [
+   1310.9,
+   1263.6
+  ],
+  "oos": {
+   "n": 26,
+   "wr": 42.31,
+   "pf": 1.203,
+   "net": 283.1,
+   "wr_req": 38.76
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 98,
+   "n_unjudgeable": 10,
+   "n_counter": 52,
+   "n_aligned": 46,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 46.15,
+   "exp_counter": 56.135,
+   "wr_aligned": 47.83,
+   "exp_aligned": 77.098
+  },
+  "n_required_h3": 333.5
+ },
+ "notes": [
+  "UNPROVEN: edge economically alive (lift=+8.28pp, p_emp=0.0494, EFDR=0.790) but n=108 < n_required(H3)=333 — statistical proof is mathematically impossible at this sample size. Quarantined, not accepted: excluded from official net profit, badge-flagged on site, auto-retried as n grows."
+ ],
+ "elapsed_s": 0.2
+}
