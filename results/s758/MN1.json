@@ -1,0 +1,23 @@
+{
+ "card": "S758-XAUUSD-MN1",
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "bars": 188,
+ "frozen": {
+  "family_L": [
+   3,
+   5,
+   8
+  ],
+  "leg_k": 1.0,
+  "sl_k": 1.45,
+  "atr_p": 89,
+  "rr": 1.618,
+  "hold": 55,
+  "null": "side-split uncond same-bracket + perm K=500"
+ },
+ "protocol": "C_holdout_prereg_S758",
+ "verdict": "INCOMPLETE",
+ "note": "TOO_SHORT"
+}
