@@ -1,0 +1,73 @@
+
+################ TF=H1 explore bars=54,798 src=/home/user/webapp/data/mt5_full/XAUUSD_H1.csv ################
+  FORCE  k=+2.0   follow: n=  545 WR=49.36% null=44.68%±1.79 INFOlift= +4.68pp z=+2.6 pw=  109 PF=1.121 exp= +3.99 [R1= +3.0 R2= +4.4 R3= +5.5] <<<
+  FORCE  k=+2.0   fade  : n=  554 WR=39.71% null=44.68%±1.79 INFOlift= -4.97pp z=-2.8 pw= -117 PF=0.741 exp=-10.34 [R1= -0.5 R2= -0.1 R3= -9.7]
+  FORCE  k=+2.618 follow: n=  368 WR=49.46% null=44.50%±2.26 INFOlift= +4.95pp z=+2.2 pw=   95 PF=1.098 exp= +3.35 [R1= +3.3 R2= +1.0 R3= +7.9] <<<
+  FORCE  k=+2.618 fade  : n=  369 WR=39.02% null=44.50%±2.26 INFOlift= -5.48pp z=-2.4 pw= -105 PF=0.724 exp=-11.33 [R1= -5.7 R2= +5.5 R3=-11.9]
+  FORCE  k=-2.0   follow: n=  569 WR=46.40% null=44.31%±1.79 INFOlift= +2.09pp z=+1.2 pw=   50 PF=1.076 exp= +2.83 [R1= +4.6 R2= +3.7 R3= -0.8]
+  FORCE  k=-2.0   fade  : n=  591 WR=42.47% null=44.31%±1.79 INFOlift= -1.84pp z=-1.0 pw=  -45 PF=0.801 exp= -8.55 [R1= -3.9 R2= -1.9 R3= -0.6]
+  FORCE  k=-2.618 follow: n=  379 WR=42.74% null=43.69%±2.39 INFOlift= -0.94pp z=-0.4 pw=  -18 PF=1.032 exp= +1.29 [R1= +1.6 R2= +2.5 R3= -5.5]
+  FORCE  k=-2.618 fade  : n=  384 WR=44.53% null=43.69%±2.39 INFOlift= +0.85pp z=+0.4 pw=   17 PF=0.806 exp= -8.65 [R1= -6.5 R2= +3.0 R3= +3.4]
+  VR     k=1.2    follow: n=  445 WR=44.94% null=44.93%±2.19 INFOlift= +0.01pp z=+0.0 pw=    0 PF=0.869 exp= -4.87 [R1= +0.9 R2= +0.1 R3= -0.3]
+  VR     k=1.2    fade  : n=  448 WR=43.75% null=44.93%±2.19 INFOlift= -1.18pp z=-0.5 pw=  -25 PF=0.865 exp= -5.01 [R1= +1.5 R2= -3.2 R3= -0.5]
+  VR     k=1.4    follow: n=  267 WR=46.82% null=44.59%±3.02 INFOlift= +2.22pp z=+0.7 pw=   36 PF=1.058 exp= +1.96 [R1= +8.7 R2= +1.4 R3= +0.4]
+  VR     k=1.4    fade  : n=  268 WR=42.91% null=44.59%±3.02 INFOlift= -1.68pp z=-0.6 pw=  -28 PF=0.794 exp= -7.91 [R1= -4.2 R2= -1.4 R3= -1.0]
+  VR     k=1.6    follow: n=  147 WR=41.50% null=45.00%±3.74 INFOlift= -3.50pp z=-0.9 pw=  -42 PF=0.767 exp= -9.22 [R1=+10.2 R2= -1.1 R3=-12.2]
+  VR     k=1.6    fade  : n=  144 WR=47.92% null=45.00%±3.74 INFOlift= +2.92pp z=+0.8 pw=   35 PF=1.180 exp= +5.82 [R1= -8.3 R2= +1.4 R3=+10.2]
+  VOLRAT k=1.1    follow: n=  516 WR=47.09% null=44.80%±1.92 INFOlift= +2.29pp z=+1.2 pw=   52 PF=1.124 exp= +4.33 [R1=+11.1 R2= +1.2 R3= -0.9]
+  VOLRAT k=1.1    fade  : n=  525 WR=43.43% null=44.80%±1.92 INFOlift= -1.37pp z=-0.7 pw=  -31 PF=0.843 exp= -6.25 [R1= -4.1 R2= -1.3 R3= -0.1]
+  VOLRAT k=1.25   follow: n=  105 WR=50.48% null=46.67%±5.25 INFOlift= +3.81pp z=+0.7 pw=   39 PF=1.198 exp= +5.97 [R1= -3.2 R2= -5.6 R3=+16.1]
+  VOLRAT k=1.25   fade  : n=  105 WR=40.95% null=46.67%±5.25 INFOlift= -5.71pp z=-1.1 pw=  -59 PF=0.741 exp= -9.67 [R1= +1.2 R2= +2.0 R3=-15.6]
+  VOLRAT k=1.4   : n=31 — کم، رد
+  AGE    k=21     follow: n=  748 WR=45.05% null=44.51%±1.72 INFOlift= +0.54pp z=+0.3 pw=   15 PF=0.964 exp= -1.32 [R1= +2.8 R2= +4.2 R3= -3.1]
+  AGE    k=21     fade  : n=  748 WR=43.85% null=44.51%±1.72 INFOlift= -0.66pp z=-0.4 pw=  -18 PF=0.829 exp= -6.51 [R1= -4.4 R2= -3.4 R3= +3.0]
+  AGE    k=55     follow: n=  256 WR=45.31% null=43.81%±2.92 INFOlift= +1.50pp z=+0.5 pw=   24 PF=1.091 exp= +3.28 [R1= +1.5 R2= +3.2 R3= +0.2]
+  AGE    k=55     fade  : n=  256 WR=43.36% null=43.81%±2.92 INFOlift= -0.45pp z=-0.2 pw=   -7 PF=0.763 exp= -9.85 [R1= -3.2 R2= -1.6 R3= +2.1]
+  AGE    k=89     follow: n=   99 WR=48.48% null=46.83%±4.37 INFOlift= +1.65pp z=+0.4 pw=   16 PF=1.265 exp= +9.22 [R1= -1.4 R2= -3.1 R3= +6.5]
+  AGE    k=89     fade  : n=   99 WR=44.44% null=46.83%±4.37 INFOlift= -2.39pp z=-0.5 pw=  -24 PF=0.772 exp=-10.34 [R1= -5.9 R2= +3.2 R3= -4.6]
+
+################ TF=H3 explore bars=19,083 src=/home/user/webapp/data/mt5_full/XAUUSD_H3.csv ################
+  FORCE  k=+2.0   follow: n=  187 WR=51.34% null=45.39%±3.68 INFOlift= +5.95pp z=+1.6 pw=   81 PF=1.365 exp=+18.49 [R1=+26.5 R2= +4.6 R3= +0.2]
+  FORCE  k=+2.0   fade  : n=  196 WR=40.82% null=45.39%±3.68 INFOlift= -4.57pp z=-1.2 pw=  -64 PF=0.780 exp=-15.50 [R1=-13.0 R2= -5.4 R3= -1.5]
+  FORCE  k=+2.618 follow: n=  128 WR=48.44% null=46.27%±3.98 INFOlift= +2.17pp z=+0.5 pw=   25 PF=1.101 exp= +6.04 [R1=+12.8 R2= +2.4 R3= -1.3]
+  FORCE  k=+2.618 fade  : n=  132 WR=43.18% null=46.27%±3.98 INFOlift= -3.09pp z=-0.8 pw=  -35 PF=0.823 exp=-12.37 [R1= -2.8 R2=-11.1 R3= +1.0]
+  FORCE  k=-2.0   follow: n=  196 WR=47.96% null=45.39%±3.49 INFOlift= +2.57pp z=+0.7 pw=   36 PF=1.105 exp= +7.08 [R1= +2.3 R2= +5.3 R3= +0.2]
+  FORCE  k=-2.0   fade  : n=  200 WR=43.00% null=45.39%±3.49 INFOlift= -2.39pp z=-0.7 pw=  -34 PF=0.855 exp=-10.60 [R1= -1.9 R2= -4.6 R3= -0.5]
+  FORCE  k=-2.618 follow: n=  127 WR=51.18% null=45.75%±3.94 INFOlift= +5.43pp z=+1.4 pw=   61 PF=1.140 exp= +9.50 [R1=+12.6 R2= +4.3 R3= +3.3]
+  FORCE  k=-2.618 fade  : n=  129 WR=41.09% null=45.75%±3.94 INFOlift= -4.66pp z=-1.2 pw=  -53 PF=0.835 exp=-12.71 [R1= -8.2 R2= -6.9 R3= -0.6]
+  VR     k=1.2    follow: n=  204 WR=44.61% null=44.77%±3.57 INFOlift= -0.16pp z=-0.0 pw=   -2 PF=0.976 exp= -1.50 [R1= +5.2 R2= +3.1 R3= -4.4]
+  VR     k=1.2    fade  : n=  205 WR=46.83% null=44.77%±3.57 INFOlift= +2.06pp z=+0.6 pw=   30 PF=1.007 exp= +0.45 [R1= -4.2 R2= -4.8 R3= +9.3]
+  VR     k=1.4    follow: n=   86 WR=39.53% null=42.76%±5.33 INFOlift= -3.23pp z=-0.6 pw=  -30 PF=0.774 exp=-15.87 [R1=-11.2 R2= +0.1 R3= -1.5]
+  VR     k=1.4    fade  : n=   89 WR=46.07% null=42.76%±5.33 INFOlift= +3.31pp z=+0.6 pw=   31 PF=1.126 exp= +8.07 [R1= +7.2 R2= +0.1 R3= +3.1]
+  VR     k=1.6   : n=34 — کم، رد
+  VOLRAT k=1.1    follow: n=  160 WR=46.88% null=44.64%±3.76 INFOlift= +2.23pp z=+0.6 pw=   28 PF=1.048 exp= +2.99 [R1= +8.7 R2= +1.5 R3= +0.2]
+  VOLRAT k=1.1    fade  : n=  159 WR=43.40% null=44.64%±3.76 INFOlift= -1.25pp z=-0.3 pw=  -16 PF=0.873 exp= -8.83 [R1=-12.4 R2= +2.4 R3= +0.8]
+  VOLRAT k=1.25  : n=33 — کم، رد
+  VOLRAT k=1.4   : n=9 — کم، رد
+  AGE    k=21     follow: n=  254 WR=49.21% null=44.89%±2.62 INFOlift= +4.32pp z=+1.6 pw=   69 PF=1.076 exp= +4.66 [R1= +3.3 R2= +2.7 R3= +6.0]
+  AGE    k=21     fade  : n=  254 WR=40.55% null=44.89%±2.62 INFOlift= -4.34pp z=-1.7 pw=  -69 PF=0.806 exp=-13.75 [R1= -6.0 R2= -2.0 R3= -5.2]
+  AGE    k=55     follow: n=   89 WR=46.07% null=44.27%±4.89 INFOlift= +1.80pp z=+0.4 pw=   17 PF=1.051 exp= +3.39 [R1= +3.1 R2= +0.2 R3= +2.2]
+  AGE    k=55     fade  : n=   89 WR=42.70% null=44.27%±4.89 INFOlift= -1.57pp z=-0.3 pw=  -15 PF=0.815 exp=-13.70 [R1= +3.1 R2= -7.2 R3= -0.1]
+  AGE    k=89    : n=38 — کم، رد
+
+################ TF=H8 explore bars=7,186 src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv ################
+  FORCE  k=+2.0   follow: n=   74 WR=41.89% null=42.79%±5.29 INFOlift= -0.90pp z=-0.2 pw=   -8 PF=0.869 exp=-14.73 [R1= +nan R2= -1.9 R3= -3.8]
+  FORCE  k=+2.0   fade  : n=   78 WR=44.87% null=42.79%±5.29 INFOlift= +2.08pp z=+0.4 pw=   18 PF=1.007 exp= +0.75 [R1= +nan R2= +7.2 R3= +1.4]
+  FORCE  k=+2.618: n=47 — کم، رد
+  FORCE  k=-2.0   follow: n=   75 WR=49.33% null=41.11%±5.61 INFOlift= +8.23pp z=+1.5 pw=   71 PF=1.330 exp=+32.95 [R1= -1.1 R2=+12.2 R3= +8.9]
+  FORCE  k=-2.0   fade  : n=   75 WR=34.67% null=41.11%±5.61 INFOlift= -6.44pp z=-1.1 pw=  -56 PF=0.584 exp=-56.30 [R1= +5.6 R2= -8.8 R3=-10.1]
+  FORCE  k=-2.618: n=33 — کم، رد
+  VR     k=1.2    follow: n=   69 WR=44.93% null=44.49%±5.32 INFOlift= +0.43pp z=+0.1 pw=    4 PF=0.896 exp=-10.63 [R1=-13.2 R2= +5.5 R3= +4.1]
+  VR     k=1.2    fade  : n=   70 WR=44.29% null=44.49%±5.32 INFOlift= -0.21pp z=-0.0 pw=   -2 PF=1.026 exp= +2.40 [R1=+11.8 R2= -9.5 R3= -0.4]
+  VR     k=1.4   : n=32 — کم، رد
+  VR     k=1.6   : n=13 — کم، رد
+  VOLRAT k=1.1    follow: n=   66 WR=53.03% null=41.85%±6.67 INFOlift=+11.18pp z=+1.7 pw=   91 PF=1.345 exp=+33.97 [R1= +nan R2=+21.8 R3= +3.3]
+  VOLRAT k=1.1    fade  : n=   65 WR=30.77% null=41.85%±6.67 INFOlift=-11.08pp z=-1.7 pw=  -89 PF=0.568 exp=-59.57 [R1= +nan R2=-13.3 R3=-10.6]
+  VOLRAT k=1.25  : n=11 — کم، رد
+  VOLRAT k=1.4   : n=3 — کم، رد
+  AGE    k=21     follow: n=   86 WR=44.19% null=43.28%±4.63 INFOlift= +0.90pp z=+0.2 pw=    8 PF=0.784 exp=-25.72 [R1=-16.6 R2=+13.4 R3= -1.8]
+  AGE    k=21     fade  : n=   86 WR=41.86% null=43.28%±4.63 INFOlift= -1.42pp z=-0.3 pw=  -13 PF=0.910 exp= -9.91 [R1=+10.0 R2=-16.6 R3= +5.5]
+  AGE    k=55    : n=30 — کم، رد
+  AGE    k=89    : n=12 — کم، رد
+
+[S834 explore-2 complete]
