@@ -1,0 +1,190 @@
+{
+ "S453_S382_H4_k15": {
+  "n": 878,
+  "n_bars": 23854,
+  "parity_mism": 0,
+  "full": {
+   "profit_ok": true,
+   "improves": {
+    "sd": true,
+    "worst": false,
+    "maxDD": true
+   },
+   "worsens_gt5": {
+    "sd": false,
+    "worst": false,
+    "maxDD": false
+   },
+   "risk_ok": true,
+   "verdict": "PASS"
+  },
+  "h1": {
+   "profit_ok": true,
+   "improves": {
+    "sd": true,
+    "worst": false,
+    "maxDD": true
+   },
+   "worsens_gt5": {
+    "sd": false,
+    "worst": false,
+    "maxDD": false
+   },
+   "risk_ok": true,
+   "verdict": "PASS"
+  },
+  "h2": {
+   "profit_ok": true,
+   "improves": {
+    "sd": true,
+    "worst": false,
+    "maxDD": true
+   },
+   "worsens_gt5": {
+    "sd": false,
+    "worst": false,
+    "maxDD": false
+   },
+   "risk_ok": true,
+   "verdict": "PASS"
+  },
+  "base_full": {
+   "n": 878,
+   "total": 239250.3,
+   "avg": 272.49,
+   "sd": 1538.08,
+   "worst": -1230.1,
+   "best": 1845.1,
+   "maxDD": 23986.5,
+   "pf": 1.433,
+   "wr": 48.9
+  },
+  "mgmt_full": {
+   "n": 878,
+   "total": 244877.9,
+   "avg": 278.9,
+   "sd": 1513.31,
+   "worst": -1230.1,
+   "best": 1845.1,
+   "maxDD": 22579.3,
+   "pf": 1.46,
+   "wr": 47.9
+  },
+  "base_h2": {
+   "n": 538,
+   "total": 196197.6,
+   "avg": 364.68,
+   "sd": 1537.97,
+   "worst": -1230.1,
+   "best": 1845.1,
+   "maxDD": 13530.9,
+   "pf": 1.616,
+   "wr": 51.9
+  },
+  "mgmt_h2": {
+   "n": 538,
+   "total": 196657.9,
+   "avg": 365.54,
+   "sd": 1528.83,
+   "worst": -1230.1,
+   "best": 1845.1,
+   "maxDD": 12854.8,
+   "pf": 1.625,
+   "wr": 51.5
+  }
+ },
+ "S455_S312_H1_VDDFAIL": {
+  "n": 266,
+  "n_bars": 91331,
+  "parity_mism": 0,
+  "full": {
+   "profit_ok": true,
+   "improves": {
+    "sd": true,
+    "worst": false,
+    "maxDD": true
+   },
+   "worsens_gt5": {
+    "sd": false,
+    "worst": false,
+    "maxDD": false
+   },
+   "risk_ok": true,
+   "verdict": "PASS"
+  },
+  "h1": {
+   "profit_ok": true,
+   "improves": {
+    "sd": true,
+    "worst": true,
+    "maxDD": true
+   },
+   "worsens_gt5": {
+    "sd": false,
+    "worst": false,
+    "maxDD": false
+   },
+   "risk_ok": true,
+   "verdict": "PASS"
+  },
+  "h2": {
+   "profit_ok": true,
+   "improves": {
+    "sd": true,
+    "worst": false,
+    "maxDD": true
+   },
+   "worsens_gt5": {
+    "sd": false,
+    "worst": false,
+    "maxDD": false
+   },
+   "risk_ok": true,
+   "verdict": "PASS"
+  },
+  "base_full": {
+   "n": 266,
+   "total": 132570.0,
+   "avg": 498.38,
+   "sd": 1892.04,
+   "worst": -9431.0,
+   "best": 4000.0,
+   "maxDD": 14079.0,
+   "pf": 2.101,
+   "wr": 60.9
+  },
+  "mgmt_full": {
+   "n": 266,
+   "total": 136499.0,
+   "avg": 513.15,
+   "sd": 1805.8,
+   "worst": -9431.0,
+   "best": 4000.0,
+   "maxDD": 9431.0,
+   "pf": 2.243,
+   "wr": 57.5
+  },
+  "base_h2": {
+   "n": 147,
+   "total": 120564.0,
+   "avg": 820.16,
+   "sd": 2249.03,
+   "worst": -9431.0,
+   "best": 4000.0,
+   "maxDD": 9536.0,
+   "pf": 2.665,
+   "wr": 63.9
+  },
+  "mgmt_h2": {
+   "n": 147,
+   "total": 121338.0,
+   "avg": 825.43,
+   "sd": 2173.86,
+   "worst": -9431.0,
+   "best": 4000.0,
+   "maxDD": 9431.0,
+   "pf": 2.809,
+   "wr": 61.2
+  }
+ }
+}
