@@ -1,0 +1,43 @@
+{
+ "card": "XAUUSD-D1",
+ "prereg": "7c6b8f16",
+ "verdict": "UNPROVEN",
+ "reason": "no eligible config in discovery (n_IS>=60 & exp@2x>0) - holdout untouched",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars": 4005,
+ "split": 2803,
+ "events": {
+  "H8/A_win": 15,
+  "H8/A_loss": 22,
+  "H16/A_win": 15,
+  "H16/A_loss": 22
+ },
+ "discovery": [
+  {
+   "cfg": "H8/A_win",
+   "n_is": 11,
+   "note": "too few"
+  },
+  {
+   "cfg": "H8/A_loss",
+   "n_is": 17,
+   "note": "too few"
+  },
+  {
+   "cfg": "H16/A_win",
+   "n_is": 12,
+   "note": "too few"
+  },
+  {
+   "cfg": "H16/A_loss",
+   "n_is": 16,
+   "note": "too few"
+  }
+ ],
+ "p1_base_is": {
+  "n": 31,
+  "wr": 45.16,
+  "exp": 8.29
+ },
+ "p2": {}
+}

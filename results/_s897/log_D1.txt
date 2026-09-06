@@ -1,0 +1,6 @@
+========================================================================
+S897 Reflexive Shock Memory · XAUUSD-D1 (prereg 7c6b8f16)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_D1.csv bars=4005 split=2803 base shocks=41 (IS 31)
+P1 base (IS, ungated S965): {'n': 31, 'wr': 45.16, 'exp': 8.29}
+NO ELIGIBLE CONFIG → UNPROVEN
