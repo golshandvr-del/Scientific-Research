@@ -35,6 +35,7 @@ CFG = {
  's991': dict(name='AutocorrMomLong',  tf='H8', side='long', mh=21, nt=159, seed=991991),
  's992': dict(name='ErShockLong',      tf='H1', side='long', mh=48, nt=146, seed=992992),
  's993': dict(name='ErShockCalmShort', tf='H1', side='short', mh=48, nt=200, seed=993993),
+ 's994': dict(name='SeasonalVolumeShockLong', tf='M30', side='long', mh=64, nt=64, seed=994994),
 }
 
 def rule_s990(df):
@@ -80,6 +81,19 @@ def rule_s993(df):
     calm = (atr13 <= atr13.shift(1).rolling(233).median()).fillna(False).astype(bool)
     gate = ((net < 0).fillna(False).astype(bool)) & calm
     return (edge & gate), gate, sl, sl*1.5
+
+def rule_s994(df):
+    h,l,c,o = df['high'].values, df['low'].values, df['close'].values, df['open'].values
+    sl = med_atr(h,l,c,100)*1.5/0.1
+    t = df['time'].values.astype(np.int64); slot = t % 86400
+    v = pd.Series(df['volume'].values.astype(float)); rv = pd.Series(np.nan, index=df.index)
+    for s_ in np.unique(slot):
+        idx = np.where(slot==s_)[0]; vs = v.iloc[idx]
+        med = vs.shift(1).rolling(20, min_periods=10).median()
+        rv.iloc[idx] = (vs/med.replace(0,np.nan)).values
+    sig = ((rv >= 3.0) & pd.Series(c > o)).fillna(False).astype(bool)
+    gate = pd.Series(True, index=df.index)
+    return sig, gate, sl, sl*1.5
 
 # ---------------- اجرا ----------------
 layer = sys.argv[1]; cfg = CFG[layer]
