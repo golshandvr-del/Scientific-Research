@@ -1,0 +1,10 @@
+========================================================================
+S897 Reflexive Shock Memory · XAUUSD-M3 (prereg 7c6b8f16)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_M3.csv bars=1815880 split=1271116 base shocks=25164 (IS 19453)
+P1 base (IS, ungated S965): {'n': 19442, 'wr': 35.31, 'exp': -3.99}
+           H8/A_win    n=5935 WR=35.48 exp=   -3.87 exp2x=   -7.17 t=-22.48
+           H8/A_loss   n=12286 WR=35.13 exp=   -4.06 exp2x=   -7.36 t=-35.06
+           H16/A_win   n=6157 WR=34.64 exp=   -3.99 exp2x=   -7.29 t=-23.88
+           H16/A_loss  n=11936 WR=35.61 exp=   -4.01 exp2x=   -7.31 t=-33.83
+NO ELIGIBLE CONFIG → UNPROVEN
