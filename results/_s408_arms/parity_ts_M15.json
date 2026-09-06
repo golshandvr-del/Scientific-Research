@@ -1,0 +1,25 @@
+{
+ "layer": "S408",
+ "tf": "M15",
+ "fixture": "../results/_s408_arms/parity_m15_fixture.json",
+ "bars": 20000,
+ "compared_day_boundaries": 206,
+ "missing_boundaries_in_ts": 0,
+ "mismatches": {
+  "gap": 0,
+  "wk": 0,
+  "dow": 0,
+  "atr": 0,
+  "gapok": 0,
+  "volok": 0,
+  "dec": 0,
+  "geom": 0
+ },
+ "py_active": 8,
+ "ts_active": 8,
+ "negative_control": {
+  "base_only_days": 20,
+  "wrongly_fired": 0
+ },
+ "verdict": "PASS"
+}
