@@ -1,0 +1,52 @@
+{
+ "card": "S758-XAUUSD-W1",
+ "asset": "XAUUSD",
+ "tf": "W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "bars": 813,
+ "frozen": {
+  "family_L": [
+   3,
+   5,
+   8
+  ],
+  "leg_k": 1.0,
+  "sl_k": 1.45,
+  "atr_p": 89,
+  "rr": 1.618,
+  "hold": 55,
+  "null": "side-split uncond same-bracket + perm K=500"
+ },
+ "protocol": "C_holdout_prereg_S758",
+ "discovery": [
+  {
+   "L": 3,
+   "n": 0,
+   "n_long_sig": 0,
+   "n_short_sig": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  },
+  {
+   "L": 5,
+   "n": 0,
+   "n_long_sig": 0,
+   "n_short_sig": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  },
+  {
+   "L": 8,
+   "n": 0,
+   "n_long_sig": 0,
+   "n_short_sig": 0,
+   "wr": null,
+   "net_pip": null,
+   "crit": -1000000000.0
+  }
+ ],
+ "verdict": "UNPROVEN",
+ "note": "discovery: no config with n>=30"
+}
