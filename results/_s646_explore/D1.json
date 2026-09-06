@@ -1,0 +1,149 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars_first_half": 2002,
+ "sl_pip": 275.1,
+ "cost_to_sl_pct": 1.2,
+ "blind_long_wr": 48.03,
+ "blind_short_wr": 50.28,
+ "n_events": {
+  "K4": 173,
+  "K6": 67,
+  "K8": 43
+ },
+ "cells": [
+  {
+   "variant": "K4",
+   "mode": "cont",
+   "side": "long",
+   "n": 73,
+   "wr": 45.21,
+   "blind": 48.03,
+   "lift": -2.83,
+   "exp_pip": -32.25,
+   "lsn": -24.2
+  },
+  {
+   "variant": "K4",
+   "mode": "cont",
+   "side": "short",
+   "n": 74,
+   "wr": 50.0,
+   "blind": 50.28,
+   "lift": -0.28,
+   "exp_pip": -3.3,
+   "lsn": -2.4
+  },
+  {
+   "variant": "K4",
+   "mode": "fade",
+   "side": "long",
+   "n": 74,
+   "wr": 47.3,
+   "blind": 48.03,
+   "lift": -0.74,
+   "exp_pip": -18.17,
+   "lsn": -6.3
+  },
+  {
+   "variant": "K4",
+   "mode": "fade",
+   "side": "short",
+   "n": 73,
+   "wr": 52.05,
+   "blind": 50.28,
+   "lift": 1.77,
+   "exp_pip": 10.58,
+   "lsn": 15.2
+  },
+  {
+   "variant": "K6",
+   "mode": "cont",
+   "side": "long",
+   "n": 30,
+   "wr": 43.33,
+   "blind": 48.03,
+   "lift": -4.7,
+   "exp_pip": -46.24,
+   "lsn": -25.7
+  },
+  {
+   "variant": "K6",
+   "mode": "cont",
+   "side": "short",
+   "n": 35,
+   "wr": 42.86,
+   "blind": 50.28,
+   "lift": -7.42,
+   "exp_pip": -42.6,
+   "lsn": -43.9
+  },
+  {
+   "variant": "K6",
+   "mode": "fade",
+   "side": "long",
+   "n": 35,
+   "wr": 51.43,
+   "blind": 48.03,
+   "lift": 3.39,
+   "exp_pip": 4.56,
+   "lsn": 20.1
+  },
+  {
+   "variant": "K6",
+   "mode": "fade",
+   "side": "short",
+   "n": 30,
+   "wr": 50.0,
+   "blind": 50.28,
+   "lift": -0.28,
+   "exp_pip": 2.96,
+   "lsn": -1.5
+  },
+  {
+   "variant": "K8",
+   "mode": "cont",
+   "side": "long",
+   "n": 19,
+   "wr": 42.11,
+   "blind": 48.03,
+   "lift": -5.93,
+   "exp_pip": -46.74,
+   "lsn": -25.8
+  },
+  {
+   "variant": "K8",
+   "mode": "cont",
+   "side": "short",
+   "n": 23,
+   "wr": 43.48,
+   "blind": 50.28,
+   "lift": -6.8,
+   "exp_pip": -39.18,
+   "lsn": -32.6
+  },
+  {
+   "variant": "K8",
+   "mode": "fade",
+   "side": "long",
+   "n": 23,
+   "wr": 52.17,
+   "blind": 48.03,
+   "lift": 4.14,
+   "exp_pip": 8.66,
+   "lsn": 19.9
+  },
+  {
+   "variant": "K8",
+   "mode": "fade",
+   "side": "short",
+   "n": 19,
+   "wr": 52.63,
+   "blind": 50.28,
+   "lift": 2.35,
+   "exp_pip": 11.18,
+   "lsn": 10.2
+  }
+ ],
+ "sec": 0.0
+}
