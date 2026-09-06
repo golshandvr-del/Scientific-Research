@@ -210,7 +210,9 @@ def scan_search(tf: str):
 
 
 # ---- فاز ۲: هولدآوت (فقط پس از کامیتِ الحاقیهٔ انجماد پر می‌شود) ----
-FROZEN = {}
+FROZEN = {
+    'H4': dict(side='long', e_star=0.5, gate='none'),
+}
 
 
 def build_null_side(dfa, valid, sl_arr, tp_arr, side, n_side, rng, n_perm=K_PERM):
