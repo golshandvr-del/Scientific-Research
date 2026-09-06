@@ -276,7 +276,11 @@ print(f'[{layer}] stride-uncond per side: ' + ' '.join(f'{s}=max{max(v):.2f}' fo
 OUTD = os.path.join(ROOT, 'results', f'_official_{layer.upper()}')
 os.makedirs(OUTD, exist_ok=True)
 _TRP = os.path.join(OUTD, f'{TF}_trades.csv')
-tr.to_csv(_TRP, index=False); del tr; gc.collect()
+tr.to_csv(_TRP, index=False); del tr
+# RAM: آرایه‌های بی‌استفاده در فاز null (فقط برای M1 اهمیت دارد؛ منطق بی‌تغییر)
+del atr_price, atr_pip
+if 'volume' in d: del d['volume']
+gc.collect()
 
 # ---- null ②: جای‌گشت درون گیت K=500 با همان تعداد سیگنال (سقف PERM_CAP) ----
 def _rss_mb():
@@ -294,7 +298,7 @@ for kk in range(PERM_K):
         pick = np.unique(rs.randint(0, len(pool), size=int(m * 1.02) + 16))
         rs.shuffle(pick); pick = pool[pick[:m]]
         (ls if s == 'long' else ss)[pick] = True
-    t = se.simulate_trades(df, ls, ss, sl_arr, tp_arr, 'XAUUSD', max_hold=MH, allow_overlap=False)
+    t = simulate_exact_chunked(ls, ss)   # دقیقاً برابر تماس مستقیم موتور؛ فقط RAM (S620)
     for s in sides:
         w, _ = wr_side(t, s)
         if w is not None: perm[s].append(w)
