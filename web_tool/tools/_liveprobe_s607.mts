@@ -52,10 +52,19 @@ function aggregate(src: Candle[], f: number): Candle[] {
   return out
 }
 
-const CARDS: Array<{ id: string; agg: number; floor: number }> = [
-  { id: 'XAUUSD-D1', agg: 24, floor: 51 },
-  { id: 'XAUUSD-H8', agg: 8, floor: 234 },
-  { id: 'XAUUSD-H6', agg: 6, floor: 242 },
+// ⚠️ دامِ اجرای اول (سنجیده شد، حدس نیست): `/api/candles` پارامترِ `asset` را
+//    **کاملاً نادیده می‌گیرد** و فقط `interval`/`range` را می‌خواند — پیش‌فرضش
+//    `15m`/`1mo` است. پس اجرای اولِ این probe به‌جای کندلِ H1، ۱۹۳۹ کندلِ
+//    ۱۵-دقیقه‌ای گرفت و تجمیعِ ×۸ روی آن یک سریِ بی‌معنا ساخت ⇒ FAILِ کاذب.
+//    مسیرِ واقعیِ تصمیم در index.tsx از نگاشتِ `GOLD_TF` می‌آید، پس همان
+//    interval/range را عیناً بازتولید می‌کنیم:
+//      · XAUUSD-D1  → 1h / 2y  (≈۱۴۵۰۰ کندلِ H1 ⇒ ≈۷۲۰ کندلِ D1)
+//      · XAUUSD-H8  → 1h / 1y  (≈۶۲۰۰ کندلِ H1 ⇒ ≈۷۸۰ کندلِ H8)
+//      · XAUUSD-H6  → 1h / 2y  (≈۱۴۵۰۰ کندلِ H1 ⇒ ≈۲۴۱۶ کندلِ H6)
+const CARDS: Array<{ id: string; agg: number; floor: number; interval: string; range: string }> = [
+  { id: 'XAUUSD-D1', agg: 24, floor: 51,  interval: '1h', range: '2y' },
+  { id: 'XAUUSD-H8', agg: 8,  floor: 234, interval: '1h', range: '1y' },
+  { id: 'XAUUSD-H6', agg: 6,  floor: 242, interval: '1h', range: '2y' },
 ]
 
 console.log('══ LIVE PROBE — S607 روی فیدِ واقعیِ سایت ══\n')
