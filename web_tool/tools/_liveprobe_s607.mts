@@ -77,7 +77,7 @@ for (const card of CARDS) {
   const cfg = S607_CFG[card.id]
   let raw1h: Candle[] = []
   try {
-    const r = await fetch(`${BASE}/api/candles?asset=${card.id}`)
+    const r = await fetch(`${BASE}/api/candles?interval=${card.interval}&range=${card.range}`)
     const j: any = await r.json()
     raw1h = (j.candles || j.data || []) as Candle[]
   } catch (e) {
