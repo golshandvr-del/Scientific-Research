@@ -1,0 +1,25 @@
+{
+ "checks": {
+  "n_signals": {
+   "got": 222,
+   "ref": 222
+  },
+  "n_trades": {
+   "got": 147,
+   "ref": 147
+  },
+  "wr": {
+   "got": 59.86,
+   "ref": 59.86
+  },
+  "sl_pip": {
+   "got": 179.67,
+   "ref": 179.67
+  },
+  "tp_pip": {
+   "got": 269.5,
+   "ref": 269.5
+  }
+ },
+ "mismatch": []
+}
