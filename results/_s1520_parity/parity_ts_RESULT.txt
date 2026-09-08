@@ -1,0 +1,42 @@
+=== S1520 parity: TS port vs python reference (frozen verdict machinery) ===
+reference: results/_s1520_parity/  ·  rule: fresh-high(90) x signed rho >= 0.618, LONG-only
+
+--- XAUUSD_H8  (ACCEPT 90.6 -> WIRED)
+    bars             11978
+    max|dPriorMax|   0.00e+0
+    max|dRho|        0.00e+0
+    max|dAtr|        0.00e+0
+    signals          ts=222 py=222
+    gatePassRate     61.5%
+    fresh            ts=361 py=361
+    geometry         SL 179.67 vs 179.67 · TP 269.5 vs 269.50
+    wiring           WIRED
+    RESULT           GREEN (all 5 checks pass)
+
+--- XAUUSD_H4  (not accepted -> negative control)
+    bars             23854
+    max|dPriorMax|   0.00e+0
+    max|dRho|        0.00e+0
+    max|dAtr|        0.00e+0
+    signals          ts=399 py=399
+    gatePassRate     55.65%
+    fresh            ts=717 py=717
+    geometry         SL 123.01 vs 123.01 · TP 184.51 vs 184.51
+    wiring           not wired (negative control)
+    RESULT           GREEN (all 5 checks pass)
+
+--- XAUUSD_H12  (not accepted -> negative control)
+    bars             7998
+    max|dPriorMax|   0.00e+0
+    max|dRho|        0.00e+0
+    max|dAtr|        0.00e+0
+    signals          ts=150 py=150
+    gatePassRate     60.48%
+    fresh            ts=248 py=248
+    geometry         SL 228.09 vs 228.09 · TP 342.14 vs 342.14
+    wiring           not wired (negative control)
+    RESULT           GREEN (all 5 checks pass)
+
+PARITY GREEN — the TypeScript port reproduces the python verdict machinery
+exactly on series, event flags, signal sets and geometry, and the MTF
+negative control holds (H4/H12 port correctly yet stay unwired).
