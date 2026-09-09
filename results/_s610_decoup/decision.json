@@ -1,0 +1,27 @@
+{
+ "primary": {
+  "n": 18,
+  "wr": 55.56,
+  "net_pip": 1204.6,
+  "pf": 1.819,
+  "uncond_wr": 41.488,
+  "uncond_n": 793,
+  "perm_mean": 44.55,
+  "perm_sd": 11.996,
+  "perm_max": 77.778,
+  "perm_k": 500,
+  "ref": 44.55,
+  "lift": 11.01,
+  "z": 0.92,
+  "tf": "H8",
+  "split_bar": 8612,
+  "n_events_total": 36,
+  "primary": true
+ },
+ "rule": "n>=40 AND net>0 AND lift>=2.0*perm_sd",
+ "need_lift": 23.99,
+ "confirm_pass": false,
+ "verdict": "REJECT",
+ "score": 0,
+ "elapsed_s": 0.2
+}

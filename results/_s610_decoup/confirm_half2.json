@@ -1,0 +1,40 @@
+{
+ "H8": {
+  "n": 18,
+  "wr": 55.56,
+  "net_pip": 1204.6,
+  "pf": 1.819,
+  "uncond_wr": 41.488,
+  "uncond_n": 793,
+  "perm_mean": 44.55,
+  "perm_sd": 11.996,
+  "perm_max": 77.778,
+  "perm_k": 500,
+  "ref": 44.55,
+  "lift": 11.01,
+  "z": 0.92,
+  "tf": "H8",
+  "split_bar": 8612,
+  "n_events_total": 36,
+  "primary": true
+ },
+ "D1": {
+  "n": 8,
+  "wr": 37.5,
+  "net_pip": -203.1,
+  "pf": 0.886,
+  "uncond_wr": 48.736,
+  "uncond_n": 277,
+  "perm_mean": 51.866,
+  "perm_sd": 17.18,
+  "perm_max": 100.0,
+  "perm_k": 500,
+  "ref": 51.87,
+  "lift": -14.37,
+  "z": -0.84,
+  "tf": "D1",
+  "split_bar": 2862,
+  "n_events_total": 15,
+  "primary": false
+ }
+}
