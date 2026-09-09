@@ -1,0 +1,6 @@
+{
+ "tf": "W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "bars": 813,
+ "verdict": "TOO_SHORT"
+}
