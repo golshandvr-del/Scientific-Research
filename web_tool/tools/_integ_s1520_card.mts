@@ -61,7 +61,6 @@ function loadCsv(tf: string): Candle[] {
   } else {
     const gz = path.join(ROOT, `data/mt5_full/XAUUSD_${tf}.csv.gz`)
     if (!fs.existsSync(gz)) throw new Error(`نه کش و نه gz برای ${tf}: ${p} | ${gz}`)
-    const zlib = require('node:zlib') as typeof import('node:zlib')
     text = zlib.gunzipSync(fs.readFileSync(gz)).toString('utf8')
     fs.mkdirSync(path.dirname(p), { recursive: true })
     fs.writeFileSync(p, text)   // کش را مثلِ پایتون می‌سازیم تا اجراهای بعدی سریع باشند
