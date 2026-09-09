@@ -268,7 +268,15 @@ def main():
         'pairs_vs_wired_layers': pairs,
         'control_s966_vs_s965': control,
         'false_witness_pairs': [p['b'] for p in risky],
-        'decision': ('BLOCK' if risky else 'CLEAR'),
+        'quality_filter_pairs': [p['b'] for p in constrained],
+        'decision': ('BLOCK' if risky
+                     else 'CLEAR-WITH-CONSTRAINTS' if constrained
+                     else 'CLEAR'),
+        'constraints_if_wired': ([
+            'S1911 در اولویتِ **پایین‌ترِ** S965 روی کارتِ H8 وصل شود (سابقهٔ S966).',
+            'ارزشِ اعلامیِ لایه «کیفیت/انتخابِ زیرمجموعه» است، نه پوششِ رویدادِ نو.',
+            'کارت باید سایزِ مشترک بدهد: در تلاقی، دو کادر ≠ دو ریسکِ جدا.',
+        ] if constrained else []),
     }
     os.makedirs(OUT_DIR, exist_ok=True)
     with open(OUT_FILE, 'w') as fh:
