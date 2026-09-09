@@ -99,3 +99,33 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# ---------------------------------------------------------------------------
+# سازندهٔ سیگنالِ مشترک برای اسکن و داوری (طبق پیش‌ثبت §۲؛ commit 605edaa8)
+# ---------------------------------------------------------------------------
+MED_W = 233
+
+
+def rolling_median_prev(x, W=MED_W, min_periods=100):
+    import pandas as pd
+    return pd.Series(x).rolling(W, min_periods=min_periods).median().shift(1).values
+
+
+def build_s887(big, sub, tf):
+    """پیش‌محاسبهٔ eff, med_eff, atr, rng روی کندل‌های درشت (big: dict time/open/high/low/close)."""
+    eff, nsub = path_efficiency(big['time'], fd.TF_MINUTES[tf], sub['time'], sub['open'],
+                                sub['close'], big['open'], big['close'])
+    med = rolling_median_prev(eff)
+    atr = atr_prev(big['high'], big['low'], big['close'], 21)
+    return dict(eff=eff, nsub=nsub, med=med, atr=atr, rng=big['high'] - big['low'],
+                up=big['close'] > big['open'], dn=big['close'] < big['open'])
+
+
+def s887_signals(pre, theta, m):
+    """m=0 ⇒ شوک بی‌گیت (فقط برای P1، خارج از فضای انتخاب)."""
+    shock = pre['rng'] >= theta * pre['atr']
+    ok = shock & (pre['nsub'] >= 2) & np.isfinite(pre['eff'])
+    if m > 0:
+        ok &= pre['eff'] >= m * pre['med']
+    return ok & pre['up'], ok & pre['dn']
