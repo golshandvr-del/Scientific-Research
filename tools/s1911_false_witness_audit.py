@@ -146,8 +146,8 @@ def ev_s950(f, warm):
         jump = np.abs(r) > K_JUMP_S950 * np.where(sig_prev > 0, sig_prev, np.inf)
     drift = np.zeros(n, bool)
     aligned = np.zeros(n, bool)
-    for t in range(BV_WIN + 2, n):
-        d = c[t - 1] - c[t - 1 - BV_WIN]
+    for t in range(BV_WIN_S950 + 2, n):
+        d = c[t - 1] - c[t - 1 - BV_WIN_S950]
         drift[t] = d > 0
         aligned[t] = (d > 0 and r[t] > 0) or (d < 0 and r[t] < 0)
     idx = np.arange(n)
