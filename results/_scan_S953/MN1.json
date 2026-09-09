@@ -1,0 +1,137 @@
+{
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_bars": 188,
+ "members": [
+  {
+   "k": 2.6,
+   "D": 89,
+   "timing": "t0",
+   "mode": "revert",
+   "n_sig": 2,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "D": 89,
+   "timing": "t0",
+   "mode": "continue",
+   "n_sig": 2,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "D": 89,
+   "timing": "t1",
+   "mode": "revert",
+   "n_sig": 2,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "D": 89,
+   "timing": "t1",
+   "mode": "continue",
+   "n_sig": 2,
+   "z": -99
+  },
+  {
+   "k": 3.4,
+   "D": 89,
+   "timing": "t0",
+   "mode": "revert",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 3.4,
+   "D": 89,
+   "timing": "t0",
+   "mode": "continue",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 3.4,
+   "D": 89,
+   "timing": "t1",
+   "mode": "revert",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 3.4,
+   "D": 89,
+   "timing": "t1",
+   "mode": "continue",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "D": 180,
+   "timing": "t0",
+   "mode": "revert",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "D": 180,
+   "timing": "t0",
+   "mode": "continue",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "D": 180,
+   "timing": "t1",
+   "mode": "revert",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 2.6,
+   "D": 180,
+   "timing": "t1",
+   "mode": "continue",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 3.4,
+   "D": 180,
+   "timing": "t0",
+   "mode": "revert",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 3.4,
+   "D": 180,
+   "timing": "t0",
+   "mode": "continue",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 3.4,
+   "D": 180,
+   "timing": "t1",
+   "mode": "revert",
+   "n_sig": 0,
+   "z": -99
+  },
+  {
+   "k": 3.4,
+   "D": 180,
+   "timing": "t1",
+   "mode": "continue",
+   "n_sig": 0,
+   "z": -99
+  }
+ ],
+ "verdict": "NO-CANDIDATE",
+ "best": null
+}
