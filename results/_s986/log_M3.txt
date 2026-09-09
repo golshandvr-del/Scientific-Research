@@ -1,0 +1,27 @@
+[M3] src=/home/user/webapp/data/mt5_full/XAUUSD_M3.csv
+[M3] bars_total=1,815,880  bars_search=907,940 (نیمهٔ اول — مسیر C)
+[M3]   θ=1.618 W=3 shocks=99445 trig=42647 invalid=12669 expire=30264 replace=13865  (4s)
+[M3]   θ=1.618 W=8 shocks=99445 trig=51794 invalid=21158 expire=8465 replace=18028  (8s)
+[M3]   θ=2.618 W=3 shocks=20692 trig=8220 invalid=1766 expire=9601 replace=1105  (12s)
+[M3]   θ=2.618 W=8 shocks=20692 trig=10751 invalid=3963 expire=4597 replace=1381  (13s)
+[M3] arms=32 valid(n>=30)=32 elapsed=13.9s
+[M3] ── ۱۰ بازوی برتر (بر z) ──
+  θ=2.618 W=3 mirr slk=1.8 rr=1.6 n=7725  wr= 40.72% be=49.85% lift= -9.12pp z=-16.04 net=-20560pip
+  θ=2.618 W=8 mirr slk=1.8 rr=1.6 n=9953  wr= 41.03% be=49.85% lift= -8.81pp z=-17.59 net=-25712pip
+  θ=2.618 W=3 mirr slk=1.8 rr=1.3 n=7788  wr= 44.85% be=56.35% lift=-11.50pp z=-20.46 net=-21599pip
+  θ=2.618 W=8 mirr slk=1.8 rr=1.3 n=10052 wr= 45.25% be=56.35% lift=-11.09pp z=-22.43 net=-26922pip
+  θ=2.618 W=3 main slk=1.8 rr=1.6 n=7573  wr= 35.72% be=49.85% lift=-14.13pp z=-24.59 net=-29968pip
+  θ=2.618 W=8 main slk=1.8 rr=1.6 n=9740  wr= 35.54% be=49.85% lift=-14.30pp z=-28.23 net=-39003pip
+  θ=2.618 W=3 mirr slk=1.2 rr=1.6 n=7989  wr= 39.69% be=55.54% lift=-15.85pp z=-28.51 net=-24052pip
+  θ=2.618 W=3 main slk=1.8 rr=1.3 n=7704  wr= 39.82% be=56.35% lift=-16.53pp z=-29.25 net=-30881pip
+  θ=2.618 W=8 mirr slk=1.2 rr=1.6 n=10392 wr= 40.05% be=55.54% lift=-15.49pp z=-31.78 net=-30539pip
+  θ=1.618 W=3 mirr slk=1.8 rr=1.6 n=31301 wr= 40.61% be=49.85% lift= -9.24pp z=-32.69 net=-82972pip
+[M3] ── کنترلِ P1 (ورودِ فوری در close شوک، follow) ──
+  θ=1.618 slk=1.2 rr=1.3 n=78204 lift=-22.78pp z=-131.78
+  θ=1.618 slk=1.2 rr=1.6 n=73884 lift=-19.78pp z=-108.19
+  θ=1.618 slk=1.8 rr=1.3 n=61272 lift=-16.00pp z=-79.84
+  θ=1.618 slk=1.8 rr=1.6 n=56544 lift=-13.88pp z=-66.00
+  θ=2.618 slk=1.2 rr=1.3 n=20042 lift=-23.02pp z=-67.42
+  θ=2.618 slk=1.2 rr=1.6 n=19745 lift=-19.87pp z=-56.18
+  θ=2.618 slk=1.8 rr=1.3 n=18733 lift=-16.36pp z=-45.14
+  θ=2.618 slk=1.8 rr=1.6 n=18146 lift=-13.96pp z=-37.61
