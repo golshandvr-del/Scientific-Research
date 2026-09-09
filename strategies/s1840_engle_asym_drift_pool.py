@@ -3,6 +3,7 @@
 S1840 — استخر همگنِ شوک × درفت انگل (Pool of S849 {H6,H8,H12,D1})
 ===================================================================
 پیش‌ثبت: results/S1840_PREREG_engle_asym_drift_homogeneous_pool.md (کامیت 43a9a185)
+الحاقیهٔ ۱: results/S1840_PREREG_ADDENDUM1_fifo_strictness.md (کامیت fa0ae7ff) — FIFO سخت، n_trials=102
 دستور پخت S431/S843. اعضا و نول‌ها عیناً از results/_scan_S849/{TF}.json خوانده
 می‌شوند (صفر پارامتر آزاد). یک استخر، یک آزمون. n_trials رسمی = 101.
 """
@@ -19,12 +20,14 @@ from tools import s434_fast_data as fd                   # noqa: E402
 from strategies.s840_engle_shock import (                # noqa: E402
     ASSET, TF_HOLD, SPLIT_FRAC, atr_series, ewma_z, queue_frozen)
 from strategies.s849_engle_asym_shock_drift import asym_signals, RR_FIXED  # noqa: E402
-from strategies.s843_engle_shock_pool import fifo_calendar, blend_pool_null  # noqa: E402
+from strategies.s843_engle_shock_pool import blend_pool_null  # noqa: E402
+# الحاقیهٔ ۱: FIFO سخت (t_entry > last_exit) عیناً از پروتکل کانونی استخر
+from engine.rqs2_pool import _fifo_calendar as fifo_calendar  # noqa: E402
 
 OUT = 'results/_scan_S1840'
 SRC = 'results/_scan_S849'
 MEMBER_TFS = ('H6', 'H8', 'H12', 'D1')
-N_TRIALS_OFFICIAL = 101         # 24×4 IS + 4 per-TF judgments + 1 (this)
+N_TRIALS_OFFICIAL = 102         # 24×4 IS + 4 per-TF + run1 (non-strict FIFO) + this
 N_TRIALS_STRESS = 500
 STEP_NS = 3600 * 1_000_000_000
 
