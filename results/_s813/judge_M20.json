@@ -1,0 +1,121 @@
+{
+ "tf": "M20",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M20.csv",
+ "n_shock": 24007,
+ "n_pause": 5441,
+ "n_trades": 5304,
+ "null": {
+  "long": {
+   "uncond_wr": 39.9706,
+   "perm_mean": 40.1867,
+   "perm_sd": 0.9989,
+   "perm_max": 42.993,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 39.1976,
+   "perm_mean": 39.6577,
+   "perm_sd": 0.9558,
+   "perm_max": 42.3333,
+   "perm_k": 500
+  }
+ },
+ "n_trials": 19,
+ "verdict": "REJECT",
+ "rqs2_score": 0.0,
+ "gates": {},
+ "metrics": {
+  "n_trades": 5304,
+  "win_rate": 39.23,
+  "net_profit": -10000.6,
+  "profit_factor": 0.781,
+  "max_dd_pct": 100.01,
+  "max_consec_losses": 14,
+  "mcl_allowed": 24,
+  "n_wins": 2081,
+  "top_win_share": 0.0114,
+  "recovery_factor": -0.93,
+  "expectancy_pip": -2.8094,
+  "expectancy_at_2x_cost": -6.1094,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 24.144,
+  "tp_pip": 39.063,
+  "rr": 1.618,
+  "breakeven_wr_cost": 43.42,
+  "wr_excess_cost": -4.18,
+  "null_ref_wr": 39.92,
+  "skill_lift_pp": -0.68,
+  "skill_z": -0.7,
+  "skill_p_perm": 0.757416,
+  "perm_max": 42.66,
+  "perm_k": 500,
+  "side_n": {
+   "long": 2594,
+   "short": 2710
+  },
+  "side_wr": {
+   "long": 38.51,
+   "short": 39.93
+  },
+  "side_lift_pp": {
+   "long": -1.67,
+   "short": 0.27
+  },
+  "prune_sides": [
+   "long",
+   "short"
+  ],
+  "p_emp": 0.848038,
+  "p_adj_bonferroni": 1.0,
+  "z_obs": -1.014,
+  "z_luck_bound": 1.878,
+  "z_margin": -2.892,
+  "n_trials": 19,
+  "cal_nets": [
+   -9065.0,
+   -9623.6,
+   -5549.3,
+   -7233.6
+  ],
+  "cal_counts": [
+   1641,
+   1450,
+   1154,
+   1059
+  ],
+  "cal_positive": 0,
+  "cal_occupied": 4,
+  "half_nets": [
+   -10000.6,
+   -8748.2
+  ],
+  "oos": {
+   "n": 2198,
+   "wr": 40.08,
+   "pf": 0.86,
+   "net": -8785.7,
+   "wr_req": 43.42
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 4867,
+   "n_unjudgeable": 437,
+   "n_counter": 2499,
+   "n_aligned": 2368,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 39.78,
+   "exp_counter": -2.312,
+   "wr_aligned": 38.68,
+   "exp_aligned": -3.184
+  },
+  "n_required_h3": null
+ },
+ "sens_n_trials_8": null,
+ "baseline_no_pause": {
+  "n": 20076,
+  "wr": 38.788,
+  "exp_pip": -3.193
+ },
+ "line": "S813-M20                   | REJECT     RQS2=  0.0 | n=5304 WR=39.23% PF=0.78 lift=  -0.68pp z=-0.7 | H0:\u2717 H1:\u2717 H2:\u2717 H3:\u2717 H4:\u2717 H5:\u2717 H6:\u2717 H7:\u2717 H8:\u2717 H9:\u2717 H10:\u2717"
+}
