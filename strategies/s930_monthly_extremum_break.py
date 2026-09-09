@@ -89,7 +89,7 @@ def first_cross_of_month(cond: np.ndarray, mid: np.ndarray) -> np.ndarray:
     return out
 
 
-def features(d):
+def features(d, keep_aux=True):
     o, h, l, c = d['open'], d['high'], d['low'], d['close']
     n = c.shape[0]
     mid = month_id(d['time'])
@@ -107,8 +107,13 @@ def features(d):
     rng_ = h - l
     body = c - o
     rho = np.divide(np.abs(body), rng_, out=np.zeros(n), where=rng_ > 0)
-    return dict(up=up_first, dn=dn_first,
-                inf_up=(rho >= RHO) & (body > 0), inf_dn=(rho >= RHO) & (body < 0),
+    inf_up = (rho >= RHO) & (body > 0); inf_dn = (rho >= RHO) & (body < 0)
+    del rng_, body, rho, prev_c, up_x, dn_x, first_two
+    if not keep_aux:                       # حافظه (M1 = 5M کندل): فقط ضروری‌ها
+        del pmh, pml
+        pmh = pml = None
+    gc.collect()
+    return dict(up=up_first, dn=dn_first, inf_up=inf_up, inf_dn=inf_dn,
                 atr_prev=atr_prev, valid=valid, mid=mid, pmh=pmh, pml=pml)
 
 
@@ -124,7 +129,8 @@ def arm_signals(f, arm):
 
 # ───────────────────────────── شبیه‌سازی و نول ─────────────────────────────
 def _df(d):
-    return pd.DataFrame(dict(open=d['open'], high=d['high'], low=d['low'], close=d['close']))
+    return pd.DataFrame(dict(open=d['open'], high=d['high'], low=d['low'], close=d['close']),
+                        copy=False)
 
 
 def simulate(df, ls, ss, sl_arr, tp_arr, overlap=False):
@@ -189,7 +195,7 @@ def verify(n=20000, seed=5) -> float:
     h = np.maximum(o, c) + np.abs(rng.normal(0, 2, n))
     l = np.minimum(o, c) - np.abs(rng.normal(0, 2, n))
     d = dict(time=t, open=o, high=h, low=l, close=c)
-    f = features(d)
+    f = features(d, keep_aux=True)
     s = pd.DataFrame(dict(high=h, low=l, close=c), index=pd.to_datetime(t, unit='s'))
     mh = s['high'].resample('MS').max().shift(1); ml = s['low'].resample('MS').min().shift(1)
     ref_pmh = mh.reindex(s.index, method='ffill').to_numpy()
@@ -229,10 +235,14 @@ def run_card(tf: str, verbose=True) -> dict:
     n = int(d['n_bars'])
     print(f"\n{'='*84}\n=== S930 InformedMonthlyExtremumBreak :: {ASSET}_{tf}  bars={n:,}  "
           f"span={d['span_years']}y\n    src={d['src']}  ({d['first_utc']} → {d['last_utc']})", flush=True)
-    f = features(d)
+    for k in ('volume', 'hour', 'minute', 'dow'):   # حافظه: ستون‌های بی‌استفاده
+        d.pop(k, None)
+    f = features(d, keep_aux=False)
     pip = se.ASSETS[ASSET]['pip']
-    sl_arr = np.where(np.isfinite(f['atr_prev']), K_SL * f['atr_prev'] / pip, 1e-9)
-    tp_arr = np.where(np.isfinite(f['atr_prev']), K_TP * f['atr_prev'] / pip, 1e-9)
+    ok = np.isfinite(f['atr_prev'])
+    sl_arr = np.where(ok, K_SL * f['atr_prev'] / pip, 1e-9)
+    tp_arr = np.where(ok, K_TP * f['atr_prev'] / pip, 1e-9)
+    del ok; f['atr_prev'] = None; f['mid'] = None; gc.collect()
     df = _df(d)
     split_bar = int(SPLIT_FRAC * n)
     k_perm = 500 if n > 1_500_000 else 1000
