@@ -1,0 +1,121 @@
+{
+ "tf": "H12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "n_shock": 633,
+ "n_pause": 246,
+ "n_trades": 232,
+ "null": {
+  "long": {
+   "uncond_wr": 43.2819,
+   "perm_mean": 43.9445,
+   "perm_sd": 4.5113,
+   "perm_max": 56.3636,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 36.2851,
+   "perm_mean": 36.2991,
+   "perm_sd": 4.4951,
+   "perm_max": 49.1071,
+   "perm_k": 500
+  }
+ },
+ "n_trials": 4,
+ "verdict": "REJECT",
+ "rqs2_score": 18.2,
+ "gates": {},
+ "metrics": {
+  "n_trades": 232,
+  "win_rate": 44.4,
+  "net_profit": 3275.1,
+  "profit_factor": 1.224,
+  "max_dd_pct": 7.94,
+  "max_consec_losses": 6,
+  "mcl_allowed": 15,
+  "n_wins": 103,
+  "top_win_share": 0.0754,
+  "recovery_factor": 2.99,
+  "expectancy_pip": 32.8642,
+  "expectancy_at_2x_cost": 29.5642,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 158.57,
+  "tp_pip": 256.554,
+  "rr": 1.618,
+  "breakeven_wr_cost": 38.99,
+  "wr_excess_cost": 5.4,
+  "null_ref_wr": 39.59,
+  "skill_lift_pp": 4.8,
+  "skill_z": 1.07,
+  "skill_p_perm": 0.143071,
+  "perm_max": 52.23,
+  "perm_k": 500,
+  "side_n": {
+   "long": 100,
+   "short": 132
+  },
+  "side_wr": {
+   "long": 51.0,
+   "short": 39.39
+  },
+  "side_lift_pp": {
+   "long": 7.06,
+   "short": 3.09
+  },
+  "prune_sides": [],
+  "p_emp": 0.077186,
+  "p_adj_bonferroni": 0.308745,
+  "z_obs": 1.496,
+  "z_luck_bound": 1.052,
+  "z_margin": 0.443,
+  "n_trials": 4,
+  "cal_nets": [
+   -170.3,
+   1560.7,
+   394.5,
+   1381.4
+  ],
+  "cal_counts": [
+   55,
+   72,
+   53,
+   52
+  ],
+  "cal_positive": 3,
+  "cal_occupied": 4,
+  "half_nets": [
+   1342.7,
+   1700.4
+  ],
+  "oos": {
+   "n": 103,
+   "wr": 45.63,
+   "pf": 1.276,
+   "net": 1663.1,
+   "wr_req": 38.99
+  },
+  "max_concurrency": 1,
+  "counter_drift": {
+   "n_judgeable": 216,
+   "n_unjudgeable": 16,
+   "n_counter": 114,
+   "n_aligned": 102,
+   "regime_lookback_days": 280.0,
+   "wr_counter": 43.86,
+   "exp_counter": 24.645,
+   "wr_aligned": 45.1,
+   "exp_aligned": 46.08
+  },
+  "n_required_h3": 990.3
+ },
+ "sens_n_trials_8": {
+  "verdict": "REJECT",
+  "rqs2": 17.8
+ },
+ "baseline_no_pause": {
+  "n": 543,
+  "wr": 43.094,
+  "exp_pip": 23.54
+ },
+ "line": "S813-H12                   | REJECT     RQS2= 18.2 | n= 232 WR=44.40% PF=1.22 lift=  +4.80pp z= 1.1 | H0:\u2713 H1:\u2717 H2:\u2713 H3:\u2717 H4:\u2713 H5:\u2713 H6:\u2713 H7:\u2713 H8:\u2717 H9:\u2713 H10:\u2713"
+}
