@@ -1,0 +1,52 @@
+{
+ "session": "S609",
+ "prereg": "results/S609_PREREG_ENGLE_STORM_FADE.md",
+ "cards_W": {
+  "H8": 233,
+  "H6": 233,
+  "H12": 89
+ },
+ "census": {
+  "H8": {
+   "W": 233,
+   "n_sig": 343,
+   "n_valid": 340,
+   "n_storm": 113,
+   "pass_rate": 0.3324,
+   "n_member": 113,
+   "wr": 47.79,
+   "lift": -2.4596,
+   "n_long": 60
+  },
+  "H6": {
+   "W": 233,
+   "n_sig": 488,
+   "n_valid": 487,
+   "n_storm": 146,
+   "pass_rate": 0.2998,
+   "n_member": 146,
+   "wr": 37.67,
+   "lift": -6.5879,
+   "n_long": 72
+  },
+  "H12": {
+   "W": 89,
+   "n_sig": 467,
+   "n_valid": 467,
+   "n_storm": 170,
+   "pass_rate": 0.364,
+   "n_member": 169,
+   "wr": 44.38,
+   "lift": -5.3904,
+   "n_long": 85
+  }
+ },
+ "P1_reversal": false,
+ "P2_uninformative": false,
+ "seed": 20260825,
+ "n_trials": 5179,
+ "n_trials_stress": 8000,
+ "verdict": "REJECT",
+ "rqs2_score": null,
+ "note": "all members lift<=0 — pool_cards rejected all"
+}
