@@ -33,6 +33,12 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
+// ⚠️ zlib به‌صورت **استاتیک** import می‌شود، نه با `require`. این فایل یک ماژولِ
+//    ESM است (پسوندِ .mts) و در ESM هیچ `require`ای در scope وجود ندارد ⇒
+//    `require('node:zlib')` با ReferenceError می‌مرد. خطا فقط در مسیرِ «کش نبود»
+//    ظاهر می‌شد، پس روی ماشینی که کشِ data/full را داشت پنهان می‌ماند و تنها
+//    روی کلونِ تازه (همان حالتی که گامِ ۱۲ می‌خواست درست کند) بیرون می‌زد.
+import zlib from 'node:zlib'
 import { CARD_LAYERS, runCard } from '../src/strategy_registry'
 import { computeS1520, S1520_CFG } from '../src/informed_fresh_high_s1520'
 
