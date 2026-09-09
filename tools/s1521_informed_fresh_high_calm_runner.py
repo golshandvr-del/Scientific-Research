@@ -5,13 +5,6 @@
 حالت‌ها: calm (σ_t ≤ median σ_{t−233..t−1}) | storm (σ_t > median) — برای P2.
 σ عیناً از strategies/s605_engle_sigma_regime.py import می‌شود (بازنویسی نشده).
 """
-_OLD_DOC = """S1520
-
-پیش‌ثبت: results/S1520_PREREG_InformedFreshHigh_Xauusd_H8H4H12.md (کامیت ab904dab، قبل از این کد).
-هارنس عیناً s526_fresh_high_runner.py؛ تنها تغییر: گیت ρ روی کندل سیگنال.
-حالت‌ها: gated (ρ≥0.618) | counter (ρ<0.618) — برای ابطال‌گر P2.
-نول شرطی‌شده در فضای درفت>0 (همان S526) — تا lift گیت‌شده با پایهٔ S526 هم‌مقیاس باشد.
-"""
 
 from __future__ import annotations
 
