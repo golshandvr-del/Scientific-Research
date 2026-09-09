@@ -40,9 +40,27 @@ const ROOT = path.resolve(import.meta.dirname, '../..')
 
 type Candle = { time: number; open: number; high: number; low: number; close: number; volume: number }
 
+// دادهٔ کامل عیناً مثلِ `load_full`ِ رانرِ پایتون خوانده می‌شود: اول کشِ
+// `data/full/*.csv` و اگر نبود، از `data/mt5_full/*.csv.gz` باز می‌شود.
+// ⚠️ چرا این مسیرِ دوگانه لازم است (درسِ ریستِ سندباکس): `data/full/` یک کشِ
+//    محلیِ **gitignore-شده** است که رانرِ پایتون می‌سازد؛ پس روی یک کلونِ تازه
+//    یا پس از ریستِ محیط **وجود ندارد**. آزمونی که فقط به آن نگاه کند، روی
+//    ماشینِ پاک با ENOENT می‌میرد و شبیهِ «باگِ لایه» به نظر می‌رسد، در حالی که
+//    فقط کش نبوده. با gunzipِ درجا، آزمون روی هر کلونِ تازه خودکفا اجرا می‌شود.
 function loadCsv(tf: string): Candle[] {
   const p = path.join(ROOT, `data/full/XAUUSD_${tf}.csv`)
-  const lines = fs.readFileSync(p, 'utf8').trim().split('\n')
+  let text: string
+  if (fs.existsSync(p)) {
+    text = fs.readFileSync(p, 'utf8')
+  } else {
+    const gz = path.join(ROOT, `data/mt5_full/XAUUSD_${tf}.csv.gz`)
+    if (!fs.existsSync(gz)) throw new Error(`نه کش و نه gz برای ${tf}: ${p} | ${gz}`)
+    const zlib = require('node:zlib') as typeof import('node:zlib')
+    text = zlib.gunzipSync(fs.readFileSync(gz)).toString('utf8')
+    fs.mkdirSync(path.dirname(p), { recursive: true })
+    fs.writeFileSync(p, text)   // کش را مثلِ پایتون می‌سازیم تا اجراهای بعدی سریع باشند
+  }
+  const lines = text.trim().split('\n')
   const head = lines[0].split(',')
   const ix = (n: string) => head.indexOf(n)
   const iT = ix('time'), iO = ix('open'), iH = ix('high'), iL = ix('low'), iC = ix('close')
