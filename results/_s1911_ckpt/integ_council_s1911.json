@@ -1,0 +1,125 @@
+{
+ "what": "آزمونِ گاردِ شاهدِ کاذب در مسیرِ شورا (convene واقعی) · XAUUSD-H8",
+ "why": "مکانیزمِ نمایشِ کارت همپوشانی را با اولویت حل می‌کند، ولی شورا مسیرِ جدایی است که فقط آرا را می‌شمارد؛ زیرمجموعهٔ ۱۰۰٪ آنجا شمارش را متورم می‌کند و «تأییدِ دومِ» کاذب می‌سازد ⇒ ریسکِ دوبرابر بدونِ اطلاعِ تازه.",
+ "measured_basis": {
+  "s1911_subset_of_s965": "results/_s1911_ckpt/false_witness_h8.json (۸۲ از ۸۲ · jaccard ۰.۵۶۹)",
+  "live_path_confirm": "results/_s1911_ckpt/integ_card_s1911.json (۷ از ۷ رویداد · S965 همیشه حاضر)",
+  "s966_subset_of_s965": "عددِ منتشرشدهٔ ریپو، بازتولیدشده به‌عنوانِ کنترلِ ابزار (share ۱۰۰٪ · jaccard ۰.۵۰)"
+ },
+ "passed": "7/7",
+ "checks": {
+  "someCasesTested": true,
+  "allCasesPass": true,
+  "lot_rule_untouched": true
+ },
+ "rows": [
+  {
+   "case": "A) S965 + S1911 هم‌جهت — زیرمجموعهٔ ۱۰۰٪ ⇒ باید فقط ۱ شاهدِ مستقل",
+   "consensus": "UNANIMOUS",
+   "lotMultiplier": 1.5,
+   "longVotes": 2,
+   "shortVotes": 0,
+   "note": "اجماعِ 2 لایه هم‌جهت (LONG)، ولی ⚠️ فقط **1 شاهدِ مستقل**: S1911⊂S965 (زیرمجموعهٔ اندازه‌گیری‌شده ⇒ رویدادِ واحد با دو اسم، نه تأییدِ دوم). یعنی عملاً **یک** شاهد دارید ⇒ پیشنهادِ لاتِ ×۱.۵ را نادیده بگیرید و سایزِ تک‌لایه بگیرید.⚠️ سایزِ مشترک: لایه‌های زیرمجموعه‌ای یک پوزیشن‌اند، نه چند ریسکِ جدا.",
+   "ok": true,
+   "detail": {
+    "okConsensus": true,
+    "okIndep": true,
+    "okDup": true,
+    "okIgnore": true
+   }
+  },
+  {
+   "case": "B) S965 + S1911 + S950 — یکی زیرمجموعه، یکی مستقل ⇒ ۲ شاهدِ مستقل",
+   "consensus": "UNANIMOUS",
+   "lotMultiplier": 1.5,
+   "longVotes": 3,
+   "shortVotes": 0,
+   "note": "اجماعِ 3 لایه هم‌جهت (LONG)، ولی ⚠️ فقط **2 شاهدِ مستقل**: S1911⊂S965 (زیرمجموعهٔ اندازه‌گیری‌شده ⇒ رویدادِ واحد با دو اسم، نه تأییدِ دوم). پیشنهادِ لاتِ ×۱.۵ را بر پایهٔ 2 شاهد بسنجید، نه 3. ⚠️ سایزِ مشترک: لایه‌های زیرمجموعه‌ای یک پوزیشن‌اند، نه چند ریسکِ جدا.",
+   "ok": true,
+   "detail": {
+    "okConsensus": true,
+    "okIndep": true,
+    "okDup": true,
+    "okIgnore": true
+   }
+  },
+  {
+   "case": "C) S965 + S966 — زوجِ منتشرشدهٔ ریپو ⇒ رگرسیون: باید گرفته شود",
+   "consensus": "UNANIMOUS",
+   "lotMultiplier": 1.5,
+   "longVotes": 0,
+   "shortVotes": 2,
+   "note": "اجماعِ 2 لایه هم‌جهت (SHORT)، ولی ⚠️ فقط **1 شاهدِ مستقل**: S966⊂S965 (زیرمجموعهٔ اندازه‌گیری‌شده ⇒ رویدادِ واحد با دو اسم، نه تأییدِ دوم). یعنی عملاً **یک** شاهد دارید ⇒ پیشنهادِ لاتِ ×۱.۵ را نادیده بگیرید و سایزِ تک‌لایه بگیرید.⚠️ سایزِ مشترک: لایه‌های زیرمجموعه‌ای یک پوزیشن‌اند، نه چند ریسکِ جدا.",
+   "ok": true,
+   "detail": {
+    "okConsensus": true,
+    "okIndep": true,
+    "okDup": true,
+    "okIgnore": true
+   }
+  },
+  {
+   "case": "D) S1911 بدونِ S965 (ابرمجموعه غایب) + S950 ⇒ نباید هشدار بدهد",
+   "consensus": "UNANIMOUS",
+   "lotMultiplier": 1.5,
+   "longVotes": 2,
+   "shortVotes": 0,
+   "note": "اجماعِ کامل: 2 لایه هم‌جهت (LONG). اطمینانِ بالا؛ پیشنهادِ لاتِ ×۱.۵. «لایهٔ دوم هم همین سیگنال را تأیید کرد.»",
+   "ok": true,
+   "detail": {
+    "okConsensus": true,
+    "okIndep": true,
+    "okDup": true,
+    "okIgnore": true
+   }
+  },
+  {
+   "case": "E) دو لایهٔ مستقل (S950 + S770) ⇒ هیچ هشدارِ کاذبی نباید بدهد",
+   "consensus": "UNANIMOUS",
+   "lotMultiplier": 1.5,
+   "longVotes": 2,
+   "shortVotes": 0,
+   "note": "اجماعِ کامل: 2 لایه هم‌جهت (LONG). اطمینانِ بالا؛ پیشنهادِ لاتِ ×۱.۵. «لایهٔ دوم هم همین سیگنال را تأیید کرد.»",
+   "ok": true,
+   "detail": {
+    "okConsensus": true,
+    "okIndep": true,
+    "okDup": true,
+    "okIgnore": true
+   }
+  },
+  {
+   "case": "F) تک‌لایه ⇒ SINGLE دست‌نخورده",
+   "consensus": "SINGLE",
+   "lotMultiplier": 1,
+   "longVotes": 1,
+   "shortVotes": 0,
+   "note": "تنها یک لایهٔ فعال (LONG). اجماع بی‌معناست؛ رأیِ همان لایه ملاک است.",
+   "ok": true,
+   "detail": {
+    "okConsensus": true,
+    "okIndep": true,
+    "okDup": true,
+    "okIgnore": true
+   }
+  },
+  {
+   "case": "G) تضاد ⇒ CONFLICT دست‌نخورده",
+   "consensus": "CONFLICT",
+   "lotMultiplier": 0,
+   "longVotes": 1,
+   "shortVotes": 1,
+   "note": "تضادِ جهت: 1 لایه LONG و 1 لایه SHORT ⇒ بازارِ دوقطبی. شورا ورود را وتو می‌کند (فیلترِ محافظ).",
+   "ok": true,
+   "detail": {
+    "okConsensus": true,
+    "okIndep": true,
+    "okDup": true,
+    "okIgnore": true
+   }
+  }
+ ],
+ "lot_rule_untouched": true,
+ "note_on_scope": "گارد فقط **متنِ** شاخهٔ UNANIMOUS را صادق کرد. عددِ lotMultiplier عمداً دست‌نخورده ماند: آن یک قانونِ سنجیده است و تغییرش نیازمندِ اندازه‌گیریِ مستقل است، نه استنتاج.",
+ "verdict": "GREEN"
+}
