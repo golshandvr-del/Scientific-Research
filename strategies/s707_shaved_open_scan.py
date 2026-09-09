@@ -146,8 +146,21 @@ def scan_tf(tf):
         null_cache[key] = (wr, int(len(tr_)))
         return null_cache[key]
 
+    # چک‌پوینتِ سلول‌به‌سلول (M1: هر سلول در فرایندِ جدا — حافظهٔ ۹۸۵MB)
+    ckpt_p = os.path.join(OUT_DIR, f'partial_{tf}.json')
+    done_cells = []
+    if os.path.exists(ckpt_p):
+        done_cells = json.load(open(ckpt_p))['cells']
+    done_keys = {(c['omega'], c['rho'], c['mode'], c['k_sl']) for c in done_cells}
+    out['cells'] = list(done_cells)
+    only_one = os.environ.get('S707_ONE_CELL') == '1'
+    n_new = 0
     for omega in OMEGAS:
         for rho in RHOS:
+            if only_one and n_new >= 1:
+                break
+            if all((omega, rho, md, ks) in done_keys for md in ('cont', 'fade') for ks in K_SLS):
+                continue
             ev = build_events(df, omega, rho)
             ev_next = np.zeros_like(ev)
             ev_next[1:] = ev[:-1]              # ورود کندل بعد
@@ -159,6 +172,9 @@ def scan_tf(tf):
                     ls = pd.Series(ev_next == -1, index=df.index)
                     ss = pd.Series(ev_next == 1, index=df.index)
                 for k_sl in K_SLS:
+                    if (omega, rho, mode, k_sl) in done_keys:
+                        continue
+                    n_new += 1
                     sl_pip = k_sl * atr55_med_pip
                     tp_pip = RR * sl_pip
                     cell = {'omega': omega, 'rho': rho, 'mode': mode, 'k_sl': k_sl,
@@ -196,8 +212,16 @@ def scan_tf(tf):
                                 n_req=round(nreq, 1) if nreq else None)
                     out['cells'].append(cell)
     out['elapsed_s'] = round(time.time() - t0, 1)
+    n_total = len(OMEGAS) * len(RHOS) * 2 * len(K_SLS)
+    if len(out['cells']) < n_total:
+        with open(ckpt_p, 'w') as f:
+            json.dump(out, f)
+        out['partial'] = True
+        return out
     with open(os.path.join(OUT_DIR, f'scan_{tf}.json'), 'w') as f:
         json.dump(out, f)
+    if os.path.exists(ckpt_p):
+        os.remove(ckpt_p)
     return out
 
 
@@ -215,6 +239,9 @@ if __name__ == '__main__':
             print(f'{tf}: already scanned, skip', flush=True)
             continue
         r = scan_tf(tf)
+        if r.get('partial'):
+            print(f"{tf}: partial checkpoint {len(r['cells'])} cells", flush=True)
+            continue
         best = sorted([c for c in r['cells'] if 'z' in c],
                       key=lambda c: -(c.get('z') or -9))[:3]
         print(f"{tf}: done {r['elapsed_s']}s atr55={r['atr55_med_pip']:.0f}pip "
