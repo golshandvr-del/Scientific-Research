@@ -129,7 +129,12 @@ def run_tf(tf):
                        phases_long=int(ls.sum()), phases_short=int(ss.sum())))
         print("n<30 → INCOMPLETE"); return
     n_all = len(tr); wr_all = wr_of(tr)
-    n_long = int((tr['side'] == 'long').sum()) if 'side' in tr.columns else int(ls.sum())
+    dcol = next((c for c in ('dir', 'side', 'direction') if c in tr.columns), None)
+    if dcol is not None:
+        vals = tr[dcol].astype(str).str.lower().values
+        n_long = int(np.isin(vals, ['long', 'buy', '1', 'l']).sum())
+    else:
+        n_long = int(ls[tr['entry_bar'].values - 1].sum()) if 'entry_bar' in tr.columns else int(ls.sum())
     n_short = n_all - n_long
     sl_med = float(np.median(tr['sl_pip'].values)); tp_med = sl_med * K_TP / K_SL
     print(f"trades n={n_all} (L{n_long}/S{n_short}) WR={wr_all:.2f} net={tr['pnl_pip'].sum():.0f}pip  SLmed={sl_med:.1f}", flush=True)

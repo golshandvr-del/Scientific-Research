@@ -1,0 +1,226 @@
+{
+ "card": "XAUUSD-H1",
+ "prereg": "2a88a426",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+ "bars": 91331,
+ "split": 63931,
+ "L": 8,
+ "hold": 128,
+ "phases_long": 699,
+ "phases_short": 830,
+ "n": 417,
+ "n_long": 195,
+ "n_short": 222,
+ "wr": 46.28,
+ "is_wr": 44.78,
+ "oos_n": 120,
+ "oos_wr": 50.0,
+ "sl_pip_med": 143.54,
+ "tp_pip_med": 232.24,
+ "net_pip": 15935.7,
+ "uncond_draws": {
+  "long": [
+   [
+    898,
+    41.2573673870334,
+    509
+   ],
+   [
+    1898,
+    42.47619047619048,
+    525
+   ],
+   [
+    2898,
+    42.054263565891475,
+    516
+   ]
+  ],
+  "short": [
+   [
+    898,
+    39.96101364522417,
+    513
+   ],
+   [
+    1898,
+    37.01550387596899,
+    516
+   ],
+   [
+    2898,
+    37.524557956778,
+    509
+   ]
+  ]
+ },
+ "perm": {
+  "long": {
+   "mean": 42.06070991236312,
+   "sd": 3.4440754935325457,
+   "max": 55.11363636363637,
+   "k": 500
+  },
+  "short": {
+   "mean": 37.68665097412164,
+   "sd": 3.1246522085899233,
+   "max": 46.93877551020408,
+   "k": 500
+  }
+ },
+ "null": {
+  "long": {
+   "uncond_wr": 42.47619047619048,
+   "perm_mean": 42.06070991236312,
+   "perm_sd": 3.4440754935325457,
+   "perm_max": 55.11363636363637,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 39.96101364522417,
+   "perm_mean": 37.68665097412164,
+   "perm_sd": 3.1246522085899233,
+   "perm_max": 46.93877551020408,
+   "perm_k": 500
+  }
+ },
+ "rqs2": {
+  "asset": "XAUUSD",
+  "gates": {
+   "H0": true,
+   "H1": false,
+   "H2": true,
+   "H3": false,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "metrics": {
+   "n_trades": 417,
+   "win_rate": 46.28,
+   "net_profit": 8620.7,
+   "profit_factor": 1.279,
+   "max_dd_pct": 6.97,
+   "max_consec_losses": 9,
+   "mcl_allowed": 16,
+   "n_wins": 193,
+   "top_win_share": 0.046,
+   "recovery_factor": 6.63,
+   "expectancy_pip": 38.2151,
+   "expectancy_at_2x_cost": 34.9151,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 143.542,
+   "tp_pip": 232.24,
+   "rr": 1.618,
+   "breakeven_wr_cost": 39.08,
+   "wr_excess_cost": 7.21,
+   "null_ref_wr": 41.14,
+   "skill_lift_pp": 5.15,
+   "skill_z": 1.57,
+   "skill_p_perm": 0.058009,
+   "perm_max": 50.76,
+   "perm_k": 500,
+   "side_n": {
+    "long": 195,
+    "short": 222
+   },
+   "side_wr": {
+    "long": 46.15,
+    "short": 46.4
+   },
+   "side_lift_pp": {
+    "long": 3.68,
+    "short": 6.44
+   },
+   "prune_sides": [],
+   "p_emp": 0.018505,
+   "p_adj_bonferroni": 0.351589,
+   "z_obs": 2.135,
+   "z_luck_bound": 1.878,
+   "z_margin": 0.257,
+   "n_trials": 19,
+   "cal_nets": [
+    2611.1,
+    410.3,
+    960.1,
+    3074.2
+   ],
+   "cal_counts": [
+    118,
+    88,
+    108,
+    103
+   ],
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "half_nets": [
+    3151.9,
+    4392.2
+   ],
+   "oos": {
+    "n": 120,
+    "wr": 50.0,
+    "pf": 1.461,
+    "net": 3282.9,
+    "wr_req": 39.08
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 387,
+    "n_unjudgeable": 30,
+    "n_counter": 196,
+    "n_aligned": 191,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 49.49,
+    "exp_counter": 62.916,
+    "wr_aligned": 42.93,
+    "exp_aligned": 13.656
+   },
+   "n_required_h3": 873.1
+  },
+  "notes": [
+   "PF=1.279<1.3"
+  ],
+  "passed": false,
+  "rqs2_score": 22.1,
+  "verdict": "REJECT",
+  "n_fail": 2,
+  "n_unknown": 0,
+  "accepted": false,
+  "power_limited": false,
+  "unproven": false,
+  "unproven_checks": {
+   "G1_lift_floor": true,
+   "G2_evidence": true,
+   "G3_efdr": true,
+   "G4_economics": false,
+   "G5_glass_ceiling": true,
+   "G6_structure": false
+  },
+  "gate_families": {
+   "economic": {
+    "H0": true,
+    "H1": false,
+    "H2": true,
+    "H8": true,
+    "H9": true
+   },
+   "power": {
+    "H3": false,
+    "H7": true,
+    "H10": true
+   },
+   "economic_all_pass": false,
+   "power_defects": [
+    "H3"
+   ]
+  },
+  "admission_rule": "gates_only",
+  "rank_tier": "D"
+ }
+}
