@@ -215,11 +215,52 @@ if (hit < 0) {
   if (dOff?.sourceLayer?.code) mapOff.set(dOff.sourceLayer.code, { state: dOff.state, entry: dOff.entry, sl: dOff.sl, tp: dOff.tp })
   for (const o of (dOff?.otherLayers || [])) mapOff.set(o.code, { state: o.state, entry: o.entry, sl: o.sl, tp: o.tp })
 
+  // ⚠️ اصلاحِ **معیار** (نه اصلاحِ کد سایت): مقایسهٔ فهرستِ کدهای خروجیِ
+  //    `runCard` معیارِ غلطی برای رگرسیون است، چون `runCard` عمداً لایه‌های
+  //    `NEUTRAL` را از `otherLayers` بیرون می‌گذارد (خطِ فیلترِ
+  //    `d.state === 'ENTRY' || d.state === 'APPROACHING'`). در بارِ ۱۱۹۷۵
+  //    اندازه‌گیری شد که هر پنج ساکن `NEUTRAL`اند و تنها S1520 `ENTRY` است ⇒
+  //    بدونِ S1520 هیچ ENTRYای نبود، پس S950 (اولین NEUTRAL) به‌عنوان primary
+  //    نمایش داده می‌شد؛ با S1520، primary درست عوض می‌شود و NEUTRALها طبق
+  //    طراحی حذف می‌شوند. یعنی «حذفِ S950» رفتارِ **صحیحِ** کارت است، نه
+  //    رگرسیون: کارتی که سیگنالِ واقعی دارد نباید خنثی‌ها را کنارش نشان دهد.
+  //    پس ملاکِ درستِ عدمِ تداخل، تصمیمِ **خودِ لایه** است نه جایگاهش در
+  //    خروجیِ رتبه‌بندی‌شده — چون لایه‌ها در معماریِ ros2-مانندِ سایت مستقل‌اند
+  //    و هیچ‌کدام ورودیِ دیگری را دست نمی‌زند. آن را مستقیم می‌سنجیم:
+  //    هر تابعِ ساکن با **ورودیِ یکسان** دو بار صدا زده می‌شود (یک‌بار وقتی
+  //    S1520 در فهرست است و یک‌بار وقتی نیست) و تصمیمش باید مو‌به‌مو یکی باشد.
   let reg = 0
+  {
+    const codeOf = (fn: any) => { try { return fn(ctx as any)?.sourceLayer?.code || '?' } catch { return '?' } }
+    const snap = (fn: any) => {
+      try { const d = fn(ctx as any); return d ? { state: d.state, entry: d.entry, sl: d.sl, tp: d.tp } : null }
+      catch (e) { return { err: (e as Error).message } }
+    }
+    let direct = 0
+    for (const fn of filtered) {                    // فقط پنج ساکن، بی‌S1520
+      const code = codeOf(fn)
+      CARD_LAYERS[CARD] = filtered                  // بافتِ «بدونِ S1520»
+      const a = snap(fn)
+      CARD_LAYERS[CARD] = backup                    // بافتِ «با S1520»
+      const b = snap(fn)
+      const same = JSON.stringify(a) === JSON.stringify(b)
+      if (!same) { console.log(`   ❌ ③ تصمیمِ مستقیمِ ${code} عوض شد: ${JSON.stringify(a)} ⇒ ${JSON.stringify(b)}`); reg++ }
+      else direct++
+    }
+    console.log(`   ✓ ③الف تصمیمِ مستقیمِ ${direct} ساکن با ورودیِ یکسان بی‌تغییر ماند (استقلالِ ماژولار)`)
+  }
+  // ③ب مقایسهٔ خروجیِ رتبه‌بندی‌شده — فقط برای لایه‌هایی که در **هر دو** حالت
+  //    حاضرند؛ غیبتِ یک NEUTRAL دیگر ایراد شمرده نمی‌شود (بالا توضیح داده شد).
   for (const [code, v] of mapOff) {
     if (!mapOn.has(code)) {
-      console.log(`   ❌ ③ لایهٔ ساکنِ ${code} با افزودنِ S1520 از خروجی **حذف** شد`)
-      reg++; continue
+      console.log(`   ℹ️ ${code} در حالتِ «با S1520» از خروجی خارج شد — بررسی می‌شود NEUTRAL بوده باشد`)
+      if (v.state === 'NEUTRAL') {
+        console.log(`      ✓ حالتش NEUTRAL بود ⇒ فیلترِ طراحی‌شدهٔ runCard، نه رگرسیون`)
+      } else {
+        console.log(`      ❌ حالتش ${v.state} بود ⇒ یک سیگنالِ واقعی خفه شد`)
+        reg++
+      }
+      continue
     }
     const w = mapOn.get(code)
     const same = v.state === w.state
