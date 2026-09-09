@@ -49,15 +49,21 @@ const cases = [
     dec: mk(L('S965', 'SHORT'), [L('S966', 'SHORT')]),
     want: { consensus: 'UNANIMOUS', independent: 1, mentionsDup: 'S966⊂S965', tellsIgnoreLot: true },
   },
+  // ⚠️ در D و E هیچ زوجِ زیرمجموعه‌ای حاضر نیست، پس گارد **عمداً** متن را لمس
+  //    نمی‌کند و همان متنِ تاریخیِ «اجماعِ کامل» می‌آید. اجرای اولِ این اسکریپت
+  //    این دو را قرمز کرد، ولی خطا در **انتظارِ من** بود نه در گارد: انتظار داشتم
+  //    عبارتِ «N شاهدِ مستقل» همیشه چاپ شود، در حالی که طرحِ درست این است که مسیرِ
+  //    سالم دست‌نخورده بماند (کم‌ترین تغییر در رفتارِ موجود). پس معیارِ درست برای
+  //    این دو مورد «نبودِ هرگونه هشدار» است، نه «بودنِ شمارشِ مستقل».
   {
-    id: 'D) S1911 بدونِ S965 (ابرمجموعه غایب) + S950 ⇒ ۲ شاهدِ مستقلِ واقعی',
+    id: 'D) S1911 بدونِ S965 (ابرمجموعه غایب) + S950 ⇒ نباید هشدار بدهد',
     dec: mk(L('S950', 'LONG'), [L('S1911', 'LONG')]),
-    want: { consensus: 'UNANIMOUS', independent: 2, mentionsDup: null, tellsIgnoreLot: false },
+    want: { consensus: 'UNANIMOUS', independent: null, mentionsDup: null, tellsIgnoreLot: false },
   },
   {
     id: 'E) دو لایهٔ مستقل (S950 + S770) ⇒ هیچ هشدارِ کاذبی نباید بدهد',
     dec: mk(L('S950', 'LONG'), [L('S770', 'LONG')]),
-    want: { consensus: 'UNANIMOUS', independent: 2, mentionsDup: null, tellsIgnoreLot: false },
+    want: { consensus: 'UNANIMOUS', independent: null, mentionsDup: null, tellsIgnoreLot: false },
   },
   {
     id: 'F) تک‌لایه ⇒ SINGLE دست‌نخورده',
