@@ -1,0 +1,12 @@
+{
+ "card": "XAUUSD-W1",
+ "prereg": "2a88a426",
+ "verdict": "INCOMPLETE",
+ "L": 1,
+ "hold": 16,
+ "reason": "n=11 < 30",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "bars": 813,
+ "phases_long": 7,
+ "phases_short": 4
+}
