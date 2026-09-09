@@ -1,0 +1,130 @@
+{
+ "what": "آزمونِ یکپارچگیِ S1911 از مسیرِ واقعیِ runCard · XAUUSD-H8",
+ "why": "پریتی فقط ماژول را می‌سنجد. این آزمون می‌سنجد که سایت لایه را اجرا می‌کند، روی رویدادِ مرجع ENTRY می‌دهد، و مهم‌تر: قیدِ (الف) ممیزیِ شاهدِ کاذب برقرار است — S1911 زیرِ S965 است پس در تلاقی primary نمی‌شود و کاربر یک تصمیم می‌بیند نه دو شاهدِ ظاهراً مستقل.",
+ "card": "XAUUSD-H8",
+ "layers_on_card": 7,
+ "events_tested": 7,
+ "s1911_entry_count": 7,
+ "s1911_direction_match": 7,
+ "s1911_as_primary": 0,
+ "s1911_in_other_layers": 7,
+ "s965_as_primary": 4,
+ "checks": {
+  "someEventsTested": true,
+  "wired": true,
+  "firesOnEveryRefEvent": true,
+  "directionMatches": true,
+  "neverPrimary": true,
+  "presentInOtherLayers": true,
+  "supersetPresentEveryEvent": true
+ },
+ "rows": [
+  {
+   "idx": 9904,
+   "refDir": "LONG",
+   "primary": "S950",
+   "primaryState": "ENTRY",
+   "s1911_present": true,
+   "s1911_state": "ENTRY",
+   "s1911_dir": "LONG",
+   "others": [
+    "S965",
+    "S770",
+    "S966",
+    "S1911",
+    "S607",
+    "S1520"
+   ]
+  },
+  {
+   "idx": 10093,
+   "refDir": "LONG",
+   "primary": "S950",
+   "primaryState": "ENTRY",
+   "s1911_present": true,
+   "s1911_state": "ENTRY",
+   "s1911_dir": "LONG",
+   "others": [
+    "S965",
+    "S770",
+    "S966",
+    "S1911",
+    "S607",
+    "S1520"
+   ]
+  },
+  {
+   "idx": 11236,
+   "refDir": "LONG",
+   "primary": "S965",
+   "primaryState": "ENTRY",
+   "s1911_present": true,
+   "s1911_state": "ENTRY",
+   "s1911_dir": "LONG",
+   "others": [
+    "S770",
+    "S966",
+    "S1911",
+    "S607"
+   ]
+  },
+  {
+   "idx": 11257,
+   "refDir": "LONG",
+   "primary": "S950",
+   "primaryState": "ENTRY",
+   "s1911_present": true,
+   "s1911_state": "ENTRY",
+   "s1911_dir": "LONG",
+   "others": [
+    "S965",
+    "S770",
+    "S966",
+    "S1911",
+    "S607",
+    "S1520"
+   ]
+  },
+  {
+   "idx": 10623,
+   "refDir": "SHORT",
+   "primary": "S965",
+   "primaryState": "ENTRY",
+   "s1911_present": true,
+   "s1911_state": "ENTRY",
+   "s1911_dir": "SHORT",
+   "others": [
+    "S770",
+    "S1911"
+   ]
+  },
+  {
+   "idx": 10935,
+   "refDir": "SHORT",
+   "primary": "S965",
+   "primaryState": "ENTRY",
+   "s1911_present": true,
+   "s1911_state": "ENTRY",
+   "s1911_dir": "SHORT",
+   "others": [
+    "S770",
+    "S1911"
+   ]
+  },
+  {
+   "idx": 11673,
+   "refDir": "SHORT",
+   "primary": "S965",
+   "primaryState": "ENTRY",
+   "s1911_present": true,
+   "s1911_state": "ENTRY",
+   "s1911_dir": "SHORT",
+   "others": [
+    "S770",
+    "S1911",
+    "S950"
+   ]
+  }
+ ],
+ "verdict": "GREEN"
+}
