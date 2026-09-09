@@ -1,0 +1,39 @@
+{
+ "what": "پریتیِ S1911 · XAUUSD-H8 · TS در برابرِ مرجعِ پایتون",
+ "window": {
+  "tail": 3000,
+  "offset": 8978,
+  "cut_local": 566,
+  "cut_global": 9544
+ },
+ "signals": {
+  "ts_long": 5,
+  "py_long": 5,
+  "long_identical": true,
+  "ts_short": 3,
+  "py_short": 3,
+  "short_identical": true,
+  "ts_total": 8,
+  "py_total_full_history": 82,
+  "py_ungated_full_history": 144
+ },
+ "features": {
+  "max_rel_err_atr_prev": 0,
+  "max_rel_err_rho": 0,
+  "max_rel_err_reg": 4.322574854422315e-10,
+  "reg_points_compared": 2434,
+  "tol": 1e-9
+ },
+ "geometry": {
+  "max_rel_err_sl": 0,
+  "max_rel_err_tp": 0
+ },
+ "checks": {
+  "okLong": true,
+  "okShort": true,
+  "okFeat": true,
+  "okReg": true,
+  "okGeom": true
+ },
+ "verdict": "GREEN — پورت با مرجع یکی است"
+}
