@@ -157,7 +157,10 @@ def judge(tag, df, tr, sl, tp, null):
     q = np.quantile(entry_dt, SPLIT_FRAC)
     holdout = entry_dt >= q
     np.random.seed(SEED)
-    v = rqs2.compute_rqs2(tr, ASSET, sl_pip=sl, tp_pip=tp, bar_time=dt_all, null=null,
+    # floating ATR bracket -> engine receives the median (project convention S770/S965; RR invariant)
+    sl_med = float(np.nanmedian(tr['sl_pip'].to_numpy(float)))
+    tp_med = sl_med * (TP_K / SL_K)
+    v = rqs2.compute_rqs2(tr, ASSET, sl_pip=sl_med, tp_pip=tp_med, bar_time=dt_all, null=null,
                           close=df['close'], holdout_mask=holdout, n_trials=N_TRIALS,
                           allow_overlap=False)
     m = v['metrics']; g = v['gates']
