@@ -42,9 +42,10 @@ def atr21_prev(h, l, c):
     """ATR21 تا کندل i-1 (اکیداً علّی): مقدار در ایندکس i = میانگین TR[i-21..i-1]."""
     pc = np.roll(c, 1); pc[0] = c[0]
     tr = np.maximum(h - l, np.maximum(np.abs(h - pc), np.abs(l - pc)))
-    cs = np.concatenate([[0.0], np.cumsum(tr)])
+    cs = np.concatenate([[0.0], np.cumsum(tr)])   # cs[k] = sum TR[0..k-1]
     a = np.full(len(c), np.nan)
-    a[21:] = (cs[21:] - cs[:-21]) / 21.0      # TR[i-21..i-1]
+    # a[i] = mean TR[i-21..i-1] = (cs[i] - cs[i-21]) / 21
+    a[21:] = (cs[21:len(c)] - cs[:len(c) - 21]) / 21.0
     return a
 
 
