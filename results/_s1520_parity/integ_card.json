@@ -1,0 +1,30 @@
+{
+ "layer_count": 6,
+ "negative_control": {
+  "XAUUSD-H4": {
+   "in_cfg": false
+  },
+  "XAUUSD-H12": {
+   "in_cfg": false
+  }
+ },
+ "event": {
+  "bar": 11975,
+  "time": 1786060800,
+  "when": "2026-08-07 00:00",
+  "price": 4264.73,
+  "codes_on": [
+   "S1520"
+  ],
+  "codes_off": [
+   "S950"
+  ],
+  "as_primary": true,
+  "state": "ENTRY",
+  "regressions": 0,
+  "entry": 4264.73,
+  "sl": 4246.763,
+  "tp": 4291.679999999999,
+  "rr": "1:1.50"
+ }
+}
