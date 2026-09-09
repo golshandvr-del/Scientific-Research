@@ -1,0 +1,24 @@
+{
+ "S569_gated": {
+  "n": 177,
+  "wr": 76.84,
+  "mean_pip": 10.81,
+  "dd_pct": 4.75,
+  "sum_pip": 1913.1
+ },
+ "complement_removed": {
+  "n": 230,
+  "wr": 67.39,
+  "mean_pip": 6.22,
+  "dd_pct": 7.64,
+  "sum_pip": 1429.5
+ },
+ "S560_base": {
+  "n": 407,
+  "wr": 71.5,
+  "mean_pip": 8.21,
+  "dd_pct": 7.45,
+  "sum_pip": 3342.6
+ },
+ "share_of_base_kept_pct": 43.5
+}
