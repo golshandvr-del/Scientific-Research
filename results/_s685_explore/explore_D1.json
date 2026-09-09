@@ -1,0 +1,110 @@
+{
+ "asset": "XAUUSD",
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "n_full": 4005,
+ "n_half": 2002,
+ "sl_pip": 292.8,
+ "atr_per": 34,
+ "sl_mult": 1.618,
+ "max_hold": 8,
+ "cost_pip": 3.3,
+ "warm": 400,
+ "rho": 0.5,
+ "w_drift": 240,
+ "uncond": {
+  "1.0": {
+   "long": {
+    "wr": 47.49,
+    "exp": -14.384,
+    "n": 1592
+   },
+   "short": {
+    "wr": 51.82,
+    "exp": 5.945,
+    "n": 1592
+   }
+  },
+  "1.5": {
+   "long": {
+    "wr": 45.48,
+    "exp": -10.069,
+    "n": 1592
+   },
+   "short": {
+    "wr": 49.25,
+    "exp": 11.366,
+    "n": 1592
+   }
+  },
+  "2.0": {
+   "long": {
+    "wr": 45.04,
+    "exp": -10.693,
+    "n": 1592
+   },
+   "short": {
+    "wr": 48.62,
+    "exp": 12.81,
+    "n": 1592
+   }
+  }
+ },
+ "n_uncond": 20000,
+ "gate_stats": {
+  "g0.382": {
+   "n_gap_shock": 2,
+   "n_event_body": 0,
+   "n_aligned": 0,
+   "body_pass": 0.0,
+   "drift_pass": null
+  },
+  "g0.618": {
+   "n_gap_shock": 0,
+   "n_event_body": 0,
+   "n_aligned": 0,
+   "body_pass": null,
+   "drift_pass": null
+  }
+ },
+ "grid_cells": 6,
+ "cells": [
+  {
+   "g": 0.382,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "g": 0.382,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "g": 0.382,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "g": 0.618,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "g": 0.618,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "g": 0.618,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  }
+ ],
+ "elapsed_s": 0.1
+}

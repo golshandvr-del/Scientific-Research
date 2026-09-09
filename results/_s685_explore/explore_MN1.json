@@ -1,0 +1,11 @@
+{
+ "asset": "XAUUSD",
+ "tf": "MN1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv",
+ "n_full": 188,
+ "n_half": 94,
+ "sl_pip": NaN,
+ "max_hold": 5,
+ "degenerate": "n_half<warm",
+ "cells": []
+}

@@ -1,0 +1,140 @@
+{
+ "asset": "XAUUSD",
+ "tf": "H6",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+ "n_full": 15966,
+ "n_half": 7983,
+ "sl_pip": 131.6,
+ "atr_per": 34,
+ "sl_mult": 1.618,
+ "max_hold": 13,
+ "cost_pip": 3.3,
+ "warm": 400,
+ "rho": 0.5,
+ "w_drift": 240,
+ "uncond": {
+  "1.0": {
+   "long": {
+    "wr": 47.38,
+    "exp": -9.017,
+    "n": 7568
+   },
+   "short": {
+    "wr": 51.06,
+    "exp": -0.365,
+    "n": 7568
+   }
+  },
+  "1.5": {
+   "long": {
+    "wr": 41.23,
+    "exp": -9.833,
+    "n": 7568
+   },
+   "short": {
+    "wr": 45.49,
+    "exp": 1.719,
+    "n": 7568
+   }
+  },
+  "2.0": {
+   "long": {
+    "wr": 39.36,
+    "exp": -8.762,
+    "n": 7568
+   },
+   "short": {
+    "wr": 43.23,
+    "exp": 2.678,
+    "n": 7568
+   }
+  }
+ },
+ "n_uncond": 20000,
+ "gate_stats": {
+  "g0.382": {
+   "n_gap_shock": 14,
+   "n_event_body": 5,
+   "n_aligned": 2,
+   "body_pass": 0.357,
+   "drift_pass": 0.4
+  },
+  "g0.618": {
+   "n_gap_shock": 3,
+   "n_event_body": 1,
+   "n_aligned": 0,
+   "body_pass": 0.333,
+   "drift_pass": 0.0
+  }
+ },
+ "grid_cells": 6,
+ "cells": [
+  {
+   "g": 0.382,
+   "rr": 1.0,
+   "n": 2,
+   "n_long": 0,
+   "n_sig": 2,
+   "wr": 50.0,
+   "uncond_ref": 51.06,
+   "lift_uncond": -1.06,
+   "be_wr": 51.25,
+   "lift_be": -1.25,
+   "wr_long": null,
+   "wr_short": 50.0,
+   "exp_pip": 11.85,
+   "z_screen": -0.03
+  },
+  {
+   "g": 0.382,
+   "rr": 1.5,
+   "n": 2,
+   "n_long": 0,
+   "n_sig": 2,
+   "wr": 50.0,
+   "uncond_ref": 45.49,
+   "lift_uncond": 4.51,
+   "be_wr": 41.0,
+   "lift_be": 9.0,
+   "wr_long": null,
+   "wr_short": 50.0,
+   "exp_pip": 44.75,
+   "z_screen": 0.13
+  },
+  {
+   "g": 0.382,
+   "rr": 2.0,
+   "n": 2,
+   "n_long": 0,
+   "n_sig": 2,
+   "wr": 50.0,
+   "uncond_ref": 43.23,
+   "lift_uncond": 6.77,
+   "be_wr": 34.17,
+   "lift_be": 15.83,
+   "wr_long": null,
+   "wr_short": 50.0,
+   "exp_pip": 61.7,
+   "z_screen": 0.19
+  },
+  {
+   "g": 0.618,
+   "rr": 1.0,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "g": 0.618,
+   "rr": 1.5,
+   "n": 0,
+   "skipped": "no_sig"
+  },
+  {
+   "g": 0.618,
+   "rr": 2.0,
+   "n": 0,
+   "skipped": "no_sig"
+  }
+ ],
+ "elapsed_s": 0.5
+}
