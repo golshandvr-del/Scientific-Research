@@ -1,0 +1,55 @@
+{
+ "tf": "M15",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+ "n_bars": 363778,
+ "split_bar": 181889,
+ "theta": null,
+ "n_trials": 16,
+ "seed": 20260909,
+ "train": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+  "n_bars": 363778,
+  "split": 181889,
+  "grid": [
+   {
+    "theta": 0.146,
+    "n": 1803,
+    "wr": 40.21075984470327,
+    "exp": -2.3911738152393998,
+    "pf": 0.8305715817402693,
+    "net": -4311.286388876638,
+    "n_events": 2006,
+    "score": null
+   },
+   {
+    "theta": 0.236,
+    "n": 646,
+    "wr": 40.71207430340557,
+    "exp": -2.7127466159693645,
+    "pf": 0.8065734840223334,
+    "net": -1752.4343139162095,
+    "n_events": 690,
+    "score": null
+   },
+   {
+    "theta": 0.382,
+    "n": 266,
+    "wr": 38.721804511278194,
+    "exp": -3.3216684139613677,
+    "pf": 0.7562280232254429,
+    "net": -883.5637981137238,
+    "n_events": 276,
+    "score": null
+   }
+  ],
+  "winner": null
+ },
+ "rqs2": {
+  "verdict": "REJECT",
+  "rqs2_score": 0.0,
+  "passed": false,
+  "notes": [
+   "no TRAIN cell met n>=100 & net>0 — glass ceiling; holdout untouched (prereg §3)"
+  ]
+ }
+}
