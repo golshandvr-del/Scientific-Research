@@ -1,0 +1,17 @@
+{
+ "n_sig": 1069,
+ "n_valid": 1064,
+ "pr_drift": 0.4981,
+ "pr_calm": 0.6842,
+ "pr_dual": 0.3421,
+ "collinearity_ratio": 1.004,
+ "n_dual": 364,
+ "K": 60,
+ "W": 233,
+ "n_member": 360,
+ "wr": 47.22,
+ "lift": 2.8981,
+ "lift_raw": 1.1385,
+ "wr_raw": 44.99,
+ "n_raw": 1038
+}
