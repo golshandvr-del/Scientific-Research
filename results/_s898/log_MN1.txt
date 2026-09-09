@@ -1,0 +1,5 @@
+========================================================================
+S898 Phase-Free Informed Move · XAUUSD-MN1  L=1 hold=16 (prereg 2a88a426)
+========================================================================
+src=/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv bars=188 split=131 raw shock phases: long=1 short=0
+n<30 → INCOMPLETE
