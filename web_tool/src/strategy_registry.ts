@@ -244,6 +244,29 @@ import { decideS1520, S1520_CFG } from './informed_fresh_high_s1520'
 //       (lift ۲.۶۱ → ۱۱.۹۹pp)، نه پوششِ نو ⇒ در CARD_LAYERS **زیرِ** S965/S950 می‌آید.
 //    سند: results/S966_KylePermanenceDriftAligned_Xauusd_H8_rqs2_86_ACCEPT.md
 import { decideS966, S966_CFG } from './kyle_permanence_drift_s966'
+// ⭐⭐ S1911 ⭐نو — «شوکِ مطلع در آرامش» (Kyle Shock × Calm-σ Regime) · XAUUSD-**H8**
+//    RQS2 = **93.9** · هر ۱۱ دروازهٔ H0..H10 سبز · notes خالی · n_trials=2
+//    پیش‌ثبت پیش از هر عدد: results/S1911_PREREG_kyle_shock_calm_regime.md
+//    قاعده: شوکِ کایلِ S965 (rng≥2.618×ATR21[i−1] ∧ ρ≥0.618 ∧ follow) **و**
+//      گیتِ آرامشِ S606: σ_t ÷ میانهٔ σ(t−233..t−1) ≤ 1 (RiskMetrics λ=0.94، علّی).
+//      صفر پارامترِ آزادِ نو — هر دو تکه ارثی و منجمدند.
+//    فیزیک: کندلِ درشت در **طوفان** می‌تواند فقط نوسانِ رژیمی باشد؛ همان کندل در
+//      **آرامش** نمی‌تواند ⇒ احتمالِ خبرِ واقعی بالا می‌رود («خبر در سکوت شنیده
+//      می‌شود»). همین تفکیک RQS2 را از ۸۲.۲ (S965 خام) به ۹۳.۹ می‌برد.
+//    ⚠️ قانونِ MTF: **تنها H8**. کارتِ H6 داوری و منتشر شد و REJECT است
+//      (`results/_s1911_ckpt/judge_H6.json::failed_gates = ["H3","H7","H8"]`)
+//      ⇒ هیچ کارتِ دومی این لایه را نشان نمی‌دهد.
+//    ⚠️ **زیرمجموعهٔ ۱۰۰٪ِ S965** (اندازه‌گیری‌شده، نه ادعا): ۸۲ از ۸۲ رویداد
+//      داخلِ ۱۴۴ رویدادِ S965 · jaccard=۰.۵۶۹ · جهتِ مخالف=صفر · در برابرِ S966
+//      (jac ۰.۴۳) و S950 (jac ۰.۱۴) مستقل. ابزار با کنترل اعتبارسنجی شد (عددِ
+//      منتشرشدهٔ S966⊂S965 را بازتولید کرد). سند: tools/s1911_false_witness_audit.py
+//      + results/_s1911_ckpt/false_witness_h8.json ⇒ حکم CLEAR-WITH-CONSTRAINTS.
+//      این **شاهدِ کاذبِ S404/S408 نیست** (آنجا jaccard بالا + هم‌اندازگی بود ⇒
+//      «یکی، نه هر دو»)؛ اینجا زیرمجموعهٔ نیمه-اندازه است ⇒ عینِ پروندهٔ S966:
+//      ارزشش **فیلترِ کیفیت** است نه پوششِ نو ⇒ در CARD_LAYERS **زیرِ** S965 و
+//      با سایزِ مشترک. پریتیِ پورت GREEN: results/_s1911_ckpt/parity_h8_result.json
+//    سند: results/S1911_KyleShockCalmRegime_Xauusd_H8_rqs2_93.9_ACCEPT.md
+import { decideS1911, S1911_CFG } from './kyle_shock_calm_s1911'
 // ⭐⭐ S919 — «شوکِ مطلعِ هم‌راستا با قراردادِ بازار» · XAUUSD-**H6** (کارتِ نو)
 //    RQS2 = **88.9** · هر ۱۱ دروازهٔ H0..H10 سبز · notes خالی · n_trials=2
 //    n=106 · WR=55.66٪ · null_ref=40.04٪ · lift=+15.62pp · z=3.282 (z_margin=2.762)
