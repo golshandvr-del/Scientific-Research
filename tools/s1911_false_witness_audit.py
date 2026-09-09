@@ -246,7 +246,11 @@ def main():
     eb, db, mhb = layers['S965']
     control = pair_stats('S966', ea, da, 'S965', eb, db, mha, mhb, times)
 
-    risky = [p for p in pairs if p['verdict'] != 'independent']
+    # فقط «شاهدِ کاذب» مانعِ سیم‌کشی است (سابقهٔ S404/S408: یکی، نه هر دو).
+    # «quality-filter» (زیرمجموعهٔ کوچکِ یک لایهٔ بزرگ‌تر) مانع نیست ولی قید دارد —
+    # همان کاری که ریپو برای S966 زیرِ S965 کرد.
+    risky = [p for p in pairs if p['verdict'] == 'FALSE-WITNESS']
+    constrained = [p for p in pairs if p['verdict'].endswith('quality-filter')]
     out = {
         'what': 'ممیزیِ شاهدِ کاذب برای S1911 پیش از سیم‌کشی روی کارتِ XAUUSD-H8',
         'why': ('مکانیزمِ نمایشِ سایت همپوشانیِ معمولی را حل می‌کند، ولی نمی‌تواند تشخیص دهد '
