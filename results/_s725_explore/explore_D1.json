@@ -1,0 +1,572 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars_full": 4005,
+ "bars_half": 2002,
+ "atr89_med_pip": 177.92,
+ "max_hold": 34,
+ "n_uncond": 6000,
+ "seed": 20260904,
+ "event_stability": [
+  {
+   "theta": 1.618,
+   "first_half": 8,
+   "second_half": 18,
+   "ratio": 2.25
+  },
+  {
+   "theta": 2.0,
+   "first_half": 2,
+   "second_half": 7,
+   "ratio": 3.5
+  },
+  {
+   "theta": 2.618,
+   "first_half": 1,
+   "second_half": 4,
+   "ratio": 4.0
+  }
+ ],
+ "rows": [
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 231.3,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 347.0,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 462.6,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 373.6,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 560.4,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 747.2,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 604.9,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 907.3,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 1209.8,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 231.3,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 347.0,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 462.6,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 373.6,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 560.4,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 747.2,
+   "n": 7,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 604.9,
+   "n": 8,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 907.3,
+   "n": 7,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 1.618,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 1209.8,
+   "n": 7,
+   "n_events": 8,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 231.3,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 347.0,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 462.6,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 373.6,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 560.4,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 747.2,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 604.9,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 907.3,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 1209.8,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 231.3,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 347.0,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 462.6,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 373.6,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 560.4,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 747.2,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 604.9,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 907.3,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.0,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 1209.8,
+   "n": 2,
+   "n_events": 2,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 231.3,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 347.0,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 231.3,
+   "tp": 462.6,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 373.6,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 560.4,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 373.6,
+   "tp": 747.2,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 604.9,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 907.3,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "with",
+   "sl": 604.9,
+   "tp": 1209.8,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 231.3,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 347.0,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 231.3,
+   "tp": 462.6,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 373.6,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 560.4,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 373.6,
+   "tp": 747.2,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 604.9,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 907.3,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  },
+  {
+   "tf": "D1",
+   "theta": 2.618,
+   "mode": "against",
+   "sl": 604.9,
+   "tp": 1209.8,
+   "n": 1,
+   "n_events": 1,
+   "note": "n<30"
+  }
+ ]
+}
