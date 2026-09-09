@@ -23,6 +23,41 @@ import {
   type LayerVote,
 } from './contracts'
 
+// ⚠️⚠️ ثبتِ «زیرمجموعه‌های اندازه‌گیری‌شده» — گاردِ شاهدِ کاذب در مسیرِ شورا.
+// ---------------------------------------------------------------------------
+// چرا این‌جا لازم است: مکانیزمِ نمایشِ کارت همپوشانی را با **اولویت** حل می‌کند
+// (لایهٔ زیرمجموعه پایین‌تر می‌نشیند و primary نمی‌شود)، ولی شورا مسیرِ **جدایی**
+// است که فقط آرا را **می‌شمارد**. اگر لایهٔ B زیرمجموعهٔ ۱۰۰٪ِ لایهٔ A باشد،
+// هر ENTRYِ B یک ENTRYِ هم‌جهتِ A هم دارد؛ پس B شمارشِ اجماع را +۱ می‌کند و
+// شورا می‌گوید «لایهٔ دوم هم تأیید کرد ⇒ لاتِ ×۱.۵» — در حالی که شاهدِ دومی
+// وجود ندارد. این همان «شاهدِ کاذب» است: ریسک دوبرابر بی‌اطلاعِ تازه.
+//
+// این نگاشت **فقط از اندازه‌گیری** پر می‌شود، نه از حدس:
+//   • S1911 ⊂ S965 — ۸۲ از ۸۲ رویداد داخلِ S965 · jaccard ۰.۵۶۹ · جهتِ مخالف صفر
+//     ابزار: tools/s1911_false_witness_audit.py
+//     خروجی: results/_s1911_ckpt/false_witness_h8.json (CLEAR-WITH-CONSTRAINTS)
+//     تأییدِ مسیرِ زنده: results/_s1911_ckpt/integ_card_s1911.json (۷ از ۷ رویداد،
+//     S965 همیشه حاضر بود ⇒ زیرمجموعگی در سایت هم بازتولید شد)
+//   • S966 ⊂ S965 — عددِ منتشرشدهٔ ریپو (share ۱۰۰٪ · jaccard ۰.۵۰)؛ همان ابزار
+//     به‌عنوانِ کنترل بازتولیدش کرد.
+// نکته: این «حذف» نیست. رأی سرِ جایش می‌ماند و لات دست‌نخورده است — فقط شمارشِ
+// شاهدهای **مستقل** جدا گزارش می‌شود تا کاربر فریبِ عددِ متورم را نخورد.
+const SUBSET_OF: Record<string, string> = {
+  S1911: 'S965',
+  S966: 'S965',
+}
+
+/** شمارشِ آرای ENTRYِ **مستقل**: رأیی که ابرمجموعه‌اش هم همزمان ENTRY داده، تکراری است. */
+function countIndependent(entryVotes: LayerVote[]): { independent: number; duplicates: string[] } {
+  const present = new Set(entryVotes.map(v => v.code))
+  const duplicates: string[] = []
+  for (const v of entryVotes) {
+    const sup = SUBSET_OF[v.code]
+    if (sup && present.has(sup)) duplicates.push(`${v.code}⊂${sup}`)
+  }
+  return { independent: entryVotes.length - duplicates.length, duplicates }
+}
+
 /** استخراجِ رأیِ همهٔ لایه‌های *فعالِ* (ENTRY/APPROACHING) یک کارت از CardDecision. */
 function collectVotes(cardId: string, dec: CardDecision): LayerVote[] {
   const votes: LayerVote[] = []
