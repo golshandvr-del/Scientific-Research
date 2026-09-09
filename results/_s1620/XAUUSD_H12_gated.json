@@ -1,0 +1,1 @@
+{"card": "XAUUSD_H12", "span_years": 15.59, "n_signals": 27, "n_trades": 27, "verdict": "TOO_FEW_TRADES", "sl_pip": 228.09, "layer": "s1620", "mode": "gated", "lookback": 90, "cfg": {"name": "RecordAgeGate", "n_trials": 7, "age_min": 45}, "n_base": 248, "n_sig": 27, "pass_rate": 10.9}
