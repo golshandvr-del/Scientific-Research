@@ -1,0 +1,11 @@
+[MN1] src=/home/user/webapp/data/mt5_full/XAUUSD_MN1.csv
+[MN1] bars_total=188  bars_search=94 (نیمهٔ اول — مسیر C)
+/usr/local/lib/python3.13/site-packages/numpy/lib/_nanfunctions_impl.py:1214: RuntimeWarning: Mean of empty slice
+  return np.nanmean(a, axis, out=out, keepdims=keepdims)
+[MN1]   θ=1.618 W=3 shocks=0 trig=0 invalid=0 expire=0 replace=0  (0s)
+[MN1]   θ=1.618 W=8 shocks=0 trig=0 invalid=0 expire=0 replace=0  (0s)
+[MN1]   θ=2.618 W=3 shocks=0 trig=0 invalid=0 expire=0 replace=0  (0s)
+[MN1]   θ=2.618 W=8 shocks=0 trig=0 invalid=0 expire=0 replace=0  (0s)
+[MN1] arms=32 valid(n>=30)=0 elapsed=0.0s
+[MN1] ── ۱۰ بازوی برتر (بر z) ──
+[MN1] ── کنترلِ P1 (ورودِ فوری در close شوک، follow) ──
