@@ -134,7 +134,20 @@ console.log(`   دادهٔ H8: ${all.length} کندل`)
 
 // جست‌وجوی آخرین کندلی که S1520 در آن active است
 let hit = -1
-const lo = Math.max(cfg.lookback + cfg.atrWin + 5, all.length - 2500)
+// ⚠️ فیلد `atrP` است، **نه** `atrWin`. این نام در S1520 از S382 ارث رسیده،
+//    در حالی که خواهرانِ کارت (S965/S966) `atrWin` دارند ⇒ نامِ اشتباه در
+//    TypeScript سر-و-صدا نمی‌کند چون `cfg` با `typeof` استنتاج می‌شود و دسترسی
+//    به کلیدِ ناموجود روی یک نوعِ عریض فقط `undefined` می‌دهد. نتیجه‌اش کشنده
+//    بود: `90 + undefined + 5 = NaN` ⇒ `lo = NaN` ⇒ شرطِ `i >= NaN` همیشه
+//    false ⇒ حلقه **صفر بار** اجرا شد و آزمون اعلام کرد «لایه مرده است».
+//    این بدترین نوعِ خطای ابزار است: یک ادعای منفیِ قاطع که در واقع هیچ‌چیز
+//    را نسنجیده. مرجعِ پریتی خلافش را ثابت کرد (۶۱ سیگنال در همین ۲۵۰۰ کندل،
+//    آخرینش بارِ ۱۱۹۷۵ = فقط ۲ کندل پیش از انتها) و بازرسیِ مستقیمِ
+//    computeS1520 روی همان بارها `active=true` داد ⇒ ایراد در ابزار بود نه لایه.
+//    گاردِ زیر تضمین می‌کند این حالت دیگر هرگز بی‌صدا رد نشود.
+const warm = cfg.lookback + cfg.atrP + 5
+if (!Number.isFinite(warm)) throw new Error(`گرم‌شدنِ محاسبه‌شده معتبر نیست: ${warm} — نامِ فیلدِ کانفیگ را بررسی کن`)
+const lo = Math.max(warm, all.length - 2500)
 for (let i = all.length - 1; i >= lo; i--) {
   const raw = computeS1520(all.slice(0, i + 1) as any, cfg)
   if (raw.active) { hit = i; break }
