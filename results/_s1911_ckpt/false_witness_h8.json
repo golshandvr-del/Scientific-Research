@@ -1,0 +1,103 @@
+{
+ "what": "ممیزیِ شاهدِ کاذب برای S1911 پیش از سیم‌کشی روی کارتِ XAUUSD-H8",
+ "why": "مکانیزمِ نمایشِ سایت همپوشانیِ معمولی را حل می‌کند، ولی نمی‌تواند تشخیص دهد که دو لایه یک رویدادِ واحد با دو اسم‌اند. آن حالت «شاهدِ کاذب» است: کاربر دو کادر می‌بیند و دو شاهدِ مستقل فرض می‌کند، در حالی که یک شاهد دو بار شمرده شده ⇒ ریسک دوبرابر، اطلاعِ تازه صفر. سابقه: strategy_registry.ts:794-797 دربارهٔ S404/S408 (jaccard ۶۹.۳٪ ⇒ «یکی، نه هر دو»).",
+ "data": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+  "bars": 11978,
+  "tf": "H8",
+  "warm": 295,
+  "from_utc": "2011-01-03 00:00:00",
+  "to_utc": "2026-08-07 16:00:00"
+ },
+ "thresholds": {
+  "jaccard_false_witness": 0.6,
+  "share_subset": 0.9,
+  "precedent": "S404/S408 jaccard 0.693 ⇒ one, not both"
+ },
+ "event_counts": {
+  "S965": 144,
+  "S966": 72,
+  "S1911": 82,
+  "S950": 235
+ },
+ "pairs_vs_wired_layers": [
+  {
+   "a": "S1911",
+   "b": "S965",
+   "n_a": 82,
+   "n_b": 144,
+   "same_bar_overlap": 82,
+   "jaccard": 0.5694,
+   "share_of_a": 1.0,
+   "share_of_b": 0.5694,
+   "same_direction": 82,
+   "opposite_direction": 0,
+   "a_open_when_b_fires": 82,
+   "a_open_when_b_fires_pct": 100.0,
+   "verdict": "A-subset-of-B-quality-filter",
+   "first_shared_bar_utc": "2011-06-23 08:00:00",
+   "last_shared_bar_utc": "2026-03-18 08:00:00"
+  },
+  {
+   "a": "S1911",
+   "b": "S966",
+   "n_a": 82,
+   "n_b": 72,
+   "same_bar_overlap": 46,
+   "jaccard": 0.4259,
+   "share_of_a": 0.561,
+   "share_of_b": 0.6389,
+   "same_direction": 46,
+   "opposite_direction": 0,
+   "a_open_when_b_fires": 48,
+   "a_open_when_b_fires_pct": 58.5,
+   "verdict": "independent",
+   "first_shared_bar_utc": "2011-10-25 16:00:00",
+   "last_shared_bar_utc": "2025-09-02 16:00:00"
+  },
+  {
+   "a": "S1911",
+   "b": "S950",
+   "n_a": 82,
+   "n_b": 235,
+   "same_bar_overlap": 40,
+   "jaccard": 0.1444,
+   "share_of_a": 0.4878,
+   "share_of_b": 0.1702,
+   "same_direction": 40,
+   "opposite_direction": 0,
+   "a_open_when_b_fires": 51,
+   "a_open_when_b_fires_pct": 62.2,
+   "verdict": "independent",
+   "first_shared_bar_utc": "2011-12-13 16:00:00",
+   "last_shared_bar_utc": "2025-09-02 16:00:00"
+  }
+ ],
+ "control_s966_vs_s965": {
+  "a": "S966",
+  "b": "S965",
+  "n_a": 72,
+  "n_b": 144,
+  "same_bar_overlap": 72,
+  "jaccard": 0.5,
+  "share_of_a": 1.0,
+  "share_of_b": 0.5,
+  "same_direction": 72,
+  "opposite_direction": 0,
+  "a_open_when_b_fires": 72,
+  "a_open_when_b_fires_pct": 100.0,
+  "verdict": "A-subset-of-B-quality-filter",
+  "first_shared_bar_utc": "2011-08-09 00:00:00",
+  "last_shared_bar_utc": "2025-09-02 16:00:00"
+ },
+ "false_witness_pairs": [],
+ "quality_filter_pairs": [
+  "S965"
+ ],
+ "decision": "CLEAR-WITH-CONSTRAINTS",
+ "constraints_if_wired": [
+  "S1911 در اولویتِ **پایین‌ترِ** S965 روی کارتِ H8 وصل شود (سابقهٔ S966).",
+  "ارزشِ اعلامیِ لایه «کیفیت/انتخابِ زیرمجموعه» است، نه پوششِ رویدادِ نو.",
+  "کارت باید سایزِ مشترک بدهد: در تلاقی، دو کادر ≠ دو ریسکِ جدا."
+ ]
+}
