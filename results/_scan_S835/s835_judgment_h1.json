@@ -1,0 +1,34 @@
+{
+ "layer": "S835",
+ "card": "XAUUSD-H1",
+ "prereg": "4a7f3c7c",
+ "geometry": {
+  "n_days": 10,
+  "k": 0.5,
+  "slm_sigma_d": 1.0,
+  "rr": 1.3,
+  "hold": 72
+ },
+ "n_holdout": 372,
+ "n_long": 234,
+ "n_short": 138,
+ "wr_holdout": 52.956989247311824,
+ "pf_holdout": 1.42506738207776,
+ "exp_pip": 59.45841397849457,
+ "verdict": "REJECT",
+ "score": 21.9,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": false,
+  "H5": true,
+  "H6": false,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": true
+ },
+ "notes": []
+}
