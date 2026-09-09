@@ -1,8 +1,8 @@
 {
  "tf": "H4",
- "src": "/home/user/webapp/data/XAUUSD_H4.csv",
- "bars": 23755,
- "split_bar": 14253,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H4.csv",
+ "bars": 23854,
+ "split_bar": 14312,
  "grid": [
   {
    "F": 6,
@@ -385,17 +385,17 @@
  },
  "null": {
   "long": {
-   "uncond_wr": 41.184096802074336,
-   "perm_mean": 40.365401509256166,
-   "perm_sd": 5.41494833907361,
-   "perm_max": 55.12820512820513,
+   "uncond_wr": 41.171403962101635,
+   "perm_mean": 40.22410739954928,
+   "perm_sd": 5.387572105501687,
+   "perm_max": 57.692307692307686,
    "perm_k": 600
   },
   "short": {
-   "uncond_wr": 36.6120218579235,
-   "perm_mean": 37.02157642559983,
-   "perm_sd": 5.794020196827156,
-   "perm_max": 56.060606060606055,
+   "uncond_wr": 36.641541038525965,
+   "perm_mean": 37.26128043171018,
+   "perm_sd": 5.699343817356183,
+   "perm_max": 58.730158730158735,
    "perm_k": 600
   }
  },
@@ -432,11 +432,11 @@
   "rr": 1.618,
   "breakeven_wr_cost": 38.96,
   "wr_excess_cost": -1.12,
-  "null_ref_wr": 39.3,
-  "skill_lift_pp": -1.46,
-  "skill_z": -0.26,
-  "skill_p_perm": 0.603215,
-  "perm_max": 55.55,
+  "null_ref_wr": 39.4,
+  "skill_lift_pp": -1.56,
+  "skill_z": -0.28,
+  "skill_p_perm": 0.61133,
+  "perm_max": 58.16,
   "perm_k": 600,
   "side_n": {
    "long": 81,
@@ -447,18 +447,18 @@
    "short": 34.33
   },
   "side_lift_pp": {
-   "long": -0.44,
-   "short": -2.69
+   "long": -0.43,
+   "short": -2.93
   },
   "prune_sides": [
    "long",
    "short"
   ],
-  "p_emp": 0.671206,
+  "p_emp": 0.68029,
   "p_adj_bonferroni": 1.0,
-  "z_obs": -0.364,
+  "z_obs": -0.389,
   "z_luck_bound": 2.369,
-  "z_margin": -2.734,
+  "z_margin": -2.759,
   "n_trials": 64,
   "cal_nets": [
    228.5,

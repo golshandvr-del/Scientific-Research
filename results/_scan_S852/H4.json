@@ -1,8 +1,8 @@
 {
  "tf": "H4",
- "src": "/home/user/webapp/data/XAUUSD_H4.csv",
- "bars": 23755,
- "split_bar": 14253,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H4.csv",
+ "bars": 23854,
+ "split_bar": 14312,
  "grid": [
   {
    "h": 5.0,
@@ -385,17 +385,17 @@
  },
  "null": {
   "long": {
-   "uncond_wr": 40.06447831184056,
-   "perm_mean": 39.50915458937199,
-   "perm_sd": 10.343032123206692,
-   "perm_max": 72.0,
+   "uncond_wr": 40.02919708029197,
+   "perm_mean": 39.165048309178744,
+   "perm_sd": 9.895299420062363,
+   "perm_max": 76.0,
    "perm_k": 600
   },
   "short": {
-   "uncond_wr": 36.893764434180135,
-   "perm_mean": 37.298838215300954,
-   "perm_sd": 8.752154979410346,
-   "perm_max": 66.66666666666666,
+   "uncond_wr": 36.89208633093525,
+   "perm_mean": 37.613731306389816,
+   "perm_sd": 8.63499183021494,
+   "perm_max": 64.51612903225806,
    "perm_k": 600
   }
  },
@@ -432,11 +432,11 @@
   "rr": 1.618,
   "breakeven_wr_cost": 39.21,
   "wr_excess_cost": 12.58,
-  "null_ref_wr": 38.53,
-  "skill_lift_pp": 13.25,
-  "skill_z": 1.4,
-  "skill_p_perm": 0.080679,
-  "perm_max": 69.05,
+  "null_ref_wr": 38.69,
+  "skill_lift_pp": 13.09,
+  "skill_z": 1.42,
+  "skill_p_perm": 0.077283,
+  "perm_max": 69.64,
   "perm_k": 600,
   "side_n": {
    "long": 25,
@@ -447,17 +447,17 @@
    "short": 48.39
   },
   "side_lift_pp": {
-   "long": 15.94,
-   "short": 11.09
+   "long": 15.97,
+   "short": 10.77
   },
   "prune_sides": [
    "short"
   ],
-  "p_emp": 0.029974,
+  "p_emp": 0.031702,
   "p_adj_bonferroni": 1.0,
-  "z_obs": 2.038,
+  "z_obs": 2.012,
   "z_luck_bound": 2.369,
-  "z_margin": -0.332,
+  "z_margin": -0.358,
   "n_trials": 64,
   "cal_nets": [
    724.8,
@@ -497,10 +497,10 @@
    "exp_aligned": 17.898,
    "h10_substitute": "small-counter-sample-adverse"
   },
-  "n_required_h3": 128.8
+  "n_required_h3": 132.1
  },
  "verdict": "REJECT",
- "rqs2_score": 10.6,
+ "rqs2_score": 10.7,
  "notes": [
   "H10 FAIL (substitute): 17 counter-drift trades (<20) and their expectancy is negative (-73.284 pip) — the little adverse-regime evidence there is points against the edge."
  ]
