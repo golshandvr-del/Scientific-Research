@@ -185,13 +185,27 @@ def pair_stats(name_a, ev_a, dir_a, name_b, ev_b, dir_b, mh_a, mh_b, times):
     for i in sorted(ia):
         if ib_sorted.size and np.any((ib_sorted >= i) & (ib_sorted <= i + mh_a)):
             hold += 1
+    # ── تفکیکِ دو سابقهٔ متفاوتِ همین ریپو (این‌ها یک چیز نیستند) ──────────────
+    #  ① S404/S408: jaccard=۶۹.۳٪ **و** share_of_b=۹۹.۴٪ ⇒ دو لایه تقریباً
+    #     هم‌اندازه و هم‌رویداد بودند ⇒ سندِ ACCEPT گفت «یکی، نه هر دو» (حذف).
+    #  ② S966/S965: share_of_a=۱۰۰٪ ولی jaccard=۵۰٪ ⇒ زیرمجموعهٔ **کوچکِ** یک
+    #     لایهٔ بزرگ‌تر. ریپو **هر دو** را وصل کرد، با سه قید: S966 زیرِ S965
+    #     در اولویت · ارزشش «کیفیت» اعلام شد نه پوششِ نو · هشدارِ سایزِ مشترک.
+    #
+    # پس «زیرمجموعه بودن» به‌تنهایی شاهدِ کاذب نیست. شاهدِ کاذب وقتی است که دو
+    # لایه **یک رویدادِ واحد با دو اسم** باشند — یعنی هم زیرمجموعه، هم هم‌اندازه
+    # (jaccard بالا). زیرمجموعهٔ کوچک، یک «فیلترِ کیفیت» است که مکانیزمِ نمایش
+    # (یک تصمیمِ اصلی + بقیه در otherLayers) به‌علاوهٔ قاعدهٔ سایزِ مشترکِ کارت
+    # مهارش می‌کند.
     verdict = 'independent'
-    if jac >= JACCARD_FALSE_WITNESS:
-        verdict = 'FALSE-WITNESS-RISK'
-    elif len(ia) and len(inter) / len(ia) >= SHARE_SUBSET:
-        verdict = 'A-subset-of-B'
-    elif len(ib) and len(inter) / len(ib) >= SHARE_SUBSET:
-        verdict = 'B-subset-of-A'
+    sa = len(inter) / len(ia) if ia else 0.0
+    sb = len(inter) / len(ib) if ib else 0.0
+    if jac >= JACCARD_FALSE_WITNESS and max(sa, sb) >= SHARE_SUBSET:
+        verdict = 'FALSE-WITNESS'          # سابقهٔ ① ⇒ حذف، «یکی نه هر دو»
+    elif sa >= SHARE_SUBSET:
+        verdict = 'A-subset-of-B-quality-filter'   # سابقهٔ ② ⇒ مجاز، با قید
+    elif sb >= SHARE_SUBSET:
+        verdict = 'B-subset-of-A-quality-filter'
     return {
         'a': name_a, 'b': name_b,
         'n_a': len(ia), 'n_b': len(ib),
