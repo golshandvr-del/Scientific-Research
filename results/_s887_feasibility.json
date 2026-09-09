@@ -1,0 +1,401 @@
+{
+ "H1": {
+  "th1.618_phi0.0": {
+   "events": 6305,
+   "long": 3055,
+   "short": 3250,
+   "per_year": 805.7
+  },
+  "th1.618_phi0.5": {
+   "events": 4246,
+   "long": 2067,
+   "short": 2179,
+   "per_year": 542.6
+  },
+  "th1.618_phi0.618": {
+   "events": 3507,
+   "long": 1724,
+   "short": 1783,
+   "per_year": 448.2
+  },
+  "th1.618_phi0.786": {
+   "events": 2374,
+   "long": 1162,
+   "short": 1212,
+   "per_year": 303.4
+  },
+  "th2.618_phi0.0": {
+   "events": 1751,
+   "long": 835,
+   "short": 916,
+   "per_year": 223.8
+  },
+  "th2.618_phi0.5": {
+   "events": 1355,
+   "long": 654,
+   "short": 701,
+   "per_year": 173.2
+  },
+  "th2.618_phi0.618": {
+   "events": 1172,
+   "long": 563,
+   "short": 609,
+   "per_year": 149.8
+  },
+  "th2.618_phi0.786": {
+   "events": 809,
+   "long": 395,
+   "short": 414,
+   "per_year": 103.4
+  },
+  "eff_quantiles_all_bars": {
+   "0.25": 0.228,
+   "0.5": 0.469,
+   "0.75": 0.756,
+   "0.9": 1.0
+  },
+  "eff_median_shock_bars": 0.755
+ },
+ "H2": {
+  "th1.618_phi0.0": {
+   "events": 3256,
+   "long": 1538,
+   "short": 1718,
+   "per_year": 413.7
+  },
+  "th1.618_phi0.5": {
+   "events": 1714,
+   "long": 820,
+   "short": 894,
+   "per_year": 217.8
+  },
+  "th1.618_phi0.618": {
+   "events": 1192,
+   "long": 577,
+   "short": 615,
+   "per_year": 151.5
+  },
+  "th1.618_phi0.786": {
+   "events": 485,
+   "long": 241,
+   "short": 244,
+   "per_year": 61.6
+  },
+  "th2.618_phi0.0": {
+   "events": 953,
+   "long": 460,
+   "short": 493,
+   "per_year": 121.1
+  },
+  "th2.618_phi0.5": {
+   "events": 621,
+   "long": 291,
+   "short": 330,
+   "per_year": 78.9
+  },
+  "th2.618_phi0.618": {
+   "events": 466,
+   "long": 217,
+   "short": 249,
+   "per_year": 59.2
+  },
+  "th2.618_phi0.786": {
+   "events": 209,
+   "long": 90,
+   "short": 119,
+   "per_year": 26.6
+  },
+  "eff_quantiles_all_bars": {
+   "0.25": 0.154,
+   "0.5": 0.323,
+   "0.75": 0.533,
+   "0.9": 0.725
+  },
+  "eff_median_shock_bars": 0.614
+ },
+ "H4": {
+  "th1.618_phi0.0": {
+   "events": 1548,
+   "long": 737,
+   "short": 811,
+   "per_year": 197.4
+  },
+  "th1.618_phi0.5": {
+   "events": 548,
+   "long": 250,
+   "short": 298,
+   "per_year": 69.9
+  },
+  "th1.618_phi0.618": {
+   "events": 242,
+   "long": 110,
+   "short": 132,
+   "per_year": 30.9
+  },
+  "th1.618_phi0.786": {
+   "events": 48,
+   "long": 20,
+   "short": 28,
+   "per_year": 6.1
+  },
+  "th2.618_phi0.0": {
+   "events": 368,
+   "long": 173,
+   "short": 195,
+   "per_year": 46.9
+  },
+  "th2.618_phi0.5": {
+   "events": 180,
+   "long": 84,
+   "short": 96,
+   "per_year": 23.0
+  },
+  "th2.618_phi0.618": {
+   "events": 104,
+   "long": 50,
+   "short": 54,
+   "per_year": 13.3
+  },
+  "th2.618_phi0.786": {
+   "events": 26,
+   "long": 11,
+   "short": 15,
+   "per_year": 3.3
+  },
+  "eff_quantiles_all_bars": {
+   "0.25": 0.107,
+   "0.5": 0.223,
+   "0.75": 0.378,
+   "0.9": 0.526
+  },
+  "eff_median_shock_bars": 0.497
+ },
+ "H6": {
+  "th1.618_phi0.0": {
+   "events": 990,
+   "long": 473,
+   "short": 517,
+   "per_year": 126.0
+  },
+  "th1.618_phi0.5": {
+   "events": 221,
+   "long": 111,
+   "short": 110,
+   "per_year": 28.1
+  },
+  "th1.618_phi0.618": {
+   "events": 75,
+   "long": 39,
+   "short": 36,
+   "per_year": 9.5
+  },
+  "th1.618_phi0.786": {
+   "events": 13,
+   "long": 6,
+   "short": 7,
+   "per_year": 1.7
+  },
+  "th2.618_phi0.0": {
+   "events": 212,
+   "long": 106,
+   "short": 106,
+   "per_year": 27.0
+  },
+  "th2.618_phi0.5": {
+   "events": 85,
+   "long": 43,
+   "short": 42,
+   "per_year": 10.8
+  },
+  "th2.618_phi0.618": {
+   "events": 38,
+   "long": 19,
+   "short": 19,
+   "per_year": 4.8
+  },
+  "th2.618_phi0.786": {
+   "events": 9,
+   "long": 4,
+   "short": 5,
+   "per_year": 1.1
+  },
+  "eff_quantiles_all_bars": {
+   "0.25": 0.087,
+   "0.5": 0.183,
+   "0.75": 0.312,
+   "0.9": 0.44
+  },
+  "eff_median_shock_bars": 0.455
+ },
+ "H8": {
+  "th1.618_phi0.0": {
+   "events": 688,
+   "long": 322,
+   "short": 366,
+   "per_year": 87.6
+  },
+  "th1.618_phi0.5": {
+   "events": 115,
+   "long": 56,
+   "short": 59,
+   "per_year": 14.6
+  },
+  "th1.618_phi0.618": {
+   "events": 24,
+   "long": 10,
+   "short": 14,
+   "per_year": 3.1
+  },
+  "th1.618_phi0.786": {
+   "events": 0,
+   "long": 0,
+   "short": 0,
+   "per_year": 0.0
+  },
+  "th2.618_phi0.0": {
+   "events": 120,
+   "long": 56,
+   "short": 64,
+   "per_year": 15.3
+  },
+  "th2.618_phi0.5": {
+   "events": 47,
+   "long": 23,
+   "short": 24,
+   "per_year": 6.0
+  },
+  "th2.618_phi0.618": {
+   "events": 13,
+   "long": 6,
+   "short": 7,
+   "per_year": 1.7
+  },
+  "th2.618_phi0.786": {
+   "events": 0,
+   "long": 0,
+   "short": 0,
+   "per_year": 0.0
+  },
+  "eff_quantiles_all_bars": {
+   "0.25": 0.079,
+   "0.5": 0.165,
+   "0.75": 0.278,
+   "0.9": 0.394
+  },
+  "eff_median_shock_bars": 0.459
+ },
+ "H12": {
+  "th1.618_phi0.0": {
+   "events": 437,
+   "long": 202,
+   "short": 235,
+   "per_year": 55.7
+  },
+  "th1.618_phi0.5": {
+   "events": 31,
+   "long": 14,
+   "short": 17,
+   "per_year": 4.0
+  },
+  "th1.618_phi0.618": {
+   "events": 4,
+   "long": 2,
+   "short": 2,
+   "per_year": 0.5
+  },
+  "th1.618_phi0.786": {
+   "events": 0,
+   "long": 0,
+   "short": 0,
+   "per_year": 0.0
+  },
+  "th2.618_phi0.0": {
+   "events": 79,
+   "long": 41,
+   "short": 38,
+   "per_year": 10.1
+  },
+  "th2.618_phi0.5": {
+   "events": 18,
+   "long": 9,
+   "short": 9,
+   "per_year": 2.3
+  },
+  "th2.618_phi0.618": {
+   "events": 3,
+   "long": 1,
+   "short": 2,
+   "per_year": 0.4
+  },
+  "th2.618_phi0.786": {
+   "events": 0,
+   "long": 0,
+   "short": 0,
+   "per_year": 0.0
+  },
+  "eff_quantiles_all_bars": {
+   "0.25": 0.065,
+   "0.5": 0.137,
+   "0.75": 0.227,
+   "0.9": 0.321
+  },
+  "eff_median_shock_bars": 0.385
+ },
+ "D1": {
+  "th1.618_phi0.0": {
+   "events": 175,
+   "long": 82,
+   "short": 93,
+   "per_year": 22.3
+  },
+  "th1.618_phi0.5": {
+   "events": 4,
+   "long": 0,
+   "short": 4,
+   "per_year": 0.5
+  },
+  "th1.618_phi0.618": {
+   "events": 1,
+   "long": 0,
+   "short": 1,
+   "per_year": 0.1
+  },
+  "th1.618_phi0.786": {
+   "events": 0,
+   "long": 0,
+   "short": 0,
+   "per_year": 0.0
+  },
+  "th2.618_phi0.0": {
+   "events": 27,
+   "long": 13,
+   "short": 14,
+   "per_year": 3.4
+  },
+  "th2.618_phi0.5": {
+   "events": 2,
+   "long": 0,
+   "short": 2,
+   "per_year": 0.3
+  },
+  "th2.618_phi0.618": {
+   "events": 0,
+   "long": 0,
+   "short": 0,
+   "per_year": 0.0
+  },
+  "th2.618_phi0.786": {
+   "events": 0,
+   "long": 0,
+   "short": 0,
+   "per_year": 0.0
+  },
+  "eff_quantiles_all_bars": {
+   "0.25": 0.049,
+   "0.5": 0.098,
+   "0.75": 0.173,
+   "0.9": 0.253
+  },
+  "eff_median_shock_bars": 0.315
+ }
+}
