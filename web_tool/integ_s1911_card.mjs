@@ -29,11 +29,14 @@ const tail = fx.candles.map(c => ({
   time: c.time, open: c.open, high: c.high, low: c.low, close: c.close, volume: c.volume || 0,
 }))
 const off = fx.offset            // نگاشتِ اندیسِ کلِ تاریخ → اندیسِ پنجرهٔ دنباله
-const long = fx.long_idx || []
-const short = fx.short_idx || []
+const long = fx.py.idx_long || []
+const short = fx.py.idx_short || []
 
-// رویدادهایی که در پنجرهٔ دنباله هستند **و** به‌قدرِ کافی گرم‌شده‌اند
-const inTail = (i) => (i - off) >= WIN
+// رویدادهایی که در پنجرهٔ دنباله هستند **و** پیش از خود به‌قدرِ کفِ لایه کندل دارند.
+// کفِ واقعی ۲۸۵ کندل است (میانهٔ σ روی ۲۳۳ + گرم‌شدنِ σ)؛ ۴۰۰ را می‌گیریم تا
+// حاشیه داشته باشیم ولی رویدادهای معرف را دور نریزیم.
+const MIN_HIST = 400
+const inTail = (i) => (i - off) >= MIN_HIST
 const picks = []
 for (const [dir, arr] of [['LONG', long], ['SHORT', short]]) {
   const av = arr.filter(inTail)
