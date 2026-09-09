@@ -91,7 +91,7 @@ def main():
     tr, be = trades_t(L, h6, fresh_floor(h6))
     print(f'S1511-H6: n={len(tr)} (انتظار 279) be={be:.2f}', flush=True)
     res = dict(src='data/mt5_full', be=round(be, 2), all=seg(tr, be))
-    h4 = load('data/XAUUSD_H4.csv'); tr4, _ = trades_t(L, h4, L.signals(h4))
+    h4 = load('data/mt5_full/XAUUSD_H4.csv'); tr4, _ = trades_t(L, h4, L.signals(h4))
     res['vs_S382_H4_live'] = vs_window(tr, be, tr4)
     tr526, _ = trades_t(L, h8, fresh_high(h8)); res['vs_S526_H8'] = vs_window(tr, be, tr526)
     tr1520, _ = trades_t(L, h8, fresh_high(h8) & _b(rho(h8) >= 0.618)); res['vs_S1520_H8'] = vs_window(tr, be, tr1520)
