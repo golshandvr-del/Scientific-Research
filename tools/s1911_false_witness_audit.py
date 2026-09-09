@@ -139,7 +139,7 @@ def ev_s950(f, warm):
     bp = np.zeros(n)
     bp[2:] = np.abs(r[2:]) * np.abs(r[1:-1])
     mu1 = np.sqrt(2.0 / np.pi)
-    bv = _rollmean(bp, BV_WIN) / (mu1 * mu1)
+    bv = _rollmean(bp, BV_WIN_S950) / (mu1 * mu1)
     sig = np.sqrt(np.maximum(bv, 0.0))
     sig_prev = np.empty(n); sig_prev[0] = sig[0]; sig_prev[1:] = sig[:-1]
     with np.errstate(divide='ignore', invalid='ignore'):
