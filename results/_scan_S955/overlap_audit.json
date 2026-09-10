@@ -1,0 +1,68 @@
+{
+ "H8": [
+  {
+   "vs": "S950 (parent, ACCEPT 80)",
+   "n_a": 118,
+   "n_b": 238,
+   "same_bar": 118,
+   "same_bar_pct_of_a": 100.0,
+   "opposite_dir_same_bar": 0,
+   "window_overlap_n": 118,
+   "window_overlap_pct_of_a": 100.0
+  },
+  {
+   "vs": "S1911 (ACCEPT 93.9)",
+   "n_a": 118,
+   "n_b": 82,
+   "same_bar": 40,
+   "same_bar_pct_of_a": 33.9,
+   "opposite_dir_same_bar": 0,
+   "window_overlap_n": 54,
+   "window_overlap_pct_of_a": 45.8
+  },
+  {
+   "vs": "S966 (ACCEPT 86)",
+   "n_a": 118,
+   "n_b": 73,
+   "same_bar": 28,
+   "same_bar_pct_of_a": 23.7,
+   "opposite_dir_same_bar": 0,
+   "window_overlap_n": 42,
+   "window_overlap_pct_of_a": 35.6
+  },
+  {
+   "vs": "S965 event (ACCEPT 82)",
+   "n_a": 118,
+   "n_b": 146,
+   "same_bar": 40,
+   "same_bar_pct_of_a": 33.9,
+   "opposite_dir_same_bar": 0,
+   "window_overlap_n": 60,
+   "window_overlap_pct_of_a": 50.8
+  }
+ ],
+ "H6": [
+  {
+   "vs": "S919 (ACCEPT 88.9)",
+   "n_a": 155,
+   "n_b": 106,
+   "same_bar": 47,
+   "same_bar_pct_of_a": 30.3,
+   "opposite_dir_same_bar": 0,
+   "window_overlap_n": 72,
+   "window_overlap_pct_of_a": 46.5
+  }
+ ],
+ "H12": [
+  {
+   "vs": "S800-H12 (ACCEPT 83.6)",
+   "n_a": 78,
+   "n_b": 436,
+   "same_bar": 34,
+   "same_bar_pct_of_a": 43.6,
+   "opposite_dir_same_bar": 0,
+   "window_overlap_n": 72,
+   "window_overlap_pct_of_a": 92.3
+  }
+ ]
+}

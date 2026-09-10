@@ -1,0 +1,46 @@
+{
+ "tf": "W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "n_bars": 813,
+ "n_trials": 34,
+ "w_reg": 233,
+ "n_sig_base": 12,
+ "n_sig_calm": 4,
+ "pass_rate_pct": 33.3,
+ "sl_med": 605.6,
+ "calm": {
+  "arm": "calm",
+  "n": 4,
+  "wr": 50.0,
+  "pf": 0.638,
+  "net_pip": -629.3,
+  "verdict": "NO-CANDIDATE"
+ },
+ "base": {
+  "arm": "base_S950",
+  "n": 12,
+  "wr": 50.0,
+  "pf": 0.885,
+  "net_pip": -782.4,
+  "verdict": "NO-CANDIDATE"
+ },
+ "storm": {
+  "arm": "storm_control",
+  "n": 5,
+  "wr": 60.0,
+  "pf": 1.163,
+  "net_pip": 506.1,
+  "verdict": "NO-CANDIDATE"
+ },
+ "entry_idx_calm": [
+  440,
+  447,
+  475,
+  635
+ ],
+ "P1_gate_adds_info": false,
+ "P2_storm_weaker": false,
+ "P3_pass_rate_alive": true,
+ "verdict": "NO-CANDIDATE",
+ "rqs2_score": null
+}
