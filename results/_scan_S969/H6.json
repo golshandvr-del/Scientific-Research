@@ -1,0 +1,148 @@
+{
+ "tf": "H6",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+ "n_bars": 15966,
+ "split_bar": 7920,
+ "member": {
+  "th": 2.618,
+  "rho": 0.618,
+  "W": 21,
+  "arm": "noisy",
+  "q_win": 233,
+  "mode": "follow",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "max_hold": 16,
+  "sl_pip_med": 113.02,
+  "tp_pip_med": 182.86
+ },
+ "discovery": {
+  "W": 21,
+  "arm": "noisy",
+  "mode": "follow",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "stat": 129.267,
+  "n": 61,
+  "wr": 57.38,
+  "be_rob": 40.83,
+  "lift": 16.551,
+  "exp_pip": 53.52,
+  "sl_med": 95.933,
+  "tp_med": 155.212
+ },
+ "controls": {
+  "n_events": 129,
+  "pass_rates": {
+   "W21": {
+    "valid": 129,
+    "noisy": 0.473
+   },
+   "W55": {
+    "valid": 129,
+    "noisy": 0.581
+   }
+  },
+  "base": {
+   "1.0/1.618": {
+    "stat": 64.72689374312876,
+    "n": 129,
+    "wr": 47.29,
+    "be_rob": 41.59,
+    "lift": 5.699,
+    "exp_pip": 16.54,
+    "sl_med": 74.34761904762127,
+    "tp_med": 120.29444761905121
+   },
+   "1.272/2.058": {
+    "stat": 72.94889833132765,
+    "n": 129,
+    "wr": 47.29,
+    "be_rob": 40.86,
+    "lift": 6.423,
+    "exp_pip": 16.88,
+    "sl_med": 94.57017142857426,
+    "tp_med": 153.00740000000457
+   }
+  },
+  "efficient": {
+   "W21:1.0/1.618": {
+    "stat": 6.895726106091173,
+    "n": 68,
+    "wr": 42.65,
+    "be_rob": 41.81,
+    "lift": 0.836,
+    "exp_pip": 0.97,
+    "sl_med": 69.76190476190129,
+    "tp_med": 112.8747619047563
+   },
+   "W21:1.272/2.058": {
+    "stat": -23.122132284081776,
+    "n": 68,
+    "wr": 38.24,
+    "be_rob": 41.04,
+    "lift": -2.804,
+    "exp_pip": -15.99,
+    "sl_med": 88.73714285713845,
+    "tp_med": 143.56999999999286
+   },
+   "W55:1.0/1.618": {
+    "stat": -5.026241107352236,
+    "n": 54,
+    "wr": 40.74,
+    "be_rob": 41.42,
+    "lift": -0.684,
+    "exp_pip": 3.39,
+    "sl_med": 78.10714285714528,
+    "tp_med": 126.37735714286107
+   },
+   "W55:1.272/2.058": {
+    "stat": -13.571345869102853,
+    "n": 54,
+    "wr": 38.89,
+    "be_rob": 40.74,
+    "lift": -1.847,
+    "exp_pip": -0.72,
+    "sl_med": 99.3522857142888,
+    "tp_med": 160.74450000000496
+   }
+  }
+ },
+ "falsifiers": {
+  "p1_vs_base": true,
+  "p2_noisy_gt_eff": true,
+  "p4_pass_rate": 0.473,
+  "p4_alive": true,
+  "p5_calm_share": 0.658,
+  "winner_arm": "noisy"
+ },
+ "null_meta": {
+  "n_perm": 500,
+  "draw_size": 111,
+  "uncond_n": 15699
+ },
+ "verdict": "REJECT",
+ "score": 15.9,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": true,
+  "H10": true
+ },
+ "n": 111,
+ "wr": 48.65,
+ "pf": 1.364,
+ "net": 2544.5,
+ "lift": 7.35,
+ "z": 1.48,
+ "p_perm": 0.069981,
+ "notes": [],
+ "sec": 1.4
+}
