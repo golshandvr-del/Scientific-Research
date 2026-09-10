@@ -79,6 +79,8 @@ RVOL_THR = 1.0         # S589 (tools/s589_volume_fresh_high_runner.py)
 SLOT_WIN = 30          # S589
 SLOT_MINP = 20         # S589
 RHO_THR = 0.618        # S965 → S1520 (tools/s1520_informed_fresh_high_runner.py)
+WILLR_P = 14           # S382 (strategies/s382_williamsr_momentum.py)
+WILLR_THR = -13.0      # S382 — غیررند، از جاروبِ خودش
 
 
 def load(card: str) -> pd.DataFrame:
