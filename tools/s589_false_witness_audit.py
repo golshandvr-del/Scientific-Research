@@ -129,6 +129,18 @@ def sig_s526(df: pd.DataFrame) -> np.ndarray:
     return fresh_high(df).to_numpy()
 
 
+def sig_s382(df: pd.DataFrame) -> np.ndarray:
+    """S382 (ساکنِ زندهٔ کارتِ H4): گذرِ Williams %R(14) به بالای −۱۳.
+
+    **رویداد** است نه حالت (`shift(1) <= thr` ∧ `> thr`) — عیناً همان تمایزی
+    که خودِ سندِ S382 می‌گوید نرخ را ۵ تا ۲۰ برابر متورم می‌کرد.
+    """
+    hh = df['high'].rolling(WILLR_P).max()
+    ll = df['low'].rolling(WILLR_P).min()
+    w = -100.0 * (hh - df['close']) / (hh - ll).replace(0, np.nan)
+    return ((w.shift(1) <= WILLR_THR) & (w > WILLR_THR)).fillna(False).to_numpy()
+
+
 def compare(a: np.ndarray, b: np.ndarray, name_a: str, name_b: str) -> dict:
     ia, ib = set(np.where(a)[0]), set(np.where(b)[0])
     inter = ia & ib

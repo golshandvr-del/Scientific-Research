@@ -1,0 +1,84 @@
+{
+ "thresholds": {
+  "jaccard_false_witness": 0.6,
+  "size_ratio_comparable": 0.75,
+  "precedent": "strategy_registry.ts:863-866 (S404/S408 jaccard 69.3% => one, not both)"
+ },
+ "cards": {
+  "XAUUSD_H8": {
+   "bars": 11978,
+   "span_years": 15.59,
+   "n_events": {
+    "S589": 260,
+    "S1520": 222,
+    "S526_base": 361
+   },
+   "vs_S1520_LIVE_ON_H8": {
+    "a": "S589",
+    "b": "S1520",
+    "n_a": 260,
+    "n_b": 222,
+    "shared": 166,
+    "share_of_a": 63.8,
+    "share_of_b": 74.8,
+    "jaccard": 0.5253,
+    "size_ratio": 0.8538,
+    "false_witness": false
+   },
+   "vs_S526_parent_unwired": {
+    "a": "S589",
+    "b": "S526",
+    "n_a": 260,
+    "n_b": 361,
+    "shared": 260,
+    "share_of_a": 100.0,
+    "share_of_b": 72.0,
+    "jaccard": 0.7202,
+    "size_ratio": 0.7202,
+    "false_witness": false
+   }
+  },
+  "XAUUSD_H4": {
+   "bars": 23854,
+   "span_years": 15.59,
+   "n_events": {
+    "S589": 490,
+    "S1520": 399,
+    "S526_base": 717
+   },
+   "vs_S1520_LIVE_ON_H8": {
+    "a": "S589",
+    "b": "S1520",
+    "n_a": 490,
+    "n_b": 399,
+    "shared": 275,
+    "share_of_a": 56.1,
+    "share_of_b": 68.9,
+    "jaccard": 0.4479,
+    "size_ratio": 0.8143,
+    "false_witness": false
+   },
+   "vs_S526_parent_unwired": {
+    "a": "S589",
+    "b": "S526",
+    "n_a": 490,
+    "n_b": 717,
+    "shared": 490,
+    "share_of_a": 100.0,
+    "share_of_b": 68.3,
+    "jaccard": 0.6834,
+    "size_ratio": 0.6834,
+    "false_witness": false
+   }
+  }
+ },
+ "control": {
+  "published_vs_S526_trades": 90.6,
+  "measured_vs_S526_events": 100.0,
+  "published_vs_S1520_trades": 61.0,
+  "measured_vs_S1520_events": 63.8,
+  "subset_of_S526_exact": true,
+  "s1520_within_10pp_of_published": true,
+  "tool_valid": true
+ }
+}
