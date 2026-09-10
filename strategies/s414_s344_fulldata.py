@@ -88,7 +88,7 @@ def judge(arm, df, sig, sl_arr, tp_arr, gate, valid, src):
     null, ndiag = build_null(df, sl_arr, tp_arr, n_short, gate, rng, valid)
     bar_time = df["dt"].values
     entry_t = pd.to_datetime(bar_time[tr["entry_bar"].values])
-    hold = (entry_t < SPLIT_T).values          # پنجرهٔ بکر = خارج‌ازنمونه
+    hold = np.asarray(entry_t < SPLIT_T, bool)          # پنجرهٔ بکر = خارج‌ازنمونه
     res = rqs2.compute_rqs2(tr, ASSET, sl_pip=sl_med, tp_pip=tp_med, bar_time=bar_time,
                             null=null, n_trials=N_TRIALS, holdout_mask=hold,
                             close=df["close"].values)
