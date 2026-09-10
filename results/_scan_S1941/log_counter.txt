@@ -1,0 +1,14 @@
+[member D1 counter] θ=0.65 hold=16 raw_sig=916 gated_sig=179 pass=19.5% trades n=139 (L=66 S=73) WR=40.29 src=/home/user/webapp/data/mt5_full/XAUUSD_D1.csv
+    null long: {"uncond_wr": 42.22791293213828, "perm_mean": 42.21821095571096, "perm_sd": 6.026360482784292, "perm_max": 60.60606060606061, "perm_k": 800}
+    null short: {"uncond_wr": 33.956466069142124, "perm_mean": 33.93966419330289, "perm_sd": 5.490780333279312, "perm_max": 54.794520547945204, "perm_k": 800}
+    lift_vs_uncond=+2.40pp
+[member H8 counter] θ=0.65 hold=16 raw_sig=1270 gated_sig=371 pass=29.2% trades n=332 (L=170 S=162) WR=38.25 src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv
+    null long: {"uncond_wr": 39.375315709715444, "perm_mean": 39.45238861816916, "perm_sd": 3.6348592805044286, "perm_max": 52.352941176470594, "perm_k": 800}
+    null short: {"uncond_wr": 34.52601448055228, "perm_mean": 34.878081627175824, "perm_sd": 3.8620411822882845, "perm_max": 46.913580246913575, "perm_k": 800}
+    lift_vs_uncond=+1.24pp
+[S1941-POOL-counter selection] {"chosen": [{"card": "XAUUSD_D1", "lift": 2.403854125406463, "n": 139}, {"card": "XAUUSD_H8", "lift": 1.2439216370448953, "n": 332}], "rejected_for_dilution": [], "z_full": 34.425, "z_chosen": 34.425, "add_margin": 0.15, "trace": [{"k": 1, "added": "XAUUSD_D1", "wlift": 2.404, "n": 139, "z_proxy": 28.341, "accepted": true}, {"k": 2, "added": "XAUUSD_H8", "wlift": 1.586, "n": 471, "z_proxy": 34.425, "accepted": true}]}
+[S1941-POOL-counter split] boundary=2020-08-05T04:48:00.000000000 explore=206 oos=138
+
+S1941-POOL-counter         | REJECT     RQS2= 14.6 | n= 344 WR=38.66% PF=1.09 lift=  +1.19pp z= 0.4 | H0:✓ H1:✗ H2:✓ H3:✗ H4:✗ H5:✗ H6:✓ H7:✗ H8:✗ H9:✓ H10:✓
+
+[S1941 counter] POOL VERDICT = REJECT score=14.6

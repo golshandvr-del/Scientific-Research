@@ -1,0 +1,16 @@
+[member D1 gated] θ=0.65 hold=16 raw_sig=916 gated_sig=737 pass=80.5% trades n=366 (L=197 S=169) WR=42.62 src=/home/user/webapp/data/mt5_full/XAUUSD_D1.csv
+    null long: {"uncond_wr": 42.22791293213828, "perm_mean": 42.24336669947167, "perm_sd": 3.4193534235605294, "perm_max": 53.299492385786806, "perm_k": 800}
+    null short: {"uncond_wr": 33.956466069142124, "perm_mean": 33.96981103832066, "perm_sd": 3.631283330445156, "perm_max": 46.74556213017752, "perm_k": 800}
+    lift_vs_uncond=+4.21pp
+[member H8 gated] θ=0.65 hold=16 raw_sig=1270 gated_sig=899 pass=70.8% trades n=717 (L=375 S=342) WR=41.56 src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv
+    null long: {"uncond_wr": 39.375315709715444, "perm_mean": 39.26931550802139, "perm_sd": 2.49470931342017, "perm_max": 47.46666666666667, "perm_k": 800}
+    null short: {"uncond_wr": 34.52601448055228, "perm_mean": 34.50935715388177, "perm_sd": 2.6394101654880378, "perm_max": 42.69005847953216, "perm_k": 800}
+    lift_vs_uncond=+4.50pp
+S1941-XAUUSD_D1-gated      | REJECT     RQS2= 18.9 | n= 366 WR=42.62% PF=1.20 lift=  +4.20pp z= 1.2 | H0:✓ H1:✗ H2:✓ H3:✗ H4:✓ H5:✗ H6:✓ H7:✗ H8:✗ H9:✓ H10:✓
+S1941-XAUUSD_H8-gated      | REJECT     RQS2= 19.7 | n= 717 WR=41.56% PF=1.22 lift=  +4.50pp z= 1.8 | H0:✓ H1:✗ H2:✓ H3:✗ H4:✓ H5:✗ H6:✓ H7:✓ H8:✗ H9:✓ H10:✓
+[S1941-POOL-gated selection] {"chosen": [{"card": "XAUUSD_H8", "lift": 4.499804262911894, "n": 717}, {"card": "XAUUSD_D1", "lift": 4.214367176731532, "n": 366}], "rejected_for_dilution": [], "z_full": 144.909, "z_chosen": 144.909, "add_margin": 0.15, "trace": [{"k": 1, "added": "XAUUSD_H8", "wlift": 4.5, "n": 717, "z_proxy": 120.491, "accepted": true}, {"k": 2, "added": "XAUUSD_D1", "wlift": 4.403, "n": 1083, "z_proxy": 144.909, "accepted": true}]}
+[S1941-POOL-gated split] boundary=2020-08-11T20:48:00.000000000 explore=430 oos=287
+
+S1941-POOL-gated           | REJECT     RQS2= 20.8 | n= 717 WR=41.84% PF=1.28 lift=  +4.67pp z= 2.1 | H0:✓ H1:✗ H2:✓ H3:✗ H4:✓ H5:✗ H6:✓ H7:✓ H8:✗ H9:✓ H10:✓
+
+[S1941 gated] POOL VERDICT = REJECT score=20.8
