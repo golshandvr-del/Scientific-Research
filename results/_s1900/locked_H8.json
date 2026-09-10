@@ -1,0 +1,27 @@
+{
+ "tf": "H8",
+ "split_bar": 7186,
+ "n_bars": 11978,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "n_eff": 16,
+ "n_trials": 16,
+ "criterion": "wr+0.001*net",
+ "min_n_is": 180,
+ "best_key": "k0.5_s2.058_rr1.618_h1",
+ "best": {
+  "n": 512,
+  "wr": 54.102,
+  "net": 71.2,
+  "n_sig": 512,
+  "uncond_asia_long": {
+   "n": 2353,
+   "wr": 51.891,
+   "net": 3966.3
+  },
+  "mirror_short": {
+   "n": 492,
+   "wr": 45.935,
+   "net": -4327.1
+  }
+ }
+}
