@@ -367,5 +367,107 @@
   "2026-01-28T08:00:00.000000000",
   "2026-01-29T08:00:00.000000000"
  ],
- "elapsed_s": 3.5
+ "elapsed_s": 3.5,
+ "tpfix": {
+  "sl_pip": 187.39349999999973,
+  "tp_pip": 281.0902499999996,
+  "verdict": "POWER-LIMITED",
+  "rqs2_score": 26.2,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": true,
+   "H5": true,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "metrics": {
+   "n_trades": 215,
+   "win_rate": 52.09,
+   "net_profit": 7801.7,
+   "profit_factor": 1.607,
+   "max_dd_pct": 6.17,
+   "max_consec_losses": 6,
+   "mcl_allowed": 12,
+   "n_wins": 112,
+   "top_win_share": 0.0309,
+   "recovery_factor": 7.04,
+   "expectancy_pip": 76.7402,
+   "expectancy_at_2x_cost": 73.4402,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 187.393,
+   "tp_pip": 281.09,
+   "rr": 1.5,
+   "breakeven_wr_cost": 40.7,
+   "wr_excess_cost": 11.39,
+   "null_ref_wr": 45.31,
+   "skill_lift_pp": 6.79,
+   "skill_z": 2.0,
+   "skill_p_perm": 0.022796,
+   "perm_max": 55.06,
+   "perm_k": 1000,
+   "side_n": {
+    "long": 215,
+    "short": 0
+   },
+   "side_wr": {
+    "long": 52.09
+   },
+   "side_lift_pp": {
+    "long": 6.79
+   },
+   "prune_sides": [],
+   "p_emp": 0.026999,
+   "p_adj_bonferroni": 0.323982,
+   "z_obs": 1.999,
+   "z_luck_bound": 1.665,
+   "z_margin": 0.334,
+   "n_trials": 12,
+   "cal_nets": [
+    373.3,
+    1239.5,
+    2159.8,
+    2604.0
+   ],
+   "cal_counts": [
+    30,
+    44,
+    61,
+    80
+   ],
+   "cal_positive": 4,
+   "cal_occupied": 4,
+   "half_nets": [
+    1705.9,
+    5376.0
+   ],
+   "oos": {
+    "n": 86,
+    "wr": 52.33,
+    "pf": 1.684,
+    "net": 2929.6,
+    "wr_req": 40.7
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 204,
+    "n_unjudgeable": 11,
+    "n_counter": 63,
+    "n_aligned": 141,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 55.56,
+    "exp_counter": 50.601,
+    "wr_aligned": 51.06,
+    "exp_aligned": 86.033
+   },
+   "n_required_h3": 513.7
+  },
+  "notes": []
+ }
 }

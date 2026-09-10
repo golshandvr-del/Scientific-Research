@@ -303,5 +303,107 @@
   "2026-01-21T00:00:00.000000000",
   "2026-01-27T12:00:00.000000000"
  ],
- "elapsed_s": 0.8
+ "elapsed_s": 0.8,
+ "tpfix": {
+  "sl_pip": 227.70299999999995,
+  "tp_pip": 341.5544999999999,
+  "verdict": "REJECT",
+  "rqs2_score": 21.9,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": true,
+   "H5": false,
+   "H6": true,
+   "H7": true,
+   "H8": false,
+   "H9": true,
+   "H10": true
+  },
+  "metrics": {
+   "n_trades": 151,
+   "win_rate": 51.66,
+   "net_profit": 4709.8,
+   "profit_factor": 1.578,
+   "max_dd_pct": 8.2,
+   "max_consec_losses": 8,
+   "mcl_allowed": 12,
+   "n_wins": 78,
+   "top_win_share": 0.0474,
+   "recovery_factor": 3.91,
+   "expectancy_pip": 88.5774,
+   "expectancy_at_2x_cost": 85.2774,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 227.703,
+   "tp_pip": 341.554,
+   "rr": 1.5,
+   "breakeven_wr_cost": 40.58,
+   "wr_excess_cost": 11.08,
+   "null_ref_wr": 48.28,
+   "skill_lift_pp": 3.37,
+   "skill_z": 0.83,
+   "skill_p_perm": 0.20347,
+   "perm_max": 61.34,
+   "perm_k": 1000,
+   "side_n": {
+    "long": 151,
+    "short": 0
+   },
+   "side_wr": {
+    "long": 51.66
+   },
+   "side_lift_pp": {
+    "long": 3.37
+   },
+   "prune_sides": [],
+   "p_emp": 0.227202,
+   "p_adj_bonferroni": 1.0,
+   "z_obs": 0.829,
+   "z_luck_bound": 1.665,
+   "z_margin": -0.836,
+   "n_trials": 12,
+   "cal_nets": [
+    -234.8,
+    986.3,
+    1731.5,
+    1271.2
+   ],
+   "cal_counts": [
+    15,
+    26,
+    45,
+    65
+   ],
+   "cal_positive": 3,
+   "cal_occupied": 4,
+   "half_nets": [
+    669.0,
+    3701.2
+   ],
+   "oos": {
+    "n": 61,
+    "wr": 52.46,
+    "pf": 1.667,
+    "net": 1890.1,
+    "wr_req": 40.58
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 149,
+    "n_unjudgeable": 2,
+    "n_counter": 36,
+    "n_aligned": 113,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 58.33,
+    "exp_counter": 57.024,
+    "wr_aligned": 50.44,
+    "exp_aligned": 106.71
+   },
+   "n_required_h3": 2096.4
+  },
+  "notes": []
+ }
 }

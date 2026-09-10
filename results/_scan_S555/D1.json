@@ -232,5 +232,112 @@
   "2026-01-13T00:00:00.000000000",
   "2026-03-02T00:00:00.000000000"
  ],
- "elapsed_s": 0.7
+ "elapsed_s": 0.7,
+ "tpfix": {
+  "sl_pip": 364.32749999999976,
+  "tp_pip": 546.4912499999997,
+  "verdict": "REJECT",
+  "rqs2_score": 22.2,
+  "gates": {
+   "H0": true,
+   "H1": true,
+   "H2": true,
+   "H3": false,
+   "H4": false,
+   "H5": false,
+   "H6": true,
+   "H7": true,
+   "H8": true,
+   "H9": true,
+   "H10": true
+  },
+  "metrics": {
+   "n_trades": 77,
+   "win_rate": 50.65,
+   "net_profit": 1978.0,
+   "profit_factor": 1.477,
+   "max_dd_pct": 4.76,
+   "max_consec_losses": 4,
+   "mcl_allowed": 11,
+   "n_wins": 39,
+   "top_win_share": 0.0675,
+   "recovery_factor": 3.42,
+   "expectancy_pip": 131.1484,
+   "expectancy_at_2x_cost": 127.8484,
+   "cost_pip": 3.3,
+   "spread_pip": 3.3,
+   "sl_pip": 364.327,
+   "tp_pip": 546.491,
+   "rr": 1.5,
+   "breakeven_wr_cost": 40.36,
+   "wr_excess_cost": 10.29,
+   "null_ref_wr": 49.94,
+   "skill_lift_pp": 0.71,
+   "skill_z": 0.12,
+   "skill_p_perm": 0.450361,
+   "perm_max": 65.67,
+   "perm_k": 1000,
+   "side_n": {
+    "long": 77,
+    "short": 0
+   },
+   "side_wr": {
+    "long": 50.65
+   },
+   "side_lift_pp": {
+    "long": 0.71
+   },
+   "prune_sides": [
+    "long"
+   ],
+   "p_emp": 0.495682,
+   "p_adj_bonferroni": 1.0,
+   "z_obs": 0.125,
+   "z_luck_bound": 1.665,
+   "z_margin": -1.54,
+   "n_trials": 12,
+   "cal_nets": [
+    375.8,
+    -216.5,
+    305.2,
+    1649.2
+   ],
+   "cal_counts": [
+    4,
+    12,
+    24,
+    37
+   ],
+   "cal_positive": 3,
+   "cal_occupied": 4,
+   "half_nets": [
+    130.2,
+    1884.1
+   ],
+   "oos": {
+    "n": 31,
+    "wr": 58.06,
+    "pf": 1.942,
+    "net": 1270.1,
+    "wr_req": 40.36
+   },
+   "max_concurrency": 1,
+   "counter_drift": {
+    "n_judgeable": 76,
+    "n_unjudgeable": 1,
+    "n_counter": 12,
+    "n_aligned": 64,
+    "regime_lookback_days": 280.0,
+    "wr_counter": 66.67,
+    "exp_counter": 157.246,
+    "wr_aligned": 48.44,
+    "exp_aligned": 133.851,
+    "h10_substitute": "small-counter-sample-nonnegative"
+   },
+   "n_required_h3": 47241.7
+  },
+  "notes": [
+   "H10 WARN (substitute PASS): only 12 counter-drift trades (<20) but their expectancy is non-negative (+157.246 pip). Weak but not adverse. Conditional pass; obtain longer history to confirm."
+  ]
+ }
 }
