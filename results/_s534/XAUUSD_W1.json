@@ -1,0 +1,1 @@
+{"card": "XAUUSD_W1", "span_years": 15.58, "n_signals": 9, "n_trades": 4, "verdict": "TOO_FEW_TRADES", "sl_pip": 784.31, "ma_period": 200, "report_only": true, "data_src": {"path": "data/mt5_full/XAUUSD_W1.csv", "rows": 813, "span_years": 15.58, "first": "2011-01-02 00:00:00", "last": "2026-08-02 00:00:00"}, "seed": 20260818}
