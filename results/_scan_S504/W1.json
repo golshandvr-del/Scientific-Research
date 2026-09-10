@@ -1,0 +1,20 @@
+{
+ "tf": "W1",
+ "bars": 813,
+ "K": 12,
+ "n_raw_sig": 39,
+ "n_drift_sig": 14,
+ "n_raw": 35,
+ "wr_raw": 40.0,
+ "n_drift": 14,
+ "wr_drift": 35.714285714285715,
+ "n_mirror": 21,
+ "wr_mirror": 42.857142857142854,
+ "gate_removed_frac": 0.641025641025641,
+ "falsifiers_dead": [
+  "F3 n_drift=14 < 60",
+  "F2 WR_drift 35.71 < WR_raw 40.00+1.0"
+ ],
+ "verdict": "SELF-REJECT",
+ "sec": 0.0
+}

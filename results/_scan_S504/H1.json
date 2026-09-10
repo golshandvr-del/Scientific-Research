@@ -1,0 +1,36 @@
+{
+ "tf": "H1",
+ "bars": 91331,
+ "K": 1440,
+ "n_raw_sig": 4363,
+ "n_drift_sig": 2127,
+ "n_raw": 3739,
+ "wr_raw": 38.75367745386467,
+ "n_drift": 2055,
+ "wr_drift": 40.243309002433094,
+ "n_mirror": 2163,
+ "wr_mirror": 37.401756819232546,
+ "gate_removed_frac": 0.512491404996562,
+ "falsifiers_dead": [
+  "F4 raw lift -0.67 <= 0"
+ ],
+ "null": {
+  "long": {
+   "uncond_wr": 40.879208826387696,
+   "perm_mean": 40.85124497991968,
+   "perm_sd": 1.3380267778227561,
+   "perm_max": 45.70281124497992,
+   "perm_k": 500
+  },
+  "short": {
+   "uncond_wr": 40.962340858029314,
+   "perm_mean": 40.858765432098764,
+   "perm_sd": 1.6911387921960026,
+   "perm_max": 46.543209876543216,
+   "perm_k": 500
+  }
+ },
+ "uncond_ref": 40.91197619652381,
+ "verdict": "SELF-REJECT",
+ "sec": 12.8
+}

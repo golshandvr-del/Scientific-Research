@@ -1,0 +1,19 @@
+{
+ "tf": "M3",
+ "bars": 1815880,
+ "K": 28800,
+ "n_raw_sig": 87603,
+ "n_drift_sig": 43617,
+ "n_raw": 75826,
+ "wr_raw": 37.13897607680743,
+ "n_drift": 42354,
+ "wr_drift": 37.46045237757945,
+ "n_mirror": 42677,
+ "wr_mirror": 36.8606040724512,
+ "gate_removed_frac": 0.5021060922571146,
+ "falsifiers_dead": [
+  "F2 WR_drift 37.46 < WR_raw 37.14+1.0"
+ ],
+ "verdict": "SELF-REJECT",
+ "sec": 6.6
+}

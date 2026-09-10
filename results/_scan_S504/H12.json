@@ -1,0 +1,19 @@
+{
+ "tf": "H12",
+ "bars": 7998,
+ "K": 120,
+ "n_raw_sig": 408,
+ "n_drift_sig": 185,
+ "n_raw": 359,
+ "wr_raw": 43.45403899721448,
+ "n_drift": 179,
+ "wr_drift": 37.988826815642454,
+ "n_mirror": 217,
+ "wr_mirror": 46.08294930875576,
+ "gate_removed_frac": 0.5465686274509804,
+ "falsifiers_dead": [
+  "F2 WR_drift 37.99 < WR_raw 43.45+1.0"
+ ],
+ "verdict": "SELF-REJECT",
+ "sec": 0.0
+}

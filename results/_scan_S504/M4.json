@@ -1,0 +1,19 @@
+{
+ "tf": "M4",
+ "bars": 1362074,
+ "K": 21600,
+ "n_raw_sig": 64775,
+ "n_drift_sig": 32240,
+ "n_raw": 55976,
+ "wr_raw": 37.323138487923394,
+ "n_drift": 31241,
+ "wr_drift": 37.59482731026536,
+ "n_mirror": 31601,
+ "wr_mirror": 37.04946046011202,
+ "gate_removed_frac": 0.5022771130837514,
+ "falsifiers_dead": [
+  "F2 WR_drift 37.59 < WR_raw 37.32+1.0"
+ ],
+ "verdict": "SELF-REJECT",
+ "sec": 5.2
+}
