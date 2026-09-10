@@ -1,0 +1,23 @@
+{
+ "strategy": "S977_LateFlowInformedShock",
+ "asset": "XAUUSD",
+ "tf": "M1",
+ "bars": 5000000,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+ "split_bar": 3500000,
+ "hold": 16,
+ "n_trials": 24,
+ "k_perm": 2000,
+ "seed": 20260906,
+ "prereg": "results/S977_PREREG_late_flow_informed_shock.md",
+ "sl_pip": 3.85,
+ "tp_pip": 5.775,
+ "diag": {
+  "n_informed": 77536,
+  "n_late": 0,
+  "n_early": 0,
+  "n_nan": 77536
+ },
+ "n_signals": 0,
+ "verdict": "NO_TRADES_FULL"
+}
