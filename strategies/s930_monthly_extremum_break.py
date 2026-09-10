@@ -37,6 +37,7 @@ SPLIT_FRAC = 0.70
 SEED = 20260905
 N_TRIALS = 38
 OUT = 'results/_s930'
+LABEL = 'S930_InformedMonthlyExtremumBreak'
 ARMS = ('gated', 'ungated')          # داوری‌شده
 CONTROL = 'fade'                     # فقط گزارشی
 
@@ -233,7 +234,7 @@ def run_card(tf: str, verbose=True) -> dict:
     os.makedirs(OUT, exist_ok=True)
     d = fd.load_fast(ASSET, tf)
     n = int(d['n_bars'])
-    print(f"\n{'='*84}\n=== S930 InformedMonthlyExtremumBreak :: {ASSET}_{tf}  bars={n:,}  "
+    print(f"\n{'='*84}\n=== {LABEL} :: {ASSET}_{tf}  bars={n:,}  "
           f"span={d['span_years']}y\n    src={d['src']}  ({d['first_utc']} → {d['last_utc']})", flush=True)
     for k in ('volume', 'hour', 'minute', 'dow'):   # حافظه: ستون‌های بی‌استفاده
         d.pop(k, None)
@@ -267,7 +268,7 @@ def run_card(tf: str, verbose=True) -> dict:
         null = build_null(df, f['valid'], sl_arr, tp_arr, nL, nS, rng, k_perm, verbose)
         res = R.compute_rqs2(tr, ASSET, sl_pip=sl_med, tp_pip=tp_med, bar_time=d['time'],
                              close=d['close'], null=null, n_trials=N_TRIALS, split_bar=split_bar)
-        print(R.format_rqs2(f'S930_{arm}_{ASSET}_{tf}', res), flush=True)
+        print(R.format_rqs2(f"{LABEL}_{arm}_{ASSET}_{tf}", res), flush=True)
         rec.update(null=null, k_perm=k_perm, rqs2=res, verdict=res['verdict'],
                    judged=(arm in ARMS))
         out['arms'][arm] = rec
