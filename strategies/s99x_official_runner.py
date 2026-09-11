@@ -37,6 +37,7 @@ CFG = {
  's993': dict(name='ErShockCalmShort', tf='H1', side='short', mh=48, nt=200, seed=993993),
  's994': dict(name='SeasonalVolumeShockLong', tf='M30', side='long', mh=64, nt=64, seed=994994),
  's995': dict(name='SeasonalRangeShockLong', tf='H2', side='long', mh=40, nt=160, seed=995995),
+ 's998': dict(name='CurvatureReigniteShort', tf='H4', side='short', mh=30, nt=216, seed=998998),
 }
 
 def rule_s990(df):
@@ -107,6 +108,14 @@ def rule_s995(df):
         rr.iloc[idx] = (vs/med.replace(0,np.nan)).values
     rng = np.where((h-l)>0, h-l, np.nan); rho = pd.Series(np.abs(c-o)/rng).fillna(0)
     sig = ((rr >= 3.5) & (rho >= 0.618) & pd.Series(c > o)).fillna(False).astype(bool)
+    gate = pd.Series(True, index=df.index)
+    return sig, gate, sl, sl*1.5
+
+def rule_s998(df):
+    h,l,c = df['high'].values, df['low'].values, df['close'].values
+    sl = med_atr(h,l,c,100)*1.5/0.1
+    m = pd.Series(c).ewm(span=21, adjust=False).mean(); v = m.diff(); a = v.diff()
+    sig = ((a < 0) & (a.shift(1) >= 0) & (v < 0)).fillna(False).astype(bool)
     gate = pd.Series(True, index=df.index)
     return sig, gate, sl, sl*1.5
 
