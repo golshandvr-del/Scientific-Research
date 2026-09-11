@@ -1,0 +1,47 @@
+{
+ "tf": "M30",
+ "role": "family",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M30.csv",
+ "n_bars": 182145,
+ "split_bar": 91072,
+ "D": null,
+ "n_trials": 12,
+ "seed": 20260910,
+ "train": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M30.csv",
+  "n_bars": 182145,
+  "split": 91072,
+  "n_shock_train": 1498,
+  "grid": [
+   {
+    "D": "mid",
+    "n": 168,
+    "n_events": 168,
+    "wr": 44.047619047619044,
+    "exp": -1.7296292040409464,
+    "pf": 0.903897544600179,
+    "net": -290.577706278879,
+    "score": null
+   },
+   {
+    "D": "open",
+    "n": 24,
+    "n_events": 24,
+    "wr": 41.66666666666667,
+    "exp": -5.085845765387911,
+    "pf": 0.7542102592836205,
+    "net": -122.06029836930988,
+    "score": null
+   }
+  ],
+  "winner": null
+ },
+ "rqs2": {
+  "verdict": "REJECT",
+  "rqs2_score": 0.0,
+  "passed": false,
+  "notes": [
+   "no TRAIN cell met n>=60 & net>0 — glass ceiling; holdout untouched (prereg §3)"
+  ]
+ }
+}
