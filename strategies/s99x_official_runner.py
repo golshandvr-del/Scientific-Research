@@ -38,6 +38,7 @@ CFG = {
  's994': dict(name='SeasonalVolumeShockLong', tf='M30', side='long', mh=64, nt=64, seed=994994),
  's995': dict(name='SeasonalRangeShockLong', tf='H2', side='long', mh=40, nt=160, seed=995995),
  's998': dict(name='CurvatureReigniteShort', tf='H4', side='short', mh=30, nt=216, seed=998998),
+ 's999': dict(name='NestedRecordLong', tf='H1', side='long', mh=48, nt=48, seed=999999),
 }
 
 def rule_s990(df):
@@ -118,6 +119,19 @@ def rule_s998(df):
     sig = ((a < 0) & (a.shift(1) >= 0) & (v < 0)).fillna(False).astype(bool)
     gate = pd.Series(True, index=df.index)
     return sig, gate, sl, sl*1.5
+
+def rule_s999(df):
+    h,l,c = df['high'].values, df['low'].values, df['close'].values
+    sl = med_atr(h,l,c,100)*1.5/0.1
+    cs = pd.Series(c); nh = (cs > cs.shift(1).rolling(90).max()).fillna(False)
+    edge = (nh & ~nh.shift(1, fill_value=False)).astype(bool)
+    dp = fd.as_dataframe(fd.load_fast('XAUUSD','H4'))
+    cp = pd.Series(dp['close'].values); rec = (cp > cp.shift(1).rolling(90).max()).fillna(False).values
+    tpo = dp['time'].values.astype(np.int64); step = int(np.median(np.diff(tpo))); tpc = tpo + step
+    t1 = df['time'].values.astype(np.int64); idx = np.searchsorted(tpc, t1, 'right') - 1
+    ok = idx >= 0; idx = np.clip(idx, 0, len(tpc)-1)
+    gate = pd.Series(rec[idx] & ok, index=df.index)
+    return (edge & gate), gate, sl, sl*1.5
 
 # ---------------- اجرا ----------------
 layer = sys.argv[1]; cfg = CFG[layer]
