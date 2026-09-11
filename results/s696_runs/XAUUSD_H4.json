@@ -1,0 +1,143 @@
+{
+ "strategy": "S696",
+ "concept": "weekly_informed_cascade",
+ "asset": "XAUUSD",
+ "tf": "H4",
+ "bars": 23854,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H4.csv",
+ "span_years": 15.59,
+ "n_weeks": 813,
+ "hold_bars": {
+  "72.0": 18,
+  "120.0": 30
+ },
+ "split_bar": 14312,
+ "n_trials": 32,
+ "family": "2x2x2x2=16/side (32)",
+ "rho_min": 0.618,
+ "cost_pip": 3.3,
+ "stop_rule_hits": {
+  "1.0_short": 39,
+  "1.272_long": 25,
+  "1.272_short": 24
+ },
+ "train_scan_top": [
+  {
+   "k_r": 1.0,
+   "k_sl": 1.618,
+   "rr": 1.0,
+   "hold_h": 72.0,
+   "side": "long",
+   "n": 49,
+   "wr": 38.78,
+   "u": 46.2,
+   "lift": -7.43,
+   "exp": -32.3,
+   "n_req": null,
+   "feas": false
+  },
+  {
+   "k_r": 1.0,
+   "k_sl": 1.618,
+   "rr": 1.0,
+   "hold_h": 120.0,
+   "side": "long",
+   "n": 49,
+   "wr": 40.82,
+   "u": 46.51,
+   "lift": -5.7,
+   "exp": -29.9,
+   "n_req": null,
+   "feas": false
+  },
+  {
+   "k_r": 1.0,
+   "k_sl": 1.618,
+   "rr": 1.618,
+   "hold_h": 72.0,
+   "side": "long",
+   "n": 49,
+   "wr": 32.65,
+   "u": 39.87,
+   "lift": -7.22,
+   "exp": -19.4,
+   "n_req": null,
+   "feas": false
+  },
+  {
+   "k_r": 1.0,
+   "k_sl": 1.618,
+   "rr": 1.618,
+   "hold_h": 120.0,
+   "side": "long",
+   "n": 49,
+   "wr": 34.69,
+   "u": 37.95,
+   "lift": -3.26,
+   "exp": -17.53,
+   "n_req": null,
+   "feas": false
+  },
+  {
+   "k_r": 1.0,
+   "k_sl": 2.618,
+   "rr": 1.0,
+   "hold_h": 72.0,
+   "side": "long",
+   "n": 49,
+   "wr": 36.73,
+   "u": 48.1,
+   "lift": -11.37,
+   "exp": -36.53,
+   "n_req": null,
+   "feas": false
+  },
+  {
+   "k_r": 1.0,
+   "k_sl": 2.618,
+   "rr": 1.0,
+   "hold_h": 120.0,
+   "side": "long",
+   "n": 49,
+   "wr": 44.9,
+   "u": 48.37,
+   "lift": -3.48,
+   "exp": -16.46,
+   "n_req": null,
+   "feas": false
+  },
+  {
+   "k_r": 1.0,
+   "k_sl": 2.618,
+   "rr": 1.618,
+   "hold_h": 72.0,
+   "side": "long",
+   "n": 49,
+   "wr": 34.69,
+   "u": 45.88,
+   "lift": -11.18,
+   "exp": -36.16,
+   "n_req": null,
+   "feas": false
+  },
+  {
+   "k_r": 1.0,
+   "k_sl": 2.618,
+   "rr": 1.618,
+   "hold_h": 120.0,
+   "side": "long",
+   "n": 49,
+   "wr": 42.86,
+   "u": 43.65,
+   "lift": -0.8,
+   "exp": -4.96,
+   "n_req": null,
+   "feas": false
+  }
+ ],
+ "winner": {
+  "long": null,
+  "short": null
+ },
+ "verdict": "REJECT (no feasible cell on TRAIN — glass ceiling)"
+}
