@@ -1,0 +1,135 @@
+{
+ "tf": "H6",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+ "n_total": 15966,
+ "half": 7983,
+ "n_explore": 7983,
+ "sl_pip": 131.153868,
+ "tp_pip": 131.153868,
+ "theta": 2.618,
+ "lam": 0.94,
+ "med_w": 233,
+ "atr_period": 34,
+ "max_hold": 34,
+ "uncond": {
+  "mean": 0.47788333333333327,
+  "sd": 0.034284637797253874,
+  "hi": 0.575,
+  "k": 300
+ },
+ "seed": 20260819,
+ "k_unc": 300,
+ "elapsed_s": 1.7,
+ "cells": [
+  {
+   "W": 55,
+   "theta": 2.618,
+   "rr": 1.0,
+   "sl_pip": 131.1538678617694,
+   "tp_pip": 131.1538678617694,
+   "gated": {
+    "n_sig_long": 69,
+    "n_sig_short": 65,
+    "n": 129,
+    "wr": 56.589,
+    "uncond": 47.788,
+    "lift_pp": 8.801,
+    "z_screen": 2.001,
+    "n_long": 67,
+    "wr_long": 59.7,
+    "n_short": 62,
+    "wr_short": 53.23,
+    "net_pip": 1689.7
+   },
+   "complement": {
+    "n_sig_long": 52,
+    "n_sig_short": 49,
+    "n": 101,
+    "wr": 54.455,
+    "uncond": 47.788,
+    "lift_pp": 6.667,
+    "z_screen": 1.341,
+    "n_long": 52,
+    "wr_long": 50.0,
+    "n_short": 49,
+    "wr_short": 59.18,
+    "net_pip": 847.1
+   },
+   "ungated": {
+    "n_sig_long": 121,
+    "n_sig_short": 114,
+    "n": 226,
+    "wr": 56.195,
+    "uncond": 47.788,
+    "lift_pp": 8.406,
+    "z_screen": 2.53,
+    "n_long": 117,
+    "wr_long": 55.56,
+    "n_short": 109,
+    "wr_short": 56.88,
+    "net_pip": 2812.3
+   },
+   "P3": {
+    "n_events": 235,
+    "pass_rate_thin": 0.57,
+    "pass_rate_calm": 0.74,
+    "phi_thin_calm": 0.27
+   }
+  },
+  {
+   "W": 89,
+   "theta": 2.618,
+   "rr": 1.0,
+   "sl_pip": 131.1538678617694,
+   "tp_pip": 131.1538678617694,
+   "gated": {
+    "n_sig_long": 69,
+    "n_sig_short": 62,
+    "n": 125,
+    "wr": 56.8,
+    "uncond": 47.788,
+    "lift_pp": 9.012,
+    "z_screen": 2.017,
+    "n_long": 66,
+    "wr_long": 57.58,
+    "n_short": 59,
+    "wr_short": 55.93,
+    "net_pip": 1702.9
+   },
+   "complement": {
+    "n_sig_long": 52,
+    "n_sig_short": 52,
+    "n": 103,
+    "wr": 54.369,
+    "uncond": 47.788,
+    "lift_pp": 6.581,
+    "z_screen": 1.337,
+    "n_long": 52,
+    "wr_long": 51.92,
+    "n_short": 51,
+    "wr_short": 56.86,
+    "net_pip": 840.5
+   },
+   "ungated": {
+    "n_sig_long": 121,
+    "n_sig_short": 114,
+    "n": 226,
+    "wr": 56.195,
+    "uncond": 47.788,
+    "lift_pp": 8.406,
+    "z_screen": 2.53,
+    "n_long": 117,
+    "wr_long": 55.56,
+    "n_short": 109,
+    "wr_short": 56.88,
+    "net_pip": 2812.3
+   },
+   "P3": {
+    "n_events": 235,
+    "pass_rate_thin": 0.557,
+    "pass_rate_calm": 0.74,
+    "phi_thin_calm": 0.196
+   }
+  }
+ ]
+}
