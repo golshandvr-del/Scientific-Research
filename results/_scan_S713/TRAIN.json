@@ -1,0 +1,118 @@
+{
+ "M30": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M30.csv",
+  "n_bars": 182145,
+  "split": 91072,
+  "n_shock_train": 1498,
+  "grid": [
+   {
+    "D": "mid",
+    "n": 168,
+    "n_events": 168,
+    "wr": 44.047619047619044,
+    "exp": -1.7296292040409464,
+    "pf": 0.903897544600179,
+    "net": -290.577706278879,
+    "score": null
+   },
+   {
+    "D": "open",
+    "n": 24,
+    "n_events": 24,
+    "wr": 41.66666666666667,
+    "exp": -5.085845765387911,
+    "pf": 0.7542102592836205,
+    "net": -122.06029836930988,
+    "score": null
+   }
+  ],
+  "winner": null
+ },
+ "H1": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "n_bars": 91331,
+  "split": 45665,
+  "n_shock_train": 791,
+  "grid": [
+   {
+    "D": "mid",
+    "n": 102,
+    "n_events": 102,
+    "wr": 36.27450980392157,
+    "exp": -6.1179665222771105,
+    "pf": 0.7730471015805287,
+    "net": -624.0325852722652,
+    "score": null
+   },
+   {
+    "D": "open",
+    "n": 17,
+    "n_events": 17,
+    "wr": 17.647058823529413,
+    "exp": -23.580648177079,
+    "pf": 0.2353975090722023,
+    "net": -400.871019010343,
+    "score": null
+   }
+  ],
+  "winner": null
+ },
+ "H2": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H2.csv",
+  "n_bars": 47623,
+  "split": 23811,
+  "n_shock_train": 454,
+  "grid": [
+   {
+    "D": "mid",
+    "n": 46,
+    "n_events": 46,
+    "wr": 45.65217391304348,
+    "exp": 3.3332846835390404,
+    "pf": 1.0905630851800823,
+    "net": 153.33109544279586,
+    "score": null
+   },
+   {
+    "D": "open",
+    "n": 7,
+    "n_events": 7,
+    "wr": 57.14285714285714,
+    "exp": 26.011915043850344,
+    "pf": 1.9750865681885241,
+    "net": 182.08340530695241,
+    "score": null
+   }
+  ],
+  "winner": null
+ },
+ "H3": {
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+  "n_bars": 31806,
+  "split": 15903,
+  "n_shock_train": 262,
+  "grid": [
+   {
+    "D": "mid",
+    "n": 18,
+    "n_events": 18,
+    "wr": 44.44444444444444,
+    "exp": 30.864518761321378,
+    "pf": 1.8415462248848018,
+    "net": 555.5613377037848,
+    "score": null
+   },
+   {
+    "D": "open",
+    "n": 5,
+    "n_events": 5,
+    "wr": 60.0,
+    "exp": 27.847959497775445,
+    "pf": 1.7957950620121468,
+    "net": 139.23979748887723,
+    "score": null
+   }
+  ],
+  "winner": null
+ }
+}
