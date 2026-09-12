@@ -10,20 +10,23 @@
    "span_years": 15.59,
    "n_events": {
     "S589": 260,
-    "S1520": 222,
-    "S526_base": 361
+    "S526_base": 361,
+    "S1520": 222
    },
-   "vs_S1520_LIVE_ON_H8": {
-    "a": "S589",
-    "b": "S1520",
-    "n_a": 260,
-    "n_b": 222,
-    "shared": 166,
-    "share_of_a": 63.8,
-    "share_of_b": 74.8,
-    "jaccard": 0.5253,
-    "size_ratio": 0.8538,
-    "false_witness": false
+   "vs_live_incumbents": {
+    "S1520": {
+     "a": "S589",
+     "b": "S1520",
+     "n_a": 260,
+     "n_b": 222,
+     "shared": 166,
+     "share_of_a": 63.8,
+     "share_of_b": 74.8,
+     "jaccard": 0.5253,
+     "size_ratio": 0.8538,
+     "false_witness": false,
+     "why_this_reference": "wired on H8 (last entry of CARD_LAYERS)"
+    }
    },
    "vs_S526_parent_unwired": {
     "a": "S589",
@@ -36,6 +39,18 @@
     "jaccard": 0.7202,
     "size_ratio": 0.7202,
     "false_witness": false
+   },
+   "vs_S1520_family_reference": {
+    "a": "S589",
+    "b": "S1520",
+    "n_a": 260,
+    "n_b": 222,
+    "shared": 166,
+    "share_of_a": 63.8,
+    "share_of_b": 74.8,
+    "jaccard": 0.5253,
+    "size_ratio": 0.8538,
+    "false_witness": false
    }
   },
   "XAUUSD_H4": {
@@ -43,20 +58,23 @@
    "span_years": 15.59,
    "n_events": {
     "S589": 490,
-    "S1520": 399,
-    "S526_base": 717
+    "S526_base": 717,
+    "S382": 1486
    },
-   "vs_S1520_LIVE_ON_H8": {
-    "a": "S589",
-    "b": "S1520",
-    "n_a": 490,
-    "n_b": 399,
-    "shared": 275,
-    "share_of_a": 56.1,
-    "share_of_b": 68.9,
-    "jaccard": 0.4479,
-    "size_ratio": 0.8143,
-    "false_witness": false
+   "vs_live_incumbents": {
+    "S382": {
+     "a": "S589",
+     "b": "S382",
+     "n_a": 490,
+     "n_b": 1486,
+     "shared": 245,
+     "share_of_a": 50.0,
+     "share_of_b": 16.5,
+     "jaccard": 0.1415,
+     "size_ratio": 0.3297,
+     "false_witness": false,
+     "why_this_reference": "wired on H4 (the only incumbent)"
+    }
    },
    "vs_S526_parent_unwired": {
     "a": "S589",
@@ -68,6 +86,18 @@
     "share_of_b": 68.3,
     "jaccard": 0.6834,
     "size_ratio": 0.6834,
+    "false_witness": false
+   },
+   "vs_S1520_family_reference": {
+    "a": "S589",
+    "b": "S1520",
+    "n_a": 490,
+    "n_b": 399,
+    "shared": 275,
+    "share_of_a": 56.1,
+    "share_of_b": 68.9,
+    "jaccard": 0.4479,
+    "size_ratio": 0.8143,
     "false_witness": false
    }
   }

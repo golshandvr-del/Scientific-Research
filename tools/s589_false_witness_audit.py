@@ -172,41 +172,67 @@ def main() -> None:
         'cards': {},
     }
 
+    # ساکنِ **زندهٔ** هر کارت — این نگاشت از CARD_LAYERS خوانده شده، نه حدس:
+    #   XAUUSD-H8 ⇒ S950·S965·S770·S966·S1911·S607·S1520  ⇒ هم‌خانوادهٔ مرتبط = S1520
+    #   XAUUSD-H4 ⇒ S382 (تنها ساکن)                       ⇒ مرجع = S382
+    # مقایسه با لایه‌ای که روی آن کارت **نیست** پاسخِ بی‌مصرف می‌دهد؛ همان اشتباهی
+    # که اجرای اولِ این ابزار کرد و در گامِ ۲ ثبت شد.
+    LIVE_ON_CARD = {
+        'XAUUSD_H8': [('S1520', sig_s1520, 'wired on H8 (last entry of CARD_LAYERS)')],
+        'XAUUSD_H4': [('S382', sig_s382, 'wired on H4 (the only incumbent)')],
+    }
+
     for card in ('XAUUSD_H8', 'XAUUSD_H4'):
         df = load(card)
-        s589, s1520, s526 = sig_s589(df), sig_s1520(df), sig_s526(df)
+        s589 = sig_s589(df)
+        s526 = sig_s526(df)
         card_rep = {
             'bars': int(len(df)),
             'span_years': round((df['time'].iloc[-1] - df['time'].iloc[0]) / (365.25 * 86400), 2),
-            'n_events': {'S589': int(s589.sum()), 'S1520': int(s1520.sum()),
-                         'S526_base': int(s526.sum())},
-            'vs_S1520_LIVE_ON_H8': compare(s589, s1520, 'S589', 'S1520'),
+            'n_events': {'S589': int(s589.sum()), 'S526_base': int(s526.sum())},
+            'vs_live_incumbents': {},
             'vs_S526_parent_unwired': compare(s589, s526, 'S589', 'S526'),
         }
-        report['cards'][card] = card_rep
         print(f'{card}: bars={len(df)} S589={int(s589.sum())} '
-              f'S1520={int(s1520.sum())} S526={int(s526.sum())}', flush=True)
-        for k in ('vs_S1520_LIVE_ON_H8', 'vs_S526_parent_unwired'):
-            r = card_rep[k]
-            print(f'  {k}: shared={r["shared"]} share_of_S589={r["share_of_a"]}% '
-                  f'jaccard={r["jaccard"]} size_ratio={r["size_ratio"]} '
-                  f'FALSE_WITNESS={r["false_witness"]}', flush=True)
+              f'S526_base={int(s526.sum())}', flush=True)
+
+        for name, fn, why in LIVE_ON_CARD[card]:
+            other = fn(df)
+            rec = compare(s589, other, 'S589', name)
+            rec['why_this_reference'] = why
+            card_rep['vs_live_incumbents'][name] = rec
+            card_rep['n_events'][name] = int(other.sum())
+            print(f'  vs {name} [{why}]: n_{name}={int(other.sum())} '
+                  f'shared={rec["shared"]} share_of_S589={rec["share_of_a"]}% '
+                  f'jaccard={rec["jaccard"]} size_ratio={rec["size_ratio"]} '
+                  f'FALSE_WITNESS={rec["false_witness"]}', flush=True)
+
+        # S1520 روی H4 وصل نیست (آن‌جا REJECT 16.7 گرفت) — فقط برای هم‌ترازیِ
+        # کنترلِ اعتبارسنجی و ثبتِ خانوادگی سنجیده می‌شود، نه به‌عنوان قیدِ پرتفوی.
+        card_rep['vs_S1520_family_reference'] = compare(s589, sig_s1520(df), 'S589', 'S1520')
+
+        r = card_rep['vs_S526_parent_unwired']
+        print(f'  vs S526 [parent, NOT wired]: shared={r["shared"]} '
+              f'share_of_S589={r["share_of_a"]}% jaccard={r["jaccard"]} '
+              f'size_ratio={r["size_ratio"]} FALSE_WITNESS={r["false_witness"]}', flush=True)
+        report['cards'][card] = card_rep
 
     # ── کنترلِ اعتبارسنجیِ ابزار: بازتولیدِ اعدادِ منتشرشدهٔ سندِ S589 §۴ ────────
     # سند روی H8 گفته: vs S526 = 90.6٪ و vs S1520 = 61.0٪ (سهم از ۱۵۹ معامله).
     # اینجا سطحِ **رویداد** سنجیده می‌شود نه معاملهٔ پس از FIFO، پس عدد دقیقاً
     # برابر نیست؛ ولی باید در همان همسایگی باشد وگرنه ابزار غلط است.
     h8 = report['cards']['XAUUSD_H8']
+    h8_s1520 = h8['vs_S1520_family_reference']
     ctrl = {
         'published_vs_S526_trades': 90.6,
         'measured_vs_S526_events': h8['vs_S526_parent_unwired']['share_of_a'],
         'published_vs_S1520_trades': 61.0,
-        'measured_vs_S1520_events': h8['vs_S1520_LIVE_ON_H8']['share_of_a'],
+        'measured_vs_S1520_events': h8_s1520['share_of_a'],
     }
     # S589 زیرمجموعهٔ ساختاریِ کاملِ S526 است (گیت روی همان رویداد) ⇒ باید ۱۰۰٪ باشد
     ctrl['subset_of_S526_exact'] = bool(h8['vs_S526_parent_unwired']['share_of_a'] == 100.0)
     ctrl['s1520_within_10pp_of_published'] = bool(
-        abs(h8['vs_S1520_LIVE_ON_H8']['share_of_a'] - 61.0) <= 10.0)
+        abs(h8_s1520['share_of_a'] - 61.0) <= 10.0)
     ctrl['tool_valid'] = bool(ctrl['subset_of_S526_exact']
                               and ctrl['s1520_within_10pp_of_published'])
     report['control'] = ctrl
