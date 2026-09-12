@@ -77,12 +77,38 @@ CARDS = ('XAUUSD_H8', 'XAUUSD_H4', 'XAUUSD_H12')
 HEALTH_CARDS = ('XAUUSD_H8', 'XAUUSD_H4')
 
 
+# ⚠️ **BUG-DATASETDRIFT روی کارتِ H4 — کشفِ گیتِ سلامت، نه حدس.**
+# اجرای اولِ این صادرکننده روی `data/mt5_full/XAUUSD_H4.csv.gz` هر پنج سنجهٔ H4 را
+# از دست داد (سیگنال ۴۹۰≠۴۸۸ · معامله ۳۲۴≠۳۲۲ · WR ۵۱.۲۳≠۵۰.۹۳ ·
+# SL ۱۲۳.۰۱≠۱۲۲.۸۵ · TP ۱۸۴.۵۱≠۱۸۴.۲۸) — درحالی‌که H8 **عیناً** بازتولید شد.
+# اختلافِ هم‌زمانِ هندسه و جمعیت، امضای دادهٔ متفاوت است نه منطقِ متفاوت.
+# علت (از خودِ سندِ S589 §سرصفحه): H8 از `data/full/` (gunzip از mt5_full) آمده
+# ولی H4 از **`data/XAUUSD_H4.csv`** — و آن فایل با کامیتِ `a8cd44cc`
+# («Delete data/XAUUSD_H4.csv») بالادست **حذف شده است**. همان چیزی که سندِ
+# S1521 هم دیده بود. mt5_full نسخهٔ ۲۳٬۸۵۴ کندلی (تا 2026-08-07) است، ولی حکم
+# روی نسخهٔ ۲۳٬۷۵۵ کندلی (تا 2026-07-16، span 15.53) صادر شد.
+# ⇒ فایلِ دورانِ حکم از تاریخِ گیت بازیابی می‌شود (`git show a8cd44cc^:…`) و
+#   هر پنج سنجه **دقیقاً** بازتولید شد. پس این یک باگِ پورت نبود؛ گیتِ سلامت
+#   کارش را کرد و یک خطای provenance را گرفت که به‌چشم دیده نمی‌شد.
+H4_VERDICT_BLOB = 'a8cd44cc^:data/XAUUSD_H4.csv'
+
+
 def load(card: str) -> pd.DataFrame:
-    path = os.path.join(ROOT, 'data', 'mt5_full', f'{card}.csv.gz')
-    assert 'mt5_full' in path, 'BUG-DATASETDRIFT: must be the full 15.6y source'
-    with gzip.open(path, 'rt') as f:
-        df = pd.read_csv(f)
+    if card == 'XAUUSD_H4':
+        # کارتِ H4: فایلِ دورانِ حکم از تاریخِ گیت (بالا را ببینید).
+        import subprocess
+        raw = subprocess.run(['git', 'show', H4_VERDICT_BLOB], cwd=ROOT,
+                             capture_output=True, check=True).stdout.decode()
+        df = pd.read_csv(pd.io.common.StringIO(raw))
+        src = f'git:{H4_VERDICT_BLOB}'
+    else:
+        path = os.path.join(ROOT, 'data', 'mt5_full', f'{card}.csv.gz')
+        assert 'mt5_full' in path, 'BUG-DATASETDRIFT: must be the full 15.6y source'
+        with gzip.open(path, 'rt') as f:
+            df = pd.read_csv(f)
+        src = path
     df['dt'] = pd.to_datetime(df['time'], unit='s')
+    df.attrs['src'] = src
     assert 'volume' in df.columns, 'BUG-NOVOLUME'
     return df
 
@@ -169,6 +195,7 @@ def main() -> None:
         ref = {
             'card': card,
             'bars': int(len(df)),
+            'data_src': df.attrs.get('src', '?'),
             'span_years': round(
                 (df['time'].iloc[-1] - df['time'].iloc[0]) / (365.25 * 86400), 2),
             'frozen': {
