@@ -1,0 +1,6 @@
+
+====================================================================================
+=== S931_InformedWeeklyExtremumBreak :: XAUUSD_M3  bars=1,815,880  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_M3.csv  (2011-01-03 00:00:00 → 2026-08-07 23:54:00)
+    monthly first-crosses: up=415 dn=351
+    [gated] trades=512 (L=281 S=231) wr=44.14 SLmed=12.1 TPmed=19.6

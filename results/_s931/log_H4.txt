@@ -1,0 +1,18 @@
+
+====================================================================================
+=== S931_InformedWeeklyExtremumBreak :: XAUUSD_H4  bars=23,854  span=15.59y
+    src=/home/user/webapp/data/mt5_full/XAUUSD_H4.csv  (2011-01-03 00:00:00 → 2026-08-07 20:00:00)
+    monthly first-crosses: up=378 dn=316
+    [gated] trades=420 (L=231 S=189) wr=40.95 SLmed=96.3 TPmed=155.8
+      null long  uncond=40.64432014131303 perm_mean=40.577712830935546 sd=3.1417768807053137 k=1000
+      null short uncond=38.84005551583463 perm_mean=38.838448802098945 sd=3.6508694294980137 k=1000
+S931_InformedWeeklyExtremumBreak_gated_XAUUSD_H4 | REJECT     RQS2=  6.5 | n= 420 WR=40.95% PF=1.02 lift=  +1.12pp z= 0.3 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✓ H10:✗
+    [ungated] trades=673 (L=368 S=305) wr=41.01 SLmed=96.2 TPmed=155.6
+      null long  uncond=40.64432014131303 perm_mean=40.91844108712552 sd=2.51548458346374 k=1000
+      null short uncond=38.84005551583463 perm_mean=39.018935275150376 sd=2.946796605817744 k=1000
+S931_InformedWeeklyExtremumBreak_ungated_XAUUSD_H4 | REJECT     RQS2=  6.5 | n= 673 WR=41.01% PF=1.03 lift=  +0.95pp z= 0.3 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✓ H10:✗
+    [fade] trades=680 (L=309 S=371) wr=37.94 SLmed=95.7 TPmed=154.8
+      null long  uncond=40.64432014131303 perm_mean=40.72301630470052 sd=2.75891350481827 k=1000
+      null short uncond=38.84005551583463 perm_mean=38.805490263606536 sd=2.4851479084224186 k=1000
+S931_InformedWeeklyExtremumBreak_fade_XAUUSD_H4 | REJECT     RQS2=  0.7 | n= 680 WR=37.94% PF=0.90 lift=  -1.75pp z=-0.7 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
+    ==> card verdict: REJECT (best arm gated 6.5)
