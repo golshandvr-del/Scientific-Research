@@ -13,3 +13,6 @@ S931_InformedWeeklyExtremumBreak_gated_XAUUSD_M1 | REJECT     RQS2=  3.4 | n= 50
 S931_InformedWeeklyExtremumBreak_ungated_XAUUSD_M1 | REJECT     RQS2=  3.5 | n= 715 WR=38.32% PF=0.37 lift=  +4.68pp z= 1.9 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✓ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
     [fade] trades=715 (L=328 S=387) wr=34.27 SLmed=7.7 TPmed=12.5
       null long  uncond=33.65531864766168 perm_mean=33.44382560890955 sd=2.4680265008495192 k=500
+      null short uncond=33.49727097812856 perm_mean=33.626648562640845 sd=2.3672055344421232 k=500
+S931_InformedWeeklyExtremumBreak_fade_XAUUSD_M1 | REJECT     RQS2=  0.4 | n= 715 WR=34.27% PF=0.44 lift=  +0.63pp z= 0.3 | H0:✓ H1:✗ H2:✗ H3:✗ H4:✗ H5:✗ H6:✗ H7:✗ H8:✗ H9:✗ H10:✗
+    ==> card verdict: REJECT (best arm ungated 3.5)
