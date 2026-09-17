@@ -1,0 +1,24 @@
+{
+ "n_trials_30": {
+  "verdict": "ACCEPT",
+  "score": 84.2,
+  "z_margin": 1.331,
+  "failed": []
+ },
+ "n_trials_100": {
+  "verdict": "ACCEPT",
+  "score": 83.5,
+  "z_margin": 0.874,
+  "failed": []
+ },
+ "counter_rho_lt_0618": {
+  "n": 127,
+  "wr": 42.52
+ },
+ "ungated_s758_long_L5": {
+  "n": 269,
+  "wr": 47.21
+ },
+ "gate_pass_rate_pct": 56.9,
+ "trades_per_year": 11.2
+}
