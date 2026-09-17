@@ -100,13 +100,21 @@ def judge_pool(arm, members):
     used = {u['card'] for u in res['used']}
     mu = [m for m in members if m['card'] in used]
     null = blend_null(mu, pool)
-    t0, t1 = pool['t_entry'].min(), pool['t_entry'].max()
-    split_idx = int((pool['t_entry'].values < t0 + SPLIT_FRAC * (t1 - t0)).sum())
-    bar_time = (pool['t_entry'].values / 1e9).astype('int64')
-    p2 = pool.copy(); p2['entry_bar'] = np.arange(len(p2)); p2['exit_bar'] = np.arange(len(p2))
+    # محور مرجع H1 برای bar_time/close (پروتکل S431/S770-POOL2 — لازم برای H10)
+    from tools import s434_fast_data as fd
+    dh = fd.load_fast('XAUUSD', 'H1'); assert 'mt5_full' in dh['src'], 'E-16 guard'
+    ref_t = (dh['time'].astype(np.int64) * 10**9); ref_c = dh['close'].astype(np.float64)
+    p2 = pool.copy()
+    p2['entry_bar'] = np.clip(np.searchsorted(ref_t, p2['t_entry'].values, 'left'), 0, len(ref_t) - 1)
+    p2['exit_bar'] = np.clip(np.searchsorted(ref_t, p2['t_exit'].values, 'left'), 0, len(ref_t) - 1)
+    p2['exit_bar'] = np.maximum(p2['exit_bar'], p2['entry_bar'])
+    p2 = p2.sort_values('exit_bar', kind='mergesort').reset_index(drop=True)
+    bar_time = (ref_t / 10**9).astype('int64')
+    te = p2['t_entry'].values.astype(np.int64)
+    split_ns = int(np.quantile(te, SPLIT_FRAC)); holdout = te >= split_ns; split_idx = int((~holdout).sum())
     sl = float(np.median([m['sl_med'] for m in mu])); tp = float(np.median([m['tp_med'] for m in mu]))
     r = rqs2.compute_rqs2(p2, 'XAUUSD', sl_pip=sl, tp_pip=tp, bar_time=bar_time, null=null,
-                          n_trials=N_TRIALS, split_bar=split_idx, close=None)
+                          close=ref_c, holdout_mask=holdout, n_trials=N_TRIALS, allow_overlap=False)
     m = r['metrics']
     line = (f"S1781-POOL-{arm.upper()} | {r['verdict']} RQS2={r['rqs2_score']} | n={len(p2)} "
             f"WR={m.get('win_rate')} PF={m.get('profit_factor')} lift={m.get('skill_lift_pp')} "

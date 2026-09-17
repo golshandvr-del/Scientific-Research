@@ -1,0 +1,38 @@
+{
+ "raw": {
+  "cards": [
+   "S1781-XAUUSD_D1-RAW | REJECT RQS2=20.7 | n=380 WR=43.68 PF=1.261 lift=5.31 z=1.55 p=0.060709 pass=1.00",
+   "S1781-XAUUSD_H8-RAW | REJECT RQS2=19.4 | n=908 WR=41.3 PF=1.211 lift=4.21 z=1.91 p=0.028313 pass=1.00"
+  ],
+  "pool": "S1781-POOL-RAW | POWER-LIMITED RQS2=23.1 | n=678 WR=44.54 PF=1.403 lift=7.04 z=3.78 p=8e-05 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]",
+  "pool_gates": "H0✓ H1✓ H2✓ H3✓ H4✓ H5✓ H6✓ H7✓ H8✓ H9✓ H10✗",
+  "pass_rates": {
+   "XAUUSD_D1": 1.0,
+   "XAUUSD_H8": 1.0
+  }
+ },
+ "calm": {
+  "cards": [
+   "S1781-XAUUSD_D1-CALM | REJECT RQS2=24.2 | n=216 WR=48.15 PF=1.645 lift=8.75 z=1.86 p=0.03149 pass=0.57",
+   "S1781-XAUUSD_H8-CALM | REJECT RQS2=20.5 | n=541 WR=43.62 PF=1.276 lift=6.11 z=2.11 p=0.017569 pass=0.58"
+  ],
+  "pool": "S1781-POOL-CALM | REJECT RQS2=18.6 | n=454 WR=44.71 PF=1.347 lift=6.69 z=2.7 p=0.003485 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]",
+  "pool_gates": "H0✓ H1✓ H2✓ H3✗ H4✓ H5✓ H6✓ H7✓ H8✗ H9✓ H10✗",
+  "pass_rates": {
+   "XAUUSD_D1": 0.571590909090909,
+   "XAUUSD_H8": 0.5836669335468375
+  }
+ },
+ "storm": {
+  "cards": [
+   "S1781-XAUUSD_D1-STORM | REJECT RQS2=5.2 | n=194 WR=37.11 PF=0.969 lift=0.24 z=0.05 p=0.47995 pass=0.43",
+   "S1781-XAUUSD_H8-STORM | REJECT RQS2=10.1 | n=416 WR=38.7 PF=1.123 lift=2.1 z=0.67 p=0.252057 pass=0.42"
+  ],
+  "pool": "S1781-POOL-STORM | REJECT RQS2=10.1 | n=416 WR=38.7 PF=1.123 lift=2.1 z=0.67 p=0.252057 | used=['XAUUSD_H8'] dropped=[('XAUUSD_D1', 'dilutes pool (lowers z_proxy)')]",
+  "pool_gates": "H0✓ H1✗ H2✓ H3✗ H4✗ H5✗ H6✗ H7✗ H8✗ H9✓ H10✗",
+  "pass_rates": {
+   "XAUUSD_D1": 0.4284090909090909,
+   "XAUUSD_H8": 0.41633306645316254
+  }
+ }
+}

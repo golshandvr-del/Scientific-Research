@@ -1,0 +1,101 @@
+{
+ "arm": "raw",
+ "verdict": "POWER-LIMITED",
+ "score": 23.1,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": true,
+  "H4": true,
+  "H5": true,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": null
+ },
+ "n": 678,
+ "used": [
+  {
+   "card": "XAUUSD_D1",
+   "lift": 5.552694888785723,
+   "n": 380
+  },
+  {
+   "card": "XAUUSD_H8",
+   "lift": 4.326706474951095,
+   "n": 908
+  }
+ ],
+ "dropped": [],
+ "null": {
+  "long": {
+   "uncond_wr": 40.25514811658658,
+   "perm_mean": 40.259172867406654,
+   "perm_sd": 1.8402778830422246,
+   "perm_max": null,
+   "perm_k": 800
+  },
+  "short": {
+   "uncond_wr": 34.46983540478039,
+   "perm_mean": 34.52435299404866,
+   "perm_sd": 1.891864231685612,
+   "perm_max": null,
+   "perm_k": 800
+  }
+ },
+ "n_trials": 302,
+ "split_idx": 394,
+ "metrics": {
+  "n_trades": 678.0,
+  "win_rate": 44.54,
+  "net_profit": 28444.1,
+  "profit_factor": 1.403,
+  "max_dd_pct": 5.68,
+  "max_consec_losses": 11.0,
+  "mcl_allowed": 17.0,
+  "n_wins": 302.0,
+  "top_win_share": 0.0289,
+  "recovery_factor": 12.41,
+  "expectancy_pip": 63.3452,
+  "expectancy_at_2x_cost": 60.0452,
+  "cost_pip": 3.3,
+  "spread_pip": 3.3,
+  "sl_pip": 220.305,
+  "tp_pip": 453.388,
+  "rr": 2.058,
+  "breakeven_wr_cost": 33.19,
+  "wr_excess_cost": 11.35,
+  "null_ref_wr": 37.5,
+  "skill_lift_pp": 7.04,
+  "skill_z": 3.78,
+  "skill_p_perm": 8e-05,
+  "perm_max": 37.5,
+  "perm_k": 800.0,
+  "side_n": "{'long': 352, 'short': 326}",
+  "side_wr": "{'long': 49.15, 'short': 39.57}",
+  "side_lift_pp": "{'long': 8.89, 'short': 5.05}",
+  "prune_sides": "[]",
+  "p_emp": 8.9e-05,
+  "p_adj_bonferroni": 0.02699,
+  "z_obs": 3.787,
+  "z_luck_bound": 2.898,
+  "z_margin": 0.889,
+  "n_trials": 302.0,
+  "cal_nets": "[3817.5, 4676.4, 524.2, 8066.7]",
+  "cal_counts": "[175, 148, 167, 188]",
+  "cal_positive": 4.0,
+  "cal_occupied": 4.0,
+  "half_nets": "[10271.5, 8895.0]",
+  "oos": "{'n': 284, 'wr': 45.07, 'pf': 1.487, 'net': 8845.7, 'wr_req': 33.19}",
+  "max_concurrency": 1.0,
+  "counter_drift": "{}",
+  "n_required_h3": 451.4
+ },
+ "notes": [
+  "H10 UNKNOWN: close series not supplied — cannot test whether the edge survives against the prevailing drift, which is the one question the permutation control structurally cannot answer"
+ ],
+ "line": "S1781-POOL-RAW | POWER-LIMITED RQS2=23.1 | n=678 WR=44.54 PF=1.403 lift=7.04 z=3.78 p=8e-05 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]",
+ "gates_str": "H0✓ H1✓ H2✓ H3✓ H4✓ H5✓ H6✓ H7✓ H8✓ H9✓ H10✗"
+}

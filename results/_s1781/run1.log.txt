@@ -1,0 +1,47 @@
+    null long: {"uncond_wr": 42.23469660518578, "perm_mean": 42.28088358458961, "perm_sd": 3.3285153048252605, "perm_max": 51.75879396984925, "perm_k": 800}
+    null short: {"uncond_wr": 34.02833466987437, "perm_mean": 34.07152394106814, "perm_sd": 3.5429517464517497, "perm_max": 46.96132596685083, "perm_k": 800}
+[raw D1] src=/home/user/webapp/data/mt5_full/XAUUSD_D1.csv n_raw_sig=880 pass=1.00 n=380 WR=43.7 lift~+5.6
+    null long: {"uncond_wr": 39.25217688236298, "perm_mean": 39.2348394373673, "perm_sd": 2.2008357474288216, "perm_max": 46.186440677966104, "perm_k": 800}
+    null short: {"uncond_wr": 34.69352911046611, "perm_mean": 34.75378638089212, "perm_sd": 2.214150435194255, "perm_max": 40.596330275229356, "perm_k": 800}
+[raw H8] src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv n_raw_sig=1249 pass=1.00 n=908 WR=41.3 lift~+4.3
+S1781-XAUUSD_D1-RAW | REJECT RQS2=20.7 | n=380 WR=43.68 PF=1.261 lift=5.31 z=1.55 p=0.060709 pass=1.00
+S1781-XAUUSD_H8-RAW | REJECT RQS2=19.4 | n=908 WR=41.3 PF=1.211 lift=4.21 z=1.91 p=0.028313 pass=1.00
+S1781-POOL-RAW | POWER-LIMITED RQS2=23.1 | n=678 WR=44.54 PF=1.403 lift=7.04 z=3.78 p=8e-05 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]
+  H0✓ H1✓ H2✓ H3✓ H4✓ H5✓ H6✓ H7✓ H8✓ H9✓ H10✗
+  oos: {'n': 284, 'wr': 45.07, 'pf': 1.487, 'net': 8845.7, 'wr_req': 33.19}
+    null long: {"uncond_wr": 43.16546762589928, "perm_mean": 42.91931818181818, "perm_sd": 4.752187896580296, "perm_max": 58.18181818181818, "perm_k": 800}
+    null short: {"uncond_wr": 35.4916067146283, "perm_mean": 35.360849056603776, "perm_sd": 4.65646530661148, "perm_max": 50.0, "perm_k": 800}
+[calm D1] src=/home/user/webapp/data/mt5_full/XAUUSD_D1.csv n_raw_sig=880 pass=0.57 n=216 WR=48.1 lift~+8.8
+    null long: {"uncond_wr": 39.53200061986673, "perm_mean": 39.4411231884058, "perm_sd": 2.966005422502596, "perm_max": 48.91304347826087, "perm_k": 800}
+    null short: {"uncond_wr": 35.34790020145669, "perm_mean": 35.40094339622642, "perm_sd": 2.8359172508771837, "perm_max": 42.64150943396226, "perm_k": 800}
+[calm H8] src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv n_raw_sig=1249 pass=0.58 n=541 WR=43.6 lift~+6.2
+S1781-XAUUSD_D1-CALM | REJECT RQS2=24.2 | n=216 WR=48.15 PF=1.645 lift=8.75 z=1.86 p=0.03149 pass=0.57
+S1781-XAUUSD_H8-CALM | REJECT RQS2=20.5 | n=541 WR=43.62 PF=1.276 lift=6.11 z=2.11 p=0.017569 pass=0.58
+S1781-POOL-CALM | REJECT RQS2=18.6 | n=454 WR=44.71 PF=1.347 lift=6.69 z=2.7 p=0.003485 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]
+  H0✓ H1✓ H2✓ H3✗ H4✓ H5✓ H6✓ H7✓ H8✗ H9✓ H10✗
+  oos: {'n': 178, 'wr': 43.26, 'pf': 1.309, 'net': 3202.4, 'wr_req': 33.19}
+    null long: {"uncond_wr": 41.06280193236715, "perm_mean": 41.09949524364201, "perm_sd": 4.728747214568954, "perm_max": 53.92156862745098, "perm_k": 800}
+    null short: {"uncond_wr": 32.18599033816425, "perm_mean": 31.946607740086005, "perm_sd": 4.861712924873026, "perm_max": 45.65217391304348, "perm_k": 800}
+[storm D1] src=/home/user/webapp/data/mt5_full/XAUUSD_D1.csv n_raw_sig=880 pass=0.43 n=194 WR=37.1 lift~+0.5
+    null long: {"uncond_wr": 38.90895267059494, "perm_mean": 38.793847696421224, "perm_sd": 3.0195166317506894, "perm_max": 47.963800904977376, "perm_k": 800}
+    null short: {"uncond_wr": 33.8908952670595, "perm_mean": 33.98425522072429, "perm_sd": 3.2886894501726984, "perm_max": 44.1025641025641, "perm_k": 800}
+[storm H8] src=/home/user/webapp/data/mt5_full/XAUUSD_H8.csv n_raw_sig=1249 pass=0.42 n=416 WR=38.7 lift~+2.3
+S1781-XAUUSD_D1-STORM | REJECT RQS2=5.2 | n=194 WR=37.11 PF=0.969 lift=0.24 z=0.05 p=0.47995 pass=0.43
+S1781-XAUUSD_H8-STORM | REJECT RQS2=10.1 | n=416 WR=38.7 PF=1.123 lift=2.1 z=0.67 p=0.252057 pass=0.42
+S1781-POOL-STORM | REJECT RQS2=10.1 | n=416 WR=38.7 PF=1.123 lift=2.1 z=0.67 p=0.252057 | used=['XAUUSD_H8'] dropped=[('XAUUSD_D1', 'dilutes pool (lowers z_proxy)')]
+  H0✓ H1✗ H2✓ H3✗ H4✗ H5✗ H6✗ H7✗ H8✗ H9✓ H10✗
+  oos: {'n': 180, 'wr': 38.89, 'pf': 1.191, 'net': 1999.1, 'wr_req': 33.4}
+
+===== SUMMARY =====
+raw :: S1781-POOL-RAW | POWER-LIMITED RQS2=23.1 | n=678 WR=44.54 PF=1.403 lift=7.04 z=3.78 p=8e-05 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]
+    H0✓ H1✓ H2✓ H3✓ H4✓ H5✓ H6✓ H7✓ H8✓ H9✓ H10✗
+    S1781-XAUUSD_D1-RAW | REJECT RQS2=20.7 | n=380 WR=43.68 PF=1.261 lift=5.31 z=1.55 p=0.060709 pass=1.00
+    S1781-XAUUSD_H8-RAW | REJECT RQS2=19.4 | n=908 WR=41.3 PF=1.211 lift=4.21 z=1.91 p=0.028313 pass=1.00
+calm :: S1781-POOL-CALM | REJECT RQS2=18.6 | n=454 WR=44.71 PF=1.347 lift=6.69 z=2.7 p=0.003485 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]
+    H0✓ H1✓ H2✓ H3✗ H4✓ H5✓ H6✓ H7✓ H8✗ H9✓ H10✗
+    S1781-XAUUSD_D1-CALM | REJECT RQS2=24.2 | n=216 WR=48.15 PF=1.645 lift=8.75 z=1.86 p=0.03149 pass=0.57
+    S1781-XAUUSD_H8-CALM | REJECT RQS2=20.5 | n=541 WR=43.62 PF=1.276 lift=6.11 z=2.11 p=0.017569 pass=0.58
+storm :: S1781-POOL-STORM | REJECT RQS2=10.1 | n=416 WR=38.7 PF=1.123 lift=2.1 z=0.67 p=0.252057 | used=['XAUUSD_H8'] dropped=[('XAUUSD_D1', 'dilutes pool (lowers z_proxy)')]
+    H0✓ H1✗ H2✓ H3✗ H4✗ H5✗ H6✗ H7✗ H8✗ H9✓ H10✗
+    S1781-XAUUSD_D1-STORM | REJECT RQS2=5.2 | n=194 WR=37.11 PF=0.969 lift=0.24 z=0.05 p=0.47995 pass=0.43
+    S1781-XAUUSD_H8-STORM | REJECT RQS2=10.1 | n=416 WR=38.7 PF=1.123 lift=2.1 z=0.67 p=0.252057 pass=0.42
