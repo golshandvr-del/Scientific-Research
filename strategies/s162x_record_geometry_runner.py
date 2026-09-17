@@ -21,6 +21,8 @@ CFG = {
     's1620': dict(name='RecordAgeGate', cards=['XAUUSD_H8', 'XAUUSD_H6', 'XAUUSD_H12'], n_trials=7, age_min=45),
     # S1621: حاشیهٔ شکست — (close − prevmax90) / ATR100[t−1] ≥ 0.25
     's1621': dict(name='RecordMarginGate', cards=['XAUUSD_H8', 'XAUUSD_H6', 'XAUUSD_H12'], n_trials=6, margin_min=0.25),
+    # S1622: هوای پاک — low[t] > max(close[t-90..t-1])
+    's1622': dict(name='ClearAirRecord', cards=['XAUUSD_H8', 'XAUUSD_H6', 'XAUUSD_H12'], n_trials=6),
 }
 
 
@@ -67,6 +69,9 @@ def gate_fn(layer, cfg, df):
         a = record_age(df); return a >= cfg['age_min'], a
     if layer == 's1621':
         m = record_margin(df); return m >= cfg['margin_min'], m
+    if layer == 's1622':
+        c = df['close'].astype(float); prevmax = c.rolling(LOOKBACK).max().shift(1)
+        g = df['low'].astype(float) > prevmax; return g.fillna(False), (df['low'].astype(float) - prevmax)
     raise KeyError(layer)
 
 
