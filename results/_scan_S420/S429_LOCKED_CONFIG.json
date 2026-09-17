@@ -1,0 +1,16 @@
+{
+ "strategy": "S429_CapitulationBracket",
+ "asset": "XAUUSD",
+ "data": "data/mt5_full/XAUUSD_H1.csv.gz",
+ "q": 0.75,
+ "d": 1.5,
+ "W": 5,
+ "hold": 10,
+ "atr_n": 14,
+ "k": 1.5,
+ "geometry": "SL=TP=k*ATR_d",
+ "direction": "long_only",
+ "n_trials": 10,
+ "efdr_mult": 6,
+ "prereg": "results/S429_PREREGISTRATION_CapitulationBracket.md"
+}
