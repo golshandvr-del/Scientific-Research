@@ -1,0 +1,1406 @@
+{
+ "H1": {
+  "sl_pip": 47.22449999999999,
+  "bars": 45665,
+  "cells": {
+   "k2.0_A_raw_fadeBear_long_rr1.0": {
+    "n": 904,
+    "wr": 49.67,
+    "base": 48.14,
+    "lift": 1.53,
+    "pnl": -3.56,
+    "z": 0.92,
+    "yrs_pos": "1/8",
+    "power": 46.0
+   },
+   "k2.0_A_raw_fadeBear_long_rr1.5": {
+    "n": 882,
+    "wr": 38.44,
+    "base": 39.03,
+    "lift": -0.59,
+    "pnl": -5.25,
+    "z": -0.35,
+    "yrs_pos": "1/8",
+    "power": -17.6
+   },
+   "k2.0_A_raw_fadeBull_short_rr1.0": {
+    "n": 853,
+    "wr": 47.36,
+    "base": 51.33,
+    "lift": -3.96,
+    "pnl": -5.82,
+    "z": -2.32,
+    "yrs_pos": "1/8",
+    "power": -115.8
+   },
+   "k2.0_A_raw_fadeBull_short_rr1.5": {
+    "n": 839,
+    "wr": 39.33,
+    "base": 41.82,
+    "lift": -2.49,
+    "pnl": -4.36,
+    "z": -1.44,
+    "yrs_pos": "3/8",
+    "power": -72.1
+   },
+   "k2.0_B_drift_fadeBear_long_rr1.0": {
+    "n": 390,
+    "wr": 48.72,
+    "base": 48.7,
+    "lift": 0.02,
+    "pnl": -4.51,
+    "z": 0.01,
+    "yrs_pos": "3/8",
+    "power": 0.5
+   },
+   "k2.0_B_drift_fadeBear_long_rr1.5": {
+    "n": 381,
+    "wr": 38.85,
+    "base": 40.33,
+    "lift": -1.49,
+    "pnl": -4.66,
+    "z": -0.58,
+    "yrs_pos": "3/8",
+    "power": -29.0
+   },
+   "k2.0_B_drift_fadeBull_short_rr1.0": {
+    "n": 384,
+    "wr": 45.57,
+    "base": 50.51,
+    "lift": -4.94,
+    "pnl": -7.48,
+    "z": -1.94,
+    "yrs_pos": "0/8",
+    "power": -96.8
+   },
+   "k2.0_B_drift_fadeBull_short_rr1.5": {
+    "n": 379,
+    "wr": 37.47,
+    "base": 40.7,
+    "lift": -3.23,
+    "pnl": -6.55,
+    "z": -1.26,
+    "yrs_pos": "3/8",
+    "power": -62.9
+   },
+   "k2.0_C_calm_fadeBear_long_rr1.0": {
+    "n": 316,
+    "wr": 49.37,
+    "base": 46.75,
+    "lift": 2.62,
+    "pnl": -3.9,
+    "z": 0.93,
+    "yrs_pos": "3/8",
+    "power": 46.5
+   },
+   "k2.0_C_calm_fadeBear_long_rr1.5": {
+    "n": 313,
+    "wr": 39.94,
+    "base": 37.7,
+    "lift": 2.23,
+    "pnl": -3.49,
+    "z": 0.79,
+    "yrs_pos": "3/8",
+    "power": 39.5
+   },
+   "k2.0_C_calm_fadeBull_short_rr1.0": {
+    "n": 324,
+    "wr": 49.69,
+    "base": 54.72,
+    "lift": -5.03,
+    "pnl": -3.67,
+    "z": -1.81,
+    "yrs_pos": "2/8",
+    "power": -90.6
+   },
+   "k2.0_C_calm_fadeBull_short_rr1.5": {
+    "n": 322,
+    "wr": 41.93,
+    "base": 44.73,
+    "lift": -2.81,
+    "pnl": -1.49,
+    "z": -1.01,
+    "yrs_pos": "3/8",
+    "power": -50.4
+   },
+   "k2.0_D_both_fadeBear_long_rr1.0": {
+    "n": 139,
+    "wr": 51.8,
+    "base": 47.71,
+    "lift": 4.08,
+    "pnl": -1.6,
+    "z": 0.96,
+    "yrs_pos": "2/8",
+    "power": 48.2
+   },
+   "k2.0_D_both_fadeBear_long_rr1.5": {
+    "n": 138,
+    "wr": 45.65,
+    "base": 39.85,
+    "lift": 5.8,
+    "pnl": 3.37,
+    "z": 1.36,
+    "yrs_pos": "4/8",
+    "power": 68.2
+   },
+   "k2.0_D_both_fadeBull_short_rr1.0": {
+    "n": 144,
+    "wr": 50.69,
+    "base": 51.62,
+    "lift": -0.93,
+    "pnl": -2.64,
+    "z": -0.22,
+    "yrs_pos": "4/8",
+    "power": -11.1
+   },
+   "k2.0_D_both_fadeBull_short_rr1.5": {
+    "n": 143,
+    "wr": 42.66,
+    "base": 41.88,
+    "lift": 0.78,
+    "pnl": -0.86,
+    "z": 0.19,
+    "yrs_pos": "4/8",
+    "power": 9.3
+   },
+   "k2.0_E_antidrift_fadeBear_long_rr1.0": {
+    "n": 516,
+    "wr": 50.58,
+    "base": 47.76,
+    "lift": 2.82,
+    "pnl": -2.66,
+    "z": 1.28,
+    "yrs_pos": "1/8",
+    "power": 64.1
+   },
+   "k2.0_E_antidrift_fadeBear_long_rr1.5": {
+    "n": 501,
+    "wr": 38.12,
+    "base": 38.83,
+    "lift": -0.7,
+    "pnl": -5.7,
+    "z": -0.32,
+    "yrs_pos": "1/8",
+    "power": -15.8
+   },
+   "k2.0_E_antidrift_fadeBull_short_rr1.0": {
+    "n": 469,
+    "wr": 48.83,
+    "base": 52.37,
+    "lift": -3.54,
+    "pnl": -4.46,
+    "z": -1.53,
+    "yrs_pos": "3/8",
+    "power": -76.7
+   },
+   "k2.0_E_antidrift_fadeBull_short_rr1.5": {
+    "n": 460,
+    "wr": 40.87,
+    "base": 42.78,
+    "lift": -1.91,
+    "pnl": -2.55,
+    "z": -0.82,
+    "yrs_pos": "3/8",
+    "power": -41.0
+   },
+   "k2.618_A_raw_fadeBear_long_rr1.0": {
+    "n": 487,
+    "wr": 48.67,
+    "base": 48.14,
+    "lift": 0.53,
+    "pnl": -4.46,
+    "z": 0.23,
+    "yrs_pos": "2/8",
+    "power": 11.7
+   },
+   "k2.618_A_raw_fadeBear_long_rr1.5": {
+    "n": 484,
+    "wr": 37.81,
+    "base": 39.03,
+    "lift": -1.22,
+    "pnl": -5.94,
+    "z": -0.54,
+    "yrs_pos": "2/8",
+    "power": -26.8
+   },
+   "k2.618_A_raw_fadeBull_short_rr1.0": {
+    "n": 467,
+    "wr": 46.47,
+    "base": 51.33,
+    "lift": -4.86,
+    "pnl": -6.64,
+    "z": -2.1,
+    "yrs_pos": "1/8",
+    "power": -105.0
+   },
+   "k2.618_A_raw_fadeBull_short_rr1.5": {
+    "n": 463,
+    "wr": 38.01,
+    "base": 41.82,
+    "lift": -3.81,
+    "pnl": -6.0,
+    "z": -1.64,
+    "yrs_pos": "2/8",
+    "power": -81.9
+   },
+   "k2.618_B_drift_fadeBear_long_rr1.0": {
+    "n": 198,
+    "wr": 43.94,
+    "base": 48.7,
+    "lift": -4.76,
+    "pnl": -9.02,
+    "z": -1.34,
+    "yrs_pos": "0/8",
+    "power": -66.9
+   },
+   "k2.618_B_drift_fadeBear_long_rr1.5": {
+    "n": 197,
+    "wr": 32.99,
+    "base": 40.33,
+    "lift": -7.34,
+    "pnl": -11.57,
+    "z": -2.06,
+    "yrs_pos": "2/8",
+    "power": -103.0
+   },
+   "k2.618_B_drift_fadeBull_short_rr1.0": {
+    "n": 215,
+    "wr": 43.72,
+    "base": 50.51,
+    "lift": -6.79,
+    "pnl": -9.23,
+    "z": -1.99,
+    "yrs_pos": "0/8",
+    "power": -99.6
+   },
+   "k2.618_B_drift_fadeBull_short_rr1.5": {
+    "n": 213,
+    "wr": 34.74,
+    "base": 40.7,
+    "lift": -5.96,
+    "pnl": -9.98,
+    "z": -1.74,
+    "yrs_pos": "2/8",
+    "power": -87.0
+   },
+   "k2.618_C_calm_fadeBear_long_rr1.0": {
+    "n": 149,
+    "wr": 48.99,
+    "base": 46.75,
+    "lift": 2.24,
+    "pnl": -4.25,
+    "z": 0.55,
+    "yrs_pos": "2/8",
+    "power": 27.4
+   },
+   "k2.618_C_calm_fadeBear_long_rr1.5": {
+    "n": 148,
+    "wr": 41.89,
+    "base": 37.7,
+    "lift": 4.19,
+    "pnl": -1.07,
+    "z": 1.02,
+    "yrs_pos": "5/8",
+    "power": 51.0
+   },
+   "k2.618_C_calm_fadeBull_short_rr1.0": {
+    "n": 151,
+    "wr": 51.66,
+    "base": 54.72,
+    "lift": -3.07,
+    "pnl": -1.74,
+    "z": -0.75,
+    "yrs_pos": "3/8",
+    "power": -37.7
+   },
+   "k2.618_C_calm_fadeBull_short_rr1.5": {
+    "n": 150,
+    "wr": 41.33,
+    "base": 44.73,
+    "lift": -3.4,
+    "pnl": -2.39,
+    "z": -0.83,
+    "yrs_pos": "2/8",
+    "power": -41.6
+   },
+   "k2.618_D_both_fadeBear_long_rr1.0": {
+    "n": 58,
+    "wr": 44.83,
+    "base": 47.71,
+    "lift": -2.89,
+    "pnl": -8.19,
+    "z": -0.44,
+    "yrs_pos": "2/8",
+    "power": -22.0
+   },
+   "k2.618_D_both_fadeBear_long_rr1.5": {
+    "n": 57,
+    "wr": 40.35,
+    "base": 39.85,
+    "lift": 0.5,
+    "pnl": -2.89,
+    "z": 0.08,
+    "yrs_pos": "2/8",
+    "power": 3.8
+   },
+   "k2.618_D_both_fadeBull_short_rr1.0": {
+    "n": 73,
+    "wr": 50.68,
+    "base": 51.62,
+    "lift": -0.94,
+    "pnl": -2.65,
+    "z": -0.16,
+    "yrs_pos": "4/7",
+    "power": -8.0
+   },
+   "k2.618_D_both_fadeBull_short_rr1.5": {
+    "n": 73,
+    "wr": 38.36,
+    "base": 41.88,
+    "lift": -3.52,
+    "pnl": -6.61,
+    "z": -0.6,
+    "yrs_pos": "3/7",
+    "power": -30.1
+   },
+   "k2.618_E_antidrift_fadeBear_long_rr1.0": {
+    "n": 290,
+    "wr": 52.07,
+    "base": 47.76,
+    "lift": 4.31,
+    "pnl": -1.18,
+    "z": 1.47,
+    "yrs_pos": "3/8",
+    "power": 73.4
+   },
+   "k2.618_E_antidrift_fadeBear_long_rr1.5": {
+    "n": 288,
+    "wr": 40.97,
+    "base": 38.83,
+    "lift": 2.14,
+    "pnl": -2.24,
+    "z": 0.73,
+    "yrs_pos": "3/8",
+    "power": 36.4
+   },
+   "k2.618_E_antidrift_fadeBull_short_rr1.0": {
+    "n": 252,
+    "wr": 48.81,
+    "base": 52.37,
+    "lift": -3.56,
+    "pnl": -4.42,
+    "z": -1.13,
+    "yrs_pos": "3/8",
+    "power": -56.5
+   },
+   "k2.618_E_antidrift_fadeBull_short_rr1.5": {
+    "n": 250,
+    "wr": 40.8,
+    "base": 42.78,
+    "lift": -1.98,
+    "pnl": -2.61,
+    "z": -0.63,
+    "yrs_pos": "3/8",
+    "power": -31.3
+   }
+  }
+ },
+ "H4": {
+  "sl_pip": 96.96900000000001,
+  "bars": 11927,
+  "cells": {
+   "k2.0_A_raw_fadeBear_long_rr1.0": {
+    "n": 267,
+    "wr": 44.94,
+    "base": 49.02,
+    "lift": -4.08,
+    "pnl": -13.32,
+    "z": -1.33,
+    "yrs_pos": "2/8",
+    "power": -66.6
+   },
+   "k2.0_A_raw_fadeBear_long_rr1.5": {
+    "n": 267,
+    "wr": 40.07,
+    "base": 44.23,
+    "lift": -4.15,
+    "pnl": -10.11,
+    "z": -1.36,
+    "yrs_pos": "3/8",
+    "power": -67.8
+   },
+   "k2.0_A_raw_fadeBull_short_rr1.0": {
+    "n": 204,
+    "wr": 37.75,
+    "base": 50.67,
+    "lift": -12.93,
+    "pnl": -24.76,
+    "z": -3.69,
+    "yrs_pos": "0/8",
+    "power": -184.6
+   },
+   "k2.0_A_raw_fadeBull_short_rr1.5": {
+    "n": 202,
+    "wr": 32.18,
+    "base": 44.65,
+    "lift": -12.47,
+    "pnl": -27.33,
+    "z": -3.55,
+    "yrs_pos": "1/8",
+    "power": -177.3
+   },
+   "k2.0_B_drift_fadeBear_long_rr1.0": {
+    "n": 98,
+    "wr": 42.86,
+    "base": 50.63,
+    "lift": -7.77,
+    "pnl": -15.02,
+    "z": -1.54,
+    "yrs_pos": "2/8",
+    "power": -76.9
+   },
+   "k2.0_B_drift_fadeBear_long_rr1.5": {
+    "n": 98,
+    "wr": 37.76,
+    "base": 44.84,
+    "lift": -7.08,
+    "pnl": -11.82,
+    "z": -1.4,
+    "yrs_pos": "3/8",
+    "power": -70.1
+   },
+   "k2.0_B_drift_fadeBull_short_rr1.0": {
+    "n": 97,
+    "wr": 35.05,
+    "base": 49.01,
+    "lift": -13.96,
+    "pnl": -33.57,
+    "z": -2.75,
+    "yrs_pos": "1/8",
+    "power": -137.5
+   },
+   "k2.0_B_drift_fadeBull_short_rr1.5": {
+    "n": 96,
+    "wr": 30.21,
+    "base": 42.05,
+    "lift": -11.84,
+    "pnl": -36.93,
+    "z": -2.32,
+    "yrs_pos": "1/8",
+    "power": -116.0
+   },
+   "k2.0_C_calm_fadeBear_long_rr1.0": {
+    "n": 118,
+    "wr": 43.22,
+    "base": 46.35,
+    "lift": -3.13,
+    "pnl": -16.32,
+    "z": -0.68,
+    "yrs_pos": "2/8",
+    "power": -34.0
+   },
+   "k2.0_C_calm_fadeBear_long_rr1.5": {
+    "n": 118,
+    "wr": 39.83,
+    "base": 42.7,
+    "lift": -2.87,
+    "pnl": -10.28,
+    "z": -0.62,
+    "yrs_pos": "3/8",
+    "power": -31.2
+   },
+   "k2.0_C_calm_fadeBull_short_rr1.0": {
+    "n": 78,
+    "wr": 33.33,
+    "base": 52.67,
+    "lift": -19.34,
+    "pnl": -34.79,
+    "z": -3.42,
+    "yrs_pos": "0/8",
+    "power": -170.8
+   },
+   "k2.0_C_calm_fadeBull_short_rr1.5": {
+    "n": 77,
+    "wr": 29.87,
+    "base": 47.42,
+    "lift": -17.55,
+    "pnl": -37.55,
+    "z": -3.08,
+    "yrs_pos": "0/8",
+    "power": -154.0
+   },
+   "k2.0_D_both_fadeBear_long_rr1.0": {
+    "n": 39,
+    "wr": 30.77,
+    "base": 51.09,
+    "lift": -20.32,
+    "pnl": -35.57,
+    "z": -2.54,
+    "yrs_pos": "1/8",
+    "power": -126.9
+   },
+   "k2.0_D_both_fadeBear_long_rr1.5": {
+    "n": 39,
+    "wr": 28.21,
+    "base": 46.2,
+    "lift": -17.99,
+    "pnl": -28.35,
+    "z": -2.25,
+    "yrs_pos": "1/8",
+    "power": -112.4
+   },
+   "k2.0_D_both_fadeBull_short_rr1.0": {
+    "n": 32,
+    "wr": 34.38,
+    "base": 50.0,
+    "lift": -15.62,
+    "pnl": -39.22,
+    "z": -1.77,
+    "yrs_pos": "2/8",
+    "power": -88.4
+   },
+   "k2.0_D_both_fadeBull_short_rr1.5": {
+    "n": 32,
+    "wr": 28.12,
+    "base": 43.65,
+    "lift": -15.53,
+    "pnl": -49.74,
+    "z": -1.76,
+    "yrs_pos": "1/8",
+    "power": -87.8
+   },
+   "k2.0_E_antidrift_fadeBear_long_rr1.0": {
+    "n": 170,
+    "wr": 45.88,
+    "base": 47.79,
+    "lift": -1.91,
+    "pnl": -12.86,
+    "z": -0.5,
+    "yrs_pos": "2/8",
+    "power": -24.9
+   },
+   "k2.0_E_antidrift_fadeBear_long_rr1.5": {
+    "n": 170,
+    "wr": 41.18,
+    "base": 43.76,
+    "lift": -2.59,
+    "pnl": -9.65,
+    "z": -0.67,
+    "yrs_pos": "3/8",
+    "power": -33.7
+   },
+   "k2.0_E_antidrift_fadeBull_short_rr1.0": {
+    "n": 108,
+    "wr": 40.74,
+    "base": 53.16,
+    "lift": -12.42,
+    "pnl": -15.75,
+    "z": -2.58,
+    "yrs_pos": "2/8",
+    "power": -129.0
+   },
+   "k2.0_E_antidrift_fadeBull_short_rr1.5": {
+    "n": 107,
+    "wr": 34.58,
+    "base": 48.05,
+    "lift": -13.47,
+    "pnl": -17.14,
+    "z": -2.79,
+    "yrs_pos": "2/8",
+    "power": -139.3
+   },
+   "k2.618_A_raw_fadeBear_long_rr1.0": {
+    "n": 123,
+    "wr": 39.02,
+    "base": 49.02,
+    "lift": -10.0,
+    "pnl": -25.54,
+    "z": -2.22,
+    "yrs_pos": "1/8",
+    "power": -110.9
+   },
+   "k2.618_A_raw_fadeBear_long_rr1.5": {
+    "n": 123,
+    "wr": 34.96,
+    "base": 44.23,
+    "lift": -9.27,
+    "pnl": -23.27,
+    "z": -2.06,
+    "yrs_pos": "2/8",
+    "power": -102.8
+   },
+   "k2.618_A_raw_fadeBull_short_rr1.0": {
+    "n": 101,
+    "wr": 34.65,
+    "base": 50.67,
+    "lift": -16.02,
+    "pnl": -28.88,
+    "z": -3.22,
+    "yrs_pos": "0/8",
+    "power": -161.0
+   },
+   "k2.618_A_raw_fadeBull_short_rr1.5": {
+    "n": 101,
+    "wr": 29.7,
+    "base": 44.65,
+    "lift": -14.95,
+    "pnl": -27.46,
+    "z": -3.0,
+    "yrs_pos": "0/8",
+    "power": -150.2
+   },
+   "k2.618_B_drift_fadeBear_long_rr1.0": {
+    "n": 41,
+    "wr": 31.71,
+    "base": 50.63,
+    "lift": -18.92,
+    "pnl": -40.36,
+    "z": -2.42,
+    "yrs_pos": "1/8",
+    "power": -121.2
+   },
+   "k2.618_B_drift_fadeBear_long_rr1.5": {
+    "n": 41,
+    "wr": 26.83,
+    "base": 44.84,
+    "lift": -18.01,
+    "pnl": -42.3,
+    "z": -2.31,
+    "yrs_pos": "2/8",
+    "power": -115.3
+   },
+   "k2.618_B_drift_fadeBull_short_rr1.0": {
+    "n": 45,
+    "wr": 33.33,
+    "base": 49.01,
+    "lift": -15.68,
+    "pnl": -36.42,
+    "z": -2.1,
+    "yrs_pos": "1/8",
+    "power": -105.2
+   },
+   "k2.618_B_drift_fadeBull_short_rr1.5": {
+    "n": 45,
+    "wr": 31.11,
+    "base": 42.05,
+    "lift": -10.94,
+    "pnl": -31.83,
+    "z": -1.47,
+    "yrs_pos": "1/8",
+    "power": -73.4
+   },
+   "k2.618_C_calm_fadeBear_long_rr1.0": {
+    "n": 52,
+    "wr": 40.38,
+    "base": 46.35,
+    "lift": -5.97,
+    "pnl": -26.64,
+    "z": -0.86,
+    "yrs_pos": "2/8",
+    "power": -43.0
+   },
+   "k2.618_C_calm_fadeBear_long_rr1.5": {
+    "n": 52,
+    "wr": 36.54,
+    "base": 42.7,
+    "lift": -6.17,
+    "pnl": -25.68,
+    "z": -0.89,
+    "yrs_pos": "1/8",
+    "power": -44.5
+   },
+   "k2.618_C_calm_fadeBull_short_rr1.0": {
+    "n": 35,
+    "wr": 31.43,
+    "base": 52.67,
+    "lift": -21.24,
+    "pnl": -35.76,
+    "z": -2.51,
+    "yrs_pos": "1/8",
+    "power": -125.7
+   },
+   "k2.618_C_calm_fadeBull_short_rr1.5": {
+    "n": 35,
+    "wr": 28.57,
+    "base": 47.42,
+    "lift": -18.85,
+    "pnl": -38.01,
+    "z": -2.23,
+    "yrs_pos": "2/8",
+    "power": -111.5
+   },
+   "k2.618_E_antidrift_fadeBear_long_rr1.0": {
+    "n": 82,
+    "wr": 42.68,
+    "base": 47.79,
+    "lift": -5.11,
+    "pnl": -18.13,
+    "z": -0.93,
+    "yrs_pos": "2/8",
+    "power": -46.3
+   },
+   "k2.618_E_antidrift_fadeBear_long_rr1.5": {
+    "n": 82,
+    "wr": 39.02,
+    "base": 43.76,
+    "lift": -4.74,
+    "pnl": -13.76,
+    "z": -0.86,
+    "yrs_pos": "2/8",
+    "power": -42.9
+   },
+   "k2.618_E_antidrift_fadeBull_short_rr1.0": {
+    "n": 56,
+    "wr": 35.71,
+    "base": 53.16,
+    "lift": -17.44,
+    "pnl": -22.82,
+    "z": -2.61,
+    "yrs_pos": "1/8",
+    "power": -130.5
+   },
+   "k2.618_E_antidrift_fadeBull_short_rr1.5": {
+    "n": 56,
+    "wr": 28.57,
+    "base": 48.05,
+    "lift": -19.47,
+    "pnl": -23.95,
+    "z": -2.91,
+    "yrs_pos": "1/8",
+    "power": -145.7
+   }
+  }
+ },
+ "H6": {
+  "sl_pip": 122.98500000000004,
+  "bars": 7983,
+  "cells": {
+   "k2.0_A_raw_fadeBear_long_rr1.0": {
+    "n": 147,
+    "wr": 45.58,
+    "base": 47.23,
+    "lift": -1.65,
+    "pnl": -14.38,
+    "z": -0.4,
+    "yrs_pos": "2/8",
+    "power": -20.0
+   },
+   "k2.0_A_raw_fadeBear_long_rr1.5": {
+    "n": 146,
+    "wr": 40.41,
+    "base": 44.14,
+    "lift": -3.73,
+    "pnl": -14.3,
+    "z": -0.9,
+    "yrs_pos": "1/8",
+    "power": -45.0
+   },
+   "k2.0_A_raw_fadeBull_short_rr1.0": {
+    "n": 131,
+    "wr": 43.51,
+    "base": 50.65,
+    "lift": -7.14,
+    "pnl": -17.2,
+    "z": -1.63,
+    "yrs_pos": "1/8",
+    "power": -81.7
+   },
+   "k2.0_A_raw_fadeBull_short_rr1.5": {
+    "n": 131,
+    "wr": 41.22,
+    "base": 46.42,
+    "lift": -5.2,
+    "pnl": -19.55,
+    "z": -1.19,
+    "yrs_pos": "1/8",
+    "power": -59.5
+   },
+   "k2.0_B_drift_fadeBear_long_rr1.0": {
+    "n": 57,
+    "wr": 49.12,
+    "base": 50.37,
+    "lift": -1.24,
+    "pnl": -7.87,
+    "z": -0.19,
+    "yrs_pos": "3/8",
+    "power": -9.4
+   },
+   "k2.0_B_drift_fadeBear_long_rr1.5": {
+    "n": 56,
+    "wr": 44.64,
+    "base": 46.32,
+    "lift": -1.68,
+    "pnl": -7.62,
+    "z": -0.25,
+    "yrs_pos": "3/8",
+    "power": -12.6
+   },
+   "k2.0_B_drift_fadeBull_short_rr1.0": {
+    "n": 60,
+    "wr": 41.67,
+    "base": 49.32,
+    "lift": -7.65,
+    "pnl": -25.93,
+    "z": -1.19,
+    "yrs_pos": "1/8",
+    "power": -59.3
+   },
+   "k2.0_B_drift_fadeBull_short_rr1.5": {
+    "n": 60,
+    "wr": 38.33,
+    "base": 44.84,
+    "lift": -6.5,
+    "pnl": -31.72,
+    "z": -1.01,
+    "yrs_pos": "0/8",
+    "power": -50.4
+   },
+   "k2.0_C_calm_fadeBear_long_rr1.0": {
+    "n": 56,
+    "wr": 46.43,
+    "base": 49.55,
+    "lift": -3.13,
+    "pnl": -15.65,
+    "z": -0.47,
+    "yrs_pos": "2/8",
+    "power": -23.4
+   },
+   "k2.0_C_calm_fadeBear_long_rr1.5": {
+    "n": 56,
+    "wr": 42.86,
+    "base": 47.18,
+    "lift": -4.32,
+    "pnl": -17.07,
+    "z": -0.65,
+    "yrs_pos": "2/8",
+    "power": -32.4
+   },
+   "k2.0_C_calm_fadeBull_short_rr1.0": {
+    "n": 50,
+    "wr": 36.0,
+    "base": 51.28,
+    "lift": -15.28,
+    "pnl": -36.8,
+    "z": -2.16,
+    "yrs_pos": "0/8",
+    "power": -108.0
+   },
+   "k2.0_C_calm_fadeBull_short_rr1.5": {
+    "n": 50,
+    "wr": 32.0,
+    "base": 46.29,
+    "lift": -14.29,
+    "pnl": -44.22,
+    "z": -2.02,
+    "yrs_pos": "1/8",
+    "power": -101.1
+   },
+   "k2.0_D_both_fadeBear_long_rr1.0": {
+    "n": 21,
+    "wr": 57.14,
+    "base": 54.29,
+    "lift": 2.86,
+    "pnl": 10.28,
+    "z": 0.26,
+    "yrs_pos": "3/7",
+    "power": 13.1
+   },
+   "k2.0_D_both_fadeBear_long_rr1.5": {
+    "n": 21,
+    "wr": 57.14,
+    "base": 51.43,
+    "lift": 5.71,
+    "pnl": 14.01,
+    "z": 0.52,
+    "yrs_pos": "5/7",
+    "power": 26.2
+   },
+   "k2.0_D_both_fadeBull_short_rr1.0": {
+    "n": 21,
+    "wr": 42.86,
+    "base": 48.36,
+    "lift": -5.5,
+    "pnl": -21.91,
+    "z": -0.5,
+    "yrs_pos": "2/7",
+    "power": -25.2
+   },
+   "k2.0_D_both_fadeBull_short_rr1.5": {
+    "n": 21,
+    "wr": 38.1,
+    "base": 44.61,
+    "lift": -6.51,
+    "pnl": -32.09,
+    "z": -0.6,
+    "yrs_pos": "2/7",
+    "power": -29.8
+   },
+   "k2.0_E_antidrift_fadeBear_long_rr1.0": {
+    "n": 90,
+    "wr": 43.33,
+    "base": 45.83,
+    "lift": -2.49,
+    "pnl": -18.51,
+    "z": -0.47,
+    "yrs_pos": "1/8",
+    "power": -23.7
+   },
+   "k2.0_E_antidrift_fadeBear_long_rr1.5": {
+    "n": 90,
+    "wr": 37.78,
+    "base": 42.4,
+    "lift": -4.62,
+    "pnl": -18.47,
+    "z": -0.88,
+    "yrs_pos": "1/8",
+    "power": -43.8
+   },
+   "k2.0_E_antidrift_fadeBull_short_rr1.0": {
+    "n": 71,
+    "wr": 45.07,
+    "base": 53.22,
+    "lift": -8.15,
+    "pnl": -9.82,
+    "z": -1.37,
+    "yrs_pos": "3/8",
+    "power": -68.6
+   },
+   "k2.0_E_antidrift_fadeBull_short_rr1.5": {
+    "n": 71,
+    "wr": 43.66,
+    "base": 49.42,
+    "lift": -5.75,
+    "pnl": -9.27,
+    "z": -0.97,
+    "yrs_pos": "3/8",
+    "power": -48.5
+   },
+   "k2.618_A_raw_fadeBear_long_rr1.0": {
+    "n": 69,
+    "wr": 42.03,
+    "base": 47.23,
+    "lift": -5.2,
+    "pnl": -26.31,
+    "z": -0.86,
+    "yrs_pos": "1/8",
+    "power": -43.2
+   },
+   "k2.618_A_raw_fadeBear_long_rr1.5": {
+    "n": 69,
+    "wr": 36.23,
+    "base": 44.14,
+    "lift": -7.9,
+    "pnl": -29.42,
+    "z": -1.31,
+    "yrs_pos": "2/8",
+    "power": -65.7
+   },
+   "k2.618_A_raw_fadeBull_short_rr1.0": {
+    "n": 64,
+    "wr": 40.62,
+    "base": 50.65,
+    "lift": -10.03,
+    "pnl": -30.07,
+    "z": -1.6,
+    "yrs_pos": "1/8",
+    "power": -80.2
+   },
+   "k2.618_A_raw_fadeBull_short_rr1.5": {
+    "n": 64,
+    "wr": 37.5,
+    "base": 46.42,
+    "lift": -8.92,
+    "pnl": -36.99,
+    "z": -1.43,
+    "yrs_pos": "1/8",
+    "power": -71.3
+   },
+   "k2.618_B_drift_fadeBear_long_rr1.0": {
+    "n": 23,
+    "wr": 52.17,
+    "base": 50.37,
+    "lift": 1.81,
+    "pnl": -5.74,
+    "z": 0.17,
+    "yrs_pos": "3/8",
+    "power": 8.7
+   },
+   "k2.618_B_drift_fadeBear_long_rr1.5": {
+    "n": 23,
+    "wr": 47.83,
+    "base": 46.32,
+    "lift": 1.5,
+    "pnl": -2.67,
+    "z": 0.14,
+    "yrs_pos": "3/8",
+    "power": 7.2
+   },
+   "k2.618_B_drift_fadeBull_short_rr1.0": {
+    "n": 32,
+    "wr": 40.62,
+    "base": 49.32,
+    "lift": -8.69,
+    "pnl": -32.16,
+    "z": -0.98,
+    "yrs_pos": "2/8",
+    "power": -49.2
+   },
+   "k2.618_B_drift_fadeBull_short_rr1.5": {
+    "n": 32,
+    "wr": 37.5,
+    "base": 44.84,
+    "lift": -7.34,
+    "pnl": -47.5,
+    "z": -0.83,
+    "yrs_pos": "1/8",
+    "power": -41.5
+   },
+   "k2.618_C_calm_fadeBear_long_rr1.0": {
+    "n": 27,
+    "wr": 37.04,
+    "base": 49.55,
+    "lift": -12.52,
+    "pnl": -41.26,
+    "z": -1.3,
+    "yrs_pos": "1/8",
+    "power": -65.0
+   },
+   "k2.618_C_calm_fadeBear_long_rr1.5": {
+    "n": 27,
+    "wr": 33.33,
+    "base": 47.18,
+    "lift": -13.85,
+    "pnl": -43.94,
+    "z": -1.44,
+    "yrs_pos": "1/8",
+    "power": -72.0
+   },
+   "k2.618_C_calm_fadeBull_short_rr1.0": {
+    "n": 22,
+    "wr": 50.0,
+    "base": 51.28,
+    "lift": -1.28,
+    "pnl": -11.54,
+    "z": -0.12,
+    "yrs_pos": "4/8",
+    "power": -6.0
+   },
+   "k2.618_C_calm_fadeBull_short_rr1.5": {
+    "n": 22,
+    "wr": 40.91,
+    "base": 46.29,
+    "lift": -5.38,
+    "pnl": -27.05,
+    "z": -0.5,
+    "yrs_pos": "2/8",
+    "power": -25.2
+   },
+   "k2.618_E_antidrift_fadeBear_long_rr1.0": {
+    "n": 46,
+    "wr": 36.96,
+    "base": 45.83,
+    "lift": -8.87,
+    "pnl": -36.59,
+    "z": -1.2,
+    "yrs_pos": "1/8",
+    "power": -60.2
+   },
+   "k2.618_E_antidrift_fadeBear_long_rr1.5": {
+    "n": 46,
+    "wr": 30.43,
+    "base": 42.4,
+    "lift": -11.96,
+    "pnl": -42.79,
+    "z": -1.62,
+    "yrs_pos": "1/8",
+    "power": -81.1
+   },
+   "k2.618_E_antidrift_fadeBull_short_rr1.0": {
+    "n": 32,
+    "wr": 40.62,
+    "base": 53.22,
+    "lift": -12.59,
+    "pnl": -27.99,
+    "z": -1.42,
+    "yrs_pos": "1/7",
+    "power": -71.2
+   },
+   "k2.618_E_antidrift_fadeBull_short_rr1.5": {
+    "n": 32,
+    "wr": 37.5,
+    "base": 49.42,
+    "lift": -11.92,
+    "pnl": -26.48,
+    "z": -1.35,
+    "yrs_pos": "2/7",
+    "power": -67.4
+   }
+  }
+ },
+ "H8": {
+  "sl_pip": 148.4549999999998,
+  "bars": 5989,
+  "cells": {
+   "k2.0_A_raw_fadeBear_long_rr1.0": {
+    "n": 120,
+    "wr": 42.5,
+    "base": 49.12,
+    "lift": -6.62,
+    "pnl": -24.78,
+    "z": -1.45,
+    "yrs_pos": "2/8",
+    "power": -72.5
+   },
+   "k2.0_A_raw_fadeBear_long_rr1.5": {
+    "n": 120,
+    "wr": 40.0,
+    "base": 45.99,
+    "lift": -5.99,
+    "pnl": -24.83,
+    "z": -1.31,
+    "yrs_pos": "3/8",
+    "power": -65.6
+   },
+   "k2.0_A_raw_fadeBull_short_rr1.0": {
+    "n": 94,
+    "wr": 45.74,
+    "base": 50.76,
+    "lift": -5.01,
+    "pnl": -7.91,
+    "z": -0.97,
+    "yrs_pos": "3/8",
+    "power": -48.6
+   },
+   "k2.0_A_raw_fadeBull_short_rr1.5": {
+    "n": 94,
+    "wr": 44.68,
+    "base": 47.51,
+    "lift": -2.82,
+    "pnl": 1.29,
+    "z": -0.55,
+    "yrs_pos": "4/8",
+    "power": -27.4
+   },
+   "k2.0_B_drift_fadeBear_long_rr1.0": {
+    "n": 45,
+    "wr": 53.33,
+    "base": 51.21,
+    "lift": 2.13,
+    "pnl": -2.66,
+    "z": 0.29,
+    "yrs_pos": "3/7",
+    "power": 14.3
+   },
+   "k2.0_B_drift_fadeBear_long_rr1.5": {
+    "n": 45,
+    "wr": 51.11,
+    "base": 46.92,
+    "lift": 4.19,
+    "pnl": -2.51,
+    "z": 0.56,
+    "yrs_pos": "2/7",
+    "power": 28.1
+   },
+   "k2.0_B_drift_fadeBull_short_rr1.0": {
+    "n": 42,
+    "wr": 47.62,
+    "base": 48.24,
+    "lift": -0.62,
+    "pnl": -13.12,
+    "z": -0.08,
+    "yrs_pos": "3/8",
+    "power": -4.0
+   },
+   "k2.0_B_drift_fadeBull_short_rr1.5": {
+    "n": 42,
+    "wr": 47.62,
+    "base": 45.85,
+    "lift": 1.77,
+    "pnl": -1.87,
+    "z": 0.23,
+    "yrs_pos": "4/8",
+    "power": 11.5
+   },
+   "k2.0_C_calm_fadeBear_long_rr1.0": {
+    "n": 42,
+    "wr": 40.48,
+    "base": 49.23,
+    "lift": -8.75,
+    "pnl": -33.36,
+    "z": -1.13,
+    "yrs_pos": "1/8",
+    "power": -56.7
+   },
+   "k2.0_C_calm_fadeBear_long_rr1.5": {
+    "n": 42,
+    "wr": 40.48,
+    "base": 46.14,
+    "lift": -5.66,
+    "pnl": -32.27,
+    "z": -0.73,
+    "yrs_pos": "2/8",
+    "power": -36.7
+   },
+   "k2.0_C_calm_fadeBull_short_rr1.0": {
+    "n": 37,
+    "wr": 32.43,
+    "base": 51.79,
+    "lift": -19.36,
+    "pnl": -43.3,
+    "z": -2.36,
+    "yrs_pos": "1/8",
+    "power": -117.8
+   },
+   "k2.0_C_calm_fadeBull_short_rr1.5": {
+    "n": 37,
+    "wr": 32.43,
+    "base": 49.8,
+    "lift": -17.37,
+    "pnl": -41.42,
+    "z": -2.11,
+    "yrs_pos": "1/8",
+    "power": -105.6
+   },
+   "k2.0_E_antidrift_fadeBear_long_rr1.0": {
+    "n": 75,
+    "wr": 36.0,
+    "base": 47.2,
+    "lift": -11.2,
+    "pnl": -38.05,
+    "z": -1.94,
+    "yrs_pos": "2/8",
+    "power": -97.0
+   },
+   "k2.0_E_antidrift_fadeBear_long_rr1.5": {
+    "n": 75,
+    "wr": 33.33,
+    "base": 45.42,
+    "lift": -12.09,
+    "pnl": -38.23,
+    "z": -2.09,
+    "yrs_pos": "2/8",
+    "power": -104.7
+   },
+   "k2.0_E_antidrift_fadeBull_short_rr1.0": {
+    "n": 52,
+    "wr": 44.23,
+    "base": 52.67,
+    "lift": -8.44,
+    "pnl": -3.7,
+    "z": -1.22,
+    "yrs_pos": "4/8",
+    "power": -60.9
+   },
+   "k2.0_E_antidrift_fadeBull_short_rr1.5": {
+    "n": 52,
+    "wr": 42.31,
+    "base": 49.62,
+    "lift": -7.31,
+    "pnl": 3.85,
+    "z": -1.05,
+    "yrs_pos": "6/8",
+    "power": -52.7
+   },
+   "k2.618_A_raw_fadeBear_long_rr1.0": {
+    "n": 42,
+    "wr": 35.71,
+    "base": 49.12,
+    "lift": -13.4,
+    "pnl": -53.8,
+    "z": -1.74,
+    "yrs_pos": "1/8",
+    "power": -86.9
+   },
+   "k2.618_A_raw_fadeBear_long_rr1.5": {
+    "n": 42,
+    "wr": 33.33,
+    "base": 45.99,
+    "lift": -12.65,
+    "pnl": -54.85,
+    "z": -1.64,
+    "yrs_pos": "1/8",
+    "power": -82.0
+   },
+   "k2.618_A_raw_fadeBull_short_rr1.0": {
+    "n": 43,
+    "wr": 34.88,
+    "base": 50.76,
+    "lift": -15.88,
+    "pnl": -39.87,
+    "z": -2.08,
+    "yrs_pos": "0/8",
+    "power": -104.1
+   },
+   "k2.618_A_raw_fadeBull_short_rr1.5": {
+    "n": 43,
+    "wr": 32.56,
+    "base": 47.51,
+    "lift": -14.95,
+    "pnl": -38.12,
+    "z": -1.96,
+    "yrs_pos": "1/8",
+    "power": -98.0
+   },
+   "k2.618_B_drift_fadeBull_short_rr1.0": {
+    "n": 23,
+    "wr": 47.83,
+    "base": 48.24,
+    "lift": -0.42,
+    "pnl": -11.02,
+    "z": -0.04,
+    "yrs_pos": "3/8",
+    "power": -2.0
+   },
+   "k2.618_B_drift_fadeBull_short_rr1.5": {
+    "n": 23,
+    "wr": 47.83,
+    "base": 45.85,
+    "lift": 1.98,
+    "pnl": 1.88,
+    "z": 0.19,
+    "yrs_pos": "4/8",
+    "power": 9.5
+   },
+   "k2.618_E_antidrift_fadeBear_long_rr1.0": {
+    "n": 23,
+    "wr": 17.39,
+    "base": 47.2,
+    "lift": -29.81,
+    "pnl": -96.81,
+    "z": -2.86,
+    "yrs_pos": "0/6",
+    "power": -143.0
+   },
+   "k2.618_E_antidrift_fadeBear_long_rr1.5": {
+    "n": 23,
+    "wr": 17.39,
+    "base": 45.42,
+    "lift": -28.03,
+    "pnl": -93.87,
+    "z": -2.69,
+    "yrs_pos": "0/6",
+    "power": -134.4
+   },
+   "k2.618_E_antidrift_fadeBull_short_rr1.0": {
+    "n": 20,
+    "wr": 20.0,
+    "base": 52.67,
+    "lift": -32.67,
+    "pnl": -73.06,
+    "z": -2.92,
+    "yrs_pos": "0/8",
+    "power": -146.1
+   },
+   "k2.618_E_antidrift_fadeBull_short_rr1.5": {
+    "n": 20,
+    "wr": 15.0,
+    "base": 49.62,
+    "lift": -34.62,
+    "pnl": -84.11,
+    "z": -3.1,
+    "yrs_pos": "1/8",
+    "power": -154.8
+   }
+  }
+ }
+}
