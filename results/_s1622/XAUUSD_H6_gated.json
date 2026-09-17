@@ -1,0 +1,1 @@
+{"card": "XAUUSD_H6", "span_years": 15.59, "n_signals": 9, "n_trades": 9, "verdict": "TOO_FEW_TRADES", "sl_pip": 152.1, "layer": "s1622", "mode": "gated", "lookback": 90, "cfg": {"name": "ClearAirRecord", "n_trials": 6}, "n_base": 491, "n_sig": 9, "pass_rate": 1.8}
