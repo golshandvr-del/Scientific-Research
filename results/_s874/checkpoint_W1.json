@@ -1,0 +1,14 @@
+{
+ "tf": "W1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_W1.csv",
+ "bars": 813,
+ "split_bar": 406,
+ "max_hold": 16,
+ "n_events": 15,
+ "n_events_gated": 7,
+ "n_long": 7,
+ "n_short": 8,
+ "sl_median_pip": 582.2952527298032,
+ "verdict": "NO_EVENTS",
+ "elapsed_s": 0.5
+}

@@ -101,6 +101,9 @@ def variant_events(idx, dr, drift_ok, gate):
     return idx[m], dr[m]
 
 
+FORCE_ADJ = False  # --adjudicate: حکم رسمی موتور برای برنده‌ی IS حتی زیر گیت (قانون «هر شماره یک حکم»)
+
+
 def process_tf(tf):
     t0 = time.time()
     d = fd.load_fast(ASSET, tf)
@@ -151,7 +154,7 @@ def process_tf(tf):
     valid = [r for r in rows if np.isfinite(r.get('z_is', np.nan))]
     winner = max(valid, key=lambda r: r['z_is']) if valid else None
     out['winner'] = winner
-    if winner is None or winner['z_is'] < Z_IS_MIN:
+    if winner is None or (winner['z_is'] < Z_IS_MIN and not FORCE_ADJ):
         out['verdict'] = 'DEAD_IS'
         out['elapsed_s'] = round(time.time() - t0, 1)
         return out
@@ -193,6 +196,7 @@ def process_tf(tf):
                        pnl_pip=float(tr_full['pnl_pip'].sum()),
                        null_flat=dict(mean=float(np.mean(wrs)),
                                       sd=float(np.std(wrs, ddof=1)), k=len(wrs)))
+    out['forced_adjudication'] = bool(winner['z_is'] < Z_IS_MIN)
     out['rqs2'] = {k: res.get(k) for k in ('verdict', 'rqs2_score', 'gates')}
     out['rqs2_metrics'] = res.get('metrics')
     out['verdict'] = res.get('verdict')
@@ -203,9 +207,12 @@ def process_tf(tf):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    only = sys.argv[1:] if len(sys.argv) > 1 else TFS
+    global FORCE_ADJ
+    args = [a for a in sys.argv[1:] if a != '--adjudicate']
+    FORCE_ADJ = '--adjudicate' in sys.argv
+    only = args if args else TFS
     for tf in only:
-        ck = os.path.join(OUT, f'checkpoint_{tf}.json')
+        ck = os.path.join(OUT, f'checkpoint_{tf}{"_ADJ" if FORCE_ADJ else ""}.json')
         if os.path.exists(ck):
             print(f'[skip] {tf}', flush=True)
             continue
