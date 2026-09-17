@@ -205,10 +205,12 @@ def phase_overlap(tf):
     sets = (('kept', m), ('removed_vs_base', mask & ~m), ('S560_base', mask),
             ('S562_V_ref', gm['V']), ('kept_not_in_V', m & ~gm['V']), ('V_not_in_kept', gm['V'] & ~m))
     for tag, mk in sets:
-        tr = se.simulate_trades(df, mk, zl, sl, tp, 'XAUUSD', max_hold=mh, allow_overlap=False)
-        p = tr['pnl_pip'].values.astype(float)
-        if len(p) == 0:
+        if not mk.any():
             out[tag] = dict(n=0); continue
+        tr = se.simulate_trades(df, mk, zl, sl, tp, 'XAUUSD', max_hold=mh, allow_overlap=False)
+        if len(tr) == 0 or 'pnl_pip' not in tr.columns:
+            out[tag] = dict(n=0); continue
+        p = tr['pnl_pip'].values.astype(float)
         eq = 10000.0 + np.cumsum(p) * 10.0
         peak = np.maximum.accumulate(eq)
         out[tag] = dict(n=len(p), wr=round(100 * float((p > 0).mean()), 2), mean_pip=round(float(p.mean()), 2),

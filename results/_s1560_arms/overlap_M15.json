@@ -1,0 +1,42 @@
+{
+ "kept": {
+  "n": 210,
+  "wr": 71.9,
+  "mean_pip": 6.86,
+  "dd_pct": 5.11,
+  "sum_pip": 1441.1
+ },
+ "removed_vs_base": {
+  "n": 393,
+  "wr": 64.63,
+  "mean_pip": 5.18,
+  "dd_pct": 16.42,
+  "sum_pip": 2035.3
+ },
+ "S560_base": {
+  "n": 603,
+  "wr": 67.16,
+  "mean_pip": 5.77,
+  "dd_pct": 13.4,
+  "sum_pip": 3476.4
+ },
+ "S562_V_ref": {
+  "n": 438,
+  "wr": 70.78,
+  "mean_pip": 7.56,
+  "dd_pct": 4.88,
+  "sum_pip": 3309.8
+ },
+ "kept_not_in_V": {
+  "n": 0
+ },
+ "V_not_in_kept": {
+  "n": 228,
+  "wr": 69.74,
+  "mean_pip": 8.2,
+  "dd_pct": 5.13,
+  "sum_pip": 1868.7
+ },
+ "share_of_base_kept_pct": 34.8,
+ "jaccard_with_V": 0.479
+}
