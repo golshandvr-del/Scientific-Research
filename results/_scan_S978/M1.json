@@ -1,0 +1,23 @@
+{
+ "strategy": "S978_LateFlowFreshExtreme",
+ "asset": "XAUUSD",
+ "tf": "M1",
+ "bars": 5000000,
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+ "split_bar": 3500000,
+ "hold": 16,
+ "n_trials": 24,
+ "k_perm": 2000,
+ "seed": 20260910,
+ "prereg": "results/S978_PREREG_late_flow_fresh_extreme.md",
+ "sl_pip": 5.903,
+ "tp_pip": 8.854,
+ "diag": {
+  "n_edge": 239766,
+  "n_late": 0,
+  "n_early": 0,
+  "n_nan": 239766
+ },
+ "n_signals": 0,
+ "verdict": "NO_TRADES_FULL"
+}
