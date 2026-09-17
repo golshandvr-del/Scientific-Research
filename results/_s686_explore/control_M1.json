@@ -1,0 +1,29 @@
+{
+ "control": "M1",
+ "sl_pip": 4.6,
+ "note": "cost control only; not adjudicated",
+ "cells": {
+  "1.272": {
+   "n": 63,
+   "wr": 53.97,
+   "exp_pip": -2.519,
+   "gates": {
+    "n_days": 1855,
+    "n_shock": 110,
+    "n_aligned": 64,
+    "drift_pass": 0.582
+   }
+  },
+  "1.618": {
+   "n": 30,
+   "wr": 63.33,
+   "exp_pip": -1.637,
+   "gates": {
+    "n_days": 1855,
+    "n_shock": 50,
+    "n_aligned": 30,
+    "drift_pass": 0.6
+   }
+  }
+ }
+}
