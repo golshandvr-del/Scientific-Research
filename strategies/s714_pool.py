@@ -39,7 +39,7 @@ def load_member(tf):
 
 
 def main():
-    members = [load_member(tf) for tf in FAMILY if os.path.exists(f'{OUT}/{tf}.json')]
+    members = [load_member(tf) for tf in FAMILY if os.path.exists(f'{OUT}/{tf}_trades.csv')]
     res = pool_cards(members)
     if res is None:
         print('pool: no valid members'); return
@@ -78,7 +78,7 @@ def main():
     r = rqs2.compute_rqs2(pool, ASSET, sl_pip=sl_med, tp_pip=tp_med, bar_time=axis_dt,
                           close=axis_close, null=null, holdout_mask=holdout,
                           n_trials=N_TRIALS_POOL, allow_overlap=False)
-    print(rqs2.format_rqs2('S714_DSF_POOL', r), flush=True)
+    print(rqs2.format_rqs2('S714_MondayRange_POOL', r), flush=True)
 
     payload = dict(used=used, dropped=res['dropped'], n_before=res['n_before'],
                    n_after=res['n_after'], selection=res['selection'],
