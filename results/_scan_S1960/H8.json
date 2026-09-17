@@ -1,0 +1,120 @@
+{
+ "tf": "H8",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "n_bars": 11978,
+ "split_bar": 5943,
+ "member": {
+  "th": 2.618,
+  "rho": 0.618,
+  "L": 144,
+  "arm": "invalidated",
+  "mode": "follow",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "max_hold": 16,
+  "sl_pip_med": 153.48,
+  "tp_pip_med": 248.32
+ },
+ "discovery": {
+  "L": 144,
+  "arm": "invalidated",
+  "mode": "follow",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "stat": 108.609,
+  "n": 36,
+  "wr": 58.33,
+  "be_rob": 40.23,
+  "lift": 18.101,
+  "exp_pip": 43.79,
+  "sl_med": 123.969,
+  "tp_med": 200.572
+ },
+ "controls": {
+  "n_events": 82,
+  "pass_rates": {
+   "L55": {
+    "with_prior": 39,
+    "validated": 0.564
+   },
+   "L144": {
+    "with_prior": 71,
+    "validated": 0.493
+   }
+  },
+  "base": {
+   "stat": 164.4006539686467,
+   "n": 82,
+   "wr": 58.54,
+   "be_rob": 40.38,
+   "lift": 18.155,
+   "exp_pip": 54.86,
+   "sl_med": 115.46731428570828,
+   "tp_med": 186.81739999999027
+  },
+  "invalidated": {
+   "L55": {
+    "stat": 53.063966492796744,
+    "n": 17,
+    "wr": 52.94,
+    "be_rob": 40.07,
+    "lift": 12.87,
+    "exp_pip": 11.14,
+    "sl_med": 134.5957714285709,
+    "tp_med": 217.76579999999913
+   },
+   "L144": {
+    "stat": 108.6089331214292,
+    "n": 36,
+    "wr": 58.33,
+    "be_rob": 40.23,
+    "lift": 18.101,
+    "exp_pip": 43.79,
+    "sl_med": 123.9685142857148,
+    "tp_med": 200.57170000000082
+   }
+  }
+ },
+ "falsifiers": {
+  "winner_arm": "invalidated",
+  "winner_mode": "follow",
+  "p1_vs_base": null,
+  "p2_val_gt_inval": null,
+  "p4_pass_rate": 0.507,
+  "p4_alive": true,
+  "p5": {
+   "calm_share": 0.492,
+   "drift_aligned_share": 0.446
+  }
+ },
+ "pool_eligible": false,
+ "null_meta": {
+  "n_perm": 500,
+  "draw_size": 65,
+  "uncond_n": 11711
+ },
+ "verdict": "REJECT",
+ "score": 26.5,
+ "gates": {
+  "H0": true,
+  "H1": true,
+  "H2": true,
+  "H3": false,
+  "H4": true,
+  "H5": false,
+  "H6": true,
+  "H7": true,
+  "H8": true,
+  "H9": true,
+  "H10": true
+ },
+ "n": 65,
+ "wr": 55.38,
+ "pf": 1.789,
+ "net": 2461.6,
+ "lift": 13.49,
+ "z": 2.18,
+ "p_perm": 0.014563,
+ "notes": [],
+ "sec": 2.7
+}
