@@ -1,0 +1,188 @@
+{
+ "M15": {
+  "arms": {
+   "BASE": {
+    "gate": "BASE",
+    "sl": 50.9,
+    "tp": 50.9,
+    "mh": 1,
+    "n_signals": 603,
+    "t_first_half": 3.647301228557637,
+    "n_first_half": 202,
+    "wr_first_half": 65.35,
+    "dd_first_half": 5.28,
+    "judged": false,
+    "dead_gate": false
+   },
+   "V": {
+    "gate": "V",
+    "sl": 50.9,
+    "tp": 50.9,
+    "mh": 1,
+    "n_signals": 438,
+    "t_first_half": 3.6097495783966953,
+    "n_first_half": 150,
+    "wr_first_half": 67.33,
+    "dd_first_half": 4.88,
+    "judged": false,
+    "dead_gate": false
+   },
+   "SIGMA": {
+    "gate": "SIGMA",
+    "sl": 50.9,
+    "tp": 50.9,
+    "mh": 1,
+    "n_signals": 288,
+    "t_first_half": 2.3682086803902447,
+    "n_first_half": 87,
+    "wr_first_half": 64.37,
+    "dd_first_half": 6.47,
+    "judged": true,
+    "dead_gate": false
+   },
+   "DUAL": {
+    "gate": "DUAL",
+    "sl": 50.9,
+    "tp": 50.9,
+    "mh": 1,
+    "n_signals": 210,
+    "t_first_half": 2.6602774583978097,
+    "n_first_half": 61,
+    "wr_first_half": 68.85,
+    "dd_first_half": 5.11,
+    "judged": true,
+    "dead_gate": false
+   }
+  },
+  "picked": "DUAL",
+  "densities": {
+   "V": {
+    "n_pass_total": 438,
+    "n_pass_fh": 150,
+    "pass_rate_fh": 74.3
+   },
+   "SIGMA": {
+    "n_pass_total": 288,
+    "n_pass_fh": 87,
+    "pass_rate_fh": 43.1
+   },
+   "DUAL": {
+    "n_pass_total": 210,
+    "n_pass_fh": 61,
+    "pass_rate_fh": 30.2
+   }
+  },
+  "collinearity_v_sigma": 0.943,
+  "first_half_answer": "H_scale (V >= SIGMA)",
+  "qv_frozen": 85,
+  "geometry": {
+   "sl": 50.9,
+   "tp": 50.9,
+   "mh": 1,
+   "src": "S560 V-TIME frozen"
+  },
+  "n_base": 603,
+  "split_bar": 180578,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+  "stop_check": {
+   "lift_fh_pp": 36.17,
+   "null_uncond_wr_fh": 32.676,
+   "threshold": 4.0,
+   "stopped_dead": false
+  }
+ },
+ "H1": {
+  "arms": {
+   "BASE": {
+    "gate": "BASE",
+    "sl": 101.4,
+    "tp": 101.4,
+    "mh": 2,
+    "n_signals": 407,
+    "t_first_half": 1.978510184488696,
+    "n_first_half": 111,
+    "wr_first_half": 63.96,
+    "dd_first_half": 14.77,
+    "judged": false,
+    "dead_gate": false
+   },
+   "V": {
+    "gate": "V",
+    "sl": 101.4,
+    "tp": 101.4,
+    "mh": 2,
+    "n_signals": 255,
+    "t_first_half": 2.0266987674047763,
+    "n_first_half": 83,
+    "wr_first_half": 65.06,
+    "dd_first_half": 18.63,
+    "judged": false,
+    "dead_gate": false
+   },
+   "SIGMA": {
+    "gate": "SIGMA",
+    "sl": 101.4,
+    "tp": 101.4,
+    "mh": 2,
+    "n_signals": 158,
+    "t_first_half": 0.06142430591577428,
+    "n_first_half": 42,
+    "wr_first_half": 54.76,
+    "dd_first_half": 13.67,
+    "judged": true,
+    "dead_gate": false
+   },
+   "DUAL": {
+    "gate": "DUAL",
+    "sl": 101.4,
+    "tp": 101.4,
+    "mh": 2,
+    "n_signals": 94,
+    "t_first_half": null,
+    "n_first_half": 29,
+    "wr_first_half": null,
+    "dd_first_half": null,
+    "judged": true,
+    "dead_gate": false
+   }
+  },
+  "picked": "SIGMA",
+  "densities": {
+   "V": {
+    "n_pass_total": 255,
+    "n_pass_fh": 84,
+    "pass_rate_fh": 75.0
+   },
+   "SIGMA": {
+    "n_pass_total": 158,
+    "n_pass_fh": 42,
+    "pass_rate_fh": 37.5
+   },
+   "DUAL": {
+    "n_pass_total": 94,
+    "n_pass_fh": 29,
+    "pass_rate_fh": 25.9
+   }
+  },
+  "collinearity_v_sigma": 0.921,
+  "first_half_answer": "H_scale (V >= SIGMA)",
+  "qv_frozen": 78,
+  "geometry": {
+   "sl": 101.4,
+   "tp": 101.4,
+   "mh": 2,
+   "src": "S560 V-TIME frozen"
+  },
+  "n_base": 407,
+  "split_bar": 45501,
+  "split_utc": "2018-10-20",
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H1.csv",
+  "stop_check": {
+   "lift_fh_pp": 11.18,
+   "null_uncond_wr_fh": 43.57761669024045,
+   "threshold": 4.0,
+   "stopped_dead": false
+  }
+ }
+}
