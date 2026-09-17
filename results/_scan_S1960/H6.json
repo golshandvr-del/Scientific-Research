@@ -1,0 +1,122 @@
+{
+ "tf": "H6",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H6.csv",
+ "n_bars": 15966,
+ "split_bar": 7920,
+ "member": {
+  "th": 2.618,
+  "rho": 0.618,
+  "L": 144,
+  "arm": "invalidated",
+  "mode": "follow",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "max_hold": 16,
+  "sl_pip_med": 101.57,
+  "tp_pip_med": 164.33
+ },
+ "discovery": {
+  "L": 144,
+  "arm": "invalidated",
+  "mode": "follow",
+  "k_sl": 1.272,
+  "k_tp": 2.058,
+  "stat": 39.596,
+  "n": 54,
+  "wr": 46.3,
+  "be_rob": 40.91,
+  "lift": 5.388,
+  "exp_pip": 15.26,
+  "sl_med": 93.038,
+  "tp_med": 150.528
+ },
+ "controls": {
+  "n_events": 129,
+  "pass_rates": {
+   "L55": {
+    "with_prior": 80,
+    "validated": 0.55
+   },
+   "L144": {
+    "with_prior": 120,
+    "validated": 0.55
+   }
+  },
+  "base": {
+   "stat": 72.94889833132765,
+   "n": 129,
+   "wr": 47.29,
+   "be_rob": 40.86,
+   "lift": 6.423,
+   "exp_pip": 16.88,
+   "sl_med": 94.57017142857426,
+   "tp_med": 153.00740000000457
+  },
+  "invalidated": {
+   "L55": {
+    "stat": 38.77237695654598,
+    "n": 36,
+    "wr": 47.22,
+    "be_rob": 40.76,
+    "lift": 6.462,
+    "exp_pip": 13.7,
+    "sl_med": 98.40434285714673,
+    "tp_med": 159.21080000000626
+   },
+   "L144": {
+    "stat": 39.59617639293435,
+    "n": 54,
+    "wr": 46.3,
+    "be_rob": 40.91,
+    "lift": 5.388,
+    "exp_pip": 15.26,
+    "sl_med": 93.03771428571092,
+    "tp_med": 150.52799999999453
+   }
+  }
+ },
+ "falsifiers": {
+  "winner_arm": "invalidated",
+  "winner_mode": "follow",
+  "p1_vs_base": null,
+  "p2_val_gt_inval": null,
+  "p4_pass_rate": 0.45,
+  "p4_alive": true,
+  "p5": {
+   "calm_share": 0.633,
+   "drift_aligned_share": 0.49
+  }
+ },
+ "pool_eligible": false,
+ "null_meta": {
+  "n_perm": 500,
+  "draw_size": 98,
+  "uncond_n": 15699
+ },
+ "verdict": "REJECT",
+ "score": 2.0,
+ "gates": {
+  "H0": true,
+  "H1": false,
+  "H2": false,
+  "H3": false,
+  "H4": false,
+  "H5": false,
+  "H6": false,
+  "H7": false,
+  "H8": false,
+  "H9": false,
+  "H10": false
+ },
+ "n": 98,
+ "wr": 37.76,
+ "pf": 0.833,
+ "net": -1052.6,
+ "lift": -3.62,
+ "z": -0.73,
+ "p_perm": 0.766498,
+ "notes": [
+  "PF=0.833<1.3"
+ ],
+ "sec": 2.0
+}

@@ -1,0 +1,55 @@
+{
+ "tf": "D1",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "n_bars": 4005,
+ "split_bar": 1992,
+ "verdict": "NO-SURVIVOR",
+ "controls": {
+  "n_events": 21,
+  "pass_rates": {
+   "L55": {
+    "with_prior": 9,
+    "validated": 0.556
+   },
+   "L144": {
+    "with_prior": 15,
+    "validated": 0.6
+   }
+  },
+  "base": {
+   "stat": 59.65069938208614,
+   "n": 21,
+   "wr": 52.38,
+   "be_rob": 39.36,
+   "lift": 13.017,
+   "exp_pip": 26.95,
+   "sl_med": 216.23394285714602,
+   "tp_med": 349.8502000000051
+  },
+  "invalidated": {
+   "L55": {
+    "stat": -28.22944331614852,
+    "n": 4,
+    "wr": 25.0,
+    "be_rob": 39.11,
+    "lift": -14.115,
+    "exp_pip": -77.8,
+    "sl_med": 275.0700000000022,
+    "tp_med": 445.04250000000354
+   },
+   "L144": {
+    "stat": -54.986280446885615,
+    "n": 6,
+    "wr": 16.67,
+    "be_rob": 39.11,
+    "lift": -22.448,
+    "exp_pip": -143.2,
+    "sl_med": 275.0700000000022,
+    "tp_med": 445.04250000000354
+   }
+  }
+ },
+ "pool_eligible": false,
+ "note": "هیچ عضوی غربالِ کشف (n>=30 و expectancy>0) را نگذراند",
+ "sec": 0.1
+}
