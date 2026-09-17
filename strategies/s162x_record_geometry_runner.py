@@ -23,6 +23,9 @@ CFG = {
     's1621': dict(name='RecordMarginGate', cards=['XAUUSD_H8', 'XAUUSD_H6', 'XAUUSD_H12'], n_trials=6, margin_min=0.25),
     # S1622: هوای پاک — low[t] > max(close[t-90..t-1])
     's1622': dict(name='ClearAirRecord', cards=['XAUUSD_H8', 'XAUUSD_H6', 'XAUUSD_H12'], n_trials=6),
+    # S1623: رویداد پایه = رکورد تازهٔ کف S1511 (low>max(low90) ∧ drift>0)؛ گیت = حاشیهٔ کف بر ATR ≥ 0.25؛ seed S1511
+    's1623': dict(name='FloorMarginGate', cards=['XAUUSD_H6', 'XAUUSD_H8', 'XAUUSD_H12'], n_trials=7, margin_min=0.25,
+                  base='floor', seed=20260905),
 }
 
 
@@ -38,6 +41,16 @@ def drift_mask(df):
 def fresh_high(df):
     c = df['close']; nh = (c > c.rolling(LOOKBACK).max().shift(1)).fillna(False)
     return nh & ~nh.shift(1).fillna(False)
+
+
+def fresh_floor(df):
+    """عیناً S1511: low[t] > max(low[t-90..t-1])، لبهٔ تازه، ∧ drift>0."""
+    lo = df['low'].astype(float); ff = (lo > lo.rolling(LOOKBACK).max().shift(1)).fillna(False)
+    return (ff & ~ff.shift(1).fillna(False)) & drift_mask(df)
+
+
+def base_event(cfg, df):
+    return fresh_floor(df) if cfg.get('base') == 'floor' else fresh_high(df)
 
 
 def record_age(df):
@@ -69,6 +82,9 @@ def gate_fn(layer, cfg, df):
         a = record_age(df); return a >= cfg['age_min'], a
     if layer == 's1621':
         m = record_margin(df); return m >= cfg['margin_min'], m
+    if layer == 's1623':
+        lo = df['low'].astype(float); pm = lo.rolling(LOOKBACK).max().shift(1)
+        m = (lo - pm) / atr100_causal(df); return (m >= cfg['margin_min']).fillna(False), m
     if layer == 's1622':
         c = df['close'].astype(float); prevmax = c.rolling(LOOKBACK).max().shift(1)
         g = df['low'].astype(float) > prevmax; return g.fillna(False), (df['low'].astype(float) - prevmax)
@@ -85,6 +101,7 @@ def main():
     NM = _mod('tools/s382_null_model.py', '_nm')
     MTF = _mod('tools/s382_mtf_runner.py', '_mtf')
     MTF.N_TRIALS = cfg['n_trials']
+    if cfg.get('seed'): MTF.SEED = cfg['seed']; NM.SEED = cfg['seed']
 
     def load_full(card):
         path = f'data/mt5_full/{card}.csv'
@@ -95,7 +112,7 @@ def main():
     stats = {}
 
     def signals(df):
-        base = fresh_high(df)
+        base = base_event(cfg, df)
         if mode == 'base':
             sig = base; g = None
         else:
