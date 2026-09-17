@@ -84,7 +84,13 @@ def surprise_signals(S, mx, close, atr, m, s, warmup, lo=None, hi=None,
         idx = idx[idx >= lo]
     if hi is not None:
         idx = idx[idx < hi]
-    n_shock = int(had_shock[np.where(had_shock)[0] >= max(warmup, m + 1)].sum())
+    sh_idx = np.where(had_shock)[0]
+    sh_idx = sh_idx[sh_idx >= max(warmup, m + 1)]
+    if lo is not None:
+        sh_idx = sh_idx[sh_idx >= lo]
+    if hi is not None:
+        sh_idx = sh_idx[sh_idx < hi]
+    n_shock = int(len(sh_idx))
     if len(idx) == 0:
         return idx, np.zeros(0, bool), n_shock
     isl = d[idx] > 0
