@@ -68,7 +68,9 @@ def eur_at_bar_close(df, tf):
 
 def base_fresh_high(c):
     nh = (c > c.rolling(LOOKBACK).max().shift(1)).fillna(False)
-    return nh & ~nh.shift(1).fillna(False)
+    # pandas>=3: bool.shift().fillna() -> object dtype, and ~object inverts INTs (-1/-2, truthy)
+    # => the S526 one-liner silently returns the STATE (807) instead of the EDGE (361). Cast explicitly.
+    return nh & ~nh.shift(1, fill_value=False).astype(bool)
 
 
 def main():
