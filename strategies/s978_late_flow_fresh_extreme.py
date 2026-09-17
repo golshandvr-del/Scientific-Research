@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-S978 — شوکِ مطلع با جریانِ دیرهنگام (Late-Flow Informed Shock)
+S978 — لبهٔ تازهٔ ۹۰ با جریانِ دیرهنگام (Late-Flow Fresh Extreme)
 ================================================================================
 پیش‌ثبت: results/S978_PREREG_late_flow_fresh_extreme.md (پیش از هر PnL)
 معیار:   RQS2 v2.6 gates_only. مسیرِ B — یک تعریفِ منجمد، n_trials=24.
 
 تعریف (بندِ ۲ پیش‌ثبت):
-  shock: (h−l)[i] ≥ 2.618×ATR21[i−1]؛ informed: ρ=|c−o|/(h−l) ≥ 0.618، c≠o.
-  late_share = Σvol(M1 در نیمهٔ دوم کندل) / Σvol(M1 در کل کندل)؛ LATE: ≥ 0.55.
-  LONG: shock∧informed∧c>o∧LATE ؛ SHORT: shock∧informed∧c<o∧LATE. بدون گیت درفت.
-  ورود: openِ کندلِ بعدی (موتور). M1: نیمهٔ کندل زیرِ رزولوشن ⇒ بدون سیگنال.
+  edge_hi: close>max(close[i−90..i−1]) و کندل قبل نه، c>o؛ edge_lo آینه (S526/S1511 قفل).
+  late_share = Σvol(M1 نیمهٔ دوم) / Σvol(M1 کل کندل)؛ ref = median ۲۰ کندلِ قبلیِ هم‌اسلات؛
+  exc = late_share − ref؛ LATE: exc ≥ 0.
+  LONG: edge_hi∧LATE ؛ SHORT: edge_lo∧LATE. ورود: openِ کندلِ بعدی (موتور).
 
-هندسه (بندِ ۲): SL=1.0×median(ATR14)، TP=1.5×SL، hold=16 کندل (ثابت).
+هندسه (بندِ ۲): SL=1.5×median(ATR100)، TP=1.5×SL، hold=16 کندل (ثابت).
 نال (بندِ ۴): جای‌گشتِ مکانِ ورود، K=2000 هر سمت، بذر 20260910، split=0.70.
 
 فقط XAUUSD. H4 بازنمونه از H1. checkpoint: results/_scan_S978/<TF>.json
@@ -38,13 +38,13 @@ from strategies.s346_fast import barrier_outcomes, select_non_overlap  # noqa: E
 ASSET = 'XAUUSD'
 
 # ---- ثابت‌های منجمدِ پیش‌ثبت ----
-SHOCK_ATR_WIN = 21            # ATR علّی برای مقیاسِ شوک (S965/S919)
-SHOCK_K = 2.618               # (h−l) ≥ SHOCK_K × ATR21[i−1]  (S965 قفل)
-RHO_MIN = 0.618               # ماندگاریِ بالا: ρ ≥ 0.618 ⇒ مطلع (S965 قفل)
-LATE_MIN = 0.55               # سهمِ حجمِ نیمهٔ دومِ کندل (از M1)
+W_REC = 90                    # پنجرهٔ رکوردِ close (S526/S1511 قفل)
+REF_N = 20                    # تعداد کندل‌های هم‌اسلاتِ قبلی برای مرجعِ late_share
+REF_MINP = 10                 # min_periods مرجع
+EXC_MIN = 0.0                 # LATE: late_share − ref ≥ 0
 MIN_M1_FRAC = 0.20            # کمینهٔ پوشش M1 درونِ کندل؛ کمتر ⇒ NaN
-ATR_WIN = 14                  # براکتِ SL (median ATR14 هر TF)
-SL_K = 1.0
+ATR_WIN = 100                 # براکتِ SL (median ATR100 هر TF — قفل خانواده)
+SL_K = 1.5
 RR = 1.5
 HOLD_BARS = 16                # ثابت (S965/S919)
 N_TRIALS = 24
@@ -127,54 +127,61 @@ def bar_seconds(df):
 
 
 def build_signals(df, t1=None, cv=None):
-    """(sig_idx, is_long, diag) — شوکِ مطلع + جریانِ دیرهنگام؛ causal.
+    """(sig_idx, is_long, diag) — لبهٔ تازهٔ ۹۰ + جریانِ دیرهنگامِ نرمال‌شدهٔ روزانه؛ causal.
 
-    shock: (h−l)[i] ≥ SHOCK_K×ATR21[i−1] (shift(1)). informed: ρ ≥ RHO_MIN, c≠o.
-    late_share از M1های درونِ همان کندل (همه پیش از close[i] بسته شده‌اند).
-    LONG = shock∧informed∧c>o∧late≥0.55؛ SHORT آینه. بدون گیت درفت.
-    diag: شمارشِ بازوی early (late<0.5) برای P1 (فقط گزارشی).
+    edge_hi: c>max(c[i−90..i−1]) (shift(1)) و بار قبل نه، c>o؛ edge_lo آینه.
+    late_share از M1های درونِ همان کندل برای *همهٔ* کندل‌ها (لازم برای مرجع)؛
+    ref = median از REF_N کندلِ قبلیِ هم‌اسلات (shift(1) درون گروه اسلات)؛ exc=ls−ref.
+    LONG = edge_hi∧exc≥0؛ SHORT = edge_lo∧exc≥0. diag: شمارش بازوی exc<0 برای P1.
     ورود در کندلِ بعدی توسطِ queue_rr/barrier انجام می‌شود (sig+1).
     """
     t = df['time'].values.astype(np.int64)
     o = df['open'].values.astype(np.float64)
-    h = df['high'].values.astype(np.float64)
-    l = df['low'].values.astype(np.float64)
     c = df['close'].values.astype(np.float64)
     n = len(c)
 
-    prev_c = np.concatenate(([c[0]], c[:-1]))
-    tr = np.maximum(h - l, np.maximum(np.abs(h - prev_c), np.abs(l - prev_c)))
-    del prev_c
-    atr21 = pd.Series(tr).rolling(SHOCK_ATR_WIN).mean().shift(1).values
-    del tr
-    rng_ = h - l
-    shock = rng_ >= SHOCK_K * atr21                          # NaN ⇒ False
-    del atr21
-    rho = np.divide(np.abs(c - o), rng_, out=np.zeros(n), where=rng_ > 0)
-    informed = shock & (rho >= RHO_MIN) & (c != o)
-    del rho, rng_, shock
+    cs = pd.Series(c)
+    hi = cs.shift(1).rolling(W_REC).max().values
+    lo = cs.shift(1).rolling(W_REC).min().values
+    del cs
+    nh = c > hi
+    nl = c < lo
+    del hi, lo
+    edge_hi = nh & ~np.concatenate(([False], nh[:-1])) & (c > o)
+    edge_lo = nl & ~np.concatenate(([False], nl[:-1])) & (c < o)
+    del nh, nl
 
-    cand = np.flatnonzero(informed)
-    del informed
-    diag = dict(n_informed=int(len(cand)), n_late=0, n_early=0, n_nan=0)
+    cand = np.flatnonzero(edge_hi | edge_lo)
+    diag = dict(n_edge=int(len(cand)), n_late=0, n_early=0, n_nan=0)
     if len(cand) == 0:
         return (np.zeros(0, np.int64), np.zeros(0, bool), diag)
 
     if t1 is None:
         t1, cv = load_m1_volume_clock()
     sec = bar_seconds(df)
-    # آغازِ کندل = مهرِ زمانیِ خودِ کندل (برای H4 بازنمونه: کفِ 4h — time='first' همان است)
-    starts = t[cand]
+    starts = t.copy()
     if sec == 4 * 3600:
-        starts = (starts // sec) * sec
-    ls = late_share(starts, sec, t1, cv)
-    diag['n_nan'] = int(np.isnan(ls).sum())
-    late = ls >= LATE_MIN
+        starts = (starts // sec) * sec                       # H4 بازنمونه: کفِ 4h
+    ls = late_share(starts, sec, t1, cv)                    # همهٔ کندل‌ها (مرجع لازم دارد)
+    # اسلاتِ روزانه؛ برای TFهای ≥ ۱ روز همه در اسلات ۰
+    slot = (starts % 86400) // sec if sec < 86400 else np.zeros(n, dtype=np.int64)
+    ref = np.full(n, np.nan)
+    for s in np.unique(slot):
+        idx = np.flatnonzero(slot == s)
+        ref[idx] = (pd.Series(ls[idx]).shift(1)
+                    .rolling(REF_N, min_periods=REF_MINP).median().values)
+    exc = ls - ref
+    del ls, ref, slot, starts
+
+    e = exc[cand]
+    diag['n_nan'] = int(np.isnan(e).sum())
+    late = e >= EXC_MIN                                      # NaN ⇒ False
     diag['n_late'] = int(late.sum())
-    diag['n_early'] = int((ls < 0.5).sum())
+    diag['n_early'] = int((e < 0).sum())
+    del exc
 
     sig = cand[late]
-    is_long = (c[sig] > o[sig])
+    is_long = edge_hi[sig]
     return sig.astype(np.int64), is_long.astype(bool), diag
 
 
@@ -259,8 +266,8 @@ def run_tf(tf, k_perm=K_PERM, seed=SEED):
         json.dump(out, open(out_path, 'w'), ensure_ascii=False, indent=1,
                   default=_default)
 
-    # بندِ ۴ پیش‌ثبت: warmup = max(ATR_WIN+2, SHOCK_ATR_WIN+2)
-    warmup = max(ATR_WIN + 2, SHOCK_ATR_WIN + 2)
+    # بندِ ۴ پیش‌ثبت: warmup = max(ATR_WIN+2, W_REC+2)
+    warmup = max(ATR_WIN + 2, W_REC + 2)
     if n < warmup + 500:
         out['verdict'] = 'TOO_SHORT'
         _save()
@@ -282,9 +289,9 @@ def run_tf(tf, k_perm=K_PERM, seed=SEED):
     keep = sig >= warmup
     sig, is_long = sig[keep], is_long[keep]
     out['n_signals'] = int(len(sig))
-    print(f"    informed shocks={diag['n_informed']:,} late={diag['n_late']:,} "
+    print(f"    fresh-90 edges={diag['n_edge']:,} late={diag['n_late']:,} "
           f"early={diag['n_early']:,} nan={diag['n_nan']:,}", flush=True)
-    print(f"    late-flow informed-shock signals: {len(sig):,} (L={int(is_long.sum()):,}"
+    print(f"    late-flow fresh-extreme signals: {len(sig):,} (L={int(is_long.sum()):,}"
           f"/S={int((~is_long).sum()):,})", flush=True)
     if len(sig) < 5:
         out['verdict'] = 'NO_TRADES_FULL'
