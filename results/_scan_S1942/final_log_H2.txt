@@ -1,0 +1,4 @@
+FINAL ONE-SHOT S1942 H2 · locked=long_k3.141_rr1.5_hd1 · hold=12 · holdout=[28,573,47,623) · n_trials=1
+holdout trades = 61
+
+VERDICT=REJECT  score=17.5  p_perm=0.413522
