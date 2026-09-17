@@ -1,0 +1,18 @@
+{
+ "vs_S1511_H6": {
+  "n_1581": 219,
+  "n_1511": 279,
+  "same": 197,
+  "share_of_1581": 90.0
+ },
+ "vs_S526event_H6": {
+  "n_526": 286,
+  "same": 43,
+  "share_of_1581": 19.6
+ },
+ "halves_wr": [
+  47.71,
+  58.18
+ ],
+ "note": "S589 lives on H8/H4 (different card); calendar overlap with S589-H8 must be handled at allocation time"
+}
