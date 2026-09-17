@@ -11,10 +11,14 @@ s1450_tp_extension_uu.py — S1450 · تمدیدِ TP با کلمهٔ 𝕌𝕌 �
 
 اجرا: python3 strategies/s1450_tp_extension_uu.py <patient>
 """
+import os
 import sys
 import numpy as np
 import pandas as pd
-from strategies import s145x_mgmt_cohort2 as C
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT not in sys.path:
+    sys.path.insert(0, ROOT)
+from strategies import s145x_mgmt_cohort2 as C  # noqa: E402
 
 CODE = 'S1450'
 VARIANTS = ('X125', 'X150', 'X200')
