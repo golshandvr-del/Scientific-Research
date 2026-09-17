@@ -1,0 +1,20 @@
+{
+ "card": "XAUUSD_D1",
+ "bars": 4005,
+ "eur_coverage": 0.996,
+ "n_sig_base": 147,
+ "n_base": 84,
+ "wr_base": 45.23809523809524,
+ "n_sig_conf": 86,
+ "n_sig_unc": 61,
+ "n_conf": 56,
+ "wr_conf": 50.0,
+ "n_unc": 48,
+ "wr_unc": 39.58333333333333,
+ "gate_removed_frac": 0.415,
+ "uncond_drift_and_eurhigh": 56.99,
+ "falsifiers_dead": [
+  "F3 n_conf=56<60"
+ ],
+ "verdict": "SELF-REJECT"
+}
