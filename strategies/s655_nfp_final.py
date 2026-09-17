@@ -50,6 +50,7 @@ TF_SEC = {'M1': 60, 'M3': 180, 'M4': 240, 'M5': 300, 'M6': 360, 'M10': 600,
           'H2': 7200, 'H3': 10800, 'H6': 21600, 'H8': 28800, 'H12': 43200,
           'D1': 86400}
 CHUNK = 250_000
+NULL_MAX = 400_000   # سقفِ استخرِ نول (ضدِ OOM؛ بذر و K تغییر نمی‌کنند)
 NY = zoneinfo.ZoneInfo('America/New_York')
 
 
@@ -171,6 +172,13 @@ def judge_tf(tf):
         rho = np.where(rng_bar[ann] > 0, np.abs(body) / np.where(rng_bar[ann] > 0, rng_bar[ann], 1.0), 0.0)
     valid = np.where(np.isfinite(rng_bar) & (rng_bar > 0))[0]
     valid = valid[(valid >= 200) & (valid + 1 + HOLD < n)]
+    # ضدِ OOM (فقط حافظه، نه منطق): استخرِ نول با stride یکنواخت به ≤ NULL_MAX کندل
+    # محدود می‌شود (M1 با ۵M کندل در ۹۸۵MB کشته شد — dmesg oom-kill pid 17392).
+    if len(valid) > NULL_MAX:
+        stride = int(np.ceil(len(valid) / NULL_MAX))
+        valid = valid[::stride]
+        print(f"    null pool subsampled: stride={stride} -> {len(valid):,} bars",
+              flush=True)
 
     out = dict(layer='S655', tf=tf, asset=ASSET, src=src, n_bars=n,
                n_releases=n_rel, n_announcement_bars=int(len(ann)),
