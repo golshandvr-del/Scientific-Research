@@ -1,0 +1,49 @@
+S549 Pre-FOMC Drift | 127 FOMC entry days 2011-2026 | side=long | geometry: sl=1.5xATR(100) rr=1.5 | data=full 15.6y (mt5_full) | k=2000 seed=20260827 n_trials=36
+--- XAUUSD_M15 ---
+  [DATA] data/full/XAUUSD_M15.csv rows=363778 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_M15: span=15.59y n=124 sl=28.59pip wr=46.77 be=44.62 lift=2.16 unc=39.35 pmax=56.1 z=1.69 rqs2=15.6 verdict=REJECT
+  saved -> results/_s549/XAUUSD_M15.json
+--- XAUUSD_M20 ---
+  [DATA] data/full/XAUUSD_M20.csv rows=272979 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_M20: span=15.59y n=124 sl=33.31pip wr=44.35 be=43.96 lift=0.39 unc=39.39 pmax=53.23 z=1.13 rqs2=10.8 verdict=REJECT
+  saved -> results/_s549/XAUUSD_M20.json
+--- XAUUSD_M30 ---
+  [DATA] data/full/XAUUSD_M30.csv rows=182145 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_M30: span=15.59y n=124 sl=41.37pip wr=44.35 be=43.19 lift=1.16 unc=39.01 pmax=54.03 z=1.19 rqs2=10.5 verdict=REJECT
+  saved -> results/_s549/XAUUSD_M30.json
+--- XAUUSD_H1 ---
+  [DATA] data/full/XAUUSD_H1.csv rows=91331 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_H1: span=15.59y n=124 sl=59.74pip wr=40.32 be=42.21 lift=-1.89 unc=39.05 pmax=55.37 z=0.21 rqs2=2.8 verdict=REJECT
+  saved -> results/_s549/XAUUSD_H1.json
+--- XAUUSD_H2 ---
+  [DATA] data/full/XAUUSD_H2.csv rows=47623 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_H2: span=15.59y n=124 sl=84.56pip wr=41.94 be=41.56 lift=0.37 unc=40.08 pmax=54.55 z=0.29 rqs2=8.8 verdict=REJECT
+  saved -> results/_s549/XAUUSD_H2.json
+--- XAUUSD_H3 ---
+  [DATA] data/full/XAUUSD_H3.csv rows=31806 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_H3: span=15.59y n=124 sl=104.16pip wr=39.52 be=41.27 lift=-1.75 unc=40.12 pmax=56.78 z=-0.33 rqs2=3.6 verdict=REJECT
+  saved -> results/_s549/XAUUSD_H3.json
+--- XAUUSD_H4 ---
+  [DATA] data/full/XAUUSD_H4.csv rows=23854 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_H4: span=15.59y n=124 sl=123.01pip wr=41.94 be=41.07 lift=0.86 unc=40.58 pmax=58.47 z=0.11 rqs2=8.6 verdict=REJECT
+  saved -> results/_s549/XAUUSD_H4.json
+--- XAUUSD_H6 ---
+  [DATA] data/full/XAUUSD_H6.csv rows=15966 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_H6: span=15.59y n=124 sl=152.1pip wr=46.77 be=40.87 lift=5.91 unc=41.06 pmax=55.93 z=1.05 rqs2=14.3 verdict=REJECT
+  saved -> results/_s549/XAUUSD_H6.json
+--- XAUUSD_H8 ---
+  [DATA] data/full/XAUUSD_H8.csv rows=11978 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_H8: span=15.59y n=124 sl=179.67pip wr=42.74 be=40.73 lift=2.01 unc=42.12 pmax=57.39 z=0.06 rqs2=9.0 verdict=REJECT
+  saved -> results/_s549/XAUUSD_H8.json
+--- XAUUSD_H12 ---
+  [DATA] data/full/XAUUSD_H12.csv rows=7998 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_H12: span=15.59y n=124 sl=228.09pip wr=39.52 be=40.58 lift=-1.06 unc=42.69 pmax=58.33 z=-0.71 rqs2=3.4 verdict=REJECT
+  saved -> results/_s549/XAUUSD_H12.json
+--- XAUUSD_D1 ---
+  [DATA] data/full/XAUUSD_D1.csv rows=4005 2011-01-03 → 2026-08-07 (15.59y)
+XAUUSD_D1: span=15.59y n=117 sl=348.59pip wr=38.46 be=40.38 lift=-1.92 unc=45.78 pmax=60.0 z=-1.59 rqs2=1.3 verdict=REJECT
+  saved -> results/_s549/XAUUSD_D1.json
+--- XAUUSD_W1 [REPORT-ONLY] ---
+  [DATA] data/full/XAUUSD_W1.csv rows=813 2011-01-02 → 2026-08-02 (15.58y)
+XAUUSD_W1: span=15.58y n=72 sl=784.31pip wr=50.0 be=40.17 lift=9.83 unc=50.91 pmax=69.77 z=-0.75 rqs2=20.0 verdict=REJECT [REPORT-ONLY]
+  saved -> results/_s549/XAUUSD_W1.json
