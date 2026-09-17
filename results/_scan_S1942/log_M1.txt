@@ -1,0 +1,34 @@
+DATA src=/home/user/webapp/data/mt5_full/XAUUSD_M1.csv  n_bars=5,000,000  span=14.34y
+discovery bars=3,000,000 · bars/day(median)=1376
+[ 1/16] long_k2.058_rr1.0_hd1        n_sig=  77 n=   77 wr=49.351 lift=-33.649 score=-295.27 (0s)
+[ 2/16] long_k2.058_rr1.0_hd2        n_sig=  77 n=   77 wr=49.351 lift=-33.649 score=-295.27 (0s)
+[ 3/16] long_k2.058_rr1.5_hd1        n_sig=  77 n=   77 wr=42.857 lift=-23.543 score=-206.59 (0s)
+[ 4/16] long_k2.058_rr1.5_hd2        n_sig=  77 n=   77 wr=42.857 lift=-23.543 score=-206.59 (0s)
+[ 5/16] long_k3.141_rr1.0_hd1        n_sig=  77 n=   77 wr=50.649 lift=-23.581 score=-206.92 (1s)
+[ 6/16] long_k3.141_rr1.0_hd2        n_sig=  77 n=   77 wr=50.649 lift=-23.581 score=-206.92 (1s)
+[ 7/16] long_k3.141_rr1.5_hd1        n_sig=  77 n=   77 wr=42.857 lift=-16.527 score=-145.02 (1s)
+[ 8/16] long_k3.141_rr1.5_hd2        n_sig=  77 n=   77 wr=42.857 lift=-16.527 score=-145.02 (1s)
+[ 9/16] short_k2.058_rr1.0_hd1       n_sig=  77 n=   77 wr=45.455 lift=-37.545 score=-329.46 (1s)
+[10/16] short_k2.058_rr1.0_hd2       n_sig=  77 n=   77 wr=45.455 lift=-37.545 score=-329.46 (1s)
+[11/16] short_k2.058_rr1.5_hd1       n_sig=  77 n=   77 wr=38.961 lift=-27.439 score=-240.78 (1s)
+[12/16] short_k2.058_rr1.5_hd2       n_sig=  77 n=   77 wr=38.961 lift=-27.439 score=-240.78 (1s)
+[13/16] short_k3.141_rr1.0_hd1       n_sig=  77 n=   77 wr=46.753 lift=-27.477 score=-241.11 (1s)
+[14/16] short_k3.141_rr1.0_hd2       n_sig=  77 n=   77 wr=46.753 lift=-27.477 score=-241.11 (1s)
+[15/16] short_k3.141_rr1.5_hd1       n_sig=  77 n=   77 wr=40.26 lift=-19.124 score=-167.82 (1s)
+[16/16] short_k3.141_rr1.5_hd2       n_sig=  77 n=   77 wr=40.26 lift=-19.124 score=-167.82 (1s)
+
+LOCKED -> results/_scan_S1942/lock_XAUUSD-M1.json
+{
+  "layer": "S1942",
+  "tf": "M1",
+  "split_bar": 3000000,
+  "n_bars": 5000000,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M1.csv",
+  "bpd": 1376,
+  "criterion": "max lift*sqrt(n) | both arms | n>=60 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": null,
+  "score": null,
+  "power_ok": false
+}
