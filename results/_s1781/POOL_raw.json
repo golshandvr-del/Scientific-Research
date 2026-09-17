@@ -1,7 +1,7 @@
 {
  "arm": "raw",
- "verdict": "POWER-LIMITED",
- "score": 23.1,
+ "verdict": "ACCEPT",
+ "score": 82.0,
  "gates": {
   "H0": true,
   "H1": true,
@@ -13,7 +13,7 @@
   "H7": true,
   "H8": true,
   "H9": true,
-  "H10": null
+  "H10": true
  },
  "n": 678,
  "used": [
@@ -46,7 +46,7 @@
   }
  },
  "n_trials": 302,
- "split_idx": 394,
+ "split_idx": 407,
  "metrics": {
   "n_trades": 678.0,
   "win_rate": 44.54,
@@ -83,19 +83,17 @@
   "z_luck_bound": 2.898,
   "z_margin": 0.889,
   "n_trials": 302.0,
-  "cal_nets": "[3817.5, 4676.4, 524.2, 8066.7]",
-  "cal_counts": "[175, 148, 167, 188]",
+  "cal_nets": "[3959.3, 4454.8, 303.1, 8509.0]",
+  "cal_counts": "[160, 155, 171, 192]",
   "cal_positive": 4.0,
   "cal_occupied": 4.0,
-  "half_nets": "[10271.5, 8895.0]",
-  "oos": "{'n': 284, 'wr': 45.07, 'pf': 1.487, 'net': 8845.7, 'wr_req': 33.19}",
+  "half_nets": "[10213.8, 8897.6]",
+  "oos": "{'n': 271, 'wr': 45.76, 'pf': 1.506, 'net': 8918.2, 'wr_req': 33.19}",
   "max_concurrency": 1.0,
-  "counter_drift": "{}",
+  "counter_drift": "{'n_judgeable': 606, 'n_unjudgeable': 72, 'n_counter': 298, 'n_aligned': 308, 'regime_lookback_days': 280.0, 'wr_counter': 43.96, 'exp_counter': 48.406, 'wr_aligned': 43.51, 'exp_aligned': 66.563}",
   "n_required_h3": 451.4
  },
- "notes": [
-  "H10 UNKNOWN: close series not supplied — cannot test whether the edge survives against the prevailing drift, which is the one question the permutation control structurally cannot answer"
- ],
- "line": "S1781-POOL-RAW | POWER-LIMITED RQS2=23.1 | n=678 WR=44.54 PF=1.403 lift=7.04 z=3.78 p=8e-05 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]",
- "gates_str": "H0✓ H1✓ H2✓ H3✓ H4✓ H5✓ H6✓ H7✓ H8✓ H9✓ H10✗"
+ "notes": [],
+ "line": "S1781-POOL-RAW | ACCEPT RQS2=82.0 | n=678 WR=44.54 PF=1.403 lift=7.04 z=3.78 p=8e-05 | used=['XAUUSD_D1', 'XAUUSD_H8'] dropped=[]",
+ "gates_str": "H0✓ H1✓ H2✓ H3✓ H4✓ H5✓ H6✓ H7✓ H8✓ H9✓ H10✓"
 }
