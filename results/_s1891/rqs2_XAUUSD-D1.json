@@ -1,0 +1,53 @@
+{
+ "card": "XAUUSD-D1",
+ "prereg": "5934782c",
+ "verdict": "UNPROVEN",
+ "reason": "no eligible k (n_IS>=150 & exp@2x>0) - holdout untouched",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+ "bars": 4005,
+ "split": 2803,
+ "discovery": {
+  "k1.272": {
+   "events": 250,
+   "n_is": 147,
+   "wr": 42.86,
+   "exp": 19.23,
+   "exp2x": 15.93,
+   "t": 0.71,
+   "eligible": false
+  },
+  "k1.618": {
+   "events": 123,
+   "n_is": 81,
+   "wr": 44.44,
+   "exp": 23.21,
+   "exp2x": 19.91,
+   "t": 0.629,
+   "eligible": false
+  },
+  "k2.0": {
+   "events": 47,
+   "n_is": 34,
+   "wr": 44.12,
+   "exp": 16.73,
+   "exp2x": 13.43,
+   "t": 0.3,
+   "eligible": false
+  }
+ },
+ "p1": {
+  "wr_by_k": {
+   "1.272": 42.86,
+   "1.618": 44.44,
+   "2.0": 44.12
+  },
+  "monotone": false
+ },
+ "p2": {
+  "s965_is": {
+   "n": 31,
+   "wr": 45.16,
+   "exp": 8.29
+  }
+ }
+}
