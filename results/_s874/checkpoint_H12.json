@@ -1,0 +1,14 @@
+{
+ "tf": "H12",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H12.csv",
+ "bars": 7998,
+ "split_bar": 3999,
+ "max_hold": 16,
+ "n_events": 44,
+ "n_events_gated": 30,
+ "n_long": 24,
+ "n_short": 20,
+ "sl_median_pip": 154.52872767887322,
+ "verdict": "NO_EVENTS",
+ "elapsed_s": 0.2
+}

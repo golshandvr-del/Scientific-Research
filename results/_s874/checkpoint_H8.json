@@ -1,0 +1,47 @@
+{
+ "tf": "H8",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "bars": 11978,
+ "split_bar": 5989,
+ "max_hold": 16,
+ "n_events": 81,
+ "n_events_gated": 47,
+ "n_long": 48,
+ "n_short": 33,
+ "sl_median_pip": 146.33269391337458,
+ "is_grid": [
+  {
+   "gate": "plain",
+   "mode": "follow",
+   "n": 41,
+   "wr": 46.34146341463415,
+   "null_mu": 38.110741971207084,
+   "null_sd": 6.521748990284355,
+   "lift": 8.230721443427065,
+   "z_is": 1.2620420466486242,
+   "pnl_pip": 941.7127036617351
+  },
+  {
+   "gate": "gated",
+   "mode": "follow",
+   "n": 22,
+   "wr": NaN,
+   "lift": NaN,
+   "z_is": NaN,
+   "note": "n<30 in IS"
+  }
+ ],
+ "winner": {
+  "gate": "plain",
+  "mode": "follow",
+  "n": 41,
+  "wr": 46.34146341463415,
+  "null_mu": 38.110741971207084,
+  "null_sd": 6.521748990284355,
+  "lift": 8.230721443427065,
+  "z_is": 1.2620420466486242,
+  "pnl_pip": 941.7127036617351
+ },
+ "verdict": "DEAD_IS",
+ "elapsed_s": 0.4
+}
