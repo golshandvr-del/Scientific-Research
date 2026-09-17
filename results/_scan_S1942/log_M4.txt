@@ -1,0 +1,43 @@
+DATA src=/home/user/webapp/data/mt5_full/XAUUSD_M4.csv  n_bars=1,362,074  span=15.59y
+discovery bars=817,244 · bars/day(median)=345
+[ 1/16] long_k2.058_rr1.0_hd1        n_sig=  85 n=   85 wr=50.588 lift=-12.673 score=-116.84 (0s)
+[ 2/16] long_k2.058_rr1.0_hd2        n_sig=  85 n=   85 wr=50.588 lift=-12.673 score=-116.84 (0s)
+[ 3/16] long_k2.058_rr1.5_hd1        n_sig=  85 n=   85 wr=40.0 lift=-10.609 score=-97.81 (0s)
+[ 4/16] long_k2.058_rr1.5_hd2        n_sig=  85 n=   85 wr=40.0 lift=-10.609 score=-97.81 (0s)
+[ 5/16] long_k3.141_rr1.0_hd1        n_sig=  85 n=   85 wr=55.294 lift=-3.394 score=-31.3 (0s)
+[ 6/16] long_k3.141_rr1.0_hd2        n_sig=  85 n=   85 wr=55.294 lift=-3.394 score=-31.3 (0s)
+[ 7/16] long_k3.141_rr1.5_hd1        n_sig=  85 n=   85 wr=48.235 lift=1.284 score=11.84 (0s)
+[ 8/16] long_k3.141_rr1.5_hd2        n_sig=  85 n=   85 wr=48.235 lift=1.284 score=11.84 (0s)
+[ 9/16] short_k2.058_rr1.0_hd1       n_sig=  85 n=   85 wr=49.412 lift=-13.849 score=-127.68 (0s)
+[10/16] short_k2.058_rr1.0_hd2       n_sig=  85 n=   85 wr=49.412 lift=-13.849 score=-127.68 (0s)
+[11/16] short_k2.058_rr1.5_hd1       n_sig=  85 n=   85 wr=32.941 lift=-17.667 score=-162.89 (0s)
+[12/16] short_k2.058_rr1.5_hd2       n_sig=  85 n=   85 wr=32.941 lift=-17.667 score=-162.89 (0s)
+[13/16] short_k3.141_rr1.0_hd1       n_sig=  85 n=   85 wr=44.706 lift=-13.983 score=-128.91 (0s)
+[14/16] short_k3.141_rr1.0_hd2       n_sig=  85 n=   85 wr=44.706 lift=-13.983 score=-128.91 (0s)
+[15/16] short_k3.141_rr1.5_hd1       n_sig=  85 n=   85 wr=36.471 lift=-10.48 score=-96.62 (0s)
+[16/16] short_k3.141_rr1.5_hd2       n_sig=  85 n=   85 wr=36.471 lift=-10.48 score=-96.62 (0s)
+
+LOCKED -> results/_scan_S1942/lock_XAUUSD-M4.json
+{
+  "layer": "S1942",
+  "tf": "M4",
+  "split_bar": 817244,
+  "n_bars": 1362074,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M4.csv",
+  "bpd": 345,
+  "criterion": "max lift*sqrt(n) | both arms | n>=60 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": {
+    "key": "long_k3.141_rr1.5_hd1",
+    "n": 85,
+    "wr": 48.235,
+    "net": 116.8,
+    "sl_med": 19.0,
+    "be": 46.951,
+    "lift": 1.284,
+    "score": 11.84
+  },
+  "score": 11.84,
+  "power_ok": false
+}
