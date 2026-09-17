@@ -103,7 +103,7 @@ def sig_s589(df):
 def replay_s382(trade, arr, rule, sl_abs, rr, ps):
     """قراردادِ s382.simulate_trades: ورود close[e]، از e+1: SL-first، TP.
     rule.on_bar(i, entry, fl, sl_lvl, tp_lvl, state) -> (action, state)
-    action: None | ('exit',) | ('tp', new_tp) | ('sl', new_sl)
+    action: None | ('exit',) | ('tp', new_tp) | ('sl', new_sl) | ('tp_sl', new_tp, new_sl)
     خروجی: (pnl_pip, exit_bar, reason) یا None (باز در انتهای داده)."""
     o, h, l, c = arr
     e = int(trade.entry_bar)
@@ -127,6 +127,8 @@ def replay_s382(trade, arr, rule, sl_abs, rr, ps):
                     tp_lvl = act[1]
                 elif act[0] == 'sl':
                     sl_lvl = act[1]
+                elif act[0] == 'tp_sl':
+                    tp_lvl, sl_lvl = act[1], act[2]
         j += 1
     return None
 
@@ -163,6 +165,8 @@ def replay_ts(trade, arr, rule, max_hold, spec):
                     tp = act[1]
                 elif act[0] == 'sl':
                     sl = act[1]
+                elif act[0] == 'tp_sl':
+                    tp, sl = act[1], act[2]
         i += 1
     return (c[n - 1] - entry - cost) * contract, n - 1, 'eod'
 
