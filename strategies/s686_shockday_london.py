@@ -182,11 +182,9 @@ def adjudicate(tf='H1', asset='XAUUSD'):
     ex = json.load(open(os.path.join(EXPLORE_DIR, f'explore_{tf}.json'), encoding='utf-8'))
     cand, why = pick_candidate(ex['cells'])
     if cand is None:
-        print(f'[{tf}] هیچ نامزدی — {why}', flush=True)
-        os.makedirs(ADJ_DIR, exist_ok=True)
-        json.dump(dict(layer='S686', tf=tf, verdict_engine=None, selection=why),
-                  open(os.path.join(ADJ_DIR, f'adj_{tf}.json'), 'w'), indent=1)
-        return None
+        # الحاقیهٔ پیش‌ثبت (کامیت‌شده پیش از لمسِ نیمهٔ دوم): سلولِ پیش‌فرض = اولین سلولِ گرید
+        print(f'[{tf}] هیچ نامزدی — {why} ⇒ سلولِ پیش‌فرضِ الحاقیه b={BS[0]} rr={RRS[0]}', flush=True)
+        cand = dict(b=BS[0], rr=RRS[0]); why = f'{why}->default_cell_amendment'
     sl = float(ex['sl_pip']); tp = round(float(cand['rr']) * sl, 1); mh = int(ex['max_hold'])
     if tp < sl:
         raise ValueError('TP<SL')
