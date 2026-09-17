@@ -1,0 +1,135 @@
+{
+ "status": "REJECT_AT_CALIBRATION",
+ "patient": "S382_H4",
+ "n": 878,
+ "informational": false,
+ "meta": {
+  "engine": "s382",
+  "sl_pip": 123.00787398271031,
+  "tp_pip": 184.51181097406547,
+  "n_bars": 23854
+ },
+ "data_source": "data/mt5_full (H4 resampled from H1)",
+ "n_bars": 23854,
+ "span": [
+  "2011-01-03 00:00:00",
+  "2026-08-07 20:00:00"
+ ],
+ "baseline_h1": {
+  "n": 340,
+  "total": 43052.8,
+  "avg": 126.63,
+  "sd": 1529.17,
+  "worst": -1230.1,
+  "best": 1845.1,
+  "maxDD": 23986.5,
+  "pf": 1.184,
+  "wr": 44.1
+ },
+ "baseline_h2": {
+  "n": 538,
+  "total": 196197.6,
+  "avg": 364.68,
+  "sd": 1537.97,
+  "worst": -1230.1,
+  "best": 1845.1,
+  "maxDD": 13530.9,
+  "pf": 1.616,
+  "wr": 51.9
+ },
+ "calibration": {
+  "K2": {
+   "mgmt_h1": {
+    "n": 340,
+    "total": 53815.9,
+    "avg": 158.28,
+    "sd": 1610.09,
+    "worst": -1230.1,
+    "best": 2767.7,
+    "maxDD": 23064.0,
+    "pf": 1.24,
+    "wr": 38.5
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": false,
+     "worst": false,
+     "maxDD": true
+    },
+    "worsens_gt5": {
+     "sd": true,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 126,
+   "n_openend": 0,
+   "underpowered": false
+  },
+  "K3": {
+   "mgmt_h1": {
+    "n": 340,
+    "total": 53815.9,
+    "avg": 158.28,
+    "sd": 1605.4,
+    "worst": -1230.1,
+    "best": 2767.7,
+    "maxDD": 23986.5,
+    "pf": 1.24,
+    "wr": 38.8
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 122,
+   "n_openend": 0,
+   "underpowered": false
+  },
+  "K5": {
+   "mgmt_h1": {
+    "n": 340,
+    "total": 48588.1,
+    "avg": 142.91,
+    "sd": 1597.88,
+    "worst": -1230.1,
+    "best": 2767.7,
+    "maxDD": 25216.6,
+    "pf": 1.215,
+    "wr": 38.8
+   },
+   "judge_h1": {
+    "profit_ok": true,
+    "improves": {
+     "sd": false,
+     "worst": false,
+     "maxDD": false
+    },
+    "worsens_gt5": {
+     "sd": false,
+     "worst": false,
+     "maxDD": true
+    },
+    "risk_ok": false,
+    "verdict": "FAIL"
+   },
+   "n_changed": 116,
+   "n_openend": 0,
+   "underpowered": false
+  }
+ }
+}
