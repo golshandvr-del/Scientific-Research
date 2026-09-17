@@ -1,0 +1,23 @@
+{
+  "layer": "S1942",
+  "tf": "M10",
+  "split_bar": 327292,
+  "n_bars": 545488,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_M10.csv",
+  "bpd": 138,
+  "criterion": "max lift*sqrt(n) | both arms | n>=60 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": {
+    "key": "long_k2.058_rr1.5_hd1",
+    "n": 85,
+    "wr": 48.235,
+    "net": 104.2,
+    "sl_med": 19.4,
+    "be": 46.788,
+    "lift": 1.447,
+    "score": 13.34
+  },
+  "score": 13.34,
+  "power_ok": false
+}
