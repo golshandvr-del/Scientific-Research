@@ -1,0 +1,43 @@
+DATA src=/home/user/webapp/data/mt5_full/XAUUSD_D1.csv  n_bars=4,005  span=15.59y
+discovery bars=2,403 · bars/day(median)=1
+[ 1/16] long_k2.058_rr1.0_hd1        n_sig=  85 n=   85 wr=48.235 lift=-2.227 score=-20.53 (0s)
+[ 2/16] long_k2.058_rr1.0_hd2        n_sig=  85 n=   85 wr=47.059 lift=-3.404 score=-31.38 (0s)
+[ 3/16] long_k2.058_rr1.5_hd1        n_sig=  85 n=   85 wr=48.235 lift=7.865 score=72.51 (0s)
+[ 4/16] long_k2.058_rr1.5_hd2        n_sig=  85 n=   85 wr=47.059 lift=6.689 score=61.67 (0s)
+[ 5/16] long_k3.141_rr1.0_hd1        n_sig=  85 n=   85 wr=48.235 lift=-2.068 score=-19.06 (0s)
+[ 6/16] long_k3.141_rr1.0_hd2        n_sig=  85 n=   85 wr=48.235 lift=-2.068 score=-19.06 (0s)
+[ 7/16] long_k3.141_rr1.5_hd1        n_sig=  85 n=   85 wr=48.235 lift=7.993 score=73.69 (0s)
+[ 8/16] long_k3.141_rr1.5_hd2        n_sig=  85 n=   85 wr=48.235 lift=7.993 score=73.69 (0s)
+[ 9/16] short_k2.058_rr1.0_hd1       n_sig=  85 n=   85 wr=47.059 lift=-3.404 score=-31.38 (0s)
+[10/16] short_k2.058_rr1.0_hd2       n_sig=  85 n=   85 wr=45.882 lift=-4.58 score=-42.23 (0s)
+[11/16] short_k2.058_rr1.5_hd1       n_sig=  85 n=   85 wr=47.059 lift=6.689 score=61.67 (0s)
+[12/16] short_k2.058_rr1.5_hd2       n_sig=  85 n=   85 wr=44.706 lift=4.336 score=39.97 (0s)
+[13/16] short_k3.141_rr1.0_hd1       n_sig=  85 n=   85 wr=47.059 lift=-3.244 score=-29.91 (0s)
+[14/16] short_k3.141_rr1.0_hd2       n_sig=  85 n=   85 wr=44.706 lift=-5.597 score=-51.6 (0s)
+[15/16] short_k3.141_rr1.5_hd1       n_sig=  85 n=   85 wr=47.059 lift=6.816 score=62.84 (0s)
+[16/16] short_k3.141_rr1.5_hd2       n_sig=  85 n=   85 wr=44.706 lift=4.463 score=41.15 (0s)
+
+LOCKED -> results/_scan_S1942/lock_XAUUSD-D1.json
+{
+  "layer": "S1942",
+  "tf": "D1",
+  "split_bar": 2403,
+  "n_bars": 4005,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_D1.csv",
+  "bpd": 1,
+  "criterion": "max lift*sqrt(n) | both arms | n>=60 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": null,
+  "best": null,
+  "best_unpowered": {
+    "key": "long_k3.141_rr1.5_hd1",
+    "n": 85,
+    "wr": 48.235,
+    "net": 60.5,
+    "sl_med": 544.4,
+    "be": 40.242,
+    "lift": 7.993,
+    "score": 73.69
+  },
+  "score": 73.69,
+  "power_ok": false
+}
