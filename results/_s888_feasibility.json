@@ -1,0 +1,282 @@
+{
+ "H1": {
+  "th1.618_all": 6303,
+  "th1.618_edge_eps0.0": {
+   "events": 1431,
+   "long": 671,
+   "short": 760,
+   "per_year": 182.9
+  },
+  "th1.618_edge_eps0.1": {
+   "events": 2070,
+   "long": 990,
+   "short": 1080,
+   "per_year": 264.5
+  },
+  "th1.618_edge_eps0.236": {
+   "events": 2878,
+   "long": 1387,
+   "short": 1491,
+   "per_year": 367.8
+  },
+  "th2.618_all": 1748,
+  "th2.618_edge_eps0.0": {
+   "events": 640,
+   "long": 273,
+   "short": 367,
+   "per_year": 81.8
+  },
+  "th2.618_edge_eps0.1": {
+   "events": 780,
+   "long": 343,
+   "short": 437,
+   "per_year": 99.7
+  },
+  "th2.618_edge_eps0.236": {
+   "events": 957,
+   "long": 428,
+   "short": 529,
+   "per_year": 122.3
+  }
+ },
+ "H2": {
+  "th1.618_all": 3252,
+  "th1.618_edge_eps0.0": {
+   "events": 741,
+   "long": 355,
+   "short": 386,
+   "per_year": 94.2
+  },
+  "th1.618_edge_eps0.1": {
+   "events": 1071,
+   "long": 518,
+   "short": 553,
+   "per_year": 136.1
+  },
+  "th1.618_edge_eps0.236": {
+   "events": 1487,
+   "long": 698,
+   "short": 789,
+   "per_year": 188.9
+  },
+  "th2.618_all": 952,
+  "th2.618_edge_eps0.0": {
+   "events": 349,
+   "long": 158,
+   "short": 191,
+   "per_year": 44.3
+  },
+  "th2.618_edge_eps0.1": {
+   "events": 413,
+   "long": 190,
+   "short": 223,
+   "per_year": 52.5
+  },
+  "th2.618_edge_eps0.236": {
+   "events": 503,
+   "long": 234,
+   "short": 269,
+   "per_year": 63.9
+  }
+ },
+ "H4": {
+  "th1.618_all": 1543,
+  "th1.618_edge_eps0.0": {
+   "events": 367,
+   "long": 166,
+   "short": 201,
+   "per_year": 46.8
+  },
+  "th1.618_edge_eps0.1": {
+   "events": 509,
+   "long": 240,
+   "short": 269,
+   "per_year": 64.9
+  },
+  "th1.618_edge_eps0.236": {
+   "events": 693,
+   "long": 333,
+   "short": 360,
+   "per_year": 88.4
+  },
+  "th2.618_all": 368,
+  "th2.618_edge_eps0.0": {
+   "events": 148,
+   "long": 63,
+   "short": 85,
+   "per_year": 18.9
+  },
+  "th2.618_edge_eps0.1": {
+   "events": 166,
+   "long": 73,
+   "short": 93,
+   "per_year": 21.2
+  },
+  "th2.618_edge_eps0.236": {
+   "events": 196,
+   "long": 88,
+   "short": 108,
+   "per_year": 25.0
+  }
+ },
+ "H6": {
+  "th1.618_all": 987,
+  "th1.618_edge_eps0.0": {
+   "events": 242,
+   "long": 108,
+   "short": 134,
+   "per_year": 30.8
+  },
+  "th1.618_edge_eps0.1": {
+   "events": 323,
+   "long": 146,
+   "short": 177,
+   "per_year": 41.1
+  },
+  "th1.618_edge_eps0.236": {
+   "events": 443,
+   "long": 207,
+   "short": 236,
+   "per_year": 56.4
+  },
+  "th2.618_all": 211,
+  "th2.618_edge_eps0.0": {
+   "events": 83,
+   "long": 36,
+   "short": 47,
+   "per_year": 10.6
+  },
+  "th2.618_edge_eps0.1": {
+   "events": 95,
+   "long": 41,
+   "short": 54,
+   "per_year": 12.1
+  },
+  "th2.618_edge_eps0.236": {
+   "events": 120,
+   "long": 55,
+   "short": 65,
+   "per_year": 15.3
+  }
+ },
+ "H8": {
+  "th1.618_all": 684,
+  "th1.618_edge_eps0.0": {
+   "events": 175,
+   "long": 76,
+   "short": 99,
+   "per_year": 22.3
+  },
+  "th1.618_edge_eps0.1": {
+   "events": 220,
+   "long": 98,
+   "short": 122,
+   "per_year": 28.0
+  },
+  "th1.618_edge_eps0.236": {
+   "events": 298,
+   "long": 136,
+   "short": 162,
+   "per_year": 37.9
+  },
+  "th2.618_all": 120,
+  "th2.618_edge_eps0.0": {
+   "events": 48,
+   "long": 22,
+   "short": 26,
+   "per_year": 6.1
+  },
+  "th2.618_edge_eps0.1": {
+   "events": 56,
+   "long": 25,
+   "short": 31,
+   "per_year": 7.1
+  },
+  "th2.618_edge_eps0.236": {
+   "events": 65,
+   "long": 28,
+   "short": 37,
+   "per_year": 8.3
+  }
+ },
+ "H12": {
+  "th1.618_all": 432,
+  "th1.618_edge_eps0.0": {
+   "events": 107,
+   "long": 50,
+   "short": 57,
+   "per_year": 13.6
+  },
+  "th1.618_edge_eps0.1": {
+   "events": 136,
+   "long": 64,
+   "short": 72,
+   "per_year": 17.3
+  },
+  "th1.618_edge_eps0.236": {
+   "events": 177,
+   "long": 81,
+   "short": 96,
+   "per_year": 22.6
+  },
+  "th2.618_all": 78,
+  "th2.618_edge_eps0.0": {
+   "events": 37,
+   "long": 14,
+   "short": 23,
+   "per_year": 4.7
+  },
+  "th2.618_edge_eps0.1": {
+   "events": 38,
+   "long": 15,
+   "short": 23,
+   "per_year": 4.8
+  },
+  "th2.618_edge_eps0.236": {
+   "events": 42,
+   "long": 17,
+   "short": 25,
+   "per_year": 5.4
+  }
+ },
+ "D1": {
+  "th1.618_all": 173,
+  "th1.618_edge_eps0.0": {
+   "events": 50,
+   "long": 18,
+   "short": 32,
+   "per_year": 6.4
+  },
+  "th1.618_edge_eps0.1": {
+   "events": 59,
+   "long": 19,
+   "short": 40,
+   "per_year": 7.5
+  },
+  "th1.618_edge_eps0.236": {
+   "events": 86,
+   "long": 36,
+   "short": 50,
+   "per_year": 11.0
+  },
+  "th2.618_all": 26,
+  "th2.618_edge_eps0.0": {
+   "events": 13,
+   "long": 4,
+   "short": 9,
+   "per_year": 1.7
+  },
+  "th2.618_edge_eps0.1": {
+   "events": 14,
+   "long": 5,
+   "short": 9,
+   "per_year": 1.8
+  },
+  "th2.618_edge_eps0.236": {
+   "events": 16,
+   "long": 7,
+   "short": 9,
+   "per_year": 2.0
+  }
+ }
+}
