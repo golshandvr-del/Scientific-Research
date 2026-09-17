@@ -1,0 +1,25 @@
+{
+ "tf": "M15",
+ "role": "family",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_M15.csv",
+ "n_bars": 363778,
+ "split_bar": 181889,
+ "train": {
+  "n": 382,
+  "wr": 46.33507853403142,
+  "exp": -0.05091052966464689,
+  "pf": 0.9961415962133241,
+  "net": -19.44782233189511
+ },
+ "n_events_total": 776,
+ "n_trials": 4,
+ "seed": 20260911,
+ "rqs2": {
+  "verdict": "REJECT",
+  "rqs2_score": 0.0,
+  "passed": false,
+  "notes": [
+   "TRAIN power gate failed (n<60 or net<=0) — holdout untouched (prereg §3)"
+  ]
+ }
+}
