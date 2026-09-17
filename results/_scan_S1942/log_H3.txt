@@ -1,0 +1,42 @@
+DATA src=/home/user/webapp/data/mt5_full/XAUUSD_H3.csv  n_bars=31,806  span=15.59y
+discovery bars=19,083 · bars/day(median)=8
+[ 1/16] long_k2.058_rr1.0_hd1        n_sig=  85 n=   85 wr=50.588 lift=-0.917 score=-8.45 (0s)
+[ 2/16] long_k2.058_rr1.0_hd2        n_sig=  85 n=   85 wr=51.765 lift=0.259 score=2.39 (0s)
+[ 3/16] long_k2.058_rr1.5_hd1        n_sig=  85 n=   85 wr=49.412 lift=8.208 score=75.67 (0s)
+[ 4/16] long_k2.058_rr1.5_hd2        n_sig=  85 n=   85 wr=47.059 lift=5.855 score=53.98 (0s)
+[ 5/16] long_k3.141_rr1.0_hd1        n_sig=  85 n=   85 wr=50.588 lift=-0.398 score=-3.67 (0s)
+[ 6/16] long_k3.141_rr1.0_hd2        n_sig=  85 n=   85 wr=49.412 lift=-1.574 score=-14.52 (0s)
+[ 7/16] long_k3.141_rr1.5_hd1        n_sig=  85 n=   85 wr=50.588 lift=9.799 score=90.34 (0s)
+[ 8/16] long_k3.141_rr1.5_hd2        n_sig=  85 n=   85 wr=47.059 lift=6.27 score=57.8 (0s)
+[ 9/16] short_k2.058_rr1.0_hd1       n_sig=  85 n=   85 wr=47.059 lift=-4.446 score=-40.99 (0s)
+[10/16] short_k2.058_rr1.0_hd2       n_sig=  85 n=   85 wr=45.882 lift=-5.623 score=-51.84 (0s)
+[11/16] short_k2.058_rr1.5_hd1       n_sig=  85 n=   85 wr=45.882 lift=4.678 score=43.13 (0s)
+[12/16] short_k2.058_rr1.5_hd2       n_sig=  85 n=   85 wr=43.529 lift=2.325 score=21.44 (0s)
+[13/16] short_k3.141_rr1.0_hd1       n_sig=  85 n=   85 wr=47.059 lift=-3.927 score=-36.21 (0s)
+[14/16] short_k3.141_rr1.0_hd2       n_sig=  85 n=   85 wr=45.882 lift=-5.104 score=-47.06 (0s)
+[15/16] short_k3.141_rr1.5_hd1       n_sig=  85 n=   85 wr=47.059 lift=6.27 score=57.8 (0s)
+[16/16] short_k3.141_rr1.5_hd2       n_sig=  85 n=   85 wr=45.882 lift=5.093 score=46.96 (0s)
+
+LOCKED -> results/_scan_S1942/lock_XAUUSD-H3.json
+{
+  "layer": "S1942",
+  "tf": "H3",
+  "split_bar": 19083,
+  "n_bars": 31806,
+  "src": "/home/user/webapp/data/mt5_full/XAUUSD_H3.csv",
+  "bpd": 8,
+  "criterion": "max lift*sqrt(n) | both arms | n>=60 & net>0 & power lift*sqrt(n)>=78.0",
+  "best_key": "long_k3.141_rr1.5_hd1",
+  "best": {
+    "n": 85,
+    "wr": 50.588,
+    "net": 356.6,
+    "sl_med": 167.3,
+    "be": 40.789,
+    "lift": 9.799,
+    "score": 90.34
+  },
+  "best_unpowered": null,
+  "score": 90.34,
+  "power_ok": true
+}
