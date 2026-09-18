@@ -1,0 +1,47 @@
+{
+ "cards": {
+  "XAUUSD-H8": {
+   "layer_count": 8,
+   "geometry": {
+    "sl": 179.67,
+    "tp": 269.5
+   },
+   "event": {
+    "bar": 11970,
+    "utc": "2026-08-05 08:00",
+    "close": 4183.92
+   },
+   "codes_on": [
+    "S589"
+   ],
+   "role": "primary",
+   "cofire_with_s1520": false,
+   "codes_off": [
+    "S950"
+   ]
+  },
+  "XAUUSD-H4": {
+   "layer_count": 2,
+   "geometry": {
+    "sl": 122.85,
+    "tp": 184.28
+   },
+   "event": {
+    "bar": 23850,
+    "utc": "2026-08-07 08:00",
+    "close": 4305.86
+   },
+   "codes_on": [
+    "S589",
+    "S382"
+   ],
+   "role": "primary",
+   "codes_off": [
+    "S382"
+   ]
+  }
+ },
+ "negative_control_h12": {
+  "in_cfg": false
+ }
+}
