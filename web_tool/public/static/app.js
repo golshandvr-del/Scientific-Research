@@ -12,6 +12,70 @@
 const REFRESH_MS = 30000
 const app = document.getElementById('app')
 
+// ----------------------------------------------------------------------------
+// 🚀 کنترلِ نوارِ پیشرفتِ بارگذاری (User Note: «کاش حداقل یه نوار لودینگ داشت»)
+// ----------------------------------------------------------------------------
+// خودِ نوار در HTMLِ سرور است (index.tsx) تا در **اولین رنگ‌آمیزیِ مرورگر** دیده
+// شود — پیش از آنکه همین فایل اصلاً دانلود شود. این بخش فقط آن را جلو می‌برد.
+//
+// ⚠️ تصمیمِ طراحی — این نوار عمداً **تقلبی نیست**:
+//    نوارِ زمان‌محور (که با تایمر تا ۹۰٪ می‌رود و منتظر می‌ماند) در سایتی که
+//    کاربرش صریحاً «خیلی دیر لود می‌شود» گزارش کرده، **بدتر از نبودنش** است:
+//    نوار پُر می‌شود ولی کارت‌ها نیامده‌اند ⇒ کاربر یاد می‌گیرد نوار دروغ می‌گوید.
+//    پس درصد از **شمارشِ واقعیِ کارت‌های پاسخ‌داده‌شده** می‌آید:
+//      ۸٪   = HTML رسید (مقدارِ اولیه در خودِ سرور)
+//      ۲۰٪  = app.js اجرا شد
+//      ۳۵٪  = فهرستِ کارت‌ها آمد (اسکلت‌ها ساخته شدند)
+//      ۳۵→۱۰۰٪ = به‌ازای هر کارتی که **واقعاً** پر شد (سهمِ برابر)
+//    یعنی اگر کارتی کند باشد، نوار هم دقیقاً همان‌جا کند می‌ماند. همین صداقت
+//    است که به کاربر اجازه می‌دهد «کند» را از «خراب» تشخیص دهد.
+const boot = {
+  el:  document.getElementById('boot-progress'),
+  bar: document.getElementById('boot-bar'),
+  txt: document.getElementById('boot-text'),
+  total: 0,        // تعدادِ کارت‌های *نمایان* (کارت‌های مخفی شمرده نمی‌شوند)
+  done: 0,         // چند کارت پاسخ داده‌اند (موفق یا خطادار)
+  finished: false,
+  set(pct, text) {
+    if (!this.el || this.finished) return
+    if (this.bar) this.bar.style.width = Math.max(0, Math.min(100, pct)) + '%'
+    if (this.txt && text) this.txt.textContent = text
+  },
+  // آغازِ فازِ کارت‌ها — از این لحظه پیشرفت شمارشی است، نه زمانی.
+  startCards(n) {
+    if (this.finished) return
+    this.total = n; this.done = 0
+    this.set(35, `در حال دریافتِ تحلیلِ ${n} کارت…`)
+  },
+  // یک کارت تمام شد ⇒ سهمِ خودش را به نوار اضافه کن.
+  cardDone() {
+    if (this.finished || !this.total) return
+    this.done++
+    const pct = 35 + (this.done / this.total) * 65
+    this.set(pct, this.done >= this.total
+      ? 'آماده'
+      : `تحلیلِ ${this.done} کارت از ${this.total} آماده شد…`)
+  },
+  // پایانِ موفق: کامل کن و **نرم** محو کن (نه حذفِ ناگهانی که پرش ایجاد کند).
+  finish() {
+    if (this.finished || !this.el) return
+    this.set(100, 'آماده')
+    this.finished = true
+    const el = this.el
+    el.style.transition = 'opacity .5s ease'
+    setTimeout(() => { el.style.opacity = '0' }, 250)
+    setTimeout(() => { el.remove() }, 900)
+  },
+  // خطا: نوار را **محو نکن** — قرمز بماند تا کاربر بفهمد چیزی درست نشد.
+  fail(msg) {
+    if (!this.el || this.finished) return
+    if (this.bar) { this.bar.style.width = '100%'; this.bar.style.background = '#f43f5e' }
+    if (this.txt) this.txt.textContent = msg || 'خطا در بارگذاری — دوباره تلاش کنید'
+    this.finished = true
+  },
+}
+boot.set(20, 'در حال راه‌اندازی…')
+
 // وضعیتِ محلیِ هر دارایی (معاملهٔ ثبت‌شدهٔ کاربر) در localStorage نگه‌داری می‌شود.
 const TRADE_KEY = (asset) => 'trade_' + asset
 function getTrade(asset) {
@@ -1239,6 +1303,7 @@ async function ensureAssetsMeta() {
     const data = await res.json()
     if (data.ok && Array.isArray(data.assets) && data.assets.length) {
       assetsMeta = data.assets.map(a => ({ id: a.id, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing' }))
+      boot.set(35, 'فهرستِ کارت‌ها آمد — در حال ساختِ نمای اولیه…')
       render()   // رندرِ کاملِ اولیه: header + پنل + کارت‌های اسکلت (در حال تحلیل)
       return true
     }
@@ -1265,11 +1330,15 @@ async function refreshOneAsset(id) {
       store[id].error = a.error || 'خطا'
     }
     updateOneCard(id)
+    boot.cardDone()   // 🚀 پیشرفتِ واقعی: این کارت آمد
     if (getTrade(id)) refreshAdvice(id)
   } catch (e) {
     store[id] = store[id] || {}
     store[id].error = e.message
     updateOneCard(id)
+    // کارتِ خطادار هم «تمام‌شده» حساب می‌شود؛ وگرنه نوار برای همیشه ناقص می‌ماند
+    // و کاربر منتظرِ چیزی می‌شود که هرگز نمی‌آید. خطا در خودِ کارت دیده می‌شود.
+    boot.cardDone()
   }
 }
 
@@ -1314,10 +1383,12 @@ async function refreshAll() {
       const lu = document.getElementById('last-update')
       if (lu) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
       assetsMeta.forEach(a => { if (getTrade(a.id)) refreshAdvice(a.id) })
+      boot.finish()   // 🚀 مسیرِ fallbackِ *موفق* — بدونِ این، نوار تا ابد می‌ماند
     } catch (e) {
       if (!assetsMeta.length) {
         app.innerHTML = `<div class="text-center text-rose-400 p-8"><i class="fas fa-triangle-exclamation text-2xl mb-2"></i><p>خطا در اتصال به سرور: ${e.message}</p></div>`
       }
+      boot.fail('خطا در اتصال به سرور')   // 🚀 قرمز می‌ماند و محو نمی‌شود
     }
     return
   }
@@ -1326,7 +1397,9 @@ async function refreshAll() {
   // دارایی که غیرفعال شود، یک دسته درخواست به Yahoo کمتر ⇒ سایت سریع‌تر بالا می‌آید.
   // (سمت سرور هم چون هیچ درخواستی برایشان نمی‌رسد، هیچ محاسبه/داده‌ای مصرف نمی‌کند.)
   const active = assetsMeta.filter(a => !isHidden(a.id))
+  boot.startCards(active.length)   // 🚀 از این‌جا نوار شمارشی می‌شود، نه زمانی
   await Promise.allSettled(active.map(a => refreshOneAsset(a.id)))
+  boot.finish()                    // 🚀 همهٔ کارت‌ها پاسخ دادند ⇒ نوار محو می‌شود
   lastFetchAt = Date.now()
   const lu = document.getElementById('last-update')
   if (lu) lu.textContent = 'آخرین به‌روزرسانی: ' + timeAgoSince(lastFetchAt)
