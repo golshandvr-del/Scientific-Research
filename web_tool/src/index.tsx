@@ -1026,6 +1026,33 @@ const PAGE = `<!DOCTYPE html>
   <link href="/static/style.css" rel="stylesheet">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
+  <!-- ==================================================================== -->
+  <!-- 🚀 نوارِ پیشرفتِ بارگذاری (User Note: «خیلی دیر لود می‌شود! کاش نوار    -->
+  <!--    لودینگ داشت») — عمداً **inline و با CSS خالص** نوشته شده.          -->
+  <!--                                                                      -->
+  <!-- چرا اینجا و نه در app.js: تا پیش از این، <div id="app"> کاملاً خالی   -->
+  <!-- بود و اسکلتِ کارت‌ها فقط **پس از** رسیدنِ app.js + پاسخِ /api/assets   -->
+  <!-- ساخته می‌شد. یعنی کاربر در کندترین لحظه (همان لحظه‌ای که شکایت دارد)  -->
+  <!-- یک **صفحهٔ کاملاً سفید** می‌دید. پس نوار باید بخشی از خودِ HTMLِ      -->
+  <!-- سرور باشد تا در **اولین رنگ‌آمیزیِ مرورگر** ظاهر شود — پیش از اجرای  -->
+  <!-- هر جاوااسکریپتی.                                                     -->
+  <!--                                                                      -->
+  <!-- چرا CSS خالص و نه Tailwind: Tailwind از CDN می‌آید. اگر نوار با کلاسِ -->
+  <!-- Tailwind ساخته شود، تا لودِ همان CDN بی‌استایل می‌ماند — یعنی دقیقاً  -->
+  <!-- در همان بازه‌ای که باید کار کند، کار نمی‌کند. استایلِ inline این      -->
+  <!-- وابستگی را حذف می‌کند.                                               -->
+  <!-- ==================================================================== -->
+  <div id="boot-progress" role="status" aria-live="polite" aria-label="در حال بارگذاری"
+       style="position:fixed;top:0;left:0;right:0;z-index:9999;font-family:system-ui,sans-serif">
+    <!-- شیارِ نوار -->
+    <div style="height:3px;background:#1e293b">
+      <div id="boot-bar" style="height:100%;width:8%;background:linear-gradient(90deg,#0ea5e9,#22d3ee);
+           transition:width .45s cubic-bezier(.25,.8,.25,1);box-shadow:0 0 8px #22d3ee"></div>
+    </div>
+    <!-- متنِ گویا: کاربر باید بداند **منتظرِ چه** است، نه فقط اینکه منتظر است -->
+    <div id="boot-text" style="text-align:center;padding:6px 10px;font-size:12px;color:#94a3b8;
+         background:rgba(2,6,23,.92);direction:rtl">در حال آماده‌سازی…</div>
+  </div>
   <div id="app" class="max-w-5xl mx-auto p-4"></div>
   <script type="module" src="/static/signal_latch.js"></script>
   <script type="module" src="/static/ui/badges.js"></script>
