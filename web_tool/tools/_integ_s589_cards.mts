@@ -269,16 +269,49 @@ for (const spec of CARDS) {
     for (const o of (dOff?.otherLayers || [])) codesOff.push(o.code)
     rep.codes_off = codesOff
     console.log(`   بدونِ S589: [${codesOff.join(', ')}] · state=${dOff?.state}`)
-    // ساکنان باید **دقیقاً** همان تصمیم را بدهند
-    const incumbentsOn = codesOn.filter(c => !/S589/i.test(c)).sort()
-    const incumbentsOff = codesOff.slice().sort()
-    const same = JSON.stringify(incumbentsOn) === JSON.stringify(incumbentsOff)
-    if (same) {
-      console.log('   ✓ ④ هیچ رگرسیونی: ساکنان با و بدونِ S589 دقیقاً یکی‌اند')
+
+    // 🔴 **روشِ مقایسه اصلاح شد — اجرای اول اینجا RED داد و ایراد از خودِ آزمون
+    //    بود، نه از سیم‌کشی.** مقایسهٔ ساده‌لوحانهٔ «کدهای خروجی با و بدونِ S589»
+    //    نامعتبر است، چون `runCard` در خطِ ۱۶۴۲ فقط لایه‌هایی را در `otherLayers`
+    //    می‌گذارد که `state ∈ {ENTRY, APPROACHING}` باشند. پس وقتی S589 پُرایمریِ
+    //    ENTRY است، ساکنانِ NEUTRAL **اصلاً در خروجی ظاهر نمی‌شوند**؛ و وقتی
+    //    S589 برداشته می‌شود، بهترین ساکنِ NEUTRAL (اینجا S950) پُرایمری می‌شود و
+    //    ناگهان «ظاهر» می‌گردد. خروجی [] در برابرِ [S950] پس **رفتارِ درست و
+    //    مستندِ موتورِ نمایش** است، نه رگرسیون — دقیقاً همان «مکانیزمِ نمایش که
+    //    همپوشانی را حل می‌کند».
+    //    مقایسهٔ معتبر باید روی **تصمیمِ خودِ هر ساکن** باشد، نه روی اینکه
+    //    موتورِ رتبه‌بندی کدام‌شان را نمایش می‌دهد. پس هر لایهٔ فیلترشده مستقیماً
+    //    با همان ctx صدا زده می‌شود و (code, state, direction) استخراج می‌گردد.
+    //    این تنها شکلی است که واقعاً به پرسشِ «آیا S589 چیزی را خراب کرد؟» پاسخ
+    //    می‌دهد، چون S589 اصلاً در این فراخوانی‌ها حضور ندارد.
+    const incumbentSnapshot = (fns: any[]) => fns.map((fn) => {
+      try {
+        const d = fn(ctx as any)
+        if (!d) return null
+        return `${d.sourceLayer?.code || '—'}:${d.state}:${d.direction || '—'}`
+      } catch { return 'ERR' }
+    }).filter(Boolean).sort()
+
+    const snapOff = incumbentSnapshot(filtered)
+    // همان ساکنان، ولی این‌بار در حضورِ کاملِ فهرست (S589 هم در آرایه هست).
+    // چون هر لایه تابعی خالص روی ctx است، اگر S589 هیچ حالتِ مشترکی را آلوده
+    // نکرده باشد این دو عکس باید **دقیقاً** یکی باشند.
+    const snapOn = incumbentSnapshot(backup.filter(fn => {
+      try { const d = fn(ctx as any); return !(d && /S589/i.test(d.sourceLayer?.code || '')) }
+      catch { return true }
+    }))
+    rep.incumbents_off = snapOff
+    rep.incumbents_on = snapOn
+    console.log(`   عکسِ تصمیمِ ساکنان (بدونِ S589): [${snapOff.join(' | ')}]`)
+    if (JSON.stringify(snapOn) === JSON.stringify(snapOff)) {
+      console.log('   ✓ ④ هیچ رگرسیونی: تصمیمِ تک‌تکِ ساکنان بی‌تغییر است')
     } else {
-      console.log(`   ❌ ④ رگرسیون: ساکنان عوض شدند [${incumbentsOn}] ≠ [${incumbentsOff}]`)
+      console.log(`   ❌ ④ رگرسیون: [${snapOn.join(' | ')}] ≠ [${snapOff.join(' | ')}]`)
       fail++
     }
+    // و یک چکِ مکمل: برداشتنِ S589 نباید تصمیمِ کارت را **بهتر** کند؛ فقط
+    // می‌تواند از ENTRY به چیزی ضعیف‌تر برود (چون یک شاهد کم شده).
+    console.log(`   تصمیمِ کارت: با S589 = ${dOn.state} · بدونِ S589 = ${dOff?.state}`)
   }
 }
 

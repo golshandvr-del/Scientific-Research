@@ -18,6 +18,24 @@
    "cofire_with_s1520": false,
    "codes_off": [
     "S950"
+   ],
+   "incumbents_off": [
+    "S1520:NEUTRAL:—",
+    "S1911:NEUTRAL:—",
+    "S607:NEUTRAL:—",
+    "S770:NEUTRAL:—",
+    "S950:NEUTRAL:—",
+    "S965:NEUTRAL:—",
+    "S966:NEUTRAL:—"
+   ],
+   "incumbents_on": [
+    "S1520:NEUTRAL:—",
+    "S1911:NEUTRAL:—",
+    "S607:NEUTRAL:—",
+    "S770:NEUTRAL:—",
+    "S950:NEUTRAL:—",
+    "S965:NEUTRAL:—",
+    "S966:NEUTRAL:—"
    ]
   },
   "XAUUSD-H4": {
@@ -38,6 +56,12 @@
    "role": "primary",
    "codes_off": [
     "S382"
+   ],
+   "incumbents_off": [
+    "S382:ENTRY:LONG"
+   ],
+   "incumbents_on": [
+    "S382:ENTRY:LONG"
    ]
   }
  },
