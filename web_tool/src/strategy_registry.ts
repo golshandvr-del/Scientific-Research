@@ -316,6 +316,9 @@ import { decideS966, S966_CFG } from './kyle_permanence_drift_s966'
 //      با سایزِ مشترک. پریتیِ پورت GREEN: results/_s1911_ckpt/parity_h8_result.json
 //    سند: results/S1911_KyleShockCalmRegime_Xauusd_H8_rqs2_93.9_ACCEPT.md
 import { decideS1911, S1911_CFG } from './kyle_shock_calm_s1911'
+// ⭐⭐ S955 — «جهشِ هم‌راستا در رژیمِ آرام» (S950 × گیتِ آرامشِ σ) — سه کارت:
+//    H8 (87.7) · H12 (89.4) · H6 (84.9). سند: results/S955_…_rqs2_88_ACCEPT.md
+import { decideS955, S955_CFG } from './jump_calm_s955'
 // ⭐⭐ S919 — «شوکِ مطلعِ هم‌راستا با قراردادِ بازار» · XAUUSD-**H6** (کارتِ نو)
 //    RQS2 = **88.9** · هر ۱۱ دروازهٔ H0..H10 سبز · notes خالی · n_trials=2
 //    n=106 · WR=55.66٪ · null_ref=40.04٪ · lift=+15.62pp · z=3.282 (z_margin=2.762)
