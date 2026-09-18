@@ -617,8 +617,76 @@ function renderCard(a) {
         ${uiBadges(a, s, state)}
         ${body}
         ${d ? renderCardTimeGates(d) : ''}
+        ${renderLayerInfo(a, d)}
       </div>
     </section>`
+}
+
+// ----------------------------------------------------------------------------
+// 🔎 پنلِ info کارت — «این کارت الان شاملِ چه لایه‌هایی است؟» (User Note)
+// ----------------------------------------------------------------------------
+// چرا این بخش لازم بود: سایت تا امروز فقط لایه‌ای را نشان می‌داد که **همین
+// لحظه سیگنال داده** (`sourceLayer`). لایه‌های ساکت در runCard دور ریخته
+// می‌شوند (null برمی‌گردانند)، پس کاربر هیچ‌وقت نمی‌دید کارت چند شاهد دارد.
+//
+// ⚠️ چرا این صرفاً «اطلاعاتِ بیشتر» نیست، بلکه **معنای کارت را عوض می‌کند**:
+//    کارتِ خنثی با ۱ لایه یعنی «تنها شاهدم ساکت است».
+//    کارتِ خنثی با ۸ لایه یعنی «۸ شاهدِ مستقل نگاه کردند و هیچ‌کدام چیزی ندید».
+//    این دو وزنِ کاملاً متفاوتی دارند و تا امروز **هر دو خاکستریِ یکسان** بودند.
+//
+// ⚠️ تصمیمِ UI: پیش‌فرض **بسته** (<details>) است. کارت باید تصمیم را نشان دهد،
+//    نه فهرستِ لایه‌ها. اگر این پنل باز باشد، روی کارتِ H8 هشت ردیف اضافه
+//    می‌شود و تصمیم — که کاربر واقعاً برایش آمده — به پایینِ صفحه رانده می‌شود.
+//    پس اطلاعات «در دسترس» است، نه «تحمیلی».
+//
+// ⚠️ لایهٔ سیگنال‌دهنده با یک نقطهٔ روشن و پس‌زمینه متمایز می‌شود، تا کاربر
+//    بتواند «کدام‌یک الان حرف زد» را از «کدام‌ها فقط نگهبانند» تفکیک کند.
+function renderLayerInfo(a, d) {
+  const layers = (a && a.layers) || []
+  if (!layers.length) return ''
+  // کدِ لایه‌ای که تصمیمِ فعلیِ کارت از آن آمده (اگر کارت اصلاً تصمیمی دارد).
+  const activeCode = d && d.sourceLayer ? d.sourceLayer.code : null
+
+  const rows = layers.map((L, i) => {
+    const isActive = activeCode && L.code === activeCode
+    // رنگِ حکم: ACCEPT سبز · POWER-LIMITED کهربایی (هشدار، نه تأیید) · بقیه خاکستری
+    const v = String(L.verdict || '')
+    const vCls = v.startsWith('ACCEPT') ? 'text-emerald-300 bg-emerald-500/10'
+      : v.includes('POWER') ? 'text-amber-300 bg-amber-500/10'
+      : 'text-slate-400 bg-slate-500/10'
+    const sideCls = L.side === 'LONG' ? 'text-emerald-400'
+      : L.side === 'SHORT' ? 'text-rose-400' : 'text-sky-400'
+    return `
+      <li class="flex gap-2 py-1.5 px-2 rounded ${isActive ? 'bg-sky-500/10 ring-1 ring-sky-500/30' : ''}">
+        <span class="text-[10px] text-slate-600 tabular-nums pt-0.5 w-4 shrink-0">${i + 1}</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            ${isActive ? '<span class="inline-block w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse" title="این لایه تصمیمِ فعلیِ کارت را داده"></span>' : ''}
+            <span class="text-[11px] font-bold text-slate-200">${L.code}</span>
+            <span class="text-[11px] text-slate-400 truncate">${L.name || ''}</span>
+            <span class="text-[9px] px-1 py-0.5 rounded ${vCls} font-bold shrink-0">${v}</span>
+            <span class="text-[9px] ${sideCls} shrink-0">${L.side || ''}</span>
+          </div>
+          <div class="text-[10px] text-slate-500 leading-relaxed mt-0.5">${L.what || ''}</div>
+        </div>
+      </li>`
+  }).join('')
+
+  return `
+    <details class="mt-3 border-t border-slate-800 pt-2">
+      <summary class="cursor-pointer text-[11px] text-slate-400 hover:text-slate-200 select-none flex items-center gap-1.5">
+        <i class="fas fa-layer-group text-slate-500"></i>
+        <span>لایه‌های این کارت</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded-full bg-slate-700/60 text-slate-300 font-bold tabular-nums">${layers.length}</span>
+        <span class="text-[10px] text-slate-600">— برای دیدن باز کنید</span>
+      </summary>
+      <ul class="mt-1.5 space-y-0.5">${rows}</ul>
+      <div class="text-[10px] text-slate-600 mt-2 leading-relaxed border-t border-slate-800/60 pt-1.5">
+        <i class="fas fa-circle-info ml-1"></i>
+        همهٔ این لایه‌ها هم‌زمان این کارت را می‌پایند. «خنثی» یعنی
+        <b class="text-slate-500">هیچ‌کدام</b> شرایطِ ورود ندیده‌اند — نه اینکه بررسی نشده.
+      </div>
+    </details>`
 }
 
 // --- 🟧 P5: نشان‌های افزودنیِ گره‌ها (heartbeat + شورا) از ماژولِ ui/badges ---
@@ -1302,7 +1370,11 @@ async function ensureAssetsMeta() {
     const res = await fetch('/api/assets')
     const data = await res.json()
     if (data.ok && Array.isArray(data.assets) && data.assets.length) {
-      assetsMeta = data.assets.map(a => ({ id: a.id, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing' }))
+      // 🔎 `layers` باید حفظ شود (بخشِ info — User Note). پیش‌تر این map چهار
+      //    فیلد را نگه می‌داشت و بقیه را دور می‌ریخت؛ اگر این‌جا اضافه نشود،
+      //    پنلِ info روی *همهٔ* کارت‌ها خالی می‌ماند بدونِ هیچ خطایی — یعنی
+      //    خرابیِ خاموش. آرایهٔ خالی به‌عنوان پیش‌فرض تا رندر هرگز undefined نبیند.
+      assetsMeta = data.assets.map(a => ({ id: a.id, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing', layers: a.layers || [] }))
       boot.set(35, 'فهرستِ کارت‌ها آمد — در حال ساختِ نمای اولیه…')
       render()   // رندرِ کاملِ اولیه: header + پنل + کارت‌های اسکلت (در حال تحلیل)
       return true
