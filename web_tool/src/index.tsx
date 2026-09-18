@@ -848,10 +848,21 @@ app.get('/api/assets', (c) => {
 app.get('/api/decision', async (c) => {
   const [capital, riskPct] = readCapitalParams(c)
   const results = await Promise.allSettled(ASSETS.map(a => decideAsset(a, capital, riskPct)))
+  // 🔎 `layers` این‌جا هم افزوده شد — **نه برای مسیرِ عادی**، بلکه فقط برای
+  //    مسیرِ fallbackِ کلاینت. اگر `/api/assets` (فاز ۱) در دسترس نباشد،
+  //    app.js فهرستِ کارت‌ها را از همین نقطهٔ دسته‌ای می‌سازد؛ پیش از این
+  //    فیلدِ layers در آن مسیر وجود نداشت و پنلِ info **بی‌صدا ناپدید می‌شد**
+  //    (خطا نمی‌داد، چون سمتِ کلاینت `|| []` دارد) — یعنی دقیقاً در لحظهٔ
+  //    خرابیِ سرور، همان توضیحی که به کاربر کمک می‌کند غیب می‌شد.
+  //    هزینه صفر است: این مسیر یک پاسخِ **واحد** برای همهٔ کارت‌هاست، پس
+  //    اطلاعاتِ ایستا یک‌بار می‌آید، نه ۹ بار (همان دلیلی که باعث شد در
+  //    /api/decision/:asset تک‌کارتی عمداً اضافه‌اش نکنم).
+  const rosterOf = (i: number) =>
+    layersForCard(ASSETS[i].card || ASSETS[i].id, CARD_LAYER_CODES[ASSETS[i].card || ASSETS[i].id] || [])
   const assets = results.map((r, i) =>
     r.status === 'fulfilled'
-      ? { ok: true, ...r.value }
-      : { ok: false, asset: ASSETS[i].id, name: ASSETS[i].name, symbol: ASSETS[i].symbol, error: (r as any).reason?.message || 'خطا' }
+      ? { ok: true, ...r.value, layers: rosterOf(i) }
+      : { ok: false, asset: ASSETS[i].id, name: ASSETS[i].name, symbol: ASSETS[i].symbol, error: (r as any).reason?.message || 'خطا', layers: rosterOf(i) }
   )
   return c.json({ ok: true, lastUpdate: new Date().toISOString(), assets })
 })

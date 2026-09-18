@@ -1444,7 +1444,11 @@ async function refreshAll() {
       const res = await fetch(`/api/decision?capital=${getCapital()}&risk=${getRisk()}`)
       const data = await res.json()
       if (!data.ok) throw new Error(data.error || 'خطای سرور')
-      assetsMeta = data.assets.map(a => ({ id: a.asset, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing' }))
+      // `layers` را این‌جا هم نگه می‌داریم: بدونِ آن، در مسیرِ fallback پنلِ
+      // info بی‌صدا ناپدید می‌شد (renderCard با `|| []` خطا نمی‌داد، فقط چیزی
+      // نشان نمی‌داد) — یعنی درست در لحظهٔ خرابیِ /api/assets، همان توضیحی که
+      // به کاربر می‌گوید کارت چند شاهد دارد از دست می‌رفت.
+      assetsMeta = data.assets.map(a => ({ id: a.asset, name: a.name, decimals: a.decimals || 2, layer: a.layer || 'swing', layers: a.layers || [] }))
       data.assets.forEach(a => {
         store[a.asset] = store[a.asset] || {}
         if (a.ok) { store[a.asset].decision = applyLatch(a.asset, a.decision); store[a.asset].price = a.price; store[a.asset].error = null }
