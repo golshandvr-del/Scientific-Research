@@ -1,0 +1,121 @@
+{
+ "layer": "S955",
+ "purpose": "ممیزیِ شاهدِ کاذب پیش از سیم‌کشی (H8/H12/H6)",
+ "source_of_truth": "results/_scan_S955/overlap_audit.json (اندازه‌گیریِ منتشرشدهٔ خودِ لایه — فقط خوانده شد)",
+ "decision_rule": {
+  "jaccard_high": 0.45,
+  "size_parity": 0.8,
+  "precedents": [
+   "S404/S408 ⇒ یکی، نه هر دو",
+   "S966/S1911 ⇒ زیرمجموعهٔ نصف‌اندازه مجاز است"
+  ]
+ },
+ "per_card": {
+  "H8": [
+   {
+    "vs": "S950 (parent, ACCEPT 80)",
+    "n_s955": 118,
+    "n_other": 238,
+    "same_bar": 118,
+    "window_overlap_pct": 100.0,
+    "opposite_dir": 0,
+    "jaccard": 0.496,
+    "size_parity": 0.496,
+    "share_of_s955_pct": 100.0,
+    "verdict": "SUBSET-QUALITY-FILTER",
+    "rule": "زیرمجموعهٔ ساختاری با اندازهٔ کوچک‌تر ⇒ فیلترِ کیفیت روی رویدادهای والد (پروندهٔ S966/S1911) ⇒ مجاز، اما نباید هم‌زمان با والد سایز بگیرد"
+   },
+   {
+    "vs": "S1911 (ACCEPT 93.9)",
+    "n_s955": 118,
+    "n_other": 82,
+    "same_bar": 40,
+    "window_overlap_pct": 45.8,
+    "opposite_dir": 0,
+    "jaccard": 0.25,
+    "size_parity": 0.695,
+    "share_of_s955_pct": 33.9,
+    "verdict": "INDEPENDENT",
+    "rule": "jaccard پایین ⇒ شاهدِ مستقل ⇒ هم‌زیستی آزاد"
+   },
+   {
+    "vs": "S966 (ACCEPT 86)",
+    "n_s955": 118,
+    "n_other": 73,
+    "same_bar": 28,
+    "window_overlap_pct": 35.6,
+    "opposite_dir": 0,
+    "jaccard": 0.172,
+    "size_parity": 0.619,
+    "share_of_s955_pct": 23.7,
+    "verdict": "INDEPENDENT",
+    "rule": "jaccard پایین ⇒ شاهدِ مستقل ⇒ هم‌زیستی آزاد"
+   },
+   {
+    "vs": "S965 event (ACCEPT 82)",
+    "n_s955": 118,
+    "n_other": 146,
+    "same_bar": 40,
+    "window_overlap_pct": 50.8,
+    "opposite_dir": 0,
+    "jaccard": 0.179,
+    "size_parity": 0.808,
+    "share_of_s955_pct": 33.9,
+    "verdict": "INDEPENDENT",
+    "rule": "jaccard پایین ⇒ شاهدِ مستقل ⇒ هم‌زیستی آزاد"
+   }
+  ],
+  "H12": [
+   {
+    "vs": "S800-H12 (ACCEPT 83.6)",
+    "n_s955": 78,
+    "n_other": 436,
+    "same_bar": 34,
+    "window_overlap_pct": 92.3,
+    "opposite_dir": 0,
+    "jaccard": 0.071,
+    "size_parity": 0.179,
+    "share_of_s955_pct": 43.6,
+    "verdict": "INDEPENDENT",
+    "rule": "jaccard پایین ⇒ شاهدِ مستقل ⇒ هم‌زیستی آزاد"
+   }
+  ],
+  "H6": [
+   {
+    "vs": "S919 (ACCEPT 88.9)",
+    "n_s955": 155,
+    "n_other": 106,
+    "same_bar": 47,
+    "window_overlap_pct": 46.5,
+    "opposite_dir": 0,
+    "jaccard": 0.22,
+    "size_parity": 0.684,
+    "share_of_s955_pct": 30.3,
+    "verdict": "INDEPENDENT",
+    "rule": "jaccard پایین ⇒ شاهدِ مستقل ⇒ هم‌زیستی آزاد"
+   }
+  ]
+ },
+ "twin_layer_check": {
+  "pair": "S955-H8 vs S1913-H8",
+  "s955": {
+   "n": 112.0,
+   "wr": 67.86,
+   "pf": 2.06,
+   "maxdd": 2.86
+  },
+  "s1913": {
+   "n": 112.0,
+   "wr": 67.86,
+   "pf": 2.06,
+   "maxdd": 2.86
+  },
+  "all_four_identical": true,
+  "verdict": "FALSE-WITNESS",
+  "rule": "هر چهار عددِ حکم (n/WR/PF/maxDD) عیناً یکی ⇒ یک رویدادِ واحد با دو اسم. هر دو سند خودشان همین را اعلام می‌کنند (S955 §۸: «یک لایه، دو نام؛ فقط یکی مستقر شود»؛ S1913 §پایانی: «عیناً همان اعدادِ S1913»). ⇒ روی سایت فقط یکی وصل شود؛ دیگری حتی به‌عنوانِ otherLayers هم نباید کادرِ جدا بگیرد."
+ },
+ "actions": [
+  "XAUUSD-H8: S955 زیرمجموعهٔ «S950 (parent, ACCEPT 80)» است (100.0٪ · اندازه 0.496) ⇒ جانشینی یا مرتبهٔ مقید لازم است، نه افزودنِ ساده.",
+  "S1913 نباید به‌صورتِ لایهٔ جدا وصل شود — دوقلوی S955-H8 است."
+ ]
+}
