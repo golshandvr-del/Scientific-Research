@@ -17,7 +17,9 @@ import {
   rebaseFuturesToSpot, mergeLiveQuote, closedBars,
 } from './price/gold_source'
 // --- رجیستریِ ماژولارِ لایه‌های احیاشده (تنها مغزِ تصمیمِ سایت پس از حذفِ استراتژی‌های قدیمی) ---
-import { type LayerContext } from './strategy_registry'
+import { type LayerContext, CARD_LAYER_CODES } from './strategy_registry'
+// 🔎 کاتالوگِ توصیفیِ لایه‌ها — فقط برای بخشِ info کارت‌ها (هیچ اثری بر تصمیم).
+import { layersForCard } from './layer_catalog'
 // --- گرهِ Runtime P4 (webplan): مرزِ رسمیِ اجرای لایه‌ها (CardDecision@v1). ---
 //     runCardTyped صرفاً runCard را با تایپِ رسمی می‌پیچد؛ خروجی بیت‌به‌بیت یکسان.
 import { runCardTyped as runCard } from './runtime/runtime'
@@ -818,7 +820,27 @@ function readCapitalParams(c: any): [number, number] {
 app.get('/api/assets', (c) => {
   return c.json({
     ok: true,
-    assets: ASSETS.map(a => ({ id: a.id, name: a.name, decimals: a.decimals, layer: a.layer })),
+    // 🔎 `layers`: فهرستِ لایه‌های وصل‌شده به هر کارت (User Note: بخشِ info).
+    //
+    //   چرا این‌جا و نه در /api/decision: این نقطه در **فاز ۱** صدا زده می‌شود —
+    //   هیچ fetchی به Yahoo ندارد و در چند میلی‌ثانیه برمی‌گردد. پس کاربر
+    //   ترکیبِ لایه‌های کارت را **پیش از آنکه اصلاً داده‌ای برسد** می‌بیند؛
+    //   یعنی این بخش دقیقاً همان صفحهٔ انتظاری را پر می‌کند که کاربر از کندی‌اش
+    //   شکایت داشت، به‌جای آنکه چیزی به آن انتظار اضافه کند.
+    //
+    //   گذاشتنِ آن در /api/decision یعنی همین اطلاعاتِ کاملاً **ایستا**، ۹ بار
+    //   (یک‌بار به‌ازای هر کارت) و پشتِ کندترین حلقهٔ شبکه تکرار شود — خلافِ
+    //   همان کندی‌ای که در همین نشست در حال رفعش هستیم.
+    //
+    //   داده از CARD_LAYER_CODES (ترتیبِ واقعیِ اولویت) و LAYER_CATALOG
+    //   (توضیحِ نمایشی) می‌آید، و آزمونِ هم‌گامیِ tools/_probe_layer_catalog.mts
+    //   تضمین می‌کند این دو با سیم‌کشیِ واقعی واگرا نشوند. کارتی که در رجیستری
+    //   نیست آرایهٔ **خالی** می‌گیرد (نه undefined) تا سمتِ کلاینت لازم نباشد
+    //   نبودِ فیلد را جداگانه بررسی کند.
+    assets: ASSETS.map(a => ({
+      id: a.id, name: a.name, decimals: a.decimals, layer: a.layer,
+      layers: layersForCard(a.card || a.id, CARD_LAYER_CODES[a.card || a.id] || []),
+    })),
   })
 })
 
