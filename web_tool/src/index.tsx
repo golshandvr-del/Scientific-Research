@@ -992,6 +992,22 @@ app.get('/api/spots', async (c) => {
 const _proxyCache = new Map<string, { at: number; status: number; body: string }>()
 const _PROXY_TTL = 60_000  // ۶۰ ثانیه (کندلِ M15 تا دقایق تازه می‌ماند)
 
+// 🩹 دومین نشتیِ حافظه (هم‌خانوادهٔ نشتیِ cache.ts، ولی سنگین‌تر).
+// این Map **بدنهٔ کاملِ JSON** را به‌صورتِ رشته نگه می‌دارد و هیچ سقفی نداشت. هر
+// URLِ متفاوت (هر symbol×interval×range) یک ورودیِ دائمی می‌ساخت که حتی پس از
+// انقضای TTL هم آزاد نمی‌شد — چون مسیرِ `stale-while-error` عمداً ورودیِ منقضی را
+// نگه می‌دارد، پس TTL هرگز حذفش نمی‌کرد. نتیجه: رشدِ یک‌طرفهٔ حافظه.
+// راهِ حل مثلِ cache.ts: سقفِ تعداد + حذفِ قدیمی‌ترین. عمداً کوچک‌تر است چون
+// هر ورودیِ این‌جا به‌مراتب حجیم‌تر از ورودیِ کشِ کندل است.
+const _PROXY_MAX = 60
+function _trimProxyCache(): void {
+  while (_proxyCache.size > _PROXY_MAX) {
+    const oldest = _proxyCache.keys().next()
+    if (oldest.done) break
+    _proxyCache.delete(oldest.value)
+  }
+}
+
 app.get('/api/proxy', async (c) => {
   const target = c.req.query('url') || ''
   const allow = ['query1.finance.yahoo.com', 'query2.finance.yahoo.com', 'finance.yahoo.com']
@@ -1012,10 +1028,13 @@ app.get('/api/proxy', async (c) => {
   for (let attempt = 0; attempt < 3; attempt++) {
     const u = hosts[attempt % hosts.length]
     try {
-      const r = await fetch(u, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } })
+      // 🩹 مهلت: بدونِ آن، «۳ بار retry» تضمینی برای پیشرفت نبود — یک تلاشِ
+      //    معلق کلِ حلقه را متوقف می‌کرد و retryهای بعدی هرگز اجرا نمی‌شدند.
+      const r = await fetchWithTimeout(u, { headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/json' } }, 6000)
       const body = await r.text()
       if (r.status === 200) {
         _proxyCache.set(target, { at: now, status: 200, body })
+        _trimProxyCache()
         return new Response(body, {
           status: 200,
           headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*', 'X-Proxy-Cache': 'miss' },
