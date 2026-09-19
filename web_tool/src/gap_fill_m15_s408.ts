@@ -460,6 +460,54 @@ export function decideS408(
     reason = `S408 · بی‌سیگنال.`
   }
 
+  // -------------------------------------------------------------------------
+  // 🩹 باگ: این‌جا `indicators: a as any` بود — یعنی `AnalysisResult` (یک **شیء**)
+  //     جایی فرستاده می‌شد که `rawToDecision` یک **آرایه** انتظار دارد
+  //     (`raw.indicators.filter(...)` در revived_strategies.ts:92).
+  //     نتیجه: هر بار که کارتِ M15 بارگذاری می‌شد، این لایه با خطای
+  //     «raw2.indicators.filter is not a function» می‌افتاد و `runCard` آن را
+  //     در یک `console.error` می‌بلعید. لایه **بی‌صدا غایب** بود: کاربر کارت را
+  //     سالم می‌دید ولی یکی از شاهدانش اصلاً حضور نداشت. این از خطای آشکار
+  //     بدتر است، چون تصمیم بر پایهٔ شواهدِ ناقص گرفته می‌شد بدونِ هیچ نشانه‌ای.
+  //
+  //     ریشهٔ واقعی: همان `as any`. بدونِ آن، TypeScript این را در زمانِ کامپایل
+  //     می‌گرفت. `as any` این‌جا یک خطای نوعی را ساکت کرده بود، نه حل.
+  //
+  //     رفع: همان ۵ فیلترِ مستندِ لایه به‌صورتِ آرایهٔ واقعیِ اندیکاتور ساخته
+  //     می‌شود — هم قراردادِ نوع رعایت می‌شود و هم کاربر بالاخره می‌بیند این
+  //     لایه بر چه پایه‌ای تصمیم گرفته است.
+  const indicators: RouterDecision['indicators'] = [
+    {
+      name: 'مرزِ روز (بازگشایی)',
+      value: s.brkIdx >= 0 ? `${kindFa} · وقفهٔ ${s.gapHours.toFixed(1)}h` : '—',
+      status: s.brkIdx >= 0 ? 'ok' : 'neutral',
+    },
+    {
+      name: 'گپِ منفی > آستانهٔ منجمد',
+      value: isFinite(s.gapUsd)
+        ? `${f2(s.gapUsd)}$ / آستانه ${f2(s.thrUsd)}$ (نسبت ${f2(s.ratio)}×)`
+        : '—',
+      status: s.baseActive ? 'ok' : 'bad',
+    },
+    {
+      name: 'روزِ هفته ≠ دوشنبه',
+      value: dowName,
+      status: s.dowPass ? 'ok' : 'bad',
+    },
+    {
+      name: `ATR14 روزِ قبل ≤ q${cfg.qVol}`,
+      value: isFinite(s.atrPrevUsd)
+        ? `${f1(s.atrPrevUsd)}$ / سقف ${f1(s.volThrUsd)}$`
+        : `تاریخچهٔ ناکافی (${s.daysAvail} روز)`,
+      status: s.volPass ? 'ok' : 'bad',
+    },
+    {
+      name: 'سلامتِ فید و تازگیِ پنجره',
+      value: `${s.dataHealthy ? 'سالم' : 'ناقص'} · ${s.atLatestBar} کندل از بازگشایی (سقف ${FRESH_MAX_BARS})`,
+      status: s.dataHealthy ? (s.atLatestBar <= FRESH_MAX_BARS ? 'ok' : 'warn') : 'bad',
+    },
+  ]
+
   const raw: RawSignal = {
     active, approaching,
     direction: 'LONG',
@@ -467,7 +515,7 @@ export function decideS408(
     tpDist: isFinite(s.tpDistUsd) && s.tpDistUsd > 0 ? s.tpDistUsd : 9.1 * GOLD_PIP,
     maxHoldBars: Math.max(1, s.barsLeftInDay),
     reason, approachReason,
-    indicators: a as any,
+    indicators,
   }
 
   const meta: DecideMeta = {
