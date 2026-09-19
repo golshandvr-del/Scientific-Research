@@ -210,10 +210,10 @@ async function forexFromSwissquote(base: string, quote: string): Promise<{ price
 
 async function quoteFromYahoo(symbol: string): Promise<LiveQuote> {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1m&range=1d`
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },
     cf: { cacheTtl: 2, cacheEverything: true } as any,
-  })
+  }, 6000)
   if (!res.ok) throw new Error(`Yahoo quote ${symbol} error: ${res.status}`)
   const data: any = await res.json()
   const m = data?.chart?.result?.[0]?.meta
