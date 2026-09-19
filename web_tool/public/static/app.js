@@ -1480,8 +1480,10 @@ async function refreshAll() {
   if (!ok && !assetsMeta.length) {
     // fallback: اگر /api/assets در دسترس نبود، مثلِ قبل از /api/decision استفاده کن.
     try {
-      const res = await fetch(`/api/decision?capital=${getCapital()}&risk=${getRisk()}`)
-      const data = await res.json()
+      // مسیرِ fallback همهٔ کارت‌ها را یک‌جا می‌گیرد ⇒ ذاتاً کندتر است، پس مهلتِ
+      // بلندتر. ولی باز هم متناهی: این مسیر دقیقاً وقتی فعال می‌شود که سرور
+      // مشکل دارد، و آن‌جاست که یک درخواستِ بی‌مهلت بیشترین آسیب را می‌زند.
+      const data = await fetchJSON(`/api/decision?capital=${getCapital()}&risk=${getRisk()}`, { timeoutMs: 25000 })
       if (!data.ok) throw new Error(data.error || 'خطای سرور')
       // `layers` را این‌جا هم نگه می‌داریم: بدونِ آن، در مسیرِ fallback پنلِ
       // info بی‌صدا ناپدید می‌شد (renderCard با `|| []` خطا نمی‌داد، فقط چیزی
