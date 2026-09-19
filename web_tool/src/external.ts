@@ -192,10 +192,10 @@ const SWISSQUOTE_FX: Record<string, { base: string; quote: string }> = {
 }
 
 async function forexFromSwissquote(base: string, quote: string): Promise<{ price: number; ts: number }> {
-  const res = await fetch(`https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/${base}/${quote}`, {
+  const res = await fetchWithTimeout(`https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/${base}/${quote}`, {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },
     cf: { cacheTtl: 2, cacheEverything: true } as any,
-  })
+  }, 5000)
   if (!res.ok) throw new Error(`Swissquote ${base}/${quote} error: ${res.status}`)
   const arr: any = await res.json()
   let bid = NaN, ask = NaN, ts = Date.now()
