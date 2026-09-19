@@ -3456,9 +3456,23 @@ function isSlBeyondEntry(t) {
 }
 
 // ../web_tool/src/cache.ts
+var MAX_ENTRIES = 300;
+var MAX_INFLIGHT = 64;
 var _store = /* @__PURE__ */ new Map();
 var _inflight = /* @__PURE__ */ new Map();
-var cacheStats = { hits: 0, misses: 0, stale: 0, dedup: 0, revalidations: 0 };
+var cacheStats = { hits: 0, misses: 0, stale: 0, dedup: 0, revalidations: 0, evictions: 0 };
+function _touch(key, entry) {
+  _store.delete(key);
+  _store.set(key, entry);
+}
+function _evictIfNeeded() {
+  while (_store.size > MAX_ENTRIES) {
+    const oldest = _store.keys().next();
+    if (oldest.done) break;
+    _store.delete(oldest.value);
+    cacheStats.evictions++;
+  }
+}
 async function cachedFetch(key, producer, opts = {}) {
   const freshMs = opts.freshMs ?? 3e4;
   const staleMs = opts.staleMs ?? 3e5;
@@ -3468,10 +3482,12 @@ async function cachedFetch(key, producer, opts = {}) {
     const age = now - hit.storedAt;
     if (age < hit.freshMs) {
       cacheStats.hits++;
+      _touch(key, hit);
       return hit.value;
     }
     if (age < hit.freshMs + hit.staleMs) {
       cacheStats.stale++;
+      _touch(key, hit);
       void _revalidate(key, producer, freshMs, staleMs);
       return hit.value;
     }
@@ -3485,10 +3501,15 @@ function _load(key, producer, freshMs, staleMs) {
     cacheStats.dedup++;
     return existing;
   }
+  if (_inflight.size >= MAX_INFLIGHT) {
+    const stale = _store.get(key);
+    if (stale) return Promise.resolve(stale.value);
+  }
   const p = (async () => {
     try {
       const value = await producer();
       _store.set(key, { value, storedAt: Date.now(), freshMs, staleMs });
+      _evictIfNeeded();
       return value;
     } catch (err) {
       const stale = _store.get(key);
@@ -3508,6 +3529,17 @@ async function _revalidate(key, producer, freshMs, staleMs) {
     await _load(key, producer, freshMs, staleMs);
   } catch {
   }
+}
+function cacheHealth() {
+  return {
+    entries: _store.size,
+    maxEntries: MAX_ENTRIES,
+    inflight: _inflight.size,
+    maxInflight: MAX_INFLIGHT,
+    saturated: _store.size >= MAX_ENTRIES,
+    congested: _inflight.size >= MAX_INFLIGHT,
+    stats: { ...cacheStats }
+  };
 }
 
 // ../web_tool/src/fast_fetch.ts
@@ -3569,10 +3601,10 @@ async function stooqDaily(symbol, timeoutMs = 6e3) {
 // ../web_tool/src/external.ts
 var UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36";
 async function spotFromSwissquote() {
-  const res = await fetch("https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD", {
+  const res = await fetchWithTimeout("https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD", {
     headers: { "User-Agent": UA, "Accept": "application/json" },
     cf: { cacheTtl: 10, cacheEverything: true }
-  });
+  }, 5e3);
   if (!res.ok) throw new Error(`Swissquote error: ${res.status}`);
   const arr = await res.json();
   let bid = NaN, ask = NaN, ts = Date.now();
@@ -3593,10 +3625,10 @@ async function spotFromSwissquote() {
   return { price, bid, ask, updatedAt, ageSec, source: "Swissquote (XAU/USD spot)" };
 }
 async function spotFromGoldApi() {
-  const res = await fetch("https://api.gold-api.com/price/XAU", {
+  const res = await fetchWithTimeout("https://api.gold-api.com/price/XAU", {
     headers: { "User-Agent": UA, "Accept": "application/json" },
     cf: { cacheTtl: 20, cacheEverything: true }
-  });
+  }, 5e3);
   if (!res.ok) throw new Error(`gold-api error: ${res.status}`);
   const d = await res.json();
   const updatedAt = d.updatedAt || (/* @__PURE__ */ new Date()).toISOString();
@@ -3675,10 +3707,10 @@ var SWISSQUOTE_FX = {
   "AUDUSD=X": { base: "AUD", quote: "USD" }
 };
 async function forexFromSwissquote(base, quote) {
-  const res = await fetch(`https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/${base}/${quote}`, {
+  const res = await fetchWithTimeout(`https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/${base}/${quote}`, {
     headers: { "User-Agent": UA, "Accept": "application/json" },
     cf: { cacheTtl: 2, cacheEverything: true }
-  });
+  }, 5e3);
   if (!res.ok) throw new Error(`Swissquote ${base}/${quote} error: ${res.status}`);
   const arr = await res.json();
   let bid = NaN, ask = NaN, ts = Date.now();
@@ -3697,10 +3729,10 @@ async function forexFromSwissquote(base, quote) {
 }
 async function quoteFromYahoo(symbol) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?interval=1m&range=1d`;
-  const res = await fetch(url, {
+  const res = await fetchWithTimeout(url, {
     headers: { "User-Agent": UA, "Accept": "application/json" },
     cf: { cacheTtl: 2, cacheEverything: true }
-  });
+  }, 6e3);
   if (!res.ok) throw new Error(`Yahoo quote ${symbol} error: ${res.status}`);
   const data = await res.json();
   const m = data?.chart?.result?.[0]?.meta;
@@ -3866,14 +3898,14 @@ async function fetchCalendarRaw(env) {
   let lastErr = null;
   for (const url of CAL_URLS) {
     try {
-      const res = await fetch(url, {
+      const res = await fetchWithTimeout(url, {
         headers: {
           "User-Agent": UA,
           "Accept": "application/json,text/plain,*/*",
           "Referer": "https://www.forexfactory.com/"
         },
         cf: { cacheTtl: 1800, cacheEverything: true }
-      });
+      }, 6e3);
       if (res.ok) {
         const data = await res.json();
         _calMemCache = { at: Date.now(), data };
@@ -4072,7 +4104,19 @@ async function _fetchGoldRaw(interval, range2) {
     }
   };
 }
+var H1_SUPERSET_RANGE = "2y";
+var H1_RANGE_BARS = { "1d": 30, "5d": 130, "1mo": 560, "3mo": 1600, "6mo": 3200, "1y": 6200 };
 async function fetchGold(interval, range2) {
+  if (interval === "1h" && range2 !== H1_SUPERSET_RANGE && H1_RANGE_BARS[range2]) {
+    const sup = await cachedFetch(
+      `gold:1h:${H1_SUPERSET_RANGE}`,
+      () => _fetchGoldRaw("1h", H1_SUPERSET_RANGE),
+      { freshMs: 3e4, staleMs: 6e5 }
+    );
+    const want = H1_RANGE_BARS[range2];
+    const candles = sup.candles.length > want ? sup.candles.slice(-want) : sup.candles;
+    return { candles, meta: sup.meta };
+  }
   return cachedFetch(
     `gold:${interval}:${range2}`,
     () => _fetchGoldRaw(interval, range2),
@@ -5372,21 +5416,6 @@ function decideS382(cfg, a, candles, capital = 1e4, riskPct = 1) {
 }
 
 // ../web_tool/src/jump_aftermath_s950.ts
-var GOLD_PIP4 = 0.1;
-var S950_CFG = {
-  // تنها کارتِ ACCEPT. D1 حکمِ POWER-LIMITED داشت (نه ACCEPT) ⇒ وصل نمی‌شود؛
-  // بقیهٔ ۱۷ تایم‌فریم REJECT صریح — قانونِ MTF: تعمیمِ بدونِ شاهد ممنوع.
-  "XAUUSD-H8": {
-    id: "XAUUSD-H8",
-    tfFa: "H8",
-    kJump: 2.6,
-    bvWin: 89,
-    slK: 2.058,
-    rr: 1,
-    maxHold: 34,
-    approachFrac: 0.85
-  }
-};
 function smaConvolve(x, p) {
   const n = x.length;
   const out = new Array(n).fill(0);
@@ -5423,88 +5452,137 @@ function s950Features(candles, cfg) {
   for (let t = W + 1; t < n; t++) drift[t] = candles[t - 1].close - candles[t - (W + 1)].close;
   return { r, sigmaBv, atrPx, drift };
 }
-function computeS950(candles, cfg) {
+
+// ../web_tool/src/kyle_intrabar_s965.ts
+var GOLD_PIP4 = 0.1;
+var S965_CFG = {
+  // تنها کارتِ ACCEPT در کلِ ۱۹ تایم‌فریم. عددها از
+  // results/_scan_S965/H8.json::member (فینالیستِ Path C، صفر تیونِ پس از کشف).
+  "XAUUSD-H8": {
+    id: "XAUUSD-H8",
+    tfFa: "H8",
+    theta: 2.618,
+    rhoMin: 0.618,
+    atrWin: 21,
+    kSl: 1.272,
+    kTp: 2.058,
+    maxHold: 16,
+    warm: 250,
+    approachFrac: 0.85
+  }
+};
+function rollMean(x, w) {
+  const n = x.length;
+  const out = new Array(n).fill(0);
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    acc += x[i];
+    if (i >= w) acc -= x[i - w];
+    out[i] = acc / w;
+  }
+  return out;
+}
+function s965Features(candles, cfg) {
   const n = candles.length;
-  const warm = cfg.bvWin + 2;
+  const W = cfg.atrWin;
+  const trArr2 = new Array(n).fill(0);
+  for (let t = 1; t < n; t++) {
+    const h = candles[t].high, l = candles[t].low, pc = candles[t - 1].close;
+    trArr2[t] = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+  }
+  const atr2 = rollMean(trArr2, W);
+  const atrPrev = new Array(n).fill(0);
+  if (n > 0) atrPrev[0] = atr2[0];
+  for (let t = 1; t < n; t++) atrPrev[t] = atr2[t - 1];
+  const rng = new Array(n).fill(0);
+  const rho = new Array(n).fill(0);
+  const bodySgn = new Array(n).fill(0);
+  for (let t = 0; t < n; t++) {
+    const c = candles[t];
+    const r = c.high - c.low;
+    rng[t] = r;
+    const body2 = c.close - c.open;
+    rho[t] = r > 0 ? Math.abs(body2) / r : 0;
+    bodySgn[t] = body2 > 0 ? 1 : body2 < 0 ? -1 : 0;
+  }
+  return { atrPrev, rng, rho, bodySgn };
+}
+function computeS965(candles, cfg) {
+  const n = candles.length;
+  const minBars = cfg.atrWin + 2;
   const emptyInd = [
     { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
   ];
-  if (n < warm + 2) {
+  if (n < minBars + 2) {
     return {
       active: false,
       approaching: false,
       direction: "LONG",
-      slDist: 242 * GOLD_PIP4,
-      tpDist: 242 * GOLD_PIP4,
+      slDist: 138 * GOLD_PIP4,
+      tpDist: 223 * GOLD_PIP4,
       maxHoldBars: cfg.maxHold,
-      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 ${warm} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 H8 \u0628\u0631\u0627\u06CC \u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 \u03C3_BV(${cfg.bvWin}) \u0648 ATR(${cfg.bvWin}) \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F (\u0645\u0648\u062C\u0648\u062F: ${n}).`,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0628\u0631\u0627\u06CC ATR(${cfg.atrWin}) \u0639\u0644\u0651\u06CC \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F (\u0645\u0648\u062C\u0648\u062F: ${n}).`,
       indicators: emptyInd
     };
   }
-  const f = s950Features(candles, cfg);
+  const f = s965Features(candles, cfg);
   const i = n - 1;
-  const rNow = f.r[i];
-  const sig = f.sigmaBv[i];
-  const dr = f.drift[i];
-  const atr2 = f.atrPx[i];
-  const valid = i >= warm && sig > 0;
-  const slPip = Math.max(cfg.slK * atr2 / GOLD_PIP4, 1e-9);
-  const tpPip = slPip * cfg.rr;
+  const atrPrev = f.atrPrev[i];
+  const rng = f.rng[i];
+  const rho = f.rho[i];
+  const sgn = f.bodySgn[i];
+  const valid = atrPrev > 1e-12 && rng > 0;
+  const slPip = Math.max(cfg.kSl * atrPrev / GOLD_PIP4, 1e-9);
+  const tpPip = Math.max(cfg.kTp * atrPrev / GOLD_PIP4, 1e-9);
   const slDist = slPip * GOLD_PIP4;
   const tpDist = tpPip * GOLD_PIP4;
-  const thr = cfg.kJump * sig;
-  const jumpUp = valid && rNow > thr;
-  const jumpDn = valid && rNow < -thr;
-  const longSig = jumpUp && dr > 0;
-  const shortSig = jumpDn && dr < 0;
-  const active = longSig || shortSig;
-  const direction = shortSig ? "SHORT" : "LONG";
-  const nearUp = valid && !active && rNow > cfg.approachFrac * thr && rNow <= thr && dr > 0;
-  const nearDn = valid && !active && rNow < -cfg.approachFrac * thr && rNow >= -thr && dr < 0;
-  const approaching = nearUp || nearDn;
-  const rBp = rNow * 1e4;
-  const thrBp = thr * 1e4;
-  const ratio = thr > 0 ? Math.abs(rNow) / thr : 0;
+  const thr = cfg.theta * atrPrev;
+  const isShock = valid && rng >= thr;
+  const isPermanent = rho >= cfg.rhoMin;
+  const active = isShock && isPermanent && sgn !== 0;
+  const direction = active && sgn < 0 ? "SHORT" : "LONG";
+  const approaching = valid && !active && !isShock && rng >= cfg.approachFrac * thr && isPermanent && sgn !== 0;
+  const ratio = thr > 0 ? rng / thr : 0;
   const indicators = [
     {
-      name: `\u0628\u0627\u0632\u062F\u0647\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 (r) \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u062C\u0647\u0634 \xB1${cfg.kJump}\xB7\u03C3_BV(${cfg.bvWin})`,
-      value: valid ? `${rBp.toFixed(1)} / \xB1${thrBp.toFixed(1)} bp (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647)` : "\u2014",
-      status: jumpUp || jumpDn ? "ok" : approaching ? "neutral" : "bad"
+      name: `\u0631\u0646\u062C\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${cfg.theta}\xD7ATR${cfg.atrWin}[i\u22121])`,
+      value: valid ? `${(rng / GOLD_PIP4).toFixed(1)} / ${(thr / GOLD_PIP4).toFixed(1)} pip (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647)` : "\u2014",
+      status: isShock ? "ok" : approaching ? "neutral" : "bad"
     },
     {
-      name: `\u03C3_BV(${cfg.bvWin}) \u2014 \u0646\u0648\u0633\u0627\u0646\u0650 \u067E\u0627\u06CC\u0647\u0654 Bipower (\u0645\u0642\u0627\u0648\u0645 \u0628\u0647 \u062C\u0647\u0634\u060C \u0639\u0644\u0651\u06CC)`,
-      value: valid ? `${(sig * 1e4).toFixed(2)} bp` : "\u2014",
-      status: "neutral"
+      name: `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 = |close\u2212open| \xF7 (high\u2212low) \u2014 \u06A9\u0641\u0650 ${cfg.rhoMin}`,
+      value: valid ? `${rho.toFixed(3)}` : "\u2014",
+      status: isPermanent ? "ok" : "bad"
     },
     {
-      name: `\u0631\u0627\u0646\u0634\u0650 \u0631\u0698\u06CC\u0645\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC (close[t\u22121] \u2212 close[t\u2212${cfg.bvWin + 1}])`,
-      value: valid ? `${dr >= 0 ? "+" : ""}${dr.toFixed(2)} $` : "\u2014",
-      status: active ? "ok" : jumpUp && dr <= 0 || jumpDn && dr >= 0 ? "bad" : "neutral"
+      name: "\u062C\u0647\u062A\u0650 \u0628\u062F\u0646\u0647\u0654 \u06A9\u0646\u062F\u0644\u0650 \u0634\u0648\u06A9 (\u0627\u062B\u0631\u0650 \u062F\u0627\u0626\u0645\u06CC \u21D2 \u0627\u062F\u0627\u0645\u0647)",
+      value: sgn > 0 ? "\u0635\u0639\u0648\u062F\u06CC (LONG)" : sgn < 0 ? "\u0646\u0632\u0648\u0644\u06CC (SHORT)" : "\u0628\u062F\u0648\u0646\u0650 \u0628\u062F\u0646\u0647 (doji)",
+      status: sgn !== 0 ? "neutral" : "bad"
     },
     {
-      name: `ATR(${cfg.bvWin}) \u2014 \u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A`,
-      value: atr2 > 0 ? `${(atr2 / GOLD_PIP4).toFixed(1)} pip` : "\u2014",
+      name: `ATR(${cfg.atrWin}) \u0639\u0644\u0651\u06CC \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631`,
+      value: atrPrev > 0 ? `${(atrPrev / GOLD_PIP4).toFixed(1)} pip` : "\u2014",
       status: "neutral"
     },
     {
       name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A)",
-      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (\u0646\u0633\u0628\u062A ${cfg.rr} \u2014 \u0645\u062A\u0642\u0627\u0631\u0646)`,
+      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (\u0646\u0633\u0628\u062A ${(cfg.kTp / cfg.kSl).toFixed(3)} \u21D2 TP>SL)`,
       status: "ok"
     }
   ];
   let reason;
   if (active) {
     const side = direction === "LONG" ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634";
-    const jdir = direction === "LONG" ? "\u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627" : "\u0631\u0648 \u0628\u0647 \u067E\u0627\u06CC\u06CC\u0646";
-    reason = `\u06A9\u0646\u062F\u0644\u0650 H8 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u06CC\u06A9 **\u062C\u0647\u0634\u0650** ${jdir} \u062B\u0628\u062A \u06A9\u0631\u062F: r=${rBp.toFixed(1)} bp \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.kJump}\xB7\u03C3_BV=${thrBp.toFixed(1)} bp (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647) \u2014 \u0648 \u0631\u0627\u0646\u0634\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC\u0650 \u0631\u0698\u06CC\u0645 (${dr >= 0 ? "+" : ""}${dr.toFixed(2)}$) **\u0647\u0645\u200C\u062C\u0647\u062A** \u0627\u0633\u062A \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647: \u062C\u0647\u0634\u0650 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u0628\u0627 \u0631\u0627\u0646\u0634 \u0631\u0648\u06CC H8 \u0627\u062F\u0627\u0645\u0647 \u0645\u06CC\u200C\u06CC\u0627\u0628\u062F (\u06F2\u06F2\u06F4 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F5 \u0633\u0627\u0644 \xB7 WR=\u06F6\u06F1.\u06F6\u066A \xB7 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 RQS2 \u067E\u0627\u0633\u060C z=\u06F3.\u06F3\u06F4 \u067E\u0627\u06CC\u062F\u0627\u0631 \u0631\u0648\u06CC \u06F4 seed\u061B \u0622\u0632\u0645\u0648\u0646\u0650 \u06A9\u0646\u062A\u0631\u0644 \u0628\u0627 \u0631\u0627\u0646\u0634\u0650 \u0645\u062E\u0627\u0644\u0641 REJECT \u0634\u062F \u21D2 \u0641\u06CC\u0644\u062A\u0631 \u0648\u0627\u0642\u0639\u0627\u064B \u0627\u0637\u0644\u0627\u0639\u0627\u062A \u062F\u0627\u0631\u062F). \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=TP=${slPip.toFixed(1)} pip (${cfg.slK}\xD7ATR(${cfg.bvWin}) \u0647\u0645\u06CC\u0646 \u06A9\u0646\u062F\u0644\u060C \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A).`;
+    const bodyDir = direction === "LONG" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    reason = `\u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u06CC\u06A9 **\u0634\u0648\u06A9\u0650 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631** \u0627\u0633\u062A: \u0631\u0646\u062C ${(rng / GOLD_PIP4).toFixed(1)} pip \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})=${(thr / GOLD_PIP4).toFixed(1)} pip (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647) \u0648 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1=${rho.toFixed(3)} \u2265 ${cfg.rhoMin} \u0628\u0627 \u0628\u062F\u0646\u0647\u0654 ${bodyDir} \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 (Kyle 1985): \u0628\u062F\u0646\u0647\u0654 \u0645\u0627\u0631\u0648\u0628\u0648\u0632\u0648-\u06AF\u0648\u0646\u0647 \u06CC\u0639\u0646\u06CC \u0627\u062B\u0631\u0650 \u0642\u06CC\u0645\u062A\u06CC **\u062F\u0631\u0648\u0646\u0650 \u06A9\u0646\u062F\u0644 \u067E\u0633 \u0646\u06AF\u0631\u0641\u062A** = \u0627\u0645\u0636\u0627\u06CC \u062C\u0631\u06CC\u0627\u0646\u0650 \u0645\u0637\u0644\u0639 \u21D2 \u0627\u062F\u0627\u0645\u0647\u061B \u0633\u0627\u06CC\u0647\u0654 \u0628\u0644\u0646\u062F \u06CC\u0639\u0646\u06CC \u0646\u0648\u06CC\u0632\u0650 \u06AF\u0630\u0631\u0627. (\u06F1\u06F4\u06F6 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \xB7 WR=\u06F5\u06F4.\u06F7\u06F9\u066A \xB7 lift=+\u06F1\u06F2.\u06F8\u06F4pp \xB7 z=\u06F3.\u06F1\u06F4 \xB7 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 RQS2 \u0633\u0628\u0632\u061B \u0622\u0632\u0645\u0648\u0646\u0650 P1: \u0634\u0631\u0637\u0650 \u03C1 \u062E\u0648\u062F\u0634 lift \u0631\u0627 \u0627\u0632 +\u06F1\u06F1.\u06F8\u06F1 \u0628\u0647 +\u06F1\u06F8.\u06F1\u06F6pp \u0628\u0631\u062F \u21D2 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u200C\u0627\u0641\u0632\u0627\u0633\u062A\u060C \u0646\u0647 \u062A\u0648\u0627\u0646\u200C\u0633\u0648\u0632). \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=${slPip.toFixed(1)} / TP=${tpPip.toFixed(1)} pip (${cfg.kSl}\xD7 \u0648 ${cfg.kTp}\xD7ATR(${cfg.atrWin}) \u0639\u0644\u0651\u06CC\u060C \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A).`;
   } else if (approaching) {
-    reason = `\u0628\u0627\u0632\u062F\u0647\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 (${rBp.toFixed(1)} bp) \u0628\u0647 ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u062C\u0647\u0634 (\xB1${thrBp.toFixed(1)} bp) \u0631\u0633\u06CC\u062F\u0647 \u0648 \u0631\u0627\u0646\u0634\u0650 \u0631\u0698\u06CC\u0645 \u0647\u0645\u200C\u062C\u0647\u062A \u0627\u0633\u062A \u2014 \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u062C\u0647\u0634\u0650 \u06A9\u0627\u0645\u0644 (|r| > ${cfg.kJump}\xB7\u03C3_BV) \u0628\u0633\u0627\u0632\u062F \u0648 \u0631\u0627\u0646\u0634 \u0647\u0645\u200C\u062C\u0647\u062A \u0628\u0645\u0627\u0646\u062F\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+    reason = `\u0631\u0646\u062C\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 (${(rng / GOLD_PIP4).toFixed(1)} pip) \u0628\u0647 ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${(thr / GOLD_PIP4).toFixed(1)} pip) \u0631\u0633\u06CC\u062F\u0647 \u0648 \u0628\u062F\u0646\u0647 \u0647\u0645\u200C\u0627\u06A9\u0646\u0648\u0646 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 \u0627\u0633\u062A (\u03C1=${rho.toFixed(3)}). \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 (\u0631\u0646\u062C \u2265 ${cfg.theta}\xD7ATR) \u0628\u0627 \u0647\u0645\u06CC\u0646 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u0628\u0633\u0627\u0632\u062F\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
   } else if (!valid) {
-    reason = `\u03C3_BV \u0647\u0646\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 ${warm} \u06A9\u0646\u062F\u0644\u06CC \u06CC\u0627 \u0646\u0648\u0633\u0627\u0646\u0650 \u0635\u0641\u0631) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
-  } else if (jumpUp || jumpDn) {
-    reason = `\u062C\u0647\u0634 \u0631\u062E \u062F\u0627\u062F (r=${rBp.toFixed(1)} bp \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \xB1${thrBp.toFixed(1)} bp) \u0648\u0644\u06CC \u0631\u0627\u0646\u0634\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC (${dr >= 0 ? "+" : ""}${dr.toFixed(2)}$) **\u0645\u062E\u0627\u0644\u0641** \u0627\u0633\u062A \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F. \u0627\u06CC\u0646 \u062F\u0642\u06CC\u0642\u0627\u064B \u0647\u0645\u0627\u0646 \u0641\u06CC\u0644\u062A\u0631\u06CC \u0627\u0633\u062A \u06A9\u0647 DD \u0631\u0627 \u0627\u0632 \u06F8.\u06F5\u06F9\u066A \u0628\u0647 \u06F4.\u06F9\u06F2\u066A \u0622\u0648\u0631\u062F \u0648 \u0622\u0632\u0645\u0648\u0646\u0650 \u06A9\u0646\u062A\u0631\u0644 \u0646\u0634\u0627\u0646 \u062F\u0627\u062F \u062C\u0647\u0634\u0650 \u062E\u0644\u0627\u0641\u0650 \u0631\u0627\u0646\u0634 \u0644\u0628\u0647 \u0646\u062F\u0627\u0631\u062F (z=\u06F1.\u06F6\u06F6 REJECT).`;
+    reason = `ATR(${cfg.atrWin}) \u0647\u0646\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646 \u06CC\u0627 \u0631\u0646\u062C\u0650 \u0635\u0641\u0631) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
+  } else if (isShock && !isPermanent) {
+    reason = `\u0634\u0648\u06A9 \u0631\u062E \u062F\u0627\u062F (\u0631\u0646\u062C ${(rng / GOLD_PIP4).toFixed(1)} pip \u2265 ${(thr / GOLD_PIP4).toFixed(1)} pip) \u0648\u0644\u06CC \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u06A9\u0645 \u0627\u0633\u062A: \u03C1=${rho.toFixed(3)} < ${cfg.rhoMin} \u2014 \u06CC\u0639\u0646\u06CC \u0642\u06CC\u0645\u062A **\u062F\u0631\u0648\u0646\u0650 \u0647\u0645\u0627\u0646 \u06A9\u0646\u062F\u0644** \u0628\u062E\u0634\u0650 \u0628\u0632\u0631\u06AF\u06CC \u0627\u0632 \u062D\u0631\u06A9\u062A \u0631\u0627 \u067E\u0633 \u06AF\u0631\u0641\u062A (\u0633\u0627\u06CC\u0647\u0654 \u0628\u0644\u0646\u062F) \u21D2 \u0627\u0645\u0636\u0627\u06CC \u062C\u0631\u06CC\u0627\u0646\u0650 **\u0646\u0648\u06CC\u0632**\u060C \u0646\u0647 \u0645\u0637\u0644\u0639 \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F. \u0647\u0645\u06CC\u0646 \u0634\u0631\u0637 \u0627\u0633\u062A \u06A9\u0647 lift \u0631\u0627 +\u06F6.\u06F3pp \u0628\u0627\u0644\u0627 \u0628\u0631\u062F (\u0622\u0632\u0645\u0648\u0646\u0650 P1).`;
   } else {
-    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 \u0627\u062E\u06CC\u0631 \u062C\u0647\u0634 \u0646\u06CC\u0633\u062A: |r|=${Math.abs(rBp).toFixed(1)} bp \u06CC\u0639\u0646\u06CC ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.kJump}\xB7\u03C3_BV(${cfg.bvWin})=${thrBp.toFixed(1)} bp. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (~\u06F1\u06F4 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644) \u2014 \u0628\u06CC\u0634\u062A\u0631\u0650 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u0648 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A.`;
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 \u0627\u062E\u06CC\u0631 \u0634\u0648\u06A9 \u0646\u06CC\u0633\u062A: \u0631\u0646\u062C ${(rng / GOLD_PIP4).toFixed(1)} pip \u06CC\u0639\u0646\u06CC ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.theta}\xD7ATR(${cfg.atrWin})=${(thr / GOLD_PIP4).toFixed(1)} pip. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (~\u06F9 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644) \u2014 \u0628\u06CC\u0634\u062A\u0631\u0650 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u0648 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A.`;
   }
   return {
     active,
@@ -5514,12 +5592,12 @@ function computeS950(candles, cfg) {
     tpDist,
     maxHoldBars: cfg.maxHold,
     reason,
-    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u062C\u0647\u0634\u0650 \u06A9\u0627\u0645\u0644 (|r| > ${cfg.kJump}\xB7\u03C3_BV) \u0647\u0645\u200C\u062C\u0647\u062A \u0628\u0627 \u0631\u0627\u0646\u0634\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F` : void 0,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 (\u0631\u0646\u062C \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})) \u0628\u0627 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 \u2265 ${cfg.rhoMin} \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F` : void 0,
     indicators
   };
 }
-function decideS950(cfg, a, candles, capital = 1e4, riskPct = 1) {
-  const raw2 = computeS950(candles, cfg);
+function decideS965(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS965(candles, cfg);
   const price = a.price;
   const reg = {
     regime: raw2.direction === "SHORT" ? "trend_down" : "trend_up",
@@ -5527,28 +5605,2642 @@ function decideS950(cfg, a, candles, capital = 1e4, riskPct = 1) {
     trendy: true,
     adx: 0,
     activeStream: raw2.direction === "SHORT" ? "bear" : "bull",
-    bucket: `s950_${cfg.tfFa.toLowerCase()}`
+    bucket: `s965_${cfg.tfFa.toLowerCase()}`
   };
   const slPipShow = Math.round(raw2.slDist / GOLD_PIP4 * 10) / 10;
   const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP4 * 10) / 10;
   const meta = {
-    code: "S950",
-    name: `\u067E\u0633\u200C\u0644\u0631\u0632\u0647\u0654 \u062C\u0647\u0634\u060C \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u0628\u0627 \u0631\u0627\u0646\u0634 (${cfg.tfFa})`,
-    kind: "jump_aftermath",
+    code: "S965",
+    name: `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC\u0650 \u062F\u0631\u0648\u0646-\u06A9\u0646\u062F\u0644\u06CC\u0650 \u0634\u0648\u06A9\u0650 \u06A9\u0627\u06CC\u0644 (${cfg.tfFa})`,
+    kind: "kyle_permanence",
     manageStyle: "fixed-tp-sl",
-    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=TP=${slPipShow} pip (${cfg.slK}\xD7ATR(${cfg.bvWin}) \u06A9\u0646\u062F\u0644\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u061B \u0645\u06CC\u0627\u0646\u0647\u0654 \u062A\u0627\u0631\u06CC\u062E\u06CC \u2248\u06F2\u06F4\u06F2 pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 H8 (\u2248\u06F1\u06F1 \u0631\u0648\u0632) \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u062C\u0647\u0634\u0650 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F \u2014 \u0648\u06AF\u0631\u0646\u0647 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A. \u26A0\uFE0F \u0628\u0647\u0628\u0648\u062F\u0647\u0627\u06CC BE/trailing \u062F\u0631 \u0622\u0632\u0645\u0648\u0646 **\u0645\u0647\u0627\u0631\u062A \u0631\u0627 \u0646\u0627\u0628\u0648\u062F \u06A9\u0631\u062F\u0646\u062F** (\u067E\u0633\u200C\u0644\u0631\u0632\u0647 \u0632\u0645\u0627\u0646 \u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u062F) \u21D2 \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC \u0646\u06A9\u0646\u061B \u0641\u0642\u0637 TP/SL/\u0632\u0645\u0627\u0646.`,
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=${slPipShow} / TP=${tpPipShow} pip (${cfg.kSl}\xD7 \u0648 ${cfg.kTp}\xD7ATR(${cfg.atrWin}) **\u06A9\u0646\u062F\u0644\u0650 i\u22121**\u061B \u0645\u06CC\u0627\u0646\u0647\u0654 \u062A\u0627\u0631\u06CC\u062E\u06CC \u2248\u06F1\u06F3\u06F8/\u06F2\u06F2\u06F3 pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} (\u2248\u06F5.\u06F3 \u0631\u0648\u0632) \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u0634\u0648\u06A9\u0650 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F \u2014 \u0648\u06AF\u0631\u0646\u0647 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A. \u26A0\uFE0F \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC (BE/trailing) \u0622\u0632\u0645\u0648\u062F\u0647 \u0648 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u21D2 \u0641\u0642\u0637 TP/SL/\u0632\u0645\u0627\u0646.`,
     filters: [
-      `\u062C\u0647\u0634: |r| > ${cfg.kJump}\xB7\u03C3_BV(${cfg.bvWin}) \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 H8 (\u03C3_BV \u0639\u0644\u0651\u06CC \u2014 Bipower \u062A\u0627 t\u22121)`,
-      `\u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u06CC\u06CC \u0628\u0627 \u0631\u0627\u0646\u0634\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC\u0650 \u0631\u0698\u06CC\u0645 (\u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u0646\u062A\u0631\u0644\u200C\u0634\u062F\u0647: \u0645\u06A9\u0645\u0644\u0634 REJECT)`,
-      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0645\u062A\u0642\u0627\u0631\u0646 SL=TP=${cfg.slK}\xD7ATR(${cfg.bvWin}) \u2014 \u0635\u0641\u0631 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC`,
-      "\u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (\u0628\u06CC\u0634\u06CC\u0646\u0647 \u0647\u0645\u0632\u0645\u0627\u0646\u06CC = \u06F1) \xB7 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F: ~\u06F1\u06F4 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644"
+      `\u0634\u0648\u06A9\u0650 \u0631\u0646\u062C: high\u2212low \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})[i\u22121] (ATR \u0639\u0644\u0651\u06CC \u2014 \u0634\u0648\u06A9 \u062E\u0648\u062F\u0634 \u0631\u0627 \u0622\u0644\u0648\u062F\u0647 \u0646\u0645\u06CC\u200C\u06A9\u0646\u062F)`,
+      `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 = |close\u2212open|\xF7(high\u2212low) \u2265 ${cfg.rhoMin} (\u0628\u062F\u0646\u0647\u0654 \u0645\u0627\u0631\u0648\u0628\u0648\u0632\u0648-\u06AF\u0648\u0646\u0647 = \u0627\u062B\u0631\u0650 \u062F\u0627\u0626\u0645\u06CC)`,
+      "\u062C\u0647\u062A = follow (\u0647\u0645\u200C\u062C\u0647\u062A \u0628\u0627 \u0628\u062F\u0646\u0647) \u2014 \u0628\u0627\u0632\u0648\u06CC against \u0648 \u0628\u0627\u0632\u0648\u06CC lo \u0647\u0631 \u062F\u0648 \u062F\u0631 \u06A9\u0634\u0641 \u0628\u0627\u062E\u062A\u0646\u062F",
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0646\u0627\u0645\u062A\u0642\u0627\u0631\u0646\u0650 TP>SL (${cfg.kSl}/${cfg.kTp}) \u21D2 \u0635\u0641\u0631 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC \xB7 \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 \xB7 ~\u06F9 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644`
     ]
   };
   return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
 }
 
-// ../web_tool/src/strategy_registry.ts
+// ../web_tool/src/informed_fresh_high_s1520.ts
 var GOLD_PIP5 = 0.1;
+var S1520_CFG = {
+  // تنها کارتِ ACCEPT از سه کارتِ پیش‌ثبت‌شده (H8/H4/H12).
+  // اعداد از results/_s1520/XAUUSD_H8_gated.json و results/_s1520_parity/XAUUSD_H8.json
+  // (گیتِ سلامت: n_signals 222 · n_trades 147 · WR 59.86 · SL 179.67 · TP 269.50 — همه OK).
+  "XAUUSD-H8": {
+    id: "XAUUSD-H8",
+    tfFa: "H8",
+    lookback: 90,
+    rhoMin: 0.618,
+    atrP: 100,
+    slK: 1.5,
+    rr: 1.5,
+    slPip: 179.67,
+    tpPip: 269.5,
+    maxHold: 96,
+    approachFrac: 0.995,
+    rqs2: 90.6
+  }
+};
+function atrWilderS1520(candles, p) {
+  const n = candles.length;
+  const out = new Array(n).fill(NaN);
+  if (n === 0) return out;
+  const alpha = 1 / p;
+  let prev = candles[0].high - candles[0].low;
+  out[0] = prev;
+  for (let i = 1; i < n; i++) {
+    const h = candles[i].high, l = candles[i].low, pc = candles[i - 1].close;
+    const tr = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+    prev = alpha * tr + (1 - alpha) * prev;
+    out[i] = prev;
+  }
+  return out;
+}
+function s1520Features(candles, cfg) {
+  const n = candles.length;
+  const L = cfg.lookback;
+  const priorMax = new Array(n).fill(NaN);
+  for (let i = L; i < n; i++) {
+    let m = -Infinity;
+    for (let j = i - L; j <= i - 1; j++) if (candles[j].close > m) m = candles[j].close;
+    priorMax[i] = m;
+  }
+  const rho = new Array(n).fill(0);
+  for (let i = 0; i < n; i++) {
+    const c = candles[i];
+    const rng = c.high - c.low;
+    rho[i] = rng > 0 ? (c.close - c.open) / rng : 0;
+  }
+  const atr2 = atrWilderS1520(candles, cfg.atrP);
+  const nh = new Array(n).fill(false);
+  for (let i = 0; i < n; i++) {
+    nh[i] = isFinite(priorMax[i]) && candles[i].close > priorMax[i];
+  }
+  const fresh = new Array(n).fill(false);
+  const gated = new Array(n).fill(false);
+  for (let i = 0; i < n; i++) {
+    fresh[i] = nh[i] && !(i > 0 ? nh[i - 1] : false);
+    gated[i] = fresh[i] && rho[i] >= cfg.rhoMin;
+  }
+  return { priorMax, rho, atr: atr2, fresh, gated };
+}
+function computeS1520(candles, cfg) {
+  const n = candles.length;
+  const minBars = cfg.lookback + cfg.atrP;
+  const slDist = cfg.slPip * GOLD_PIP5;
+  const tpDist = cfg.tpPip * GOLD_PIP5;
+  if (n < minBars) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F (\u0633\u0642\u0641\u0650 \u063A\u0644\u062A\u0627\u0646\u0650 ${cfg.lookback} \u06A9\u0646\u062F\u0644\u06CC + \u0647\u0645\u200C\u06AF\u0631\u0627\u06CC\u06CC\u0650 ATR(${cfg.atrP})) \u2014 \u0645\u0648\u062C\u0648\u062F: ${n}.`,
+      indicators: [{ name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }]
+    };
+  }
+  const f = s1520Features(candles, cfg);
+  const i = n - 1;
+  const close = candles[i].close;
+  const pMax = f.priorMax[i];
+  const rho = f.rho[i];
+  const atrNow = f.atr[i];
+  const isFreshHigh = f.fresh[i];
+  const isInformed = rho >= cfg.rhoMin;
+  const active = f.gated[i];
+  const nearHigh = isFinite(pMax) && !isFreshHigh && close >= cfg.approachFrac * pMax && close <= pMax;
+  const approaching = nearHigh;
+  const distPip = isFinite(pMax) ? (pMax - close) / GOLD_PIP5 : NaN;
+  const pctOfHigh = isFinite(pMax) && pMax > 0 ? close / pMax * 100 : NaN;
+  const indicators = [
+    {
+      name: `\u0633\u0642\u0641\u0650 close\u0650 ${cfg.lookback} \u06A9\u0646\u062F\u0644\u0650 \u06AF\u0630\u0634\u062A\u0647 (\u0639\u0644\u0651\u06CC \u2014 \u0628\u062F\u0648\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC)`,
+      value: isFinite(pMax) ? `${pMax.toFixed(2)}$ \xB7 \u0641\u0627\u0635\u0644\u0647\u0654 close: ${distPip > 0 ? "+" : ""}${(-distPip).toFixed(1)} pip (${pctOfHigh.toFixed(2)}\u066A \u0633\u0642\u0641)` : "\u2014",
+      status: isFreshHigh ? "ok" : nearHigh ? "neutral" : "bad"
+    },
+    {
+      name: "\u0644\u0628\u0647\u0654 **\u062A\u0627\u0632\u0647** (\u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0633\u0642\u0641\u200C\u0634\u06A9\u0646 \u0646\u0628\u0648\u062F\u0647 \u2014 \u0631\u0648\u06CC\u062F\u0627\u062F\u060C \u0646\u0647 \u062D\u0627\u0644\u062A)",
+      value: isFreshHigh ? "\u0628\u0644\u0647 \u2014 \u0647\u0645\u06CC\u0646 \u06A9\u0646\u062F\u0644 \u0646\u062E\u0633\u062A\u06CC\u0646 \u0634\u06A9\u0633\u062A \u0627\u0633\u062A" : "\u062E\u06CC\u0631",
+      status: isFreshHigh ? "ok" : "bad"
+    },
+    {
+      name: `\u06A9\u06CC\u0641\u06CC\u062A\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0645\u0637\u0644\u0639 \u03C1 = (close\u2212open) \xF7 (high\u2212low) \u2014 \u06A9\u0641\u0650 ${cfg.rhoMin}`,
+      value: `${rho.toFixed(3)}${rho < 0 ? " (\u06A9\u0646\u062F\u0644\u0650 \u0646\u0632\u0648\u0644\u06CC)" : ""}`,
+      status: isInformed ? "ok" : "bad"
+    },
+    {
+      name: `ATR(${cfg.atrP}) \u0648\u06CC\u0644\u062F\u0631\u0650 \u062C\u0627\u0631\u06CC (\u0641\u0642\u0637 \u0634\u0641\u0627\u0641\u06CC\u062A \u2014 \u0647\u0646\u062F\u0633\u0647 \u0645\u0646\u062C\u0645\u062F \u0627\u0633\u062A)`,
+      value: isFinite(atrNow) ? `${(atrNow / GOLD_PIP5).toFixed(1)} pip` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0645\u0646\u062C\u0645\u062F \u0627\u0632 \u0645\u06CC\u0627\u0646\u0647\u0654 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644)",
+      value: `${cfg.slPip} / ${cfg.tpPip} pip (\u0646\u0633\u0628\u062A ${cfg.rr} \u21D2 TP>SL)`,
+      status: "ok"
+    }
+  ];
+  let reason;
+  if (active) {
+    reason = `\u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u06CC\u06A9 **\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u0645\u0637\u0644\u0639** \u0633\u0627\u062E\u062A: close=${close.toFixed(2)}$ \u0627\u0632 \u0633\u0642\u0641\u0650 close\u0650 ${cfg.lookback} \u06A9\u0646\u062F\u0644\u0650 \u06AF\u0630\u0634\u062A\u0647 (${pMax.toFixed(2)}$) \u06AF\u0630\u0634\u062A \u0648 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0633\u0642\u0641\u200C\u0634\u06A9\u0646 **\u0646\u0628\u0648\u062F** (\u0644\u0628\u0647\u0654 \u062A\u0627\u0632\u0647\u060C \u0646\u0647 \u0627\u062F\u0627\u0645\u0647\u0654 \u06CC\u06A9 \u06AF\u0631\u062F\u0634)\u060C \u0648 \u06A9\u06CC\u0641\u06CC\u062A\u0650 \u06A9\u0646\u062F\u0644 \u03C1=${rho.toFixed(3)} \u2265 ${cfg.rhoMin} \u0627\u0633\u062A \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 **\u062E\u0631\u06CC\u062F**. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 (Kyle 1985 \u0631\u0648\u06CC \u0644\u0646\u06AF\u0631\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC): \u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647 \xAB\u06A9\u062C\u0627\xBB \u0631\u0627 \u0645\u06CC\u200C\u06AF\u0648\u06CC\u062F \u0648 \u03C1 \xAB\u0686\u06AF\u0648\u0646\u0647\xBB \u0631\u0627 \u2014 \u0633\u0642\u0641\u06CC \u06A9\u0647 \u0628\u0627 \u0628\u062F\u0646\u0647\u0654 \u067E\u064F\u0631 \u0628\u0633\u062A\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u062C\u0631\u06CC\u0627\u0646\u0650 \u0633\u0641\u0627\u0631\u0634\u0650 **\u0645\u0637\u0644\u0639** \u0627\u0633\u062A \u0648 \u0627\u062B\u0631\u0634 \u0645\u06CC\u200C\u0645\u0627\u0646\u062F\u061B \u0633\u0642\u0641\u06CC \u0628\u0627 \u0633\u0627\u06CC\u0647\u0654 \u0628\u0627\u0644\u0627\u06CC\u06CC\u0650 \u0628\u0644\u0646\u062F \u0634\u06A9\u0633\u062A\u0650 **\u0631\u062F\u200C\u0634\u062F\u0647** \u0627\u0633\u062A. (\u06F1\u06F4\u06F7 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \xB7 WR=\u06F5\u06F9.\u06F8\u06F6\u066A \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0633\u0631\u0628\u0647\u200C\u0633\u0631\u0650 \u06F4\u06F0.\u06F7\u06F3\u066A \xB7 lift=+\u06F1\u06F9.\u06F1\u06F3pp \xB7 z=\u06F3.\u06F8\u06F3 \xB7 PF=\u06F2.\u06F3\u06F1 \xB7 RQS2=${cfg.rqs2} \u0628\u0627 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647 \u0633\u0628\u0632\u061B \u0622\u0632\u0645\u0648\u0646\u0650 P1: \u0647\u0645\u06CC\u0646 \u06AF\u06CC\u062A\u0650 \u03C1 lift\u0650 \u0648\u0627\u0644\u062F S526 \u0631\u0627 \u0627\u0632 +\u06F1\u06F4.\u06F7\u06F7 \u0628\u0647 +\u06F1\u06F9.\u06F1\u06F3pp \u0628\u0631\u062F \u21D2 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u200C\u0627\u0641\u0632\u0627\u0633\u062A \u0646\u0647 \u062A\u0648\u0627\u0646\u200C\u0633\u0648\u0632\u060C \u0648 \u0628\u0627\u0632\u0648\u06CC \u0645\u06A9\u0645\u0644\u0650 \u03C1<${cfg.rhoMin} \u0641\u0642\u0637 +\u06F1\u06F0.\u06F2\u06F7 \u06AF\u0631\u0641\u062A). \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=${cfg.slPip} / TP=${cfg.tpPip} pip.`;
+  } else if (approaching) {
+    reason = `\u0642\u06CC\u0645\u062A \u0628\u0647 \u0633\u0642\u0641\u0650 close\u0650 ${cfg.lookback} \u06A9\u0646\u062F\u0644\u06CC \u0646\u0632\u062F\u06CC\u06A9 \u0634\u062F\u0647 \u0627\u0645\u0627 \u0627\u0632 \u0622\u0646 \u0646\u06AF\u0630\u0634\u062A\u0647 \u0627\u0633\u062A: close=${close.toFixed(2)}$ \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0633\u0642\u0641\u0650 ${pMax.toFixed(2)}$ (\u0641\u0627\u0635\u0644\u0647 ${distPip.toFixed(1)} pip\u060C ${pctOfHigh.toFixed(2)}\u066A \u0633\u0642\u0641). \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u06CC **\u0628\u0627\u0644\u0627\u06CC** \u0627\u06CC\u0646 \u0633\u0642\u0641 \u0628\u0628\u0646\u062F\u062F **\u0648** \u0628\u062F\u0646\u0647\u200C\u0627\u0634 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${(cfg.rhoMin * 100).toFixed(1)}\u066A \u062F\u0627\u0645\u0646\u0647\u0654 \u0647\u0645\u0627\u0646 \u06A9\u0646\u062F\u0644 \u0628\u0627\u0634\u062F (\u03C1 \u2265 ${cfg.rhoMin})\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (isFreshHigh && !isInformed) {
+    reason = `\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647 **\u0631\u062E \u062F\u0627\u062F** (close=${close.toFixed(2)}$ > ${pMax.toFixed(2)}$) \u0648\u0644\u06CC \u06A9\u0646\u062F\u0644 **\u0645\u0637\u0644\u0639 \u0646\u06CC\u0633\u062A**: \u03C1=${rho.toFixed(3)} < ${cfg.rhoMin} \u2014 \u06CC\u0639\u0646\u06CC \u0642\u06CC\u0645\u062A \u0628\u062E\u0634\u0650 \u0628\u0632\u0631\u06AF\u06CC \u0627\u0632 \u062D\u0631\u06A9\u062A \u0631\u0627 \u062F\u0631\u0648\u0646\u0650 \u0647\u0645\u0627\u0646 \u06A9\u0646\u062F\u0644 \u067E\u0633 \u062F\u0627\u062F (\u0633\u0627\u06CC\u0647\u0654 \u0628\u0627\u0644\u0627\u06CC\u06CC\u0650 \u0628\u0644\u0646\u062F) \u06CC\u0627 \u06A9\u0646\u062F\u0644 \u0646\u0632\u0648\u0644\u06CC \u0628\u0633\u062A\u0647 \u0634\u062F. \u0627\u06CC\u0646 \xAB\u0634\u06A9\u0633\u062A\u0650 \u0631\u062F\u200C\u0634\u062F\u0647\xBB \u0627\u0633\u062A: \u0628\u0627\u0632\u0627\u0631 \u0633\u0642\u0641\u0650 \u0646\u0648 \u0631\u0627 \u0646\u067E\u0630\u06CC\u0631\u0641\u062A \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F. \u0647\u0645\u06CC\u0646 \u0634\u0631\u0637 \u0627\u0633\u062A \u06A9\u0647 lift \u0631\u0627 \u0627\u0632 +\u06F1\u06F4.\u06F7\u06F7 \u0628\u0647 +\u06F1\u06F9.\u06F1\u06F3pp \u0628\u0631\u062F (\u0622\u0632\u0645\u0648\u0646\u0650 P1) \u0648 \u0628\u0627\u0632\u0648\u06CC \u0645\u06A9\u0645\u0644\u0634 \u0635\u0631\u06CC\u062D\u0627\u064B REJECT \u06AF\u0631\u0641\u062A (lift +\u06F1\u06F0.\u06F2\u06F7 \xB7 z=\u06F1.\u06F3\u06F7).`;
+  } else {
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 \u0627\u062E\u06CC\u0631 \u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647 \u0646\u0633\u0627\u062E\u062A: close=${close.toFixed(2)}$ \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0633\u0642\u0641\u0650 close\u0650 ${cfg.lookback} \u06A9\u0646\u062F\u0644\u06CC ${isFinite(pMax) ? pMax.toFixed(2) + "$" : "\u2014"} (${isFinite(pctOfHigh) ? pctOfHigh.toFixed(2) + "\u066A \u0633\u0642\u0641" : "\u2014"}). \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (~\u06F9.\u06F4 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644) \u2014 \u0628\u06CC\u0634\u062A\u0631\u0650 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u0648 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A.`;
+  }
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06CC\u06A9 \u06A9\u0646\u062F\u0644 **\u0628\u0627\u0644\u0627\u06CC** \u0633\u0642\u0641\u0650 ${cfg.lookback} \u06A9\u0646\u062F\u0644\u06CC \u0628\u0627 \u0628\u062F\u0646\u0647\u0654 \u03C1 \u2265 ${cfg.rhoMin}` : void 0,
+    indicators
+  };
+}
+function decideS1520(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS1520(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s1520_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S1520",
+    name: `\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 ${cfg.lookback}-\u06A9\u0646\u062F\u0644\u06CC \xD7 \u06A9\u0646\u062F\u0644\u0650 \u0645\u0637\u0644\u0639 (${cfg.tfFa})`,
+    kind: "informed_fresh_high",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 **\u0645\u0646\u062C\u0645\u062F** (\u0646\u0647 \u0634\u0646\u0627\u0648\u0631): SL=${cfg.slPip} / TP=${cfg.tpPip} pip \u2014 \u0627\u0632 median(ATR(${cfg.atrP}))\xD7${cfg.slK} \u0631\u0648\u06CC \u06A9\u0644\u0650 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644\u0650 ${cfg.tfFa} \u06AF\u0631\u0641\u062A\u0647 \u0634\u062F\u0647 \u0648 \u062F\u0631 \u0633\u0627\u06CC\u062A \u0628\u0627\u0632\u062A\u0648\u0644\u06CC\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u062F (\u067E\u0646\u062C\u0631\u0647\u0654 \u0633\u0627\u06CC\u062A \u06A9\u0648\u062A\u0627\u0647 \u0627\u0633\u062A) \u21D2 \u0639\u062F\u062F \u0627\u0632 artifact\u0650 \u067E\u0631\u06CC\u062A\u06CC \u0645\u06CC\u200C\u0622\u06CC\u062F. \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP \u06CC\u0627 SL \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0628\u06A9\u200C\u062A\u0633\u062A **\u0647\u06CC\u0686 time-stop \u0646\u062F\u0627\u0634\u062A**\u061B \u0628\u06CC\u0634\u06CC\u0646\u0647\u0654 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC\u0650 \u0645\u0634\u0627\u0647\u062F\u0647\u200C\u0634\u062F\u0647 \u06F6\u06F5 \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0628\u0648\u062F (\u0645\u06CC\u0627\u0646\u0647 \u06F4 \xB7 p95 \u06F2\u06F7). \u0633\u0642\u0641\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u06CC\u0650 \u0633\u0627\u06CC\u062A \u06F1\u06F0\u06F0\u066A \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u0650 \u062F\u0627\u0648\u0631\u06CC\u200C\u0634\u062F\u0647 \u0631\u0627 \u0645\u06CC\u200C\u067E\u0648\u0634\u0627\u0646\u062F\u060C \u067E\u0633 \u0647\u0631\u06AF\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0631\u0627 \u06A9\u0647 \u062D\u06A9\u0645 \u0634\u0645\u0631\u062F\u0647 \u0627\u0633\u062A \u0646\u0645\u06CC\u200C\u0628\u064F\u0631\u062F. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F \u2014 \u0648\u06AF\u0631\u0646\u0647 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A. \u26A0\uFE0F **\u0642\u06CC\u062F\u0650 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u0627 S382-H4:** \u0647\u0645\u200C\u067E\u0648\u0634\u0627\u0646\u06CC\u0650 \u0633\u0646\u062C\u06CC\u062F\u0647\u200C\u0634\u062F\u0647 \u06F5\u06F7.\u06F1\u066A. \u0628\u062E\u0634\u0650 \u063A\u06CC\u0631\u0650 \u0647\u0645\u200C\u067E\u0648\u0634\u0627\u0646 \u0645\u0633\u062A\u0642\u0644\u0627\u064B \u0633\u0648\u062F\u062F\u0647 \u0627\u0633\u062A (lift +\u06F1\u06F3.\u06F2\u06F3pp) \u067E\u0633 \u0644\u0627\u06CC\u0647 \u062D\u0630\u0641 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F\u060C \u0648\u0644\u06CC \u0627\u06AF\u0631 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 H4 \u0628\u0627\u0632\u0633\u062A \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u06AF\u06CC\u0631\u06CC\u062F. \u26A0\uFE0F **S1520 \u062C\u0627\u0646\u0634\u06CC\u0646\u0650 S526 \u0627\u0633\u062A\u060C \u0646\u0647 \u0631\u0642\u06CC\u0628\u0634** (\u06F8\u06F2.\u06F3\u066A \u0648\u0631\u0648\u062F\u0650 \u0645\u0634\u062A\u0631\u06A9): \u0627\u06AF\u0631 \u0631\u0648\u0632\u06CC S526 \u0647\u0645 \u0648\u0635\u0644 \u0634\u0648\u062F\u060C \u0647\u0631\u06AF\u0632 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0634\u0648\u0646\u062F. \u26A0\uFE0F \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC (BE/trailing) \u0622\u0632\u0645\u0648\u062F\u0647 \u0648 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u21D2 \u0641\u0642\u0637 TP/SL.`,
+    filters: [
+      `\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 ${cfg.lookback}-\u06A9\u0646\u062F\u0644\u06CC: close > max(close[i\u2212${cfg.lookback}..i\u22121]) **\u0648** \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0633\u0642\u0641\u200C\u0634\u06A9\u0646 \u0646\u0628\u0648\u062F\u0647 (\u0631\u0648\u06CC\u062F\u0627\u062F\u060C \u0646\u0647 \u062D\u0627\u0644\u062A \u2014 \u0627\u0631\u062B\u06CC \u0627\u0632 S526)`,
+      `\u06AF\u06CC\u062A\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0645\u0637\u0644\u0639: \u03C1 = (close\u2212open) \xF7 (high\u2212low) \u2265 ${cfg.rhoMin} \u0631\u0648\u06CC \u0647\u0645\u0627\u0646 \u06A9\u0646\u062F\u0644 \u2014 **\u0639\u0644\u0627\u0645\u062A\u200C\u062F\u0627\u0631**\u060C \u067E\u0633 \u0628\u062F\u0646\u0647\u0654 \u0635\u0639\u0648\u062F\u06CC \u0644\u0627\u0632\u0645 \u0627\u0633\u062A (\u0627\u0631\u062B\u06CC \u0627\u0632 S965)`,
+      "\u062C\u0647\u062A = LONG-only (\u0642\u0627\u0646\u0648\u0646\u0650 S522/S528) \u2014 \u0647\u06CC\u0686 \u0628\u0627\u0632\u0648\u06CC SHORT\u06CC \u0622\u0632\u0645\u0648\u062F\u0647 \u0646\u0634\u062F",
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0646\u0627\u0645\u062A\u0642\u0627\u0631\u0646\u0650 TP>SL (${cfg.slK}\xD7median(ATR${cfg.atrP}) \u0648 ${cfg.rr}\xD7) \u21D2 \u0635\u0641\u0631 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC \xB7 \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 \xB7 ~\u06F9.\u06F4 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644`,
+      `\u0635\u0641\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u0622\u0632\u0627\u062F: \u067E\u0646\u062C\u0631\u0647\u0654 ${cfg.lookback} \u0627\u0632 S526\u060C \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.rhoMin} \u0627\u0632 S965\u060C \u0647\u0646\u062F\u0633\u0647 \u0627\u0632 S382 \u2014 \u0647\u06CC\u0686 \u0639\u062F\u062F\u06CC \u062F\u0631 \u0627\u06CC\u0646 \u0646\u0634\u0633\u062A \u062C\u0633\u062A\u200C\u0648\u062C\u0648 \u0646\u0634\u062F (\u0636\u062F\u0650 \u0627\u0634\u062A\u0628\u0627\u0647\u0650 \u06F8)`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/volume_fresh_high_s589.ts
+var GOLD_PIP6 = 0.1;
+var S589_CFG = {
+  "XAUUSD-H8": {
+    id: "XAUUSD-H8",
+    tfFa: "H8",
+    lookback: 90,
+    rvolThr: 1,
+    slotWin: 30,
+    slotMinP: 20,
+    atrP: 100,
+    slK: 1.5,
+    rr: 1.5,
+    slPip: 179.67,
+    tpPip: 269.5,
+    // دامِ ⑤ — **عددی بسته شد، حدس نیست.** بک‌تست هیچ time-stop نداشت، پس
+    // maxHold یک پارامترِ حکم **نیست**؛ فقط یک سقفِ ایمنیِ اجرایی است و تنها
+    // شرطش این است که هیچ معاملهٔ داوری‌شده‌ای را نبُرد. توزیعِ واقعیِ
+    // نگه‌داری روی ۱۵۹ معاملهٔ مرجع (results/_s589_parity/XAUUSD_H8.json):
+    //   کمینه ۱ · میانه ۴ · p95 ۳۵ · **بیشینه ۶۵** کندلِ H8
+    // ⇒ سقفِ ۹۶ (=۳۲ روز) صد‌درصدِ معاملاتِ حکم را می‌پوشاند و هرگز معامله‌ای
+    //   را که موتور شمرده کوتاه نمی‌کند. (کپیِ maxHold=16 از S965 اینجا
+    //   ۱۱.۶٪ معاملات را زودتر می‌بست و بی‌صدا هندسهٔ دیگری می‌ساخت.)
+    maxHold: 96,
+    approachFrac: 0.995,
+    rqs2: 88.3
+  },
+  "XAUUSD-H4": {
+    id: "XAUUSD-H4",
+    tfFa: "H4",
+    lookback: 90,
+    rvolThr: 1,
+    slotWin: 30,
+    slotMinP: 20,
+    atrP: 100,
+    slK: 1.5,
+    rr: 1.5,
+    slPip: 122.85,
+    tpPip: 184.28,
+    // دامِ ⑤ روی این کارت — **هندسهٔ زمانیِ H4 با H8 یکی نیست** و کپی‌کردنِ
+    // عددِ کارتِ دیگر همان اشتباهِ رایجِ ۶ است. توزیعِ واقعی روی ۳۲۲ معاملهٔ
+    // مرجع (results/_s589_parity/XAUUSD_H4.json):
+    //   کمینه ۱ · میانه ۴ · p95 ۲۷ · **بیشینه ۱۱۴** کندلِ H4
+    // ⇒ سقفِ ۱۹۲ (=۳۲ روز، همان افقِ تقویمیِ کارتِ H8 ولی با شمارشِ کندلِ
+    //   خودش) صد‌درصدِ معاملاتِ حکم را می‌پوشاند. توجه: عددِ ۹۶ِ کارتِ H8
+    //   اگر اینجا کپی می‌شد، دنبالهٔ معاملاتِ بلندِ H4 را می‌بُرید.
+    maxHold: 192,
+    approachFrac: 0.995,
+    rqs2: 86.3
+  }
+};
+function atrWilderS589(candles, p) {
+  const n = candles.length;
+  const out = new Array(n).fill(NaN);
+  if (n === 0) return out;
+  const alpha = 1 / p;
+  let prev = candles[0].high - candles[0].low;
+  out[0] = prev;
+  for (let i = 1; i < n; i++) {
+    const h = candles[i].high, l = candles[i].low, pc = candles[i - 1].close;
+    const tr = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+    prev = alpha * tr + (1 - alpha) * prev;
+    out[i] = prev;
+  }
+  return out;
+}
+function s589Features(candles, cfg) {
+  const n = candles.length;
+  const L = cfg.lookback;
+  const priorMax = new Array(n).fill(NaN);
+  for (let i = L; i < n; i++) {
+    let m = -Infinity;
+    for (let j = i - L; j <= i - 1; j++) if (candles[j].close > m) m = candles[j].close;
+    priorMax[i] = m;
+  }
+  const slotRef = new Array(n).fill(NaN);
+  const rvol = new Array(n).fill(NaN);
+  const perHour = /* @__PURE__ */ new Map();
+  for (let i = 0; i < n; i++) {
+    const hour = new Date(candles[i].time * 1e3).getUTCHours();
+    const hist = perHour.get(hour) ?? [];
+    if (hist.length >= cfg.slotMinP) {
+      const win = hist.slice(Math.max(0, hist.length - cfg.slotWin));
+      const s = [...win].sort((x, y) => x - y);
+      const mid = s.length >> 1;
+      const med = s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+      slotRef[i] = med;
+      rvol[i] = med > 0 ? (candles[i].volume ?? 0) / med : NaN;
+    }
+    hist.push(candles[i].volume ?? 0);
+    perHour.set(hour, hist);
+  }
+  const atr2 = atrWilderS589(candles, cfg.atrP);
+  const nh = new Array(n).fill(false);
+  for (let i = 0; i < n; i++) {
+    nh[i] = isFinite(priorMax[i]) && candles[i].close > priorMax[i];
+  }
+  const fresh = new Array(n).fill(false);
+  const gated = new Array(n).fill(false);
+  for (let i = 0; i < n; i++) {
+    fresh[i] = nh[i] && !(i > 0 ? nh[i - 1] : false);
+    gated[i] = fresh[i] && isFinite(rvol[i]) && rvol[i] >= cfg.rvolThr;
+  }
+  return { priorMax, rvol, slotRef, atr: atr2, fresh, gated };
+}
+function computeS589(candles, cfg) {
+  const n = candles.length;
+  const minBars = cfg.lookback + cfg.atrP;
+  const slDist = cfg.slPip * GOLD_PIP6;
+  const tpDist = cfg.tpPip * GOLD_PIP6;
+  if (n < minBars) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F (\u0633\u0642\u0641\u0650 \u063A\u0644\u062A\u0627\u0646\u0650 ${cfg.lookback} \u06A9\u0646\u062F\u0644\u06CC + \u0647\u0645\u200C\u06AF\u0631\u0627\u06CC\u06CC\u0650 ATR(${cfg.atrP})) \u2014 \u0645\u0648\u062C\u0648\u062F: ${n}.`,
+      indicators: [{ name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }]
+    };
+  }
+  const f = s589Features(candles, cfg);
+  const i = n - 1;
+  const close = candles[i].close;
+  const pMax = f.priorMax[i];
+  const rv = f.rvol[i];
+  const ref = f.slotRef[i];
+  const vol = candles[i].volume ?? 0;
+  const atrNow = f.atr[i];
+  const hourNow = new Date(candles[i].time * 1e3).getUTCHours();
+  const isFreshHigh = f.fresh[i];
+  const volDefined = isFinite(rv);
+  const isConfirmed = volDefined && rv >= cfg.rvolThr;
+  const active = f.gated[i];
+  const volMissing = !volDefined;
+  const nearHigh = isFinite(pMax) && !isFreshHigh && close >= cfg.approachFrac * pMax && close <= pMax;
+  const approaching = nearHigh;
+  const distPip = isFinite(pMax) ? (pMax - close) / GOLD_PIP6 : NaN;
+  const pctOfHigh = isFinite(pMax) && pMax > 0 ? close / pMax * 100 : NaN;
+  const indicators = [
+    {
+      name: `\u0633\u0642\u0641\u0650 close\u0650 ${cfg.lookback} \u06A9\u0646\u062F\u0644\u0650 \u06AF\u0630\u0634\u062A\u0647 (\u0639\u0644\u0651\u06CC \u2014 \u0628\u062F\u0648\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC)`,
+      value: isFinite(pMax) ? `${pMax.toFixed(2)}$ \xB7 \u0641\u0627\u0635\u0644\u0647\u0654 close: ${(-distPip).toFixed(1)} pip (${pctOfHigh.toFixed(2)}\u066A \u0633\u0642\u0641)` : "\u2014",
+      status: isFreshHigh ? "ok" : nearHigh ? "neutral" : "bad"
+    },
+    {
+      name: "\u0644\u0628\u0647\u0654 **\u062A\u0627\u0632\u0647** (\u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0633\u0642\u0641\u200C\u0634\u06A9\u0646 \u0646\u0628\u0648\u062F\u0647 \u2014 \u0631\u0648\u06CC\u062F\u0627\u062F\u060C \u0646\u0647 \u062D\u0627\u0644\u062A)",
+      value: isFreshHigh ? "\u0628\u0644\u0647 \u2014 \u0647\u0645\u06CC\u0646 \u06A9\u0646\u062F\u0644 \u0646\u062E\u0633\u062A\u06CC\u0646 \u0634\u06A9\u0633\u062A \u0627\u0633\u062A" : "\u062E\u06CC\u0631",
+      status: isFreshHigh ? "ok" : "bad"
+    },
+    {
+      name: `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645: RVOL \u0647\u0645\u200C\u0627\u0633\u0644\u0627\u062A = \u062D\u062C\u0645 \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 ${cfg.slotWin} \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644\u06CC\u0650 \u0633\u0627\u0639\u062A\u0650 ${String(hourNow).padStart(2, "0")}:00 UTC \u2014 \u06A9\u0641\u0650 ${cfg.rvolThr}`,
+      value: volMissing ? "\u062A\u0639\u0631\u06CC\u0641\u200C\u0646\u0634\u062F\u0647 (\u062D\u062C\u0645\u0650 \u0641\u06CC\u062F \u0646\u0627\u06A9\u0627\u0641\u06CC \u06CC\u0627 \u0627\u0633\u0644\u0627\u062A \u06AF\u0631\u0645 \u0646\u0634\u062F\u0647) \u21D2 \u0644\u0627\u06CC\u0647 \u0633\u06A9\u0648\u062A \u0645\u06CC\u200C\u06A9\u0646\u062F" : `${rv.toFixed(3)}  (\u062D\u062C\u0645 ${Math.round(vol).toLocaleString("en-US")} \xF7 \u0645\u06CC\u0627\u0646\u0647 ${Math.round(ref).toLocaleString("en-US")})`,
+      status: volMissing ? "neutral" : isConfirmed ? "ok" : "bad"
+    },
+    {
+      name: `ATR(${cfg.atrP}) \u0648\u06CC\u0644\u062F\u0631\u0650 \u062C\u0627\u0631\u06CC (\u0641\u0642\u0637 \u0634\u0641\u0627\u0641\u06CC\u062A \u2014 \u0647\u0646\u062F\u0633\u0647 \u0645\u0646\u062C\u0645\u062F \u0627\u0633\u062A)`,
+      value: isFinite(atrNow) ? `${(atrNow / GOLD_PIP6).toFixed(1)} pip` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0645\u0646\u062C\u0645\u062F \u0627\u0632 \u0645\u06CC\u0627\u0646\u0647\u0654 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \u2014 \u0645\u062E\u0635\u0648\u0635\u0650 \u0647\u0645\u06CC\u0646 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645)",
+      value: `${cfg.slPip} / ${cfg.tpPip} pip (\u0646\u0633\u0628\u062A ${cfg.rr} \u21D2 TP>SL)`,
+      status: "ok"
+    }
+  ];
+  const reason = active ? `\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 ${cfg.lookback}-\u06A9\u0646\u062F\u0644\u06CC \u0628\u0627 **\u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645** (RVOL \u0647\u0645\u200C\u0627\u0633\u0644\u0627\u062A ${rv.toFixed(2)} \u2265 ${cfg.rvolThr}) \u21D2 \u062C\u0631\u06CC\u0627\u0646\u0650 \u0645\u0637\u0644\u0639\u060C \u0627\u062F\u0627\u0645\u0647.` : volMissing ? `\u062D\u062C\u0645\u0650 \u0647\u0645\u200C\u0627\u0633\u0644\u0627\u062A \u062A\u0639\u0631\u06CC\u0641\u200C\u0646\u0634\u062F\u0647 \u0627\u0633\u062A \u21D2 \u06AF\u06CC\u062A\u0650 \u062D\u0627\u0645\u0644\u0650 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u0650 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0642\u0627\u0628\u0644\u0650 \u0627\u0631\u0632\u06CC\u0627\u0628\u06CC \u0646\u06CC\u0633\u062A \u0648 \u0644\u0627\u06CC\u0647 \u0635\u0627\u062F\u0642\u0627\u0646\u0647 \u0633\u06A9\u0648\u062A \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 **\u0628\u06CC\u200C\u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645** \u0631\u0648\u06CC ${cfg.tfFa} \u0644\u0628\u0647\u0654 \u0633\u0646\u062C\u06CC\u062F\u0647\u200C\u0634\u062F\u0647\u200C\u0627\u0634 \u0635\u0641\u0631/\u0627\u0646\u062F\u06A9 \u0627\u0633\u062A).` : !isFreshHigh ? nearHigh ? `\u0642\u06CC\u0645\u062A \u0628\u0647 ${pctOfHigh.toFixed(2)}\u066A \u0633\u0642\u0641\u0650 ${cfg.lookback}-\u06A9\u0646\u062F\u0644\u06CC \u0631\u0633\u06CC\u062F\u0647 \u0648\u0644\u06CC \u0647\u0646\u0648\u0632 \u0622\u0646 \u0631\u0627 \u0646\u0628\u0633\u062A\u0647 \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u0654 \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641 + \u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645.` : `\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 ${cfg.lookback}-\u06A9\u0646\u062F\u0644\u06CC \u0646\u062F\u0627\u0631\u06CC\u0645 (${(-distPip).toFixed(0)} pip \u0632\u06CC\u0631\u0650 \u0633\u0642\u0641).` : `\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647 \u062B\u0628\u062A \u0634\u062F \u0648\u0644\u06CC **\u062D\u062C\u0645 \u062A\u0623\u06CC\u06CC\u062F \u0646\u06A9\u0631\u062F** (RVOL ${rv.toFixed(2)} < ${cfg.rvolThr}) \u21D2 \u0645\u0634\u06A9\u0648\u06A9 \u0628\u0647 \u0634\u06A9\u0633\u062A\u0650 \u06A9\u0627\u0630\u0628. \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u0650 \u062E\u0648\u062F\u0650 \u0644\u0627\u06CC\u0647: \u0628\u0627\u0632\u0648\u06CC \u06A9\u0645\u200C\u062D\u062C\u0645 \u0631\u0648\u06CC H4 lift \u22120.17pp \u0648 \u0631\u0648\u06CC H8 +8.56 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 +15.87 \u062F\u0627\u0631\u062F.`;
+  return {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    indicators
+  };
+}
+function decideS589(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS589(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s589_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S589",
+    name: `\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 ${cfg.lookback}-\u06A9\u0646\u062F\u0644\u06CC \xD7 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645 (${cfg.tfFa})`,
+    kind: "volume_fresh_high",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 **\u0645\u0646\u062C\u0645\u062F** (\u0646\u0647 \u0634\u0646\u0627\u0648\u0631): SL=${cfg.slPip} / TP=${cfg.tpPip} pip \u2014 \u0627\u0632 median(ATR(${cfg.atrP}))\xD7${cfg.slK} \u0631\u0648\u06CC \u06A9\u0644\u0650 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644\u0650 ${cfg.tfFa} \u06AF\u0631\u0641\u062A\u0647 \u0634\u062F\u0647 \u0648 \u062F\u0631 \u0633\u0627\u06CC\u062A \u0628\u0627\u0632\u062A\u0648\u0644\u06CC\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u062F (\u067E\u0646\u062C\u0631\u0647\u0654 \u0633\u0627\u06CC\u062A \u06A9\u0648\u062A\u0627\u0647 \u0627\u0633\u062A) \u21D2 \u0639\u062F\u062F \u0627\u0632 artifact\u0650 \u067E\u0631\u06CC\u062A\u06CC \u0645\u06CC\u200C\u0622\u06CC\u062F. \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP \u06CC\u0627 SL \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0628\u06A9\u200C\u062A\u0633\u062A **\u0647\u06CC\u0686 time-stop \u0646\u062F\u0627\u0634\u062A**\u061B \u0633\u0642\u0641\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u06CC\u0650 \u0633\u0627\u06CC\u062A \u0641\u0642\u0637 \u06CC\u06A9 \u0627\u06CC\u0645\u0646\u06CC\u0650 \u0627\u062C\u0631\u0627\u06CC\u06CC \u0627\u0633\u062A \u0648 \u0627\u0632 \u0628\u06CC\u0634\u06CC\u0646\u0647\u0654 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u0650 \u062F\u0627\u0648\u0631\u06CC\u200C\u0634\u062F\u0647 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0627\u0646\u062A\u062E\u0627\u0628 \u0634\u062F\u0647. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F \u2014 \u0648\u06AF\u0631\u0646\u0647 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A. ` + (cfg.id === "XAUUSD-H8" ? `\u26A0\uFE0F **\u0642\u06CC\u062F\u0650 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u0627 S1520 \u0631\u0648\u06CC \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631\u062A:** \u0645\u0645\u06CC\u0632\u06CC\u0650 \u0634\u0627\u0647\u062F\u0650 \u06A9\u0627\u0630\u0628 jaccard \u06F0.\u06F5\u06F2\u06F5 (\u06F6\u06F3.\u06F8\u066A \u0627\u0632 \u0631\u0648\u06CC\u062F\u0627\u062F\u0647\u0627\u06CC S589) \u062F\u0627\u062F \u2014 \u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u06F0.\u06F6\u06F0\u060C \u067E\u0633 \u062F\u0648 \u0644\u0627\u06CC\u0647\u0654 \u062C\u062F\u0627\u06AF\u0627\u0646\u0647\u200C\u0627\u0646\u062F\u060C \u0648\u0644\u06CC \u0647\u0631 \u062F\u0648 \u0631\u0648\u06CC **\u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u067E\u0627\u06CC\u0647\u0654 \u0645\u0634\u062A\u0631\u06A9** (\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u06F9\u06F0) \u0628\u0627 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u062A\u0639\u0627\u0645\u062F (\u062D\u062C\u0645 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0628\u062F\u0646\u0647\u0654 \u06A9\u0646\u062F\u0644) \u0633\u0648\u0627\u0631\u0646\u062F \u21D2 \u0627\u06AF\u0631 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 ENTRY \u062F\u0627\u062F\u0646\u062F **\u06CC\u06A9** \u0641\u0631\u0635\u062A \u0627\u0633\u062A \u0648 **\u06CC\u06A9** \u067E\u0648\u0632\u06CC\u0634\u0646 \u0628\u0627\u06CC\u062F \u06AF\u0631\u0641\u062A\u0647 \u0634\u0648\u062F\u060C \u0646\u0647 \u062F\u0648. ` : `\u26A0\uFE0F **\u0642\u06CC\u062F\u0650 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u0627 S382 \u0631\u0648\u06CC \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631\u062A:** \u0645\u0645\u06CC\u0632\u06CC\u0650 \u0634\u0627\u0647\u062F\u0650 \u06A9\u0627\u0630\u0628 jaccard \u06F0.\u06F1\u06F4\u06F1 \u062F\u0627\u062F (\u0642\u0627\u0637\u0639\u0627\u0646\u0647 \u062F\u0648 \u062E\u0627\u0646\u0648\u0627\u062F\u0647\u0654 \u0645\u0633\u062A\u0642\u0644)\u060C \u0648\u0644\u06CC \u0646\u06CC\u0645\u06CC \u0627\u0632 \u0648\u0631\u0648\u062F\u06CC\u200C\u0647\u0627\u06CC S589 \u062F\u0627\u062E\u0644\u0650 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 S382 \u0645\u06CC\u200C\u0627\u0641\u062A\u0646\u062F \u21D2 \u0627\u06AF\u0631 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 S382 \u0628\u0627\u0632 \u0627\u0633\u062A \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u06AF\u06CC\u0631\u06CC\u062F. `) + `\u26A0\uFE0F **\u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 S526:** \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06F1\u06F0\u06F0\u066A \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 S526 \u0627\u0633\u062A (\u0647\u0645\u0627\u0646 \u0631\u0648\u06CC\u062F\u0627\u062F + \u06AF\u06CC\u062A). S526 \u0631\u0648\u06CC \u0633\u0627\u06CC\u062A \u0648\u0635\u0644 **\u0646\u06CC\u0633\u062A** \u21D2 \u062A\u0639\u0627\u0631\u0636\u06CC \u0646\u06CC\u0633\u062A\u061B \u0627\u06AF\u0631 \u0631\u0648\u0632\u06CC \u0648\u0635\u0644 \u0634\u0648\u062F **\u0628\u0627\u06CC\u062F** \u06CC\u06A9\u06CC \u062D\u0630\u0641 \u06AF\u0631\u062F\u062F. \u26A0\uFE0F \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC (BE/trailing) \u0622\u0632\u0645\u0648\u062F\u0647 \u0648 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u21D2 \u0641\u0642\u0637 TP/SL.`,
+    filters: [
+      `\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 ${cfg.lookback}-\u06A9\u0646\u062F\u0644\u06CC: close > max(close[i\u2212${cfg.lookback}..i\u22121]) **\u0648** \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0633\u0642\u0641\u200C\u0634\u06A9\u0646 \u0646\u0628\u0648\u062F\u0647 (\u0631\u0648\u06CC\u062F\u0627\u062F\u060C \u0646\u0647 \u062D\u0627\u0644\u062A \u2014 \u0627\u0631\u062B\u06CC \u0627\u0632 S526)`,
+      `\u06AF\u06CC\u062A\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645: RVOL \u0647\u0645\u200C\u0627\u0633\u0644\u0627\u062A = \u062D\u062C\u0645 \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 ${cfg.slotWin} \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644\u06CC\u0650 **\u0647\u0645\u0627\u0646 \u0633\u0627\u0639\u062A\u0650 \u0631\u0648\u0632** \u2265 ${cfg.rvolThr} (\u06A9\u0641\u0650 ${cfg.slotMinP} \u0631\u062E\u062F\u0627\u062F) \u2014 \u0647\u0645\u200C\u0627\u0633\u0644\u0627\u062A \u0627\u0633\u062A \u062A\u0627 \xAB\u06AF\u06CC\u062A\u0650 \u062D\u062C\u0645\xBB \u0628\u0627\u0634\u062F \u0646\u0647 \xAB\u06AF\u06CC\u062A\u0650 \u0633\u0627\u0639\u062A\xBB\u060C \u0686\u0648\u0646 \u062D\u062C\u0645\u0650 ${cfg.tfFa} \u0641\u0635\u0644\u06CC\u0651\u062A\u0650 \u062F\u0631\u0648\u0646\u200C\u0631\u0648\u0632\u06CC\u0650 \u06F2\u2013\u06F3\xD7 \u062F\u0627\u0631\u062F`,
+      "\u062C\u0647\u062A = LONG-only (\u0642\u0627\u0646\u0648\u0646\u0650 S522/S528) \u2014 \u0647\u06CC\u0686 \u0628\u0627\u0632\u0648\u06CC SHORT\u06CC \u0622\u0632\u0645\u0648\u062F\u0647 \u0646\u0634\u062F",
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0646\u0627\u0645\u062A\u0642\u0627\u0631\u0646\u0650 TP>SL (${cfg.slK}\xD7median(ATR${cfg.atrP}) \u0648 ${cfg.rr}\xD7) \u21D2 \u0635\u0641\u0631 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC \xB7 \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647`,
+      `\u0635\u0641\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u0622\u0632\u0627\u062F: \u067E\u0646\u062C\u0631\u0647\u0654 ${cfg.lookback} \u0627\u0632 S526\u060C \u0647\u0646\u062F\u0633\u0647 \u0627\u0632 \u0647\u0627\u0631\u0646\u0633\u0650 S382\u060C \u0648 \u062A\u0646\u0647\u0627 \u062A\u0635\u0645\u06CC\u0645\u0650 \u0627\u06CC\u0646 \u0634\u0645\u0627\u0631\u0647 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u062A\u0639\u0627\u0631\u0641\u0650 ${cfg.rvolThr} \u0627\u0633\u062A \u06A9\u0647 \u067E\u06CC\u0634 \u0627\u0632 \u0647\u0631 \u0639\u062F\u062F \u0642\u0641\u0644 \u0634\u062F (\u0636\u062F\u0650 \u0627\u0634\u062A\u0628\u0627\u0647\u0650 \u06F7/\u06F8)`,
+      `\u062D\u062C\u0645 = **\u062D\u0627\u0645\u0644\u0650 \u0627\u0637\u0644\u0627\u0639\u0627\u062A**\u060C \u0646\u0647 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A: \u0628\u0627\u0632\u0648\u06CC \u0645\u06A9\u0645\u0644\u0650 \u06A9\u0645\u200C\u062D\u062C\u0645 \u0631\u0648\u06CC H4 lift **\u22120.17pp** \u06AF\u0631\u0641\u062A (\u0635\u0641\u0631\u0650 \u0645\u0637\u0644\u0642) \u0648 \u0631\u0648\u06CC H8 +8.56 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 +15.87`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/kyle_permanence_drift_s966.ts
+var GOLD_PIP7 = 0.1;
+var S966_CFG = {
+  // تنها کارتِ ACCEPT. عددها از results/_scan_S966/H8.json::member
+  // (فینالیستِ Path C — gate=aligned, K=180؛ صفر تیونِ پس از کشف).
+  "XAUUSD-H8": {
+    id: "XAUUSD-H8",
+    tfFa: "H8",
+    theta: 2.618,
+    rhoMin: 0.618,
+    atrWin: 21,
+    driftK: 180,
+    kSl: 1.272,
+    kTp: 2.058,
+    maxHold: 16,
+    warm: 250,
+    approachFrac: 0.85
+  }
+};
+function rollMean2(x, w) {
+  const n = x.length;
+  const out = new Array(n).fill(0);
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    acc += x[i];
+    if (i >= w) acc -= x[i - w];
+    out[i] = acc / w;
+  }
+  return out;
+}
+function s966Features(candles, cfg) {
+  const n = candles.length;
+  const W = cfg.atrWin;
+  const K10 = cfg.driftK;
+  const trArr2 = new Array(n).fill(0);
+  for (let t = 1; t < n; t++) {
+    const h = candles[t].high, l = candles[t].low, pc = candles[t - 1].close;
+    trArr2[t] = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+  }
+  const atr2 = rollMean2(trArr2, W);
+  const atrPrev = new Array(n).fill(0);
+  if (n > 0) atrPrev[0] = atr2[0];
+  for (let t = 1; t < n; t++) atrPrev[t] = atr2[t - 1];
+  const rng = new Array(n).fill(0);
+  const rho = new Array(n).fill(0);
+  const bodySgn = new Array(n).fill(0);
+  for (let t = 0; t < n; t++) {
+    const c = candles[t];
+    const r = c.high - c.low;
+    rng[t] = r;
+    const body2 = c.close - c.open;
+    rho[t] = r > 0 ? Math.abs(body2) / r : 0;
+    bodySgn[t] = body2 > 0 ? 1 : body2 < 0 ? -1 : 0;
+  }
+  const driftUp = new Array(n).fill(false);
+  const driftDn = new Array(n).fill(false);
+  for (let t = K10 + 1; t < n; t++) {
+    const a = candles[t - 1].close;
+    const b = candles[t - 1 - K10].close;
+    driftUp[t] = a > b;
+    driftDn[t] = a < b;
+  }
+  return { atrPrev, rng, rho, bodySgn, driftUp, driftDn };
+}
+function computeS966(candles, cfg) {
+  const n = candles.length;
+  const minBars = Math.max(cfg.atrWin + 2, cfg.driftK + 2);
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  if (n < minBars) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist: 136 * GOLD_PIP7,
+      tpDist: 219 * GOLD_PIP7,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F (\u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 ${cfg.driftK}-\u06A9\u0646\u062F\u0644\u06CC + ATR(${cfg.atrWin}) \u0639\u0644\u0651\u06CC) \u2014 \u0645\u0648\u062C\u0648\u062F: ${n}.`,
+      indicators: emptyInd
+    };
+  }
+  const f = s966Features(candles, cfg);
+  const i = n - 1;
+  const atrPrev = f.atrPrev[i];
+  const rng = f.rng[i];
+  const rho = f.rho[i];
+  const sgn = f.bodySgn[i];
+  const valid = atrPrev > 1e-12 && rng > 0;
+  const slPip = Math.max(cfg.kSl * atrPrev / GOLD_PIP7, 1e-9);
+  const tpPip = Math.max(cfg.kTp * atrPrev / GOLD_PIP7, 1e-9);
+  const slDist = slPip * GOLD_PIP7;
+  const tpDist = tpPip * GOLD_PIP7;
+  const thr = cfg.theta * atrPrev;
+  const isShock = valid && rng >= thr;
+  const isPermanent = rho >= cfg.rhoMin;
+  const baseUp = isShock && isPermanent && sgn > 0;
+  const baseDn = isShock && isPermanent && sgn < 0;
+  const gateOk = baseUp && f.driftUp[i] || baseDn && f.driftDn[i];
+  const active = gateOk;
+  const direction = baseDn ? "SHORT" : "LONG";
+  const cPrev = candles[i - 1].close;
+  const cRef = candles[i - 1 - cfg.driftK].close;
+  const driftDelta = cPrev - cRef;
+  const driftAligned = sgn > 0 && f.driftUp[i] || sgn < 0 && f.driftDn[i];
+  const approaching = valid && !active && !isShock && rng >= cfg.approachFrac * thr && isPermanent && sgn !== 0 && driftAligned;
+  const ratio = thr > 0 ? rng / thr : 0;
+  const driftDays = Math.round(cfg.driftK * 8 / 24);
+  const indicators = [
+    {
+      name: `\u0631\u0646\u062C\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${cfg.theta}\xD7ATR${cfg.atrWin}[i\u22121])`,
+      value: valid ? `${(rng / GOLD_PIP7).toFixed(1)} / ${(thr / GOLD_PIP7).toFixed(1)} pip (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647)` : "\u2014",
+      status: isShock ? "ok" : approaching ? "neutral" : "bad"
+    },
+    {
+      name: `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 = |close\u2212open| \xF7 (high\u2212low) \u2014 \u06A9\u0641\u0650 ${cfg.rhoMin}`,
+      value: valid ? `${rho.toFixed(3)}` : "\u2014",
+      status: isPermanent ? "ok" : "bad"
+    },
+    {
+      name: "\u062C\u0647\u062A\u0650 \u0628\u062F\u0646\u0647\u0654 \u06A9\u0646\u062F\u0644\u0650 \u0634\u0648\u06A9 (\u0627\u062B\u0631\u0650 \u062F\u0627\u0626\u0645\u06CC \u21D2 \u0627\u062F\u0627\u0645\u0647)",
+      value: sgn > 0 ? "\u0635\u0639\u0648\u062F\u06CC (LONG)" : sgn < 0 ? "\u0646\u0632\u0648\u0644\u06CC (SHORT)" : "\u0628\u062F\u0648\u0646\u0650 \u0628\u062F\u0646\u0647 (doji)",
+      status: sgn !== 0 ? "neutral" : "bad"
+    },
+    {
+      // 🆕 شاخصِ یکتای این لایه نسبت به خواهرش S965
+      name: `\u{1F195} \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 \u0639\u0644\u0651\u06CC\u0650 ${cfg.driftK} \u06A9\u0646\u062F\u0644 (\u2248${driftDays} \u0631\u0648\u0632) \u2014 close[i\u22121] \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 close[i\u22121\u2212${cfg.driftK}]`,
+      value: `${driftDelta >= 0 ? "+" : ""}${(driftDelta / GOLD_PIP7).toFixed(0)} pip (${f.driftUp[i] ? "\u062F\u0631\u0641\u062A\u0650 \u0635\u0639\u0648\u062F\u06CC" : f.driftDn[i] ? "\u062F\u0631\u0641\u062A\u0650 \u0646\u0632\u0648\u0644\u06CC" : "\u0628\u06CC\u200C\u062A\u063A\u06CC\u06CC\u0631"})${sgn !== 0 ? driftAligned ? " \u2713 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u0628\u0627 \u0628\u062F\u0646\u0647" : " \u2717 \u062E\u0644\u0627\u0641\u0650 \u0628\u062F\u0646\u0647 \u21D2 \u06AF\u06CC\u062A \u0628\u0633\u062A\u0647" : ""}`,
+      status: driftAligned ? "ok" : "bad"
+    },
+    {
+      name: `ATR(${cfg.atrWin}) \u0639\u0644\u0651\u06CC \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631`,
+      value: atrPrev > 0 ? `${(atrPrev / GOLD_PIP7).toFixed(1)} pip` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A)",
+      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (\u0646\u0633\u0628\u062A ${(cfg.kTp / cfg.kSl).toFixed(3)} \u21D2 TP>SL)`,
+      status: "ok"
+    }
+  ];
+  let reason;
+  if (active) {
+    const side = direction === "LONG" ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634";
+    const bodyDir = direction === "LONG" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    const driftDir = direction === "LONG" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    reason = `**\u062A\u0623\u06CC\u06CC\u062F\u0650 \u062F\u0648-\u0645\u0642\u06CC\u0627\u0633\u0647** \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647: \u2460 \u0645\u0642\u06CC\u0627\u0633\u0650 \u06A9\u0646\u062F\u0644 \u2014 \u0634\u0648\u06A9\u0650 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631: \u0631\u0646\u062C ${(rng / GOLD_PIP7).toFixed(1)} pip \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})=${(thr / GOLD_PIP7).toFixed(1)} pip (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647) \u0628\u0627 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1=${rho.toFixed(3)} \u2265 ${cfg.rhoMin} \u0648 \u0628\u062F\u0646\u0647\u0654 ${bodyDir}. \u2461 \u0645\u0642\u06CC\u0627\u0633\u0650 \u0645\u0627\u0647 \u2014 \u062F\u0631\u0641\u062A\u0650 \u0639\u0644\u0651\u06CC\u0650 ${cfg.driftK} \u06A9\u0646\u062F\u0644 (\u2248${driftDays} \u0631\u0648\u0632) \u0647\u0645 ${driftDir} \u0627\u0633\u062A (${driftDelta >= 0 ? "+" : ""}${(driftDelta / GOLD_PIP7).toFixed(0)} pip) \u21D2 \u06AF\u06CC\u062A \u0628\u0627\u0632 \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647: \u0628\u062F\u0646\u0647\u0654 \u0645\u0627\u0631\u0648\u0628\u0648\u0632\u0648-\u06AF\u0648\u0646\u0647 \u06CC\u0639\u0646\u06CC \u0627\u062B\u0631\u0650 \u0642\u06CC\u0645\u062A\u06CC \u062F\u0631\u0648\u0646\u0650 \u06A9\u0646\u062F\u0644 \u067E\u0633 \u0646\u06AF\u0631\u0641\u062A (Kyle 1985 \u2014 \u0627\u0645\u0636\u0627\u06CC \u062C\u0631\u06CC\u0627\u0646\u0650 \u0645\u0637\u0644\u0639)\u060C \u0648 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u06CC\u06CC\u0650 \u0622\u0646 \u0628\u0627 \u062F\u0631\u0641\u062A\u0650 \u0686\u0646\u062F\u0645\u0627\u0647\u0647 \u06CC\u0639\u0646\u06CC \u0647\u0645\u0627\u0646 \u062C\u0631\u06CC\u0627\u0646 \u062F\u0631 \u0645\u0642\u06CC\u0627\u0633\u0650 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0647\u0645 \u062C\u0627\u0631\u06CC \u0627\u0633\u062A (TSM\u061B Moskowitz-Ooi-Pedersen 2012) \u21D2 \u0627\u062F\u0627\u0645\u0647\u0654 \u0642\u0648\u06CC\u200C\u062A\u0631. (\u06F7\u06F3 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \xB7 WR=\u06F6\u06F1.\u06F6\u06F4\u066A \xB7 lift=+\u06F1\u06F9.\u06F3\u06F2pp \xB7 z=\u06F3.\u06F2\u06F1 \xB7 PF=\u06F2.\u06F4\u06F6\u06F6 \xB7 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 RQS2 \u0633\u0628\u0632\u061B \u0622\u0632\u0645\u0648\u0646\u0650 P1: \u06AF\u06CC\u062A \u0646\u06CC\u0645\u06CC \u0627\u0632 \u0645\u0639\u0627\u0645\u0644\u0627\u062A \u0631\u0627 \u062D\u0630\u0641 \u06A9\u0631\u062F \u0648\u0644\u06CC lift \u0631\u0627 \u0627\u0632 +\u06F1\u06F8.\u06F1\u06F6 \u0628\u0647 +\u06F2\u06F2.\u06F7\u06F5pp \u0628\u0631\u062F \u21D2 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u200C\u0627\u0641\u0632\u0627). \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=${slPip.toFixed(1)} / TP=${tpPip.toFixed(1)} pip. \u26A0\uFE0F \u0627\u06AF\u0631 \u0644\u0627\u06CC\u0647\u0654 \u062E\u0648\u0627\u0647\u0631 S965 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0631\u0648\u0634\u0646 \u0627\u0633\u062A\u060C **\u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F** \u0627\u0633\u062A \u0646\u0647 \u062F\u0648 \u21D2 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9.`;
+  } else if (approaching) {
+    reason = `\u0631\u0646\u062C\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 (${(rng / GOLD_PIP7).toFixed(1)} pip) \u0628\u0647 ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${(thr / GOLD_PIP7).toFixed(1)} pip) \u0631\u0633\u06CC\u062F\u0647\u060C \u0628\u062F\u0646\u0647 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 \u0627\u0633\u062A (\u03C1=${rho.toFixed(3)}) \u0648 \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 ${cfg.driftK}-\u06A9\u0646\u062F\u0644\u06CC \u0647\u0645 **\u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u0633\u062A**. \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 \u0628\u0633\u0627\u0632\u062F\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (!valid) {
+    reason = `ATR(${cfg.atrWin}) \u0647\u0646\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646 \u06CC\u0627 \u0631\u0646\u062C\u0650 \u0635\u0641\u0631) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
+  } else if ((baseUp || baseDn) && !gateOk) {
+    const bodyDir = baseUp ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    reason = `\u0634\u0648\u06A9\u0650 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 \u0631\u062E \u062F\u0627\u062F (\u0631\u0646\u062C ${(rng / GOLD_PIP7).toFixed(1)} pip \u2265 ${(thr / GOLD_PIP7).toFixed(1)} pip \xB7 \u03C1=${rho.toFixed(3)} \xB7 \u0628\u062F\u0646\u0647\u0654 ${bodyDir}) \u2014 \u06CC\u0639\u0646\u06CC **\u067E\u0627\u06CC\u0647\u0654 S965 \u0631\u0648\u0634\u0646 \u0627\u0633\u062A** \u2014 \u0648\u0644\u06CC \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 ${cfg.driftK}-\u06A9\u0646\u062F\u0644\u06CC (\u2248${driftDays} \u0631\u0648\u0632) \u062E\u0644\u0627\u0641\u0650 \u0628\u062F\u0646\u0647 \u0627\u0633\u062A (${driftDelta >= 0 ? "+" : ""}${(driftDelta / GOLD_PIP7).toFixed(0)} pip) \u21D2 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u062F\u0647\u062F. \u062F\u0642\u06CC\u0642\u0627\u064B \u0647\u0645\u06CC\u0646 \u0635\u0627\u0641\u06CC\u0650 \u0633\u062E\u062A\u200C\u06AF\u06CC\u0631\u0627\u0646\u0647 \u0627\u0633\u062A \u06A9\u0647 WR \u0631\u0627 \u0627\u0632 \u06F5\u06F4.\u06F7\u06F9\u066A \u0628\u0647 \u06F6\u06F1.\u06F6\u06F4\u066A \u0648 PF \u0631\u0627 \u0627\u0632 \u06F1.\u06F8\u06F1 \u0628\u0647 \u06F2.\u06F4\u06F6\u06F6 \u0628\u0631\u062F (\u0628\u0647 \u0628\u0647\u0627\u06CC\u0650 \u0646\u0635\u0641\u200C\u0634\u062F\u0646\u0650 \u062A\u0639\u062F\u0627\u062F\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A). \u062E\u0648\u0627\u0647\u0631\u0650 \u0628\u06CC\u200C\u06AF\u06CC\u062A\u0650 \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631\u062A (S965) \u0645\u0645\u06A9\u0646 \u0627\u0633\u062A \u0648\u0631\u0648\u062F \u0628\u062F\u0647\u062F \u2014 \u0622\u0646 \u06CC\u06A9 \u062A\u0635\u0645\u06CC\u0645\u0650 \u062C\u062F\u0627\u0633\u062A\u060C \u0646\u0647 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647.`;
+  } else if (isShock && !isPermanent) {
+    reason = `\u0634\u0648\u06A9 \u0631\u062E \u062F\u0627\u062F (\u0631\u0646\u062C ${(rng / GOLD_PIP7).toFixed(1)} pip \u2265 ${(thr / GOLD_PIP7).toFixed(1)} pip) \u0648\u0644\u06CC \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u06A9\u0645 \u0627\u0633\u062A: \u03C1=${rho.toFixed(3)} < ${cfg.rhoMin} \u2014 \u06CC\u0639\u0646\u06CC \u0642\u06CC\u0645\u062A **\u062F\u0631\u0648\u0646\u0650 \u0647\u0645\u0627\u0646 \u06A9\u0646\u062F\u0644** \u0628\u062E\u0634\u0650 \u0628\u0632\u0631\u06AF\u06CC \u0627\u0632 \u062D\u0631\u06A9\u062A \u0631\u0627 \u067E\u0633 \u06AF\u0631\u0641\u062A (\u0633\u0627\u06CC\u0647\u0654 \u0628\u0644\u0646\u062F) \u21D2 \u0627\u0645\u0636\u0627\u06CC \u062C\u0631\u06CC\u0627\u0646\u0650 **\u0646\u0648\u06CC\u0632**\u060C \u0646\u0647 \u0645\u0637\u0644\u0639 \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F.`;
+  } else {
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 \u0627\u062E\u06CC\u0631 \u0634\u0648\u06A9 \u0646\u06CC\u0633\u062A: \u0631\u0646\u062C ${(rng / GOLD_PIP7).toFixed(1)} pip \u06CC\u0639\u0646\u06CC ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.theta}\xD7ATR(${cfg.atrWin})=${(thr / GOLD_PIP7).toFixed(1)} pip. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 **\u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F\u062A\u0631\u06CC\u0646\u0650** \u06A9\u0627\u0631\u062A \u0627\u0633\u062A (\u06F7\u06F3 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \u2248 \u06F4.\u06F7 \u062F\u0631 \u0633\u0627\u0644) \u2014 \u062E\u0646\u062B\u06CC \u0628\u0648\u062F\u0646\u0634 \u062D\u0627\u0644\u062A\u0650 \u0639\u0627\u062F\u06CC \u0627\u0633\u062A\u060C \u0646\u0647 \u062E\u0631\u0627\u0628\u06CC.`;
+  }
+  return {
+    active,
+    approaching,
+    direction,
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 (\u0631\u0646\u062C \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})) \u0628\u0627 \u03C1 \u2265 ${cfg.rhoMin} \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u2014 \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A \u0647\u0645\u200C\u0627\u06A9\u0646\u0648\u0646 \u0628\u0627\u0632 \u0627\u0633\u062A` : void 0,
+    indicators
+  };
+}
+function decideS966(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS966(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: raw2.direction === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: raw2.direction === "SHORT" ? "bear" : "bull",
+    bucket: `s966_${cfg.tfFa.toLowerCase()}`
+  };
+  const slPipShow = Math.round(raw2.slDist / GOLD_PIP7 * 10) / 10;
+  const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP7 * 10) / 10;
+  const driftDays = Math.round(cfg.driftK * 8 / 24);
+  const meta = {
+    code: "S966",
+    name: `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC\u0650 \u06A9\u0627\u06CC\u0644 \xD7 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u06CC\u06CC\u0650 \u062F\u0631\u0641\u062A (${cfg.tfFa})`,
+    kind: "kyle_permanence_drift",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=${slPipShow} / TP=${tpPipShow} pip (${cfg.kSl}\xD7 \u0648 ${cfg.kTp}\xD7ATR(${cfg.atrWin}) **\u06A9\u0646\u062F\u0644\u0650 i\u22121**\u061B \u0645\u06CC\u0627\u0646\u0647\u0654 \u062A\u0627\u0631\u06CC\u062E\u06CC \u2248\u06F1\u06F3\u06F6/\u06F2\u06F1\u06F9 pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} (\u2248\u06F5.\u06F3 \u0631\u0648\u0632) \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F\u26A0\uFE0F **\u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u0627 S965 \u0627\u0644\u0632\u0627\u0645\u06CC:** S966 \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 \u0627\u06A9\u06CC\u062F\u0650 S965 \u0627\u0633\u062A (\u067E\u0627\u06CC\u0647\u0654 \u06CC\u06A9\u0633\u0627\u0646 + \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A) \u21D2 \u0647\u0631 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 S966 \u062D\u062A\u0645\u0627\u064B \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 S965 \u0647\u0645 \u0647\u0633\u062A. \u0627\u06AF\u0631 \u0647\u0631 \u062F\u0648 \u06A9\u0627\u0631\u062A \u0631\u0648\u0634\u0646 \u0634\u062F\u0646\u062F\u060C **\u06CC\u06A9 \u0645\u0639\u0627\u0645\u0644\u0647** \u0628\u06AF\u06CC\u0631\u06CC\u062F \u0646\u0647 \u062F\u0648 \u2014 \u0648\u06AF\u0631\u0646\u0647 \u0631\u06CC\u0633\u06A9 \u06F2\xD7 \u0645\u06CC\u200C\u0634\u0648\u062F \u0648 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0628\u06CC\u200C\u0627\u0639\u062A\u0628\u0627\u0631 \u0627\u0633\u062A. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A). \u26A0\uFE0F \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC (BE/trailing) \u0622\u0632\u0645\u0648\u062F\u0647 \u0648 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u21D2 \u0641\u0642\u0637 TP/SL/\u0632\u0645\u0627\u0646.`,
+    filters: [
+      `\u0634\u0648\u06A9\u0650 \u0631\u0646\u062C: high\u2212low \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})[i\u22121] \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 S965`,
+      `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 = |close\u2212open|\xF7(high\u2212low) \u2265 ${cfg.rhoMin} \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 S965`,
+      `\u{1F195} \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 \u0639\u0644\u0651\u06CC\u0650 ${cfg.driftK} \u06A9\u0646\u062F\u0644 (\u2248${driftDays} \u0631\u0648\u0632): \u0644\u0627\u0646\u06AF \u0641\u0642\u0637 \u0627\u06AF\u0631 close[i\u22121] > close[i\u22121\u2212${cfg.driftK}]\u060C \u0634\u0648\u0631\u062A \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC`,
+      `\u0628\u0627\u0632\u0648\u06CC counter (\u0642\u0631\u06CC\u0646\u0647) \u062F\u0631 \u06A9\u0634\u0641 \u0628\u0627\u062E\u062A \u21D2 \u0631\u0648\u0627\u06CC\u062A\u0650 \xAB\u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u06CC\u06CC\xBB \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F (\u0627\u0628\u0637\u0627\u0644\u200C\u06AF\u0631\u0650 P2)`,
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0646\u0627\u0645\u062A\u0642\u0627\u0631\u0646\u0650 TP>SL (${cfg.kSl}/${cfg.kTp}) \u21D2 \u0635\u0641\u0631 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC \xB7 ~\u06F4.\u06F7 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/engle_dual_gate_s607.ts
+var GOLD_PIP8 = 0.1;
+var S607_CFG = {
+  // 🟨 D1 — عضوِ **خام** استخر: هیچ گیتی ندارد (سند §۱ «D1 خام»).
+  //    چرا بی‌گیت: خودِ کارتِ D1 در S840 برندهٔ ACCEPT بود و S602/S604/S606/S607
+  //    همه آن را دست‌نخورده به استخر می‌برند ⇒ افزودنِ گیت = پارامترِ نو = ممنوع.
+  "XAUUSD-D1": {
+    id: "XAUUSD-D1",
+    tfFa: "D1",
+    zThr: 2.618,
+    lam: 0.94,
+    atrP: 34,
+    // warm=400 (نه ۲۵۰) — بازتولیدِ `max(60, 4005//10)` روی دادهٔ کاملِ D1؛
+    // تنها کارتی از سه‌گانه که زیرِ ۵۰۰۰ کندل است (دامِ ⑥).
+    slK: 1.272,
+    rr: 1,
+    maxHold: 21,
+    warm: 400,
+    driftK: null,
+    sigmaW: null,
+    barsPerDay: 1,
+    approachFrac: 0.85,
+    memberN: 87,
+    memberWr: 64.37,
+    memberLift: 16.6906
+  },
+  // 🟦 H8-DUAL — K=60 روز × ۳ کندل/روز = **۱۸۰ کندل** · W=233
+  "XAUUSD-H8": {
+    id: "XAUUSD-H8",
+    tfFa: "H8",
+    zThr: 2.618,
+    lam: 0.94,
+    atrP: 34,
+    slK: 1.618,
+    rr: 1,
+    maxHold: 34,
+    warm: 250,
+    driftK: 180,
+    sigmaW: 233,
+    barsPerDay: 3,
+    approachFrac: 0.85,
+    memberN: 131,
+    memberWr: 66.41,
+    memberLift: 16.6104
+  },
+  // 🟩 H6-DUAL — K=60 روز × ۴ کندل/روز = **۲۴۰ کندل** · W=233
+  //    تنها کارتی که rr>1 دارد (TP = 1.272×SL) ⇒ هندسهٔ نامتقارن.
+  "XAUUSD-H6": {
+    id: "XAUUSD-H6",
+    tfFa: "H6",
+    zThr: 2.618,
+    lam: 0.94,
+    atrP: 34,
+    slK: 1.618,
+    rr: 1.272,
+    maxHold: 34,
+    warm: 250,
+    driftK: 240,
+    sigmaW: 233,
+    barsPerDay: 4,
+    approachFrac: 0.85,
+    memberN: 166,
+    memberWr: 60.84,
+    memberLift: 15.7416
+  }
+  // ⛔ XAUUSD-H12 عمداً **غایب** است. انتخاب‌گرِ رسمیِ S607 آن را با حاشیهٔ
+  //    ۰.۱۵ از استخر حذف کرد (سند §۲ و verdict.json::members). افزودنش =
+  //    تعمیمِ ممنوعِ MTF و باطل‌کردنِ جمعیتِ n=283 که داوری شده.
+};
+function ewmaZ(close, lam) {
+  const n = close.length;
+  const r = new Array(n).fill(0);
+  for (let t = 1; t < n; t++) {
+    const v2 = Math.log(close[t] / close[t - 1]);
+    r[t] = Number.isFinite(v2) ? v2 : 0;
+  }
+  const z = new Array(n).fill(NaN);
+  const sigma = new Array(n).fill(NaN);
+  const k0 = Math.min(50, n - 1);
+  if (k0 < 5) return { z, sigma, r };
+  let mean2 = 0;
+  for (let t = 1; t <= k0; t++) mean2 += r[t];
+  mean2 /= k0;
+  let acc = 0;
+  for (let t = 1; t <= k0; t++) {
+    const d = r[t] - mean2;
+    acc += d * d;
+  }
+  let v = acc / k0;
+  if (!(v > 0)) v = 1e-12;
+  sigma[k0] = Math.sqrt(v);
+  z[k0] = sigma[k0] > 0 ? r[k0] / sigma[k0] : NaN;
+  for (let t = k0 + 1; t < n; t++) {
+    v = lam * v + (1 - lam) * r[t - 1] * r[t - 1];
+    const sd = Math.sqrt(v);
+    sigma[t] = sd;
+    z[t] = sd > 0 ? r[t] / sd : NaN;
+  }
+  return { z, sigma, r };
+}
+function atrWilder2(candles, p) {
+  const n = candles.length;
+  const out = new Array(n).fill(NaN);
+  if (n <= p) return out;
+  const tr = new Array(n).fill(0);
+  for (let i = 0; i < n; i++) {
+    const h = candles[i].high, l = candles[i].low;
+    const pc = i === 0 ? candles[0].close : candles[i - 1].close;
+    tr[i] = Math.max(h - l, Math.max(Math.abs(h - pc), Math.abs(l - pc)));
+  }
+  let acc = 0;
+  for (let i = 0; i < p; i++) acc += tr[i];
+  acc /= p;
+  out[p - 1] = acc;
+  const a = 1 / p;
+  for (let i = p; i < n; i++) {
+    acc = acc + a * (tr[i] - acc);
+    out[i] = acc;
+  }
+  return out;
+}
+function regimeRatio(sigma, W) {
+  const n = sigma.length;
+  const out = new Array(n).fill(NaN);
+  for (let i = W; i < n; i++) {
+    const win = [];
+    let bad = false;
+    for (let j = i - W; j <= i - 1; j++) {
+      const s = sigma[j];
+      if (!Number.isFinite(s)) {
+        bad = true;
+        break;
+      }
+      win.push(s);
+    }
+    if (bad || win.length < W) continue;
+    win.sort((x, y) => x - y);
+    const m = win.length;
+    const med = m % 2 === 1 ? win[(m - 1) / 2] : (win[m / 2 - 1] + win[m / 2]) / 2;
+    if (!(med > 0) || !Number.isFinite(sigma[i])) continue;
+    out[i] = sigma[i] / med;
+  }
+  return out;
+}
+function s607Features(candles, cfg) {
+  const close = candles.map((c) => c.close);
+  const { z, sigma } = ewmaZ(close, cfg.lam);
+  const atr2 = atrWilder2(candles, cfg.atrP);
+  const reg = cfg.sigmaW == null ? null : regimeRatio(sigma, cfg.sigmaW);
+  return { z, sigma, atr: atr2, reg };
+}
+function computeS607(candles, cfg) {
+  const n = candles.length;
+  const needDrift = cfg.driftK == null ? 0 : cfg.driftK + 2;
+  const needSigma = cfg.sigmaW == null ? 0 : cfg.sigmaW + 1;
+  const minBars = Math.max(cfg.atrP + 2, 51, needDrift, needSigma);
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  if (n < minBars) {
+    const why = [
+      `ATR(${cfg.atrP}) \u0648\u0627\u06CC\u0644\u062F\u0631`,
+      "\u0628\u0630\u0631\u0650 \u06F5\u06F0\u06A9\u0646\u062F\u0644\u06CC\u0650 \u0648\u0627\u0631\u06CC\u0627\u0646\u0633\u0650 IGARCH",
+      cfg.driftK == null ? null : `\u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 ${cfg.driftK}-\u06A9\u0646\u062F\u0644\u06CC`,
+      cfg.sigmaW == null ? null : `\u0645\u06CC\u0627\u0646\u0647\u0654 \u0631\u0698\u06CC\u0645\u0650 \u03C3 \u0631\u0648\u06CC ${cfg.sigmaW} \u06A9\u0646\u062F\u0644`
+    ].filter(Boolean).join(" + ");
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist: 180 * GOLD_PIP8,
+      tpDist: 198 * GOLD_PIP8,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F (${why}) \u2014 \u0645\u0648\u062C\u0648\u062F: ${n}.`,
+      indicators: emptyInd
+    };
+  }
+  const f = s607Features(candles, cfg);
+  const i = n - 1;
+  const zi = f.z[i];
+  const atrI = f.atr[i];
+  const sigI = f.sigma[i];
+  const valid = Number.isFinite(zi) && Number.isFinite(atrI) && atrI > 0;
+  const absZ = valid ? Math.abs(zi) : 0;
+  const slPrice = Math.max(cfg.slK * (Number.isFinite(atrI) ? atrI : 0), 1e-12);
+  const tpPrice = Math.max(cfg.rr * slPrice, slPrice);
+  const slPip = slPrice / GOLD_PIP8;
+  const tpPip = tpPrice / GOLD_PIP8;
+  const shockUp = valid && zi >= cfg.zThr;
+  const shockDn = valid && zi <= -cfg.zThr;
+  const isShock = shockUp || shockDn;
+  const direction = shockDn ? "SHORT" : "LONG";
+  let driftDelta = null;
+  let driftOk = true;
+  let driftReady = true;
+  if (cfg.driftK != null) {
+    const K10 = cfg.driftK;
+    if (i - 1 - K10 < 0) {
+      driftReady = false;
+      driftOk = false;
+    } else {
+      driftDelta = candles[i - 1].close - candles[i - 1 - K10].close;
+      driftOk = shockDn ? driftDelta < 0 : driftDelta > 0;
+    }
+  }
+  let regVal = null;
+  let calmOk = true;
+  let calmReady = true;
+  if (cfg.sigmaW != null) {
+    const rv = f.reg ? f.reg[i] : NaN;
+    if (!Number.isFinite(rv)) {
+      calmReady = false;
+      calmOk = false;
+    } else {
+      regVal = rv;
+      calmOk = rv <= 1;
+    }
+  }
+  const gatesOk = driftOk && calmOk;
+  const active = isShock && gatesOk;
+  const hypoDn = valid && zi < 0;
+  let hypoDriftOk = true;
+  if (cfg.driftK != null) {
+    hypoDriftOk = driftReady && driftDelta != null && (hypoDn ? driftDelta < 0 : driftDelta > 0);
+  }
+  const approaching = valid && !isShock && absZ >= cfg.approachFrac * cfg.zThr && hypoDriftOk && calmOk;
+  const ratio = cfg.zThr > 0 ? absZ / cfg.zThr : 0;
+  const driftDays = cfg.driftK == null ? 0 : Math.round(cfg.driftK / cfg.barsPerDay);
+  const holdDays = Math.round(cfg.maxHold / cfg.barsPerDay * 10) / 10;
+  const indicators = [
+    {
+      name: `\u0634\u0648\u06A9\u0650 \u0627\u0633\u062A\u0627\u0646\u062F\u0627\u0631\u062F\u0634\u062F\u0647\u0654 ARCH: |z| \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.zThr} (z = r \xF7 \u03C3_IGARCH)`,
+      value: valid ? `${Math.abs(zi).toFixed(3)} / ${cfg.zThr} (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647)` : "\u2014",
+      status: isShock ? "ok" : approaching ? "neutral" : "bad"
+    },
+    {
+      name: "\u062C\u0647\u062A\u0650 \u0634\u0648\u06A9 (mode=follow \u21D2 \u0647\u0645\u200C\u062C\u0647\u062A\u0650 \u0628\u0627\u0632\u062F\u0647\u0650 \u0634\u0648\u06A9)",
+      value: !valid ? "\u2014" : shockUp ? "\u0635\u0639\u0648\u062F\u06CC (LONG)" : shockDn ? "\u0646\u0632\u0648\u0644\u06CC (SHORT)" : zi > 0 ? "\u0635\u0639\u0648\u062F\u06CC (\u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647)" : "\u0646\u0632\u0648\u0644\u06CC (\u0632\u06CC\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647)",
+      status: isShock ? "ok" : "neutral"
+    }
+  ];
+  if (cfg.driftK != null) {
+    indicators.push({
+      name: `\u06AF\u06CC\u062A\u0650 \u2460: \u0631\u0648\u0646\u062F\u0650 \u0639\u0644\u0651\u06CC\u0650 ${cfg.driftK} \u06A9\u0646\u062F\u0644 (\u2248${driftDays} \u0631\u0648\u0632) \u2014 close[i\u22121] \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 close[i\u22121\u2212${cfg.driftK}]`,
+      value: !driftReady ? "\u067E\u0646\u062C\u0631\u0647\u0654 \u0646\u0627\u0642\u0635 (\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A)" : `${driftDelta >= 0 ? "+" : ""}${(driftDelta / GOLD_PIP8).toFixed(0)} pip (${driftDelta > 0 ? "\u0631\u0627\u0646\u0634\u0650 \u0635\u0639\u0648\u062F\u06CC" : driftDelta < 0 ? "\u0631\u0627\u0646\u0634\u0650 \u0646\u0632\u0648\u0644\u06CC" : "\u0628\u06CC\u200C\u062A\u063A\u06CC\u06CC\u0631"})${isShock ? driftOk ? " \u2713 \u0647\u0645\u200C\u062C\u0647\u062A\u0650 \u0634\u0648\u06A9" : " \u2717 \u062E\u0644\u0627\u0641\u0650 \u0634\u0648\u06A9 \u21D2 \u06AF\u06CC\u062A \u0628\u0633\u062A\u0647" : ""}`,
+      status: driftReady && driftOk ? "ok" : "bad"
+    });
+  }
+  if (cfg.sigmaW != null) {
+    indicators.push({
+      name: `\u06AF\u06CC\u062A\u0650 \u2461: \u0631\u0698\u06CC\u0645\u0650 \u03C3 \u2014 \u03C3[i] \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3 \u062F\u0631 ${cfg.sigmaW} \u06A9\u0646\u062F\u0644\u0650 \u06AF\u0630\u0634\u062A\u0647 (\u06A9\u0641\u0650 \u0622\u0631\u0627\u0645\u0634 \u2264 \u06F1.\u06F0)`,
+      value: !calmReady ? "\u067E\u0646\u062C\u0631\u0647\u0654 \u0646\u0627\u0642\u0635 (\u06A9\u0646\u062F\u0644\u0650 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A)" : `${regVal.toFixed(3)} (${calmOk ? "CALM \u2014 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0631\u0627\u0645 \u2713" : "STORM \u2014 \u0628\u0627\u0632\u0627\u0631\u0650 \u0645\u062A\u0644\u0627\u0637\u0645 \u2717 \u06AF\u06CC\u062A \u0628\u0633\u062A\u0647"})`,
+      status: calmReady && calmOk ? "ok" : "bad"
+    });
+  } else {
+    indicators.push({
+      name: "\u06AF\u06CC\u062A\u200C\u0647\u0627 \u0631\u0648\u06CC \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A",
+      value: "\u0647\u06CC\u0686 \u2014 D1 \u0639\u0636\u0648\u0650 **\u062E\u0627\u0645** \u0627\u0633\u062A\u062E\u0631 \u0627\u0633\u062A (\u0633\u0646\u062F \xA7\u06F1: \xABD1 \u062E\u0627\u0645\xBB)",
+      status: "neutral"
+    });
+  }
+  indicators.push(
+    {
+      name: `\u03C3_IGARCH \u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC (\u03BB=${cfg.lam})`,
+      value: Number.isFinite(sigI) ? `${(sigI * 100).toFixed(4)}\u066A \u0628\u0627\u0632\u062F\u0647\u0650 \u0644\u06AF\u0627\u0631\u06CC\u062A\u0645\u06CC` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: `ATR(${cfg.atrP}) \u0648\u0627\u06CC\u0644\u062F\u0631 \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631`,
+      value: Number.isFinite(atrI) ? `${(atrI / GOLD_PIP8).toFixed(1)} pip` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A)",
+      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (${cfg.slK}\xD7ATR \u0648 \u0646\u0633\u0628\u062A\u0650 ${cfg.rr} \u21D2 TP${cfg.rr > 1 ? ">" : "="}SL)`,
+      status: "ok"
+    }
+  );
+  const gateWord = cfg.driftK == null ? "\u0628\u06CC\u200C\u06AF\u06CC\u062A (\u06A9\u0627\u0631\u062A\u0650 \u062E\u0627\u0645)" : "\u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u062A\u0639\u0627\u0645\u062F";
+  let reason;
+  if (active) {
+    const side = direction === "LONG" ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634";
+    const shockDir = direction === "LONG" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    const gateTxt = cfg.driftK == null ? `\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A **\u062E\u0627\u0645** \u0627\u0633\u062A (\u0647\u06CC\u0686 \u06AF\u06CC\u062A\u06CC \u0646\u062F\u0627\u0631\u062F) \u2014 \u0686\u0648\u0646 \u062E\u0648\u062F\u0650 D1 \u062F\u0631 \u0648\u0627\u0644\u062F\u0650 S840 \u0628\u0631\u0646\u062F\u0647\u0654 ACCEPT \u0628\u0648\u062F \u0648 \u0627\u0641\u0632\u0648\u062F\u0646\u0650 \u06AF\u06CC\u062A \u0628\u0647 \u0622\u0646 \u06CC\u06A9 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u0646\u0648 \u0648 \u0645\u0645\u0646\u0648\u0639 \u0645\u06CC\u200C\u0628\u0648\u062F.` : `\u06AF\u06CC\u062A\u0650 \u2460 \u0631\u0648\u0646\u062F: \u0631\u0627\u0646\u0634\u0650 ${cfg.driftK}-\u06A9\u0646\u062F\u0644\u06CC (\u2248${driftDays} \u0631\u0648\u0632) ${driftDelta >= 0 ? "+" : ""}${(driftDelta / GOLD_PIP8).toFixed(0)} pip \u0648 \u0647\u0645\u200C\u062C\u0647\u062A\u0650 \u0634\u0648\u06A9 \u2713 (MOP 2012 \u2014 \u062C\u0631\u06CC\u0627\u0646\u0650 \u0645\u0637\u0644\u0639 \u062F\u0631 \u0645\u0642\u06CC\u0627\u0633\u0650 \u0645\u0627\u0647). \u06AF\u06CC\u062A\u0650 \u2461 \u0631\u0698\u06CC\u0645: \u03C3 \u0646\u0633\u0628\u062A \u0628\u0647 \u0645\u06CC\u0627\u0646\u0647\u0654 ${cfg.sigmaW} \u06A9\u0646\u062F\u0644 = ${regVal.toFixed(3)} \u2264 \u06F1.\u06F0 \u21D2 \u0628\u0627\u0632\u0627\u0631\u0650 **\u0622\u0631\u0627\u0645** \u2713 (Andersen\u2013Bollerslev \u2014 \u0634\u0648\u06A9 \u062F\u0631 \u0622\u0631\u0627\u0645\u0634 \u0627\u0637\u0644\u0627\u0639\u200C\u0628\u0627\u0631\u062A\u0631 \u0627\u0633\u062A). \u0646\u0633\u0628\u062A\u0650 \u0647\u0645\u200C\u062E\u0637\u06CC\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647\u0654 \u0627\u06CC\u0646 \u062F\u0648 \u06AF\u06CC\u062A \u2248\u06F1.\u06F0 \u21D2 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u0634\u0627\u0646 **\u062C\u0645\u0639\u200C\u067E\u0630\u06CC\u0631** \u0627\u0633\u062A \u0646\u0647 \u062A\u06A9\u0631\u0627\u0631\u06CC.`;
+    reason = `**\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0628\u0627 ${gateWord}** \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647: \u0628\u0627\u0632\u062F\u0647\u0650 \u0627\u0633\u062A\u0627\u0646\u062F\u0627\u0631\u062F\u0634\u062F\u0647 z=${zi.toFixed(3)} \u06CC\u0639\u0646\u06CC |z|=${absZ.toFixed(3)} \u2265 ${cfg.zThr} (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647) \u2014 \u062D\u0631\u06A9\u062A\u06CC \u06A9\u0647 \u0646\u0633\u0628\u062A \u0628\u0647 \u0646\u0648\u0633\u0627\u0646\u0650 **\u0634\u0631\u0637\u06CC\u0650** \u062E\u0648\u062F\u0650 \u0628\u0627\u0632\u0627\u0631 (\u03C3_IGARCH \u0628\u0627 \u03BB=${cfg.lam}) \u063A\u06CC\u0631\u0639\u0627\u062F\u06CC \u0627\u0633\u062A\u060C \u0646\u0647 \u0646\u0633\u0628\u062A \u0628\u0647 \u06CC\u06A9 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u062B\u0627\u0628\u062A\u0650 \u062F\u0644\u0628\u062E\u0648\u0627\u0647 (Engle 1982: \u0648\u0627\u0631\u06CC\u0627\u0646\u0633 \u062E\u0648\u0634\u0647\u200C\u0627\u06CC \u0627\u0633\u062A\u060C \u067E\u0633 \u0628\u0632\u0631\u06AF\u06CC\u0650 \u062E\u0627\u0645 \u06AF\u0645\u0631\u0627\u0647\u200C\u06A9\u0646\u0646\u062F\u0647 \u0627\u0633\u062A). \u062C\u0647\u062A = follow \u21D2 \u0627\u062F\u0627\u0645\u0647\u0654 \u0647\u0645\u0627\u0646 \u0634\u0648\u06A9\u0650 ${shockDir} \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. ${gateTxt} \u0633\u0647\u0645\u0650 \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u062F\u0631 \u0627\u0633\u062A\u062E\u0631\u0650 ACCEPT: n=${cfg.memberN} \xB7 WR=${cfg.memberWr}\u066A \xB7 lift=+${cfg.memberLift.toFixed(2)}pp. \u062D\u06A9\u0645\u0650 \u0627\u0633\u062A\u062E\u0631\u0650 \u0633\u0647\u200C\u06A9\u0627\u0631\u062A\u06CC: RQS2=83.1 \xB7 n=283 \xB7 WR=60.07\u066A \xB7 PF=1.609 \xB7 z=4.21 \xB7 p_perm=1.3e\u221205 \xB7 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 RQS2 v2.6 \u0633\u0628\u0632 (\u062A\u0646\u0634: 82.9). \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=${slPip.toFixed(1)} / TP=${tpPip.toFixed(1)} pip\u061B \u062D\u062F\u0627\u06A9\u062B\u0631 ${cfg.maxHold} \u06A9\u0646\u062F\u0644 (\u2248${holdDays} \u0631\u0648\u0632) \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC. \u26A0\uFE0F \u062D\u06A9\u0645 \u0631\u0648\u06CC **\u062C\u0645\u0639\u06CC\u062A\u0650 \u062A\u062C\u0645\u06CC\u0639\u06CC\u0650 \u0633\u0647 \u06A9\u0627\u0631\u062A (D1+H8+H6)** \u0627\u0633\u062A \u21D2 \u0627\u06AF\u0631 \u0686\u0646\u062F \u06A9\u0627\u0631\u062A \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0631\u0648\u0634\u0646 \u0634\u062F\u0646\u062F\u060C \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u06AF\u06CC\u0631\u06CC\u062F.`;
+  } else if (approaching) {
+    reason = `|z|=${absZ.toFixed(3)} \u0628\u0647 ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${cfg.zThr}) \u0631\u0633\u06CC\u062F\u0647 \u0648 ${cfg.driftK == null ? "\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u06AF\u06CC\u062A\u06CC \u0646\u062F\u0627\u0631\u062F" : "\u0647\u0631 \u062F\u0648 \u06AF\u06CC\u062A (\u0631\u0648\u0646\u062F \u0648 \u0631\u0698\u06CC\u0645\u0650 \u03C3) \u0647\u0645\u200C\u0627\u06A9\u0646\u0648\u0646 **\u0628\u0627\u0632** \u0647\u0633\u062A\u0646\u062F"} \u21D2 \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 \u0628\u0633\u0627\u0632\u062F\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (!valid) {
+    reason = `\u0633\u0631\u06CC\u200C\u0647\u0627\u06CC \u0639\u0644\u0651\u06CC \u0647\u0646\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A\u0646\u062F (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 ATR(${cfg.atrP}) \u06CC\u0627 \u0628\u0630\u0631\u0650 \u06F5\u06F0\u06A9\u0646\u062F\u0644\u06CC\u0650 \u0648\u0627\u0631\u06CC\u0627\u0646\u0633\u0650 IGARCH) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
+  } else if (isShock && !driftReady) {
+    reason = `\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0631\u062E \u062F\u0627\u062F (|z|=${absZ.toFixed(3)} \u2265 ${cfg.zThr}) \u0648\u0644\u06CC \u067E\u0646\u062C\u0631\u0647\u0654 \u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F \u0646\u0627\u0642\u0635 \u0627\u0633\u062A: \u0627\u06CC\u0646 \u06AF\u06CC\u062A \u0628\u0647 close[i\u22121\u2212${cfg.driftK}] \u0646\u06CC\u0627\u0632 \u062F\u0627\u0631\u062F \u0648 \u0622\u0646 \u06A9\u0646\u062F\u0644 \u062F\u0631 \u062F\u0627\u062F\u0647\u0654 \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A. \u0637\u0628\u0642\u0650 \u0627\u0635\u0644\u0650 \xAB\u067E\u0646\u062C\u0631\u0647\u0654 \u0646\u0627\u0642\u0635 \u0634\u0627\u0647\u062F \u0646\u06CC\u0633\u062A\xBB \u0648\u0631\u0648\u062F\u06CC \u0635\u0627\u062F\u0631 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F.`;
+  } else if (isShock && !calmReady) {
+    reason = `\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0631\u062E \u062F\u0627\u062F (|z|=${absZ.toFixed(3)} \u2265 ${cfg.zThr}) \u0648\u0644\u06CC \u067E\u0646\u062C\u0631\u0647\u0654 \u06AF\u06CC\u062A\u0650 \u0631\u0698\u06CC\u0645 \u0646\u0627\u0642\u0635 \u0627\u0633\u062A: \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3 \u0631\u0648\u06CC ${cfg.sigmaW} \u06A9\u0646\u062F\u0644\u0650 \u06AF\u0630\u0634\u062A\u0647 \u0644\u0627\u0632\u0645 \u0627\u0633\u062A \u0648 \u062F\u0627\u062F\u0647\u0654 \u0645\u0648\u062C\u0648\u062F \u06A9\u0648\u062A\u0627\u0647\u200C\u062A\u0631 \u0627\u0633\u062A. \u067E\u0646\u062C\u0631\u0647\u0654 \u0646\u0627\u0642\u0635 \u0634\u0627\u0647\u062F \u0646\u06CC\u0633\u062A \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F.`;
+  } else if (isShock && !driftOk) {
+    const shockDir = shockDn ? "\u0646\u0632\u0648\u0644\u06CC" : "\u0635\u0639\u0648\u062F\u06CC";
+    reason = `\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0631\u062E \u062F\u0627\u062F (|z|=${absZ.toFixed(3)} \u2265 ${cfg.zThr} \xB7 ${shockDir}) \u2014 \u06CC\u0639\u0646\u06CC **\u067E\u0627\u06CC\u0647\u0654 S840 \u0631\u0648\u0634\u0646 \u0627\u0633\u062A** \u2014 \u0648\u0644\u06CC \u06AF\u06CC\u062A\u0650 \u0631\u0648\u0646\u062F\u0650 ${cfg.driftK}-\u06A9\u0646\u062F\u0644\u06CC (\u2248${driftDays} \u0631\u0648\u0632) \u062E\u0644\u0627\u0641\u0650 \u0634\u0648\u06A9 \u0627\u0633\u062A (${driftDelta >= 0 ? "+" : ""}${(driftDelta / GOLD_PIP8).toFixed(0)} pip) \u21D2 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u062F\u0647\u062F. \u062F\u0642\u06CC\u0642\u0627\u064B \u0647\u0645\u06CC\u0646 \u0635\u0627\u0641\u06CC \u0627\u0633\u062A \u06A9\u0647 \u0644\u06CC\u0641\u062A\u0650 \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0631\u0627 \u0627\u0632 +${cfg.tfFa === "H8" ? "9.26" : "5.87"}pp \u062E\u0627\u0645 \u0628\u0647 +${cfg.memberLift.toFixed(2)}pp \u0631\u0633\u0627\u0646\u062F: \u0634\u0648\u06A9\u0650 \u062E\u0644\u0627\u0641\u0650 \u0631\u0627\u0646\u0634\u060C \u0628\u0627\u0632\u06AF\u0634\u062A\u06CC \u0627\u0633\u062A \u0646\u0647 \u0627\u062F\u0627\u0645\u0647\u200C\u062F\u0627\u0631.`;
+  } else if (isShock && !calmOk) {
+    reason = `\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0631\u062E \u062F\u0627\u062F (|z|=${absZ.toFixed(3)} \u2265 ${cfg.zThr}) \u0648\u0644\u06CC \u06AF\u06CC\u062A\u0650 \u0631\u0698\u06CC\u0645\u0650 \u03C3 \u0628\u0633\u062A\u0647 \u0627\u0633\u062A: \u0646\u0633\u0628\u062A\u0650 \u03C3 \u0628\u0647 \u0645\u06CC\u0627\u0646\u0647\u0654 ${cfg.sigmaW} \u06A9\u0646\u062F\u0644 = ${regVal.toFixed(3)} > \u06F1.\u06F0 \u21D2 \u0628\u0627\u0632\u0627\u0631 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 **STORM** (\u0645\u062A\u0644\u0627\u0637\u0645) \u0627\u0633\u062A. \u0634\u0648\u06A9 \u062F\u0631 \u0628\u0627\u0632\u0627\u0631\u0650 \u067E\u0631\u0646\u0648\u0633\u0627\u0646 \u062A\u0627\u0632\u06AF\u06CC\u0650 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u06CC \u06A9\u0645\u06CC \u062F\u0627\u0631\u062F \u2014 \u06CC\u06A9\u06CC \u0627\u0632 \u0686\u0646\u062F \u0634\u0648\u06A9\u0650 \u0622\u0646 \u062E\u0648\u0634\u0647 \u0627\u0633\u062A \u2014 \u067E\u0633 \u0627\u062F\u0627\u0645\u0647\u200C\u0627\u0634 \u0642\u0627\u0628\u0644\u0650 \u0627\u062A\u06A9\u0627 \u0646\u06CC\u0633\u062A (Andersen\u2013Bollerslev). \u0644\u0627\u06CC\u0647 \u0635\u0627\u062F\u0642\u0627\u0646\u0647 \u062E\u0646\u062B\u06CC \u0645\u06CC\u200C\u0645\u0627\u0646\u064E\u062F.`;
+  } else {
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 \u0627\u062E\u06CC\u0631 \u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0646\u06CC\u0633\u062A: |z|=${absZ.toFixed(3)} \u06CC\u0639\u0646\u06CC ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.zThr}. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 **\u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F** \u0627\u0633\u062A (\u0633\u0647\u0645\u0650 \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A ${cfg.memberN} \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644) \u2014 \u062E\u0646\u062B\u06CC \u0628\u0648\u062F\u0646\u0634 \u062D\u0627\u0644\u062A\u0650 \u0639\u0627\u062F\u06CC \u0627\u0633\u062A\u060C \u0646\u0647 \u062E\u0631\u0627\u0628\u06CC.`;
+  }
+  return {
+    active,
+    approaching,
+    direction,
+    slDist: slPrice,
+    tpDist: tpPrice,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644\u0650 |z| \u2265 ${cfg.zThr} \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u2014 ${cfg.driftK == null ? "\u06A9\u0627\u0631\u062A\u0650 \u062E\u0627\u0645\u060C \u06AF\u06CC\u062A\u06CC \u0646\u062F\u0627\u0631\u062F" : "\u0647\u0631 \u062F\u0648 \u06AF\u06CC\u062A \u0647\u0645\u200C\u0627\u06A9\u0646\u0648\u0646 \u0628\u0627\u0632 \u0627\u0633\u062A"}` : void 0,
+    indicators
+  };
+}
+function decideS607(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS607(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: raw2.direction === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: raw2.direction === "SHORT" ? "bear" : "bull",
+    bucket: `s607_${cfg.tfFa.toLowerCase()}`
+  };
+  const slPipShow = Math.round(raw2.slDist / GOLD_PIP8 * 10) / 10;
+  const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP8 * 10) / 10;
+  const driftDays = cfg.driftK == null ? 0 : Math.round(cfg.driftK / cfg.barsPerDay);
+  const holdDays = Math.round(cfg.maxHold / cfg.barsPerDay * 10) / 10;
+  const filters = [
+    `\u0634\u0648\u06A9\u0650 ARCH: |z| \u2265 ${cfg.zThr} \u0628\u0627 z = r \xF7 \u03C3 \u0648 \u03C3\xB2=${cfg.lam}\u03C3\xB2+${(1 - cfg.lam).toFixed(2)}r\xB2 (IGARCH \u0628\u06CC\u200C\u062B\u0627\u0628\u062A \u2014 \u0645\u0646\u062C\u0645\u062F \u0627\u0632 S840)`,
+    `\u062C\u0647\u062A = follow (\u0647\u0645\u200C\u062C\u0647\u062A\u0650 \u0634\u0648\u06A9) \u2014 \u0628\u0631\u0646\u062F\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 S840 \u0631\u0648\u06CC \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A`
+  ];
+  if (cfg.driftK != null) {
+    filters.push(
+      `\u06AF\u06CC\u062A\u0650 \u2460 \u0631\u0648\u0646\u062F\u0650 \u0639\u0644\u0651\u06CC: ${cfg.driftK} \u06A9\u0646\u062F\u0644 (\u2248${driftDays} \u0631\u0648\u0632) \u2014 close[i\u22121] \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 close[i\u22121\u2212${cfg.driftK}] (\u0627\u0631\u062B\u06CC \u0627\u0632 S604)`
+    );
+  }
+  if (cfg.sigmaW != null) {
+    filters.push(
+      `\u06AF\u06CC\u062A\u0650 \u2461 \u0631\u0698\u06CC\u0645\u0650 \u03C3: \u03C3[i] \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3[i\u2212${cfg.sigmaW}..i\u22121] \u2264 \u06F1.\u06F0 \u21D2 \u0641\u0642\u0637 \u0628\u0627\u0632\u0627\u0631\u0650 CALM (\u0627\u0631\u062B\u06CC \u0627\u0632 S605/S606)`
+    );
+  } else {
+    filters.push("\u06A9\u0627\u0631\u062A\u0650 **\u062E\u0627\u0645** \u2014 \u0647\u06CC\u0686 \u06AF\u06CC\u062A\u06CC \u0646\u062F\u0627\u0631\u062F (\u0633\u0646\u062F \xA7\u06F1: \xABD1 \u062E\u0627\u0645\xBB)");
+  }
+  filters.push(
+    `\u0647\u0645\u200C\u062E\u0637\u06CC\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647\u0654 \u062F\u0648 \u06AF\u06CC\u062A \u2248\u06F1.\u06F0 \u21D2 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u0650 \u0627\u0641\u0632\u0627\u06CC\u0634\u06CC\u060C \u0646\u0647 \u062A\u06A9\u0631\u0627\u0631\u06CC (\u06A9\u0634\u0641\u0650 \u0633\u0646\u062F \xA7\u06F3)`,
+    `\u0635\u0641\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u0622\u0632\u0627\u062F \u2014 \u0647\u0645\u0647 \u0627\u0632 S840/S604/S605 \u0645\u0646\u062C\u0645\u062F \u0634\u062F\u0647\u200C\u0627\u0646\u062F`
+  );
+  const meta = {
+    code: "S607",
+    name: `\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0628\u0627 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u062A\u0639\u0627\u0645\u062F (${cfg.tfFa})`,
+    kind: "engle_dual_gate",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=${slPipShow} / TP=${tpPipShow} pip (${cfg.slK}\xD7ATR(${cfg.atrP}) \u0648\u0627\u06CC\u0644\u062F\u0631 \u0648 \u0646\u0633\u0628\u062A\u0650 ${cfg.rr}\u061B \u0645\u06CC\u0627\u0646\u0647\u0654 \u062A\u0627\u0631\u06CC\u062E\u06CC\u0650 \u0627\u0633\u062A\u062E\u0631 \u2248\u06F1\u06F7\u06F9.\u06F8/\u06F1\u06F9\u06F7.\u06F5 pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} (\u2248${holdDays} \u0631\u0648\u0632) \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F\u26A0\uFE0F **\u0627\u0633\u062A\u062E\u0631\u0650 \u0627\u062A\u062D\u0627\u062F\u06CC\u0650 \u0633\u0647\u200C\u06A9\u0627\u0631\u062A\u06CC:** \u062D\u06A9\u0645\u0650 ACCEPT \u0631\u0648\u06CC \u062C\u0645\u0639\u06CC\u062A\u0650 \u062A\u062C\u0645\u06CC\u0639\u06CC\u0650 D1+H8+H6 (n=283) \u0627\u0633\u062A\u060C \u0646\u0647 \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0628\u0647\u200C\u062A\u0646\u0647\u0627\u06CC\u06CC. \u0627\u06AF\u0631 \u062F\u0648 \u06CC\u0627 \u0633\u0647 \u06A9\u0627\u0631\u062A \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u062F\u0627\u062F\u0646\u062F\u060C **\u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u0646\u0648\u0633\u0627\u0646\u06CC** \u0627\u0633\u062A \u21D2 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u06AF\u06CC\u0631\u06CC\u062F\u060C \u0646\u0647 \u0633\u0647 \u0631\u06CC\u0633\u06A9\u0650 \u06A9\u0627\u0645\u0644. \u26A0\uFE0F \u06A9\u0627\u0631\u062A\u0650 H12 \u0628\u0627 \u0622\u0646\u06A9\u0647 n=167/WR=62.28\u066A \u062F\u0627\u0634\u062A \u062A\u0648\u0633\u0637\u0650 \u0627\u0646\u062A\u062E\u0627\u0628\u200C\u06AF\u0631\u0650 \u0631\u0633\u0645\u06CC \u062D\u0630\u0641 \u0634\u062F (\u062D\u0627\u0634\u06CC\u0647\u0654 \u06F0.\u06F1\u06F5) \u21D2 \u0627\u06AF\u0631 \u0631\u0648\u0632\u06CC \u06A9\u0633\u06CC \u0622\u0646 \u0631\u0627 \u0648\u0635\u0644 \u06A9\u0631\u062F\u060C \u062C\u0645\u0639\u06CC\u062A\u0650 \u062F\u0627\u0648\u0631\u06CC\u200C\u0634\u062F\u0647 \u0628\u0627\u0637\u0644 \u0645\u06CC\u200C\u0634\u0648\u062F. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (FIFO \u062A\u0642\u0648\u06CC\u0645\u06CC \u0628\u062F\u0648\u0646\u0650 \u0647\u0645\u200C\u0632\u0645\u0627\u0646\u06CC \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A). \u26A0\uFE0F \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC (BE/trailing) \u0622\u0632\u0645\u0648\u062F\u0647 \u0648 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u21D2 \u0641\u0642\u0637 TP/SL/\u0632\u0645\u0627\u0646. \u26A0\uFE0F maxDD \u0627\u0633\u062A\u062E\u0631 \u06F7.\u06F4\u06F7\u066A \u0627\u0633\u062A (\u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u06F5.\u06F6\u06F6\u066A \u0628\u0631\u0627\u06CC S606) \u2014 \u0628\u0647\u0627\u06CC\u0650 z \u0648 \u0633\u0648\u062F\u0650 \u0628\u06CC\u0634\u062A\u0631.`,
+    filters
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/kyle_shock_calm_s1911.ts
+var GOLD_PIP9 = 0.1;
+var S1911_CFG = {
+  // تنها کارتِ ACCEPT. هیچ کارتِ دیگری اضافه نشود (H6 = REJECT).
+  "XAUUSD-H8": {
+    id: "XAUUSD-H8",
+    tfFa: "H8",
+    theta: 2.618,
+    rhoMin: 0.618,
+    atrWin: 21,
+    lam: 0.94,
+    calmW: 233,
+    regMax: 1,
+    kSl: 1.272,
+    kTp: 2.058,
+    maxHold: 16,
+    approachFrac: 0.85
+  }
+};
+function computeS1911(candles, cfg) {
+  const n = candles.length;
+  const minBars = cfg.calmW + 52;
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  if (n < minBars + 2) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist: 138 * GOLD_PIP9,
+      tpDist: 223 * GOLD_PIP9,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u06AF\u06CC\u062A\u0650 \u0631\u0698\u06CC\u0645\u0650 \u03C3 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0628\u0647 \u0645\u06CC\u0627\u0646\u0647\u0654 \u067E\u0646\u062C\u0631\u0647\u0654 \u0628\u0633\u062A\u0647\u0654 ${cfg.calmW} \u06A9\u0646\u062F\u0644\u06CC \u0646\u06CC\u0627\u0632 \u062F\u0627\u0631\u062F \u0648 \u062E\u0648\u062F\u0650 \u03C3 \u067E\u0633 \u0627\u0632 \u06F5\u06F0 \u06A9\u0646\u062F\u0644 \u0622\u063A\u0627\u0632 \u0645\u06CC\u200C\u0634\u0648\u062F \u21D2 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} (\u0645\u0648\u062C\u0648\u062F: ${n}). \u062A\u0627 \u0622\u0646 \u0632\u0645\u0627\u0646 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0633\u06A9\u0648\u062A \u0645\u06CC\u200C\u06A9\u0646\u062F.`,
+      indicators: emptyInd
+    };
+  }
+  const f = s965Features(candles, cfg);
+  const i = n - 1;
+  const atrPrev = f.atrPrev[i];
+  const rng = f.rng[i];
+  const rho = f.rho[i];
+  const sgn = f.bodySgn[i];
+  const valid = atrPrev > 1e-12 && rng > 0;
+  const close = candles.map((c) => c.close);
+  const { sigma } = ewmaZ(close, cfg.lam);
+  const reg = regimeRatio(sigma, cfg.calmW);
+  const regI = reg[i];
+  const regOk = Number.isFinite(regI) && regI <= cfg.regMax;
+  const slPip = Math.max(cfg.kSl * atrPrev / GOLD_PIP9, 1e-9);
+  const tpPip = Math.max(cfg.kTp * atrPrev / GOLD_PIP9, 1e-9);
+  const slDist = slPip * GOLD_PIP9;
+  const tpDist = tpPip * GOLD_PIP9;
+  const thr = cfg.theta * atrPrev;
+  const isShock = valid && rng >= thr;
+  const isPermanent = rho >= cfg.rhoMin;
+  const shockPart = isShock && isPermanent && sgn !== 0;
+  const active = shockPart && regOk;
+  const direction = active && sgn < 0 ? "SHORT" : "LONG";
+  const approaching = valid && !active && !isShock && regOk && rng >= cfg.approachFrac * thr && isPermanent && sgn !== 0;
+  const ratio = thr > 0 ? rng / thr : 0;
+  const regTxt = Number.isFinite(regI) ? regI.toFixed(3) : "\u2014";
+  const indicators = [
+    {
+      name: `\u0631\u0646\u062C\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${cfg.theta}\xD7ATR${cfg.atrWin}[i\u22121])`,
+      value: valid ? `${(rng / GOLD_PIP9).toFixed(1)} / ${(thr / GOLD_PIP9).toFixed(1)} pip (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647)` : "\u2014",
+      status: isShock ? "ok" : approaching ? "neutral" : "bad"
+    },
+    {
+      name: `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 = |close\u2212open| \xF7 (high\u2212low) \u2014 \u06A9\u0641\u0650 ${cfg.rhoMin}`,
+      value: valid ? `${rho.toFixed(3)}` : "\u2014",
+      status: isPermanent ? "ok" : "bad"
+    },
+    {
+      name: `\u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634: \u03C3 \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3(${cfg.calmW} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647) \u2014 \u0633\u0642\u0641\u0650 ${cfg.regMax}`,
+      value: Number.isFinite(regI) ? `${regTxt} \u21D2 ${regOk ? "\u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0631\u0627\u0645 \u2713" : "\u0628\u0627\u0632\u0627\u0631\u0650 \u0637\u0648\u0641\u0627\u0646\u06CC \u2717"}` : "\u03C3 \u0647\u0646\u0648\u0632 \u06AF\u0631\u0645 \u0646\u0634\u062F\u0647",
+      status: regOk ? "ok" : "bad"
+    },
+    {
+      name: "\u062C\u0647\u062A\u0650 \u0628\u062F\u0646\u0647\u0654 \u06A9\u0646\u062F\u0644\u0650 \u0634\u0648\u06A9 (\u0627\u062B\u0631\u0650 \u062F\u0627\u0626\u0645\u06CC \u21D2 \u0627\u062F\u0627\u0645\u0647)",
+      value: sgn > 0 ? "\u0635\u0639\u0648\u062F\u06CC (LONG)" : sgn < 0 ? "\u0646\u0632\u0648\u0644\u06CC (SHORT)" : "\u0628\u062F\u0648\u0646\u0650 \u0628\u062F\u0646\u0647 (doji)",
+      status: sgn !== 0 ? "neutral" : "bad"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A)",
+      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (\u0646\u0633\u0628\u062A ${(cfg.kTp / cfg.kSl).toFixed(3)} \u21D2 TP>SL)`,
+      status: "ok"
+    },
+    // قیدِ (ب) ممیزیِ شاهدِ کاذب — این شاخص هرگز حذف نشود.
+    {
+      name: "\u26A0\uFE0F \u0646\u0633\u0628\u062A \u0628\u0627 \u0644\u0627\u06CC\u0647\u0654 S965 (\u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647)",
+      value: "\u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 \u06A9\u0627\u0645\u0644: \u06F8\u06F2 \u0627\u0632 \u06F8\u06F2 \u0631\u0648\u06CC\u062F\u0627\u062F \u062F\u0627\u062E\u0644\u0650 S965 \xB7 jaccard \u06F0.\u06F5\u06F7 \u2014 \u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644 \u0646\u06CC\u0633\u062A\u060C \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A \u0627\u0633\u062A",
+      status: "neutral"
+    }
+  ];
+  let reason;
+  if (active) {
+    const side = direction === "LONG" ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634";
+    const bodyDir = direction === "LONG" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    reason = `\u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u06CC\u06A9 **\u0634\u0648\u06A9\u0650 \u0645\u0637\u0644\u0639 \u062F\u0631 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0631\u0627\u0645** \u0627\u0633\u062A: \u0631\u0646\u062C ${(rng / GOLD_PIP9).toFixed(1)} pip \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})=${(thr / GOLD_PIP9).toFixed(1)} pip (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647) \xB7 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1=${rho.toFixed(3)} \u2265 ${cfg.rhoMin} \xB7 \u0628\u062F\u0646\u0647\u0654 ${bodyDir} **\u0648** \u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634 \u0628\u0627\u0632 \u0627\u0633\u062A (\u03C3\xF7\u0645\u06CC\u0627\u0646\u0647 = ${regTxt} \u2264 ${cfg.regMax}) \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647: \u0634\u0648\u06A9\u0650 \u062F\u0631\u0634\u062A \u062F\u0631 **\u0622\u0631\u0627\u0645\u0634** \u0646\u0645\u06CC\u200C\u062A\u0648\u0627\u0646\u062F \u0646\u0648\u0633\u0627\u0646\u0650 \u0645\u0639\u0645\u0648\u0644\u0650 \u0631\u0698\u06CC\u0645 \u0628\u0627\u0634\u062F\u060C \u067E\u0633 \u0627\u062D\u062A\u0645\u0627\u0644\u0650 \u062E\u0628\u0631\u0650 \u0648\u0627\u0642\u0639\u06CC \u0628\u0627\u0644\u0627 \u0645\u06CC\u200C\u0631\u0648\u062F \u2014 \xAB\u062E\u0628\u0631\u0650 \u0648\u0627\u0642\u0639\u06CC \u062F\u0631 \u0633\u06A9\u0648\u062A \u0634\u0646\u06CC\u062F\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F\xBB (\u06A9\u06CC\u0646\u0632 \xD7 \u06A9\u0627\u06CC\u0644 \xD7 \u0627\u0650\u0646\u06AF\u0644). RQS2=\u06F9\u06F3.\u06F9 \xB7 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647 \u0633\u0628\u0632 \xB7 \u067E\u06CC\u0634\u200C\u062B\u0628\u062A \u067E\u06CC\u0634 \u0627\u0632 \u0639\u062F\u062F. \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=${slPip.toFixed(1)} / TP=${tpPip.toFixed(1)} pip (${cfg.kSl}\xD7 \u0648 ${cfg.kTp}\xD7ATR(${cfg.atrWin}) \u0639\u0644\u0651\u06CC\u060C \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A). \u26A0\uFE0F \u0627\u06CC\u0646 \u0631\u0648\u06CC\u062F\u0627\u062F **\u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 S965** \u0627\u0633\u062A (\u06F1\u06F0\u06F0\u066A \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647): \u0627\u06AF\u0631 \u06A9\u0627\u0631\u062A \u0647\u0645\u200C\u0632\u0645\u0627\u0646 S965 \u0631\u0627 \u0646\u0634\u0627\u0646 \u0645\u06CC\u200C\u062F\u0647\u062F\u060C \u062F\u0648 \u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644 \u0646\u06CC\u0633\u062A \u2014 \u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F \u0627\u0633\u062A \u0628\u0627 \u06CC\u06A9 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A\u0650 \u0627\u0636\u0627\u0641\u0647\u061B \u0633\u0627\u06CC\u0632 \u0645\u0634\u062A\u0631\u06A9 \u0628\u0645\u0627\u0646\u062F.`;
+  } else if (shockPart && !regOk) {
+    reason = `\u0634\u0648\u06A9\u0650 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 \u0631\u062E \u062F\u0627\u062F (\u0631\u0646\u062C ${(rng / GOLD_PIP9).toFixed(1)} pip \u2265 ${(thr / GOLD_PIP9).toFixed(1)} pip \xB7 \u03C1=${rho.toFixed(3)}) \u0648\u0644\u06CC **\u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634 \u0628\u0633\u062A\u0647 \u0627\u0633\u062A**: \u03C3\xF7\u0645\u06CC\u0627\u0646\u0647 = ${regTxt} > ${cfg.regMax} \u21D2 \u0628\u0627\u0632\u0627\u0631 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0637\u0648\u0641\u0627\u0646\u06CC \u0627\u0633\u062A. \u062F\u0631 \u0637\u0648\u0641\u0627\u0646\u060C \u06A9\u0646\u062F\u0644\u0650 \u062F\u0631\u0634\u062A \u0645\u06CC\u200C\u062A\u0648\u0627\u0646\u062F \u0635\u0631\u0641\u0627\u064B \u0646\u0648\u0633\u0627\u0646\u0650 \u0631\u0698\u06CC\u0645\u06CC \u0628\u0627\u0634\u062F \u0646\u0647 \u062E\u0628\u0631 \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F. \u0647\u0645\u06CC\u0646 \u062A\u0641\u06A9\u06CC\u06A9 \u0627\u0633\u062A \u06A9\u0647 RQS2 \u0631\u0627 \u0627\u0632 \u06F8\u06F2.\u06F2 (S965 \u062E\u0627\u0645) \u0628\u0647 \u06F9\u06F3.\u06F9 \u0628\u0631\u062F. (\u062A\u0648\u062C\u0647: \u062E\u0648\u062F\u0650 S965 \u0645\u0645\u06A9\u0646 \u0627\u0633\u062A \u0631\u0648\u06CC \u0647\u0645\u06CC\u0646 \u06A9\u0646\u062F\u0644 \u0648\u0631\u0648\u062F \u0628\u062F\u0647\u062F \u2014 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u0633\u06A9\u0648\u062A \u0645\u06CC\u200C\u06A9\u0646\u062F.)`;
+  } else if (!valid) {
+    reason = `ATR(${cfg.atrWin}) \u0647\u0646\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646 \u06CC\u0627 \u0631\u0646\u062C\u0650 \u0635\u0641\u0631) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
+  } else if (approaching) {
+    reason = `\u0631\u0646\u062C\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 (${(rng / GOLD_PIP9).toFixed(1)} pip) \u0628\u0647 ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${(thr / GOLD_PIP9).toFixed(1)} pip) \u0631\u0633\u06CC\u062F\u0647\u060C \u0628\u062F\u0646\u0647 \u0647\u0645\u200C\u0627\u06A9\u0646\u0648\u0646 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 \u0627\u0633\u062A (\u03C1=${rho.toFixed(3)}) \u0648 \u0631\u0698\u06CC\u0645 \u0622\u0631\u0627\u0645 \u0627\u0633\u062A (${regTxt} \u2264 ${cfg.regMax}). \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 \u0628\u0627 \u0647\u0645\u06CC\u0646 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u0648 \u0647\u0645\u06CC\u0646 \u0622\u0631\u0627\u0645\u0634 \u0628\u0633\u0627\u0632\u062F\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (isShock && !isPermanent) {
+    reason = `\u0634\u0648\u06A9 \u0631\u062E \u062F\u0627\u062F (\u0631\u0646\u062C ${(rng / GOLD_PIP9).toFixed(1)} pip \u2265 ${(thr / GOLD_PIP9).toFixed(1)} pip) \u0648\u0644\u06CC \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u06A9\u0645 \u0627\u0633\u062A: \u03C1=${rho.toFixed(3)} < ${cfg.rhoMin} \u2014 \u0642\u06CC\u0645\u062A **\u062F\u0631\u0648\u0646\u0650 \u0647\u0645\u0627\u0646 \u06A9\u0646\u062F\u0644** \u0628\u062E\u0634\u0650 \u0628\u0632\u0631\u06AF\u06CC \u0627\u0632 \u062D\u0631\u06A9\u062A \u0631\u0627 \u067E\u0633 \u06AF\u0631\u0641\u062A (\u0633\u0627\u06CC\u0647\u0654 \u0628\u0644\u0646\u062F) \u21D2 \u0627\u0645\u0636\u0627\u06CC \u062C\u0631\u06CC\u0627\u0646\u0650 **\u0646\u0648\u06CC\u0632**\u060C \u0646\u0647 \u0645\u0637\u0644\u0639 \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F.`;
+  } else {
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 \u0627\u062E\u06CC\u0631 \u0634\u0648\u06A9 \u0646\u06CC\u0633\u062A: \u0631\u0646\u062C ${(rng / GOLD_PIP9).toFixed(1)} pip \u06CC\u0639\u0646\u06CC ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.theta}\xD7ATR(${cfg.atrWin})=${(thr / GOLD_PIP9).toFixed(1)} pip. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0627\u0632 S965 \u0647\u0645 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F\u062A\u0631 \u0627\u0633\u062A (\u06F8\u06F2 \u0631\u0648\u06CC\u062F\u0627\u062F \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644\u060C ~\u06F5 \u062F\u0631 \u0633\u0627\u0644) \u0686\u0648\u0646 \u0639\u0644\u0627\u0648\u0647 \u0628\u0631 \u0634\u0648\u06A9\u060C \u0622\u0631\u0627\u0645\u0634\u0650 \u0631\u0698\u06CC\u0645 \u0631\u0627 \u0647\u0645 \u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u062F \u2014 \u0628\u06CC\u0634\u062A\u0631\u0650 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u0648 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A. \u0648\u0636\u0639\u06CC\u062A\u0650 \u06A9\u0646\u0648\u0646\u06CC\u0650 \u0631\u0698\u06CC\u0645: \u03C3\xF7\u0645\u06CC\u0627\u0646\u0647 = ${regTxt} (${regOk ? "\u0622\u0631\u0627\u0645" : "\u0637\u0648\u0641\u0627\u0646\u06CC"}).`;
+  }
+  return {
+    active,
+    approaching,
+    direction,
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 (\u0631\u0646\u062C \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})) \u0628\u0627 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 \u2265 ${cfg.rhoMin} \u0648 \u0631\u0698\u06CC\u0645\u0650 \u0622\u0631\u0627\u0645 \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F` : void 0,
+    indicators
+  };
+}
+function decideS1911(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS1911(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: raw2.direction === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: raw2.direction === "SHORT" ? "bear" : "bull",
+    bucket: `s1911_${cfg.tfFa.toLowerCase()}`
+  };
+  const slPipShow = Math.round(raw2.slDist / GOLD_PIP9 * 10) / 10;
+  const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP9 * 10) / 10;
+  const meta = {
+    code: "S1911",
+    name: `\u0634\u0648\u06A9\u0650 \u0645\u0637\u0644\u0639 \u062F\u0631 \u0622\u0631\u0627\u0645\u0634 (${cfg.tfFa})`,
+    kind: "kyle_shock_calm",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=${slPipShow} / TP=${tpPipShow} pip (${cfg.kSl}\xD7 \u0648 ${cfg.kTp}\xD7ATR(${cfg.atrWin}) **\u06A9\u0646\u062F\u0644\u0650 i\u22121**\u061B \u0645\u06CC\u0627\u0646\u0647\u0654 \u062A\u0627\u0631\u06CC\u062E\u06CC \u2248\u06F1\u06F3\u06F8/\u06F2\u06F2\u06F3 pip). \u0628\u06CC\u0634\u06CC\u0646\u0647\u0654 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa}. \u26A0\uFE0F \u0633\u0627\u06CC\u0632: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 **\u06F1\u06F0\u06F0\u066A** S965 \u0627\u0633\u062A (\u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647\u060C results/_s1911_ckpt/false_witness_h8.json). \u0627\u06AF\u0631 \u0647\u0631 \u062F\u0648 \u06A9\u0627\u062F\u0631 \u0631\u0648\u0634\u0646\u200C\u0627\u0646\u062F\u060C **\u06CC\u06A9** \u0631\u0648\u06CC\u062F\u0627\u062F \u0627\u0633\u062A \u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A \u21D2 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u06AF\u06CC\u0631\u06CC\u062F\u060C \u0646\u0647 \u062F\u0648 \u0631\u06CC\u0633\u06A9\u0650 \u062C\u062F\u0627.`,
+    filters: [
+      `\u0634\u0648\u06A9\u0650 \u0631\u0646\u062C: high\u2212low \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})[i\u22121] \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 S965`,
+      `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 = |close\u2212open|\xF7(high\u2212low) \u2265 ${cfg.rhoMin} \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 S965`,
+      `\u{1F195} \u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634\u0650 \u0631\u0698\u06CC\u0645: \u03C3_t \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3(${cfg.calmW} \u06A9\u0646\u062F\u0644\u0650 **\u0628\u0633\u062A\u0647**) \u2264 ${cfg.regMax} (RiskMetrics \u03BB=${cfg.lam}) \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 S605/S606\u060C \u0639\u0644\u0651\u06CC`,
+      `\u062A\u0641\u06A9\u06CC\u06A9\u200C\u06AF\u0631\u0650 \u0627\u0635\u0644\u06CC: \u0647\u0645\u0627\u0646 \u0634\u0648\u06A9 \u062F\u0631 **\u0637\u0648\u0641\u0627\u0646** \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u062F\u0647\u062F \u21D2 RQS2 \u0627\u0632 \u06F8\u06F2.\u06F2 \u0628\u0647 \u06F9\u06F3.\u06F9`,
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0646\u0627\u0645\u062A\u0642\u0627\u0631\u0646\u0650 TP>SL (${cfg.kSl}/${cfg.kTp}) \u2014 \u0627\u0631\u062B\u06CC \u0627\u0632 S965 \xB7 ~\u06F5 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644`,
+      `\u26A0\uFE0F \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 \u06F1\u06F0\u06F0\u066A\u0650 S965 (\u06F8\u06F2 \u0627\u0632 \u06F1\u06F4\u06F4 \xB7 jaccard \u06F0.\u06F5\u06F7) \u21D2 \u0641\u06CC\u0644\u062A\u0631\u0650 \u06A9\u06CC\u0641\u06CC\u062A\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644 \u21D2 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u062F\u0631 \u062A\u0644\u0627\u0642\u06CC`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/jump_calm_s955.ts
+var GOLD_PIP10 = 0.1;
+var S955_CFG = {
+  "XAUUSD-H8": {
+    id: "XAUUSD-H8",
+    tfFa: "H8",
+    kJump: 2.6,
+    bvWin: 89,
+    slK: 2.058,
+    rr: 1,
+    maxHold: 34,
+    lam: 0.94,
+    calmW: 233,
+    regMax: 1,
+    approachFrac: 0.85,
+    rqs2: 87.7,
+    nTrades: 112,
+    wr: 67.86,
+    pf: 2.06,
+    maxDd: 2.86,
+    liftPp: 17.85,
+    passRate: 49.6,
+    portfolioNote: "\u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 **\u062C\u0627\u0646\u0634\u06CC\u0646\u0650 S950 \u0631\u0648\u06CC \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631\u062A** \u0627\u0633\u062A\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u062F\u0648\u0645\u0650 \u0622\u0646: \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC \u0646\u0634\u0627\u0646 \u062F\u0627\u062F \u0647\u0631 \u06F1\u06F1\u06F8 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 S955 \u062F\u0627\u062E\u0644\u0650 \u06F2\u06F3\u06F8 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 S950 \u0627\u0633\u062A (\u06F1\u06F0\u06F0\u066A \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u060C \u062C\u0647\u062A\u0650 \u0645\u062E\u0627\u0644\u0641 \u0635\u0641\u0631). \u0647\u0645\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u060C \u0645\u0646\u0647\u0627\u06CC \u0646\u0635\u0641\u06CC \u06A9\u0647 \u062F\u0631 \u0637\u0648\u0641\u0627\u0646\u0650 \u0646\u0648\u0633\u0627\u0646 \u0628\u0627\u0632 \u0645\u06CC\u200C\u0634\u062F \u0648 \u0636\u0631\u0631 \u0645\u06CC\u200C\u062F\u0627\u062F (WR \u06F6\u06F1.\u06F6\u2192\u06F6\u06F7.\u06F9 \xB7 PF \u06F1.\u06F5\u06F6\u2192\u06F2.\u06F0\u06F6 \xB7 maxDD \u06F4.\u06F9\u06F2\u2192\u06F2.\u06F8\u06F6\u066A)."
+  },
+  "XAUUSD-H12": {
+    id: "XAUUSD-H12",
+    tfFa: "H12",
+    kJump: 2.6,
+    bvWin: 89,
+    slK: 2.058,
+    rr: 1,
+    maxHold: 34,
+    lam: 0.94,
+    calmW: 233,
+    regMax: 1,
+    approachFrac: 0.85,
+    rqs2: 89.4,
+    nTrades: 76,
+    wr: 69.74,
+    pf: 2.31,
+    maxDd: 2.43,
+    liftPp: 19.86,
+    passRate: 45.6,
+    portfolioNote: "\u0628\u0627\u0644\u0627\u062A\u0631\u06CC\u0646 \u0646\u0645\u0631\u0647\u0654 \u0633\u0647 \u06A9\u0627\u0631\u062A\u0650 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 (\u06F8\u06F9.\u06F4) \u0648 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F\u062A\u0631\u06CC\u0646 (\u06F7\u06F6 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \u2248 \u06F5 \u062F\u0631 \u0633\u0627\u0644). \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 S800 \u0631\u0648\u06CC \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631\u062A **\u0645\u0633\u062A\u0642\u0644** \u0627\u0633\u062A (jaccard \u06F0.\u06F0\u06F7\u06F1). \u26A0\uFE0F \u0627\u0645\u0627 \u0647\u0645\u067E\u0648\u0634\u0627\u0646\u06CC\u0650 \u067E\u0646\u062C\u0631\u0647\u0654 \u0646\u06AF\u0647\u062F\u0627\u0631\u06CC \u06F9\u06F2.\u06F3\u066A \u0627\u0633\u062A \u2014 \u0646\u0647 \u0627\u0632 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u0645\u0634\u062A\u0631\u06A9\u060C \u0628\u0644\u06A9\u0647 \u0686\u0648\u0646 S800 \u0628\u0627 \u06F4\u06F3\u06F6 \u0645\u0639\u0627\u0645\u0644\u0647 \u062A\u0642\u0631\u06CC\u0628\u0627\u064B \u0647\u0645\u06CC\u0634\u0647 \u062F\u0631 \u0628\u0627\u0632\u0627\u0631 \u0627\u0633\u062A. \u067E\u0633 \u0627\u06AF\u0631 \u0647\u0631 \u062F\u0648 \u0628\u0627\u0632 \u0628\u0648\u062F\u0646\u062F\u060C \u0631\u06CC\u0633\u06A9\u0650 **\u0647\u0645\u200C\u0632\u0645\u0627\u0646** \u0631\u0648\u06CC \u06A9\u0627\u0631\u062A \u062C\u0645\u0639 \u0645\u06CC\u200C\u0634\u0648\u062F: \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u06AF\u06CC\u0631\u060C \u0646\u0647 \u062F\u0648 \u0633\u0627\u06CC\u0632\u0650 \u06A9\u0627\u0645\u0644."
+  },
+  "XAUUSD-H6": {
+    id: "XAUUSD-H6",
+    tfFa: "H6",
+    kJump: 2.6,
+    bvWin: 89,
+    slK: 2.058,
+    rr: 1,
+    maxHold: 34,
+    lam: 0.94,
+    calmW: 233,
+    regMax: 1,
+    approachFrac: 0.85,
+    rqs2: 84.9,
+    nTrades: 149,
+    wr: 65.1,
+    pf: 1.74,
+    maxDd: 4.74,
+    liftPp: 15.15,
+    passRate: 49.8,
+    portfolioNote: "\u067E\u0631\u0628\u0633\u0627\u0645\u062F\u062A\u0631\u06CC\u0646 \u0648 \u062F\u0631 \u0639\u06CC\u0646\u0650 \u062D\u0627\u0644 \u06A9\u0645\u200C\u0646\u0645\u0631\u0647\u200C\u062A\u0631\u06CC\u0646\u0650 \u0633\u0647 \u06A9\u0627\u0631\u062A (\u06F8\u06F4.\u06F9 \xB7 maxDD \u06F4.\u06F7\u06F4\u066A \u2014 \u062A\u0642\u0631\u06CC\u0628\u0627\u064B \u062F\u0648 \u0628\u0631\u0627\u0628\u0631\u0650 H8/H12). \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 S919 \u0631\u0648\u06CC \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631\u062A **\u0645\u0633\u062A\u0642\u0644** \u0627\u0633\u062A (jaccard \u06F0.\u06F2\u06F2\u06F0 \xB7 \u06F4\u06F7 \u0647\u0645\u200C\u06A9\u0646\u062F\u0644 \u0627\u0632 \u06F1\u06F5\u06F5 \xB7 \u062C\u0647\u062A\u0650 \u0645\u062E\u0627\u0644\u0641 \u0635\u0641\u0631) \u21D2 \u0647\u0645\u200C\u0632\u06CC\u0633\u062A\u06CC \u0645\u062C\u0627\u0632."
+  }
+};
+function computeS955(candles, cfg) {
+  const n = candles.length;
+  const minBars = cfg.calmW + 52;
+  if (n < minBars + 2) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist: 242 * GOLD_PIP10,
+      tpDist: 242 * GOLD_PIP10,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634\u0650 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0628\u0647 \u0645\u06CC\u0627\u0646\u0647\u0654 \u067E\u0646\u062C\u0631\u0647\u0654 \u0628\u0633\u062A\u0647\u0654 ${cfg.calmW} \u06A9\u0646\u062F\u0644\u06CC \u0646\u06CC\u0627\u0632 \u062F\u0627\u0631\u062F \u0648 \u062E\u0648\u062F\u0650 \u03C3 \u067E\u0633 \u0627\u0632 \u06F5\u06F0 \u06A9\u0646\u062F\u0644 \u0622\u063A\u0627\u0632 \u0645\u06CC\u200C\u0634\u0648\u062F \u21D2 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} (\u0645\u0648\u062C\u0648\u062F: ${n}). \u062A\u0627 \u0622\u0646 \u0632\u0645\u0627\u0646 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0633\u06A9\u0648\u062A \u0645\u06CC\u200C\u06A9\u0646\u062F \u2014 \u0646\u0647 \u062A\u062E\u0645\u06CC\u0646\u060C \u0646\u0647 \u062D\u062F\u0633.`,
+      indicators: [{ name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }]
+    };
+  }
+  const f = s950Features(candles, cfg);
+  const i = n - 1;
+  const warm = cfg.bvWin + 2;
+  const rNow = f.r[i];
+  const sig = f.sigmaBv[i];
+  const dr = f.drift[i];
+  const atr2 = f.atrPx[i];
+  const valid = i >= warm && sig > 0;
+  const close = candles.map((c) => c.close);
+  const { sigma } = ewmaZ(close, cfg.lam);
+  const reg = regimeRatio(sigma, cfg.calmW);
+  const regI = reg[i];
+  const calmOk = Number.isFinite(regI) && regI <= cfg.regMax;
+  const slPip = Math.max(cfg.slK * atr2 / GOLD_PIP10, 1e-9);
+  const tpPip = slPip * cfg.rr;
+  const slDist = slPip * GOLD_PIP10;
+  const tpDist = tpPip * GOLD_PIP10;
+  const thr = cfg.kJump * sig;
+  const jumpUp = valid && rNow > thr;
+  const jumpDn = valid && rNow < -thr;
+  const longBase = jumpUp && dr > 0;
+  const shortBase = jumpDn && dr < 0;
+  const basePart = longBase || shortBase;
+  const active = basePart && calmOk;
+  const direction = shortBase ? "SHORT" : "LONG";
+  const nearUp = valid && !active && calmOk && !jumpUp && rNow > cfg.approachFrac * thr && rNow <= thr && dr > 0;
+  const nearDn = valid && !active && calmOk && !jumpDn && rNow < -cfg.approachFrac * thr && rNow >= -thr && dr < 0;
+  const approaching = nearUp || nearDn;
+  const rBp = rNow * 1e4;
+  const thrBp = thr * 1e4;
+  const ratio = thr > 0 ? Math.abs(rNow) / thr : 0;
+  const regTxt = Number.isFinite(regI) ? regI.toFixed(3) : "\u2014";
+  const indicators = [
+    {
+      name: `\u0628\u0627\u0632\u062F\u0647\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 (r) \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u062C\u0647\u0634 \xB1${cfg.kJump}\xB7\u03C3_BV(${cfg.bvWin})`,
+      value: valid ? `${rBp.toFixed(1)} / \xB1${thrBp.toFixed(1)} bp (${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647)` : "\u2014",
+      status: jumpUp || jumpDn ? "ok" : approaching ? "neutral" : "bad"
+    },
+    {
+      name: `\u0631\u0627\u0646\u0634\u0650 \u0631\u0698\u06CC\u0645\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC (close[t\u22121] \u2212 close[t\u2212${cfg.bvWin + 1}])`,
+      value: valid ? `${dr >= 0 ? "+" : ""}${dr.toFixed(2)} $` : "\u2014",
+      status: basePart ? "ok" : jumpUp && dr <= 0 || jumpDn && dr >= 0 ? "bad" : "neutral"
+    },
+    {
+      // این شاخص **قلبِ S955** است — تفاوتش با S950 دقیقاً همین یک خط است.
+      name: `\u2B50 \u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634: \u03C3 \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3(${cfg.calmW} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647) \u2014 \u0633\u0642\u0641\u0650 ${cfg.regMax}`,
+      value: Number.isFinite(regI) ? `${regTxt} ${calmOk ? "\u21D2 \u0631\u0698\u06CC\u0645\u0650 \u0622\u0631\u0627\u0645 \u2713" : "\u21D2 \u0631\u0698\u06CC\u0645\u0650 \u0637\u0648\u0641\u0627\u0646\u06CC \u2717"}` : "\u2014 (\u062F\u0631 \u062D\u0627\u0644\u0650 \u06AF\u0631\u0645\u200C\u0634\u062F\u0646)",
+      status: calmOk ? "ok" : "bad"
+    },
+    {
+      name: `\u03C3_BV(${cfg.bvWin}) \u2014 \u0646\u0648\u0633\u0627\u0646\u0650 \u067E\u0627\u06CC\u0647\u0654 Bipower (\u0645\u0642\u0627\u0648\u0645 \u0628\u0647 \u062C\u0647\u0634\u060C \u0639\u0644\u0651\u06CC)`,
+      value: valid ? `${(sig * 1e4).toFixed(2)} bp` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A)",
+      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (\u0646\u0633\u0628\u062A ${cfg.rr} \u2014 \u0645\u062A\u0642\u0627\u0631\u0646)`,
+      status: "ok"
+    }
+  ];
+  const evidence = `\u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u0650 \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A: RQS2=${cfg.rqs2} \xB7 n=${cfg.nTrades} \xB7 WR=${cfg.wr}\u066A \xB7 PF=${cfg.pf} \xB7 maxDD=${cfg.maxDd}\u066A \xB7 lift=+${cfg.liftPp}pp (\u0647\u0631 \u06F1\u06F1 \u06AF\u06CC\u062A\u0650 RQS2 \u0633\u0628\u0632)`;
+  let reason;
+  if (active) {
+    const side = direction === "LONG" ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634";
+    const jdir = direction === "LONG" ? "\u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627" : "\u0631\u0648 \u0628\u0647 \u067E\u0627\u06CC\u06CC\u0646";
+    reason = `\u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647 \u06CC\u06A9 **\u062C\u0647\u0634\u0650** ${jdir} \u062B\u0628\u062A \u06A9\u0631\u062F (r=${rBp.toFixed(1)} bp \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.kJump}\xB7\u03C3_BV=${thrBp.toFixed(1)} bp) \xB7 \u0631\u0627\u0646\u0634\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC (${dr >= 0 ? "+" : ""}${dr.toFixed(2)}$) **\u0647\u0645\u200C\u062C\u0647\u062A** \u0627\u0633\u062A \xB7 \u0648 \u0631\u0698\u06CC\u0645\u0650 \u0646\u0648\u0633\u0627\u0646 **\u0622\u0631\u0627\u0645** \u0627\u0633\u062A (\u03C3 \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3 = ${regTxt} \u2264 ${cfg.regMax}) \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647: \u062C\u0647\u0634\u0650 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u062F\u0631 \u0628\u0633\u062A\u0647\u0654 \u0622\u0631\u0627\u0645 \u0627\u062F\u0627\u0645\u0647 \u0645\u06CC\u200C\u06CC\u0627\u0628\u062F\u060C \u062F\u0631 \u0637\u0648\u0641\u0627\u0646 \u0646\u0647 \u2014 \u0631\u0648\u06CC H8 \u0647\u0645\u06CC\u0646 \u062A\u0641\u06A9\u06CC\u06A9 WR \u0631\u0627 \u0627\u0632 \u06F5\u06F4.\u06F5\u066A (\u06F1\u06F2\u06F0 \u062C\u0647\u0634\u0650 \u0637\u0648\u0641\u0627\u0646\u06CC) \u0628\u0647 \u06F6\u06F7.\u06F9\u066A (\u06F1\u06F1\u06F8 \u062C\u0647\u0634\u0650 \u0622\u0631\u0627\u0645) \u0628\u0631\u062F. ${evidence}. \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=TP=${slPip.toFixed(1)} pip.`;
+  } else if (basePart && !calmOk) {
+    reason = `\u062C\u0647\u0634\u0650 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u0631\u062E \u062F\u0627\u062F (r=${rBp.toFixed(1)} bp \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \xB1${thrBp.toFixed(1)} bp\u060C \u0631\u0627\u0646\u0634 \u0647\u0645\u200C\u062C\u0647\u062A) **\u0648\u0644\u06CC \u0631\u0698\u06CC\u0645\u0650 \u0646\u0648\u0633\u0627\u0646 \u0637\u0648\u0641\u0627\u0646\u06CC \u0627\u0633\u062A** (\u03C3 \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3 = ${regTxt} > ${cfg.regMax}) \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F. \u0627\u06CC\u0646 \u0647\u0645\u0627\u0646 \u0646\u06CC\u0645\u06CC \u0627\u0632 \u0631\u0648\u06CC\u062F\u0627\u062F\u0647\u0627\u0633\u062A \u06A9\u0647 \u0644\u0627\u06CC\u0647\u0654 \u067E\u0627\u06CC\u0647 (S950) \u0648\u0627\u0631\u062F\u0634\u0627\u0646 \u0645\u06CC\u200C\u0634\u062F \u0648 \u0636\u0631\u0631 \u0645\u06CC\u200C\u062F\u0627\u062F: WR \u0628\u0627\u0632\u0648\u06CC \u0637\u0648\u0641\u0627\u0646\u06CC \u06F5\u06F4.\u06F5\u066A \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u06F6\u06F7.\u06F9\u066A \u0622\u0631\u0627\u0645. \u0633\u06A9\u0648\u062A\u0650 \u0627\u06CC\u0646\u062C\u0627 **\u062E\u0648\u062F\u0650 \u0644\u0628\u0647** \u0627\u0633\u062A\u060C \u0646\u0647 \u0627\u0632 \u062F\u0633\u062A \u062F\u0627\u062F\u0646\u0650 \u0641\u0631\u0635\u062A.`;
+  } else if (approaching) {
+    reason = `\u0628\u0627\u0632\u062F\u0647\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 (${rBp.toFixed(1)} bp) \u0628\u0647 ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u062C\u0647\u0634 (\xB1${thrBp.toFixed(1)} bp) \u0631\u0633\u06CC\u062F\u0647\u060C \u0631\u0627\u0646\u0634 \u0647\u0645\u200C\u062C\u0647\u062A \u0627\u0633\u062A \u0648 \u0631\u0698\u06CC\u0645 \u0622\u0631\u0627\u0645 \u0627\u0633\u062A (${regTxt}) \u2014 \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u062C\u0647\u0634\u0650 \u06A9\u0627\u0645\u0644 \u0628\u0633\u0627\u0632\u062F \u0648 \u0627\u06CC\u0646 \u062F\u0648 \u0634\u0631\u0637 \u0628\u0645\u0627\u0646\u0646\u062F\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (!valid) {
+    reason = `\u03C3_BV \u0647\u0646\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 ${warm} \u06A9\u0646\u062F\u0644\u06CC \u06CC\u0627 \u0646\u0648\u0633\u0627\u0646\u0650 \u0635\u0641\u0631) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
+  } else if (jumpUp || jumpDn) {
+    reason = `\u062C\u0647\u0634 \u0631\u062E \u062F\u0627\u062F (r=${rBp.toFixed(1)} bp) \u0648\u0644\u06CC \u0631\u0627\u0646\u0634\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC (${dr >= 0 ? "+" : ""}${dr.toFixed(2)}$) **\u0645\u062E\u0627\u0644\u0641** \u0627\u0633\u062A \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F. \u0622\u0632\u0645\u0648\u0646\u0650 \u06A9\u0646\u062A\u0631\u0644\u0650 \u0644\u0627\u06CC\u0647\u0654 \u067E\u0627\u06CC\u0647 \u0646\u0634\u0627\u0646 \u062F\u0627\u062F \u062C\u0647\u0634\u0650 \u062E\u0644\u0627\u0641\u0650 \u0631\u0627\u0646\u0634 \u0644\u0628\u0647 \u0646\u062F\u0627\u0631\u062F (REJECT/z=\u06F1.\u06F6\u06F6).`;
+  } else {
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 \u0627\u062E\u06CC\u0631 \u062C\u0647\u0634 \u0646\u06CC\u0633\u062A: |r|=${Math.abs(rBp).toFixed(1)} bp \u06CC\u0639\u0646\u06CC ${(ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.kJump}\xB7\u03C3_BV(${cfg.bvWin})=${thrBp.toFixed(1)} bp. \u0631\u0698\u06CC\u0645\u0650 \u0641\u0639\u0644\u06CC: ${regTxt} (${calmOk ? "\u0622\u0631\u0627\u0645" : "\u0637\u0648\u0641\u0627\u0646\u06CC"}). \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (${cfg.nTrades} \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644) \u2014 \u0628\u06CC\u0634\u062A\u0631\u0650 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u0648 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A.`;
+  }
+  return {
+    active,
+    approaching,
+    direction,
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u062C\u0647\u0634\u0650 \u06A9\u0627\u0645\u0644 (|r| > ${cfg.kJump}\xB7\u03C3_BV) \u0647\u0645\u200C\u062C\u0647\u062A \u0628\u0627 \u0631\u0627\u0646\u0634\u060C \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0622\u0631\u0627\u0645` : void 0,
+    indicators
+  };
+}
+function decideS955(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS955(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: raw2.direction === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: raw2.direction === "SHORT" ? "bear" : "bull",
+    bucket: `s955_${cfg.tfFa.toLowerCase()}`
+  };
+  const slPipShow = Math.round(raw2.slDist / GOLD_PIP10 * 10) / 10;
+  const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP10 * 10) / 10;
+  const meta = {
+    code: "S955",
+    name: `\u062C\u0647\u0634\u0650 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0622\u0631\u0627\u0645 (${cfg.tfFa})`,
+    kind: "jump_calm",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=TP=${slPipShow} pip (${cfg.slK}\xD7ATR(${cfg.bvWin}) \u06A9\u0646\u062F\u0644\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u062C\u0647\u0634\u0650 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F \u2014 \u0648\u06AF\u0631\u0646\u0647 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A. \u26A0\uFE0F \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC \u0646\u06A9\u0646 (BE/trailing): \u062F\u0631 \u0644\u0627\u06CC\u0647\u0654 \u067E\u0627\u06CC\u0647 \u0627\u06CC\u0646 \xAB\u0628\u0647\u0628\u0648\u062F\xBB\u0647\u0627 \u0645\u0647\u0627\u0631\u062A \u0631\u0627 \u0646\u0627\u0628\u0648\u062F \u06A9\u0631\u062F\u0646\u062F\u060C \u0686\u0648\u0646 \u067E\u0633\u200C\u0644\u0631\u0632\u0647\u0654 \u062C\u0647\u0634 \u0632\u0645\u0627\u0646 \u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u062F. \u0641\u0642\u0637 TP/SL/\u0632\u0645\u0627\u0646. \u{1F517} \u0642\u06CC\u062F\u0650 \u067E\u0631\u062A\u0641\u0648\u06CC\u0650 \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A: ${cfg.portfolioNote}`,
+    filters: [
+      `\u062C\u0647\u0634: |r| > ${cfg.kJump}\xB7\u03C3_BV(${cfg.bvWin}) \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} (\u03C3_BV \u0639\u0644\u0651\u06CC \u2014 Bipower \u062A\u0627 t\u22121)`,
+      `\u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u06CC\u06CC \u0628\u0627 \u0631\u0627\u0646\u0634\u0650 ${cfg.bvWin}-\u06A9\u0646\u062F\u0644\u06CC\u0650 \u0631\u0698\u06CC\u0645 (\u0622\u0632\u0645\u0648\u0646\u0650 \u06A9\u0646\u062A\u0631\u0644: \u0645\u06A9\u0645\u0644\u0634 REJECT)`,
+      `\u2B50 \u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634: \u03C3_t \xF7 \u0645\u06CC\u0627\u0646\u0647\u0654 \u03C3(${cfg.calmW} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647) \u2264 ${cfg.regMax} \u2014 \u0646\u0631\u062E\u0650 \u0639\u0628\u0648\u0631 ${cfg.passRate}\u066A (\u06AF\u06CC\u062A\u0650 \u0632\u0646\u062F\u0647\u060C \u0646\u0647 \u0647\u0645\u06CC\u0634\u0647-\u0628\u0627\u0632\u061B \u0627\u0628\u0637\u0627\u0644\u200C\u06AF\u0631\u0650 P3 \u067E\u06CC\u0634\u200C\u062B\u0628\u062A)`,
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0645\u062A\u0642\u0627\u0631\u0646 SL=TP=${cfg.slK}\xD7ATR(${cfg.bvWin}) \u2014 \u0635\u0641\u0631 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC`,
+      `\u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (\u0628\u06CC\u0634\u06CC\u0646\u0647 \u0647\u0645\u0632\u0645\u0627\u0646\u06CC = \u06F1) \xB7 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F: ${cfg.nTrades} \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/convention_shock_s919.ts
+var GOLD_PIP11 = 0.1;
+var S919_CFG = {
+  // تنها کارتِ ACCEPT. همهٔ عددها به ارث از S965 (شوک/ماندگاری/هندسه) و
+  // S604 (قاعدهٔ K = ۶۰ روزِ تقویمی ⇒ روی H6: 60×24/6 = 240 کندل).
+  // صفر پارامترِ جست‌وجو‌شده ⇒ هیچ چندگانگیِ نو.
+  "XAUUSD-H6": {
+    id: "XAUUSD-H6",
+    tfFa: "H6",
+    tfHours: 6,
+    theta: 2.618,
+    rhoMin: 0.618,
+    atrWin: 21,
+    driftK: 240,
+    kSl: 1.272,
+    kTp: 2.058,
+    maxHold: 16,
+    approachFrac: 0.85
+  }
+};
+function rollMeanNan(x, w) {
+  const n = x.length;
+  const out = new Array(n).fill(NaN);
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    acc += x[i];
+    if (i >= w) acc -= x[i - w];
+    if (i >= w - 1) out[i] = acc / w;
+  }
+  return out;
+}
+function s919Features(candles, cfg) {
+  const n = candles.length;
+  const W = cfg.atrWin;
+  const K10 = cfg.driftK;
+  const trArr2 = new Array(n).fill(0);
+  for (let t = 1; t < n; t++) {
+    const h = candles[t].high, l = candles[t].low, pc = candles[t - 1].close;
+    trArr2[t] = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+  }
+  const atr2 = rollMeanNan(trArr2, W);
+  const atrPrev = new Array(n).fill(NaN);
+  for (let t = 1; t < n; t++) atrPrev[t] = atr2[t - 1];
+  const rng = new Array(n).fill(0);
+  const rho = new Array(n).fill(0);
+  const bodySgn = new Array(n).fill(0);
+  const shock = new Array(n).fill(false);
+  for (let t = 0; t < n; t++) {
+    const c = candles[t];
+    const r = c.high - c.low;
+    rng[t] = r;
+    const body2 = c.close - c.open;
+    rho[t] = r > 0 ? Math.abs(body2) / r : 0;
+    bodySgn[t] = body2 > 0 ? 1 : body2 < 0 ? -1 : 0;
+    const ap = atrPrev[t];
+    const thr = Number.isFinite(ap) ? cfg.theta * ap : Infinity;
+    shock[t] = r >= thr && r > 0;
+  }
+  const driftUp = new Array(n).fill(false);
+  const driftDn = new Array(n).fill(false);
+  for (let t = K10 + 1; t < n; t++) {
+    const d = candles[t - 1].close - candles[t - 1 - K10].close;
+    driftUp[t] = d > 0;
+    driftDn[t] = d < 0;
+  }
+  return { atrPrev, rng, rho, bodySgn, shock, driftUp, driftDn };
+}
+function s919EventAt(f, t, cfg) {
+  if (t < 0) return 0;
+  const sgn = f.bodySgn[t];
+  if (sgn === 0) return 0;
+  if (!f.shock[t]) return 0;
+  if (f.rho[t] < cfg.rhoMin) return 0;
+  if (sgn > 0 && f.driftUp[t]) return 1;
+  if (sgn < 0 && f.driftDn[t]) return -1;
+  return 0;
+}
+function computeS919(candles, cfg) {
+  const n = candles.length;
+  const minBars = Math.max(cfg.atrWin + 3, cfg.driftK + 3);
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  if (n < minBars) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist: 116 * GOLD_PIP11,
+      tpDist: 187 * GOLD_PIP11,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F (\u06AF\u06CC\u062A\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 ${cfg.driftK}-\u06A9\u0646\u062F\u0644\u06CC + ATR(${cfg.atrWin}) \u0639\u0644\u0651\u06CC + \u0634\u06CC\u0641\u062A\u0650 \u0645\u0627\u0633\u06A9) \u2014 \u0645\u0648\u062C\u0648\u062F: ${n}.`,
+      indicators: emptyInd
+    };
+  }
+  const f = s919Features(candles, cfg);
+  const i = n - 1;
+  const e = i - 1;
+  const atrGeom = f.atrPrev[i];
+  const geomOk = Number.isFinite(atrGeom) && atrGeom > 1e-12;
+  const atrEvent = f.atrPrev[e];
+  const eventAtrOk = Number.isFinite(atrEvent) && atrEvent > 1e-12;
+  const slPip = Math.max(cfg.kSl * (geomOk ? atrGeom : 0) / GOLD_PIP11, 1e-9);
+  const tpPip = Math.max(cfg.kTp * (geomOk ? atrGeom : 0) / GOLD_PIP11, 1e-9);
+  const slDist = slPip * GOLD_PIP11;
+  const tpDist = tpPip * GOLD_PIP11;
+  const rngE = f.rng[e];
+  const rhoE = f.rho[e];
+  const sgnE = f.bodySgn[e];
+  const thrE = eventAtrOk ? cfg.theta * atrEvent : Infinity;
+  const isShock = f.shock[e];
+  const isPermanent = rhoE >= cfg.rhoMin;
+  const baseUp = isShock && isPermanent && sgnE > 0;
+  const baseDn = isShock && isPermanent && sgnE < 0;
+  const dir = s919EventAt(f, e, cfg);
+  const active = dir !== 0 && geomOk;
+  const direction = dir < 0 ? "SHORT" : dir > 0 ? "LONG" : baseDn ? "SHORT" : "LONG";
+  const hasDrift = e - 1 - cfg.driftK >= 0;
+  const driftDelta = hasDrift ? candles[e - 1].close - candles[e - 1 - cfg.driftK].close : NaN;
+  const driftAligned = sgnE > 0 && f.driftUp[e] || sgnE < 0 && f.driftDn[e];
+  const rngI = f.rng[i];
+  const rhoI = f.rho[i];
+  const sgnI = f.bodySgn[i];
+  const thrI = geomOk ? cfg.theta * atrGeom : Infinity;
+  const nextAligned = sgnI > 0 && f.driftUp[i] || sgnI < 0 && f.driftDn[i];
+  const nextIsEvent = s919EventAt(f, i, cfg) !== 0;
+  const approaching = !active && geomOk && (nextIsEvent || rngI >= cfg.approachFrac * thrI && rhoI >= cfg.rhoMin && sgnI !== 0 && nextAligned);
+  const ratioE = Number.isFinite(thrE) && thrE > 0 ? rngE / thrE : 0;
+  const ratioI = Number.isFinite(thrI) && thrI > 0 ? rngI / thrI : 0;
+  const driftDays = Math.round(cfg.driftK * cfg.tfHours / 24);
+  const indicators = [
+    {
+      name: `\u{1F534} \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u06CC\u062F\u0627\u062F = i\u2212\u06F1 (\u0645\u0627\u0633\u06A9\u0650 pre-shift \u21D2 \u0648\u0631\u0648\u062F \u062F\u0631 \u0631\u0648\u06CC\u062F\u0627\u062F+\u06F2)`,
+      value: `\u0631\u0648\u06CC\u062F\u0627\u062F \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa}\u0650 \u0645\u0627\u0642\u0628\u0644\u0650 \u0622\u062E\u0631 \u0633\u0646\u062C\u06CC\u062F\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u2014 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A\u0650 \u062F\u0627\u0648\u0631\u06CC\u200C\u0634\u062F\u0647`,
+      status: "neutral"
+    },
+    {
+      name: `\u0631\u0646\u062C\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u06CC\u062F\u0627\u062F \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${cfg.theta}\xD7ATR${cfg.atrWin}[t\u22121])`,
+      value: eventAtrOk ? `${(rngE / GOLD_PIP11).toFixed(1)} / ${(thrE / GOLD_PIP11).toFixed(1)} pip (${(ratioE * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647)` : "\u2014",
+      status: isShock ? "ok" : "bad"
+    },
+    {
+      name: `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 = |close\u2212open| \xF7 (high\u2212low) \u2014 \u06A9\u0641\u0650 ${cfg.rhoMin} (Kyle 1985)`,
+      value: eventAtrOk ? `${rhoE.toFixed(3)}` : "\u2014",
+      status: isPermanent ? "ok" : "bad"
+    },
+    {
+      name: "\u062C\u0647\u062A\u0650 \u0628\u062F\u0646\u0647\u0654 \u06A9\u0646\u062F\u0644\u0650 \u0634\u0648\u06A9 (\u0627\u062B\u0631\u0650 \u062F\u0627\u0626\u0645\u06CC \u21D2 \u0627\u062F\u0627\u0645\u0647)",
+      value: sgnE > 0 ? "\u0635\u0639\u0648\u062F\u06CC (LONG)" : sgnE < 0 ? "\u0646\u0632\u0648\u0644\u06CC (SHORT)" : "\u0628\u062F\u0648\u0646\u0650 \u0628\u062F\u0646\u0647 (doji)",
+      status: sgnE !== 0 ? "neutral" : "bad"
+    },
+    {
+      // شاخصِ یکتای این لایه — گیتِ کینزیِ قرارداد
+      name: `\u06AF\u06CC\u062A\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 ${cfg.driftK} \u06A9\u0646\u062F\u0644 (\u2248${driftDays} \u0631\u0648\u0632) \u2014 close[t\u22121] \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 close[t\u22121\u2212${cfg.driftK}]`,
+      value: Number.isFinite(driftDelta) ? `${driftDelta >= 0 ? "+" : ""}${(driftDelta / GOLD_PIP11).toFixed(0)} pip (${f.driftUp[e] ? "\u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC" : f.driftDn[e] ? "\u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 \u0646\u0632\u0648\u0644\u06CC" : "\u0628\u06CC\u200C\u062A\u063A\u06CC\u06CC\u0631"})${sgnE !== 0 ? driftAligned ? " \u2713 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u0628\u0627 \u0634\u0648\u06A9" : " \u2717 \u062E\u0644\u0627\u0641\u0650 \u0634\u0648\u06A9 \u21D2 \u06AF\u06CC\u062A \u0628\u0633\u062A\u0647" : ""}` : "\u2014",
+      status: driftAligned ? "ok" : "bad"
+    },
+    {
+      name: `ATR(${cfg.atrWin}) \u0639\u0644\u0651\u06CC \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631 (\u062A\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u06CC\u062F\u0627\u062F)`,
+      value: geomOk ? `${(atrGeom / GOLD_PIP11).toFixed(1)} pip` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A)",
+      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (\u0646\u0633\u0628\u062A ${(cfg.kTp / cfg.kSl).toFixed(3)} \u21D2 TP>SL)`,
+      status: "ok"
+    }
+  ];
+  let reason;
+  if (active) {
+    const side = direction === "LONG" ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634";
+    const bodyDir = direction === "LONG" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    const convDir = direction === "LONG" ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    reason = `**\u0634\u0648\u06A9\u0650 \u0645\u0637\u0644\u0639\u0650 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u0628\u0627 \u0642\u0631\u0627\u0631\u062F\u0627\u062F** \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa}\u0650 \u0645\u0627\u0642\u0628\u0644\u0650 \u0622\u062E\u0631: \u2460 \u0634\u0648\u06A9\u0650 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 \u2014 \u0631\u0646\u062C ${(rngE / GOLD_PIP11).toFixed(1)} pip \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})=${(thrE / GOLD_PIP11).toFixed(1)} pip (${(ratioE * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647) \u0628\u0627 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1=${rhoE.toFixed(3)} \u2265 ${cfg.rhoMin} \u0648 \u0628\u062F\u0646\u0647\u0654 ${bodyDir}. \u2461 \u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 \u0628\u0627\u0632\u0627\u0631 \u2014 \u062F\u0631\u0641\u062A\u0650 \u0639\u0644\u0651\u06CC\u0650 ${cfg.driftK} \u06A9\u0646\u062F\u0644 (\u2248${driftDays} \u0631\u0648\u0632) \u0647\u0645 ${convDir} \u0627\u0633\u062A (${driftDelta >= 0 ? "+" : ""}${(driftDelta / GOLD_PIP11).toFixed(0)} pip) \u21D2 \u06AF\u06CC\u062A \u0628\u0627\u0632 \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647: \u0628\u062F\u0646\u0647\u0654 \u0645\u0627\u0631\u0648\u0628\u0648\u0632\u0648-\u06AF\u0648\u0646\u0647 \u06CC\u0639\u0646\u06CC \u0627\u062B\u0631\u0650 \u0642\u06CC\u0645\u062A\u06CC \u062F\u0631\u0648\u0646\u0650 \u06A9\u0646\u062F\u0644 \u067E\u0633 \u0646\u06AF\u0631\u0641\u062A (Kyle 1985 \u2014 \u0627\u0645\u0636\u0627\u06CC \u062C\u0631\u06CC\u0627\u0646\u0650 \u0645\u0637\u0644\u0639)\u060C \u0648 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u06CC\u06CC\u0650 \u0622\u0646 \u0628\u0627 \u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 \u06F6\u06F0-\u0631\u0648\u0632\u0647 \u06CC\u0639\u0646\u06CC \u062C\u0645\u0639\u06CC\u062A \u0628\u0647 \u0622\u0646 \u0645\u06CC\u200C\u067E\u06CC\u0648\u0646\u062F\u062F \u0646\u0647 \u0627\u06CC\u0646\u06A9\u0647 \u062C\u0630\u0628\u0634 \u06A9\u0646\u062F (\u06A9\u06CC\u0646\u0632\u060C \u0646\u0638\u0631\u06CC\u0647\u0654 \u0639\u0645\u0648\u0645\u06CC\u060C \u0641\u0635\u0644 \u06F1\u06F2) \u21D2 \u0627\u062F\u0627\u0645\u0647. (\u06F1\u06F0\u06F6 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \xB7 WR=\u06F5\u06F5.\u06F6\u06F6\u066A \xB7 lift=+\u06F1\u06F5.\u06F6\u06F2pp \xB7 z=\u06F3.\u06F2\u06F8 \xB7 p_perm=\u06F8.\u06F4e\u2212\u06F4 \xB7 PF=\u06F1.\u06F8\u06F5 \xB7 maxDD=\u06F2.\u06F8\u06F9\u066A \xB7 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 RQS2 \u0633\u0628\u0632\u061B \u0627\u0628\u0637\u0627\u0644\u200C\u06AF\u0631\u0650 P1: \u0628\u0627\u0632\u0648\u06CC \u0628\u06CC\u200C\u06AF\u06CC\u062A WR=\u06F4\u06F8.\u06F1\u066A \u21D2 \u06AF\u06CC\u062A \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u200C\u0627\u0641\u0632\u0627\u0633\u062A\u060C \u0627\u0628\u0637\u0627\u0644\u200C\u06AF\u0631\u0650 P3: \u0628\u0627\u0632\u0648\u06CC \u062E\u0644\u0627\u0641\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F WR=\u06F4\u06F2.\u06F1\u066A \u21D2 \u0631\u0648\u0627\u06CC\u062A\u0650 \u06A9\u06CC\u0646\u0632\u06CC \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F). \u{1F534} \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u2014 \u06A9\u0647 \u0646\u0633\u0628\u062A \u0628\u0647 \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u06CC\u062F\u0627\u062F **\u062F\u0648 \u06A9\u0646\u062F\u0644** \u0641\u0627\u0635\u0644\u0647 \u062F\u0627\u0631\u062F (\u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A). SL=${slPip.toFixed(1)} / TP=${tpPip.toFixed(1)} pip.`;
+  } else if (approaching) {
+    reason = nextIsEvent ? `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 \u0627\u062E\u06CC\u0631 **\u062E\u0648\u062F\u0634 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u06A9\u0627\u0645\u0644\u0650 S919 \u0627\u0633\u062A** (\u0634\u0648\u06A9\u0650 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 + \u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627). \u0637\u0628\u0642 \u0645\u0627\u0633\u06A9\u0650 pre-shift\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A\u060C \u0648\u0631\u0648\u062F \u062F\u0648 \u06A9\u0646\u062F\u0644 \u0628\u0639\u062F \u0627\u0632 \u0631\u0648\u06CC\u062F\u0627\u062F \u0627\u0633\u062A \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0648\u0631\u0648\u062F \u0631\u0648\u06CC **\u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F** \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.` : `\u0631\u0646\u062C\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647 (${(rngI / GOLD_PIP11).toFixed(1)} pip) \u0628\u0647 ${(ratioI * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0634\u0648\u06A9 (${(thrI / GOLD_PIP11).toFixed(1)} pip) \u0631\u0633\u06CC\u062F\u0647\u060C \u0628\u062F\u0646\u0647 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 \u0627\u0633\u062A (\u03C1=${rhoI.toFixed(3)}) \u0648 \u06AF\u06CC\u062A\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F \u0647\u0645 **\u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u0633\u062A**. \u0627\u06AF\u0631 \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 \u0628\u0633\u0627\u0632\u062F\u060C \u062F\u0648 \u06A9\u0646\u062F\u0644 \u0628\u0639\u062F \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (!geomOk || !eventAtrOk) {
+    reason = `ATR(${cfg.atrWin}) \u0647\u0646\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646 \u06CC\u0627 \u0631\u0646\u062C\u0650 \u0635\u0641\u0631) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
+  } else if ((baseUp || baseDn) && dir === 0) {
+    const bodyDir = baseUp ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC";
+    reason = `\u0634\u0648\u06A9\u0650 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 \u0631\u062E \u062F\u0627\u062F (\u0631\u0646\u062C ${(rngE / GOLD_PIP11).toFixed(1)} pip \u2265 ${(thrE / GOLD_PIP11).toFixed(1)} pip \xB7 \u03C1=${rhoE.toFixed(3)} \xB7 \u0628\u062F\u0646\u0647\u0654 ${bodyDir}) \u2014 \u06CC\u0639\u0646\u06CC **\u067E\u0627\u06CC\u0647\u0654 S965 \u0631\u0648\u0634\u0646 \u0627\u0633\u062A** \u2014 \u0648\u0644\u06CC \u06AF\u06CC\u062A\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 ${cfg.driftK}-\u06A9\u0646\u062F\u0644\u06CC (\u2248${driftDays} \u0631\u0648\u0632) \u062E\u0644\u0627\u0641\u0650 \u0628\u062F\u0646\u0647 \u0627\u0633\u062A (${Number.isFinite(driftDelta) ? (driftDelta >= 0 ? "+" : "") + (driftDelta / GOLD_PIP11).toFixed(0) : "\u2014"} pip) \u21D2 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0648\u0631\u0648\u062F \u0646\u0645\u06CC\u200C\u062F\u0647\u062F. \u0628\u0627\u0632\u0627\u0631\u0650 \u06A9\u06CC\u0646\u0632\u06CC \u0686\u0646\u06CC\u0646 \u0634\u0648\u06A9\u06CC \u0631\u0627 \xAB\u0627\u062E\u062A\u0644\u0627\u0644\u0650 \u0645\u0648\u0642\u062A\xBB \u0645\u06CC\u200C\u062E\u0648\u0627\u0646\u062F \u0648 \u062C\u0630\u0628 \u0645\u06CC\u200C\u06A9\u0646\u062F: \u0628\u0627\u0632\u0648\u06CC \u062E\u0644\u0627\u0641\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F \u062F\u0631 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC \u0641\u0642\u0637 WR=\u06F4\u06F2.\u06F1\u066A (n=\u06F1\u06F3\u06F3) \u062F\u0627\u062F \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u06F5\u06F5.\u06F6\u06F6\u066A \u0628\u0627\u0632\u0648\u06CC \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627. \u26A0\uFE0F \u062A\u0648\u062C\u0647: \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A H6 \u0627\u0633\u062A \u0648 S965 \u0631\u0648\u06CC H8 \u0648\u0635\u0644 \u0627\u0633\u062A \u21D2 \u06A9\u0627\u0631\u062A\u200C\u0647\u0627\u06CC \u0645\u062A\u0641\u0627\u0648\u062A\u060C \u062A\u0635\u0645\u06CC\u0645\u200C\u0647\u0627\u06CC \u062C\u062F\u0627.`;
+  } else if (isShock && !isPermanent) {
+    reason = `\u0634\u0648\u06A9 \u0631\u062E \u062F\u0627\u062F (\u0631\u0646\u062C ${(rngE / GOLD_PIP11).toFixed(1)} pip \u2265 ${(thrE / GOLD_PIP11).toFixed(1)} pip) \u0648\u0644\u06CC \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u06A9\u0645 \u0627\u0633\u062A: \u03C1=${rhoE.toFixed(3)} < ${cfg.rhoMin} \u2014 \u06CC\u0639\u0646\u06CC \u0642\u06CC\u0645\u062A **\u062F\u0631\u0648\u0646\u0650 \u0647\u0645\u0627\u0646 \u06A9\u0646\u062F\u0644** \u0628\u062E\u0634\u0650 \u0628\u0632\u0631\u06AF\u06CC \u0627\u0632 \u062D\u0631\u06A9\u062A \u0631\u0627 \u067E\u0633 \u06AF\u0631\u0641\u062A (\u0633\u0627\u06CC\u0647\u0654 \u0628\u0644\u0646\u062F) \u21D2 \u0627\u0645\u0636\u0627\u06CC \u062C\u0631\u06CC\u0627\u0646\u0650 **\u0646\u0648\u06CC\u0632**\u060C \u0646\u0647 \u0645\u0637\u0644\u0639 \u21D2 \u0628\u062F\u0648\u0646\u0650 \u0648\u0631\u0648\u062F.`;
+  } else {
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u06CC\u062F\u0627\u062F (\u0645\u0627\u0642\u0628\u0644\u0650 \u0622\u062E\u0631) \u0634\u0648\u06A9 \u0646\u06CC\u0633\u062A: \u0631\u0646\u062C ${(rngE / GOLD_PIP11).toFixed(1)} pip \u06CC\u0639\u0646\u06CC ${(ratioE * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${cfg.theta}\xD7ATR(${cfg.atrWin})=${(thrE / GOLD_PIP11).toFixed(1)} pip. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (\u06F1\u06F0\u06F6 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \u2248 \u06F6.\u06F8 \u062F\u0631 \u0633\u0627\u0644) \u2014 \u062E\u0646\u062B\u06CC \u0628\u0648\u062F\u0646\u0634 \u062D\u0627\u0644\u062A\u0650 \u0639\u0627\u062F\u06CC \u0627\u0633\u062A\u060C \u0646\u0647 \u062E\u0631\u0627\u0628\u06CC.`;
+  }
+  return {
+    active,
+    approaching,
+    direction,
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? nextIsEvent ? `\u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u06A9\u0627\u0645\u0644 \u062B\u0628\u062A \u0634\u062F \u2014 \u0648\u0631\u0648\u062F \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F (\u0645\u0627\u0633\u06A9\u0650 pre-shift \u21D2 \u0631\u0648\u06CC\u062F\u0627\u062F+\u06F2)` : `\u0645\u0646\u062A\u0638\u0631\u0650 \u0634\u0648\u06A9\u0650 \u06A9\u0627\u0645\u0644 (\u0631\u0646\u062C \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})) \u0628\u0627 \u03C1 \u2265 ${cfg.rhoMin} \u2014 \u06AF\u06CC\u062A\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F \u0647\u0645\u200C\u0627\u06A9\u0646\u0648\u0646 \u0628\u0627\u0632 \u0627\u0633\u062A` : void 0,
+    indicators
+  };
+}
+function decideS919(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS919(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: raw2.direction === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: raw2.direction === "SHORT" ? "bear" : "bull",
+    bucket: `s919_${cfg.tfFa.toLowerCase()}`
+  };
+  const slPipShow = Math.round(raw2.slDist / GOLD_PIP11 * 10) / 10;
+  const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP11 * 10) / 10;
+  const driftDays = Math.round(cfg.driftK * cfg.tfHours / 24);
+  const holdDays = Math.round(cfg.maxHold * cfg.tfHours / 24);
+  const meta = {
+    code: "S919",
+    name: `\u0634\u0648\u06A9\u0650 \u0645\u0637\u0644\u0639\u0650 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u0628\u0627 \u0642\u0631\u0627\u0631\u062F\u0627\u062F (${cfg.tfFa})`,
+    kind: "convention_informed_shock",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0634\u0646\u0627\u0648\u0631\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=${slPipShow} / TP=${tpPipShow} pip (${cfg.kSl}\xD7 \u0648 ${cfg.kTp}\xD7ATR(${cfg.atrWin}) \u062A\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u06CC\u062F\u0627\u062F\u061B \u0645\u06CC\u0627\u0646\u0647\u0654 \u062A\u0627\u0631\u06CC\u062E\u06CC \u2248\u06F1\u06F1\u06F5.\u06F8/\u06F1\u06F8\u06F7.\u06F3 pip\u060C RR=\u06F1.\u06F6\u06F1\u06F8). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} (\u2248${holdDays} \u0631\u0648\u0632) \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u{1F534} **\u0632\u0645\u0627\u0646\u200C\u0628\u0646\u062F\u06CC\u0650 \u0648\u0631\u0648\u062F:** \u0628\u06A9\u200C\u062A\u0633\u062A \u0645\u0627\u0633\u06A9\u0650 \u0627\u0632 \u067E\u06CC\u0634 \u0634\u06CC\u0641\u062A\u200C\u0634\u062F\u0647 \u062F\u0627\u0631\u062F \u21D2 \u0648\u0631\u0648\u062F \u062F\u0631 open\u0650 \u06A9\u0646\u062F\u0644\u0650 **\u062F\u0648\u0645\u0650** \u067E\u0633 \u0627\u0632 \u06A9\u0646\u062F\u0644\u0650 \u0634\u0648\u06A9 \u0627\u0633\u062A\u060C \u0646\u0647 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u06CC\u0650 \u0622\u0646. \u0633\u0627\u06CC\u062A \u0647\u0645\u06CC\u0646 \u0631\u0627 \u0631\u0639\u0627\u06CC\u062A \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0631\u0648\u06CC\u062F\u0627\u062F \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0645\u0627\u0642\u0628\u0644\u0650 \u0622\u062E\u0631 \u0633\u0646\u062C\u06CC\u062F\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F). \u0627\u06AF\u0631 \u06CC\u06A9 \u06A9\u0646\u062F\u0644 \u0632\u0648\u062F\u062A\u0631 \u0648\u0627\u0631\u062F \u0634\u0648\u06CC\u062F\u060C WR\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0627\u0632 \u06F5\u06F5.\u06F6\u06F6\u066A \u0628\u0647 \u06F4\u06F8.\u06F1\u06F1\u066A \u0633\u0642\u0648\u0637 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0632\u06CC\u0631\u0650 \u0633\u0631\u0628\u0647\u200C\u0633\u0631) \u2014 \u0627\u06CC\u0646 \u0639\u062F\u062F \u0633\u0646\u062C\u06CC\u062F\u0647 \u0634\u062F\u0647 \u0627\u0633\u062A. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A). \u26A0\uFE0F \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC (BE/trailing) \u0622\u0632\u0645\u0648\u062F\u0647 \u0648 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u21D2 \u0641\u0642\u0637 TP/SL/\u0632\u0645\u0627\u0646. \u2139\uFE0F \u0647\u0645\u200C\u067E\u0648\u0634\u0627\u0646\u06CC: S965/S966 \u0631\u0648\u06CC H8 \u0648\u0635\u0644\u200C\u0627\u0646\u062F \u0648 \u0631\u0648\u06CC\u062F\u0627\u062F\u0647\u0627 \u0630\u0627\u062A\u0627\u064B \u0647\u0645\u200C\u067E\u0648\u0634\u0627\u0646\u200C\u0627\u0646\u062F (\u06CC\u06A9 \u0634\u0648\u06A9\u0650 \u06F8\u0633\u0627\u0639\u062A\u0647 \u0627\u063A\u0644\u0628 \u0634\u0648\u06A9\u0650 \u06F6\u0633\u0627\u0639\u062A\u0647 \u0647\u0645 \u0647\u0633\u062A) \u21D2 \u0627\u06AF\u0631 \u06A9\u0627\u0631\u062A\u0650 H6 \u0648 H8 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0631\u0648\u0634\u0646 \u0634\u062F\u0646\u062F\u060C \u0635\u0641\u0650 FIFO/\u0633\u0627\u06CC\u0632\u0650 \u0645\u062D\u062A\u0627\u0637.`,
+    filters: [
+      `\u0634\u0648\u06A9\u0650 \u0631\u0646\u062C: high\u2212low \u2265 ${cfg.theta}\xD7ATR(${cfg.atrWin})[t\u22121] \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 S965`,
+      `\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC \u03C1 = |close\u2212open|\xF7(high\u2212low) \u2265 ${cfg.rhoMin} \u2014 \u067E\u0627\u06CC\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 S965 (Kyle 1985)`,
+      `\u06AF\u06CC\u062A\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 \u06A9\u06CC\u0646\u0632\u06CC (${cfg.driftK} \u06A9\u0646\u062F\u0644 \u2248 ${driftDays} \u0631\u0648\u0632\u060C \u0642\u0627\u0639\u062F\u0647\u0654 S604): \u0644\u0627\u0646\u06AF \u0641\u0642\u0637 \u0627\u06AF\u0631 close[t\u22121] > close[t\u22121\u2212${cfg.driftK}]\u060C \u0634\u0648\u0631\u062A \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC`,
+      `\u0628\u0627\u0632\u0648\u06CC \u062E\u0644\u0627\u0641\u0650 \u0642\u0631\u0627\u0631\u062F\u0627\u062F \u062F\u0631 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC WR=\u06F4\u06F2.\u06F1\u066A \u062F\u0627\u062F (\u0627\u0628\u0637\u0627\u0644\u200C\u06AF\u0631\u0650 P3 \u06AF\u0630\u0634\u062A) \u0648 \u0628\u0627\u0632\u0648\u06CC \u0628\u06CC\u200C\u06AF\u06CC\u062A \u06F4\u06F8.\u06F1\u066A (P1 \u06AF\u0630\u0634\u062A)`,
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0646\u0627\u0645\u062A\u0642\u0627\u0631\u0646\u0650 TP>SL (${cfg.kSl}/${cfg.kTp} \u21D2 RR=\u06F1.\u06F6\u06F1\u06F8) \xB7 \u0635\u0641\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u062C\u0633\u062A\u200C\u0648\u062C\u0648\u200C\u0634\u062F\u0647 \xB7 ~\u06F6.\u06F8 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644`,
+      `\u{1F534} \u0642\u0644\u0645\u0631\u0648: \u0641\u0642\u0637 ${cfg.tfFa} \u2014 \u06A9\u0627\u0631\u062A\u0650 H3 \u0628\u0627 RQS2=\u06F1\u06F6.\u06F0 \u0631\u062F \u0634\u062F (\u062A\u0639\u0645\u06CC\u0645 \u0645\u0645\u0646\u0648\u0639)`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/squeeze_expansion_s800.ts
+var GOLD_PIP12 = 0.1;
+var S800_CFG = {
+  // D1_locked.json : {"p":55,"q":20.0,"filter":"none","k":1.272,"rr":1.0,"hold":21}
+  "XAUUSD-D1": {
+    id: "XAUUSD-D1",
+    tfFa: "D1",
+    donchP: 55,
+    sqzQ: 20,
+    atrP: 14,
+    atrLookback: 100,
+    slAtrP: 21,
+    slK: 1.272,
+    rr: 1,
+    maxHold: 21,
+    approachFrac: 0.25,
+    slMedPip: 257.8,
+    rqs2: 91.1,
+    nTrades: 81,
+    wr: 70.4
+  },
+  // H12_locked.json: {"p":21,"q":30.0,"filter":"none","k":2.058,"rr":1.618,"hold":34}
+  "XAUUSD-H12": {
+    id: "XAUUSD-H12",
+    tfFa: "H12",
+    donchP: 21,
+    sqzQ: 30,
+    atrP: 14,
+    atrLookback: 100,
+    slAtrP: 21,
+    slK: 2.058,
+    rr: 1.618,
+    maxHold: 34,
+    approachFrac: 0.25,
+    slMedPip: 273,
+    rqs2: 83.6,
+    nTrades: 183,
+    wr: 54.6
+  }
+};
+function trueRange2(c) {
+  const n = c.length;
+  const tr = new Array(n).fill(0);
+  if (n === 0) return tr;
+  tr[0] = c[0].high - c[0].low;
+  for (let t = 1; t < n; t++) {
+    const h = c[t].high, l = c[t].low, pc = c[t - 1].close;
+    tr[t] = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+  }
+  return tr;
+}
+function rmaWilder(x, p) {
+  const n = x.length;
+  const out = new Array(n).fill(0);
+  if (n === 0) return out;
+  const alpha = 1 / p;
+  out[0] = x[0];
+  for (let t = 1; t < n; t++) out[t] = out[t - 1] + alpha * (x[t] - out[t - 1]);
+  return out;
+}
+function s800Features(candles, cfg) {
+  const n = candles.length;
+  const tr = trueRange2(candles);
+  const atrBase = rmaWilder(tr, cfg.atrP);
+  const W = cfg.atrLookback + 1;
+  const atrPct = new Array(n).fill(NaN);
+  for (let t = W - 1; t < n; t++) {
+    const cur = atrBase[t];
+    let cnt = 0;
+    for (let j = t - W + 1; j <= t; j++) if (atrBase[j] <= cur) cnt++;
+    atrPct[t] = 100 * cnt / W;
+  }
+  const sqz = new Array(n).fill(NaN);
+  for (let t = 1; t < n; t++) sqz[t] = atrPct[t - 1];
+  const P = cfg.donchP;
+  const donchHi = new Array(n).fill(NaN);
+  const donchLo = new Array(n).fill(NaN);
+  for (let t = P; t < n; t++) {
+    let hi = -Infinity, lo = Infinity;
+    for (let j = t - P; j <= t - 1; j++) {
+      if (candles[j].high > hi) hi = candles[j].high;
+      if (candles[j].low < lo) lo = candles[j].low;
+    }
+    donchHi[t] = hi;
+    donchLo[t] = lo;
+  }
+  const atrSl = rmaWilder(tr, cfg.slAtrP);
+  return { atrPct, sqz, donchHi, donchLo, atrSl };
+}
+function computeS800(candles, cfg) {
+  const n = candles.length;
+  const warm = Math.max(cfg.atrLookback + 2, cfg.donchP + 1);
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  if (n < warm + 1) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist: cfg.slMedPip * GOLD_PIP12,
+      tpDist: cfg.slMedPip * cfg.rr * GOLD_PIP12,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 ${warm} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F \u062A\u0627 \u0631\u062A\u0628\u0647\u0654 \u0686\u0646\u062F\u06A9\u06CC\u0650 ATR (\u067E\u0646\u062C\u0631\u0647\u0654 ${cfg.atrLookback + 1} \u06A9\u0646\u062F\u0644\u06CC) \u0648 \u06A9\u0627\u0646\u0627\u0644\u0650 \u062F\u0627\u0646\u0686\u06CC\u0627\u0646\u0650 ${cfg.donchP} \u06AF\u0631\u0645 \u0634\u0648\u0646\u062F (\u0645\u0648\u062C\u0648\u062F: ${n}).`,
+      indicators: emptyInd
+    };
+  }
+  const f = s800Features(candles, cfg);
+  const i = n - 1;
+  const close = candles[i].close;
+  const sq = f.sqz[i];
+  const hh = f.donchHi[i];
+  const ll = f.donchLo[i];
+  const atr2 = f.atrSl[i];
+  const slPip = Math.max(cfg.slK * atr2 / GOLD_PIP12, 1e-9);
+  const tpPip = slPip * cfg.rr;
+  const slDist = slPip * GOLD_PIP12;
+  const tpDist = tpPip * GOLD_PIP12;
+  const valid = Number.isFinite(sq) && Number.isFinite(hh) && Number.isFinite(ll) && atr2 > 0;
+  const sqzOk = valid && sq < cfg.sqzQ;
+  const breakUp = valid && close > hh;
+  const breakDn = valid && close < ll;
+  const longSig = sqzOk && breakUp;
+  const shortSig = sqzOk && breakDn;
+  const active = longSig || shortSig;
+  const direction = shortSig ? "SHORT" : "LONG";
+  const distUp = valid ? hh - close : Infinity;
+  const distDn = valid ? close - ll : Infinity;
+  const nearBand = Math.min(Math.max(distUp, 0), Math.max(distDn, 0));
+  const approaching = sqzOk && !active && atr2 > 0 && nearBand <= cfg.approachFrac * atr2;
+  const approachSide = distUp <= distDn ? "LONG" : "SHORT";
+  const dirShown = active ? direction : approaching ? approachSide : direction;
+  const indicators = [
+    {
+      name: `\u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0646\u0648\u0633\u0627\u0646 \u2014 \u0631\u062A\u0628\u0647\u0654 \u0686\u0646\u062F\u06A9\u06CC\u0650 ATR(${cfg.atrP}) \u062F\u0631 ${cfg.atrLookback + 1} \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 (\u0628\u0627 \u062A\u0623\u062E\u06CC\u0631\u0650 \u06F1)`,
+      value: valid ? `${sq.toFixed(1)}\u066A / \u0622\u0633\u062A\u0627\u0646\u0647 < ${cfg.sqzQ.toFixed(0)}\u066A` : "\u2014",
+      status: sqzOk ? "ok" : "bad"
+    },
+    {
+      name: `\u06A9\u0627\u0646\u0627\u0644\u0650 \u062F\u0627\u0646\u0686\u06CC\u0627\u0646\u0650 ${cfg.donchP} (\u0633\u0642\u0641/\u06A9\u0641\u0650 ${cfg.donchP} \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u2014 \u0639\u0644\u0651\u06CC)`,
+      value: valid ? `${ll.toFixed(2)} \u2026 ${hh.toFixed(2)} $` : "\u2014",
+      status: breakUp || breakDn ? "ok" : "neutral"
+    },
+    {
+      name: "\u0642\u06CC\u0645\u062A\u0650 \u0628\u0633\u062A\u0647 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0644\u0628\u0647\u0654 \u06A9\u0627\u0646\u0627\u0644",
+      value: valid ? `${close.toFixed(2)} $ \xB7 \u0641\u0627\u0635\u0644\u0647 \u062A\u0627 \u0633\u0642\u0641 ${distUp.toFixed(2)}$ / \u062A\u0627 \u06A9\u0641 ${distDn.toFixed(2)}$` : "\u2014",
+      status: breakUp || breakDn ? "ok" : approaching ? "neutral" : "bad"
+    },
+    {
+      name: `ATR(${cfg.slAtrP}) \u2014 \u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A (\u0628\u062F\u0648\u0646\u0650 \u0634\u06CC\u0641\u062A)`,
+      value: atr2 > 0 ? `${(atr2 / GOLD_PIP12).toFixed(1)} pip` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A)",
+      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (\u0646\u0633\u0628\u062A ${cfg.rr})`,
+      status: "ok"
+    }
+  ];
+  let reason;
+  if (active) {
+    const side = direction === "LONG" ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634";
+    const edge = direction === "LONG" ? `\u0633\u0642\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 (${hh.toFixed(2)}$)` : `\u06A9\u0641\u0650 \u06A9\u0627\u0646\u0627\u0644 (${ll.toFixed(2)}$)`;
+    reason = `\u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0627\u0632 \u062F\u0644\u0650 **\u0641\u0634\u0631\u062F\u06AF\u06CC** ${edge} \u0631\u0627 \u0634\u06A9\u0633\u062A: \u0646\u0648\u0633\u0627\u0646 \u062F\u0631 \u0631\u062A\u0628\u0647\u0654 \u0686\u0646\u062F\u06A9\u06CC\u0650 ${sq.toFixed(1)}\u066A (< ${cfg.sqzQ.toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647) \u0628\u0648\u062F \u0648 \u0642\u06CC\u0645\u062A\u0650 \u0628\u0633\u062A\u0647 ${close.toFixed(2)}$ \u0627\u0632 \u0644\u0628\u0647 \u0639\u0628\u0648\u0631 \u06A9\u0631\u062F \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647: \u0627\u0646\u0642\u0628\u0627\u0636\u0650 \u0646\u0648\u0633\u0627\u0646 \u0627\u0646\u0631\u0698\u06CC\u0650 \u0630\u062E\u06CC\u0631\u0647\u200C\u0634\u062F\u0647 \u0627\u0633\u062A \u0648 \u06AF\u0634\u0627\u06CC\u0634\u0650 \u067E\u0633 \u0627\u0632 \u0622\u0646 \u0631\u0648\u06CC ${cfg.tfFa} \u0627\u062F\u0627\u0645\u0647 \u062F\u0627\u0631\u062F (${cfg.nTrades} \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \xB7 WR=${cfg.wr.toFixed(1)}\u066A \xB7 RQS2=${cfg.rqs2} \xB7 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647 \u067E\u0627\u0633 \xB7 \u0645\u0633\u06CC\u0631 C \u0628\u0627 hold-out \u0641\u06CC\u0632\u06CC\u06A9\u06CC \u0648 n_trials=1). \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=${slPip.toFixed(1)} pip (${cfg.slK}\xD7ATR(${cfg.slAtrP}) \u0647\u0645\u06CC\u0646 \u06A9\u0646\u062F\u0644) \u0648 TP=${tpPip.toFixed(1)} pip (${cfg.rr}\xD7SL) \u2014 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A.`;
+  } else if (approaching) {
+    const edge = approachSide === "LONG" ? "\u0633\u0642\u0641" : "\u06A9\u0641";
+    reason = `\u0641\u0634\u0631\u062F\u06AF\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A (\u0631\u062A\u0628\u0647\u0654 \u0686\u0646\u062F\u06A9\u06CC\u0650 ATR = ${sq.toFixed(1)}\u066A < ${cfg.sqzQ.toFixed(0)}\u066A) \u0648 \u0642\u06CC\u0645\u062A \u062A\u0627 ${edge}\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u062F\u0627\u0646\u0686\u06CC\u0627\u0646\u0650 ${cfg.donchP} \u0641\u0642\u0637 ${nearBand.toFixed(2)}$ \u0641\u0627\u0635\u0644\u0647 \u062F\u0627\u0631\u062F (\u06A9\u0645\u062A\u0631 \u0627\u0632 ${cfg.approachFrac}\xD7ATR). \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F **\u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0647** \u0622\u0646\u200C\u0633\u0648\u06CC\u0650 \u0644\u0628\u0647 \u0628\u0646\u0634\u06CC\u0646\u062F \u0648 \u0641\u0634\u0631\u062F\u06AF\u06CC \u0647\u0646\u0648\u0632 \u0628\u0631\u0642\u0631\u0627\u0631 \u0628\u0627\u0634\u062F\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (!valid) {
+    reason = `\u0627\u0646\u062F\u06CC\u06A9\u0627\u062A\u0648\u0631\u0647\u0627 \u0647\u0646\u0648\u0632 \u06AF\u0631\u0645 \u0646\u0634\u062F\u0647\u200C\u0627\u0646\u062F (\u0646\u06CC\u0627\u0632\u0650 ${warm} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0628\u0631\u0627\u06CC \u0631\u062A\u0628\u0647\u0654 \u0686\u0646\u062F\u06A9\u06CC\u0650 ATR \u0648 \u06A9\u0627\u0646\u0627\u0644\u0650 ${cfg.donchP}) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
+  } else if (!sqzOk) {
+    reason = `\u0634\u0631\u0637\u0650 **\u0641\u0634\u0631\u062F\u06AF\u06CC** \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A: \u0631\u062A\u0628\u0647\u0654 \u0686\u0646\u062F\u06A9\u06CC\u0650 ATR = ${sq.toFixed(1)}\u066A \u062F\u0631 \u062D\u0627\u0644\u06CC \u06A9\u0647 \u0622\u0633\u062A\u0627\u0646\u0647 < ${cfg.sqzQ.toFixed(0)}\u066A \u0627\u0633\u062A. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u0634\u06A9\u0633\u062A\u06CC \u0631\u0627 \u0645\u06CC\u200C\u062E\u0631\u062F \u06A9\u0647 \u0627\u0632 \u062F\u0644\u0650 \u0622\u0631\u0627\u0645\u0634 \u0628\u06CC\u0631\u0648\u0646 \u0628\u06CC\u0627\u06CC\u062F\u061B \u0634\u06A9\u0633\u062A \u062F\u0631 \u0628\u0627\u0632\u0627\u0631\u0650 \u0627\u0632 \u067E\u06CC\u0634 \u067E\u0631\u0646\u0648\u0633\u0627\u0646 \u0647\u0645\u0627\u0646 \u0686\u06CC\u0632\u06CC \u0627\u0633\u062A \u06A9\u0647 \u062F\u0631 \u0622\u0632\u0645\u0648\u0646 \u0644\u0628\u0647 \u0646\u062F\u0627\u0634\u062A.`;
+  } else {
+    reason = `\u0641\u0634\u0631\u062F\u06AF\u06CC \u0647\u0633\u062A (${sq.toFixed(1)}\u066A < ${cfg.sqzQ.toFixed(0)}\u066A) \u0648\u0644\u06CC \u0647\u0646\u0648\u0632 \u0634\u06A9\u0633\u062A\u06CC \u0631\u062E \u0646\u062F\u0627\u062F\u0647: \u0642\u06CC\u0645\u062A\u0650 \u0628\u0633\u062A\u0647 ${close.toFixed(2)}$ \u062F\u0631\u0648\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 ${ll.toFixed(2)}\u2026${hh.toFixed(2)}$ \u0627\u0633\u062A. \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (~${(cfg.nTrades / 15.6).toFixed(1)} \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644) \u2014 \u0628\u06CC\u0634\u062A\u0631\u0650 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u0648 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A.`;
+  }
+  return {
+    active,
+    approaching,
+    direction: dirShown,
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u0622\u0646\u200C\u0633\u0648\u06CC\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u062F\u0627\u0646\u0686\u06CC\u0627\u0646\u0650 ${cfg.donchP} \u0628\u0627 \u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u0628\u0631\u0642\u0631\u0627\u0631` : void 0,
+    indicators
+  };
+}
+function decideS800(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS800(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: raw2.direction === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: raw2.direction === "SHORT" ? "bear" : "bull",
+    bucket: `s800_${cfg.tfFa.toLowerCase()}`
+  };
+  const slPipShow = Math.round(raw2.slDist / GOLD_PIP12 * 10) / 10;
+  const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP12 * 10) / 10;
+  const meta = {
+    code: "S800",
+    name: `\u0641\u0634\u0631\u062F\u06AF\u06CC \u2192 \u06AF\u0634\u0627\u06CC\u0634 (${cfg.tfFa})`,
+    kind: "squeeze_expansion",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=${slPipShow} pip (${cfg.slK}\xD7ATR(${cfg.slAtrP}) \u06A9\u0646\u062F\u0644\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644\u061B \u0645\u06CC\u0627\u0646\u0647\u0654 \u062A\u0627\u0631\u06CC\u062E\u06CC \u2248${cfg.slMedPip.toFixed(0)} pip) \u0648 TP=${tpPipShow} pip (${cfg.rr}\xD7SL). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u0634\u06A9\u0633\u062A\u0650 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F. \u26A0\uFE0F \u0647\u0645\u067E\u0648\u0634\u0627\u0646\u06CC\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u0628\u0627\u0644\u0627 \u0628\u0627 S382-H4 (D1 \u2248\u06F8\u06F1\u066A \xB7 H12 \u2248\u06F9\u06F1\u066A): \u0631\u0648\u06CC \u062D\u0633\u0627\u0628\u0650 \u0648\u0627\u0642\u0639\u06CC \u0635\u0641\u0650 FIFO \u0644\u0627\u0632\u0645 \u0627\u0633\u062A \u2014 \u0647\u0631 \u062F\u0648 \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647 \u0633\u0648\u062F\u062F\u0647\u200C\u0627\u0646\u062F \u067E\u0633 \u062D\u0630\u0641\u0650 \u0644\u0627\u06CC\u0647 \u0644\u0627\u0632\u0645 \u0646\u06CC\u0633\u062A\u060C \u0648\u0644\u06CC \u0631\u06CC\u0633\u06A9\u0650 \u0647\u0645\u0632\u0645\u0627\u0646 \u0646\u0628\u0627\u06CC\u062F \u062F\u0648\u0628\u0631\u0627\u0628\u0631 \u0634\u0648\u062F.`,
+    filters: [
+      `\u0641\u0634\u0631\u062F\u06AF\u06CC: \u0631\u062A\u0628\u0647\u0654 \u0686\u0646\u062F\u06A9\u06CC\u0650 ATR(${cfg.atrP}) \u062F\u0631 ${cfg.atrLookback + 1} \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631 < ${cfg.sqzQ.toFixed(0)}\u066A (\u0628\u0627 \u062A\u0623\u062E\u06CC\u0631\u0650 \u06F1 \u06A9\u0646\u062F\u0644)`,
+      `\u06AF\u0634\u0627\u06CC\u0634: \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646 \u0628\u06CC\u0631\u0648\u0646\u0650 \u06A9\u0627\u0646\u0627\u0644\u0650 \u062F\u0627\u0646\u0686\u06CC\u0627\u0646\u0650 ${cfg.donchP} (\u0633\u0642\u0641/\u06A9\u0641\u0650 ${cfg.donchP} \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u2014 \u0639\u0644\u0651\u06CC)`,
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u062B\u0627\u0628\u062A: SL=${cfg.slK}\xD7ATR(${cfg.slAtrP}) \xB7 TP=${cfg.rr}\xD7SL \xB7 \u0628\u06CC\u0634\u06CC\u0646\u0647 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC ${cfg.maxHold} \u06A9\u0646\u062F\u0644`,
+      `\u0628\u062F\u0648\u0646\u0650 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645 (filter="none" \u062F\u0631 \u067E\u06CC\u06A9\u0631\u0628\u0646\u062F\u06CC\u0650 \u0642\u0641\u0644\u200C\u0634\u062F\u0647) \xB7 \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/adr_expansion_s770.ts
+var GOLD_PIP13 = 0.1;
+var SEC_PER_DAY = 86400;
+var S770_CFG = {
+  "XAUUSD-D1": {
+    id: "XAUUSD-D1",
+    tfFa: "D1",
+    theta: 0.65,
+    adrP: 21,
+    atrP: 100,
+    slK: 1.272,
+    rr: 2.058,
+    maxHold: 16,
+    approachFrac: 0.85,
+    medSlPip: 331
+  },
+  "XAUUSD-H8": {
+    id: "XAUUSD-H8",
+    tfFa: "H8",
+    theta: 0.65,
+    adrP: 21,
+    atrP: 100,
+    slK: 1.272,
+    rr: 2.058,
+    maxHold: 16,
+    approachFrac: 0.85,
+    medSlPip: 165
+  }
+};
+function rollingMeanSimple(x, p) {
+  const n = x.length;
+  const out = new Array(n).fill(NaN);
+  let acc = 0;
+  for (let i = 0; i < n; i++) {
+    acc += x[i];
+    if (i >= p) acc -= x[i - p];
+    if (i >= p - 1) out[i] = acc / p;
+  }
+  return out;
+}
+function s770Features(candles, cfg) {
+  const n = candles.length;
+  const frac = new Array(n).fill(NaN);
+  const adrOut = new Array(n).fill(NaN);
+  const dayOpenOut = new Array(n).fill(NaN);
+  const dayKey = new Array(n).fill(0);
+  const dayIndexOf = new Array(n).fill(-1);
+  const dRng = [];
+  const dOpen = [];
+  for (let i = 0; i < n; i++) {
+    const k = Math.floor(candles[i].time / SEC_PER_DAY);
+    dayKey[i] = k;
+    if (i === 0 || k !== dayKey[i - 1]) {
+      dRng.push(candles[i].high - candles[i].low);
+      dOpen.push(candles[i].open);
+      dayIndexOf[i] = dRng.length - 1;
+    } else {
+      const j = dRng.length - 1;
+      dayIndexOf[i] = j;
+    }
+  }
+  const nDays = dRng.length;
+  const dHi = new Array(nDays).fill(-Infinity);
+  const dLo = new Array(nDays).fill(Infinity);
+  for (let i = 0; i < n; i++) {
+    const j = dayIndexOf[i];
+    if (candles[i].high > dHi[j]) dHi[j] = candles[i].high;
+    if (candles[i].low < dLo[j]) dLo[j] = candles[i].low;
+  }
+  for (let j = 0; j < nDays; j++) dRng[j] = dHi[j] - dLo[j];
+  const adrRoll = rollingMeanSimple(dRng, cfg.adrP);
+  const adrDay = new Array(nDays).fill(NaN);
+  for (let j = 1; j < nDays; j++) adrDay[j] = adrRoll[j - 1];
+  for (let i = 0; i < n; i++) {
+    const j = dayIndexOf[i];
+    const a = adrDay[j];
+    const op = dOpen[j];
+    adrOut[i] = a;
+    dayOpenOut[i] = op;
+    frac[i] = isFinite(a) && a > 0 ? (candles[i].close - op) / a : NaN;
+  }
+  const tr = new Array(n).fill(0);
+  for (let i = 0; i < n; i++) {
+    const pc = i === 0 ? candles[0].close : candles[i - 1].close;
+    const h = candles[i].high, l = candles[i].low;
+    tr[i] = Math.max(h - l, Math.abs(h - pc), Math.abs(l - pc));
+  }
+  const atrPx = rollingMeanSimple(tr, cfg.atrP);
+  const slPip = new Array(n).fill(NaN);
+  const tpPip = new Array(n).fill(NaN);
+  for (let i = 0; i < n; i++) {
+    if (!isFinite(atrPx[i])) continue;
+    slPip[i] = cfg.slK * atrPx[i] / GOLD_PIP13;
+    tpPip[i] = cfg.rr * slPip[i];
+  }
+  return { frac, adr: adrOut, dayOpen: dayOpenOut, atrPx, slPip, tpPip };
+}
+function computeS770(candles, cfg) {
+  const n = candles.length;
+  const warm = cfg.atrP + 2;
+  const emptyInd = [
+    { name: "\u062F\u0627\u062F\u0647", value: "\u0646\u0627\u06A9\u0627\u0641\u06CC", status: "neutral" }
+  ];
+  if (n < warm) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist: cfg.medSlPip * GOLD_PIP13,
+      tpDist: cfg.medSlPip * cfg.rr * GOLD_PIP13,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 ${warm} \u06A9\u0646\u062F\u0644\u0650 \u0628\u0633\u062A\u0647\u0654 ${cfg.tfFa} \u0628\u0631\u0627\u06CC \u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 ATR(${cfg.atrP}) \u0648 ADR(${cfg.adrP} \u0631\u0648\u0632\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC) \u0644\u0627\u0632\u0645 \u062F\u0627\u0631\u062F (\u0645\u0648\u062C\u0648\u062F: ${n}).`,
+      indicators: emptyInd
+    };
+  }
+  const f = s770Features(candles, cfg);
+  const i = n - 1;
+  const fracNow = f.frac[i];
+  const fracPrev = f.frac[i - 1];
+  const adrNow = f.adr[i];
+  const atr2 = f.atrPx[i];
+  const sl = f.slPip[i];
+  const valid = isFinite(fracNow) && isFinite(sl) && sl > 0;
+  const crossable = valid && isFinite(fracPrev);
+  const slPip = valid ? sl : cfg.medSlPip;
+  const tpPip = slPip * cfg.rr;
+  const slDist = slPip * GOLD_PIP13;
+  const tpDist = tpPip * GOLD_PIP13;
+  const th = cfg.theta;
+  const longSig = crossable && fracPrev < th && fracNow >= th;
+  const shortSig = crossable && fracPrev > -th && fracNow <= -th;
+  const active = longSig || shortSig;
+  const direction = shortSig ? "SHORT" : "LONG";
+  const nearUp = valid && !active && fracNow >= cfg.approachFrac * th && fracNow < th;
+  const nearDn = valid && !active && fracNow <= -cfg.approachFrac * th && fracNow > -th;
+  const approaching = nearUp || nearDn;
+  const pctOfTh = valid && th > 0 ? Math.abs(fracNow) / th * 100 : 0;
+  const indicators = [
+    {
+      name: `\u062D\u0627\u0644\u062A\u0650 \u0627\u0646\u0628\u0633\u0627\u0637 frac = (close \u2212 open\u0650 \u0631\u0648\u0632) \xF7 ADR${cfg.adrP} \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \xB1${cfg.theta}`,
+      value: valid ? `${fracNow >= 0 ? "+" : ""}${fracNow.toFixed(3)} / \xB1${th.toFixed(2)} (${pctOfTh.toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647)` : "\u2014",
+      status: active ? "ok" : approaching ? "neutral" : "bad"
+    },
+    {
+      name: "\u062D\u0627\u0644\u062A\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 (\u0644\u0627\u0632\u0645 \u0628\u0631\u0627\u06CC \xAB\u0639\u0628\u0648\u0631\xBB \u2014 \u0646\u0647 \u0641\u0642\u0637 \u0628\u0648\u062F\u0646 \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647)",
+      value: isFinite(fracPrev) ? `${fracPrev >= 0 ? "+" : ""}${fracPrev.toFixed(3)}` : "\u2014",
+      status: active ? "ok" : "neutral"
+    },
+    {
+      name: `ADR${cfg.adrP} \u2014 \u0645\u0642\u06CC\u0627\u0633\u0650 \u0639\u0627\u062F\u06CC\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 \u0631\u0648\u0632\u0627\u0646\u0647 (\u0639\u0644\u0651\u06CC: \u062A\u0627 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644)`,
+      value: isFinite(adrNow) ? `${(adrNow / GOLD_PIP13).toFixed(0)} pip ($${adrNow.toFixed(2)})` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: `ATR(${cfg.atrP}) \u06A9\u0627\u0631\u062A\u0650 ${cfg.tfFa} \u2014 \u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A`,
+      value: isFinite(atr2) ? `${(atr2 / GOLD_PIP13).toFixed(1)} pip` : "\u2014",
+      status: "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A)",
+      value: `${slPip.toFixed(1)} / ${tpPip.toFixed(1)} pip (\u0646\u0633\u0628\u062A ${cfg.rr} \u21D2 \u0647\u062F\u0641 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0627\u0632 \u062D\u062F\u0650 \u0636\u0631\u0631)`,
+      status: "ok"
+    }
+  ];
+  let reason;
+  if (active) {
+    const side = direction === "LONG" ? "\u062E\u0631\u06CC\u062F" : "\u0641\u0631\u0648\u0634";
+    const dirFa = direction === "LONG" ? "\u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627" : "\u0631\u0648 \u0628\u0647 \u067E\u0627\u06CC\u06CC\u0646";
+    reason = `\u062D\u0627\u0644\u062A\u0650 \u0627\u0646\u0628\u0633\u0627\u0637\u0650 \u062F\u0627\u0645\u0646\u0647 \u0647\u0645\u06CC\u0646 \u0627\u0644\u0622\u0646 \u0622\u0633\u062A\u0627\u0646\u0647 \u0631\u0627 **\u0642\u0637\u0639 \u06A9\u0631\u062F** ${dirFa}: frac \u0627\u0632 ${fracPrev.toFixed(3)} \u0628\u0647 ${fracNow >= 0 ? "+" : ""}${fracNow.toFixed(3)} \u0631\u0641\u062A \u0648 \u0627\u0632 ${direction === "LONG" ? "+" : "\u2212"}${th.toFixed(2)} \u06AF\u0630\u0634\u062A \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 ${side}. \u06CC\u0639\u0646\u06CC \u062D\u0631\u06A9\u062A\u0650 \u0627\u0645\u0631\u0648\u0632 \u0627\u0632 **\u0645\u0642\u06CC\u0627\u0633\u0650 \u0639\u0627\u062F\u06CC\u0650 \u0631\u0648\u0632\u0627\u0646\u0647** (ADR${cfg.adrP} = ${isFinite(adrNow) ? (adrNow / GOLD_PIP13).toFixed(0) : "\u2014"} pip) \u0641\u0631\u0627\u062A\u0631 \u0631\u0641\u062A\u0647 \u2014 \u0646\u0634\u0627\u0646\u0647\u0654 \u0648\u0631\u0648\u062F\u0650 \u062C\u0631\u06CC\u0627\u0646\u0650 \u0633\u0641\u0627\u0631\u0634\u0650 \u0627\u0637\u0644\u0627\u0639\u0627\u062A\u06CC \u06A9\u0647 \u062A\u062F\u0627\u0648\u0645 \u0645\u06CC\u200C\u06CC\u0627\u0628\u062F. \u0641\u06CC\u0632\u06CC\u06A9\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647: \u06F6\u06F8\u06F9 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \u0631\u0648\u06CC \u0627\u0633\u062A\u062E\u0631\u0650 D1+H8 \xB7 WR=\u06F4\u06F4.\u06F7\u066A \u0628\u0627 \u0646\u0633\u0628\u062A\u0650 ${cfg.rr} \xB7 \u0647\u0631 \u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 RQS2 \u067E\u0627\u0633 (z=\u06F3.\u06F9\u06F1 \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0633\u062F\u0650 \u06F2.\u06F8\u06F9\u06F7 \u0628\u0627 \u0634\u0645\u0627\u0631\u0634\u0650 \u06F3\u06F0\u06F1 \u0622\u0632\u0645\u0648\u0646) \xB7 \u0646\u06CC\u0645\u0647\u0654 \u067E\u0646\u0647\u0627\u0646\u0650 \u062F\u0627\u062F\u0647 (holdout) \u062D\u062A\u06CC **\u0628\u0647\u062A\u0631** \u0628\u0648\u062F (PF=\u06F1.\u06F5\u06F0). \u0648\u0631\u0648\u062F \u0631\u0648\u06CC open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u061B SL=${slPip.toFixed(1)} / TP=${tpPip.toFixed(1)} pip (${cfg.slK}\xD7ATR(${cfg.atrP}) \u0647\u0645\u06CC\u0646 \u06A9\u0646\u062F\u0644\u060C \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A).`;
+  } else if (approaching) {
+    const towards = fracNow >= 0 ? "\u0633\u0642\u0641\u0650" : "\u06A9\u0641\u0650";
+    reason = `\u062D\u0627\u0644\u062A\u0650 \u0627\u0646\u0628\u0633\u0627\u0637 (${fracNow >= 0 ? "+" : ""}${fracNow.toFixed(3)}) \u0628\u0647 ${pctOfTh.toFixed(0)}\u066A ${towards} \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \xB1${th.toFixed(2)} \u0631\u0633\u06CC\u062F\u0647 \u0648\u0644\u06CC \u0647\u0646\u0648\u0632 **\u0639\u0628\u0648\u0631 \u0646\u06A9\u0631\u062F\u0647**. \u0627\u06AF\u0631 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \u0622\u0633\u062A\u0627\u0646\u0647 \u0631\u0627 \u0642\u0637\u0639 \u06A9\u0646\u062F\u060C \u0648\u0631\u0648\u062F \u0635\u0627\u062F\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F. \u062A\u0648\u062C\u0647: \u062E\u0648\u062F\u0650 \xAB\u0628\u0648\u062F\u0646\xBB \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0646\u06CC\u0633\u062A \u2014 \u0641\u0642\u0637 \u0644\u062D\u0638\u0647\u0654 **\u0639\u0628\u0648\u0631** \u0627\u0637\u0644\u0627\u0639\u0627\u062A \u062F\u0627\u0631\u062F (\u0642\u0627\u0639\u062F\u0647\u0654 state-cross). \u0647\u0646\u0648\u0632 \u0645\u0639\u0627\u0645\u0644\u0647\u200C\u0627\u06CC \u0646\u06CC\u0633\u062A.`;
+  } else if (!valid) {
+    reason = `ADR${cfg.adrP} \u06CC\u0627 ATR(${cfg.atrP}) \u0647\u0646\u0648\u0632 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 ${warm} \u06A9\u0646\u062F\u0644\u06CC / ${cfg.adrP + 1} \u0631\u0648\u0632\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC) \u2014 \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0646\u062A\u0638\u0627\u0631.`;
+  } else if (Math.abs(fracNow) >= th) {
+    reason = `\u062D\u0627\u0644\u062A\u0650 \u0627\u0646\u0628\u0633\u0627\u0637 (${fracNow >= 0 ? "+" : ""}${fracNow.toFixed(3)}) \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \xB1${th.toFixed(2)} \u0627\u0633\u062A\u060C \u0648\u0644\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0647\u0645 \u0628\u0627\u0644\u0627\u06CC \u0622\u0633\u062A\u0627\u0646\u0647 \u0628\u0648\u062F (${fracPrev.toFixed(3)}) \u21D2 **\u0639\u0628\u0648\u0631\u0650 \u062A\u0627\u0632\u0647\u200C\u0627\u06CC \u0631\u062E \u0646\u062F\u0627\u062F\u0647** \u0648 \u0648\u0631\u0648\u062F\u06CC \u0635\u0627\u062F\u0631 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F. \u0627\u06CC\u0646 \u0639\u0645\u062F\u06CC \u0627\u0633\u062A: \u0627\u0637\u0644\u0627\u0639\u0627\u062A \u062F\u0631 \u0644\u0628\u0647\u0654 \u062A\u063A\u06CC\u06CC\u0631\u0650 \u062D\u0627\u0644\u062A \u0627\u0633\u062A \u0646\u0647 \u062F\u0631 \u062D\u0627\u0644\u062A\u0650 \u0627\u0646\u0628\u0627\u0634\u062A\u0647 \u2014 \u0647\u0645\u0627\u0646 \u0642\u0627\u0639\u062F\u0647\u200C\u0627\u06CC \u06A9\u0647 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC \u0634\u062F \u0648 \u067E\u0627\u0633 \u06AF\u0631\u0641\u062A (\u0627\u06AF\u0631 \xAB\u0628\u0648\u062F\u0646\xBB \u0631\u0627 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0645\u06CC\u200C\u06AF\u0631\u0641\u062A\u06CC\u0645\u060C \u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F \u0686\u0646\u062F \u0628\u0627\u0631 \u0634\u0645\u0631\u062F\u0647 \u0645\u06CC\u200C\u0634\u062F).`;
+  } else {
+    reason = `\u062D\u0631\u06A9\u062A\u0650 \u0631\u0648\u0632\u0650 \u062C\u0627\u0631\u06CC \u062F\u0631 \u0645\u0642\u06CC\u0627\u0633\u0650 \u0639\u0627\u062F\u06CC \u0627\u0633\u062A: frac=${fracNow >= 0 ? "+" : ""}${fracNow.toFixed(3)} \u06CC\u0639\u0646\u06CC ${pctOfTh.toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \xB1${th.toFixed(2)} (${isFinite(adrNow) ? (adrNow / GOLD_PIP13).toFixed(0) : "\u2014"} pip \u062F\u0627\u0645\u0646\u0647\u0654 \u0639\u0627\u062F\u06CC). \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (~\u06F4\u06F4 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u0627\u0633\u062A\u062E\u0631\u06CC \u062F\u0631 \u0633\u0627\u0644 \u0631\u0648\u06CC \u062F\u0648 \u06A9\u0627\u0631\u062A) \u2014 \u0628\u06CC\u0634\u062A\u0631\u0650 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u0648 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A.`;
+  }
+  return {
+    active,
+    approaching,
+    direction,
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 **\u0639\u0628\u0648\u0631\u0650** frac \u0627\u0632 ${fracNow >= 0 ? "+" : "\u2212"}${th.toFixed(2)} \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F\u0650 ${cfg.tfFa}` : void 0,
+    indicators
+  };
+}
+function decideS770(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS770(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: raw2.direction === "SHORT" ? "trend_down" : "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: raw2.direction === "SHORT" ? "bear" : "bull",
+    bucket: `s770_${cfg.tfFa.toLowerCase()}`
+  };
+  const slPipShow = Math.round(raw2.slDist / GOLD_PIP13 * 10) / 10;
+  const tpPipShow = Math.round(raw2.tpDist / GOLD_PIP13 * 10) / 10;
+  const meta = {
+    code: "S770",
+    name: `\u0627\u0646\u0628\u0633\u0627\u0637\u0650 \u062F\u0627\u0645\u0646\u0647 \u0646\u0633\u0628\u062A \u0628\u0647 ADR \u0628\u0627 \u062A\u062F\u0627\u0648\u0645 (${cfg.tfFa})`,
+    kind: "range_expansion",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC\u0650 \u0639\u06CC\u0646\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A: SL=${slPipShow} / TP=${tpPipShow} pip (${cfg.slK}\xD7ATR(${cfg.atrP}) \u06A9\u0646\u062F\u0644\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644 \xD7 \u0646\u0633\u0628\u062A\u0650 ${cfg.rr}\u061B \u0645\u06CC\u0627\u0646\u0647\u0654 \u062A\u0627\u0631\u06CC\u062E\u06CC\u0650 \u0627\u0633\u062A\u062E\u0631 \u2248\u06F2\u06F2\u06F0/\u06F4\u06F5\u06F3 pip). \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP/SL \u06CC\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false \u062F\u0631 \u0628\u06A9\u200C\u062A\u0633\u062A) \u0648 **\u0645\u0647\u0645\u200C\u062A\u0631**: \u062D\u06A9\u0645\u0650 ACCEPT \u0631\u0648\u06CC **\u0627\u0633\u062A\u062E\u0631\u0650 D1+H8 \u0628\u0627 \u0635\u0641\u0650 FIFO \u0648 \u0647\u0645\u0632\u0645\u0627\u0646\u06CC\u0650 \u062D\u062F\u0627\u06A9\u062B\u0631 \u06F1** \u0635\u0627\u062F\u0631 \u0634\u062F\u0647. \u06CC\u0639\u0646\u06CC \u0627\u06AF\u0631 \u06A9\u0627\u0631\u062A\u0650 D1 \u0648 \u06A9\u0627\u0631\u062A\u0650 H8 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u062F\u0627\u062F\u0646\u062F\u060C **\u0641\u0642\u0637 \u0627\u0648\u0644\u06CC** \u0645\u0639\u0627\u0645\u0644\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u0648 \u062F\u0648\u0645\u06CC \u062A\u0627 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 \u0622\u0646 \u0635\u0631\u0641\u0650\u200C\u0646\u0638\u0631 \u0645\u06CC\u200C\u0634\u0648\u062F \u2014 \u0648\u06AF\u0631\u0646\u0647 \u0631\u06CC\u0633\u06A9 \u062F\u0648 \u0628\u0631\u0627\u0628\u0631 \u0648 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0628\u06CC\u200C\u0627\u0639\u062A\u0628\u0627\u0631 \u0627\u0633\u062A. \u26A0\uFE0F \u0647\u0645\u0686\u0646\u06CC\u0646 \u0628\u0627 S382-H4 \u062A\u0644\u0627\u0642\u06CC\u0650 \u0632\u0645\u0627\u0646\u06CC\u0650 \u06F6\u06F2.\u06F7\u066A \u062F\u0627\u0631\u062F (\u0647\u0631 \u062F\u0648 hold \u0628\u0644\u0646\u062F) \u21D2 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9\u061B \u0648\u0644\u06CC \u0628\u062E\u0634\u0650 \u0645\u0633\u062A\u0642\u0644\u0634 \u0647\u0645 \u0633\u0648\u062F\u062F\u0647 \u0627\u0633\u062A (WR \u06F3\u06F6.\u06F0\u066A \u0628\u0627\u0644\u0627\u06CC \u0633\u0631\u0628\u0647\u200C\u0633\u0631\u0650 \u06F3\u06F3.\u06F2\u066A) \u21D2 \u062D\u0630\u0641 \u0644\u0627\u0632\u0645 \u0646\u06CC\u0633\u062A.`,
+    filters: [
+      `\u0639\u0628\u0648\u0631\u0650 \u062D\u0627\u0644\u062A (state-cross) \u0627\u0632 \xB1${cfg.theta}: frac = (close \u2212 open\u0650 \u0631\u0648\u0632\u0650 UTC) \xF7 ADR${cfg.adrP}`,
+      `ADR${cfg.adrP} \u0631\u0648\u06CC \u0631\u0648\u0632\u0647\u0627\u06CC \u062A\u0642\u0648\u06CC\u0645\u06CC \u0648 \u0628\u0627 \u0634\u06CC\u0641\u062A\u0650 \u06F1 \u0631\u0648\u0632 (\u0639\u0644\u0651\u06CC \u2014 \u0631\u0648\u0632\u0650 \u062C\u0627\u0631\u06CC \u062F\u0631 \u0622\u0646 \u0646\u06CC\u0633\u062A)`,
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0628\u0631\u062F\u0627\u0631\u06CC SL=${cfg.slK}\xD7ATR(${cfg.atrP}) \u0648 TP=${cfg.rr}\xD7SL \u21D2 TP>SL (\u0642\u0627\u0646\u0648\u0646\u0650 \u0628\u0648\u062F\u062C\u0647)`,
+      `\u062F\u0648\u0633\u0648\u06CC\u0647: \u0647\u0631 \u062F\u0648 \u0633\u0648 \u0645\u0633\u062A\u0642\u0644\u0627\u064B \u0644\u0628\u0647 \u062F\u0627\u0631\u0646\u062F (long +\u06F9.\u06F0\u06F6pp \xB7 short +\u06F5.\u06F2\u06F5pp)`,
+      "\u0635\u0641\u0631 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0631\u0698\u06CC\u0645/\u062C\u0647\u062A \u21D2 \u0628\u0648\u062F\u062C\u0647\u0654 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0633\u062A\u200C\u0646\u062E\u0648\u0631\u062F\u0647 \xB7 \u0635\u0641\u0650 FIFO \u0627\u0633\u062A\u062E\u0631\u06CC \u0628\u0627 \u06A9\u0627\u0631\u062A\u0650 \u062F\u06CC\u06AF\u0631"
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/gap_open_s560.ts
+var GOLD_PIP14 = 0.1;
+var S560_CFG = {
+  // تنها کارتِ ACCEPT که در سایت وجود دارد. M1 هم ACCEPT (95.6) بود ولی کارتِ
+  // M1 در سایت ساخته نشده ⇒ طبقِ §۱۰ سند فقط M5 وصل می‌شود.
+  // M15/M30/H1 حکمِ **REJECT** داشتند (شکستِ H8 = wall-time/DD) ⇒ تعمیمِ
+  // بدونِ شاهد ممنوع؛ قانونِ Multi-TF.
+  "XAUUSD-M5": {
+    id: "XAUUSD-M5",
+    tfFa: "M5",
+    tfSec: 300,
+    // ↓ منبعِ حقیقت: results/_s560_arms/frozen_thresholds_M5.json (q=80، تفکیکِ آخرهفته)
+    thrWeekendUsd: 2.952,
+    thrWeekdayUsd: 1.01,
+    slPip: 48.1,
+    tpPip: 48.1,
+    maxHold: 1,
+    approachFrac: 0.75
+  }
+};
+function dayBreakThreshold(tfSec) {
+  return Math.max(1800, 1.5 * tfSec);
+}
+function computeS560Signal(candles, cfg) {
+  const empty = {
+    active: false,
+    approaching: false,
+    brkIdx: -1,
+    gapUsd: NaN,
+    thrUsd: NaN,
+    isWeekend: false,
+    gapHours: NaN,
+    atLatestBar: -1,
+    ratio: 0,
+    dataHealthy: false
+  };
+  const n = candles.length;
+  if (n < 3) return empty;
+  const brkThr = dayBreakThreshold(cfg.tfSec);
+  let brk = -1;
+  for (let i = n - 2; i >= 1; i--) {
+    if (candles[i + 1].time - candles[i].time > brkThr) {
+      brk = i;
+      break;
+    }
+  }
+  if (brk < 0) return empty;
+  const prev = candles[brk];
+  const first = candles[brk + 1];
+  const dt = first.time - prev.time;
+  const isWeekend = dt > 86400;
+  const gapUsd = first.open - prev.close;
+  const thrUsd = isWeekend ? cfg.thrWeekendUsd : cfg.thrWeekdayUsd;
+  const absGap = Math.abs(gapUsd);
+  const ratio = thrUsd > 0 ? absGap / thrUsd : 0;
+  const dataHealthy = candles[brk].time - candles[brk - 1].time <= brkThr;
+  const cond = gapUsd < 0 && absGap > thrUsd && dataHealthy;
+  const approaching = !cond && gapUsd < 0 && ratio >= cfg.approachFrac;
+  return {
+    active: cond,
+    approaching,
+    brkIdx: brk,
+    gapUsd,
+    thrUsd,
+    isWeekend,
+    gapHours: dt / 3600,
+    atLatestBar: n - 1 - (brk + 1),
+    // ۰ ⇒ کندلِ اولِ روزِ نو آخرین کندلِ بسته است
+    ratio,
+    dataHealthy
+  };
+}
+var FRESH_MAX_BARS = 0;
+function decideS560(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const s = computeS560Signal(candles, cfg);
+  const price = a.price;
+  const fresh = s.atLatestBar >= 0 && s.atLatestBar <= FRESH_MAX_BARS;
+  const active = s.active && fresh;
+  const approaching = !active && s.approaching && fresh ? true : false;
+  const kindFa = s.isWeekend ? "\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0622\u062E\u0631\u0647\u0641\u062A\u0647 (\u062F\u0648\u0634\u0646\u0628\u0647)" : "\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC";
+  const gapAbs = Math.abs(s.gapUsd);
+  const gapPip = isFinite(gapAbs) ? gapAbs / GOLD_PIP14 : NaN;
+  let reason;
+  if (active) {
+    reason = `\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F: \u0628\u0627\u0632\u0627\u0631 \u0631\u0648\u0632\u0650 \u0646\u0648 \u0631\u0627 ${gapAbs.toFixed(2)}$ (${gapPip.toFixed(0)} pip) **\u0632\u06CC\u0631\u0650** \u0628\u0633\u062A\u0647\u0654 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 \u0628\u0627\u0632 \u06A9\u0631\u062F \u2014 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0627\u0632 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 ${s.thrUsd.toFixed(3)}$ \u0628\u0631\u0627\u06CC ${kindFa} (\u0646\u0633\u0628\u062A ${s.ratio.toFixed(2)}\xD7). \u0637\u0628\u0642\u0650 \u0633\u0646\u062F (RQS2=\u06F9\u06F6\u060C WR \u06F7\u06F1.\u06F5\u066A \u0631\u0648\u06CC n=\u06F4\u06F0\u06F7) \u0627\u06CC\u0646 \xAB\u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\xBB \u06AF\u0631\u0627\u06CC\u0634\u0650 \u0642\u0648\u06CC\u0650 \u0622\u0645\u0627\u0631\u06CC \u0628\u0647 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627 \u062F\u0631 \u0647\u0645\u0627\u0646 \u06A9\u0646\u062F\u0644\u0650 \u0646\u062E\u0633\u062A \u062F\u0627\u0631\u062F \u21D2 LONG \u0628\u0627 \u062E\u0631\u0648\u062C\u0650 \u0632\u0645\u0627\u0646\u06CC. \u23F1\uFE0F \u067E\u0646\u062C\u0631\u0647 \u0628\u0633\u06CC\u0627\u0631 \u06A9\u0648\u062A\u0627\u0647 \u0627\u0633\u062A: \u0648\u0631\u0648\u062F\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A\u06CC \u062F\u0631 open \u0647\u0645\u06CC\u0646 \u06A9\u0646\u062F\u0644\u0650 \u062A\u0627\u0632\u0647\u200C\u0628\u0633\u062A\u0647 \u0628\u0648\u062F \u0648 \u062E\u0631\u0648\u062C \u062F\u0631 close \u0622\u0646 \u21D2 \u0644\u0628\u0647 \u062F\u0631 \u0647\u0645\u06CC\u0646 \u062F\u0642\u06CC\u0642\u0647\u200C\u0647\u0627 \u0645\u0635\u0631\u0641 \u0645\u06CC\u200C\u0634\u0648\u062F.`;
+  } else if (s.active && !fresh) {
+    reason = `\u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC **\u0627\u0645\u0631\u0648\u0632 \u0631\u062E \u062F\u0627\u062F** (\u06AF\u067E ${gapAbs.toFixed(2)}$ \u062F\u0631 ${kindFa}) \u0648\u0644\u06CC \u067E\u0646\u062C\u0631\u0647\u0654 \u06F5\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC\u0650 \u0622\u0646 ${s.atLatestBar} \u06A9\u0646\u062F\u0644 \u067E\u06CC\u0634 \u0628\u0633\u062A\u0647 \u0634\u062F. \u0647\u0646\u062F\u0633\u0647\u0654 \u0642\u0641\u0644\u200C\u0634\u062F\u0647\u0654 \u0644\u0627\u06CC\u0647 maxHold=\u06F1 \u06A9\u0646\u062F\u0644\u0650 M5 \u0627\u0633\u062A \u21D2 \u0648\u0631\u0648\u062F\u0650 \u062A\u0623\u062E\u06CC\u0631\u06CC \u0647\u06CC\u0686 \u0631\u0628\u0637\u06CC \u0628\u0647 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0646\u062F\u0627\u0631\u062F. \u0635\u0627\u062F\u0642\u0627\u0646\u0647: \u0627\u06CC\u0646 \u0641\u0631\u0635\u062A \u0627\u0632 \u062F\u0633\u062A \u0631\u0641\u062A\u0647 \u0627\u0633\u062A\u060C \u0646\u0647 \u06CC\u06A9 \u0648\u0631\u0648\u062F\u0650 \u0645\u0639\u062A\u0628\u0631.`;
+  } else if (s.brkIdx < 0) {
+    reason = `\u0647\u06CC\u0686 \u0645\u0631\u0632\u0650 \u0631\u0648\u0632\u06CC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A (\u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0644\u062D\u0638\u0647\u0654 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0632 \u0645\u0639\u0646\u0627 \u062F\u0627\u0631\u062F). \u0644\u0627\u06CC\u0647 \u0631\u0648\u0632\u06CC \u06CC\u06A9\u200C\u0628\u0627\u0631 \u0627\u0631\u0632\u06CC\u0627\u0628\u06CC \u0645\u06CC\u200C\u0634\u0648\u062F.`;
+  } else if (s.brkIdx >= 0 && !s.dataHealthy) {
+    reason = `\u26A0\uFE0F **\u062F\u0627\u062F\u0647\u0654 \u0641\u06CC\u062F \u062F\u0631 \u0627\u06CC\u0646 \u0646\u0627\u062D\u06CC\u0647 \u0646\u0627\u067E\u06CC\u0648\u0633\u062A\u0647 \u0627\u0633\u062A** \u21D2 \u0644\u0627\u06CC\u0647 \u0639\u0645\u062F\u0627\u064B \u0645\u0633\u062F\u0648\u062F \u0634\u062F. \u06A9\u0646\u062F\u0644\u0650 \u0645\u0627\u0642\u0628\u0644\u0650 \u0645\u0631\u0632\u0650 \u0631\u0648\u0632 \u0647\u0645 \u0628\u0627 \u0648\u0642\u0641\u0647\u200C\u0627\u06CC \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0627\u0632 \u062D\u062F\u0650 \u0645\u062C\u0627\u0632 \u0622\u0645\u062F\u0647\u060C \u06CC\u0639\u0646\u06CC \xAB\u0628\u0633\u062A\u0647\u0654 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644\xBB \u06CC\u06A9 \u0642\u06CC\u0645\u062A\u0650 **\u06A9\u0647\u0646\u0647** \u0627\u0633\u062A \u0648 \u06AF\u067E\u0650 ${gapAbs.toFixed(2)}$\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u200C\u0634\u062F\u0647 \u0645\u0635\u0646\u0648\u0639\u0650 \u0634\u06A9\u0627\u0641\u0650 \u062F\u0627\u062F\u0647 \u0627\u0633\u062A\u060C \u0646\u0647 \u0631\u0641\u062A\u0627\u0631\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631. \u0645\u0639\u0627\u0645\u0644\u0647 \u0631\u0648\u06CC \u0686\u0646\u06CC\u0646 \u06AF\u067E\u06CC \u0628\u06CC\u200C\u0645\u0639\u0646\u0627 \u0627\u0633\u062A. (\u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u0627\u062B\u0631\u0650 \u0627\u06CC\u0646 \u06AF\u0627\u0631\u062F \u0631\u0648\u06CC \u06A9\u0644\u0650 \u062A\u0627\u0631\u06CC\u062E: \u062A\u0646\u0647\u0627 \u06F3 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0627\u0632 \u06F4\u06F2\u06F3 = \u06F0.\u06F7\u06F1\u066A\u060C \u0647\u0631 \u0633\u0647 \u062F\u0631 \u0646\u0627\u062D\u06CC\u0647\u0654 \u0645\u0639\u06CC\u0648\u0628\u0650 \u0698\u0648\u0626\u0646\u0650 \u06F2\u06F0\u06F1\u06F3 \u21D2 \u062D\u06A9\u0645\u0650 \u0622\u0645\u0627\u0631\u06CC \u062F\u0633\u062A\u200C\u0646\u062E\u0648\u0631\u062F\u0647 \u0627\u0633\u062A.)`;
+  } else if (s.gapUsd >= 0) {
+    reason = `\u0622\u062E\u0631\u06CC\u0646 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC (${kindFa}) \u06AF\u067E\u0650 **\u0645\u062B\u0628\u062A/\u0635\u0641\u0631** \u062F\u0627\u0634\u062A (${s.gapUsd.toFixed(2)}$) \u2014 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC \u0631\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC)\u060C \u067E\u0633 \u0628\u06CC\u200C\u0633\u06CC\u06AF\u0646\u0627\u0644 \u0627\u0633\u062A.`;
+  } else {
+    reason = `\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0622\u062E\u0631\u06CC\u0646 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC \u06A9\u0645\u200C\u0639\u0645\u0642 \u0628\u0648\u062F: ${gapAbs.toFixed(2)}$ \u06CC\u0639\u0646\u06CC ${(s.ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${s.thrUsd.toFixed(3)}$ \u0628\u0631\u0627\u06CC ${kindFa}. \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (~\u06F4\u06F1\u06F2 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \u2248 \u06F1\u06F0\u066A \u0631\u0648\u0632\u0647\u0627) \u0648 \u0628\u06CC\u0634\u062A\u0631\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u2014 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A.`;
+  }
+  const indicators = [
+    {
+      name: "\u0645\u0631\u0632\u0650 \u0631\u0648\u0632 (\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC)",
+      value: s.brkIdx >= 0 ? `${kindFa} \xB7 \u0648\u0642\u0641\u0647\u0654 ${s.gapHours.toFixed(1)}h` : "\u2014",
+      status: s.brkIdx >= 0 ? "ok" : "neutral"
+    },
+    {
+      name: "\u062C\u0647\u062A\u0650 \u06AF\u067E (\u0628\u0627\u06CC\u062F \u0645\u0646\u0641\u06CC \u0628\u0627\u0634\u062F)",
+      value: isFinite(s.gapUsd) ? `${s.gapUsd >= 0 ? "+" : ""}${s.gapUsd.toFixed(2)}$` + (s.gapUsd < 0 ? " \u2714" : " \u2718") : "\u2014",
+      status: s.gapUsd < 0 ? "ok" : "bad"
+    },
+    {
+      name: `\u0639\u0645\u0642\u0650 \u06AF\u067E > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F (${isFinite(s.thrUsd) ? s.thrUsd.toFixed(3) : "\u2014"}$)`,
+      value: isFinite(gapAbs) ? `${gapAbs.toFixed(2)}$ (${(s.ratio * 100).toFixed(0)}\u066A)` + (s.active ? " \u2714" : "") : "\u2014",
+      status: s.active ? "ok" : s.approaching ? "warn" : "bad"
+    },
+    {
+      name: "\u062A\u0627\u0632\u06AF\u06CC\u0650 \u067E\u0646\u062C\u0631\u0647 (maxHold=\u06F1 \u06A9\u0646\u062F\u0644\u0650 M5)",
+      value: s.brkIdx < 0 ? "\u2014" : fresh ? "\u0628\u0627\u0632 \u2014 \u0647\u0645\u06CC\u0646 \u06A9\u0646\u062F\u0644 \u2714" : `\u0628\u0633\u062A\u0647 \u2014 ${s.atLatestBar} \u06A9\u0646\u062F\u0644 \u06AF\u0630\u0634\u062A\u0647 \u2718`,
+      status: s.brkIdx < 0 ? "neutral" : fresh ? "ok" : "bad"
+    },
+    {
+      name: "\u067E\u06CC\u0648\u0633\u062A\u06AF\u06CC\u0650 \u0641\u06CC\u062F\u0650 \u062F\u0627\u062F\u0647 (\u06AF\u0627\u0631\u062F\u0650 \u0636\u062F\u0650 \u06AF\u067E\u0650 \u062C\u0639\u0644\u06CC)",
+      value: s.brkIdx < 0 ? "\u2014" : s.dataHealthy ? "\u0633\u0627\u0644\u0645 \u2714" : "\u0646\u0627\u067E\u06CC\u0648\u0633\u062A\u0647 \u2014 \u0645\u0633\u062F\u0648\u062F \u2718",
+      status: s.brkIdx < 0 ? "neutral" : s.dataHealthy ? "ok" : "bad"
+    }
+  ];
+  const raw2 = {
+    active,
+    approaching,
+    direction: "LONG",
+    // لایه LONG-only است (گپِ منفی ⇒ بازگشتِ بالا)
+    slDist: cfg.slPip * GOLD_PIP14,
+    // 48.1 pip ⇒ 4.81$ — براکتِ نادر-فعال
+    tpDist: cfg.tpPip * GOLD_PIP14,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0639\u0645\u06CC\u0642\u200C\u0634\u062F\u0646\u0650 \u06AF\u067E \u062A\u0627 \u0639\u0628\u0648\u0631 \u0627\u0632 ${s.thrUsd.toFixed(3)}$ (\u0627\u06A9\u0646\u0648\u0646 ${(s.ratio * 100).toFixed(0)}\u066A)` : void 0,
+    indicators
+  };
+  const reg = {
+    regime: "range",
+    // رویدادِ بازگشتی، نه روندی
+    efficiencyRatio: 0,
+    trendy: false,
+    adx: 0,
+    activeStream: active ? "bull" : "none",
+    bucket: `s560_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S560",
+    name: `\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC (${cfg.tfFa})`,
+    kind: "gap_open",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u23F1\uFE0F **\u062E\u0631\u0648\u062C\u0650 \u0632\u0645\u0627\u0646\u06CC \u062D\u0627\u06A9\u0645 \u0627\u0633\u062A\u060C \u0646\u0647 \u0627\u0633\u062A\u0627\u067E\u0650 \u0642\u06CC\u0645\u062A\u06CC.** \u0647\u0646\u062F\u0633\u0647\u0654 \u0642\u0641\u0644\u200C\u0634\u062F\u0647\u0654 \u0628\u0627\u0632\u0648\u0650 V-TIME: \u062F\u0631 close \u06A9\u0646\u062F\u0644\u0650 M5\u0650 \u0648\u0631\u0648\u062F \u062E\u0627\u0631\u062C \u0634\u0648 (maxHold=${cfg.maxHold}). \u0628\u0631\u0627\u06A9\u062A\u0650 SL=TP=${cfg.slPip} pip \u0641\u0642\u0637 **\u0645\u062D\u0627\u0641\u0638\u0650 \u0646\u0627\u062F\u0631-\u0641\u0639\u0627\u0644** \u0627\u0633\u062A (\u0686\u0646\u062F\u06A9\u0650 \u06F9\u06F8 \u062F\u0645\u0650 MFE\u222AMAE \u0646\u06CC\u0645\u0647\u0654 \u0627\u0648\u0644) \u0648 \u062F\u0631 \u062D\u0627\u0644\u062A\u0650 \u0639\u0627\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0641\u0639\u0627\u0644 \u0634\u0648\u062F. \u062F\u0631\u0633\u0650 \u06F1 \u0633\u0646\u062F: \u0628\u0627\u0632\u0648\u0650 \u0627\u0633\u062A\u0627\u067E-\u0642\u06CC\u0645\u062A\u06CC (V-BRK) \u062F\u0631 **\u0647\u0631 \u06F5 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645** \u0645\u063A\u0644\u0648\u0628 \u0634\u062F \u21D2 \u0627\u0633\u062A\u0627\u067E \u0631\u0627 \u062A\u0646\u06AF \u0646\u06A9\u0646 \u0648 TP \u0631\u0627 \u0632\u0648\u062F \u0646\u06AF\u06CC\u0631\u061B \u0641\u0642\u0637 \u0632\u0645\u0627\u0646. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false \u062F\u0631 \u062F\u0627\u0648\u0631\u06CC): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u0646\u0648 \u0628\u0627\u0632 \u06A9\u0646\u062F.`,
+    filters: [
+      `\u0645\u0631\u0632\u0650 \u0631\u0648\u0632: \u0648\u0642\u0641\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC > ${dayBreakThreshold(cfg.tfSec)}s (\u0642\u0627\u0639\u062F\u0647\u0654 BUG-BRKTHRESH)`,
+      "\u06AF\u067E = open(\u06A9\u0646\u062F\u0644\u0650 \u0627\u0648\u0644\u0650 \u0631\u0648\u0632) \u2212 close(\u0622\u062E\u0631\u06CC\u0646 \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644) \u2014 \u0628\u0627\u06CC\u062F **\u0645\u0646\u0641\u06CC** \u0628\u0627\u0634\u062F",
+      `\u0639\u0645\u0642\u0650 \u06AF\u067E \u0627\u06A9\u06CC\u062F\u0627\u064B > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 q80 (\u0622\u062E\u0631\u0647\u0641\u062A\u0647 ${cfg.thrWeekendUsd}$ / \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC ${cfg.thrWeekdayUsd}$)`,
+      "\u062A\u0641\u06A9\u06CC\u06A9\u0650 \u0622\u062E\u0631\u0647\u0641\u062A\u0647/\u0645\u06CC\u0627\u0646\u200C\u0647\u0641\u062A\u0647 (\u062F\u0631\u0633\u0650 \u06F2 \u0633\u0646\u062F: \u06AF\u067E\u0650 \u062F\u0648\u0634\u0646\u0628\u0647 \u2248\u06F8\xD7 \u06AF\u067E\u0650 \u0631\u0648\u0632\u0627\u0646\u0647)",
+      `\u062E\u0631\u0648\u062C\u0650 \u0632\u0645\u0627\u0646\u06CC\u0650 \u062E\u0627\u0644\u0635 \u067E\u0633 \u0627\u0632 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \xB7 LONG-only \xB7 ~\u06F2\u06F6 \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u0633\u0627\u0644`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/gap_open_volfilter_s562.ts
+var GOLD_PIP15 = 0.1;
+var VOL_N = 14;
+var S562_CFG = {
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tfFa: "M15",
+    tfSec: 900,
+    // ⇒ dayBreakThreshold = max(1800, 1350) = 1800s
+    thrWeekendUsd: 2.056,
+    thrWeekdayUsd: 0.766,
+    volThrUsd: 143.3813,
+    qv: 85,
+    slPip: 50.9,
+    tpPip: 50.9,
+    maxHold: 1,
+    approachFrac: 0.75,
+    rqs2: 95.3,
+    nTrades: 438,
+    wrPct: 70.78,
+    maxDdPct: 3.71
+  },
+  "XAUUSD-H1": {
+    id: "XAUUSD-H1",
+    tfFa: "H1",
+    tfSec: 3600,
+    // ⇒ dayBreakThreshold = max(1800, 5400) = 5400s
+    thrWeekendUsd: 2.952,
+    thrWeekdayUsd: 0.98,
+    volThrUsd: 132.0466,
+    qv: 78,
+    slPip: 101.4,
+    tpPip: 101.4,
+    maxHold: 2,
+    approachFrac: 0.75,
+    rqs2: 96,
+    nTrades: 254,
+    wrPct: 68.9,
+    maxDdPct: 2.07
+  }
+};
+function dailyRanges(candles, tfSec) {
+  const n = candles.length;
+  const brkThr = dayBreakThreshold(tfSec);
+  const brk = [];
+  for (let i = 0; i < n - 1; i++) {
+    if (candles[i + 1].time - candles[i].time > brkThr) brk.push(i);
+  }
+  const starts = [0, ...brk.map((b) => b + 1)];
+  const ends = [...brk, n - 1];
+  const rng = [];
+  for (let k = 0; k < starts.length; k++) {
+    let hi = -Infinity, lo = Infinity;
+    for (let i = starts[k]; i <= ends[k]; i++) {
+      if (candles[i].high > hi) hi = candles[i].high;
+      if (candles[i].low < lo) lo = candles[i].low;
+    }
+    rng.push(hi - lo);
+  }
+  return { rng, ends };
+}
+function computeS562Signal(candles, cfg) {
+  const empty = {
+    active: false,
+    approaching: false,
+    baseActive: false,
+    volPass: false,
+    volRefUsd: NaN,
+    volThrUsd: cfg.volThrUsd,
+    volRatio: NaN,
+    volDaysAvail: 0,
+    brkIdx: -1,
+    gapUsd: NaN,
+    thrUsd: NaN,
+    isWeekend: false,
+    gapHours: NaN,
+    atLatestBar: -1,
+    ratio: 0,
+    dataHealthy: false
+  };
+  const n = candles.length;
+  if (n < 3) return empty;
+  const brkThr = dayBreakThreshold(cfg.tfSec);
+  let brk = -1;
+  for (let i = n - 2; i >= 1; i--) {
+    if (candles[i + 1].time - candles[i].time > brkThr) {
+      brk = i;
+      break;
+    }
+  }
+  if (brk < 0) return empty;
+  const prev = candles[brk];
+  const first = candles[brk + 1];
+  const dt = first.time - prev.time;
+  const isWeekend = dt > 86400;
+  const gapUsd = first.open - prev.close;
+  const thrUsd = isWeekend ? cfg.thrWeekendUsd : cfg.thrWeekdayUsd;
+  const absGap = Math.abs(gapUsd);
+  const ratio = thrUsd > 0 ? absGap / thrUsd : 0;
+  const dataHealthy = candles[brk].time - candles[brk - 1].time <= brkThr;
+  const baseActive = gapUsd < 0 && absGap > thrUsd && dataHealthy;
+  const { rng, ends } = dailyRanges(candles, cfg.tfSec);
+  let kDay = -1;
+  for (let k = 0; k < ends.length; k++) {
+    if (ends[k] === brk) {
+      kDay = k;
+      break;
+    }
+  }
+  let volRefUsd = NaN;
+  let volDaysAvail = 0;
+  if (kDay >= 0) {
+    volDaysAvail = kDay + 1;
+    if (kDay >= VOL_N - 1) {
+      let s = 0;
+      for (let j = kDay - (VOL_N - 1); j <= kDay; j++) s += rng[j];
+      volRefUsd = s / VOL_N;
+    }
+  }
+  const volPass = isFinite(volRefUsd) && volRefUsd <= cfg.volThrUsd;
+  const volRatio = isFinite(volRefUsd) ? volRefUsd / cfg.volThrUsd : NaN;
+  const cond = baseActive && volPass;
+  const approaching = !cond && volPass && gapUsd < 0 && ratio >= cfg.approachFrac;
+  return {
+    active: cond,
+    approaching,
+    baseActive,
+    volPass,
+    volRefUsd,
+    volThrUsd: cfg.volThrUsd,
+    volRatio,
+    volDaysAvail,
+    brkIdx: brk,
+    gapUsd,
+    thrUsd,
+    isWeekend,
+    gapHours: dt / 3600,
+    atLatestBar: n - 1 - (brk + 1),
+    // ۰ ⇒ کندلِ اولِ روزِ نو آخرین کندلِ بسته است
+    ratio,
+    dataHealthy
+  };
+}
+function decideS562(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const s = computeS562Signal(candles, cfg);
+  const price = a.price;
+  const freshMaxBars = Math.max(0, cfg.maxHold - 1);
+  const fresh = s.atLatestBar >= 0 && s.atLatestBar <= freshMaxBars;
+  const active = s.active && fresh;
+  const approaching = !active && s.approaching && fresh ? true : false;
+  const kindFa = s.isWeekend ? "\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0622\u062E\u0631\u0647\u0641\u062A\u0647 (\u062F\u0648\u0634\u0646\u0628\u0647)" : "\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC";
+  const gapAbs = Math.abs(s.gapUsd);
+  const gapPip = isFinite(gapAbs) ? gapAbs / GOLD_PIP15 : NaN;
+  const holdFa = cfg.maxHold === 1 ? `\u06F1 \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa}` : `${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa}`;
+  let reason;
+  if (active) {
+    reason = `\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC **\u0648** \u0641\u06CC\u0644\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646\u060C \u0647\u0631 \u062F\u0648 \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F\u0646\u062F: \u0628\u0627\u0632\u0627\u0631 \u0631\u0648\u0632\u0650 \u0646\u0648 \u0631\u0627 ${gapAbs.toFixed(2)}$ (${gapPip.toFixed(0)} pip) **\u0632\u06CC\u0631\u0650** \u0628\u0633\u062A\u0647\u0654 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 \u0628\u0627\u0632 \u06A9\u0631\u062F \u2014 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0627\u0632 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 ${s.thrUsd.toFixed(3)}$ \u0628\u0631\u0627\u06CC ${kindFa} (\u0646\u0633\u0628\u062A ${s.ratio.toFixed(2)}\xD7) \u2014 \u0648 \u0646\u0648\u0633\u0627\u0646\u0650 \u0645\u0631\u062C\u0639\u0650 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 ${s.volRefUsd.toFixed(1)}$ \u0627\u0633\u062A \u06A9\u0647 **\u0632\u06CC\u0631\u0650** \u0633\u0642\u0641\u0650 ${s.volThrUsd.toFixed(1)}$ (\u0686\u0646\u062F\u06A9\u0650 ${cfg.qv}) \u0645\u06CC\u200C\u0646\u0634\u06CC\u0646\u062F \u21D2 \u0631\u0698\u06CC\u0645\u0650 \xAB\u0631\u0648\u0632\u0650 \u0622\u0631\u0627\u0645\xBB \u21D2 \u0645\u062C\u0627\u0632\u0650 \u0648\u0631\u0648\u062F. \u0637\u0628\u0642\u0650 \u0633\u0646\u062F (RQS2=${cfg.rqs2}\u060C WR ${cfg.wrPct}\u066A \u0631\u0648\u06CC n=${cfg.nTrades}\u060C maxDD ${cfg.maxDdPct}\u066A) \u0627\u06CC\u0646 \u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC \u06AF\u0631\u0627\u06CC\u0634\u0650 \u0642\u0648\u06CC\u0650 \u0622\u0645\u0627\u0631\u06CC \u0628\u0647 \u0628\u0627\u0632\u06AF\u0634\u062A\u0650 \u0631\u0648 \u0628\u0647 \u0628\u0627\u0644\u0627 \u062F\u0627\u0631\u062F \u21D2 LONG \u0628\u0627 \u062E\u0631\u0648\u062C\u0650 \u0632\u0645\u0627\u0646\u06CC\u0650 ${holdFa}. \u23F1\uFE0F \u067E\u0646\u062C\u0631\u0647 \u06A9\u0648\u062A\u0627\u0647 \u0627\u0633\u062A: \u0648\u0631\u0648\u062F\u0650 \u0628\u06A9\u200C\u062A\u0633\u062A\u06CC \u062F\u0631 open \u06A9\u0646\u062F\u0644\u0650 \u0627\u0648\u0644\u0650 \u0631\u0648\u0632 \u0628\u0648\u062F.`;
+  } else if (s.baseActive && !s.volPass && isFinite(s.volRefUsd)) {
+    reason = `\u26D4 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u06A9\u0627\u0641\u06CC \u0648\u062C\u0648\u062F \u062F\u0627\u0631\u062F (${gapAbs.toFixed(2)}$ \u062F\u0631 ${kindFa}\u060C ${s.ratio.toFixed(2)}\xD7 \u0622\u0633\u062A\u0627\u0646\u0647) **\u0648\u0644\u06CC \u0641\u06CC\u0644\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646 \u0622\u0646 \u0631\u0627 \u0631\u062F \u06A9\u0631\u062F**: \u0646\u0648\u0633\u0627\u0646\u0650 \u0645\u0631\u062C\u0639\u0650 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 ${s.volRefUsd.toFixed(1)}$ \u0627\u0633\u062A\u060C \u0628\u0627\u0644\u0627\u062A\u0631 \u0627\u0632 \u0633\u0642\u0641\u0650 \u0645\u0646\u062C\u0645\u062F\u0650 ${s.volThrUsd.toFixed(1)}$ (${(s.volRatio * 100).toFixed(0)}\u066A) \u21D2 \u0628\u0627\u0632\u0627\u0631 \u062F\u0631 **\u0631\u0698\u06CC\u0645\u0650 \u067E\u0631\u0646\u0648\u0633\u0627\u0646** \u0627\u0633\u062A. \u0627\u06CC\u0646 \u0647\u0645\u0627\u0646 \u06A9\u0634\u0641\u0650 \u0645\u0631\u06A9\u0632\u06CC\u0650 S562 \u0627\u0633\u062A (\u0642\u0627\u0646\u0648\u0646\u0650 DD-\u0627\u0646\u062A\u0642\u0627\u0644\u060C \xA7\u06F4 \u0633\u0646\u062F): \u062E\u0648\u0634\u0647\u200C\u0647\u0627\u06CC \u0628\u0627\u062E\u062A\u0650 \u0644\u0627\u06CC\u0647\u200C\u0647\u0627\u06CC \u06AF\u067E \u062F\u0631 \u0631\u0648\u0632\u0647\u0627\u06CC \u067E\u0631\u0646\u0648\u0633\u0627\u0646 \u0632\u0646\u062F\u06AF\u06CC \u0645\u06CC\u200C\u06A9\u0646\u0646\u062F\u061B \u062D\u0630\u0641\u0650 \u0647\u0645\u06CC\u0646 \u0631\u0648\u0632\u0647\u0627 maxDD \u0631\u0627 \u0627\u0632 \u06F1\u06F2.\u06F4\u066A \u0628\u0647 \u06F3.\u06F7\u066A (M15) \u0648 \u0627\u0632 \u06F9.\u06F5\u066A \u0628\u0647 \u06F2.\u06F1\u066A (H1) \u0631\u0633\u0627\u0646\u062F. \u067E\u0633 \u0627\u06CC\u0646 \xAB\u0631\u062F\u0652\xBB \u0646\u0642\u0635\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0646\u06CC\u0633\u062A \u2014 **\u062E\u0648\u062F\u0650 \u0645\u0647\u0627\u0631\u062A\u0650 \u0644\u0627\u06CC\u0647** \u0627\u0633\u062A.`;
+  } else if (s.baseActive && !isFinite(s.volRefUsd)) {
+    reason = `\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u06A9\u0627\u0641\u06CC \u0648\u062C\u0648\u062F \u062F\u0627\u0631\u062F \u0648\u0644\u06CC **\u062A\u0627\u0631\u06CC\u062E\u0686\u0647\u0654 \u0646\u0648\u0633\u0627\u0646 \u0646\u0627\u06A9\u0627\u0641\u06CC \u0627\u0633\u062A**: \u0641\u06CC\u0644\u062A\u0631\u0650 V \u0628\u0647 \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 ${VOL_N} \u0631\u0648\u0632\u0650 \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0627\u0632 \u062F\u0627\u0631\u062F \u0648 \u0641\u0642\u0637 ${s.volDaysAvail} \u0631\u0648\u0632 \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u062F\u0627\u062F\u0647 \u0647\u0633\u062A. \u0637\u0628\u0642\u0650 \u0645\u0646\u0637\u0642\u0650 \u0645\u062D\u0627\u0641\u0638\u0647\u200C\u06A9\u0627\u0631\u0627\u0646\u0647\u0654 \u0627\u0628\u0632\u0627\u0631\u0650 \u062F\u0627\u0648\u0631\u06CC (\u0646\u0628\u0648\u062F\u0650 \u062A\u0627\u0631\u06CC\u062E\u0686\u0647 = \u0631\u062F\u060C \u0646\u0647 \u0639\u0628\u0648\u0631\u0650 \u0628\u06CC\u200C\u0641\u06CC\u0644\u062A\u0631)\u060C \u0648\u0631\u0648\u062F \u0645\u062C\u0627\u0632 \u0646\u06CC\u0633\u062A. \u0627\u06AF\u0631 \u0628\u0631\u0639\u06A9\u0633 \u0639\u0645\u0644 \u0645\u06CC\u200C\u0634\u062F\u060C \u0644\u0627\u06CC\u0647 \u062F\u0631 \u0627\u0628\u062A\u062F\u0627\u06CC \u067E\u0646\u062C\u0631\u0647 \u0628\u06CC\u200C\u0641\u06CC\u0644\u062A\u0631 \u0645\u0639\u0627\u0645\u0644\u0647 \u0645\u06CC\u200C\u06A9\u0631\u062F \u2014 \u0647\u0645\u0627\u0646 \u0686\u06CC\u0632\u06CC \u06A9\u0647 \u062F\u0631\u0648\u0627\u0632\u0647\u0654 H8 \u0631\u0627 \u0645\u06CC\u200C\u0634\u06A9\u0633\u062A.`;
+  } else if (s.active && !fresh) {
+    reason = `\u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u06A9\u0627\u0645\u0644\u0650 S562 **\u0627\u0645\u0631\u0648\u0632 \u0631\u062E \u062F\u0627\u062F** (\u06AF\u067E ${gapAbs.toFixed(2)}$ \u062F\u0631 ${kindFa}\u060C \u0631\u0648\u0632\u0650 \u0622\u0631\u0627\u0645) \u0648\u0644\u06CC \u067E\u0646\u062C\u0631\u0647\u0654 ${holdFa}\u06CC \u0622\u0646 ${s.atLatestBar} \u06A9\u0646\u062F\u0644 \u067E\u06CC\u0634 \u0628\u0633\u062A\u0647 \u0634\u062F. \u0647\u0646\u062F\u0633\u0647\u0654 \u0642\u0641\u0644\u200C\u0634\u062F\u0647 maxHold=${cfg.maxHold} \u0627\u0633\u062A \u21D2 \u0648\u0631\u0648\u062F\u0650 \u062A\u0623\u062E\u06CC\u0631\u06CC \u0647\u06CC\u0686 \u0631\u0628\u0637\u06CC \u0628\u0647 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0646\u062F\u0627\u0631\u062F. \u0635\u0627\u062F\u0642\u0627\u0646\u0647: \u0627\u06CC\u0646 \u0641\u0631\u0635\u062A \u0627\u0632 \u062F\u0633\u062A \u0631\u0641\u062A\u0647 \u0627\u0633\u062A\u060C \u0646\u0647 \u06CC\u06A9 \u0648\u0631\u0648\u062F\u0650 \u0645\u0639\u062A\u0628\u0631.`;
+  } else if (s.brkIdx < 0) {
+    reason = `\u0647\u06CC\u0686 \u0645\u0631\u0632\u0650 \u0631\u0648\u0632\u06CC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A (\u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u062F\u0631 \u0644\u062D\u0638\u0647\u0654 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0632 \u0645\u0639\u0646\u0627 \u062F\u0627\u0631\u062F). \u0644\u0627\u06CC\u0647 \u0631\u0648\u0632\u06CC \u06CC\u06A9\u200C\u0628\u0627\u0631 \u0627\u0631\u0632\u06CC\u0627\u0628\u06CC \u0645\u06CC\u200C\u0634\u0648\u062F.`;
+  } else if (!s.dataHealthy) {
+    reason = `\u26A0\uFE0F **\u062F\u0627\u062F\u0647\u0654 \u0641\u06CC\u062F \u062F\u0631 \u0627\u06CC\u0646 \u0646\u0627\u062D\u06CC\u0647 \u0646\u0627\u067E\u06CC\u0648\u0633\u062A\u0647 \u0627\u0633\u062A** \u21D2 \u0644\u0627\u06CC\u0647 \u0639\u0645\u062F\u0627\u064B \u0645\u0633\u062F\u0648\u062F \u0634\u062F. \u06A9\u0646\u062F\u0644\u0650 \u0645\u0627\u0642\u0628\u0644\u0650 \u0645\u0631\u0632\u0650 \u0631\u0648\u0632 \u0628\u0627 \u0648\u0642\u0641\u0647\u200C\u0627\u06CC \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0627\u0632 \u062D\u062F\u0650 \u0645\u062C\u0627\u0632 \u0622\u0645\u062F\u0647\u060C \u06CC\u0639\u0646\u06CC \xAB\u0628\u0633\u062A\u0647\u0654 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644\xBB \u0642\u06CC\u0645\u062A\u06CC **\u06A9\u0647\u0646\u0647** \u0627\u0633\u062A \u0648 \u06AF\u067E\u0650 ${gapAbs.toFixed(2)}$\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u200C\u0634\u062F\u0647 \u0645\u0635\u0646\u0648\u0639\u0650 \u0634\u06A9\u0627\u0641\u0650 \u062F\u0627\u062F\u0647 \u0627\u0633\u062A\u060C \u0646\u0647 \u0631\u0641\u062A\u0627\u0631\u0650 \u0648\u0627\u0642\u0639\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631.`;
+  } else if (s.gapUsd >= 0) {
+    reason = `\u0622\u062E\u0631\u06CC\u0646 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC (${kindFa}) \u06AF\u067E\u0650 **\u0645\u062B\u0628\u062A/\u0635\u0641\u0631** \u062F\u0627\u0634\u062A (${s.gapUsd.toFixed(2)}$) \u2014 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC \u0631\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0645\u06CC\u200C\u06A9\u0646\u062F (\u0641\u0631\u0648\u0634\u0650 \u0647\u06CC\u062C\u0627\u0646\u06CC)\u060C \u067E\u0633 \u0628\u06CC\u200C\u0633\u06CC\u06AF\u0646\u0627\u0644 \u0627\u0633\u062A.`;
+  } else {
+    const volFa = isFinite(s.volRefUsd) ? `\u0646\u0648\u0633\u0627\u0646\u0650 \u0645\u0631\u062C\u0639 ${s.volRefUsd.toFixed(1)}$ ${s.volPass ? "\u0632\u06CC\u0631\u0650" : "\u0628\u0627\u0644\u0627\u06CC"} \u0633\u0642\u0641\u0650 ${s.volThrUsd.toFixed(1)}$` : `\u062A\u0627\u0631\u06CC\u062E\u0686\u0647\u0654 \u0646\u0648\u0633\u0627\u0646 \u0646\u0627\u06A9\u0627\u0641\u06CC (${s.volDaysAvail}/${VOL_N} \u0631\u0648\u0632)`;
+    reason = `\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0622\u062E\u0631\u06CC\u0646 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC \u06A9\u0645\u200C\u0639\u0645\u0642 \u0628\u0648\u062F: ${gapAbs.toFixed(2)}$ \u06CC\u0639\u0646\u06CC ${(s.ratio * 100).toFixed(0)}\u066A \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${s.thrUsd.toFixed(3)}$ \u0628\u0631\u0627\u06CC ${kindFa} (${volFa}). \u0644\u0627\u06CC\u0647 \u06A9\u0645\u200C\u0628\u0633\u0627\u0645\u062F \u0627\u0633\u062A (${cfg.nTrades} \u0645\u0639\u0627\u0645\u0644\u0647 \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644) \u0648 \u0628\u06CC\u0634\u062A\u0631\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u200C\u0647\u0627 \u0647\u06CC\u0686\u200C\u0627\u0646\u062F \u2014 \u0647\u0645\u06CC\u0646 \u0635\u062F\u0627\u0642\u062A\u0650 \u0644\u0627\u06CC\u0647 \u0627\u0633\u062A.`;
+  }
+  const indicators = [
+    {
+      name: "\u0645\u0631\u0632\u0650 \u0631\u0648\u0632 (\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC)",
+      value: s.brkIdx >= 0 ? `${kindFa} \xB7 \u0648\u0642\u0641\u0647\u0654 ${s.gapHours.toFixed(1)}h` : "\u2014",
+      status: s.brkIdx >= 0 ? "ok" : "neutral"
+    },
+    {
+      name: "\u062C\u0647\u062A\u0650 \u06AF\u067E (\u0628\u0627\u06CC\u062F \u0645\u0646\u0641\u06CC \u0628\u0627\u0634\u062F)",
+      value: isFinite(s.gapUsd) ? `${s.gapUsd >= 0 ? "+" : ""}${s.gapUsd.toFixed(2)}$` + (s.gapUsd < 0 ? " \u2714" : " \u2718") : "\u2014",
+      status: s.gapUsd < 0 ? "ok" : "bad"
+    },
+    {
+      name: `\u0639\u0645\u0642\u0650 \u06AF\u067E > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F (${isFinite(s.thrUsd) ? s.thrUsd.toFixed(3) : "\u2014"}$)`,
+      value: isFinite(gapAbs) ? `${gapAbs.toFixed(2)}$ (${(s.ratio * 100).toFixed(0)}\u066A)` + (s.baseActive ? " \u2714" : "") : "\u2014",
+      status: s.baseActive ? "ok" : s.ratio >= cfg.approachFrac ? "warn" : "bad"
+    },
+    {
+      // ⭐ دروازهٔ نوِ S562 — همان چیزی که لایه را از S560 جدا می‌کند
+      name: `\u2B50 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646: \u0645\u0631\u062C\u0639\u0650 \u06F1\u06F4\u0631\u0648\u0632\u0647 \u2264 \u0633\u0642\u0641\u0650 q${cfg.qv} (${cfg.volThrUsd.toFixed(1)}$)`,
+      value: isFinite(s.volRefUsd) ? `${s.volRefUsd.toFixed(1)}$ (${(s.volRatio * 100).toFixed(0)}\u066A) ` + (s.volPass ? "\u2714 \u0631\u0648\u0632\u0650 \u0622\u0631\u0627\u0645" : "\u2718 \u0631\u0698\u06CC\u0645\u0650 \u067E\u0631\u0646\u0648\u0633\u0627\u0646") : `\u062A\u0627\u0631\u06CC\u062E\u0686\u0647 \u0646\u0627\u06A9\u0627\u0641\u06CC (${s.volDaysAvail}/${VOL_N} \u0631\u0648\u0632) \u2718`,
+      status: s.volPass ? "ok" : "bad"
+    },
+    {
+      name: `\u062A\u0627\u0632\u06AF\u06CC\u0650 \u067E\u0646\u062C\u0631\u0647 (maxHold=${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa})`,
+      value: s.brkIdx < 0 ? "\u2014" : fresh ? "\u0628\u0627\u0632 \u2714" : `\u0628\u0633\u062A\u0647 \u2014 ${s.atLatestBar} \u06A9\u0646\u062F\u0644 \u06AF\u0630\u0634\u062A\u0647 \u2718`,
+      status: s.brkIdx < 0 ? "neutral" : fresh ? "ok" : "bad"
+    },
+    {
+      name: "\u067E\u06CC\u0648\u0633\u062A\u06AF\u06CC\u0650 \u0641\u06CC\u062F\u0650 \u062F\u0627\u062F\u0647 (\u06AF\u0627\u0631\u062F\u0650 \u0636\u062F\u0650 \u06AF\u067E\u0650 \u062C\u0639\u0644\u06CC)",
+      value: s.brkIdx < 0 ? "\u2014" : s.dataHealthy ? "\u0633\u0627\u0644\u0645 \u2714" : "\u0646\u0627\u067E\u06CC\u0648\u0633\u062A\u0647 \u2014 \u0645\u0633\u062F\u0648\u062F \u2718",
+      status: s.brkIdx < 0 ? "neutral" : s.dataHealthy ? "ok" : "bad"
+    }
+  ];
+  const raw2 = {
+    active,
+    approaching,
+    direction: "LONG",
+    // LONG-only (گپِ منفی ⇒ بازگشتِ بالا)
+    slDist: cfg.slPip * GOLD_PIP15,
+    tpDist: cfg.tpPip * GOLD_PIP15,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    approachReason: approaching ? `\u0645\u0646\u062A\u0638\u0631\u0650 \u0639\u0645\u06CC\u0642\u200C\u0634\u062F\u0646\u0650 \u06AF\u067E \u062A\u0627 \u0639\u0628\u0648\u0631 \u0627\u0632 ${s.thrUsd.toFixed(3)}$ (\u0627\u06A9\u0646\u0648\u0646 ${(s.ratio * 100).toFixed(0)}\u066A) \u2014 \u0631\u0698\u06CC\u0645\u0650 \u0646\u0648\u0633\u0627\u0646 \u0645\u062C\u0627\u0632 \u0627\u0633\u062A` : void 0,
+    indicators
+  };
+  const reg = {
+    regime: "range",
+    // رویدادِ بازگشتی، نه روندی
+    efficiencyRatio: 0,
+    trendy: false,
+    adx: 0,
+    activeStream: active ? "bull" : "none",
+    bucket: `s562_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S562",
+    name: `\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC + \u0641\u06CC\u0644\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646 (${cfg.tfFa})`,
+    kind: "gap_open",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u23F1\uFE0F **\u062E\u0631\u0648\u062C\u0650 \u0632\u0645\u0627\u0646\u06CC \u062D\u0627\u06A9\u0645 \u0627\u0633\u062A\u060C \u0646\u0647 \u0627\u0633\u062A\u0627\u067E\u0650 \u0642\u06CC\u0645\u062A\u06CC.** \u0647\u0646\u062F\u0633\u0647\u0654 \u0642\u0641\u0644\u200C\u0634\u062F\u0647\u0654 \u0628\u0627\u0632\u0648\u0650 V-TIME (\u0645\u0646\u062C\u0645\u062F \u0627\u0632 S560\u060C assert\u0650 BUG-GEOMDRIFT): \u062F\u0631 close \u06A9\u0646\u062F\u0644\u0650 ${cfg.maxHold}\u064F\u0645\u0650 ${cfg.tfFa} \u067E\u0633 \u0627\u0632 \u0648\u0631\u0648\u062F \u062E\u0627\u0631\u062C \u0634\u0648. \u0628\u0631\u0627\u06A9\u062A\u0650 SL=TP=${cfg.slPip} pip \u0641\u0642\u0637 **\u0645\u062D\u0627\u0641\u0638\u0650 \u0646\u0627\u062F\u0631-\u0641\u0639\u0627\u0644** \u0627\u0633\u062A (\u0686\u0646\u062F\u06A9\u0650 \u06F9\u06F8 \u062F\u0645\u0650 MFE\u222AMAE \u0646\u06CC\u0645\u0647\u0654 \u0627\u0648\u0644) \u0648 \u062F\u0631 \u062D\u0627\u0644\u062A\u0650 \u0639\u0627\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0641\u0639\u0627\u0644 \u0634\u0648\u062F \u2014 \u062F\u0631\u0633\u0650 \u06F1 \u062E\u0627\u0646\u0648\u0627\u062F\u0647\u0654 \u06AF\u067E: \u0628\u0627\u0632\u0648\u0650 \u0627\u0633\u062A\u0627\u067E-\u0642\u06CC\u0645\u062A\u06CC (V-BRK) \u062F\u0631 \u0647\u0631 \u06F5 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645 \u0645\u063A\u0644\u0648\u0628 \u0634\u062F\u060C \u0648 S561 \u0628\u0627 \u062A\u0646\u06AF\u200C\u06A9\u0631\u062F\u0646\u0650 \u0628\u0631\u0627\u06A9\u062A DD \u0631\u0627 \u0627\u0632 \u06F1\u06F2.\u06F4\u066A \u0628\u0647 \u06F2\u06F7.\u06F3\u066A **\u0628\u062F\u062A\u0631** \u06A9\u0631\u062F \u21D2 \u0627\u0633\u062A\u0627\u067E \u0631\u0627 \u062A\u0646\u06AF \u0646\u06A9\u0646. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u0646\u0648 \u0628\u0627\u0632 \u06A9\u0646\u062F. \u26A0\uFE0F \u0647\u0645\u200C\u062E\u0627\u0646\u0648\u0627\u062F\u06AF\u06CC\u0650 M15\u2194H1 (jaccard \u0631\u0648\u0632\u0627\u0646\u0647 \u06F0.\u06F5\u06F6\u060C \xA7\u06F5 \u0633\u0646\u062F): \u0627\u06CC\u0646 \u062F\u0648 \u06A9\u0627\u0631\u062A \u063A\u0627\u0644\u0628\u0627\u064B **\u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F** \u0631\u0627 \u0646\u0634\u0627\u0646 \u0645\u06CC\u200C\u062F\u0647\u0646\u062F\u061B \u062F\u0631 \u0633\u0627\u06CC\u0632\u0628\u0646\u062F\u06CC\u0650 \u067E\u0631\u062A\u0641\u0648\u06CC \u06CC\u06A9 \u062E\u0627\u0646\u0648\u0627\u062F\u0647 \u0628\u0634\u0645\u0627\u0631\u060C \u0646\u0647 \u062F\u0648.`,
+    filters: [
+      `\u0645\u0631\u0632\u0650 \u0631\u0648\u0632: \u0648\u0642\u0641\u0647\u0654 \u0632\u0645\u0627\u0646\u06CC > ${dayBreakThreshold(cfg.tfSec)}s (\u0642\u0627\u0639\u062F\u0647\u0654 BUG-BRKTHRESH \u0628\u0631\u0627\u06CC ${cfg.tfFa})`,
+      "\u06AF\u067E = open(\u06A9\u0646\u062F\u0644\u0650 \u0627\u0648\u0644\u0650 \u0631\u0648\u0632) \u2212 close(\u0622\u062E\u0631\u06CC\u0646 \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644) \u2014 \u0628\u0627\u06CC\u062F **\u0645\u0646\u0641\u06CC** \u0628\u0627\u0634\u062F",
+      `\u0639\u0645\u0642\u0650 \u06AF\u067E \u0627\u06A9\u06CC\u062F\u0627\u064B > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F (\u0622\u062E\u0631\u0647\u0641\u062A\u0647 ${cfg.thrWeekendUsd}$ / \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC ${cfg.thrWeekdayUsd}$)`,
+      "\u062A\u0641\u06A9\u06CC\u06A9\u0650 \u0622\u062E\u0631\u0647\u0641\u062A\u0647/\u0645\u06CC\u0627\u0646\u200C\u0647\u0641\u062A\u0647 (\u06AF\u067E\u0650 \u062F\u0648\u0634\u0646\u0628\u0647 \u2248\u06F8\xD7 \u06AF\u067E\u0650 \u0631\u0648\u0632\u0627\u0646\u0647)",
+      `\u2B50 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u0639\u0644\u0651\u06CC: \u0645\u06CC\u0627\u0646\u06AF\u06CC\u0646\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 \u0631\u0648\u0632\u0627\u0646\u0647\u0654 ${VOL_N} \u0631\u0648\u0632\u0650 \u06A9\u0627\u0645\u0644\u200C\u0634\u062F\u0647 \u2264 \u0686\u0646\u062F\u06A9\u0650 q${cfg.qv} (\u0633\u0642\u0641\u0650 \u0645\u0646\u062C\u0645\u062F\u0650 ${cfg.volThrUsd.toFixed(1)}$) \u2014 \u062A\u0646\u0647\u0627 \u062F\u0631\u062C\u0647\u0654 \u0622\u0632\u0627\u062F\u06CC\u0650 \u0646\u0648\u0650 S562`,
+      `\u062E\u0631\u0648\u062C\u0650 \u0632\u0645\u0627\u0646\u06CC\u0650 \u062E\u0627\u0644\u0635 \u067E\u0633 \u0627\u0632 ${holdFa} \xB7 LONG-only \xB7 n=${cfg.nTrades} \u062F\u0631 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/gap_fill_m15_s408.ts
+var GOLD_PIP16 = 0.1;
+var ATR_N = 14;
+function s408DayBreakSec(candles) {
+  const n = candles.length;
+  if (n < 3) return 1800;
+  const d = [];
+  for (let i = 0; i < n - 1; i++) d.push(candles[i + 1].time - candles[i].time);
+  d.sort((a, b) => a - b);
+  const m = d.length;
+  const med = m % 2 === 1 ? d[(m - 1) / 2] : (d[m / 2 - 1] + d[m / 2]) / 2;
+  return 2 * Math.trunc(med);
+}
+var WEEKEND_GAP_SEC = 1e5;
+var S408_CFG = {
+  "XAUUSD-M15": {
+    id: "XAUUSD-M15",
+    tfFa: "M15",
+    tfSec: 900,
+    thrWeekendUsd: 6.402,
+    thrWeekdayUsd: 1.296,
+    volThrUsd: 132.3252,
+    qGap: 60,
+    qVol: 0.78,
+    kSl: 2,
+    approachFrac: 0.7,
+    rqs2: 93.8,
+    nTrades: 496,
+    wrPct: 89.11,
+    pf: 2.36,
+    maxDdPct: 5.19
+  }
+};
+function dailyBarsAtr(candles, _tfSec) {
+  const n = candles.length;
+  const brkThr = s408DayBreakSec(candles);
+  const brk = [];
+  for (let i = 0; i < n - 1; i++) {
+    if (candles[i + 1].time - candles[i].time >= brkThr) brk.push(i);
+  }
+  const starts = [0, ...brk.map((b) => b + 1)];
+  const ends = [...brk, n - 1];
+  const dHigh = [];
+  const dLow = [];
+  const dClose = [];
+  for (let k = 0; k < starts.length; k++) {
+    let hi = -Infinity, lo = Infinity;
+    for (let i = starts[k]; i <= ends[k]; i++) {
+      if (candles[i].high > hi) hi = candles[i].high;
+      if (candles[i].low < lo) lo = candles[i].low;
+    }
+    dHigh.push(hi);
+    dLow.push(lo);
+    dClose.push(candles[ends[k]].close);
+  }
+  const m = starts.length;
+  const tr = new Array(m).fill(NaN);
+  for (let k = 0; k < m; k++) {
+    if (k === 0) {
+      tr[k] = dHigh[k] - dLow[k];
+      continue;
+    }
+    const pc = dClose[k - 1];
+    tr[k] = Math.max(
+      dHigh[k] - dLow[k],
+      Math.abs(dHigh[k] - pc),
+      Math.abs(dLow[k] - pc)
+    );
+  }
+  const atr2 = new Array(m).fill(NaN);
+  for (let k = ATR_N - 1; k < m; k++) {
+    let s = 0;
+    for (let j = k - ATR_N + 1; j <= k; j++) s += tr[j];
+    atr2[k] = s / ATR_N;
+  }
+  return { ends, starts, atr: atr2 };
+}
+function computeS408Signal(candles, cfg) {
+  const empty = {
+    active: false,
+    approaching: false,
+    baseActive: false,
+    volPass: false,
+    dowPass: false,
+    atrPrevUsd: NaN,
+    volThrUsd: cfg.volThrUsd,
+    volRatio: NaN,
+    daysAvail: 0,
+    brkIdx: -1,
+    gapUsd: NaN,
+    thrUsd: NaN,
+    isWeekend: false,
+    dow: -1,
+    gapHours: NaN,
+    atLatestBar: -1,
+    ratio: 0,
+    dataHealthy: false,
+    tpDistUsd: NaN,
+    slDistUsd: NaN,
+    barsLeftInDay: 0
+  };
+  const n = candles.length;
+  if (n < 3) return empty;
+  const brkThr = s408DayBreakSec(candles);
+  let brk = -1;
+  for (let i = n - 2; i >= 1; i--) {
+    if (candles[i + 1].time - candles[i].time >= brkThr) {
+      brk = i;
+      break;
+    }
+  }
+  if (brk < 0) return empty;
+  const prev = candles[brk];
+  const first = candles[brk + 1];
+  const dt = first.time - prev.time;
+  const isWeekend = dt > WEEKEND_GAP_SEC;
+  const gapUsd = first.open - prev.close;
+  const thrUsd = isWeekend ? cfg.thrWeekendUsd : cfg.thrWeekdayUsd;
+  const absGap = Math.abs(gapUsd);
+  const ratio = thrUsd > 0 ? absGap / thrUsd : 0;
+  const dataHealthy = candles[brk].time - candles[brk - 1].time < brkThr;
+  const jsDow = new Date(first.time * 1e3).getUTCDay();
+  const dow = (jsDow + 6) % 7;
+  const dowPass = dow !== 0;
+  const baseActive = gapUsd < 0 && absGap > thrUsd && dataHealthy;
+  const { ends, atr: atr2 } = dailyBarsAtr(candles, cfg.tfSec);
+  let kDay = -1;
+  for (let k = 0; k < ends.length; k++) {
+    if (ends[k] === brk) {
+      kDay = k;
+      break;
+    }
+  }
+  let atrPrevUsd = NaN;
+  let daysAvail = 0;
+  if (kDay >= 0) {
+    daysAvail = kDay + 1;
+    atrPrevUsd = atr2[kDay];
+  }
+  const volPass = isFinite(atrPrevUsd) && atrPrevUsd <= cfg.volThrUsd;
+  const volRatio = isFinite(atrPrevUsd) ? atrPrevUsd / cfg.volThrUsd : NaN;
+  const tpDistUsd = prev.close - first.open;
+  const slDistUsd = cfg.kSl * absGap;
+  const cond = baseActive && dowPass && volPass && tpDistUsd > 0;
+  const approaching = !cond && volPass && dowPass && gapUsd < 0 && ratio >= cfg.approachFrac;
+  const atLatestBar = n - 1 - (brk + 1);
+  const barsLeftInDay = Math.max(0, Math.round(86400 / cfg.tfSec / 3) - atLatestBar);
+  return {
+    active: cond,
+    approaching,
+    baseActive,
+    volPass,
+    dowPass,
+    atrPrevUsd,
+    volThrUsd: cfg.volThrUsd,
+    volRatio,
+    daysAvail,
+    brkIdx: brk,
+    gapUsd,
+    thrUsd,
+    isWeekend,
+    dow,
+    gapHours: dt / 3600,
+    atLatestBar,
+    ratio,
+    dataHealthy,
+    tpDistUsd,
+    slDistUsd,
+    barsLeftInDay
+  };
+}
+var FRESH_MAX_BARS2 = 96;
+function decideS408(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const s = computeS408Signal(candles, cfg);
+  const price = a.price;
+  const fresh = s.atLatestBar >= 0 && s.atLatestBar <= FRESH_MAX_BARS2;
+  const active = s.active && fresh;
+  const approaching = !active && s.approaching && fresh;
+  const f2 = (x) => isFinite(x) ? x.toFixed(2) : "\u2014";
+  const f1 = (x) => isFinite(x) ? x.toFixed(1) : "\u2014";
+  const kindFa = s.isWeekend ? "\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0622\u062E\u0631\u0647\u0641\u062A\u0647" : "\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0645\u06CC\u0627\u0646\u200C\u0647\u0641\u062A\u0647";
+  const dowFa = ["\u062F\u0648\u0634\u0646\u0628\u0647", "\u0633\u0647\u200C\u0634\u0646\u0628\u0647", "\u0686\u0647\u0627\u0631\u0634\u0646\u0628\u0647", "\u067E\u0646\u062C\u200C\u0634\u0646\u0628\u0647", "\u062C\u0645\u0639\u0647", "\u0634\u0646\u0628\u0647", "\u06CC\u06A9\u200C\u0634\u0646\u0628\u0647"];
+  const dowName = s.dow >= 0 && s.dow < 7 ? dowFa[s.dow] : "\u2014";
+  let reason;
+  let approachReason;
+  if (s.brkIdx < 0) {
+    reason = `S408 \xB7 \u0647\u06CC\u0686 \u0645\u0631\u0632\u0650 \u0631\u0648\u0632\u06CC \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 ${cfg.tfFa} \u06CC\u0627\u0641\u062A \u0646\u0634\u062F (\u062F\u0627\u062F\u0647 \u06A9\u0648\u062A\u0627\u0647 \u0627\u0633\u062A).`;
+  } else if (!s.dataHealthy) {
+    reason = `S408 \xB7 \u06AF\u0627\u0631\u062F\u0650 \u0633\u0644\u0627\u0645\u062A\u0650 \u0641\u06CC\u062F: \u06A9\u0646\u062F\u0644\u200C\u0647\u0627\u06CC \u067E\u06CC\u0634 \u0627\u0632 \u0645\u0631\u0632\u0650 \u0631\u0648\u0632 \u0646\u0627\u0642\u0635\u200C\u0627\u0646\u062F \u21D2 \xAB\u0628\u0633\u062A\u0647\u0654 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644\xBB \u06A9\u0647\u0646\u0647 \u0627\u0633\u062A \u0648 \u06AF\u067E \u062C\u0639\u0644\u06CC \u0645\u06CC\u200C\u0634\u0648\u062F \u21D2 \u0648\u0631\u0648\u062F \u0645\u0633\u062F\u0648\u062F.`;
+  } else if (!isFinite(s.atrPrevUsd)) {
+    reason = `S408 \xB7 \u062A\u0627\u0631\u06CC\u062E\u0686\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC ATR14 \u0631\u0648\u0632\u0627\u0646\u0647 \u0646\u06CC\u0633\u062A (${s.daysAvail} \u0631\u0648\u0632\u0650 \u06A9\u0627\u0645\u0644 \u062F\u0631 \u062F\u0633\u062A\u061B \u06F1\u06F5 \u0631\u0648\u0632 \u0644\u0627\u0632\u0645 \u0627\u0633\u062A) \u21D2 \u0631\u062F\u0650 \u0645\u062D\u0627\u0641\u0638\u0647\u200C\u06A9\u0627\u0631\u0627\u0646\u0647.`;
+  } else if (active) {
+    reason = `S408 \xB7 ${kindFa} \u0628\u0627 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 ${f2(s.gapUsd)}$ (|\u06AF\u067E| = ${f2(Math.abs(s.gapUsd))}$ > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 ${f2(s.thrUsd)}$ \xB7 \u0646\u0633\u0628\u062A ${f2(s.ratio)}\xD7) \xB7 \u0631\u0648\u0632\u0650 ${dowName} (\u2260\u062F\u0648\u0634\u0646\u0628\u0647 \u2713) \xB7 \u0631\u0698\u06CC\u0645\u0650 \u0622\u0631\u0627\u0645: ATR14 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 ${f1(s.atrPrevUsd)}$ \u2264 ${f1(s.volThrUsd)}$ \u2713 \u21D2 \u062E\u0631\u06CC\u062F\u0650 \u06AF\u067E\u200C\u0641\u06CC\u0644: TP = \u0628\u0633\u062A\u0647\u0654 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 (${f2(s.tpDistUsd)}$ \u0628\u0627\u0644\u0627\u062A\u0631) \xB7 SL = ${cfg.kSl}\xD7|\u06AF\u067E| = ${f2(s.slDistUsd)}$ \xB7 \u062E\u0631\u0648\u062C\u0650 \u0627\u062C\u0628\u0627\u0631\u06CC \u062F\u0631 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0631\u0648\u0632.`;
+  } else if (approaching) {
+    reason = `S408 \xB7 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 ${f2(s.gapUsd)}$ \u062F\u0631 ${kindFa}\u060C \u0648\u0644\u06CC \u0647\u0646\u0648\u0632 \u06A9\u0645\u200C\u0639\u0645\u0642\u200C\u062A\u0631 \u0627\u0632 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${f2(s.thrUsd)}$ (\u0646\u0633\u0628\u062A ${f2(s.ratio)}\xD7). \u0631\u0698\u06CC\u0645 \u0622\u0631\u0627\u0645 \u0627\u0633\u062A \u2713.`;
+    approachReason = `\u0628\u0631\u0627\u06CC \u0641\u0639\u0627\u0644\u200C\u0634\u062F\u0646\u060C |\u06AF\u067E| \u0628\u0627\u06CC\u062F \u0627\u0632 ${f2(s.thrUsd)}$ \u0639\u0628\u0648\u0631 \u06A9\u0646\u062F.`;
+  } else if (s.gapUsd >= 0) {
+    reason = `S408 \xB7 \u06AF\u067E\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC \u0645\u062B\u0628\u062A/\u0635\u0641\u0631 \u0627\u0633\u062A (${f2(s.gapUsd)}$) \u2014 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0641\u0642\u0637 \u06AF\u067E\u0650 **\u0645\u0646\u0641\u06CC** \u0631\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0645\u06CC\u200C\u06A9\u0646\u062F (LONG-only).`;
+  } else if (!s.dowPass) {
+    reason = `S408 \xB7 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 ${f2(s.gapUsd)}$ \u0647\u0633\u062A \u0648\u0644\u06CC \u0631\u0648\u0632\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC **\u062F\u0648\u0634\u0646\u0628\u0647** \u0627\u0633\u062A \u21D2 \u062D\u0630\u0641\u0650 \u0627\u0631\u062B\u06CC\u0650 S405/S613 (\u062F\u0648\u0634\u0646\u0628\u0647 \u0633\u0648\u062E\u062A\u0647) \u21D2 \u0648\u0631\u0648\u062F \u0645\u0645\u0646\u0648\u0639.`;
+  } else if (!s.volPass) {
+    reason = `S408 \xB7 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 ${f2(s.gapUsd)}$ \u0647\u0633\u062A \u0648\u0644\u06CC \u0631\u0698\u06CC\u0645 **\u067E\u0631\u0646\u0648\u0633\u0627\u0646** \u0627\u0633\u062A: ATR14 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 ${f1(s.atrPrevUsd)}$ > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 ${f1(s.volThrUsd)}$ (${f2(s.volRatio)}\xD7) \u21D2 \u0641\u06CC\u0644\u062A\u0631\u0650 V \u0645\u06CC\u200C\u0628\u0646\u062F\u062F (\u0642\u0627\u0646\u0648\u0646\u0650 DD-\u0627\u0646\u062A\u0642\u0627\u0644).`;
+  } else if (!s.baseActive) {
+    reason = `S408 \xB7 |\u06AF\u067E| = ${f2(Math.abs(s.gapUsd))}$ \u0627\u0632 \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 ${f2(s.thrUsd)}$ \u0639\u0628\u0648\u0631 \u0646\u06A9\u0631\u062F (\u0646\u0633\u0628\u062A ${f2(s.ratio)}\xD7).`;
+  } else if (!fresh) {
+    reason = `S408 \xB7 \u0634\u0631\u0627\u06CC\u0637 \u0628\u0631\u0642\u0631\u0627\u0631 \u0628\u0648\u062F \u0648\u0644\u06CC ${s.atLatestBar} \u06A9\u0646\u062F\u0644 \u0627\u0632 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0632 \u06AF\u0630\u0634\u062A\u0647 \u0627\u0633\u062A (\u067E\u0646\u062C\u0631\u0647\u0654 \u0645\u062C\u0627\u0632 ${FRESH_MAX_BARS2} \u06A9\u0646\u062F\u0644 = \u06CC\u06A9 \u0631\u0648\u0632) \u21D2 \u067E\u0646\u062C\u0631\u0647\u0654 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647.`;
+  } else {
+    reason = `S408 \xB7 \u0628\u06CC\u200C\u0633\u06CC\u06AF\u0646\u0627\u0644.`;
+  }
+  const raw2 = {
+    active,
+    approaching,
+    direction: "LONG",
+    slDist: isFinite(s.slDistUsd) && s.slDistUsd > 0 ? s.slDistUsd : 18.2 * GOLD_PIP16,
+    tpDist: isFinite(s.tpDistUsd) && s.tpDistUsd > 0 ? s.tpDistUsd : 9.1 * GOLD_PIP16,
+    maxHoldBars: Math.max(1, s.barsLeftInDay),
+    reason,
+    approachReason,
+    indicators: a
+  };
+  const meta = {
+    code: "S408",
+    name: `\u06AF\u067E\u200C\u0641\u06CC\u0644\u0650 ${cfg.tfFa} \u0628\u0627 \u0641\u06CC\u0644\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u062B\u0627\u0628\u062A (RQS2 ${cfg.rqs2} \xB7 Tier A)`,
+    kind: "mean-reversion",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `TP = \u0628\u0633\u062A\u0647\u0654 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 (\u067E\u064F\u0631\u0634\u062F\u0646\u0650 \u06A9\u0627\u0645\u0644\u0650 \u06AF\u067E) \xB7 SL = ${cfg.kSl}\xD7|\u06AF\u067E| \xB7 \u0628\u062F\u0648\u0646 BE/time-stop/cooldown \xB7 **\u062E\u0631\u0648\u062C\u0650 \u0627\u062C\u0628\u0627\u0631\u06CC \u062F\u0631 \u0622\u062E\u0631\u06CC\u0646 \u06A9\u0646\u062F\u0644\u0650 \u0647\u0645\u0627\u0646 \u0631\u0648\u0632**. \u062F\u0627\u0648\u0631\u06CC\u200C\u0634\u062F\u0647: n=${cfg.nTrades} \xB7 WR=${cfg.wrPct}\u066A \xB7 PF=${cfg.pf} \xB7 maxDD=${cfg.maxDdPct}\u066A \u0631\u0648\u06CC \u06F1\u06F5.\u06F6 \u0633\u0627\u0644. \u26A0\uFE0F \u0627\u0628\u064E\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 S404 (\u06F9\u06F9.\u06F4\u066A) \u21D2 \u0647\u0631\u06AF\u0632 \u0628\u0627 S404 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0634\u0648\u062F\u061B \u0628\u0627 S562 \u0645\u0633\u062A\u0642\u0644 \u0627\u0633\u062A (Jaccard \u06F1\u06F2.\u06F5\u066A) \u0648\u0644\u06CC \u062F\u0631 \u0631\u0648\u0632\u0647\u0627\u06CC \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9.`,
+    filters: [
+      `\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F\u0650 QW q${cfg.qGap} (${kindFa}: ${f2(s.thrUsd)}$)`,
+      `DOW \u2260 \u062F\u0648\u0634\u0646\u0628\u0647 (\u0631\u0648\u0632\u0650 \u0641\u0639\u0644\u06CC: ${dowName})`,
+      `ATR14 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 \u2264 q${cfg.qVol} \u0645\u0646\u062C\u0645\u062F (${f1(s.atrPrevUsd)}$ / ${f1(s.volThrUsd)}$)`,
+      `\u06AF\u0627\u0631\u062F\u0650 \u0633\u0644\u0627\u0645\u062A\u0650 \u0641\u06CC\u062F: ${s.dataHealthy ? "\u0633\u0627\u0644\u0645" : "\u0646\u0627\u0642\u0635 \u21D2 \u0645\u0633\u062F\u0648\u062F"}`,
+      `\u062A\u0627\u0632\u06AF\u06CC: ${s.atLatestBar} \u06A9\u0646\u062F\u0644 \u0627\u0632 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC (\u0633\u0642\u0641 ${FRESH_MAX_BARS2})`
+    ]
+  };
+  const reg = {
+    regime: "range",
+    efficiencyRatio: 0,
+    trendy: false,
+    adx: isFinite(a.adx) ? a.adx : 0,
+    activeStream: "none",
+    bucket: cfg.tfFa
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
+// ../web_tool/src/strategy_registry.ts
+var GOLD_PIP17 = 0.1;
 function lightRegime(adxVal, trendy, bucket) {
   return { regime: trendy ? "trend_up" : "range", efficiencyRatio: 0, trendy, adx: isFinite(adxVal) ? adxVal : 0, activeStream: trendy ? "bull" : "none", bucket };
 }
@@ -5567,8 +8259,8 @@ function s312Layer(slPip, tpPip, maxHold) {
       active,
       approaching,
       direction: "LONG",
-      slDist: slPip * GOLD_PIP5,
-      tpDist: tpPip * GOLD_PIP5,
+      slDist: slPip * GOLD_PIP17,
+      tpDist: tpPip * GOLD_PIP17,
       maxHoldBars: maxHold,
       reason: sig.reason,
       approachReason: approaching ? "\u0648\u0631\u0648\u062F \u0628\u0647 \u0633\u0627\u0639\u0627\u062A\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0631\u0648\u0632\u0650 \u0645\u06CC\u0627\u0646\u0650\u200C\u0645\u0627\u0647" : void 0,
@@ -5600,7 +8292,19 @@ function s312Layer(slPip, tpPip, maxHold) {
 }
 var s333Layer = (cfg) => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s382Layer = (cfg) => (ctx) => decideS382(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
-var s950Layer = (cfg) => (ctx) => decideS950(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s965Layer = (cfg) => (ctx) => decideS965(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s966Layer = (cfg) => (ctx) => decideS966(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s1911Layer = (cfg) => (ctx) => decideS1911(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s955Layer = (cfg) => (ctx) => decideS955(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s919Layer = (cfg) => (ctx) => decideS919(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s800Layer = (cfg) => (ctx) => decideS800(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s770Layer = (cfg) => (ctx) => decideS770(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s607Layer = (cfg) => (ctx) => decideS607(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s1520Layer = (cfg) => (ctx) => decideS1520(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s589Layer = (cfg) => (ctx) => decideS589(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s560Layer = (cfg) => (ctx) => decideS560(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s562Layer = (cfg) => (ctx) => decideS562(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s408Layer = (cfg) => (ctx) => decideS408(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s344Layer = (cfg) => (ctx) => decideS344(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s354Layer = (cfg) => (ctx) => decideS354(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var CARD_LAYERS = {
@@ -5630,8 +8334,71 @@ var CARD_LAYERS = {
     // ⚰️ حذف‌شده در S396 (همه با RQS+ بازنشسته مجوز گرفته بودند، هیچ ACCEPTِ RQS2):
     //    S330(FADE) · S328(SHORT) · S334(SHORT·RQS+81.6) · S335(LONG·RQS+92.2) · S326(LONG)
     //    و S327 که پیش‌تر با RQS2=21.5 حذف شده بود.
+    //
+    // ⭐⭐ S560 — «گپِ منفیِ بازگشایی» · **احیایِ این کارت** (پس از حذفِ S355 خالی بود)
+    //    RQS2 = **96.0** ⇒ بالاترین نمرهٔ کلِ لایه‌های وصل‌شدهٔ سایت.
+    //    n=407 · WR=71.5٪ · PF=2.514 · maxDD=2.43٪ · MCL=5 (مجاز ۸) · RF=20.05
+    //    lift=+43.98pp روی نالِ بازو-محورِ 27.51٪ · z=19.87 · z_luck_bound=2.985
+    //    ⇒ z_margin=16.885 · p_perm=0.0 (K=500) · n_trials=400 کسرشده (Path C).
+    //    هر ۱۱ دروازهٔ H0..H10 پاس، **صفر** دروازهٔ ناموفق.
+    //
+    //    چرا این لایه با بقیهٔ سایت هم‌پوشانی ندارد: تنها لایهٔ **رویدادِ
+    //    بازگشاییِ روز** است (روزی یک ارزیابی) و LONG-only روی گپِ منفی.
+    //
+    //    ⏱️ **هشدارِ صداقتِ پنجره:** هندسهٔ قفل‌شده maxHold=۱ کندلِ M5 ⇒ کلِ
+    //    پنجرهٔ معامله ۵ دقیقه است. سایت (درست) سیگنال را روی کندلِ **بسته**
+    //    می‌سنجد، پس ENTRY فقط در همان یک چرخه‌ای نمایش داده می‌شود که کندلِ
+    //    اولِ روزِ نو تازه بسته شده؛ بعد از آن لایه صادقانه به NEUTRAL می‌رود و
+    //    می‌گوید فرصت گذشته است (هیچ ورودِ تأخیریِ دروغین ساخته نمی‌شود).
+    //
+    //    آستانه‌ها از ۱۵.۶ سال داده **منجمد** شده‌اند (چون سایت فقط ۵ روز کندلِ
+    //    M5 دارد و چندکِ انبساطی در مرورگر بازتولیدپذیر نیست):
+    //      results/_s560_arms/frozen_thresholds_M5.json
+    //    اثباتِ پورت: صفر اختلاف روی **۴۰۶۹ مرزِ روز** / ۱.۰۹M کندل ⇒
+    //      results/_s560_arms/parity_ts_M5.json
+    //    سند: results/S560_GapOpenNegGap_Xauusd_M1M5M15M30H1_rqs2_96_ACCEPT.md
+    //
+    //    ⚠️ تعمیم ممنوع (قانونِ Multi-TF): M1 هم ACCEPT بود (95.6) ولی کارتِ M1
+    //    در سایت وجود ندارد؛ M15/M30/H1 حکمِ **REJECT** گرفتند (شکستِ H8 = DD/wall-time)
+    //    ⇒ فقط همین کارت وصل می‌شود.
+    s560Layer(S560_CFG["XAUUSD-M5"])
   ],
   "XAUUSD-M15": [
+    // ⭐⭐ S562 ⭐نو — «گپِ منفیِ بازگشایی + فیلترِ نوسانِ علّی» · LONG
+    //    RQS2 = **95.3** (بالاترین نمرهٔ این کارت) · n=438 · WR 70.78% · maxDD 3.71%
+    //    هر ۱۱ دروازهٔ RQS2 v2.6 سبز · SL=TP=50.9 pip (RR 1.0) · maxHold=1
+    //    ⚠️ هندسه و آستانهٔ گپ **ارثی** از S560 است (صفر پارامترِ نوِ جست‌وجو‌شده)؛
+    //       تنها افزودهٔ S562 یک عددِ انتخابِ معامله است: qv=85.
+    //    ⚠️ **هم‌خانواده با S560-M5 (jaccard ≈۰.۵۱–۰.۵۴) و با S562-H1 (۰.۵۶).**
+    //       اگر هر سه کارت هم‌زمان سیگنال دادند، **یک رویدادِ گپ** است نه سه لبهٔ
+    //       مستقل ⇒ سایزِ مشترک بگیرید (سند §۵).
+    //    اولویتِ صدرِ فهرست: نمرهٔ این لایه از S344 (۸۹.۰) و S431 (۹۳.۹) بالاتر است.
+    s562Layer(S562_CFG["XAUUSD-M15"]),
+    // ⭐⭐ S408 ⭐نو — «گپ‌فیلِ M15 با فیلترِ V ثابت» روی **دادهٔ کاملِ ۱۵.۶ ساله** · LONG
+    //    RQS2 = **93.8** (Tier A) · n=496 · WR 89.11% · PF 2.36 · maxDD 5.19%
+    //    هر ۱۱ دروازهٔ RQS2 v2.6 سبز · سند: results/S408_GapFillM15FullData_Xauusd_M15_rqs2_94_ACCEPT.md
+    //    قاعده: گپِ **منفیِ** بازگشایی عمیق‌تر از آستانهٔ صدکِ QW(q=60) ∧ روزِ هفته ≠ دوشنبه
+    //           ∧ ATR14ِ روزِ قبل ≤ ۱۳۲.۳۲۵۲$ (فیلترِ V — روزهای آرام) ⇒ LONG در openِ
+    //           کندلِ اولِ روز، TP = **closeِ روزِ قبل** (پُرشدنِ گپ)، SL = ۲×|گپ|،
+    //           خروجِ اجباری در آخرین کندلِ همان روزِ معاملاتی.
+    //    ⚠️ **چرا S407 نیست:** S407 (rqs2 98) با کامیت e3672c8e به‌عنوان INVALID-DATA
+    //       باطل شد — روی دادهٔ بریدهٔ ۱۵۰k باری اجرا شده بود. S408 همان فرضیه روی
+    //       دادهٔ کاملِ ۳۶۳٬۷۷۸ باری است و **جانشینِ رسمیِ** آن. پس عددِ ۹۸ وصل نمی‌شود.
+    //    ⚠️ **قیدِ پرتفوی — S404 XOR S408.** تلاقیِ روزانه با S404-M30 = jaccard ۶۹.۳٪
+    //       (share_of_b ۹۹.۴٪ ⇒ S404 تقریباً زیرمجموعهٔ S408 است). سندِ ACCEPT
+    //       می‌گوید «یکی، نه هر دو». S404 روی سایت وصل نیست ⇒ تعارضی وجود ندارد،
+    //       و اگر روزی S404 وصل شود **باید** این ورودی حذف گردد.
+    //    ✅ **هم‌زیستی با S562 روی همین کارت مجاز است:** با آنکه هر دو گپ-محورند،
+    //       تلاقیِ روزانه فقط jaccard **۱۲.۵٪** است (۱۰۳ روزِ مشترک از ۴۹۳/۴۳۲)
+    //       — دو منبعِ اطلاعاتیِ مستقل. سند: results/_s408_overlap.json
+    //    ⚠️ آستانه‌های گپ/نوسان **منجمد**اند (۶.۴۰۲۰$ آخرهفته · ۱.۲۹۶۰$ میان‌هفته ·
+    //       V=۱۳۲.۳۲۵۲$) چون صدکِ غلتانِ ۲۵۰ روزه در پنجرهٔ ۲۲ روزهٔ سایت
+    //       بازتولید‌شدنی نیست. صداقتِ انجماد سنجیده شد: در پنجرهٔ واقعیِ سایت
+    //       توافقِ منجمد↔غلتان **۱۰۰٪/۱۰۰٪/۱۰۰٪** (گپ/V/تصمیم).
+    //       اسناد: results/_s408_arms/{frozen_thresholds_M15,recency_M15,parity_ts_M15}.json
+    //    ✅ پریتیِ TS↔پایتون: **۸/۸ سنجه سبز**، تصمیم ۰ ناهمخوانی (py=8 ts=8 روی
+    //       ۲۰۶ روز)، کنترلِ منفی ۲۰ روزِ پایه-بدونِ-فیلتر ⇒ ۰ شلیکِ غلط.
+    s408Layer(S408_CFG["XAUUSD-M15"]),
     // ⭐ S344 — Brooks فصلِ ۲۳ «trend-from-open first-pullback» · SHORT
     //    RQS2 = **89.0** · n=92 · WR 64.13% · PF 2.078 · maxDD 3.10%
     //    SL=220 / TP=340 pip (RR 1.55 ⇒ TP>SL) · maxHold=32
@@ -5692,6 +8459,18 @@ var CARD_LAYERS = {
     //    و S327/S323 که پیش‌تر با RQS2 حذف شده بودند.
   ],
   "XAUUSD-H1": [
+    // ⭐⭐ S562 ⭐نو — «گپِ منفیِ بازگشایی + فیلترِ نوسانِ علّی» · LONG
+    //    RQS2 = **96.0** (بالاترین نمرهٔ کلِ سایت) · n=254 · WR 68.90% · maxDD 2.07%
+    //    هر ۱۱ دروازهٔ RQS2 v2.6 سبز · SL=TP=101.4 pip (RR 1.0) · maxHold=2
+    //    ⚠️ این **همان لایهٔ کارتِ M15** است با qv=78 به‌جای ۸۵ — دو ACCEPTِ
+    //       مستقل روی دو تایم‌فریم، پس طبق قانونِ MTF **هر دو** وصل می‌شوند؛
+    //       ولی هم‌پوشانیِ روزانه‌شان jaccard=۰.۵۶ است ⇒ **هم‌خانواده**، سایزِ
+    //       مشترک (سند §۵). همچنین ≈۰.۵۱–۰.۵۴ با S560-M5 زنده.
+    //    مزیتِ H1 بر M15 در انجماد: در پنجرهٔ ۶۵روزهٔ این کارت آستانهٔ منجمد
+    //       ۱۰۰٪ با چندکِ رولینگ می‌خواند و تا ۱۲۵ روز هم ۱۰۰٪ می‌مانَد
+    //       (M15 در ۱۲۵ روز به ۸۹.۳٪ می‌افتد) ⇒ انجمادِ H1 ایمن‌ترِ دو تاست.
+    //    اولویتِ صدرِ فهرست: ۹۶.۰ از S431 (۹۳.۹) و S356 (۷۹.۶) بالاتر است.
+    s562Layer(S562_CFG["XAUUSD-H1"]),
     // ⭐ S356 — احیای S354، Brooks فصلِ ۲۵ «trend-resumption day» · نسخهٔ **علّی**
     //    RQS2 = **79.6** · n=117 · WR 51.28% · PF 1.636 · maxDD 4.05%
     //    SL=50.6 / TP=101.2 pip (RR 2.0 ⇒ TP دوبرابرِ SL) · maxHold=20
@@ -5741,12 +8520,155 @@ var CARD_LAYERS = {
     //       هندسه (TP>SL) می‌آید نه از WR-سازی (ضدِ اشتباهِ رایجِ ۸).
     //    ⓷ willrThr = **-13.0** (نه -20 رند) و atrP=100 ⇒ ضدِ اشتباهِ رایجِ ۷.
     //    ⓸ صفر فیلتر ⇒ بودجهٔ معامله دست‌نخورده (قانونِ هزینهٔ فیلترِ S379).
-    s382Layer(S382_CFG["XAUUSD-H4"])
+    s382Layer(S382_CFG["XAUUSD-H4"]),
+    // ⭐⭐ S589 ⭐نو — «سقفِ تازهٔ ۹۰-کندلی × تأییدِ حجمِ نسبیِ هم‌اسلات»
+    //    RQS2 = **86.3** · n=322 · WR 50.93٪ · BE 41.07٪ · lift **+9.86pp**
+    //    z=3.29 · PF 1.60 · SL/TP = **122.85 / 184.28 pip** (هندسهٔ خودِ H4)
+    //    این کارتِ **دومِ** یک حکمِ دو-کارتی است (H8=88.3 و H4=86.3، هر دو
+    //    ACCEPT ⇒ قانونِ MTF ایجاب می‌کند هر دو وصل شوند، نه فقط بهترین).
+    //
+    //    ⓵ **نخستین لایهٔ سایت که به حجم تکیه می‌کند.** همهٔ ساکنانِ پیشین
+    //       فقط OHLC می‌خواستند. اینجا حجم «فیلترِ کیفیت» نیست بلکه **حاملِ
+    //       اطلاعات** است، و شاهدش روی همین کارت قاطع‌ترین شکلِ ممکن را دارد:
+    //       بازوی مکملِ **کم‌حجم** روی H4 لبهٔ **lift = −۰.۱۷pp** گرفت — یعنی
+    //       سقفِ تازه بدونِ تأییدِ حجم روی H4 **صفرِ مطلق** لبه دارد. پس تمامِ
+    //       ۸۶.۳ از خودِ گیتِ حجم می‌آید، نه از رویدادِ پایه (Easley–O'Hara).
+    //    ⓶ **مکملِ S382 است، نه رقیبِ آن** — و این اندازه‌گیری شد نه فرض:
+    //       ممیزیِ شاهدِ کاذب (tools/s589_false_witness_audit.py) روی کلِ
+    //       ۱۵.۵ سال ⇒ jaccard = **۰.۱۴۱** · size_ratio ۰.۳۳ · اشتراک ۲۴۵ از
+    //       ۴۹۰ رویدادِ S589 در برابرِ ۱۴۸۶ رویدادِ S382. قاطعانه **دو خانوادهٔ
+    //       متفاوت**: S382 یک نوسان‌نمای %R است، S589 یک رویدادِ ساختاریِ
+    //       سقفِ ۹۰-کندلی با گیتِ حجم. ⇒ شاهدِ کاذب **نیست**.
+    //    ⓷ ولی ~۵۰٪ از ورودی‌های S589 داخلِ رویدادِ S382 می‌افتند ⇒ اگر هر دو
+    //       هم‌زمان ENTRY دادند، **سایزِ مشترک** (یک واحدِ ریسک بینِ دو لایه
+    //       تقسیم شود)، نه دو ریسکِ کامل. این قیدِ پرتفوی است نه قیدِ نمایش.
+    //    ⓸ WR 50.93٪ تقریباً روی سربه‌سر است و لبه از **هندسه** (TP>SL) و
+    //       دقتِ گیت می‌آید، نه از WR-سازی (ضدِ اشتباهِ رایجِ ۸).
+    //    ⚠️ BUG-DATASETDRIFT: حکمِ این کارت روی `data/XAUUSD_H4.csv` صادر شده
+    //       که بالادست (کامیتِ a8cd44cc) حذف شده؛ نسخهٔ فعلیِ mt5_full ۹۹ کندل
+    //       بلندتر است و میانهٔ ATR100 و در نتیجه براکتِ منجمد را جابه‌جا
+    //       می‌کند. فایلِ دورانِ حکم از تاریخِ گیت بازیابی و هر ۵ سنجه **عیناً**
+    //       بازتولید شد ⇒ اعدادِ بالا معتبرند.
+    //    سند: results/S589_VolumeConfirmedFreshHigh_Xauusd_H8H4_rqs2_88_ACCEPT.md
+    s589Layer(S589_CFG["XAUUSD-H4"])
     // ⚰️ حذف‌شده در S396: S374(Kennedy) · S340(RQS+92.6) · S332(RQS+92.1)
     //    و S327 که پیش‌تر با RQS2=18.8 حذف شده بود.
     //    S374 مهم‌ترین حذف است: با RQS+ «ACCEPTED» اعلام شده بود، ولی زیرِ RQS2
     //    هر دو کارتش افتاد (XAUUSD-H4 و EURUSD-H4=15.7) ⇒ کارتِ EURUSD-H4 که
     //    فقط برای آن متولد شده بود، با حذفش از سایت برداشته می‌شود.
+  ],
+  // ═══════════════════════════════════════════════════════════════════════
+  // 🆕 کارتِ H6 — **نو در این استقرار** (پیش از S919 هیچ لایه‌ای روی H6 نبود)
+  // ═══════════════════════════════════════════════════════════════════════
+  "XAUUSD-H6": [
+    // ⭐⭐ S919 — «شوکِ مطلعِ هم‌راستا با قراردادِ بازار» (Convention-Aligned
+    //    Informed Shock) · دانشمند: جان مینارد کینز · بلوکِ S910–S919
+    //    RQS2 = **88.9** · هر ۱۱ دروازهٔ H0..H10 سبز · notes خالی · n_trials=2
+    //    n=106 · WR=55.66٪ · null_ref=40.04٪ · BE_cost=39.29٪ · lift=+15.62pp
+    //    z_obs=3.282 · z_margin=2.762 · p_perm=8.42e−04 · PF=1.85 · maxDD=2.89٪
+    //    (SL_med=115.8 pip · TP_med=187.3 pip · RR=1.618)
+    //
+    //    قاعده (صفر پارامترِ آزاد — همه به ارث):
+    //      · شوک:      high−low ≥ 2.618 × ATR21[t−1]        ← پایهٔ منجمدِ S965
+    //      · ماندگاری: ρ = |close−open| ÷ (high−low) ≥ 0.618 ← پایهٔ منجمدِ S965
+    //      · جهت:      follow (بدنهٔ صعودی→LONG، نزولی→SHORT) ← S965
+    //      · گیتِ قرارداد: drift = close[t−1] − close[t−241]؛ LONG فقط drift>0،
+    //        SHORT فقط drift<0 (۶۰ روزِ تقویمی = ۲۴۰ کندلِ H6) ← قاعدهٔ S604
+    //      · براکتِ شناور: SL=1.272×ATR21، TP=2.058×ATR21 (TP>SL ✓) ← S965
+    //      · max_hold=16 کندلِ H6 (≈۴ روز) · allow_overlap=false · هزینه ۳.۳ pip
+    //
+    //    ⓵ **اولین لایهٔ کارتِ H6 در کلِ پروژه.** خوشهٔ شوک تا امروز همه H8 بود
+    //       (S602/S770/S950/S526/S965/S966) و S604 استخرِ {D1، H6-درفت} داشت؛
+    //       S919 خودِ کارتِ H6 را باز کرد ⇒ افزودنِ پوششِ نو، نه فشرده‌سازیِ H8.
+    //    ⓶ ابطال‌گرِ P1 (ضدِ توان‌سوزی): بازوی بی‌گیت روی H6 = بازتولیدِ مستقلِ
+    //       S965 ⇒ n=239 / WR=48.1٪ (S965 خودش n=240 گزارش کرده بود — تطابقِ n
+    //       اثباتِ درستیِ پیاده‌سازی است). گیت همان پایهٔ REJECT را به ACCEPT برد.
+    //    ⓷ ابطال‌گرِ P3 (روایتِ کینزی): بازوی **خلافِ** قرارداد WR=42.1٪ (n=133)
+    //       ⇒ بازار شوکِ خلافِ قرارداد را «اختلالِ موقت» می‌خواند و جذب می‌کند.
+    //    ⓸ **قلمرو قفل‌شده: فقط H6.** کارتِ H3 با RQS2=16.0 رد شد (n=317 ·
+    //       WR=44.79٪ · z=1.87) ⇒ تعمیم ممنوع. H8 عامدانه از پیش‌ثبت حذف شده بود
+    //       (S965/S966 آن‌جا ACCEPT دارند و دوباره‌آزمونی چندگانگیِ نو می‌ساخت).
+    //    ⓹ هم‌پوشانی: رویدادها با کارتِ H8 ذاتاً هم‌پوشان‌اند (یک شوکِ ۸ساعته
+    //       اغلب شوکِ ۶ساعته هم هست) ولی **کارت‌ها متفاوت‌اند** ⇒ لایه حذف
+    //       نمی‌شود؛ صفِ FIFO/سایزِ محتاط روی حسابِ واقعی در manageNote ثبت شد.
+    //
+    //    🔴 **دامِ زمان‌بندی (مهم‌ترین نکتهٔ این استقرار):** ماسکِ بک‌تستِ
+    //       داوری‌شده از پیش شیفت‌شده است (`lm[1:] = up[:-1]`) و سپس موتور ورود
+    //       را در openِ کندلِ بعدِ ماسک می‌گذارد ⇒ **ورودِ واقعی = رویداد + ۲**.
+    //       اندازه‌گیری روی همان داده و همان هندسه:
+    //         · رویداد+۲ (کدِ داوری‌شده): n=106 · WR=55.66٪ · e=+51.93 pip ✓
+    //         · رویداد+۱ (پورتِ ساده‌لوح): n=106 · WR=48.11٪ · e=+24.56 pip ✗
+    //       ⇒ پورتِ ساده‌لوحانه لبه را زیرِ سربه‌سر می‌برد. پس computeS919 رویداد
+    //       را روی کندلِ **i−1** می‌سنجد و سیگنال را روی کندلِ بستهٔ i می‌دهد.
+    //    پریتی: web_tool/parity_s919_signal.mjs — ۷ آزمون، هر ۷ PASS، صفر اختلاف
+    //       (شاملِ آزمونِ زمان‌بندیِ ورود=رویداد+۲ و آزمونِ «زود-شلیک نکردن»).
+    //    سند: results/S919_ConventionAlignedInformedShock_Xauusd_H6_rqs2_88.9_ACCEPT.md
+    s919Layer(S919_CFG["XAUUSD-H6"]),
+    // ⭐⭐ S955 ⭐نو — «جهشِ هم‌راستا در رژیمِ آرام» · سومین کارتِ این لایه
+    //    RQS2 = **84.9** · هر ۱۱ دروازهٔ H0..H10 سبز · notes خالی
+    //    n=149 · WR 63.09٪ · lift=+15.16pp · z=3.70 · PF=1.94 · maxDD=3.11٪
+    //    قاعده: **عیناً** همان قاعدهٔ منجمدِ H8/H12 — جهشِ |r| > 2.6·σ_BV(89)
+    //      هم‌جهت با رانشِ ۸۹-کندلی **∧** σ_t ÷ میانهٔ σ(۲۳۳ کندلِ بسته) ≤ ۱ ·
+    //      SL=TP=2.058×ATR(89) · maxHold=34 · تک‌معامله · هزینهٔ ۳.۳ pip.
+    //      صفر تیونِ per-card ⇒ این کارت هم قاعده را دست‌نخورده پذیرفت.
+    //    ⓵ **مرتبهٔ آرایه: زیرِ S919، بالای S607** — و این از نمره می‌آید نه سلیقه:
+    //       S919 = ۸۸.۹ · S955 = ۸۴.۹ · S607 = ۸۳.۱. پس در تلاقیِ S919 با S955،
+    //       تصمیمِ اصلیِ کارت از S919 می‌آید و S955 در otherLayers می‌نشیند —
+    //       همان قاعدهٔ runCard که کلِ سایت با آن کار می‌کند.
+    //    ⓶ ممیزیِ شاهدِ کاذب در برابرِ S919 (ساکنِ صدرِ این کارت):
+    //       ۴۷ هم‌کندل از ۱۵۵/۱۰۶ ⇒ jaccard **۰.۲۲۰** · سهمِ S955 = ۳۰.۳٪
+    //       ⇒ **مستقل** (نه هم‌اندازه، نه زیرمجموعه) ⇒ افزودنِ ساده مجاز است.
+    //       ⚠️ تفاوتِ بنیادیِ این کارت با H8: آنجا S955 زیرمجموعهٔ ۱۰۰٪ِ ساکنِ
+    //          کارت (S950) بود و **جانشینی** لازم شد؛ اینجا رویدادِ پایه اصلاً
+    //          فرق دارد (شوکِ مطلعِ قراردادی در برابرِ جهشِ مرتون) ⇒ دو شاهدِ
+    //          واقعاً مستقل. یعنی «یک لایه، دو حکمِ متفاوت روی دو کارت» —
+    //          و این تفاوت از اندازه‌گیری آمد، نه از قاعدهٔ کلی.
+    //    ⓷ کفِ داده: S955 کفِ ۲۸۵ کندل می‌خواهد (میانهٔ σ روی ۲۳۳ کندلِ بسته +
+    //       آغازِ σ پس از ۵۰) که از کفِ ۲۶۰یِ کارت (index.tsx:687، تعیین‌شده
+    //       توسطِ S919) **سخت‌گیرانه‌تر** است. روی فیدِ واقعی اندازه‌گیری شد:
+    //       range=2y ⇒ H1 ۱۴٬۵۲۳ کندل ⇒ H6 ≈**۲۴۲۰** کندل = **۸.۵×** کف.
+    //       ⇒ اختلافِ ۲۶۰/۲۸۵ عملاً بی‌اثر است و **هیچ تغییری در index.tsx
+    //         لازم نیست**. اگر روزی range کوتاه شد، گاردِ داخلیِ computeS955
+    //       صادقانه «دادهٔ ناکافی» می‌دهد و سکوت می‌کند (نه سیگنالِ حدسی).
+    //    ⚠️ کندل‌های این کارت از تجمیعِ H1×6 ساخته می‌شوند — همان مسیرِ S919/S607.
+    //    سند: results/S955_JumpAftermathCalmRegime_Xauusd_H8H12H6_rqs2_88_ACCEPT.md
+    s955Layer(S955_CFG["XAUUSD-H6"]),
+    // ⭐⭐ S607 — «شوکِ انگل با دو گیتِ متعامد» · عضوِ H6-DUAL از استخرِ سه‌عضوی
+    //    دانشمند: گئورگ کانتور · بلوکِ S600–S609 (شمارهٔ ۸)
+    //    حکمِ رسمی روی **استخرِ اتحادِ {D1 خام, H8-DUAL, H6-DUAL}**:
+    //      RQS2 = **83.1** (تنش ۸۲.۹) · هر ۱۱ دروازهٔ H0..H10 سبز
+    //      n=۳۸۴ · WR=۶۳.۸۰٪ · lift=+۱۵.۹۸pp · SL_med=۱۷۹.۸۲ · TP_med=۱۹۷.۵۵ pip
+    //    ⚠️ **حکم روی استخر است، نه این کارت به‌تنهایی** — عینِ الگوی S431/S770
+    //      که پیش‌تر در همین رجیستری پذیرفته شد (سندِ METHOD_ENSEMBLE_UNION).
+    //      سهمِ رسمیِ این کارت: n=۱۶۶ · WR=۶۰.۸۴٪ · lift=+۱۵.۷۴pp
+    //
+    //    قاعده (صفر پارامترِ آزاد — همه از S840/S604/S605 به ارث):
+    //      · واریانسِ IGARCH: σ²_t = 0.94·σ²_{t−1} + 0.06·r²_{t−1}  (λ منجمد)
+    //      · شوک: |z| = |r_t/σ_t| ≥ **2.618** روی کندلِ بسته · جهت: follow
+    //      · گیتِ روندِ علّی: sign(close[i−1] − close[i−1−**240**]) هم‌جهتِ شوک
+    //        (۶۰ روز × ۴ کندلِ H6 در روز) — هر دو سر **قبل** از کندلِ شوک
+    //      · گیتِ رژیمِ آرام: σ[i] ÷ median(σ[i−233..i−1]) ≤ **1.0**
+    //      · براکت: SL=1.618×ATR34، TP=**1.272**×SL (RR>1 ⇒ TP>SL ✓، ضدِ #۸)
+    //      · max_hold=۳۴ کندلِ H6 (≈۸.۵ روز)
+    //
+    //    ⓵ **هم‌زیستی با S919 روی همین کارت — بررسی‌شده، نه فرض‌شده:** هر دو
+    //       «شوک»اند ولی **کمیتِ شوکشان متفاوت است**: S919 روی هندسهٔ کندل
+    //       (range ≥ 2.618×ATR21 و ρ=|close−open|/range ≥ 0.618) ماشه دارد،
+    //       S607 روی **بازدهِ استانداردشدهٔ بسته-به-بسته** (r/σ با σِ IGARCH).
+    //       یک کندلِ پرنوسان با بدنهٔ کوچک برای S919 شوک نیست ولی برای S607
+    //       می‌تواند باشد و برعکس ⇒ دو منبعِ اطلاعاتیِ متمایز، نه تکرار.
+    //    ⓶ **جهتِ گیتِ روند در هر دو یکی است** (قاعدهٔ ارثیِ S604) ولی افقش
+    //       فرق دارد: S919 با ۲۴۱ کندل فاصله، S607 با ۲۴۱ کندل (K=240 ⇒ i−1−240)
+    //       — این‌جا **عملاً هم‌افق‌اند**، پس در سایزِ پرتفوی هم‌خانواده حساب
+    //       شوند؛ در manageNote هشدارِ صفِ FIFO ثبت است.
+    //    ⓷ **زمان‌بندی متفاوت از S919:** ورودِ S607 = رویداد+۱ (نه +۲) — اثبات
+    //       و ردیابیِ کد در کامنتِ computeS607 آمده. کپیِ الگوی S919 غلط بود.
+    //    ⓸ کفِ دادهٔ این لایه ۲۴۲ کندلِ H6 است و کفِ کارت ۲۶۰ (که S919 تعیین
+    //       کرد) از آن سخت‌گیرانه‌تر است ⇒ هیچ تغییری در index.tsx لازم نیست.
+    //    پریتی: web_tool/tools/_parity_s607.mts — سبز، صفر اختلاف روی سری‌ها،
+    //       سیگنال‌ها و هندسه؛ n_dual=۱۷۲ برابرِ census.json رسمی.
+    //    سند: results/S607_EngleShockDualGatePool_Xauusd_D1H8H6_rqs2_83.1_ACCEPT.md
+    s607Layer(S607_CFG["XAUUSD-H6"])
   ],
   "XAUUSD-H8": [
     // ⭐ S950 — «پس‌لرزهٔ جهش، هم‌راستا با رانش» (Jump-Aftermath Drift-Aligned)
@@ -5769,7 +8691,433 @@ var CARD_LAYERS = {
     //    ⚠️ کندل‌های این کارت از تجمیعِ H1×8 ساخته می‌شوند (Yahoo H8 ندارد) —
     //       عینِ H1×4ِ کارتِ H4؛ مرزهای UTC 0/8/16 با بک‌تست هم‌ترازند.
     //    سند: results/S950_JumpAftermathDriftAligned_Xauusd_H8_rqs2_80_ACCEPT.md
-    s950Layer(S950_CFG["XAUUSD-H8"])
+    //
+    // 🔄🔄 **جانشینی (این نشست): S955 جای S950 را روی این کارت گرفت.**
+    //    خطِ `s950Layer(S950_CFG['XAUUSD-H8'])` **حذف نشده که فراموش شود** —
+    //    عمداً همین‌جا در کامنت می‌ماند، چون کلِ توضیحِ بالا (فیزیکِ جهش، آزمونِ
+    //    کنترلِ رانش، ساختارِ MTF) **همچنان معتبر و همچنان توضیحِ رویدادِ پایه**
+    //    است؛ S955 رویدادِ تازه‌ای نیاورده، یک گیت روی همین رویداد گذاشته.
+    //
+    //    چرا جانشینی و نه افزودن — این یک تصمیمِ اندازه‌گیری‌شده است:
+    //      ابزار: tools/s955_false_witness_audit.py
+    //      خروجی: results/_s955_ckpt/false_witness.json
+    //      عدد: ۱۱۸ رویدادِ S955 در برابرِ ۲۳۸ رویدادِ S950 · هم‌کندل = ۱۱۸
+    //           ⇒ **۱۰۰٪ زیرمجموعهٔ ساختاری** · همپوشانیِ پنجرهٔ نگهداری ۱۰۰٪
+    //           · جهتِ مخالف = **صفر**.
+    //      اگر هر دو روی کارت بمانند، روی هر سیگنالِ S955 دو لایه هم‌جهت
+    //      هم‌زمان روشن می‌شوند ⇒ سایزِ دوبرابر روی یک رویدادِ واحد، بدونِ هیچ
+    //      اطلاعِ تازه. مکانیزمِ نمایشِ سایت این را حل نمی‌کند: کاربر دو کادر
+    //      می‌بیند و گمان می‌کند دو شاهد دارد. این همان «شاهدِ کاذب» است.
+    //      خودِ سندِ S955 (§۴) هم همین را نوشته: «دو لایه نباید هم‌زمان روی کارت
+    //      باشند» و جانشینی را پیشنهاد کرده.
+    //
+    //    جانشینی چه چیزی را عوض می‌کند (اعدادِ موتور، نه تخمین):
+    //      n 224 → 112 (نصفِ معاملات حذف می‌شود)
+    //      WR 61.6٪ → 67.86٪   ·   PF 1.56 → 2.06   ·   maxDD 4.92٪ → 2.86٪
+    //      RQS2 80 → 87.7      ·   lift +11.15pp → +17.85pp
+    //      یعنی نصفی که حذف می‌شود، **همان نصفی است که ضرر می‌داد**: جهش‌هایی
+    //      که در طوفانِ نوسان باز می‌شدند (بازوی طوفانی: WR ۵۴.۵٪ · n=۱۲۰).
+    //
+    //    ⚠️ اگر روزی کسی خواست S950 را برگرداند: **هر دو با هم ممنوع‌اند.** یکی
+    //       را انتخاب کن. S950 فقط اگر معنا دارد که بخواهی رویدادِ بی‌گیت را
+    //       معامله کنی (پربسامدتر، ضعیف‌تر) — که اندازه‌گیری آن را رد کرده.
+    s955Layer(S955_CFG["XAUUSD-H8"]),
+    // ⭐ S965 ⭐نو — «ماندگاریِ درون-کندلیِ اثرِ قیمتیِ کایل» (Kyle 1985) · دوسویه
+    //    RQS2 = **82.2** · هر ۱۱ دروازهٔ H0..H10 سبز · notes خالی
+    //    n=146 · WR 54.79٪ · BE_rob 40.4٪ · lift=+12.84pp · z=3.14 · p_perm=8.33e−04
+    //    PF=1.81 · net=+$7,113 · نول: K=500 جایگشت · draw=146 · uncond_n=11,711
+    //    قانون: کندلِ شوک (high−low ≥ 2.618×ATR21[i−1]، ATR علّی) **که** ماندگاریِ
+    //      درون-کندلی ρ=|close−open|÷(high−low) ≥ 0.618 داشته باشد ⇒ ادامه هم‌جهتِ بدنه.
+    //      SL=1.272×ATR21[i−1] / TP=2.058×ATR21[i−1] (میانه ≈۱۳۸/۲۲۳ pip، TP>SL) · hold=16.
+    //    ⓵ **آزمونِ تفکیک‌گرِ P1 پاس شد** (درسِ S603/S964): پایهٔ θ-only بدونِ شرطِ ρ
+    //       lift=+11.81pp داشت؛ با شرطِ ρ به **+18.16pp** رسید ⇒ فیلترِ **اطلاعات‌افزا**،
+    //       نه توان‌سوز. این دقیقاً وارونهٔ مرگِ S964 است.
+    //    ⓶ قانونِ MTF رعایت شد: هر ۱۹ TF داوری و منتشر شد — H8 تنها ACCEPT؛ D1 با
+    //       z=−3.40 و H12 با z=−2.13 لیفتِ **منفی** دارند (REJECT صریح)، H6/H3/H2/H1
+    //       REJECT، و ۱۲ کارت NO-SURVIVOR ⇒ **صفر تعمیم**، فقط همین یک کارت وصل شد.
+    //    ⓷ پنجمین لبهٔ مستقلِ «رویدادِ لحظه‌ای × TF درشت» روی H8، کنارِ
+    //       S602/S770/S950/S526 — و نخستین ACCEPTِ بلوکِ کایل پس از ۵ REJECT (S960–S964).
+    //    ⓸ مکمل بودن با S950 روی همین کارت: S950 ماشه‌اش **بازدهِ لگاریتمی** در برابرِ
+    //       σ_BV است با فیلترِ رانشِ ۸۹کندلی و هندسهٔ **متقارن**؛ S965 ماشه‌اش **رنج و
+    //       شکلِ درون-کندلی** است بدونِ هیچ فیلترِ رژیم و با هندسهٔ **نامتقارن TP>SL**
+    //       ⇒ دو سنجهٔ متفاوت از یک خانوادهٔ فیزیکی (شوک)، نه دو نسخه از یک قانون.
+    //       ⚠️ همپوشانی **اندازه‌گیری شد** (روی ۳۰۰۰ کندلِ آخرِ H8، هم‌ترازِ زمانی،
+    //          با سیگنال‌های خودِ پایتونِ هر دو لایه):
+    //            · هم‌کندل: **۱۱ از ۲۵** سیگنالِ S965 (۴۴٪ از S965 · ۱۸٪ از S950)
+    //            · جهت: **۱۱ هم‌جهت / ۰ مخالف** ⇒ هیچ هجِ خودزنی رخ نمی‌دهد ✅
+    //            · با پنجرهٔ نگه‌داری (۱۶ در برابر ۳۴ کندل): **۸۴٪** معاملاتِ S965
+    //              با یک معاملهٔ بازِ S950 هم‌پوشانیِ زمانی دارد ⚠️
+    //          ⇒ روی حسابِ واقعی سایزِ مشترک بگیرید (هر دو قیدِ allow_overlap=false
+    //            دارند)؛ وگرنه ریسکِ هم‌زمان تا ۲× می‌شود. اندازه‌گیری:
+    //            results/_scan_S965/overlap_s950_s965_h8.json
+    //    سند: results/S965_KyleIntrabarPermanence_Xauusd_H8_rqs2_82_ACCEPT.md
+    s965Layer(S965_CFG["XAUUSD-H8"]),
+    // ⭐⭐ S770 ⭐نو — «انبساطِ دامنه نسبت به ADR با تداوم» · **دوسویه** (LONG + SHORT)
+    //    RQS2 = **82.4** (استخرِ {D1,H8}) · هر ۱۱ دروازهٔ H0..H10 پاس · lift=+7.23pp
+    //    z=3.91 در برابرِ سدِ 2.897 (n_trials=301 صادقانه) · p_perm=4.5e−05
+    //    سهمِ این کارت در استخر: n=۴۲۳ از ۶۸۹ (۶۱٪) ⇒ **عضوِ بزرگ‌ترِ استخر**.
+    //    قاعده: frac = (close − openِ **روزِ تقویمیِ UTC**) ÷ ADR(21) و **عبورِ**
+    //      آن از ±0.65 (عبور، نه بودن ⇒ هر روز حداکثر یک ماشه در هر سو) ⇒ تداومِ هم‌جهت.
+    //    هندسه: SL=1.272×ATR(100) و TP=2.058×SL (RR=2.058 ⇒ قانونِ بودجه TP>SL برقرار)
+    //      — **برداری** از کندلِ سیگنال (میانهٔ اندازه‌گیری‌شدهٔ این کارت ≈۱۵۵ pip SL)
+    //      · maxHold=۱۶ کندلِ H8 · allow_overlap=false.
+    //
+    //    ⚠️ **افشای صریح — این حکم استخری است، نه تک‌کارتی.** کارتِ H8 به‌تنهایی
+    //       `REJECT` (RQS2=19.3) داشت با lift=+4.23pp. ورودش به سایت **تنها** به
+    //       اعتبارِ استخرِ {D1,H8} است که با هم هر ۱۱ دروازه را پاس کرد. کسی نباید
+    //       این کارت را «مستقلاً اثبات‌شده» بخواند — عینِ همان افشایی که برای
+    //       S432/M15 و S431 ثبت شد. حذفِ هر یک از دو عضو، جمعیتی که حکم بر آن
+    //       صادر شده را نابود می‌کند ⇒ طبقِ قانونِ MTF **هر دو** وصل می‌شوند.
+    //    چرا با این حال ارزشِ اتصال دارد: lift هر دو عضو مثبت و هم‌علامت است و
+    //       ساختارِ lift با مقیاس **یکنوا** رشد می‌کند (زیرساعتی منفی → H4 +2.67
+    //       → H8 +4.23 → D1 +5.70) ⇒ پدیدهٔ فیزیکیِ مقیاس-وابسته، نه گلچینِ تایم‌فریم.
+    //
+    //    مکمل بودن با دو لایهٔ دیگرِ همین کارت — سه ماشهٔ **متفاوت** از یک بازار:
+    //      · S950 ماشه‌اش **بازدهِ لگاریتمیِ** یک کندل در برابرِ σ_BV است (جهش).
+    //      · S965 ماشه‌اش **رنج و شکلِ درون-کندلیِ** یک کندل است (شوکِ کایل).
+    //      · S770 ماشه‌اش **حرکتِ تجمعیِ روز نسبت به مقیاسِ روزانه (ADR)** است —
+    //        یعنی تنها لایهٔ این کارت که به **روزِ تقویمی** لنگر دارد نه به یک کندل،
+    //        و تنها لایه‌ای که متغیرِ حالتش **بی‌بعد** است (کسری از ADR).
+    //      ⇒ سه منبعِ اطلاعاتیِ مستقل، نه سه نسخه از یک ایده.
+    //
+    //    ⚠️⚠️ **قیدِ سایزِ مشترک — الزامی و انباشته روی این کارت.** حکمِ S770 با
+    //       `allow_overlap=false` **و** صفِ FIFOِ تقویمیِ استخری (همزمانیِ حداکثر ۱
+    //       میانِ D1 و H8) اندازه‌گیری شد. پس روی حسابِ واقعی:
+    //         ① اگر کارتِ D1 و همین کارت هم‌زمان S770 دادند ⇒ فقط **اولی** معامله شود.
+    //         ② اگر S950 یا S965 هم‌زمان بازند ⇒ سایزِ مشترک (هشدارِ ثبت‌شدهٔ
+    //            بالای همین بلوک: S950↔S965 هم‌کندل ۱۱/۲۵ و ۸۴٪ تلاقیِ پنجره).
+    //       بی‌رعایتِ این قید، ریسکِ هم‌زمانِ کارت چند برابر می‌شود و حکمِ
+    //       اندازه‌گیری‌شده دیگر معتبر نیست.
+    //    parity: mismatch=0 · ۱۸۴ LONG + ۱۳۲ SHORT بازتولید شد + ۴۰ کنترلِ منفی
+    //       (results/_scan_S770/parity_s770_PASS.txt)
+    //    سند: results/S770_AdrExpansionPool_Xauusd_D1H8_rqs2_82_ACCEPT.md
+    s770Layer(S770_CFG["XAUUSD-H8"]),
+    // ⭐ S966 ⭐نو — «ماندگاریِ کایل × هم‌راستاییِ درفت» (Kyle Permanence, Drift-Aligned)
+    //    RQS2 = **85.8** · هر ۱۱ دروازهٔ H0..H10 سبز · n=74 · WR=55.41٪ · PF=1.87
+    //    lift=+11.99pp · z=3.21 · p_perm=0.00066 (۱۰۰۰ جایگشت)
+    //    سند: results/S966_KylePermanenceDriftAligned_Xauusd_H8_rqs2_86_ACCEPT.md
+    //
+    //    قاعده (یک خط): کندلِ شوکِ کایل (رنج ≥ ۲.۶۱۸·ATR21ِ علّی) **با** ماندگاریِ
+    //    درون-کندلی ρ=|C−O|÷(H−L) ≥ ۰.۶۱۸ — و **تنها اگر** بدنه هم‌جهتِ درفتِ
+    //    علّیِ ۱۸۰کندلی باشد (close[t−1] در برابرِ close[t−181]) ⇒ ادامهٔ جهتِ بدنه.
+    //
+    //    ⓵ **چرا زیرِ همهٔ لایه‌های این کارت وصل شد (نه بالای آن‌ها):**
+    //       همپوشانی **اندازه‌گیری شد** (۳۰۰۰ کندلِ آخرِ H8، هم‌ترازِ زمانی):
+    //       S966 **زیرمجموعهٔ ساختاریِ ۱۰۰٪ِ S965** است — ۱۱ از ۱۱ سیگنال هم‌کندل و
+    //       هم‌جهت با S965، صفر موردِ مخالف. پس S966 **پوششِ نو نمی‌آورد**؛ ارزشش
+    //       فیلترِ **کیفیت** است: ۱۴ سیگنالِ S965 که درفت مخالفشان بود حذف می‌شوند و
+    //       lift از +۲.۶۱pp به **+۱۱.۹۹pp** می‌رسد. چون S965 مجموعهٔ بزرگ‌ترِ
+    //       ACCEPT-دار است، آن تصمیمِ اصلیِ کارت می‌ماند و S966 در `otherLayers`
+    //       به‌عنوان **مُهرِ تأییدِ کیفیت** دیده می‌شود: اگر هر دو ENTRY باشند،
+    //       آن سیگنالِ S965 از نوعِ «درفت-هم‌راستا» است (کیفیتِ بالاتر).
+    //       سند: results/_scan_S966/overlap_s950_s965_s966_h8.json
+    //    ⓶ **ضدِ اشتباهِ «کلونِ لایهٔ موجود»:** پریتی یک کنترلِ اختصاصیِ دروازه دارد —
+    //       ۱۳ کندلی که پایهٔ S965 شلیک کرد ولی درفت مخالف بود، **همه بلاک شدند**
+    //       (leak=0) ⇒ دروازه واقعاً وصل است، نه تزئینی.
+    //       سند: results/_scan_S966/parity_web_s966.json (verdict=PASS)
+    //    ⓷ **قانونِ MTF رعایت شد:** از دو تایم‌فریمِ پیش‌ثبت‌شده تنها **H8** حکمِ
+    //       ACCEPT گرفت؛ H6 با RQS2=۷.۸ (lift +۲.۶۱ · z=۰.۵۹) رد شد ⇒ کارتِ H6
+    //       ساخته **نمی‌شود**. تعمیم بدونِ شاهد ممنوع.
+    //    ⚠️ **هشدارِ سایزِ مشترکِ کارتِ H8 — اکنون سه‌لایه‌ای:** پیش‌تر برای
+    //       S950↔S965 ثبت شده بود (هم‌کندل ۱۱/۲۵ · ۸۴٪ تلاقیِ پنجره). با S966:
+    //       هم‌کندل با S965 = ۱۰۰٪ و با S950 = ۸۱.۸٪ (صفر جهتِ مخالف). هر سه لایه
+    //       `allow_overlap=false` دارند ⇒ روی حسابِ واقعی، ENTRYِ هم‌زمانِ این سه
+    //       **یک** رویدادِ شوک است و باید **یک** پوزیشن گرفته شود، نه سه.
+    s966Layer(S966_CFG["XAUUSD-H8"]),
+    // ⭐⭐ S1911 ⭐نو — «شوکِ مطلع در آرامش» · RQS2 **93.9** (بالاترینِ کلِ کارتِ H8)
+    //    قاعده: شوکِ کایلِ S965 **∧** گیتِ آرامشِ S606 (σ_t ÷ میانهٔ σ_{t−233..t−1} ≤ 1).
+    //    صفر پارامترِ آزادِ نو؛ هر دو تکه ارثی و منجمد. پیش‌ثبت پیش از عدد.
+    //    هندسه: SL=1.272× · TP=2.058×ATR21[i−1] · maxHold=16 — ارثی از S965.
+    //
+    //    ⚠️⚠️ **جایگاهِ این لایه در آرایه تصادفی نیست — قیدِ ممیزیِ شاهدِ کاذب است.**
+    //       اندازه‌گیری (tools/s1911_false_witness_audit.py روی ۱۱٬۹۷۸ کندلِ H8،
+    //       هم‌ترازِ زمانی، هر لایه از مرجعِ پایتونیِ خودش):
+    //         · S1911 vs S965: n=۸۲ در برابر ۱۴۴ · هم‌کندل=۸۲ ⇒ **۱۰۰٪ رویدادهای
+    //           S1911 داخلِ S965 است** · jaccard=۰.۵۶۹ · جهتِ مخالف=**صفر**
+    //         · S1911 vs S966: jaccard=۰.۴۲۶ ⇒ مستقل
+    //         · S1911 vs S950: jaccard=۰.۱۴۴ ⇒ مستقل
+    //       اعتبارِ ابزار: عددِ منتشرشدهٔ «S966 ⊂ S965» را عیناً بازتولید کرد
+    //       (share=۱۰۰٪ · jaccard=۰.۵۰) ⇒ ابزار قابل‌اعتماد است.
+    //       خروجی: results/_s1911_ckpt/false_witness_h8.json ⇒ CLEAR-WITH-CONSTRAINTS
+    //
+    //       چرا **حذف نشد** (در تقابل با S404/S408 در همین فایل، خطوطِ ~۷۹۴–۷۹۷):
+    //         آنجا jaccard=۶۹.۳٪ **به‌همراهِ هم‌اندازگی** بود ⇒ دو لایه واقعاً یک
+    //         رویدادِ واحد با دو اسم بودند ⇒ «یکی، نه هر دو». اینجا زیرمجموعه‌ای
+    //         با **نیمهٔ** اندازه است (۸۲ از ۱۴۴) ⇒ همان الگوی S966: یک **فیلترِ
+    //         کیفیت** روی رویدادهای لایهٔ بزرگ‌تر، نه یک شاهدِ مستقلِ تازه.
+    //       سه قیدِ الزامی (عینِ پروندهٔ S966):
+    //         (الف) در آرایه **زیرِ** S965 ⇒ در تلاقی، تصمیمِ اصلیِ کارت از S965
+    //               می‌آید و S1911 در otherLayers می‌نشیند. ✅ همین‌جا اعمال شد.
+    //         (ب) ارزشِ اعلامی در UI صریحاً «کیفیت/زیرمجموعه» است نه رویدادِ نو —
+    //               یک شاخصِ اختصاصی + متنِ reason + manageNote این را می‌گویند.
+    //         (ج) ⚠️ **سایزِ مشترک**: اگر هر دو کادر روشن‌اند، **یک** رویداد است.
+    //               دو کادر ≠ دو ریسکِ جدا؛ وگرنه ریسک بی‌دلیل ۲× می‌شود.
+    //
+    //    ⚠️ قانونِ MTF: تنها همین یک کارت. H6 داوری و منتشر شد ⇒ REJECT
+    //       (`results/_s1911_ckpt/judge_H6.json::failed_gates=["H3","H7","H8"]`).
+    //    پریتیِ پورت GREEN (سیگنال/ویژگی/رژیم/هندسه): results/_s1911_ckpt/parity_h8_result.json
+    //    سند: results/S1911_KyleShockCalmRegime_Xauusd_H8_rqs2_93.9_ACCEPT.md
+    s1911Layer(S1911_CFG["XAUUSD-H8"]),
+    // ⭐⭐ S607 — «شوکِ انگل با دو گیتِ متعامد» · عضوِ H8-DUAL از استخرِ سه‌عضوی
+    //    حکمِ رسمی روی **استخرِ اتحادِ {D1 خام, H8-DUAL, H6-DUAL}**: RQS2 = **83.1**
+    //      (تنش ۸۲.۹) · هر ۱۱ دروازه سبز · n=۳۸۴ · WR=۶۳.۸۰٪ · lift=+۱۵.۹۸pp
+    //    سهمِ رسمیِ این کارت: n=۱۳۱ · WR=**۶۶.۴۱٪** · lift=+۱۶.۶۱pp — **بهترین
+    //      WRِ سه عضو**. عضوِ حذف‌ناشدنی: اگر این کارت وصل نشود، استخرِ داوری‌شده
+    //      شکسته می‌شود و حکمِ ۸۳.۱ دیگر معتبر نیست (همان منطقی که در S431/S770
+    //      رعایت شد) ⇒ اتصال **اجباری**، ولی با محلِّ درست در اولویت.
+    //    قاعده: |z| ≥ 2.618 روی σِ IGARCH(0.94) · follow · گیتِ روندِ علّیِ
+    //      close[i−1] vs close[i−1−**180**] (۶۰ روز × ۳ کندلِ H8) ∧ گیتِ رژیمِ
+    //      آرام σ[i] ÷ median(σ[i−233..i−1]) ≤ 1.0 · SL=1.618×ATR34 · TP=**1.0**×SL
+    //      · max_hold=۳۴ کندلِ H8 (≈۱۱.۳ روز) · ورود = رویداد+۱.
+    //
+    //    🔴 **چرا آخرینِ فهرست است — اندازه‌گیری‌شده، نه سلیقه:**
+    //       این کارت شلوغ‌ترین کارتِ پروژه است و S607 روی آن **پوششِ نو ندارد**:
+    //       در پنجرهٔ ۱۲۰۰ کندلِ H8، هر ۱۱ سیگنالِ S607 با دستِ‌کم یکی از چهار
+    //       ساکن هم‌کندل است (۹۰.۹٪ با S770 · ۷۲.۷٪ با S950 · ۱۸.۲٪ با S965 و
+    //       S966) و **صفر** موردِ جهتِ مخالف.
+    //       سند: results/_s607_overlap/h8.json
+    //    ⚠️ و این **آرتیفکتِ تراکم نیست** — با آزمونِ نرخِ پایه سنجیده شد:
+    //       پوششِ اتحادِ ساکنان ۱۶۱ کندل از ۱۲۰۰ ⇒ p_base=۱۳.۴٪، پس یک لایهٔ
+    //       بی‌ربط با ۱۱ شلیک انتظارِ ~۱.۵ هم‌کندلی داشت، نه ۱۱.
+    //       آزمونِ دقیقِ دوجمله‌ای: **p = 2.54e−10** (و ۸.۵e−۹ برای S770 تنها)
+    //       با αِ پیش‌ثبت‌شدهٔ ۰.۰۵ ⇒ فرضِ «بی‌ربط» قاطعانه رد می‌شود.
+    //       سند: results/_s607_overlap/h8_baserate.json
+    //    ⇒ نتیجهٔ حاکمیتی: S607 روی H8 رویدادِ **نو** نمی‌آورد، بلکه همان
+    //      رویدادِ شوکِ ساکنان را از منظرِ دیگری تأیید می‌کند. پس مثلِ S966
+    //      **پایین‌ترین اولویتِ کارت** می‌گیرد: اگر ساکنی ENTRY داد، تصمیمِ اصلی
+    //      از آنِ اوست و S607 در otherLayers به‌عنوانِ تأییدِ کیفی می‌نشیند.
+    //    ⚠️⚠️ **هشدارِ سایزِ کارتِ H8 — اکنون پنج‌لایه‌ای:** S950/S965/S966 پیش‌تر
+    //      ثبت شده بودند؛ با S607 اضافه‌شدن، ENTRYِ هم‌زمانِ تا **پنج** لایه روی
+    //      یک کندل ممکن است و طبقِ اندازه‌گیریِ بالا این **قاعده است نه استثنا**.
+    //      هر پنج لایه `allow_overlap=false` دارند ⇒ روی حسابِ واقعی این یک
+    //      رویدادِ شوکِ واحد است و باید **یک** پوزیشن گرفته شود، نه پنج.
+    //      (قاعدهٔ اتحادِ سطحِ بار در docs/METHOD_ENSEMBLE_UNION_DEPLOYMENT.md §۴)
+    //    پریتی: web_tool/tools/_parity_s607.mts — سبز، n_dual=۱۳۱ برابرِ census.
+    //    سند: results/S607_EngleShockDualGatePool_Xauusd_D1H8H6_rqs2_83.1_ACCEPT.md
+    s607Layer(S607_CFG["XAUUSD-H8"]),
+    // ⭐ S1520 — سقفِ تازهٔ ۹۰-کندلی × کندلِ مطلع · RQS2 **90.6** (بالاترینِ کارتِ H8)
+    //    n=۱۴۷ · WR=۵۹.۸۶٪ · lift=+۱۹.۱۳pp · z=۳.۸۳ · PF=۲.۳۱ · MaxDD کم
+    //    هندسه: SL=**۱۷۹.۶۷** pip · TP=**۲۶۹.۵۰** pip (RR ۱.۵) — از
+    //      median(ATR100)×۱.۵ روی کلِ ۱۵.۶ سال منجمد شده؛ عددِ رندِ مشترک نیست
+    //      (ضدِ اشتباهِ ۶) و با هندسهٔ هیچ‌یک از پنج ساکنِ کارت یکی نمی‌شود.
+    //    هم‌زیستی با پنج ساکن — **متمایز در ماشه**، هر شش تا از یک «چرا»ی متفاوت:
+    //      · S950 از **پس‌لرزهٔ جهش** می‌آید (رویدادِ پرش + هم‌راستاییِ درفت).
+    //      · S965 از **ماندگاریِ درون-کندلیِ اثرِ کایل** (|ρ| مطلق، دوطرفه).
+    //      · S770 از **انبساطِ دامنه نسبت به ADR** با تداومِ هم‌جهت.
+    //      · S966 = S965 × دروازهٔ درفت (زیرمجموعهٔ ۱۰۰٪ِ S965، فیلترِ کیفیت).
+    //      · S607 از **بازدهِ استانداردشدهٔ بسته-به-بسته** (r/σ).
+    //      · S1520 از **رویدادِ ساختاریِ سقفِ تازهٔ ۹۰-کندلی × ρِ علامت‌دار** —
+    //        تنها لایهٔ کارت که ماشه‌اش یک **لنگرِ ساختاری** است (نه یک کمیتِ
+    //        نوسانی)، و تنها لایه‌ای که ρ را **علامت‌دار** می‌خواند (LONG-only)
+    //        در حالیکه S965/S966 قدرِمطلقش را می‌خوانند ⇒ جمعیت‌ها یکی نیستند.
+    //    ⚠️ چرا فقط همین یک کارت: از سه کارتِ پیش‌ثبت‌شده تنها H8 پذیرفته شد
+    //      (H4 = ۱۶.۷ REJECT با بازوی مخالفِ برنده · H12 = ۲۷.۱ اثبات‌نشده) ⇒
+    //      قانونِ MTF اجازهٔ تعمیم نمی‌دهد. جزئیات در بلوکِ importِ همین فایل.
+    s1520Layer(S1520_CFG["XAUUSD-H8"]),
+    // ⭐⭐ S589 ⭐نو — «سقفِ تازهٔ ۹۰-کندلی × تأییدِ حجمِ نسبیِ هم‌اسلات»
+    //    RQS2 = **88.3** (تنشِ n_trials=50 ⇒ **86.9** ⇒ پایدار) · n=۱۵۹
+    //    WR=۵۶.۶۰٪ · BE=۴۰.۷۳٪ · lift=**+۱۵.۸۷pp** · z=۳.۱۶ · PF=۲.۰۲ · DD ۲.۱٪
+    //    هندسه: SL=**۱۷۹.۶۷** pip · TP=**۲۶۹.۵۰** pip (RR ۱.۵) — از
+    //      median(ATR100)×۱.۵ روی کلِ ۱۵.۶ سال منجمد شده.
+    //    این کارتِ **اولِ** یک حکمِ دو-کارتی است (H8=88.3 · H4=86.3) ⇒ هر دو
+    //      وصل شدند. H12 با REJECT ۲۵.۱ عامدانه وصل **نشد**.
+    //
+    //    ⓵ **تنها لایهٔ کلِ سایت که به حجم تکیه می‌کند.** هر شش ساکنِ دیگرِ
+    //       این کارت فقط OHLC می‌خوانند ⇒ S589 یک **بُعدِ دادهٔ کاملاً نو** به
+    //       کارت می‌آورد، نه قرائتِ دیگری از همان سری قیمت. این مهم‌ترین دلیلِ
+    //       علمیِ اتصالِ اوست: اطلاعِ ارتاگونال، نه تأییدِ مضاعف.
+    //
+    //    🔴🔴 **قیدِ حاکمیتی — چرا زیرِ S1520 نشست (اندازه‌گیری‌شده، نه سلیقه):**
+    //       S589 و S1520 **دقیقاً یک رویدادِ پایه** دارند (سقفِ تازهٔ ۹۰-کندلیِ
+    //       منجمدِ S526) و فقط گیت‌شان فرق می‌کند: S589 با **حجمِ هم‌اسلات**،
+    //       S1520 با **بدنهٔ کندلِ مطلع (ρ کایل)**. پس باید پیش از اتصال ثابت
+    //       می‌شد که «شاهدِ کاذبِ S404/S408» نیستند — و شد:
+    //         tools/s589_false_witness_audit.py · results/_s589/false_witness.json
+    //         (اعتبارِ ابزار: عددِ منتشرشدهٔ §۴ سند را بازتولید کرد.)
+    //         · jaccard = **۰.۵۲۵** · اشتراک ۱۶۶ کندل · ۶۳.۸٪ از رویدادهای S589
+    //           · size_ratio = ۰.۸۵ (۲۶۰ در برابرِ ۲۲۲ رویداد)
+    //         ⇒ **زیرِ** آستانهٔ ۰.۶۰ ⇒ شاهدِ کاذب **نیست** ⇒ حذف لازم نیست.
+    //       ⚠️ **ولی فاصله فقط ۰.۰۷۵ است و اندازه‌ها هم‌مقیاس‌اند** — این دقیقاً
+    //         همان ناحیه‌ای است که پروندهٔ S404/S408 (jaccard ۶۹.۳٪، خطوطِ
+    //         ~۸۹۱–۸۹۴ همین فایل) در آن به «یکی، نه هر دو» رسید. تفاوتِ
+    //         تعیین‌کننده: آنجا یکی تقریباً **زیرمجموعهٔ** دیگری بود
+    //         (share_of_b=۹۹.۴٪)، اینجا هیچ‌کدام زیرمجموعهٔ دیگری نیست
+    //         (۶۳.۸٪ در برابرِ ۷۴.۸٪) ⇒ هر کدام جمعیتی دارند که دیگری ندارد.
+    //       سه قیدِ الزامی (عینِ پروندهٔ S966 و S1911 روی همین کارت):
+    //         (الف) در آرایه **زیرِ** S1520 (۹۰.۶) ⇒ در تلاقی تصمیمِ اصلیِ کارت
+    //               از S1520 می‌آید و S589 در otherLayers می‌نشیند. ✅ اعمال شد.
+    //         (ب) ⚠️⚠️ **سایزِ مشترک — مهم‌ترین قید:** اگر S589 و S1520 هم‌زمان
+    //               ENTRY دادند، آن **یک** سقفِ تازه است که دو گیتِ متعامد
+    //               تأییدش کرده‌اند، نه دو فرصتِ مستقل. دو کادر ≠ دو ریسک؛
+    //               **یک** پوزیشن گرفته شود وگرنه ریسک بی‌دلیل ۲× می‌شود.
+    //         (ج) هر دو LONG-only ⇒ هیچ پوششِ طبیعیِ جهتِ مخالفی وجود ندارد که
+    //               ریسکِ هم‌زمانی را خنثی کند (برخلافِ S965 که دوطرفه است).
+    //
+    //    ⚠️ قیدِ ماندگارِ S526: S589 از نظرِ ساختاری **۱۰۰٪ زیرمجموعهٔ** S526
+    //       است (ذاتی — همان رویداد + گیت). S526 امروز وصل **نیست** ⇒ تعارضی
+    //       نیست؛ ولی اگر روزی وصل شود **باید** یکی از این دو حذف گردد.
+    //    پریتیِ پورت GREEN روی هر سه کارت (۲۶۰/۴۸۸/۱۸۷ سیگنالِ بیت‌به‌بیت):
+    //      web_tool/tools/_parity_s589.mts
+    //    سند: results/S589_VolumeConfirmedFreshHigh_Xauusd_H8H4_rqs2_88_ACCEPT.md
+    s589Layer(S589_CFG["XAUUSD-H8"])
+  ],
+  "XAUUSD-H12": [
+    // ⭐⭐ S955 ⭐نو — «جهشِ هم‌راستا در رژیمِ آرام» · **بالاترین نمرهٔ این کارت**
+    //    RQS2 = **89.4** (در برابرِ ۸۳.۶ی S800) · هر ۱۱ دروازه سبز · notes خالی
+    //    n=76 (≈۵ معامله در سال — کم‌بسامدترین کارتِ این لایه) · WR 69.74٪
+    //    lift=+19.86pp · z=3.46 · p_perm=2.7e−04 · PF=2.31 · maxDD=2.43٪
+    //    ۴ بذرِ نول: 89.2–89.4 همه ACCEPT · تنشِ n_trials=1000 ⇒ ACCEPT 87.7
+    //    قاعده: جهشِ |r| > 2.6·σ_BV(89) هم‌جهت با رانشِ ۸۹-کندلی **∧** گیتِ
+    //      آرامش σ_t ÷ میانهٔ σ(۲۳۳ کندلِ بسته) ≤ ۱. SL=TP=2.058×ATR(89) ·
+    //      maxHold=34 کندلِ H12 · تک‌معامله · هزینهٔ ۳.۳ pip.
+    //    ⓵ **صفر پارامترِ آزاد و صفر تیونِ per-card**: این کارت «کارتِ اصلیِ»
+    //       پیش‌ثبت نبود (آن H8 بود) و با **همان قاعدهٔ منجمد** ACCEPT گرفت ⇒
+    //       هیچ انتخابِ پس‌نگری در کار نیست. اینکه نمرهٔ کارتِ غیر-اصلی از
+    //       کارتِ اصلی بالاتر درآمد، شاهدِ تقویت‌کننده است نه گلچین.
+    //    ⓶ گرادیانِ مقیاس (سندِ §۶): lift از H12 +19.9 → H8 +17.9 → H6 +15.2 →
+    //       H4 +7.9 → … → M1 −11.0 ⇒ پدیدهٔ یکنواختِ مقیاس-وابسته، نه برازش.
+    //    ⓷ ممیزیِ شاهدِ کاذب در برابرِ S800 (تنها ساکنِ فعلیِ این کارت):
+    //       ۳۴ هم‌کندل از ۷۸/۴۳۶ ⇒ jaccard **۰.۰۷۱** ⇒ **مستقل** ⇒ افزودن مجاز.
+    //       ⚠️ اما همپوشانیِ **پنجرهٔ نگهداری** ۹۲.۳٪ است. این تناقض نیست: S800
+    //          با ۴۳۶ معامله تقریباً همیشه در بازار است، پس تقریباً هر معاملهٔ
+    //          هر لایهٔ دیگری داخلِ پنجرهٔ آن می‌افتد. یعنی قیدِ **سایز** دارد،
+    //          نه قیدِ **ورود** — و همین در manageNote به اپراتور گفته می‌شود.
+    //    ⓸ صدرِ آرایه: نمرهٔ این لایه از S800-H12 بالاتر است، پس در تلاقی
+    //       تصمیمِ اصلیِ کارت از S955 می‌آید و S800 در otherLayers می‌نشیند.
+    //    ⚠️ کندل‌های این کارت از تجمیعِ H1×12 ساخته می‌شوند — همان مسیرِ S800.
+    //    سند: results/S955_JumpAftermathCalmRegime_Xauusd_H8H12H6_rqs2_88_ACCEPT.md
+    s955Layer(S955_CFG["XAUUSD-H12"]),
+    // ⭐⭐ S800 — «فشردگی → گشایش» (Squeeze-Expansion Breakout) · **کارتِ نو**
+    //    RQS2 = **83.6** · هر ۱۱ دروازهٔ H0..H10 پاس · حکمِ **مستقلِ تک-کارتی**
+    //    n=183 · WR 54.60٪ (LONG 99 معامله +15.9pp / SHORT 84 معامله +9.5pp)
+    //    PF=1.550 · maxDD=5.64٪ · MCL=7 · lift=+12.93pp · z_obs=3.546 · p_perm=1.95e−04
+    //    پیکربندیِ قفل‌شده (results/_scan_S800/H12_locked.json — پیش از دیدنِ حکم):
+    //      p=21 (کانالِ دانچیان) · q=30.0٪ (چندکِ فشردگی) · filter=none
+    //      k=2.058 (SL=k×ATR(21)) · rr=1.618 · hold=34 کندلِ H12
+    //    قانون: نوسان در چندکِ پایینِ ۳۰٪ (رتبهٔ چندکیِ ATR در ۱۰۱ کندلِ اخیر، با
+    //      تأخیرِ ۱ کندل) **و** بسته‌شدن بیرونِ کانالِ دانچیانِ ۲۱ ⇒ ادامهٔ گشایش.
+    //    ⓵ مسیرِ چندگانگی C: جست‌وجوی خانوادهٔ ۹۷۲تایی فقط روی **نیمهٔ اول**
+    //       (split_bar=3999 از 7998)، سپس یک داوریِ نهاییِ تک‌شات با n_trials=1.
+    //    ⓶ ساختارِ MTF صادقانه: H1/H3/H6 آزمونِ نهایی شدند و **REJECT** خوردند
+    //       (4.9 / 20.5 / 19.7)؛ M1..M30 و H2 توانِ کافی نداشتند و هرگز داوری
+    //       نشدند ⇒ فقط D1 و H12 حقِ اتصال دارند (تعمیمِ بدونِ شاهد ممنوع).
+    //    ⓷ همپوشانی با S382-H4: تقویمِ روزانه ۹۰.۶٪ همپوشان است، ولی **هر دو**
+    //       زیرمجموعهٔ همپوشان و مستقل سوددهند ⇒ فیلترِ حذفی لازم نیست.
+    //       ⚠️ روی حسابِ واقعی صفِ FIFO لازم است (قیدِ allow_overlap=false).
+    //    ⚠️ کندل‌های این کارت از تجمیعِ H1×12 ساخته می‌شوند (Yahoo H12 ندارد) —
+    //       مرزهای UTC 00/12 با کندل‌های MT5 هم‌ترازند (t % 43200 == 0).
+    //    سند: results/S800_SqueezeExpansion_Xauusd_M1toMN1_rqs2_91_ACCEPT.md
+    s800Layer(S800_CFG["XAUUSD-H12"])
+  ],
+  "XAUUSD-D1": [
+    // ⭐⭐ S800 — «فشردگی → گشایش» (Squeeze-Expansion Breakout) · **کارتِ نو**
+    //    RQS2 = **91.1** ⇒ از بالاترین نمرات سایت · هر ۱۱ دروازهٔ H0..H10 پاس
+    //    n=81 (~۵.۲ معامله در سال) · WR 70.37٪ (LONG 49 معامله +24.21pp /
+    //      SHORT 32 معامله +16.37pp ⇒ **هر دو سو** لبه دارند، نه فقط یک جهت)
+    //    PF=1.937 · maxDD=2.77٪ · MCL=3 (مجاز ۸) · lift=+21.12pp
+    //    z_obs=3.801 در برابرِ z_luck_bound=0.520 · p_perm=7.2e−05 · cal_positive=4/4
+    //    پیکربندیِ قفل‌شده (results/_scan_S800/D1_locked.json — پیش از دیدنِ حکم):
+    //      p=55 (کانالِ دانچیان) · q=20.0٪ (چندکِ فشردگی) · filter=none
+    //      k=1.272 (SL=k×ATR(21)) · rr=1.0 (متقارن ⇒ صفر تورشِ WR-سازی) · hold=21
+    //    ⓵ کم‌بسامد و کم‌ریسک: ۸۱ معامله در ۱۵.۶ سال با maxDD زیرِ ۳٪ —
+    //       بالاترین کیفیتِ ریسکِ کلِ لایه‌های تایم‌فریمِ بالای سایت.
+    //    ⓶ هر ۴ چهارکِ تقویمی مثبت (cal_positive=4/4) ⇒ لبه به یک دورهٔ خاص
+    //       (مثلاً رژیمِ روندیِ ۲۰۲۳-۲۰۲۶) گره نخورده است.
+    //    ⓷ همپوشانی با S382-H4: ۸۱.۴٪ تقویمی، ولی هر دو زیرمجموعه سودده
+    //       ⇒ لایه حذف نمی‌شود؛ فقط صفِ FIFO روی حسابِ واقعی لازم است.
+    //    ⚠️ کندل‌های این کارت از تجمیعِ H1×24 ساخته می‌شوند و **نه** از کندلِ
+    //       ۱-روزهٔ Yahoo: کندلِ روزانهٔ GC=F در ۰۴:۰۰ UTC باز می‌شود، در حالی
+    //       که D1ِ بک‌تستِ MT5 نیمه‌شبِ UTC است (t % 86400 == 0). تجمیعِ H1
+    //       دقیقاً همان مرزها را بازتولید می‌کند.
+    //    سند: results/S800_SqueezeExpansion_Xauusd_M1toMN1_rqs2_91_ACCEPT.md
+    s800Layer(S800_CFG["XAUUSD-D1"]),
+    // ⭐⭐ S770 ⭐نو — «انبساطِ دامنه نسبت به ADR با تداوم» · **دوسویه** (LONG + SHORT)
+    //    ⇒ **عضوِ دومِ همان استخرِ {D1,H8}**؛ نسخهٔ H8 در کارتِ بالاتر وصل شد.
+    //    RQS2 = **82.4** (حکمِ استخری) · هر ۱۱ دروازهٔ H0..H10 پاس · n=689
+    //    WR=44.70٪ · PF=1.398 · maxDD=5.83٪ · net=+$29,077 · lift=+7.23pp
+    //    z=3.91 در برابرِ سدِ 2.897 (n_trials=301 صادقانه) · p_perm=4.5e−05
+    //    holdout: PF=1.502 ⇒ **بهتر** از نیمهٔ کشف (نشانهٔ نبودِ بیش‌برازش)
+    //    سهمِ این کارت در استخر: n=۲۶۶ از ۶۸۹ (۳۹٪).
+    //    قاعده: frac = (close − openِ **روزِ تقویمیِ UTC**) ÷ ADR(21) و **عبورِ**
+    //      آن از ±0.65 ⇒ تداومِ هم‌جهت. روی D1 هر کندل خودش یک روز است ⇒ ADR
+    //      همان میانگینِ دامنهٔ ۲۱ کندلِ اخیر با یک کندل تأخیر (علّی).
+    //    هندسه: SL=1.272×ATR(100) و TP=2.058×SL (RR=2.058 ⇒ TP>SL برقرار)
+    //      — **برداری** از کندلِ سیگنال (میانهٔ اندازه‌گیری‌شدهٔ این کارت ≈۲۸۶ pip SL)
+    //      · maxHold=۱۶ کندلِ D1 · allow_overlap=false.
+    //
+    //    ⚠️ **افشای صریح — حکم استخری است، نه تک‌کارتی.** کارتِ D1 به‌تنهایی
+    //       `REJECT` (RQS2=21.0) داشت با lift=+5.70pp — بالاترین liftِ استخر ولی
+    //       با n=۲۲۵ کم‌توان. علتِ REJECT **کمبودِ n بود نه نبودِ لبه**؛ استخر
+    //       دقیقاً برای همین ساخته شد. پس این کارت «مستقلاً اثبات‌شده» نیست و
+    //       اعتبارش با عضوِ H8 گره خورده است ⇒ حذفِ هر یک، جمعیتِ حکم را نابود
+    //       می‌کند (قانونِ MTF: همهٔ تایم‌فریم‌های پاس‌شده باید وصل شوند).
+    //    ساختارِ liftِ یکنوا با مقیاس: زیرساعتی منفی → H4 +2.67 → H8 +4.23 →
+    //       D1 +5.70 ⇒ پدیدهٔ فیزیکیِ مقیاس-وابسته (هرچه ADR معنادارتر، لبه بیشتر)،
+    //       نه گلچینِ تایم‌فریم. **D1 نقطهٔ اوجِ این ساختار است.**
+    //
+    //    مکمل بودن با S800 در همین کارت — دو ماشهٔ متقابلِ آینه‌ای:
+    //      · S800 از **فشردگیِ** نوسان (چندکِ پایینِ ATR) + شکستِ دانچیان می‌آید
+    //        ⇒ ورود در *آغازِ* بیدارشدنِ بازار از خواب.
+    //      · S770 از **انبساطِ** دامنه نسبت به ADR می‌آید ⇒ ورود در *میانهٔ* یک
+    //        حرکتِ بزرگِ همان‌روز که قبلاً بیدار شده است.
+    //      ⇒ دو فازِ متفاوت از چرخهٔ نوسان (کم‌نوسان→شکست در برابر پرنوسان→تداوم)
+    //        و دو مقیاسِ ATR متفاوت (۲۱ در برابرِ ۱۰۰) ⇒ منابعِ اطلاعاتیِ مستقل.
+    //
+    //    ⚠️⚠️ **قیدِ صفِ FIFOِ استخری — الزامی.** حکم با همزمانیِ حداکثر ۱ معامله
+    //       میانِ **کلِ استخر** اندازه‌گیری شد (max_concurrency=1.0 در متریک‌ها).
+    //       پس اگر این کارت و کارتِ H8 هم‌زمان S770 دادند ⇒ فقط **اولی به ترتیبِ
+    //       زمانِ تقویمی** معامله شود، نه هر دو. همچنین با S800-D1 و S382-H4
+    //       (۸۱.۴٪ همپوشانیِ تقویمیِ ثبت‌شده) سایزِ مشترک لازم است.
+    //    همپوشانی **اندازه‌گیری شد** نه چشمی: بخشِ هم‌زمان با لایه‌های زنده
+    //       WR=۴۸.۶٪ در برابرِ بخشِ مستقل ۳۶.۰٪ — بخشِ مستقل هم بالای سربه‌سرِ
+    //       هزینه‌دارِ ۳۳.۲٪ می‌ماند و سودده است ⇒ **فیلترِ حذف لازم نیست**، فقط صف‌بندی.
+    //    ⚠️ کندل‌های این کارت از تجمیعِ H1×24 می‌آیند (مرزِ t % 86400 == 0) — و این
+    //       برای S770 **بحرانی‌تر** از هر لایهٔ دیگرِ سایت است، چون متغیرِ حالتش
+    //       مستقیماً روی openِ روزِ UTC لنگر دارد؛ کندلِ ۱-روزهٔ ۰۴:۰۰ UTCِ Yahoo
+    //       فرضِ لایه را می‌شکند. زیرساختِ موجودِ کارت عیناً همین مرز را می‌سازد ✔
+    //    parity: mismatch=0 · ۱۸۰ LONG + ۱۴۱ SHORT بازتولید شد + ۴۰ کنترلِ منفی
+    //       (results/_scan_S770/parity_s770_PASS.txt)
+    //    سند: results/S770_AdrExpansionPool_Xauusd_D1H8_rqs2_82_ACCEPT.md
+    s770Layer(S770_CFG["XAUUSD-D1"]),
+    // ⭐⭐ S607 — «شوکِ انگل» · عضوِ **D1ِ خام** از استخرِ سه‌عضوی — سومین و
+    //    آخرین کارتِ این لایه (قانونِ MTF: هر سه تایم‌فریمِ ACCEPT وصل شدند).
+    //    حکمِ رسمی روی استخرِ اتحادِ {D1 خام, H8-DUAL, H6-DUAL}: RQS2 = **83.1**
+    //      (تنش ۸۲.۹) · هر ۱۱ دروازه سبز · n=۳۸۴ · WR=۶۳.۸۰٪ · lift=+۱۵.۹۸pp
+    //    سهمِ رسمیِ این کارت: n=۸۷ · WR=۶۴.۳۷٪ · lift=+۱۶.۶۹pp — **بالاترین
+    //      liftِ سه عضو** با کم‌ترین n (طبیعیِ D1: هر کندل یک روز).
+    //
+    //    🔵 **این عضو با دو عضوِ دیگر یک تفاوتِ ساختاری دارد: بی‌گیت است.**
+    //      روی H8/H6 دو گیتِ متعامد (روندِ ۶۰روزه ∧ رژیمِ آرامِ σ) اعمال می‌شود،
+    //      ولی D1 **خام** وارد استخر شد — یعنی هر شوکِ |z| ≥ 2.618 معامله است.
+    //      دلیل: D1 والدِ ACCEPTِ S840 بود و در استخرِ رسمیِ S607 با همان
+    //      پیکربندیِ ارثی و **بدونِ** گیت شرکت کرد (RAW_POOL = ['D1','H8']).
+    //      ⇒ این نامتقارنی **ارثی و عمدی** است، نه فراموشیِ سیم‌کشی. اگر کسی
+    //      «برای یکدستی» گیت را به D1 اضافه کند، جمعیتِ داوری‌شده عوض می‌شود و
+    //      حکمِ ۸۳.۱ دیگر معتبر نیست. پیکربندی: driftK=null · sigmaW=null.
+    //    قاعده: σِ IGARCH(0.94) ⇒ |z| ≥ 2.618 روی کندلِ بستهٔ D1 · follow ·
+    //      SL=**1.272**×ATR34 · TP=1.0×SL · max_hold=۲۱ کندلِ D1 · ورود=رویداد+۱.
+    //      (توجه: slK اینجا ۱.۲۷۲ است نه ۱.۶۱۸ِ H8/H6 — منجمد از _scan_S840/D1.)
+    //    ⚠️ warm=**۴۰۰** برای این کارت (نه ۲۵۰) — بازتولیدِ max(60, 4005//10) روی
+    //      سریِ کاملِ D1؛ فقط برای پریتی، نه مسیرِ زندهٔ تصمیم (کامنتِ ماژول).
+    //
+    //    هم‌زیستی با دو ساکنِ کارت — **متمایز در کمیتِ ماشه**:
+    //      · S800 از **فشردگیِ** نوسان + شکستِ دانچیان می‌آید (چندکِ پایینِ ATR).
+    //      · S770 از **انبساطِ دامنه نسبت به ADR** با تداومِ هم‌جهت می‌آید.
+    //      · S607 از **بازدهِ استانداردشدهٔ بسته-به-بسته** (r/σ با σِ بازگشتیِ
+    //        IGARCH) می‌آید ⇒ نه فشردگی، نه دامنهٔ درون‌روز، بلکه **بزرگیِ خودِ
+    //        بازده نسبت به نوسانِ اخیر**. سه کمیتِ متفاوت روی یک کندل.
+    //    ⚠️ **هشدارِ سایزِ مشترک — قیدِ FIFO:** بر خلافِ کارتِ H8 (که هم‌پوشانیِ
+    //      معنادارش با p=2.54e−10 اندازه‌گیری شد)، برای کارتِ D1 **هیچ اندازه‌گیریِ
+    //      هم‌پوشانی انجام نشده است** — و این صادقانه ثبت می‌شود، نه با فرضِ
+    //      «احتمالاً کم است» پر شود. تا وقتی اندازه‌گیری نشده، محافظه‌کارانه
+    //      فرض کنید ENTRYِ هم‌زمانِ S607/S800/S770 روی یک کندلِ D1 **یک** رویداد
+    //      است و **یک** پوزیشن باید گرفته شود (قاعدهٔ اتحادِ سطحِ بار §۴).
+    //      همچنین قیدِ max_concurrency=1.0 استخرِ S607: اگر D1 و H8 هم‌زمان
+    //      شلیک کردند، فقط اولی به ترتیبِ زمانِ تقویمی معامله شود.
+    //    پریتی: web_tool/tools/_parity_s607.mts — سبز روی این کارت (سری‌های
+    //      z/σ/ATR و هندسهٔ SL/TP، با warm=400 اعمال‌شده).
+    //    سند: results/S607_EngleShockDualGatePool_Xauusd_D1H8H6_rqs2_83.1_ACCEPT.md
+    s607Layer(S607_CFG["XAUUSD-D1"])
   ]
   // ⚰️⚰️ **چهار کارتِ حذف‌شده در S396** (هیچ اتصالِ ACCEPT نداشتند):
   //    'EURUSD-M5'  ← S334 (RQS+ 84.1) — بی‌ACCEPT زیرِ RQS2
@@ -5785,6 +9133,17 @@ var CARD_LAYERS = {
   //    گره‌ها می‌مانند، گراف عوض می‌شود).
 };
 var REGISTERED_CARDS = Object.keys(CARD_LAYERS);
+var CARD_LAYER_CODES = {
+  "XAUUSD-M5": ["S560"],
+  "XAUUSD-M15": ["S562", "S408", "S344", "S333", "S312"],
+  "XAUUSD-M30": ["S312", "S333"],
+  "XAUUSD-H1": ["S562", "S354", "S333", "S312"],
+  "XAUUSD-H4": ["S382", "S589"],
+  "XAUUSD-H6": ["S919", "S955", "S607"],
+  "XAUUSD-H8": ["S955", "S965", "S770", "S966", "S1911", "S607", "S1520", "S589"],
+  "XAUUSD-H12": ["S955", "S800"],
+  "XAUUSD-D1": ["S800", "S770", "S607"]
+};
 var STATE_RANK = { ENTRY: 3, APPROACHING: 2, NEUTRAL: 1 };
 function runCard(ctx) {
   const layers = CARD_LAYERS[ctx.cardId] || [];
@@ -5844,13 +9203,245 @@ function runCard(ctx) {
   return primary;
 }
 
+// ../web_tool/src/layer_catalog.ts
+var LAYER_CATALOG = {
+  // ---------------------------- XAUUSD-M5 ----------------------------
+  "XAUUSD-M5|S560": {
+    code: "S560",
+    name: "\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC (M5)",
+    verdict: "ACCEPT 96.6",
+    side: "LONG",
+    what: "\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u0650 \u0631\u0648\u0632 \u0628\u0627 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC \u0648 \u0622\u0631\u0627\u0645\u0634\u0650 \u0646\u0648\u0633\u0627\u0646 \u21D2 \u0628\u0627\u0632\u06AF\u0634\u062A \u0628\u0647 \u0628\u0627\u0644\u0627."
+  },
+  // ---------------------------- XAUUSD-M15 ---------------------------
+  "XAUUSD-M15|S562": {
+    code: "S562",
+    name: "\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC + \u0641\u06CC\u0644\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u0639\u0644\u0651\u06CC",
+    verdict: "ACCEPT 90.9",
+    side: "LONG",
+    what: "\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC\u060C \u0645\u0634\u0631\u0648\u0637 \u0628\u0647 \u0627\u06CC\u0646\u06A9\u0647 \u0646\u0648\u0633\u0627\u0646\u0650 \u0627\u062E\u06CC\u0631 \u0627\u0632 \u0622\u0633\u062A\u0627\u0646\u0647 \u0641\u0631\u0627\u062A\u0631 \u0646\u0631\u0641\u062A\u0647 \u0628\u0627\u0634\u062F."
+  },
+  "XAUUSD-M15|S408": {
+    code: "S408",
+    name: "\u06AF\u067E\u200C\u0641\u06CC\u0644\u0650 M15 \u0628\u0627 V \u062B\u0627\u0628\u062A",
+    verdict: "ACCEPT 93.8",
+    side: "LONG",
+    what: "\u067E\u064F\u0631 \u0634\u062F\u0646\u0650 \u06AF\u067E\u0650 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC \u0628\u0627 \u0647\u0646\u062F\u0633\u0647\u0654 \u062B\u0627\u0628\u062A (V) \u0628\u0647\u200C\u062C\u0627\u06CC \u0647\u062F\u0641\u0650 \u0634\u0646\u0627\u0648\u0631."
+  },
+  "XAUUSD-M15|S344": {
+    code: "S344",
+    name: "\u0628\u0631\u0648\u06A9\u0633: \u067E\u0648\u0644\u0628\u06A9\u0650 \u0627\u0648\u0644\u0650 \u0631\u0648\u0646\u062F",
+    verdict: "ACCEPT 82.5",
+    side: "SHORT",
+    what: "\u0631\u0648\u0646\u062F\u0650 \u0627\u0632 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC \u0648 \u0646\u062E\u0633\u062A\u06CC\u0646 \u067E\u0648\u0644\u0628\u06A9\u0650 \u06A9\u0648\u0686\u06A9 \u21D2 \u0627\u062F\u0627\u0645\u0647\u0654 \u0631\u0648\u0646\u062F (\u0641\u0635\u0644\u0650 \u06F2\u06F3 \u0628\u0631\u0648\u06A9\u0633)."
+  },
+  "XAUUSD-M15|S333": {
+    code: "S333",
+    name: "\u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F (\u0647\u0646\u062F\u0633\u0647\u0654 \u0645\u0646\u0635\u0641\u0627\u0646\u0647)",
+    verdict: "ACCEPT",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u067E\u0648\u0644\u0628\u06A9 \u062F\u0631 \u062C\u0647\u062A\u0650 \u0631\u0648\u0646\u062F \u0628\u0627 \u0647\u0646\u062F\u0633\u0647\u0654 TP \u2265 SL (\u0628\u062F\u0648\u0646\u0650 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC)."
+  },
+  "XAUUSD-M15|S312": {
+    code: "S312",
+    name: "\u062F\u0631\u0641\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647",
+    verdict: "ACCEPT 88",
+    side: "LONG",
+    what: "\u067E\u0646\u062C\u0631\u0647\u0654 \u0631\u0648\u0632\u0650 \u0645\u0627\u0647 \xD7 \u0633\u0627\u0639\u062A\u0650 \u0622\u0633\u06CC\u0627/\u0644\u0646\u062F\u0646 \u2014 \u0633\u0648\u06AF\u06CC\u0631\u06CC\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u0627\u062B\u0628\u0627\u062A\u200C\u0634\u062F\u0647."
+  },
+  // ---------------------------- XAUUSD-M30 ---------------------------
+  "XAUUSD-M30|S312": {
+    code: "S312",
+    name: "\u062F\u0631\u0641\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647 (M30)",
+    verdict: "ACCEPT 88",
+    side: "LONG",
+    what: "\u0647\u0645\u0627\u0646 \u0633\u0648\u06AF\u06CC\u0631\u06CC\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647\u060C \u0631\u0648\u06CC \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645\u0650 \u0646\u06CC\u0645\u200C\u0633\u0627\u0639\u062A\u0647."
+  },
+  "XAUUSD-M30|S333": {
+    code: "S431",
+    name: "\u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F + \u062F\u0631\u0648\u0627\u0632\u0647\u0654 \u0633\u0627\u062E\u062A\u0627\u0631\u0650 LPSB",
+    verdict: "ACCEPT 84",
+    side: "LONG",
+    what: "\u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F\u060C \u0641\u0642\u0637 \u0648\u0642\u062A\u06CC \u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0628\u0627\u0632\u0627\u0631 \u062D\u0627\u0644\u062A\u0650 LPSB \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0646\u062F."
+  },
+  // ---------------------------- XAUUSD-H1 ----------------------------
+  "XAUUSD-H1|S562": {
+    code: "S562",
+    name: "\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC + \u0641\u06CC\u0644\u062A\u0631\u0650 \u0646\u0648\u0633\u0627\u0646\u0650 \u0639\u0644\u0651\u06CC (H1)",
+    verdict: "ACCEPT 90.9",
+    side: "LONG",
+    what: "\u0647\u0645\u0627\u0646 \u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC\u0650 \u0641\u06CC\u0644\u062A\u0631\u0634\u062F\u0647\u060C \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647."
+  },
+  "XAUUSD-H1|S354": {
+    code: "S356",
+    name: "\u0628\u0631\u0648\u06A9\u0633: \u0627\u0632\u0633\u0631\u06AF\u06CC\u0631\u06CC\u0650 \u0631\u0648\u0646\u062F (\u0639\u0644\u0651\u06CC)",
+    verdict: "ACCEPT 80",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0631\u0648\u0632\u0650 \u0627\u0632\u0633\u0631\u06AF\u06CC\u0631\u06CC\u0650 \u0631\u0648\u0646\u062F \u2014 \u0646\u0633\u062E\u0647\u0654 \u0639\u0644\u0651\u06CC\u0650 S354 (\u0641\u0635\u0644\u0650 \u06F2\u06F5 \u0628\u0631\u0648\u06A9\u0633)."
+  },
+  "XAUUSD-H1|S333": {
+    code: "S333",
+    name: "\u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F (H1)",
+    verdict: "ACCEPT",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u067E\u0648\u0644\u0628\u06A9 \u062F\u0631 \u062C\u0647\u062A\u0650 \u0631\u0648\u0646\u062F \u0628\u0627 \u0647\u0646\u062F\u0633\u0647\u0654 \u0645\u0646\u0635\u0641\u0627\u0646\u0647."
+  },
+  "XAUUSD-H1|S312": {
+    code: "S312",
+    name: "\u062F\u0631\u0641\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647 (H1)",
+    verdict: "ACCEPT 88",
+    side: "LONG",
+    what: "\u0633\u0648\u06AF\u06CC\u0631\u06CC\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647 \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647."
+  },
+  // ---------------------------- XAUUSD-H4 ----------------------------
+  "XAUUSD-H4|S382": {
+    code: "S382",
+    name: "\u0645\u0648\u0645\u0646\u062A\u0648\u0645\u0650 \u0648\u06CC\u0644\u06CC\u0627\u0645\u0632 %R",
+    verdict: "ACCEPT 79",
+    side: "LONG",
+    what: "\u06AF\u0630\u0631\u0650 Williams %R \u0628\u0647 \u0628\u0627\u0644\u0627\u06CC \u2212\u06F1\u06F3 \u2014 \u062A\u0646\u0647\u0627 \u0644\u0627\u06CC\u0647\u0654 \u06F1\u06F1/\u06F1\u06F1 \u062F\u0631\u0648\u0627\u0632\u0647 \u0628\u0627 \u0635\u0641\u0631 \u0641\u06CC\u0644\u062A\u0631."
+  },
+  "XAUUSD-H4|S589": {
+    code: "S589",
+    name: "\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647 \xD7 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645",
+    verdict: "ACCEPT 88",
+    side: "LONG",
+    what: "\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u06F9\u06F0-\u06A9\u0646\u062F\u0644\u06CC \u06A9\u0647 \u062D\u062C\u0645\u0650 \u0646\u0633\u0628\u06CC \u0622\u0646 \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0646\u062F."
+  },
+  // ---------------------------- XAUUSD-H6 ----------------------------
+  "XAUUSD-H6|S919": {
+    code: "S919",
+    name: "\u0634\u0648\u06A9\u0650 \u0645\u0637\u0644\u0639 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627 \u0628\u0627 \u0642\u0631\u0627\u0631\u062F\u0627\u062F",
+    verdict: "ACCEPT 88.9",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0634\u0648\u06A9\u0650 \u0642\u06CC\u0645\u062A\u06CC\u0650 \u0645\u0637\u0644\u0639\u060C \u0647\u0645\u200C\u062C\u0647\u062A \u0628\u0627 \u0642\u0631\u0627\u0631\u062F\u0627\u062F\u0650 \u0628\u0644\u0646\u062F\u0645\u062F\u062A\u0650 \u0628\u0627\u0632\u0627\u0631 (\u06F2\u06F4\u06F0 \u06A9\u0646\u062F\u0644)."
+  },
+  "XAUUSD-H6|S955": {
+    code: "S955",
+    name: "\u062C\u0647\u0634 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0622\u0631\u0627\u0645",
+    verdict: "ACCEPT 84.9",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u062C\u0647\u0634\u0650 \u0645\u0631\u062A\u0648\u0646 \u0647\u0645\u200C\u062C\u0647\u062A \u0628\u0627 \u0631\u0627\u0646\u0634\u060C \u0641\u0642\u0637 \u0648\u0642\u062A\u06CC \u0646\u0648\u0633\u0627\u0646 \u0622\u0631\u0627\u0645 \u0628\u0627\u0634\u062F."
+  },
+  "XAUUSD-H6|S607": {
+    code: "S607",
+    name: "\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0628\u0627 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u062A\u0639\u0627\u0645\u062F",
+    verdict: "ACCEPT 83.1",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0634\u0648\u06A9\u0650 \u0646\u0648\u0633\u0627\u0646\u06CC\u0650 \u0627\u0646\u06AF\u0644\u060C \u0645\u0634\u0631\u0648\u0637 \u0628\u0647 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u0631\u0648\u0646\u062F \u0648 \u0646\u0648\u0633\u0627\u0646."
+  },
+  // ---------------------------- XAUUSD-H8 ----------------------------
+  "XAUUSD-H8|S955": {
+    code: "S955",
+    name: "\u062C\u0647\u0634 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0622\u0631\u0627\u0645",
+    verdict: "ACCEPT 87.7",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u062C\u0647\u0634\u0650 \u0645\u0631\u062A\u0648\u0646 \u0647\u0645\u200C\u062C\u0647\u062A \u0628\u0627 \u0631\u0627\u0646\u0634 + \u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634\u0650 \u0646\u0648\u0633\u0627\u0646. \u062C\u0627\u0646\u0634\u06CC\u0646\u0650 S950 \u0634\u062F."
+  },
+  "XAUUSD-H8|S965": {
+    code: "S965",
+    name: "\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC\u0650 \u0627\u062B\u0631\u0650 \u0642\u06CC\u0645\u062A\u06CC\u0650 \u06A9\u0627\u06CC\u0644",
+    verdict: "ACCEPT 82.2",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u06A9\u0646\u062F\u0644\u0650 \u0634\u0648\u06A9 \u0628\u0627 \u0628\u062F\u0646\u0647\u0654 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631 (\u03C1 \u2265 \u06F0.\u06F6\u06F1\u06F8) \u21D2 \u0627\u062F\u0627\u0645\u0647\u0654 \u0647\u0645\u200C\u062C\u0647\u062A\u0650 \u0628\u062F\u0646\u0647."
+  },
+  "XAUUSD-H8|S770": {
+    code: "S770",
+    name: "\u0627\u0646\u0628\u0633\u0627\u0637\u0650 \u062F\u0627\u0645\u0646\u0647 \u0646\u0633\u0628\u062A \u0628\u0647 ADR",
+    verdict: "ACCEPT 85",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u062F\u0627\u0645\u0646\u0647\u0654 \u06A9\u0646\u062F\u0644 \u0646\u0633\u0628\u062A \u0628\u0647 \u062F\u0627\u0645\u0646\u0647\u0654 \u0645\u062A\u0648\u0633\u0637\u0650 \u0631\u0648\u0632\u0627\u0646\u0647 \u0645\u0646\u0628\u0633\u0637 \u0634\u0648\u062F \u0648 \u062A\u062F\u0627\u0648\u0645 \u06CC\u0627\u0628\u062F."
+  },
+  "XAUUSD-H8|S966": {
+    code: "S966",
+    name: "\u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC\u0650 \u06A9\u0627\u06CC\u0644 \xD7 \u0647\u0645\u200C\u0631\u0627\u0633\u062A\u0627\u06CC\u06CC\u0650 \u062F\u0631\u0641\u062A",
+    verdict: "ACCEPT 86",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0647\u0645\u0627\u0646 \u0645\u0627\u0646\u062F\u06AF\u0627\u0631\u06CC\u0650 \u06A9\u0627\u06CC\u0644\u060C \u0645\u0634\u0631\u0648\u0637 \u0628\u0647 \u0647\u0645\u200C\u062C\u0647\u062A\u06CC\u0650 \u0631\u0627\u0646\u0634\u0650 \u0628\u0644\u0646\u062F\u0645\u062F\u062A."
+  },
+  "XAUUSD-H8|S1911": {
+    code: "S1911",
+    name: "\u0634\u0648\u06A9\u0650 \u0645\u0637\u0644\u0639 \u062F\u0631 \u0622\u0631\u0627\u0645\u0634",
+    verdict: "ACCEPT 93.9",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0634\u0648\u06A9\u0650 \u06A9\u0627\u06CC\u0644 + \u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634\u0650 \u0631\u0698\u06CC\u0645 \u2014 \u0628\u0627\u0644\u0627\u062A\u0631\u06CC\u0646 \u0646\u0645\u0631\u0647\u0654 \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A."
+  },
+  "XAUUSD-H8|S607": {
+    code: "S607",
+    name: "\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0628\u0627 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u062A\u0639\u0627\u0645\u062F",
+    verdict: "ACCEPT 83.1",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0634\u0648\u06A9\u0650 \u0646\u0648\u0633\u0627\u0646\u06CC\u0650 \u0627\u0646\u06AF\u0644 \u0628\u0627 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u0631\u0648\u0646\u062F \u0648 \u0646\u0648\u0633\u0627\u0646."
+  },
+  "XAUUSD-H8|S1520": {
+    code: "S1520",
+    name: "\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u0645\u0637\u0644\u0639",
+    verdict: "ACCEPT 90.6",
+    side: "LONG",
+    what: "\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u200C\u0627\u06CC \u06A9\u0647 \u0646\u0634\u0627\u0646\u0647\u0654 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u0645\u0637\u0644\u0639 \u062F\u0631 \u0622\u0646 \u062F\u06CC\u062F\u0647 \u0634\u0648\u062F."
+  },
+  "XAUUSD-H8|S589": {
+    code: "S589",
+    name: "\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647 \xD7 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645",
+    verdict: "ACCEPT 88",
+    side: "LONG",
+    what: "\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u06F9\u06F0-\u06A9\u0646\u062F\u0644\u06CC \u0628\u0627 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u062D\u062C\u0645\u0650 \u0646\u0633\u0628\u06CC."
+  },
+  // ---------------------------- XAUUSD-H12 ---------------------------
+  "XAUUSD-H12|S955": {
+    code: "S955",
+    name: "\u062C\u0647\u0634 \u062F\u0631 \u0631\u0698\u06CC\u0645\u0650 \u0622\u0631\u0627\u0645",
+    verdict: "ACCEPT 89.4",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u062C\u0647\u0634\u0650 \u0645\u0631\u062A\u0648\u0646 + \u06AF\u06CC\u062A\u0650 \u0622\u0631\u0627\u0645\u0634 \u2014 \u0628\u0627\u0644\u0627\u062A\u0631\u06CC\u0646 \u0646\u0645\u0631\u0647\u0654 \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A."
+  },
+  "XAUUSD-H12|S800": {
+    code: "S800",
+    name: "\u0641\u0634\u0631\u062F\u06AF\u06CC \u2192 \u06AF\u0634\u0627\u06CC\u0634",
+    verdict: "ACCEPT 83.6",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u062F\u0627\u0645\u0646\u0647 \u0648 \u0633\u067E\u0633 \u06AF\u0634\u0627\u06CC\u0634\u0650 \u0627\u0646\u0641\u062C\u0627\u0631\u06CC \u062F\u0631 \u062C\u0647\u062A\u0650 \u0634\u06A9\u0633\u062A."
+  },
+  // ---------------------------- XAUUSD-D1 ----------------------------
+  "XAUUSD-D1|S800": {
+    code: "S800",
+    name: "\u0641\u0634\u0631\u062F\u06AF\u06CC \u2192 \u06AF\u0634\u0627\u06CC\u0634 (D1)",
+    verdict: "ACCEPT 91.1",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0641\u0634\u0631\u062F\u06AF\u06CC\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 \u0631\u0648\u0632\u0627\u0646\u0647 \u0648 \u0633\u067E\u0633 \u06AF\u0634\u0627\u06CC\u0634 \u2014 \u0627\u0632 \u0628\u0627\u0644\u0627\u062A\u0631\u06CC\u0646 \u0646\u0645\u0631\u0627\u062A\u0650 \u0633\u0627\u06CC\u062A."
+  },
+  "XAUUSD-D1|S770": {
+    code: "S770",
+    name: "\u0627\u0646\u0628\u0633\u0627\u0637\u0650 \u062F\u0627\u0645\u0646\u0647 \u0646\u0633\u0628\u062A \u0628\u0647 ADR (D1)",
+    verdict: "ACCEPT 85",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0627\u0646\u0628\u0633\u0627\u0637\u0650 \u062F\u0627\u0645\u0646\u0647\u0654 \u0631\u0648\u0632\u0627\u0646\u0647 \u0646\u0633\u0628\u062A \u0628\u0647 ADR \u0628\u0627 \u062A\u062F\u0627\u0648\u0645\u0650 \u062C\u0647\u062A."
+  },
+  "XAUUSD-D1|S607": {
+    code: "S607",
+    name: "\u0634\u0648\u06A9\u0650 \u0627\u0646\u06AF\u0644 \u0628\u0627 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u062A\u0639\u0627\u0645\u062F (D1)",
+    verdict: "ACCEPT 83.1",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u0634\u0648\u06A9\u0650 \u0646\u0648\u0633\u0627\u0646\u06CC\u0650 \u0627\u0646\u06AF\u0644 \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0631\u0648\u0632\u0627\u0646\u0647 \u0628\u0627 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u0633\u062A\u0642\u0644."
+  }
+};
+function layersForCard(cardId, codes) {
+  return codes.map((c) => LAYER_CATALOG[`${cardId}|${c}`] || {
+    code: c,
+    name: c,
+    verdict: "\u2014",
+    side: "\u062F\u0648\u0637\u0631\u0641\u0647",
+    what: "\u062A\u0648\u0636\u06CC\u062D\u0650 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0647\u0646\u0648\u0632 \u062F\u0631 \u06A9\u0627\u062A\u0627\u0644\u0648\u06AF \u062B\u0628\u062A \u0646\u0634\u062F\u0647 \u0627\u0633\u062A."
+  });
+}
+
 // ../web_tool/src/runtime/runtime.ts
 function runCardTyped(ctx) {
   return runCard(ctx);
 }
 
 // ../web_tool/src/signal_log.ts
-var MAX_ENTRIES = 800;
+var MAX_ENTRIES2 = 800;
 var buf = [];
 function logSignal(card, dec, price, candleTime) {
   try {
@@ -5872,11 +9463,11 @@ function logSignal(card, dec, price, candleTime) {
       candleTime
     };
     buf.push(e);
-    if (buf.length > MAX_ENTRIES) buf.splice(0, buf.length - MAX_ENTRIES);
+    if (buf.length > MAX_ENTRIES2) buf.splice(0, buf.length - MAX_ENTRIES2);
   } catch {
   }
 }
-function getLog(limit = MAX_ENTRIES) {
+function getLog(limit = MAX_ENTRIES2) {
   return buf.slice(-limit);
 }
 function findConflicts(windowSec = 120) {
@@ -7903,6 +11494,19 @@ function fmt2(x) {
 var COUNCIL_VERDICT_VERSION = 1;
 
 // ../web_tool/src/council/council.ts
+var SUBSET_OF = {
+  S1911: "S965",
+  S966: "S965"
+};
+function countIndependent(entryVotes) {
+  const present = new Set(entryVotes.map((v) => v.code));
+  const duplicates = [];
+  for (const v of entryVotes) {
+    const sup = SUBSET_OF[v.code];
+    if (sup && present.has(sup)) duplicates.push(`${v.code}\u2282${sup}`);
+  }
+  return { independent: entryVotes.length - duplicates.length, duplicates };
+}
 function collectVotes(cardId, dec) {
   const votes = [];
   if (dec.state === "ENTRY" || dec.state === "APPROACHING") {
@@ -7959,7 +11563,12 @@ function convene(cardId, dec) {
     } else {
       consensus = "UNANIMOUS";
       lotMultiplier = 1.5;
-      note = `\u0627\u062C\u0645\u0627\u0639\u0650 \u06A9\u0627\u0645\u0644: ${activeCount} \u0644\u0627\u06CC\u0647 \u0647\u0645\u200C\u062C\u0647\u062A (${direction}). \u0627\u0637\u0645\u06CC\u0646\u0627\u0646\u0650 \u0628\u0627\u0644\u0627\u061B \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u0650 \u0644\u0627\u062A\u0650 \xD7\u06F1.\u06F5. \xAB\u0644\u0627\u06CC\u0647\u0654 \u062F\u0648\u0645 \u0647\u0645 \u0647\u0645\u06CC\u0646 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F.\xBB`;
+      const { independent, duplicates } = countIndependent(entryVotes);
+      if (duplicates.length > 0) {
+        note = `\u0627\u062C\u0645\u0627\u0639\u0650 ${activeCount} \u0644\u0627\u06CC\u0647 \u0647\u0645\u200C\u062C\u0647\u062A (${direction})\u060C \u0648\u0644\u06CC \u26A0\uFE0F \u0641\u0642\u0637 **${independent} \u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644**: ${duplicates.join(" \xB7 ")} (\u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u21D2 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u0648\u0627\u062D\u062F \u0628\u0627 \u062F\u0648 \u0627\u0633\u0645\u060C \u0646\u0647 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u062F\u0648\u0645). ` + (independent <= 1 ? `\u06CC\u0639\u0646\u06CC \u0639\u0645\u0644\u0627\u064B **\u06CC\u06A9** \u0634\u0627\u0647\u062F \u062F\u0627\u0631\u06CC\u062F \u21D2 \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u0650 \u0644\u0627\u062A\u0650 \xD7\u06F1.\u06F5 \u0631\u0627 \u0646\u0627\u062F\u06CC\u062F\u0647 \u0628\u06AF\u06CC\u0631\u06CC\u062F \u0648 \u0633\u0627\u06CC\u0632\u0650 \u062A\u06A9\u200C\u0644\u0627\u06CC\u0647 \u0628\u06AF\u06CC\u0631\u06CC\u062F.` : `\u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u0650 \u0644\u0627\u062A\u0650 \xD7\u06F1.\u06F5 \u0631\u0627 \u0628\u0631 \u067E\u0627\u06CC\u0647\u0654 ${independent} \u0634\u0627\u0647\u062F \u0628\u0633\u0646\u062C\u06CC\u062F\u060C \u0646\u0647 ${activeCount}. `) + `\u26A0\uFE0F \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9: \u0644\u0627\u06CC\u0647\u200C\u0647\u0627\u06CC \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u200C\u0627\u06CC \u06CC\u06A9 \u067E\u0648\u0632\u06CC\u0634\u0646\u200C\u0627\u0646\u062F\u060C \u0646\u0647 \u0686\u0646\u062F \u0631\u06CC\u0633\u06A9\u0650 \u062C\u062F\u0627.`;
+      } else {
+        note = `\u0627\u062C\u0645\u0627\u0639\u0650 \u06A9\u0627\u0645\u0644: ${activeCount} \u0644\u0627\u06CC\u0647 \u0647\u0645\u200C\u062C\u0647\u062A (${direction}). \u0627\u0637\u0645\u06CC\u0646\u0627\u0646\u0650 \u0628\u0627\u0644\u0627\u061B \u067E\u06CC\u0634\u0646\u0647\u0627\u062F\u0650 \u0644\u0627\u062A\u0650 \xD7\u06F1.\u06F5. \xAB\u0644\u0627\u06CC\u0647\u0654 \u062F\u0648\u0645 \u0647\u0645 \u0647\u0645\u06CC\u0646 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0631\u062F.\xBB`;
+      }
     }
   }
   return {
@@ -8467,8 +12076,8 @@ app.post("/api/trade/advice", async (c) => {
     if (meta_asset.isGold) {
       const mtf = GOLD_TF[meta_asset.id] || GOLD_TF["XAUUSD"];
       const { candles } = await fetchGold(mtf.interval, mtf.range);
-      const aggF = meta_asset.id === "XAUUSD-H4" ? 4 : meta_asset.id === "XAUUSD-H8" ? 8 : 1;
-      const minBars = aggF === 4 ? 240 : aggF === 8 ? 880 : 220;
+      const aggF = meta_asset.id === "XAUUSD-H4" ? 4 : meta_asset.id === "XAUUSD-H6" ? 6 : meta_asset.id === "XAUUSD-H8" ? 8 : meta_asset.id === "XAUUSD-H12" ? 12 : meta_asset.id === "XAUUSD-D1" ? 24 : 1;
+      const minBars = aggF === 4 ? 240 : aggF === 6 ? 1560 : aggF === 8 ? 1520 : aggF === 12 ? 1300 : aggF === 24 ? 2500 : 220;
       if (candles.length < minBars) return c.json({ ok: false, error: "\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A" }, 400);
       let spot = null;
       try {
@@ -8672,10 +12281,24 @@ var ASSETS = [
   { id: "XAUUSD-M30", card: "XAUUSD-M30", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 M30 (\u0633\u06CC\u200C\u062F\u0642\u06CC\u0642\u0647\u200C\u0627\u06CC)", symbol: "GC=F", isGold: true, decimals: 2, layer: "swing-m30" },
   { id: "XAUUSD-H1", card: "XAUUSD-H1", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H1 (\u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
   { id: "XAUUSD-H4", card: "XAUUSD-H4", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H4 (\u0686\u0647\u0627\u0631\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
+  // ⭐⭐ کارتِ نوِ S919 — «شوکِ مطلعِ هم‌راستا با قراردادِ بازار» (کینز)
+  //    تنها تایم‌فریمِ ACCEPT این لایه **H6** است (RQS2=88.9 · n=106 · WR=55.66٪).
+  //    کارتِ H3 با RQS2=16.0 رد شد ⇒ فقط همین یک کارت اضافه می‌شود (تعمیم ممنوع).
+  //    کندلِ H6 از تجمیعِ H1×6 ساخته می‌شود (Yahoo تایم‌فریمِ ۶ساعته ندارد) —
+  //    مرزهای UTC 0/6/12/18 که با کندل‌های MT5ِ بک‌تست دقیقاً هم‌تراز است
+  //    (تأییدِ عددی: هر ۱۵۹۶۶ کندلِ XAUUSD_H6.csv مضربِ ۲۱۶۰۰ ثانیه‌اند).
+  { id: "XAUUSD-H6", card: "XAUUSD-H6", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H6 (\u0634\u0634\u200C\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
   // ⭐ کارتِ نوِ S950 — تنها تایم‌فریمِ ACCEPTِ لایهٔ «پس‌لرزهٔ جهش، هم‌راستا با رانش»
   //    (RQS2=80 · پایدار روی ۴ seed). کندلِ H8 از تجمیعِ H1×8 ساخته می‌شود
   //    (عینِ الگوی H4؛ Yahoo تایم‌فریمِ ۸ساعته ندارد). مرزهای UTC 0/8/16.
-  { id: "XAUUSD-H8", card: "XAUUSD-H8", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H8 (\u0647\u0634\u062A\u200C\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" }
+  { id: "XAUUSD-H8", card: "XAUUSD-H8", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H8 (\u0647\u0634\u062A\u200C\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
+  // ⭐⭐ دو کارتِ نوی S800 — «فشردگی → گشایش». این لایه **دو حکمِ مستقلِ
+  //    تک-کارتی** دارد (نه یک حکمِ استخری)، پس طبقِ قانونِ MTF هر دو
+  //    تایم‌فریم باید روی سایت باشند: D1 (RQS2 91.1) و H12 (RQS2 83.6).
+  //    هر دو از تجمیعِ H1 ساخته می‌شوند (×12 و ×24) — مرزهای UTC 00/12
+  //    و نیمه‌شبِ UTC، عیناً هم‌تراز با کندل‌های MT5ِ بک‌تست.
+  { id: "XAUUSD-H12", card: "XAUUSD-H12", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 H12 (\u062F\u0648\u0627\u0632\u062F\u0647\u200C\u0633\u0627\u0639\u062A\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" },
+  { id: "XAUUSD-D1", card: "XAUUSD-D1", name: "\u0637\u0644\u0627 / \u062F\u0644\u0627\u0631 \u2014 D1 (\u0631\u0648\u0632\u0627\u0646\u0647)", symbol: "GC=F", isGold: true, decimals: 2, layer: "htf" }
   // ⚰️ حذف‌شده در S396 — بی‌ACCEPT زیرِ RQS2 v2.4:
   //   { id: 'EURUSD-M15', card: 'EURUSD-M15', … }   ← S326
   //   { id: 'EURUSD-M30', card: 'EURUSD-M30', … }   ← S345 (RQS+ 91.7، ولی بی‌ACCEPT)
@@ -8688,10 +12311,28 @@ var GOLD_TF = {
   "XAUUSD-H1": { interval: "1h", range: "3mo", gap: 3600 },
   "XAUUSD-H4": { interval: "1h", range: "1y", gap: 3600 },
   // H4 از تجمیعِ H1 ساخته می‌شود
+  // H6 (S919): گیتِ قراردادِ کینزی به close[t−1−240] با t=n−2 نگاه می‌کند ⇒ کفِ
+  // **۲۴۳ کندلِ H6** — عمیق‌ترین کفِ دادهٔ کلِ سایت. با range='1y' فقط ≈۱۰۳۳
+  // کندل (حاشیهٔ ۴.۳×) به دست می‌آمد؛ با **۲ سال** ≈۲۴۱۶ کندل ⇒ حاشیهٔ ۹.۹×
+  // نیازِ لایه و ۱۲.۱× نیازِ EMA200ِ analyze. همان منطقِ محافظه‌کارانه‌ای که
+  // S800 برای H12/D1 برگزید: کفِ عمیق ⇒ بازهٔ بلندتر، تا تعطیلی‌ها و حفرهٔ
+  // دادهٔ منبع لایه را به حالتِ «دادهٔ ناکافی» نیندازند.
+  "XAUUSD-H6": { interval: "1h", range: "2y", gap: 3600 },
+  // H6 از تجمیعِ H1×6
   // H8 (S950): ۱ سالِ H1 ≈ ۶۲۰۰ کندل ⇒ ≈۷۸۰ کندلِ H8 — برای گرم‌شدنِ ۹۱کندلیِ
   // σ_BV(89)/ATR(89) و EMA200ِ analyze هر دو کافی است (حاشیه ≈۸× نیازِ لایه).
-  "XAUUSD-H8": { interval: "1h", range: "1y", gap: 3600 }
+  "XAUUSD-H8": { interval: "1h", range: "1y", gap: 3600 },
   // H8 از تجمیعِ H1×8 ساخته می‌شود
+  // S800 (H12 و D1): لایه ۱۰۲ کندلِ گرم‌شدن می‌خواهد (پنجرهٔ ۱۰۱کندلیِ رتبهٔ
+  // چندکیِ ATR + کانالِ دانچیانِ ۵۵) و analyze هم EMA200 می‌خواهد. با بازهٔ
+  // **۲ سالهٔ H1** (≈۱۴۵۰۰ کندل): H12 ≈۱۳۳۰ کندل و D1 ≈۷۲۰ کندل ⇒ برای D1
+  // حاشیهٔ ≈۷× نیازِ لایه و ≈۳.۶× نیازِ EMA200. با range='1y' کارتِ D1 فقط
+  // ≈۳۶۱ کندل داشت — هنوز کافی، ولی حاشیهٔ امنیتیِ کمتری برای تعطیلی‌ها
+  // و حفرهٔ دادهٔ منبع.
+  "XAUUSD-H12": { interval: "1h", range: "2y", gap: 3600 },
+  // H12 از تجمیعِ H1×12
+  "XAUUSD-D1": { interval: "1h", range: "2y", gap: 3600 }
+  // D1 از تجمیعِ H1×24
 };
 function tfLabelForGold(id) {
   switch (id) {
@@ -8705,8 +12346,15 @@ function tfLabelForGold(id) {
       return "H1";
     case "XAUUSD-H4":
       return "H4";
+    case "XAUUSD-H6":
+      return "H6";
+    // S919
     case "XAUUSD-H8":
       return "H8";
+    case "XAUUSD-H12":
+      return "H12";
+    case "XAUUSD-D1":
+      return "D1";
     default:
       return "M15";
   }
@@ -8740,9 +12388,9 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
   if (a.isGold) {
     const tfc = GOLD_TF[a.id] || GOLD_TF["XAUUSD"];
     const { candles: rawCandles } = await fetchGold(tfc.interval, tfc.range);
-    const aggFactor = a.id === "XAUUSD-H4" ? 4 : a.id === "XAUUSD-H8" ? 8 : 1;
+    const aggFactor = a.id === "XAUUSD-H4" ? 4 : a.id === "XAUUSD-H6" ? 6 : a.id === "XAUUSD-H8" ? 8 : a.id === "XAUUSD-H12" ? 12 : a.id === "XAUUSD-D1" ? 24 : 1;
     const candles2 = aggFactor > 1 ? aggregateCandles(rawCandles, aggFactor) : rawCandles;
-    const minBars2 = a.id === "XAUUSD-H4" ? 60 : a.id === "XAUUSD-H8" ? 110 : 220;
+    const minBars2 = a.id === "XAUUSD-H4" ? 60 : a.id === "XAUUSD-H6" ? 260 : a.id === "XAUUSD-H8" || a.id === "XAUUSD-H12" || a.id === "XAUUSD-D1" ? 110 : 220;
     if (candles2.length < minBars2) throw new Error("\u062F\u0627\u062F\u0647 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u062D\u0644\u06CC\u0644 \u0646\u06CC\u0633\u062A");
     let spot = null;
     try {
@@ -8752,7 +12400,7 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     const merged2 = rebaseFuturesToSpot(candles2, spot, tfc.gap);
     const useCandles2 = merged2.candles;
     const result2 = analyze(useCandles2);
-    const sigGap = a.id === "XAUUSD-H8" ? tfc.gap * 8 : tfc.gap;
+    const sigGap = a.id === "XAUUSD-H6" ? tfc.gap * 6 : a.id === "XAUUSD-H8" ? tfc.gap * 8 : a.id === "XAUUSD-H12" ? tfc.gap * 12 : a.id === "XAUUSD-D1" ? tfc.gap * 24 : tfc.gap;
     const sig2 = closedBars(useCandles2, sigGap);
     const lastClosed2 = sig2[sig2.length - 1];
     const goldUtcHour = new Date(lastClosed2.time * 1e3).getUTCHours();
@@ -8863,14 +12511,38 @@ function readCapitalParams(c) {
 app.get("/api/assets", (c) => {
   return c.json({
     ok: true,
-    assets: ASSETS.map((a) => ({ id: a.id, name: a.name, decimals: a.decimals, layer: a.layer }))
+    // 🔎 `layers`: فهرستِ لایه‌های وصل‌شده به هر کارت (User Note: بخشِ info).
+    //
+    //   چرا این‌جا و نه در /api/decision: این نقطه در **فاز ۱** صدا زده می‌شود —
+    //   هیچ fetchی به Yahoo ندارد و در چند میلی‌ثانیه برمی‌گردد. پس کاربر
+    //   ترکیبِ لایه‌های کارت را **پیش از آنکه اصلاً داده‌ای برسد** می‌بیند؛
+    //   یعنی این بخش دقیقاً همان صفحهٔ انتظاری را پر می‌کند که کاربر از کندی‌اش
+    //   شکایت داشت، به‌جای آنکه چیزی به آن انتظار اضافه کند.
+    //
+    //   گذاشتنِ آن در /api/decision یعنی همین اطلاعاتِ کاملاً **ایستا**، ۹ بار
+    //   (یک‌بار به‌ازای هر کارت) و پشتِ کندترین حلقهٔ شبکه تکرار شود — خلافِ
+    //   همان کندی‌ای که در همین نشست در حال رفعش هستیم.
+    //
+    //   داده از CARD_LAYER_CODES (ترتیبِ واقعیِ اولویت) و LAYER_CATALOG
+    //   (توضیحِ نمایشی) می‌آید، و آزمونِ هم‌گامیِ tools/_probe_layer_catalog.mts
+    //   تضمین می‌کند این دو با سیم‌کشیِ واقعی واگرا نشوند. کارتی که در رجیستری
+    //   نیست آرایهٔ **خالی** می‌گیرد (نه undefined) تا سمتِ کلاینت لازم نباشد
+    //   نبودِ فیلد را جداگانه بررسی کند.
+    assets: ASSETS.map((a) => ({
+      id: a.id,
+      name: a.name,
+      decimals: a.decimals,
+      layer: a.layer,
+      layers: layersForCard(a.card || a.id, CARD_LAYER_CODES[a.card || a.id] || [])
+    }))
   });
 });
 app.get("/api/decision", async (c) => {
   const [capital, riskPct] = readCapitalParams(c);
   const results = await Promise.allSettled(ASSETS.map((a) => decideAsset(a, capital, riskPct)));
+  const rosterOf = (i) => layersForCard(ASSETS[i].card || ASSETS[i].id, CARD_LAYER_CODES[ASSETS[i].card || ASSETS[i].id] || []);
   const assets = results.map(
-    (r, i) => r.status === "fulfilled" ? { ok: true, ...r.value } : { ok: false, asset: ASSETS[i].id, name: ASSETS[i].name, symbol: ASSETS[i].symbol, error: r.reason?.message || "\u062E\u0637\u0627" }
+    (r, i) => r.status === "fulfilled" ? { ok: true, ...r.value, layers: rosterOf(i) } : { ok: false, asset: ASSETS[i].id, name: ASSETS[i].name, symbol: ASSETS[i].symbol, error: r.reason?.message || "\u062E\u0637\u0627", layers: rosterOf(i) }
   );
   return c.json({ ok: true, lastUpdate: (/* @__PURE__ */ new Date()).toISOString(), assets });
 });
@@ -8973,6 +12645,14 @@ app.get("/api/spots", async (c) => {
 });
 var _proxyCache = /* @__PURE__ */ new Map();
 var _PROXY_TTL = 6e4;
+var _PROXY_MAX = 60;
+function _trimProxyCache() {
+  while (_proxyCache.size > _PROXY_MAX) {
+    const oldest = _proxyCache.keys().next();
+    if (oldest.done) break;
+    _proxyCache.delete(oldest.value);
+  }
+}
 app.get("/api/proxy", async (c) => {
   const target = c.req.query("url") || "";
   const allow = ["query1.finance.yahoo.com", "query2.finance.yahoo.com", "finance.yahoo.com"];
@@ -8995,10 +12675,11 @@ app.get("/api/proxy", async (c) => {
   for (let attempt = 0; attempt < 3; attempt++) {
     const u = hosts[attempt % hosts.length];
     try {
-      const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } });
+      const r = await fetchWithTimeout(u, { headers: { "User-Agent": "Mozilla/5.0", "Accept": "application/json" } }, 6e3);
       const body2 = await r.text();
       if (r.status === 200) {
         _proxyCache.set(target, { at: now, status: 200, body: body2 });
+        _trimProxyCache();
         return new Response(body2, {
           status: 200,
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*", "X-Proxy-Cache": "miss" }
@@ -9016,7 +12697,18 @@ app.get("/api/proxy", async (c) => {
   }
   return c.json({ ok: false, error: "upstream unavailable" }, 502);
 });
-app.get("/api/health", (c) => c.json({ ok: true, service: "xauusd-live-tool", time: Date.now() }));
+app.get("/api/health", (c) => {
+  const cache = cacheHealth();
+  const degraded = cache.saturated || cache.congested || _proxyCache.size >= _PROXY_MAX;
+  return c.json({
+    ok: true,
+    service: "xauusd-live-tool",
+    time: Date.now(),
+    degraded,
+    cache,
+    proxyCache: { entries: _proxyCache.size, max: _PROXY_MAX }
+  });
+});
 app.get("/favicon.ico", (c) => {
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><circle cx="16" cy="16" r="14" fill="#f59e0b"/><text x="16" y="22" font-size="16" text-anchor="middle" fill="#0f172a" font-family="Arial" font-weight="bold">A</text></svg>`;
   return c.body(svg, 200, { "Content-Type": "image/svg+xml", "Cache-Control": "public, max-age=86400" });
@@ -9035,6 +12727,33 @@ var PAGE = `<!DOCTYPE html>
   <link href="/static/style.css" rel="stylesheet">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
+  <!-- ==================================================================== -->
+  <!-- \u{1F680} \u0646\u0648\u0627\u0631\u0650 \u067E\u06CC\u0634\u0631\u0641\u062A\u0650 \u0628\u0627\u0631\u06AF\u0630\u0627\u0631\u06CC (User Note: \xAB\u062E\u06CC\u0644\u06CC \u062F\u06CC\u0631 \u0644\u0648\u062F \u0645\u06CC\u200C\u0634\u0648\u062F! \u06A9\u0627\u0634 \u0646\u0648\u0627\u0631    -->
+  <!--    \u0644\u0648\u062F\u06CC\u0646\u06AF \u062F\u0627\u0634\u062A\xBB) \u2014 \u0639\u0645\u062F\u0627\u064B **inline \u0648 \u0628\u0627 CSS \u062E\u0627\u0644\u0635** \u0646\u0648\u0634\u062A\u0647 \u0634\u062F\u0647.          -->
+  <!--                                                                      -->
+  <!-- \u0686\u0631\u0627 \u0627\u06CC\u0646\u062C\u0627 \u0648 \u0646\u0647 \u062F\u0631 app.js: \u062A\u0627 \u067E\u06CC\u0634 \u0627\u0632 \u0627\u06CC\u0646\u060C <div id="app"> \u06A9\u0627\u0645\u0644\u0627\u064B \u062E\u0627\u0644\u06CC   -->
+  <!-- \u0628\u0648\u062F \u0648 \u0627\u0633\u06A9\u0644\u062A\u0650 \u06A9\u0627\u0631\u062A\u200C\u0647\u0627 \u0641\u0642\u0637 **\u067E\u0633 \u0627\u0632** \u0631\u0633\u06CC\u062F\u0646\u0650 app.js + \u067E\u0627\u0633\u062E\u0650 /api/assets   -->
+  <!-- \u0633\u0627\u062E\u062A\u0647 \u0645\u06CC\u200C\u0634\u062F. \u06CC\u0639\u0646\u06CC \u06A9\u0627\u0631\u0628\u0631 \u062F\u0631 \u06A9\u0646\u062F\u062A\u0631\u06CC\u0646 \u0644\u062D\u0638\u0647 (\u0647\u0645\u0627\u0646 \u0644\u062D\u0638\u0647\u200C\u0627\u06CC \u06A9\u0647 \u0634\u06A9\u0627\u06CC\u062A \u062F\u0627\u0631\u062F)  -->
+  <!-- \u06CC\u06A9 **\u0635\u0641\u062D\u0647\u0654 \u06A9\u0627\u0645\u0644\u0627\u064B \u0633\u0641\u06CC\u062F** \u0645\u06CC\u200C\u062F\u06CC\u062F. \u067E\u0633 \u0646\u0648\u0627\u0631 \u0628\u0627\u06CC\u062F \u0628\u062E\u0634\u06CC \u0627\u0632 \u062E\u0648\u062F\u0650 HTML\u0650      -->
+  <!-- \u0633\u0631\u0648\u0631 \u0628\u0627\u0634\u062F \u062A\u0627 \u062F\u0631 **\u0627\u0648\u0644\u06CC\u0646 \u0631\u0646\u06AF\u200C\u0622\u0645\u06CC\u0632\u06CC\u0650 \u0645\u0631\u0648\u0631\u06AF\u0631** \u0638\u0627\u0647\u0631 \u0634\u0648\u062F \u2014 \u067E\u06CC\u0634 \u0627\u0632 \u0627\u062C\u0631\u0627\u06CC  -->
+  <!-- \u0647\u0631 \u062C\u0627\u0648\u0627\u0627\u0633\u06A9\u0631\u06CC\u067E\u062A\u06CC.                                                     -->
+  <!--                                                                      -->
+  <!-- \u0686\u0631\u0627 CSS \u062E\u0627\u0644\u0635 \u0648 \u0646\u0647 Tailwind: Tailwind \u0627\u0632 CDN \u0645\u06CC\u200C\u0622\u06CC\u062F. \u0627\u06AF\u0631 \u0646\u0648\u0627\u0631 \u0628\u0627 \u06A9\u0644\u0627\u0633\u0650 -->
+  <!-- Tailwind \u0633\u0627\u062E\u062A\u0647 \u0634\u0648\u062F\u060C \u062A\u0627 \u0644\u0648\u062F\u0650 \u0647\u0645\u0627\u0646 CDN \u0628\u06CC\u200C\u0627\u0633\u062A\u0627\u06CC\u0644 \u0645\u06CC\u200C\u0645\u0627\u0646\u062F \u2014 \u06CC\u0639\u0646\u06CC \u062F\u0642\u06CC\u0642\u0627\u064B  -->
+  <!-- \u062F\u0631 \u0647\u0645\u0627\u0646 \u0628\u0627\u0632\u0647\u200C\u0627\u06CC \u06A9\u0647 \u0628\u0627\u06CC\u062F \u06A9\u0627\u0631 \u06A9\u0646\u062F\u060C \u06A9\u0627\u0631 \u0646\u0645\u06CC\u200C\u06A9\u0646\u062F. \u0627\u0633\u062A\u0627\u06CC\u0644\u0650 inline \u0627\u06CC\u0646      -->
+  <!-- \u0648\u0627\u0628\u0633\u062A\u06AF\u06CC \u0631\u0627 \u062D\u0630\u0641 \u0645\u06CC\u200C\u06A9\u0646\u062F.                                               -->
+  <!-- ==================================================================== -->
+  <div id="boot-progress" role="status" aria-live="polite" aria-label="\u062F\u0631 \u062D\u0627\u0644 \u0628\u0627\u0631\u06AF\u0630\u0627\u0631\u06CC"
+       style="position:fixed;top:0;left:0;right:0;z-index:9999;font-family:system-ui,sans-serif">
+    <!-- \u0634\u06CC\u0627\u0631\u0650 \u0646\u0648\u0627\u0631 -->
+    <div style="height:3px;background:#1e293b">
+      <div id="boot-bar" style="height:100%;width:8%;background:linear-gradient(90deg,#0ea5e9,#22d3ee);
+           transition:width .45s cubic-bezier(.25,.8,.25,1);box-shadow:0 0 8px #22d3ee"></div>
+    </div>
+    <!-- \u0645\u062A\u0646\u0650 \u06AF\u0648\u06CC\u0627: \u06A9\u0627\u0631\u0628\u0631 \u0628\u0627\u06CC\u062F \u0628\u062F\u0627\u0646\u062F **\u0645\u0646\u062A\u0638\u0631\u0650 \u0686\u0647** \u0627\u0633\u062A\u060C \u0646\u0647 \u0641\u0642\u0637 \u0627\u06CC\u0646\u06A9\u0647 \u0645\u0646\u062A\u0638\u0631 \u0627\u0633\u062A -->
+    <div id="boot-text" style="text-align:center;padding:6px 10px;font-size:12px;color:#94a3b8;
+         background:rgba(2,6,23,.92);direction:rtl">\u062F\u0631 \u062D\u0627\u0644 \u0622\u0645\u0627\u062F\u0647\u200C\u0633\u0627\u0632\u06CC\u2026</div>
+  </div>
   <div id="app" class="max-w-5xl mx-auto p-4"></div>
   <script type="module" src="/static/signal_latch.js"></script>
   <script type="module" src="/static/ui/badges.js"></script>
