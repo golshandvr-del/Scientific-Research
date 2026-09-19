@@ -1744,18 +1744,95 @@ export const CARD_LAYER_CODES: Record<string, string[]> = {
 // ---------------------------------------------------------------------------
 const STATE_RANK: Record<string, number> = { ENTRY: 3, APPROACHING: 2, NEUTRAL: 1 }
 
+// ---------------------------------------------------------------------------
+// 🛡️ رجیستریِ «شاهدِ کاذب» — قیدهای انحصارِ متقابل، به‌صورتِ قابلِ‌اجرا.
+// ---------------------------------------------------------------------------
+// چرا لازم است: مکانیزمِ نمایشِ سایت هم‌پوشانیِ معمولیِ لایه‌ها را خودش حل می‌کند،
+// ولی یک حالت را نمی‌تواند: وقتی دو لایه در واقع **یک رویدادِ واحد** با دو نام
+// باشند. آن‌وقت سایت دو کادر نشان می‌دهد و کاربر می‌پندارد دو شاهدِ مستقل دارد،
+// در حالی که یک شاهد دوبار شمرده شده — ریسک دوبرابر می‌شود بدونِ افزودنِ هیچ
+// اطلاعِ تازه‌ای. تنها راهِ تشخیص، اندازه‌گیریِ قبلی (jaccard) است، نه UI.
+//
+// نمونهٔ مستندِ همین ریپو: S404 و S408 با jaccard ۶۹.۳٪ و share_of_b ۹۹.۴٪
+// (یعنی S404 عملاً زیرمجموعهٔ S408)؛ سندِ ACCEPT حکم می‌دهد «یکی، نه هر دو».
+//
+// مشکلِ ساختاری: این حکم فقط به‌صورتِ **کامنت** ثبت شده بود، و کامنت هیچ‌چیز را
+// اجرا نمی‌کند. طبقِ روندِ پروژه هر روز لایهٔ ACCEPTِ تازه وصل می‌شود؛ هر کسی که
+// روزی S404 را وصل کند، تنها چیزی که جلویش را می‌گیرد این است که آن کامنت را
+// بخواند و به‌یاد بیاورد. این همان تلهٔ «باندلِ کهنه» در لباسی دیگر است:
+// درستیِ سیستم به حافظهٔ انسان گره خورده باشد.
+//
+// راهِ حل: قید در داده ثبت می‌شود، نه در نثر. اگر هر دو عضوِ یک جفتِ ناسازگار
+// هم‌زمان روی یک کارت سیگنال بدهند، ضعیف‌تر حذف و در `falseWitness` گزارش
+// می‌شود. افزودنِ قیدِ تازه برای لایه‌های آینده = یک سطر در این جدول.
+//
+// نکتهٔ رفتاری: لایه **حذف** می‌شود، نه اینکه کارت مسدود شود. کاربر همچنان
+// شاهدِ قوی‌تر را می‌بیند — فقط دیگر یک رویداد را دوبار نمی‌شمارد.
+interface ExclusivePair {
+  a: string; b: string; jaccard: number; note: string
+}
+const FALSE_WITNESS_PAIRS: ExclusivePair[] = [
+  {
+    a: 'S404', b: 'S408', jaccard: 69.3,
+    note: 'share_of_b ۹۹.۴٪ ⇒ S404 تقریباً زیرمجموعهٔ S408 است؛ سندِ ACCEPT: «یکی، نه هر دو».',
+  },
+]
+
+/** کدِ لایهٔ یک تصمیم (برای تطبیق با جدولِ انحصار). */
+function layerCodeOf(d: RouterDecision): string {
+  return (d.sourceLayer?.code || '').trim()
+}
+
+/**
+ * جفت‌های ناسازگارِ هم‌زمان-فعال را حذف می‌کند و فهرستِ حذف‌شده‌ها را برمی‌گرداند.
+ * فقط لایه‌های «فعال» (ENTRY/APPROACHING) اهمیت دارند: دو لایهٔ خنثی هیچ شاهدی
+ * نمی‌سازند، پس حذفشان بی‌معنا است و فقط اطلاعاتِ نمایشی را از بین می‌برد.
+ */
+function dropFalseWitnesses(
+  decisions: RouterDecision[],
+  cardId: string,
+): { kept: RouterDecision[]; dropped: { code: string; inFavorOf: string; jaccard: number; note: string }[] } {
+  const dropped: { code: string; inFavorOf: string; jaccard: number; note: string }[] = []
+  let kept = decisions
+  const isActive = (d: RouterDecision) => d.state === 'ENTRY' || d.state === 'APPROACHING'
+  for (const pair of FALSE_WITNESS_PAIRS) {
+    const da = kept.find(d => layerCodeOf(d) === pair.a && isActive(d))
+    const db = kept.find(d => layerCodeOf(d) === pair.b && isActive(d))
+    if (!da || !db) continue
+    // کدام می‌ماند؟ حالتِ قوی‌تر، سپس احتمالِ بالاتر — قطعی و بدونِ تصادف.
+    const rank = (d: RouterDecision) => (STATE_RANK[d.state] || 0) * 1000 + (d.probability || 0)
+    const loser = rank(da) >= rank(db) ? db : da
+    const winner = loser === db ? da : db
+    dropped.push({
+      code: layerCodeOf(loser),
+      inFavorOf: layerCodeOf(winner),
+      jaccard: pair.jaccard,
+      note: pair.note,
+    })
+    console.warn(
+      `[registry] شاهدِ کاذب روی ${cardId}: ${layerCodeOf(loser)} حذف شد به‌نفعِ `
+      + `${layerCodeOf(winner)} (jaccard ${pair.jaccard}٪) — یک رویداد، نه دو شاهد.`,
+    )
+    kept = kept.filter(d => d !== loser)
+  }
+  return { kept, dropped }
+}
+
 export function runCard(ctx: LayerContext): RouterDecision {
   const layers = CARD_LAYERS[ctx.cardId] || []
-  const decisions: RouterDecision[] = []
+  const collected: RouterDecision[] = []
   for (const fn of layers) {
     try {
       const d = fn(ctx)
-      if (d) decisions.push(d)
+      if (d) collected.push(d)
     } catch (e) {
       // لایهٔ مشکل‌دار نباید کلِ کارت را بشکند (پایداری)
       console.error(`[registry] layer error on ${ctx.cardId}:`, (e as Error)?.message)
     }
   }
+  // 🛡️ پیش از هر انتخابی: یک رویداد نباید دوبار به‌عنوانِ دو شاهد شمرده شود.
+  const fw = dropFalseWitnesses(collected, ctx.cardId)
+  const decisions = fw.kept
   if (decisions.length === 0) {
     return {
       state: 'NEUTRAL',
@@ -1807,5 +1884,9 @@ export function runCard(ctx: LayerContext): RouterDecision {
       return true
     })
   }
+  // شفافیت: اگر شاهدی به‌عنوانِ کاذب حذف شد، پنهانش نکن. کاربر باید بداند چرا
+  // لایه‌ای که انتظارش را داشت در فهرست نیست — وگرنه «ناپدید شدنِ بی‌دلیل»
+  // خودش به یک باگِ گزارش‌شدنی تبدیل می‌شود.
+  if (fw.dropped.length > 0) (primary as any).falseWitness = fw.dropped
   return primary
 }
