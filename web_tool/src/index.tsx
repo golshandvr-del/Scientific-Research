@@ -1091,8 +1091,61 @@ const PAGE = `<!DOCTYPE html>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>دستیارِ تصمیمِ معاملات — چند دارایی</title>
+  <!-- ==================================================================== -->
+  <!-- 🩹 وابستگیِ بحرانی به CDNِ خارجی — رفعِ ریسکِ «صفحه اصلاً بالا نمی‌آید» -->
+  <!-- -------------------------------------------------------------------- -->
+  <!-- مشاهده: این صفحه دو منبعِ **بیرونی** می‌گرفت و هر دو در <head> و       -->
+  <!-- بلوکه‌کننده بودند. برای سایتی که ادعای «اجرای محلی روی گوشی» دارد این  -->
+  <!-- یک تناقضِ معماری است: سرورِ محلی HTML را در ۴ میلی‌ثانیه می‌دهد، ولی   -->
+  <!-- مرورگر تا آمدنِ tailwind از اینترنت هیچ‌چیز رنگ نمی‌کند. اگر اینترنتِ  -->
+  <!-- گوشی کند/قطع/فیلتر باشد، کاربر صفحهٔ سفید می‌بیند و می‌گوید «سایت بالا -->
+  <!-- نمی‌آید» — در حالی که سرورِ محلی کاملاً سالم و آماده است.              -->
+  <!--                                                                      -->
+  <!-- نکته: نویسندهٔ نوارِ پیشرفت (چند خط پایین‌تر) خودش به همین ریسک اشاره  -->
+  <!-- کرده و نوار را عمداً inline نوشته. این‌جا همان اصل به کلِ صفحه تعمیم   -->
+  <!-- داده می‌شود: «هیچ‌چیزِ حیاتی نباید منتظرِ شبکهٔ خارجی بماند».            -->
+  <!--                                                                      -->
+  <!-- چرا Tailwind حذف نشد: نسخهٔ CDN یک **کامپایلرِ JIT** است، نه فایلِ CSS؛ -->
+  <!-- جایگزینیِ درستش نیازمندِ افزودنِ Tailwind به pipelineِ ساخت است که      -->
+  <!-- ریسکِ تغییرِ ظاهر دارد. پس به‌جای تعویضِ پرریسک، وابستگی از «حیاتی» به  -->
+  <!-- «تزئینی» تنزل داده می‌شود:                                            -->
+  <!--   • preconnect  ⇒ دست‌دادنِ TLS زودتر شروع شود.                        -->
+  <!--   • فونت‌آیکون‌ها با media=print + onload ⇒ کاملاً غیربلوکه.            -->
+  <!--   • یک لایهٔ CSSِ اضطراریِ inline ⇒ اگر Tailwind هرگز نیامد، صفحه باز   -->
+  <!--     هم خوانا بماند (پس‌زمینهٔ تیره، متنِ روشن، چیدمانِ کارت‌ها) به‌جای   -->
+  <!--     دیوارِ سفیدِ بی‌معنا.                                               -->
+  <!-- ==================================================================== -->
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <style>
+    /* لایهٔ اضطراری: فقط چیزهایی که «خوانا بودن» به آن‌ها وابسته است.
+       عمداً کمینه — قرار نیست جای Tailwind را بگیرد، فقط نمی‌گذارد صفحه
+       در نبودِ آن به یک ورقهٔ سفیدِ بی‌ساختار تبدیل شود. */
+    html, body { background: #020617; color: #f1f5f9; }
+    body { font-family: system-ui, -apple-system, "Segoe UI", Tahoma, sans-serif;
+           margin: 0; min-height: 100vh; }
+    a { color: #7dd3fc; }
+    /* اگر Tailwind نیامد، کارت‌ها دست‌کم از هم تفکیک شوند: */
+    .no-tw [id^="card-"] { border: 1px solid #1e293b; border-radius: 12px;
+                           padding: 12px; margin: 10px; background: #0f172a; }
+  </style>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css" rel="stylesheet">
+  <script>
+    /* اگر Tailwind بارگذاری نشد، به <html> کلاسِ no-tw بده تا CSSِ اضطراری
+       فعال شود. بررسی پس از load انجام می‌شود چون tailwind شیءِ سراسریِ
+       خود را می‌سازد؛ نبودنش یعنی CDN نیامده است. */
+    window.addEventListener('load', function () {
+      if (typeof window.tailwind === 'undefined') {
+        document.documentElement.classList.add('no-tw')
+        console.warn('[boot] Tailwind از CDN نیامد — نمایشِ اضطراری فعال شد (سایت کار می‌کند).')
+      }
+    })
+  </script>
+  <!-- آیکون‌ها کاملاً تزئینی‌اند ⇒ هرگز نباید رندر را بلوکه کنند. -->
+  <link rel="preload" as="style"
+        href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"
+        onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css"></noscript>
   <link href="/static/style.css" rel="stylesheet">
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen">
