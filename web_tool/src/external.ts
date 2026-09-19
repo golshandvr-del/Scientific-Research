@@ -34,10 +34,13 @@ export interface SpotPrice {
 
 // --- منبع ۱: Swissquote (نزدیک‌ترین به TradingView/OANDA spot، bid/ask زنده) ---
 async function spotFromSwissquote(): Promise<SpotPrice> {
-  const res = await fetch('https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD', {
+  // 🩹 مهلتِ صریح: این تابع در مسیرِ `raceOk` است، ولی `raceOk` فقط «اولین پاسخِ
+  //    سالم» را برمی‌گرداند و بازنده‌ها را **لغو نمی‌کند** — یک منبعِ هنگ‌کرده
+  //    نامرئی معلق می‌ماند و منابع را نگه می‌دارد. مهلت این را قطعی می‌بندد.
+  const res = await fetchWithTimeout('https://forex-data-feed.swissquote.com/public-quotes/bboquotes/instrument/XAU/USD', {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },
     cf: { cacheTtl: 10, cacheEverything: true } as any,
-  })
+  }, 5000)
   if (!res.ok) throw new Error(`Swissquote error: ${res.status}`)
   const arr: any = await res.json()
   // نزدیک‌ترین اسپرد (elite) را ترجیح می‌دهیم؛ mid = (bid+ask)/2
