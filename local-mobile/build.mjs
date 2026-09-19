@@ -57,4 +57,35 @@ await build({
   logLevel: 'info',
 })
 
+// ---------------------------------------------------------------------------
+// 🔏 اثرِ انگشتِ منبع — قرینهٔ نگهبانِ کهنگی در server.mjs.
+// ---------------------------------------------------------------------------
+// باندل باید بداند «از کدام نسخهٔ کد ساخته شده‌ام». نسخهٔ اولِ این سازوکار برای
+// همین کار `mtime` را مقایسه می‌کرد و هشدارِ کاذب می‌داد: `git pull` زمانِ فایل
+// را روی لحظهٔ دانلود می‌گذارد و ترتیبِ نوشتن هم تضمینی نیست، پس بعد از هر pullِ
+// سالم چند فایل تصادفاً جلوتر از باندل مهر می‌خوردند.
+//
+// این‌جا به‌جای زمان، **محتوا** ثبت می‌شود: هشِ مسیر+بایتِ همهٔ فایل‌های ts/tsx.
+// الگوریتم عمداً مو‌به‌مو همان چیزی است که `server.mjs` اجرا می‌کند (ترتیبِ
+// الفبایی، مسیرِ نسبی، سپس محتوا)؛ اگر این دو از هم فاصله بگیرند، نگهبان دوباره
+// دروغ می‌گوید — پس هر تغییری در یکی باید در دیگری هم بیفتد.
+{
+  const { readdirSync, readFileSync, writeFileSync } = await import('node:fs')
+  const { createHash } = await import('node:crypto')
+  const srcDir = join(ROOT, 'web_tool', 'src')
+  const files = []
+  const walk = (dir) => {
+    for (const ent of readdirSync(dir, { withFileTypes: true }).sort((x, y) => x.name < y.name ? -1 : 1)) {
+      const p = join(dir, ent.name)
+      if (ent.isDirectory()) walk(p)
+      else if (/\.(ts|tsx)$/.test(ent.name)) files.push(p)
+    }
+  }
+  walk(srcDir)
+  const h = createHash('sha1')
+  for (const f of files) { h.update(f.slice(srcDir.length)); h.update(readFileSync(f)) }
+  writeFileSync(join(__dirname, '.bundle-src-hash'), h.digest('hex') + '\n')
+  console.log(`🔏 اثرِ انگشتِ منبع ثبت شد (${files.length} فایل).`)
+}
+
 console.log('✅ ساختِ app.bundle.mjs کامل شد.')
