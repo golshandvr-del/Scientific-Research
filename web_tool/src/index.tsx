@@ -8,7 +8,7 @@ import { getMTF, getIntermarket, getNews, getSpotGold, yahooCandles, getLiveQuot
 // مدیریتِ معاملهٔ اسکالپِ M5 طلا (تنها بازماندهٔ روترهای قدیمی که هنوز فعال است —
 //   endpointِ /api/manage-scalp از آن استفاده می‌کند؛ بقیهٔ decide*های قدیمی حذف شدند).
 import { manageGoldM5Scalp } from './gold_m5_router'
-import { cachedFetch } from './cache'
+import { cachedFetch, cacheHealth } from './cache'
 import { fetchWithTimeout } from './fast_fetch'
 // --- گرهِ قیمت (webplan P1): توابعِ قیمتِ طلا از index.tsx استخراج و اینجا import شدند ---
 //     منطق بیت‌به‌بیت یکسان است؛ فقط مرزِ ماژول رسمی شد (Strangler Fig).
@@ -1054,7 +1054,25 @@ app.get('/api/proxy', async (c) => {
 })
 
 // health
-app.get('/api/health', (c) => c.json({ ok: true, service: 'xauusd-live-tool', time: Date.now() }))
+// ----------------------------------------------------------------------------
+// 🔭 از «زنده هستم» به «حالم چطور است».
+// نسخهٔ پیشین فقط `ok: true` می‌داد؛ یعنی در تمامِ مدتی که حافظه به‌سمتِ فریز
+// می‌رفت، این endpoint با خوشحالی `ok` برمی‌گرداند. یک health-checkی که هنگام
+// مردنِ سرویس سبز است، بدتر از نداشتنش است — چون تشخیص را به تأخیر می‌اندازد.
+// حالا وضعیتِ هر دو کش را می‌دهد تا نشتیِ بعدی در چند ثانیه دیده شود، نه ماه‌ها.
+//   • degraded=true یعنی «هنوز کار می‌کنم ولی تحتِ فشارم» — هشدارِ زودهنگام.
+app.get('/api/health', (c) => {
+  const cache = cacheHealth()
+  const degraded = cache.saturated || cache.congested || _proxyCache.size >= _PROXY_MAX
+  return c.json({
+    ok: true,
+    service: 'xauusd-live-tool',
+    time: Date.now(),
+    degraded,
+    cache,
+    proxyCache: { entries: _proxyCache.size, max: _PROXY_MAX },
+  })
+})
 
 // favicon (طلایی ساده به‌صورت SVG) — جلوگیری از خطای 500
 app.get('/favicon.ico', (c) => {
