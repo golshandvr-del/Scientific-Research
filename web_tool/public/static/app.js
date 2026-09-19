@@ -1589,11 +1589,11 @@ async function refreshAdvice(asset) {
     const barsHeld = trade.openedAt
       ? Math.floor((Math.floor(Date.now() / 1000) - trade.openedAt) / 900)
       : undefined
-    const res = await fetch('/api/trade/advice', {
+    const data = await fetchJSON('/api/trade/advice', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ asset, trade: { side: trade.side, entry: trade.entry, tp: trade.tp, sl: trade.sl, openedAt: trade.openedAt, barsHeld, managePlan: trade.managePlan }, modelProbPct: trade.modelProbPct }),
+      timeoutMs: 15000,
     })
-    const data = await res.json()
     store[asset] = store[asset] || {}
     if (data.ok) {
       store[asset].adviceStatus = stabilizeReversal(asset, data.status)
