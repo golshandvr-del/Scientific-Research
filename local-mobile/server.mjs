@@ -40,6 +40,56 @@ if (!existsSync(BUNDLE)) {
   process.exit(1)
 }
 
+// ---------------------------------------------------------------------------
+// 🛡️ نگهبانِ کهنگیِ باندل — رفعِ یک اشتباهِ *تکرارشونده*، نه یک باگِ منفرد.
+// ---------------------------------------------------------------------------
+// مشاهدهٔ واقعی: `app.bundle.mjs` از کامیتِ 59e9d79 بازسازی نشده بود. در فاصلهٔ
+// آن تا امروز، رفع‌های متعددی در `web_tool/src` نوشته و کامیت شد — و هیچ‌کدام
+// روی گوشی اجرا نمی‌شد. کد «درست» بود ولی کاربر نسخهٔ کهنه را می‌دید.
+//
+// این از باگِ معمولی بدتر است چون **بی‌صدا** است: نه خطایی می‌دهد، نه در بررسیِ
+// کد دیده می‌شود. توسعه‌دهنده کد را اصلاح می‌کند، کامیت می‌زند، و مطمئن است که
+// کار تمام شده. تنها جای ظهورِ مشکل، گوشیِ کاربر است.
+//
+// چون این ساختار تکرارشونده است (هر لایهٔ ACCEPTِ جدید هم دقیقاً همین‌جا گیر
+// می‌کند)، راهِ حل نباید «یادت باشد build بزنی» باشد. به حافظهٔ انسان تکیه نکن:
+// خودِ سرور مقایسه می‌کند که باندل از منبعش قدیمی‌تر است یا نه، و اگر بود با
+// صدای بلند هشدار می‌دهد. یک `mtime` ساده، یک کلاس کاملِ اشتباه را حذف می‌کند.
+//
+// عمداً *هشدار* است نه *خطا*: روی گوشی اصلاً `web_tool/src` وجود ندارد (کاربر
+// فقط باندل را pull می‌کند)، پس آن‌جا این بررسی بی‌صدا رد می‌شود. فقط روی
+// کامپیوتر/سندباکس — جایی که منبع هست و ساخت ممکن است — هشدار دیده می‌شود.
+try {
+  const { statSync, readdirSync } = await import('node:fs')
+  const bundleAt = statSync(BUNDLE).mtimeMs
+  const srcDir = join(__dirname, '..', 'web_tool', 'src')
+  let newest = 0
+  let newestFile = ''
+  const walk = (dir) => {
+    for (const ent of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, ent.name)
+      if (ent.isDirectory()) walk(p)
+      else if (/\.(ts|tsx)$/.test(ent.name)) {
+        const m = statSync(p).mtimeMs
+        if (m > newest) { newest = m; newestFile = ent.name }
+      }
+    }
+  }
+  if (existsSync(srcDir)) {
+    walk(srcDir)
+    if (newest > bundleAt) {
+      const mins = Math.round((newest - bundleAt) / 60000)
+      console.warn('')
+      console.warn('⚠️  ══════════════════════════════════════════════════════')
+      console.warn('⚠️   باندل کهنه است — تغییراتِ کد در سایت دیده نمی‌شود!')
+      console.warn(`⚠️   تازه‌ترین فایلِ منبع: ${newestFile} (${mins} دقیقه جلوتر)`)
+      console.warn('⚠️   چاره:  cd local-mobile && node build.mjs')
+      console.warn('⚠️  ══════════════════════════════════════════════════════')
+      console.warn('')
+    }
+  }
+} catch { /* روی گوشی منبع نیست ⇒ بی‌صدا رد شو (رفتارِ درست، نه نقص) */ }
+
 const mod = await import('./app.bundle.mjs')
 const app = mod.default
 if (!app || typeof app.fetch !== 'function') {
