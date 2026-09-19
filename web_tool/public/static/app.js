@@ -1403,8 +1403,9 @@ function applyLatch(asset, raw) {
 async function ensureAssetsMeta() {
   if (assetsMeta.length) return true
   try {
-    const res = await fetch('/api/assets')
-    const data = await res.json()
+    // مهلتِ کوتاه‌تر: این فراخوانی عمداً سبک است (هیچ fetchِ بیرونی ندارد). اگر
+    // کند شد یعنی خودِ سرور گرفتار است، نه منبعِ داده ⇒ زود به fallback برو.
+    const data = await fetchJSON('/api/assets', { timeoutMs: 8000 })
     if (data.ok && Array.isArray(data.assets) && data.assets.length) {
       // 🔎 `layers` باید حفظ شود (بخشِ info — User Note). پیش‌تر این map چهار
       //    فیلد را نگه می‌داشت و بقیه را دور می‌ریخت؛ اگر این‌جا اضافه نشود،
