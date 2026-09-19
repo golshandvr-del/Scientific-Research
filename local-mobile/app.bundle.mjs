@@ -8203,6 +8203,33 @@ function decideS408(cfg, a, candles, capital = 1e4, riskPct = 1) {
   } else {
     reason = `S408 \xB7 \u0628\u06CC\u200C\u0633\u06CC\u06AF\u0646\u0627\u0644.`;
   }
+  const indicators = [
+    {
+      name: "\u0645\u0631\u0632\u0650 \u0631\u0648\u0632 (\u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC)",
+      value: s.brkIdx >= 0 ? `${kindFa} \xB7 \u0648\u0642\u0641\u0647\u0654 ${s.gapHours.toFixed(1)}h` : "\u2014",
+      status: s.brkIdx >= 0 ? "ok" : "neutral"
+    },
+    {
+      name: "\u06AF\u067E\u0650 \u0645\u0646\u0641\u06CC > \u0622\u0633\u062A\u0627\u0646\u0647\u0654 \u0645\u0646\u062C\u0645\u062F",
+      value: isFinite(s.gapUsd) ? `${f2(s.gapUsd)}$ / \u0622\u0633\u062A\u0627\u0646\u0647 ${f2(s.thrUsd)}$ (\u0646\u0633\u0628\u062A ${f2(s.ratio)}\xD7)` : "\u2014",
+      status: s.baseActive ? "ok" : "bad"
+    },
+    {
+      name: "\u0631\u0648\u0632\u0650 \u0647\u0641\u062A\u0647 \u2260 \u062F\u0648\u0634\u0646\u0628\u0647",
+      value: dowName,
+      status: s.dowPass ? "ok" : "bad"
+    },
+    {
+      name: `ATR14 \u0631\u0648\u0632\u0650 \u0642\u0628\u0644 \u2264 q${cfg.qVol}`,
+      value: isFinite(s.atrPrevUsd) ? `${f1(s.atrPrevUsd)}$ / \u0633\u0642\u0641 ${f1(s.volThrUsd)}$` : `\u062A\u0627\u0631\u06CC\u062E\u0686\u0647\u0654 \u0646\u0627\u06A9\u0627\u0641\u06CC (${s.daysAvail} \u0631\u0648\u0632)`,
+      status: s.volPass ? "ok" : "bad"
+    },
+    {
+      name: "\u0633\u0644\u0627\u0645\u062A\u0650 \u0641\u06CC\u062F \u0648 \u062A\u0627\u0632\u06AF\u06CC\u0650 \u067E\u0646\u062C\u0631\u0647",
+      value: `${s.dataHealthy ? "\u0633\u0627\u0644\u0645" : "\u0646\u0627\u0642\u0635"} \xB7 ${s.atLatestBar} \u06A9\u0646\u062F\u0644 \u0627\u0632 \u0628\u0627\u0632\u06AF\u0634\u0627\u06CC\u06CC (\u0633\u0642\u0641 ${FRESH_MAX_BARS2})`,
+      status: s.dataHealthy ? s.atLatestBar <= FRESH_MAX_BARS2 ? "ok" : "warn" : "bad"
+    }
+  ];
   const raw2 = {
     active,
     approaching,
@@ -8212,7 +8239,7 @@ function decideS408(cfg, a, candles, capital = 1e4, riskPct = 1) {
     maxHoldBars: Math.max(1, s.barsLeftInDay),
     reason,
     approachReason,
-    indicators: a
+    indicators
   };
   const meta = {
     code: "S408",
@@ -9145,17 +9172,54 @@ var CARD_LAYER_CODES = {
   "XAUUSD-D1": ["S800", "S770", "S607"]
 };
 var STATE_RANK = { ENTRY: 3, APPROACHING: 2, NEUTRAL: 1 };
+var FALSE_WITNESS_PAIRS = [
+  {
+    a: "S404",
+    b: "S408",
+    jaccard: 69.3,
+    note: "share_of_b \u06F9\u06F9.\u06F4\u066A \u21D2 S404 \u062A\u0642\u0631\u06CC\u0628\u0627\u064B \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 S408 \u0627\u0633\u062A\u061B \u0633\u0646\u062F\u0650 ACCEPT: \xAB\u06CC\u06A9\u06CC\u060C \u0646\u0647 \u0647\u0631 \u062F\u0648\xBB."
+  }
+];
+function layerCodeOf(d) {
+  return (d.sourceLayer?.code || "").trim();
+}
+function dropFalseWitnesses(decisions, cardId) {
+  const dropped = [];
+  let kept = decisions;
+  const isActive = (d) => d.state === "ENTRY" || d.state === "APPROACHING";
+  for (const pair of FALSE_WITNESS_PAIRS) {
+    const da = kept.find((d) => layerCodeOf(d) === pair.a && isActive(d));
+    const db = kept.find((d) => layerCodeOf(d) === pair.b && isActive(d));
+    if (!da || !db) continue;
+    const rank = (d) => (STATE_RANK[d.state] || 0) * 1e3 + (d.probability || 0);
+    const loser = rank(da) >= rank(db) ? db : da;
+    const winner = loser === db ? da : db;
+    dropped.push({
+      code: layerCodeOf(loser),
+      inFavorOf: layerCodeOf(winner),
+      jaccard: pair.jaccard,
+      note: pair.note
+    });
+    console.warn(
+      `[registry] \u0634\u0627\u0647\u062F\u0650 \u06A9\u0627\u0630\u0628 \u0631\u0648\u06CC ${cardId}: ${layerCodeOf(loser)} \u062D\u0630\u0641 \u0634\u062F \u0628\u0647\u200C\u0646\u0641\u0639\u0650 ${layerCodeOf(winner)} (jaccard ${pair.jaccard}\u066A) \u2014 \u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F\u060C \u0646\u0647 \u062F\u0648 \u0634\u0627\u0647\u062F.`
+    );
+    kept = kept.filter((d) => d !== loser);
+  }
+  return { kept, dropped };
+}
 function runCard(ctx) {
   const layers = CARD_LAYERS[ctx.cardId] || [];
-  const decisions = [];
+  const collected = [];
   for (const fn of layers) {
     try {
       const d = fn(ctx);
-      if (d) decisions.push(d);
+      if (d) collected.push(d);
     } catch (e) {
       console.error(`[registry] layer error on ${ctx.cardId}:`, e?.message);
     }
   }
+  const fw = dropFalseWitnesses(collected, ctx.cardId);
+  const decisions = fw.kept;
   if (decisions.length === 0) {
     return {
       state: "NEUTRAL",
@@ -9200,6 +9264,7 @@ function runCard(ctx) {
       return true;
     });
   }
+  if (fw.dropped.length > 0) primary.falseWitness = fw.dropped;
   return primary;
 }
 
