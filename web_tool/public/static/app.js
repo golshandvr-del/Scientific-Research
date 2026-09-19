@@ -1645,8 +1645,10 @@ function applySpot(asset, price, ageSec, decimals) {
 
 async function refreshSpots() {
   try {
-    const res = await fetch('/api/spots')
-    const data = await res.json()
+    // ۲-ثانیه‌ای‌ترین پُلینگِ سایت ⇒ حساس‌ترین نقطه به انباشت. مهلت زیرِ فاصلهٔ
+    // پُلینگ نگه داشته می‌شود؛ یک اسپاتِ از-دست-رفته بی‌اهمیت است (۲ ثانیه بعد
+    // دوباره می‌آید)، ولی یک درخواستِ معلق ماندگار است.
+    const data = await fetchJSON('/api/spots', { timeoutMs: 1800 })
     if (!data.ok) return
     const decMap = {}
     assetsMeta.forEach(a => { decMap[a.id] = a.decimals })
