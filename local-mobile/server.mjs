@@ -53,36 +53,49 @@ if (!existsSync(BUNDLE)) {
 //
 // چون این ساختار تکرارشونده است (هر لایهٔ ACCEPTِ جدید هم دقیقاً همین‌جا گیر
 // می‌کند)، راهِ حل نباید «یادت باشد build بزنی» باشد. به حافظهٔ انسان تکیه نکن:
-// خودِ سرور مقایسه می‌کند که باندل از منبعش قدیمی‌تر است یا نه، و اگر بود با
-// صدای بلند هشدار می‌دهد. یک `mtime` ساده، یک کلاس کاملِ اشتباه را حذف می‌کند.
+// خودِ سرور بررسی می‌کند که باندل با منبعش هم‌خوان است یا نه.
 //
-// عمداً *هشدار* است نه *خطا*: روی گوشی اصلاً `web_tool/src` وجود ندارد (کاربر
-// فقط باندل را pull می‌کند)، پس آن‌جا این بررسی بی‌صدا رد می‌شود. فقط روی
-// کامپیوتر/سندباکس — جایی که منبع هست و ساخت ممکن است — هشدار دیده می‌شود.
+// ⚠️ نسخهٔ اولِ این نگهبان `mtime` را مقایسه می‌کرد — و **غلط** بود. دلیلش را
+//    خودِ کاربر روی گوشی دید: `git pull` زمانِ فایل را روی «لحظهٔ دانلود» تنظیم
+//    می‌کند، نه زمانِ کامیت، و ترتیبِ نوشتنِ فایل‌ها هم تضمینی نیست. پس درست
+//    بعد از یک pullِ سالم، چند فایلِ `src` تصادفاً چند میلی‌ثانیه جلوتر از باندل
+//    مهر می‌خوردند و نگهبان فریاد می‌زد «باندل کهنه است» در حالی که باندل دقیقاً
+//    همان چیزی بود که باید باشد. (نشانه‌اش همان «۰ دقیقه جلوتر» بود.)
+//
+//    این بدترین نوعِ خرابیِ یک نگهبان است: هشدارِ کاذب. کاربر یاد می‌گیرد هشدار
+//    را نادیده بگیرد، و آن‌وقت روزی که هشدار **راست** باشد هم نادیده گرفته
+//    می‌شود. نگهبانی که گرگ‌بازی کند از نبودنش بدتر است.
+//
+//    رفع: زمان اصلاً معیارِ درستی نبود — محتوا است. هنگامِ ساخت، اثرِ انگشتِ
+//    منبع (هشِ همهٔ فایل‌های ts/tsx) در کنارِ باندل ذخیره می‌شود؛ این‌جا همان
+//    هش دوباره حساب و مقایسه می‌شود. `git pull`، کپی، و تغییرِ ساعتِ سیستم
+//    هیچ اثری بر هش ندارند — فقط تغییرِ **واقعیِ** کد آن را عوض می‌کند.
 try {
-  const { statSync, readdirSync } = await import('node:fs')
-  const bundleAt = statSync(BUNDLE).mtimeMs
+  const { readdirSync, readFileSync } = await import('node:fs')
+  const { createHash } = await import('node:crypto')
   const srcDir = join(__dirname, '..', 'web_tool', 'src')
-  let newest = 0
-  let newestFile = ''
-  const walk = (dir) => {
-    for (const ent of readdirSync(dir, { withFileTypes: true })) {
-      const p = join(dir, ent.name)
-      if (ent.isDirectory()) walk(p)
-      else if (/\.(ts|tsx)$/.test(ent.name)) {
-        const m = statSync(p).mtimeMs
-        if (m > newest) { newest = m; newestFile = ent.name }
+  const stampFile = join(__dirname, '.bundle-src-hash')
+
+  if (existsSync(srcDir) && existsSync(stampFile)) {
+    // هشِ محتوا: مسیر + بایت‌های هر فایلِ منبع، به ترتیبِ الفبا (قطعی و تکرارپذیر).
+    const files = []
+    const walk = (dir) => {
+      for (const ent of readdirSync(dir, { withFileTypes: true }).sort((x, y) => x.name < y.name ? -1 : 1)) {
+        const p = join(dir, ent.name)
+        if (ent.isDirectory()) walk(p)
+        else if (/\.(ts|tsx)$/.test(ent.name)) files.push(p)
       }
     }
-  }
-  if (existsSync(srcDir)) {
     walk(srcDir)
-    if (newest > bundleAt) {
-      const mins = Math.round((newest - bundleAt) / 60000)
+    const h = createHash('sha1')
+    for (const f of files) { h.update(f.slice(srcDir.length)); h.update(readFileSync(f)) }
+    const actual = h.digest('hex')
+    const expected = readFileSync(stampFile, 'utf8').trim()
+
+    if (actual !== expected) {
       console.warn('')
       console.warn('⚠️  ══════════════════════════════════════════════════════')
-      console.warn('⚠️   باندل کهنه است — تغییراتِ کد در سایت دیده نمی‌شود!')
-      console.warn(`⚠️   تازه‌ترین فایلِ منبع: ${newestFile} (${mins} دقیقه جلوتر)`)
+      console.warn('⚠️   باندل با کدِ منبع هم‌خوان نیست — تغییرات دیده نمی‌شود!')
       console.warn('⚠️   چاره:  cd local-mobile && node build.mjs')
       console.warn('⚠️  ══════════════════════════════════════════════════════')
       console.warn('')
