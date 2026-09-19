@@ -460,14 +460,18 @@ async function fetchCalendarRaw(env?: any): Promise<any[]> {
   // 2) تلاش از mirrorها
   for (const url of CAL_URLS) {
     try {
-      const res = await fetch(url, {
+      // 🩹 این حلقه روی چند mirror تکرار می‌شود. بدونِ مهلت، یک mirrorِ مرده
+      //    کلِ زنجیره را متوقف می‌کرد و mirrorهای سالمِ بعدی هرگز امتحان
+      //    نمی‌شدند — یعنی fallbackی که برای تاب‌آوری نوشته شده بود، خودش به
+      //    نقطهٔ شکست تبدیل می‌شد. مهلتِ کوتاه تضمین می‌کند زنجیره پیش برود.
+      const res = await fetchWithTimeout(url, {
         headers: {
           'User-Agent': UA,
           'Accept': 'application/json,text/plain,*/*',
           'Referer': 'https://www.forexfactory.com/',
         },
         cf: { cacheTtl: 1800, cacheEverything: true } as any,
-      })
+      }, 6000)
       if (res.ok) {
         const data = await res.json() as any[]
         _calMemCache = { at: Date.now(), data }
