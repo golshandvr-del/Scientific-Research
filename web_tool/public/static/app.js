@@ -1423,8 +1423,10 @@ async function ensureAssetsMeta() {
 // یک کارتِ مشخص را مستقلاً از سرور می‌گیرد و فقط همان کارت را در DOM به‌روز می‌کند.
 async function refreshOneAsset(id) {
   try {
-    const res = await fetch(`/api/decision/${id}?capital=${getCapital()}&risk=${getRisk()}`)
-    const a = await res.json()
+    // این همان فراخوانی‌ای است که نوار را گروگان می‌گرفت. ۲۰ ثانیه سخاوتمندانه
+    // است (کارتِ سنگین با چند لایه واقعاً وقت می‌برد) ولی **متناهی**؛ و چون از
+    // REFRESH_MS=۳۰s کمتر است، هر دور پیش از آغازِ دورِ بعد قطعاً بسته می‌شود.
+    const a = await fetchJSON(`/api/decision/${id}?capital=${getCapital()}&risk=${getRisk()}`, { timeoutMs: 20000 })
     store[id] = store[id] || {}
     if (a.ok) {
       store[id].decision = applyLatch(id, a.decision)   // 🔒 قفلِ سیگنال
