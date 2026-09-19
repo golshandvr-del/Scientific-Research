@@ -1528,11 +1528,13 @@ async function refreshScalpManage(asset) {
   const trade = getTrade(asset)
   if (!trade || !trade.scalp) return
   try {
-    const res = await fetch('/api/scalp/manage', {
+    // پُلینگِ ۵-ثانیه‌ای ⇒ مهلت باید کوتاه‌تر از فاصلهٔ پُلینگ باشد، وگرنه
+    // درخواست‌های معلق روی هم انباشته می‌شوند (همان الگویی که سایت را کشت).
+    const data = await fetchJSON('/api/scalp/manage', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: trade.action, refPrice: trade.entry, tpPip: trade.tpPip, slPip: trade.slPip }),
+      timeoutMs: 4500,
     })
-    const data = await res.json()
     store[asset] = store[asset] || {}
     if (data.ok) {
       store[asset].scalpManage = { state: data.state, message: data.message }
