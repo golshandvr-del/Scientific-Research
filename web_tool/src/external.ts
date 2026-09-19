@@ -60,10 +60,10 @@ async function spotFromSwissquote(): Promise<SpotPrice> {
 
 // --- منبع ۲: gold-api.com (fallback) ---
 async function spotFromGoldApi(): Promise<SpotPrice> {
-  const res = await fetch('https://api.gold-api.com/price/XAU', {
+  const res = await fetchWithTimeout('https://api.gold-api.com/price/XAU', {
     headers: { 'User-Agent': UA, 'Accept': 'application/json' },
     cf: { cacheTtl: 20, cacheEverything: true } as any,
-  })
+  }, 5000)
   if (!res.ok) throw new Error(`gold-api error: ${res.status}`)
   const d: any = await res.json()
   const updatedAt = d.updatedAt || new Date().toISOString()
