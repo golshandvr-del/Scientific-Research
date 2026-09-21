@@ -65,6 +65,7 @@ import {
 import {
   computeMidMonth, MID_ENTRY_HOURS, MID_APPROACH_HOUR, MID_SL_PIP, MID_TP_PIP, MID_MAX_HOLD,
 } from './mid_month_drift'
+import { computePreHoliday, PRE_ENTRY_HOURS } from './preholiday_drift'
 
 // --- ماژولِ لایه‌های نو ---
 import {
