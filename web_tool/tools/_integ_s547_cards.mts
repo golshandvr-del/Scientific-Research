@@ -35,7 +35,7 @@ import path from 'node:path'
 // وضعیتی که این جلسه (پس از ریستِ سندباکس) در آن است.
 import zlib from 'node:zlib'
 import { CARD_LAYERS, runCard } from '../src/strategy_registry'
-import { computePreHoliday } from '../src/preholiday_drift'
+import { computePreHoliday, isPreHolidayDay, PRE_ENTRY_HOURS } from '../src/preholiday_drift'
 
 const ROOT = path.resolve(import.meta.dirname, '../..')
 
@@ -126,11 +126,20 @@ for (const { card, tf, slDoc, isPrimary, rqs2 } of CARDS) {
 
   // ② پیدا کردنِ یک کندلِ واقعی که لایه در آن ENTRY می‌دهد.
   //    از انتها به عقب می‌گردیم تا جدیدترین رویداد پیدا شود (تازه‌ترین شاهد).
+  // ⚠️ جست‌وجو باید **ارزان** باشد. نسخهٔ اول برای هر کندل `slice` می‌گرفت و
+  //    `computePreHoliday` را صدا می‌زد؛ چون آن تابع ATR را روی کلِ تاریخچه
+  //    حساب می‌کند، هزینه O(n²) می‌شد و آزمون روی M15 (≈۴۰۰k کندل) به timeout
+  //    می‌خورد — یعنی آزمونی که «تمام نمی‌شود» عملاً هیچ چیزی را تضمین نمی‌کند.
+  //    پس اول با یک غربالِ ارزانِ تقویمی روزِ P را پیدا می‌کنیم (فقط تاریخ و
+  //    ساعت، بدونِ ATR) و تنها برای همان نامزد، تابعِ کامل را صدا می‌زنیم.
   let hit = -1
   for (let i = all.length - 1; i > 300; i--) {
-    const times = all.slice(0, i + 1).map(c => c.time)
     const utcHour = new Date(all[i].time * 1000).getUTCHours()
-    const sig = computePreHoliday(times, utcHour, all.slice(0, i + 1) as any)
+    if (!PRE_ENTRY_HOURS.includes(utcHour)) continue
+    if (!isPreHolidayDay(new Date(all[i].time * 1000))) continue
+    const sig = computePreHoliday(
+      all.slice(0, i + 1).map(c => c.time), utcHour, all.slice(0, i + 1) as any,
+    )
     if (sig.state === 'ENTRY') { hit = i; break }
   }
   if (hit < 0) {
