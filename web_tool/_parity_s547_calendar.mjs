@@ -12,9 +12,15 @@
 // خروجی: صفر عدمِ‌تطابق ⇒ تقویمِ سایت معادلِ تقویمِ حکم است.
 
 import { readFileSync } from 'node:fs'
+import path from 'node:path'
 import { isPreHolidayDay } from './dist_parity_s547.mjs'
 
-const py = JSON.parse(readFileSync('/tmp/py_pre_days.json', 'utf8'))
+// حقیقتِ‌زمینیِ پایتون **درونِ ریپو** نگه‌داری می‌شود، نه در /tmp.
+// دلیل از تجربه آمد نه از سلیقه: سندباکس ریست شد، `/tmp` پاک شد و این آزمون
+// به‌جای صدور حکم با ENOENT کرش کرد. ابزارِ پایشی که پس از هر ریست خراب
+// بالا می‌آید، عملاً ابزارِ پایشی نیست — چون واکنشِ طبیعی «فعلاً ردش کن» است.
+const GT = path.resolve(import.meta.dirname, '../results/_s547/py_pre_days.json')
+const py = JSON.parse(readFileSync(GT, 'utf8'))
 const pySet = new Set(py)
 
 // همهٔ روزهای ۲۰۱۱..۲۰۲۷ را از سمتِ TS غربال می‌کنیم.
