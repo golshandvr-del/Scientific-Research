@@ -2,7 +2,7 @@
 """
 S99x — اجراکنندهٔ رسمی احکام دههٔ S1990–S1999 (لاگرانژ)
 =====================================================
-usage: python3 s99x_official_runner.py <layer>   e.g. s990
+usage: python3 s199x_official_runner.py <layer>   e.g. s1990
 هر لایه: نیمهٔ دوم | یک اجرا | نول ① سخت‌ترین stride گیت‌خورده | نول ② جایگشت K=500 |
 compute_rqs2 با n_trials صادقانهٔ پیش‌ثبت‌شده (research/S99x_PREREG.md) | MD خودکار.
 قاعدهٔ هر لایه در تابع rule_<layer>(df) تعریف می‌شود و باید پیش از اجرا کامیت شده باشد.
@@ -105,7 +105,7 @@ md_name = f"S{layer[1:]}_{cfg['name']}_Xauusd_{TF}_rqs2_{sc}_{v}.md"
 md = f"""# S{layer[1:]} — {cfg['name']} — XAUUSD-{TF} — {v} (RQS2 v2.6 = {sc})
 
 **دانشمند:** لاگرانژ (S1990–S1999) · **پیش‌ثبت:** `research/S{layer[1:]}_PREREG.md` (کامیت قبل از هر عدد نیمهٔ دوم)
-**runner:** `strategies/s99x_official_runner.py {layer}` · **رکوردها:** `results/_{layer}/` · **داده:** `data/mt5_full/` ۱۵.۶y، نیمهٔ دوم ({len(df)} کندل)
+**runner:** `strategies/s199x_official_runner.py {layer}` · **رکوردها:** `results/_{layer}/` · **داده:** `data/mt5_full/` ۱۵.۶y، نیمهٔ دوم ({len(df)} کندل)
 
 ## حکم موتور — عیناً
 ```
