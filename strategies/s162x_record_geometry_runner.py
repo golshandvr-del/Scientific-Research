@@ -28,6 +28,9 @@ CFG = {
                   base='floor', seed=20260905),
     # S1624: رکورد در رکورد — close > max(close[t-360..t-1]) همزمان با لبهٔ تازهٔ ۹۰
     's1624': dict(name='NestedRecordGate', cards=['XAUUSD_H8', 'XAUUSD_H6', 'XAUUSD_H12'], n_trials=6, outer=360),
+    # S1625: قاطعیت دوگانه margin≥0.25 ∧ ρ≥0.618؛ LB تقویم‌همتا (S1523)؛ بازوها: dual / margin_only / rho_only / neither
+    's1625': dict(name='DualDecisiveness', cards=['XAUUSD_H8', 'XAUUSD_H4', 'XAUUSD_H6'], n_trials=12, margin_min=0.25, rho_min=0.618,
+                  lb_by_card={'XAUUSD_H8': 90, 'XAUUSD_H4': 180, 'XAUUSD_H6': 120}),
 }
 
 
@@ -90,6 +93,13 @@ def gate_fn(layer, cfg, df):
     if layer == 's1624':
         c = df['close'].astype(float); pm = c.rolling(cfg['outer']).max().shift(1)
         return (c > pm).fillna(False), (c - pm)
+    if layer == 's1625':
+        m = record_margin(df); rng_ = (df['high'] - df['low']).replace(0, np.nan)
+        rho = ((df['close'] - df['open']) / rng_).fillna(0.0)
+        gm = (m >= cfg['margin_min']).fillna(False); gr = (rho >= cfg['rho_min']).fillna(False)
+        arm = cfg.get('arm', 'dual')
+        g = {'dual': gm & gr, 'margin_only': gm & ~gr, 'rho_only': gr & ~gm, 'neither': ~gm & ~gr}[arm]
+        return g, m
     if layer == 's1622':
         c = df['close'].astype(float); prevmax = c.rolling(LOOKBACK).max().shift(1)
         g = df['low'].astype(float) > prevmax; return g.fillna(False), (df['low'].astype(float) - prevmax)
@@ -99,6 +109,8 @@ def gate_fn(layer, cfg, df):
 def main():
     layer = sys.argv[1]; cfg = CFG[layer]
     mode = sys.argv[2] if len(sys.argv) > 2 else 'gated'
+    if layer == 's1625' and mode in ('dual', 'margin_only', 'rho_only', 'neither'):
+        cfg['arm'] = mode; mode = 'gated'
     assert mode in ('gated', 'counter', 'base')
     cards = [a for a in sys.argv[3:] if a.startswith('XAUUSD')] or cfg['cards']
     OUT = f'results/_{layer}'; os.makedirs(OUT, exist_ok=True)
@@ -153,12 +165,16 @@ def main():
     print(f'{layer.upper()} {cfg["name"]} [{mode}] sl_k={L.SL_K} rr={L.RR} long | cond-null(drift>0) K={NM.K} n_trials={cfg["n_trials"]}', flush=True)
     for card in cards:
         stats.clear()
+        global LOOKBACK
+        LOOKBACK = cfg.get('lb_by_card', {}).get(card, 90)
         try:
             r = MTF.run_card(card, L, NM)
         except Exception as e:
             print(f'{card}: ERROR {e}', flush=True); continue
         r.update(layer=layer, mode=mode, lookback=LOOKBACK, cfg={k: v for k, v in cfg.items() if k != 'cards'}, **stats)
-        json.dump(r, open(f'{OUT}/{card}_{mode}.json', 'w'), ensure_ascii=False, default=str)
+        tag = cfg.get('arm', mode)
+        r['lookback'] = LOOKBACK
+        json.dump(r, open(f'{OUT}/{card}_{tag}.json', 'w'), ensure_ascii=False, default=str)
         print(f'{card} [{mode}]: n={r.get("n_trades")} (sig={r.get("n_signals")}) sl={r.get("sl_pip")}pip wr={r.get("wr")} be={r.get("be")} '
               f'lift={r.get("lift")} unc={r.get("uncond_wr")} pmean={r.get("perm_mean")} pmax={r.get("perm_max")} z={r.get("z")} '
               f'pf={r.get("pf")} rqs2={r.get("rqs2")} verdict={r.get("verdict")}', flush=True)
