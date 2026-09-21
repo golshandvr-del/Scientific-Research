@@ -26,6 +26,8 @@ CFG = {
     # S1623: رویداد پایه = رکورد تازهٔ کف S1511 (low>max(low90) ∧ drift>0)؛ گیت = حاشیهٔ کف بر ATR ≥ 0.25؛ seed S1511
     's1623': dict(name='FloorMarginGate', cards=['XAUUSD_H6', 'XAUUSD_H8', 'XAUUSD_H12'], n_trials=7, margin_min=0.25,
                   base='floor', seed=20260905),
+    # S1624: رکورد در رکورد — close > max(close[t-360..t-1]) همزمان با لبهٔ تازهٔ ۹۰
+    's1624': dict(name='NestedRecordGate', cards=['XAUUSD_H8', 'XAUUSD_H6', 'XAUUSD_H12'], n_trials=6, outer=360),
 }
 
 
@@ -85,6 +87,9 @@ def gate_fn(layer, cfg, df):
     if layer == 's1623':
         lo = df['low'].astype(float); pm = lo.rolling(LOOKBACK).max().shift(1)
         m = (lo - pm) / atr100_causal(df); return (m >= cfg['margin_min']).fillna(False), m
+    if layer == 's1624':
+        c = df['close'].astype(float); pm = c.rolling(cfg['outer']).max().shift(1)
+        return (c > pm).fillna(False), (c - pm)
     if layer == 's1622':
         c = df['close'].astype(float); prevmax = c.rolling(LOOKBACK).max().shift(1)
         g = df['low'].astype(float) > prevmax; return g.fillna(False), (df['low'].astype(float) - prevmax)
