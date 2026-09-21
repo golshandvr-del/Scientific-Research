@@ -68,10 +68,23 @@ def jaccard(a: set, b: set) -> dict:
 
 
 def days_from_times(times) -> set:
-    """لیستِ رشته/عددِ زمانِ سیگنال → مجموعهٔ روزهای تقویمیِ UTC."""
-    s = pd.to_datetime(pd.Series(list(times)), utc=True, errors='coerce')
-    if s.isna().all():
-        s = pd.to_datetime(pd.Series(list(times)), unit='s', utc=True, errors='coerce')
+    """لیستِ زمانِ سیگنال → مجموعهٔ روزهای تقویمیِ UTC.
+
+    آرتیفکت‌های بلوکِ S562 زمان را **epoch ثانیه‌ای عددی** ذخیره کرده‌اند
+    (مثلاً ۱۲۹۵۴۷۸۰۰۰). اگر همان اعداد را بدونِ `unit='s'` به pandas بدهیم،
+    نانوثانیه تفسیر می‌شوند و همه به ۱۹۷۰ می‌افتند؛ بعد فیلترِ بازه حذفشان
+    می‌کند و خروجی «۰ روز» می‌شود. آن صفر، صفرِ باگ است نه صفرِ استقلال —
+    و صفرِ باگ را نمی‌توان شاهدِ عدمِ هم‌پوشانی گرفت. پس نوع را صریح
+    تشخیص می‌دهیم: عددی ⇒ epoch ثانیه، رشته ⇒ تاریخِ متنی.
+    """
+    ser = pd.Series(list(times))
+    if pd.api.types.is_numeric_dtype(ser):
+        s = pd.to_datetime(ser, unit='s', utc=True, errors='coerce')
+    else:
+        s = pd.to_datetime(ser, utc=True, errors='coerce')
+        if s.isna().all():
+            s = pd.to_datetime(pd.to_numeric(ser, errors='coerce'),
+                               unit='s', utc=True, errors='coerce')
     return set(s.dropna().dt.tz_convert('UTC').dt.normalize().dt.date)
 
 
