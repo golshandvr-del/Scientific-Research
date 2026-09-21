@@ -1,0 +1,82 @@
+{
+  "cards": {
+    "XAUUSD-M30": {
+      "tf": "M30",
+      "sl_doc_pip": 41.37,
+      "expect_primary": true,
+      "listed_in_codes": true,
+      "bars": 182145,
+      "event_bar_utc": "2026-07-02T03:30:00.000Z",
+      "primary_code": "S547",
+      "reached_output": true,
+      "sl_pip_live": 41.2,
+      "ratio_to_doc": 1,
+      "rr": "1:1.50",
+      "same_event_family": {
+        "code": "S547",
+        "isPrimary": true,
+        "primaryCard": "XAUUSD-M30",
+        "siblingCards": [
+          "XAUUSD-M15",
+          "XAUUSD-H4"
+        ],
+        "note": "هر سه کارت همان ۱۴۶ روزِ پیش‌تعطیلات را معامله می‌کنند (n مستقل از تایم‌فریم است). قلهٔ حکم M30 است (RQS2 ۸۹.۳ · z=۴.۰۰)؛ M15 (۸۴.۷) و H4 (۸۱.۹) بدیل‌اند، نه شاهدِ دوم. سندِ ACCEPT §۸ + قانونِ S605: هم‌زمان معامله نشوند."
+      }
+    },
+    "XAUUSD-M15": {
+      "tf": "M15",
+      "sl_doc_pip": 28.59,
+      "expect_primary": false,
+      "listed_in_codes": true,
+      "bars": 363778,
+      "event_bar_utc": "2026-07-02T03:45:00.000Z",
+      "primary_code": "S547",
+      "reached_output": true,
+      "sl_pip_live": 28.5,
+      "ratio_to_doc": 1,
+      "rr": "1:1.50",
+      "same_event_family": {
+        "code": "S547",
+        "isPrimary": false,
+        "primaryCard": "XAUUSD-M30",
+        "siblingCards": [
+          "XAUUSD-M30",
+          "XAUUSD-H4"
+        ],
+        "note": "هر سه کارت همان ۱۴۶ روزِ پیش‌تعطیلات را معامله می‌کنند (n مستقل از تایم‌فریم است). قلهٔ حکم M30 است (RQS2 ۸۹.۳ · z=۴.۰۰)؛ M15 (۸۴.۷) و H4 (۸۱.۹) بدیل‌اند، نه شاهدِ دوم. سندِ ACCEPT §۸ + قانونِ S605: هم‌زمان معامله نشوند."
+      }
+    },
+    "XAUUSD-H4": {
+      "tf": "H4",
+      "sl_doc_pip": 123.01,
+      "expect_primary": false,
+      "listed_in_codes": true,
+      "bars": 24004,
+      "event_bar_utc": "2026-09-04T00:00:00.000Z",
+      "primary_code": "S547",
+      "reached_output": true,
+      "sl_pip_live": 123.3,
+      "ratio_to_doc": 1,
+      "rr": "1:1.50",
+      "same_event_family": {
+        "code": "S547",
+        "isPrimary": false,
+        "primaryCard": "XAUUSD-M30",
+        "siblingCards": [
+          "XAUUSD-M15",
+          "XAUUSD-M30"
+        ],
+        "note": "هر سه کارت همان ۱۴۶ روزِ پیش‌تعطیلات را معامله می‌کنند (n مستقل از تایم‌فریم است). قلهٔ حکم M30 است (RQS2 ۸۹.۳ · z=۴.۰۰)؛ M15 (۸۴.۷) و H4 (۸۱.۹) بدیل‌اند، نه شاهدِ دوم. سندِ ACCEPT §۸ + قانونِ S605: هم‌زمان معامله نشوند."
+      }
+    }
+  },
+  "negative_control_h1": {
+    "codes": [
+      "S562",
+      "S354",
+      "S333",
+      "S312"
+    ],
+    "has_s547": false
+  }
+}
