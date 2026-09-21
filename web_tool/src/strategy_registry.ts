@@ -1798,7 +1798,7 @@ export const REGISTERED_CARDS = Object.keys(CARD_LAYERS)
 // نمی‌توانست واگراییِ واقعی را از تفاوتِ نام‌گذاری تشخیص دهد.
 export const CARD_LAYER_CODES: Record<string, string[]> = {
   'XAUUSD-M5':  ['S560'],
-  'XAUUSD-M15': ['S562', 'S408', 'S344', 'S333', 'S312'],
+  'XAUUSD-M15': ['S562', 'S408', 'S344', 'S333', 'S312', 'S547'],
   'XAUUSD-M30': ['S547', 'S312', 'S333'],
   'XAUUSD-H1':  ['S562', 'S354', 'S333', 'S312'],
   'XAUUSD-H4':  ['S382', 'S589'],
