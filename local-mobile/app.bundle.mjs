@@ -4314,6 +4314,203 @@ function computeMidMonth(times, utcHour, filt) {
   };
 }
 
+// ../web_tool/src/preholiday_drift.ts
+var PRE_SL_ATR_MULT = 1.5;
+var PRE_TP_RR = 1.5;
+function dow(y, m, d) {
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+}
+function nthWeekday(y, m, weekday, n) {
+  const first = dow(y, m, 1);
+  return 1 + (weekday - first + 7) % 7 + (n - 1) * 7;
+}
+function lastWeekday(y, m, weekday) {
+  const last2 = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  const wl = dow(y, m, last2);
+  return last2 - (wl - weekday + 7) % 7;
+}
+function observed(y, m, d) {
+  const w = dow(y, m, d);
+  if (w === 6) {
+    const dt = new Date(Date.UTC(y, m - 1, d - 1));
+    return [dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate()];
+  }
+  if (w === 0) {
+    const dt = new Date(Date.UTC(y, m - 1, d + 1));
+    return [dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate()];
+  }
+  return [y, m, d];
+}
+function easterMonthDay(y) {
+  const a = y % 19, b = Math.floor(y / 100), c = y % 100;
+  const d = Math.floor(b / 4), e = b % 4;
+  const f = Math.floor((b + 8) / 25), g = Math.floor((b - f + 1) / 3);
+  const h = (19 * a + b - d - g + 15) % 30;
+  const i = Math.floor(c / 4), k = c % 4;
+  const l = (32 + 2 * e + 2 * i - h - k) % 7;
+  const m = Math.floor((a + 11 * h + 22 * l) / 451);
+  const month = Math.floor((h + l - 7 * m + 114) / 31);
+  const day = (h + l - 7 * m + 114) % 31 + 1;
+  return [month, day];
+}
+var ymd = (y, m, d) => `${y}-${String(m).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+function holidaysOfYear(y) {
+  const out = /* @__PURE__ */ new Set();
+  const add = (m, d) => {
+    const [yy, mm, dd] = observed(y, m, d);
+    out.add(ymd(yy, mm, dd));
+  };
+  add(1, 1);
+  out.add(ymd(y, 1, nthWeekday(y, 1, 1, 3)));
+  out.add(ymd(y, 2, nthWeekday(y, 2, 1, 3)));
+  const [em, ed] = easterMonthDay(y);
+  const gf = new Date(Date.UTC(y, em - 1, ed - 2));
+  out.add(ymd(gf.getUTCFullYear(), gf.getUTCMonth() + 1, gf.getUTCDate()));
+  out.add(ymd(y, 5, lastWeekday(y, 5, 1)));
+  if (y >= 2021) add(6, 19);
+  add(7, 4);
+  out.add(ymd(y, 9, nthWeekday(y, 9, 1, 1)));
+  out.add(ymd(y, 11, nthWeekday(y, 11, 4, 4)));
+  add(12, 25);
+  return out;
+}
+function isHoliday(dt) {
+  const y = dt.getUTCFullYear();
+  const key = ymd(y, dt.getUTCMonth() + 1, dt.getUTCDate());
+  return holidaysOfYear(y).has(key) || holidaysOfYear(y + 1).has(key);
+}
+function prevBDay(dt) {
+  const d = new Date(dt.getTime());
+  do {
+    d.setUTCDate(d.getUTCDate() - 1);
+  } while (d.getUTCDay() === 0 || d.getUTCDay() === 6);
+  return d;
+}
+function nextBDay(dt) {
+  const d = new Date(dt.getTime());
+  do {
+    d.setUTCDate(d.getUTCDate() + 1);
+  } while (d.getUTCDay() === 0 || d.getUTCDay() === 6);
+  return d;
+}
+function isPreHolidayDay(dt) {
+  if (dt.getUTCDay() === 0 || dt.getUTCDay() === 6) return false;
+  if (isHoliday(dt)) return false;
+  let probe = nextBDay(dt);
+  if (!isHoliday(probe)) return false;
+  let p = prevBDay(probe);
+  while (isHoliday(p)) p = prevBDay(p);
+  return p.getUTCFullYear() === dt.getUTCFullYear() && p.getUTCMonth() === dt.getUTCMonth() && p.getUTCDate() === dt.getUTCDate();
+}
+function upcomingHolidayName(dt) {
+  const probe = nextBDay(dt);
+  const y = probe.getUTCFullYear(), m = probe.getUTCMonth() + 1, d = probe.getUTCDate();
+  const key = ymd(y, m, d);
+  const table = [
+    [ymd(y, 1, 1), "\u0633\u0627\u0644\u0650 \u0646\u0648"],
+    [ymd(y, 1, nthWeekday(y, 1, 1, 3)), "\u0631\u0648\u0632\u0650 \u0645\u0627\u0631\u062A\u06CC\u0646 \u0644\u0648\u062A\u0631 \u06A9\u06CC\u0646\u06AF"],
+    [ymd(y, 2, nthWeekday(y, 2, 1, 3)), "\u0631\u0648\u0632\u0650 \u0631\u0624\u0633\u0627\u06CC \u062C\u0645\u0647\u0648\u0631"],
+    [ymd(y, 5, lastWeekday(y, 5, 1)), "\u0631\u0648\u0632\u0650 \u06CC\u0627\u062F\u0628\u0648\u062F"],
+    [ymd(y, 6, 19), "\u062C\u0648\u0646\u200C\u062A\u06CC\u0646\u062B"],
+    [ymd(y, 7, 4), "\u0631\u0648\u0632\u0650 \u0627\u0633\u062A\u0642\u0644\u0627\u0644"],
+    [ymd(y, 9, nthWeekday(y, 9, 1, 1)), "\u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06AF\u0631"],
+    [ymd(y, 11, nthWeekday(y, 11, 4, 4)), "\u0634\u06A9\u0631\u06AF\u0632\u0627\u0631\u06CC"],
+    [ymd(y, 12, 25), "\u06A9\u0631\u06CC\u0633\u0645\u0633"]
+  ];
+  for (const [k, name] of table) if (k === key) return name;
+  const [em, ed] = easterMonthDay(y);
+  const gf = new Date(Date.UTC(y, em - 1, ed - 2));
+  if (ymd(gf.getUTCFullYear(), gf.getUTCMonth() + 1, gf.getUTCDate()) === key) return "\u062C\u0645\u0639\u0647\u0654 \u0646\u06CC\u06A9";
+  return "\u062A\u0639\u0637\u06CC\u0644\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0645\u0631\u06CC\u06A9\u0627";
+}
+function medianAtr(candles, n = 100) {
+  if (candles.length < 2) return NaN;
+  const trs = [];
+  for (let i = 1; i < candles.length; i++) {
+    const c = candles[i], p = candles[i - 1];
+    trs.push(Math.max(c.high - c.low, Math.abs(c.high - p.close), Math.abs(c.low - p.close)));
+  }
+  if (trs.length === 0) return NaN;
+  const alpha = 1 / n;
+  const ew = new Array(trs.length);
+  let acc = trs[0];
+  ew[0] = acc;
+  for (let i = 1; i < trs.length; i++) {
+    acc = alpha * trs[i] + (1 - alpha) * acc;
+    ew[i] = acc;
+  }
+  const s = [...ew].sort((x, y) => x - y);
+  const mid = Math.floor(s.length / 2);
+  return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+}
+function toIran6(utcHour) {
+  const total = ((utcHour * 60 + 210) % 1440 + 1440) % 1440;
+  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+}
+var PRE_ENTRY_HOURS = [0, 1, 2, 3];
+var PRE_IRAN_RANGE = `${toIran6(0)}\u2013${toIran6(4)}`;
+function computePreHoliday(times, utcHour, candles) {
+  const atr2 = medianAtr(candles, 100);
+  const slDist = Number.isFinite(atr2) ? atr2 * PRE_SL_ATR_MULT : NaN;
+  const tpDist = Number.isFinite(slDist) ? slDist * PRE_TP_RR : NaN;
+  if (times.length === 0) {
+    return {
+      state: "NEUTRAL",
+      isPreHoliday: false,
+      holidayName: "\u2014",
+      utcHour,
+      slDist,
+      tpDist,
+      reason: "\u062F\u0627\u062F\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u062A\u0634\u062E\u06CC\u0635\u0650 \u0631\u0648\u0632\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC \u0646\u06CC\u0633\u062A."
+    };
+  }
+  const now = new Date(times[times.length - 1] * 1e3);
+  const isPre = isPreHolidayDay(now);
+  const hol = isPre ? upcomingHolidayName(now) : "\u2014";
+  if (isPre && !Number.isFinite(tpDist)) {
+    return {
+      state: "APPROACHING",
+      isPreHoliday: true,
+      holidayName: hol,
+      utcHour,
+      slDist,
+      tpDist,
+      reason: `\u0627\u0645\u0631\u0648\u0632 \xAB\u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A\xBB (\u0622\u062E\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u067E\u06CC\u0634 \u0627\u0632 ${hol}) \u0627\u0633\u062A\u060C \u0627\u0645\u0627 \u062A\u0627\u0631\u06CC\u062E\u0686\u0647\u0654 \u06A9\u0627\u0641\u06CC \u0628\u0631\u0627\u06CC \u0645\u062D\u0627\u0633\u0628\u0647\u0654 \u0627\u0646\u062F\u0627\u0632\u0647\u0654 \u062D\u062F/\u0647\u062F\u0641 (ATR) \u0645\u0648\u062C\u0648\u062F \u0646\u06CC\u0633\u062A \u21D2 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0635\u0627\u062F\u0631 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F.`
+    };
+  }
+  if (isPre && PRE_ENTRY_HOURS.includes(utcHour)) {
+    return {
+      state: "ENTRY",
+      isPreHoliday: true,
+      holidayName: hol,
+      utcHour,
+      slDist,
+      tpDist,
+      reason: `\u0627\u0645\u0631\u0648\u0632 \u0622\u062E\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0645\u0631\u06CC\u06A9\u0627 \u067E\u06CC\u0634 \u0627\u0632 **${hol}** \u0627\u0633\u062A. \u0627\u062B\u0631\u0650 \u0645\u0633\u062A\u0646\u062F\u0650 \xAB\u062F\u0631\u0641\u062A\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A\xBB (Ariel 1990) \u0631\u0648\u06CC \u0637\u0644\u0627 \u0628\u0627 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644 \u062F\u0627\u062F\u0647 \u062A\u0623\u06CC\u06CC\u062F \u0634\u062F\u0647: \u0646\u0631\u062E\u0650 \u0628\u0631\u062F\u0650 \u2248\u06F5\u06F5\u066A \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u067E\u0627\u06CC\u0647\u0654 \u2248\u06F3\u06F9\u2013\u06F4\u06F3\u066A. \u0633\u0627\u0632\u0648\u06A9\u0627\u0631: \u067E\u06CC\u0634 \u0627\u0632 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u0650 COMEX/NYSE \u0639\u0631\u0636\u0647\u0654 \u0641\u0631\u0648\u0634\u0646\u062F\u06AF\u0627\u0646 \u0648 \u0638\u0631\u0641\u06CC\u062A\u0650 \u067E\u0648\u0634\u0634\u0650 \u0631\u06CC\u0633\u06A9 \u06A9\u0645 \u0645\u06CC\u200C\u0634\u0648\u062F \u0648 \u067E\u0648\u0634\u0634\u0650 \u0634\u0648\u0631\u062A \u062F\u0631\u0641\u062A\u0650 \u0645\u062B\u0628\u062A \u0645\u06CC\u200C\u0633\u0627\u0632\u062F. \u067E\u0646\u062C\u0631\u0647\u0654 \u0648\u0631\u0648\u062F \u0633\u0627\u0639\u0627\u062A\u0650 ${PRE_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646 (\u0627\u0628\u062A\u062F\u0627\u06CC \u0631\u0648\u0632\u0650 P) \u0627\u0633\u062A.`
+    };
+  }
+  if (isPre) {
+    return {
+      state: "APPROACHING",
+      isPreHoliday: true,
+      holidayName: hol,
+      utcHour,
+      slDist,
+      tpDist,
+      reason: `\u0627\u0645\u0631\u0648\u0632 \u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A\u0650 ${hol} \u0627\u0633\u062A\u060C \u0627\u0645\u0627 \u0633\u0627\u0639\u062A\u0650 \u0648\u0631\u0648\u062F \u06AF\u0630\u0634\u062A\u0647 \u0627\u0633\u062A. \u067E\u0646\u062C\u0631\u0647\u0654 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0627\u0628\u062A\u062F\u0627\u06CC \u0631\u0648\u0632\u0650 P (${PRE_IRAN_RANGE} \u0628\u0647 \u0648\u0642\u062A\u0650 \u0627\u06CC\u0631\u0627\u0646) \u0627\u0633\u062A.`
+    };
+  }
+  return {
+    state: "NEUTRAL",
+    isPreHoliday: false,
+    holidayName: "\u2014",
+    utcHour,
+    slDist,
+    tpDist,
+    reason: "\u0627\u0645\u0631\u0648\u0632 \u0622\u062E\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u067E\u06CC\u0634 \u0627\u0632 \u062A\u0639\u0637\u06CC\u0644\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0645\u0631\u06CC\u06A9\u0627 \u0646\u06CC\u0633\u062A \u21D2 \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062E\u0646\u062B\u06CC \u0627\u0633\u062A."
+  };
+}
+
 // ../web_tool/src/squeeze_s332.ts
 function r2Series(close, period = 20) {
   const n = close.length;
@@ -8116,8 +8313,8 @@ function computeS408Signal(candles, cfg) {
   const ratio = thrUsd > 0 ? absGap / thrUsd : 0;
   const dataHealthy = candles[brk].time - candles[brk - 1].time < brkThr;
   const jsDow = new Date(first.time * 1e3).getUTCDay();
-  const dow = (jsDow + 6) % 7;
-  const dowPass = dow !== 0;
+  const dow2 = (jsDow + 6) % 7;
+  const dowPass = dow2 !== 0;
   const baseActive = gapUsd < 0 && absGap > thrUsd && dataHealthy;
   const { ends, atr: atr2 } = dailyBarsAtr(candles, cfg.tfSec);
   let kDay = -1;
@@ -8155,7 +8352,7 @@ function computeS408Signal(candles, cfg) {
     gapUsd,
     thrUsd,
     isWeekend,
-    dow,
+    dow: dow2,
     gapHours: dt / 3600,
     atLatestBar,
     ratio,
@@ -8317,6 +8514,60 @@ function s312Layer(slPip, tpPip, maxHold) {
     }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
   };
 }
+function s547Layer(maxHoldBars) {
+  return (ctx) => {
+    const sig = computePreHoliday(ctx.times, ctx.utcHour, ctx.candles);
+    const price = ctx.a.price;
+    const active = sig.state === "ENTRY";
+    const approaching = sig.state === "APPROACHING";
+    const slPipShown = Number.isFinite(sig.slDist) ? Math.round(sig.slDist / GOLD_PIP17) : NaN;
+    const tpPipShown = Number.isFinite(sig.tpDist) ? Math.round(sig.tpDist / GOLD_PIP17) : NaN;
+    const raw2 = {
+      active,
+      approaching,
+      direction: "LONG",
+      slDist: sig.slDist,
+      tpDist: sig.tpDist,
+      maxHoldBars,
+      reason: sig.reason,
+      approachReason: approaching ? "\u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A \u0627\u0633\u062A\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u067E\u0646\u062C\u0631\u0647\u0654 \u0648\u0631\u0648\u062F (\u0627\u0628\u062A\u062F\u0627\u06CC \u0631\u0648\u0632)" : void 0,
+      indicators: [
+        {
+          name: "\u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A (\u0622\u062E\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u067E\u06CC\u0634 \u0627\u0632 \u062A\u0639\u0637\u06CC\u0644\u06CC)",
+          value: sig.isPreHoliday ? `\u0628\u0644\u0647 \u2714 (${sig.holidayName})` : "\u062E\u06CC\u0631",
+          status: sig.isPreHoliday ? "ok" : "neutral"
+        },
+        {
+          name: "\u0633\u0627\u0639\u062A\u0650 UTC",
+          value: `${sig.utcHour}:00`,
+          status: PRE_ENTRY_HOURS.includes(sig.utcHour) ? "ok" : "neutral"
+        },
+        {
+          name: "\u0628\u0631\u0627\u06A9\u062A\u0650 \u06F1.\u06F5\xD7ATR (SL) \u0628\u0627 RR \u06F1.\u06F5",
+          value: Number.isFinite(slPipShown) ? `SL ${slPipShown} / TP ${tpPipShown} pip` : "ATR \u06AF\u0631\u0645 \u0646\u0634\u062F\u0647",
+          status: Number.isFinite(slPipShown) ? "ok" : "warn"
+        }
+      ],
+      timeGate: {
+        layerCode: "S547",
+        label: "\u062F\u0631\u0641\u062A\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A",
+        entryHoursUtc: PRE_ENTRY_HOURS,
+        dayOfMonthNote: "\u0622\u062E\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u067E\u06CC\u0634 \u0627\u0632 \u062A\u0639\u0637\u06CC\u0644\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0645\u0631\u06CC\u06A9\u0627",
+        windowOpen: sig.isPreHoliday && PRE_ENTRY_HOURS.includes(sig.utcHour),
+        endHourUtc: Math.max(...PRE_ENTRY_HOURS) + 1
+      }
+    };
+    const reg = lightRegime(0, true, "s547_preholiday");
+    return rawToDecision(raw2, {
+      code: "S547",
+      name: "Pre-Holiday Drift",
+      kind: "time",
+      manageStyle: "fixed-tp-sl",
+      manageNote: "\u0647\u062F\u0641/\u062D\u062F\u0650 \u062B\u0627\u0628\u062A \u0628\u0631 \u067E\u0627\u06CC\u0647\u0654 \u06F1.\u06F5\xD7ATR \u0628\u0627 RR \u06F1.\u06F5\u061B \u062A\u0627 \u067E\u0627\u06CC\u0627\u0646\u0650 \u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A \u06CC\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0646\u06AF\u0647\u200C\u062F\u0627\u0631.",
+      filters: ["\u062A\u0642\u0648\u06CC\u0645\u0650 \u062A\u0639\u0637\u06CC\u0644\u0627\u062A\u0650 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0645\u0631\u06CC\u06A9\u0627", "\u0622\u062E\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u067E\u06CC\u0634 \u0627\u0632 \u062A\u0639\u0637\u06CC\u0644\u06CC", "\u067E\u0646\u062C\u0631\u0647\u0654 \u0627\u0628\u062A\u062F\u0627\u06CC \u0631\u0648\u0632"]
+    }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct);
+  };
+}
 var s333Layer = (cfg) => (ctx) => decideS333(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s382Layer = (cfg) => (ctx) => decideS382(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s965Layer = (cfg) => (ctx) => decideS965(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
@@ -8459,7 +8710,12 @@ var CARD_LAYERS = {
     //    مکمل بودن: `S344` (SHORT، ساختاری) و `S431` (LONG، ساختاری) هر دو
     //    قیمت-محورند؛ این لایه زمان-محورِ خالص است ⇒ سه منبعِ مستقل روی یک کارت.
     //    سند: results/S432_MidMonthDriftCalendarPool_Xauusd_H1M15_rqs2_84_ACCEPT.md
-    s312Layer(295, 295, 48)
+    s312Layer(295, 295, 48),
+    // ⭐ S547 — پیش‌تعطیلات روی M15: RQS2 ۸۴.۷ · z=۳.۴۸ · n=۱۴۶ · WR ۵۳.۴۲٪ ·
+    //    PF ۱.۷۱ · lift +۸.۸۱pp · ۱۱/۱۱ سبز. **بدیلِ** کارتِ M30 (همان ۱۴۶ روز)
+    //    ⇒ نشانه‌گذاریِ sameEventFamily آن را از «شاهدِ دوم» جدا می‌کند.
+    //    پایین‌تر از S312 نشسته چون z و RQS2اش کمتر است. maxHold=۹۶ = یک روزِ M15.
+    s547Layer(96)
     // ⚰️ حذف‌شده در S396: S345(RQS+90.7) · S333(RQS+91.7) · S332(RQS+91.2) ·
     //    S324 · S322 · S335(RQS+89.7) · S310 — هیچ‌کدام ACCEPTِ RQS2 ندارند.
     //    (S312(M15) دیگر در این فهرست نیست — در S432 احیا و بالاتر وصل شد.)
@@ -8470,6 +8726,10 @@ var CARD_LAYERS = {
     //    RQS2 = **87.7** · n=289 · WR 61.25% · PF 1.680 · maxDD 2.55%
     //    SL=TP=295 pip (RR 1.0) · maxHold=36 — هندسهٔ متقارن، هیچ تورشِ WR-سازی.
     //    بالاترین توانِ آماریِ میانِ سه لایهٔ زمان‌محورِ پروژه (n=289).
+    // ⭐ S547 — کارتِ **مرجعِ** خانوادهٔ پیش‌تعطیلات: قلهٔ حکم (RQS2 ۸۹.۳ · z=۴.۰۰ ·
+    //    n=۱۴۶ · WR ۵۵.۴۸٪ · PF ۱.۸۶ · lift +۱۲.۲۹pp · ۱۱/۱۱ سبز). بالاتر از S312
+    //    نشسته چون رویدادش نادرتر و z‌اش بزرگ‌تر است. maxHold=۴۸ = یک روزِ کاملِ M30.
+    s547Layer(48),
     s312Layer(295, 295, 36),
     // ⭐ S431 — «S333 + دروازهٔ ساختارِ LPSB» · عضوِ استخرِ چند-کارتی · LONG
     //    RQS2 = **93.9** · هر ۱۱ دروازه پاس (روی جمعیتِ تجمیعی، نه این کارت تنها)
@@ -8577,7 +8837,14 @@ var CARD_LAYERS = {
     //       می‌کند. فایلِ دورانِ حکم از تاریخِ گیت بازیابی و هر ۵ سنجه **عیناً**
     //       بازتولید شد ⇒ اعدادِ بالا معتبرند.
     //    سند: results/S589_VolumeConfirmedFreshHigh_Xauusd_H8H4_rqs2_88_ACCEPT.md
-    s589Layer(S589_CFG["XAUUSD-H4"])
+    s589Layer(S589_CFG["XAUUSD-H4"]),
+    // ⭐ S547 — پیش‌تعطیلات روی H4: RQS2 ۸۱.۹ · z=۳.۰۹ · n=۱۴۴ · WR ۵۴.۱۷٪ ·
+    //    PF ۱.۷۴ · lift **+۱۳.۰۹pp** (بزرگ‌ترین liftِ خانواده) · ۱۱/۱۱ سبز.
+    //    نکتهٔ علمیِ سند (ابطالگرِ F2 نیمه‌ابطال شد): درفتِ پیش‌تعطیلات در مقیاسِ
+    //    براکتِ ۱۲۰–۱۸۰ پیپ هم حمل می‌شود، پس این کارت «نسخهٔ رقیق‌شدهٔ M30» نیست.
+    //    با این حال **بدیلِ** M30 است (همان رویداد) نه شاهدِ مستقل ⇒ sameEventFamily.
+    //    maxHold=۶ = یک روزِ کاملِ H4.
+    s547Layer(6)
     // ⚰️ حذف‌شده در S396: S374(Kennedy) · S340(RQS+92.6) · S332(RQS+92.1)
     //    و S327 که پیش‌تر با RQS2=18.8 حذف شده بود.
     //    S374 مهم‌ترین حذف است: با RQS+ «ACCEPTED» اعلام شده بود، ولی زیرِ RQS2
@@ -9162,10 +9429,10 @@ var CARD_LAYERS = {
 var REGISTERED_CARDS = Object.keys(CARD_LAYERS);
 var CARD_LAYER_CODES = {
   "XAUUSD-M5": ["S560"],
-  "XAUUSD-M15": ["S562", "S408", "S344", "S333", "S312"],
-  "XAUUSD-M30": ["S312", "S333"],
+  "XAUUSD-M15": ["S562", "S408", "S344", "S333", "S312", "S547"],
+  "XAUUSD-M30": ["S547", "S312", "S333"],
   "XAUUSD-H1": ["S562", "S354", "S333", "S312"],
-  "XAUUSD-H4": ["S382", "S589"],
+  "XAUUSD-H4": ["S382", "S589", "S547"],
   "XAUUSD-H6": ["S919", "S955", "S607"],
   "XAUUSD-H8": ["S955", "S965", "S770", "S966", "S1911", "S607", "S1520", "S589"],
   "XAUUSD-H12": ["S955", "S800"],
@@ -9180,6 +9447,29 @@ var FALSE_WITNESS_PAIRS = [
     note: "share_of_b \u06F9\u06F9.\u06F4\u066A \u21D2 S404 \u062A\u0642\u0631\u06CC\u0628\u0627\u064B \u0632\u06CC\u0631\u0645\u062C\u0645\u0648\u0639\u0647\u0654 S408 \u0627\u0633\u062A\u061B \u0633\u0646\u062F\u0650 ACCEPT: \xAB\u06CC\u06A9\u06CC\u060C \u0646\u0647 \u0647\u0631 \u062F\u0648\xBB."
   }
 ];
+var CROSS_CARD_ALTERNATES = [
+  {
+    code: "S547",
+    cards: ["XAUUSD-M15", "XAUUSD-M30", "XAUUSD-H4"],
+    primaryCard: "XAUUSD-M30",
+    sharedEventNote: "\u0647\u0631 \u0633\u0647 \u06A9\u0627\u0631\u062A \u0647\u0645\u0627\u0646 \u06F1\u06F4\u06F6 \u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A \u0631\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0645\u06CC\u200C\u06A9\u0646\u0646\u062F (n \u0645\u0633\u062A\u0642\u0644 \u0627\u0632 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645 \u0627\u0633\u062A). \u0642\u0644\u0647\u0654 \u062D\u06A9\u0645 M30 \u0627\u0633\u062A (RQS2 \u06F8\u06F9.\u06F3 \xB7 z=\u06F4.\u06F0\u06F0)\u061B M15 (\u06F8\u06F4.\u06F7) \u0648 H4 (\u06F8\u06F1.\u06F9) \u0628\u062F\u06CC\u0644\u200C\u0627\u0646\u062F\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u062F\u0648\u0645. \u0633\u0646\u062F\u0650 ACCEPT \xA7\u06F8 + \u0642\u0627\u0646\u0648\u0646\u0650 S605: \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0634\u0648\u0646\u062F."
+  }
+];
+function markCrossCardAlternates(d, cardId) {
+  const code = (d.sourceLayer?.code || "").trim();
+  if (!code) return;
+  if (d.state !== "ENTRY" && d.state !== "APPROACHING") return;
+  for (const fam of CROSS_CARD_ALTERNATES) {
+    if (fam.code !== code || !fam.cards.includes(cardId)) continue;
+    d.sameEventFamily = {
+      code: fam.code,
+      isPrimary: cardId === fam.primaryCard,
+      primaryCard: fam.primaryCard,
+      siblingCards: fam.cards.filter((c) => c !== cardId),
+      note: fam.sharedEventNote
+    };
+  }
+}
 function layerCodeOf(d) {
   return (d.sourceLayer?.code || "").trim();
 }
@@ -9265,6 +9555,15 @@ function runCard(ctx) {
     });
   }
   if (fw.dropped.length > 0) primary.falseWitness = fw.dropped;
+  markCrossCardAlternates(primary, ctx.cardId);
+  for (const d of others) markCrossCardAlternates(d, ctx.cardId);
+  if (primary.otherLayers) {
+    primary.otherLayers = primary.otherLayers.map((ol, i) => {
+      const src = others[i];
+      const fam = src ? src.sameEventFamily : void 0;
+      return fam ? { ...ol, sameEventFamily: fam } : ol;
+    });
+  }
   return primary;
 }
 
@@ -9314,7 +9613,21 @@ var LAYER_CATALOG = {
     side: "LONG",
     what: "\u067E\u0646\u062C\u0631\u0647\u0654 \u0631\u0648\u0632\u0650 \u0645\u0627\u0647 \xD7 \u0633\u0627\u0639\u062A\u0650 \u0622\u0633\u06CC\u0627/\u0644\u0646\u062F\u0646 \u2014 \u0633\u0648\u06AF\u06CC\u0631\u06CC\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u0627\u062B\u0628\u0627\u062A\u200C\u0634\u062F\u0647."
   },
+  "XAUUSD-M15|S547": {
+    code: "S547",
+    name: "\u062F\u0631\u0641\u062A\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A (M15) \u2014 \u0628\u062F\u06CC\u0644\u0650 \u06A9\u0627\u0631\u062A\u0650 M30",
+    verdict: "ACCEPT 84.7",
+    side: "LONG",
+    what: "\u0622\u062E\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u067E\u06CC\u0634 \u0627\u0632 \u062A\u0639\u0637\u06CC\u0644\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0645\u0631\u06CC\u06A9\u0627 (Ariel 1990). \u26A0\uFE0F \u0647\u0645\u0627\u0646 \u06F1\u06F4\u06F6 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u062A\u0650 M30 \u0627\u0633\u062A\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u062F\u0648\u0645."
+  },
   // ---------------------------- XAUUSD-M30 ---------------------------
+  "XAUUSD-M30|S547": {
+    code: "S547",
+    name: "\u062F\u0631\u0641\u062A\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A (\u06A9\u0627\u0631\u062A\u0650 \u0645\u0631\u062C\u0639)",
+    verdict: "ACCEPT 89.3",
+    side: "LONG",
+    what: "\u0622\u062E\u0631\u06CC\u0646 \u0631\u0648\u0632\u0650 \u06A9\u0627\u0631\u06CC \u067E\u06CC\u0634 \u0627\u0632 \u062A\u0639\u0637\u06CC\u0644\u06CC\u0650 \u0628\u0627\u0632\u0627\u0631\u0650 \u0622\u0645\u0631\u06CC\u06A9\u0627\u061B \u0642\u0644\u0647\u0654 \u062D\u06A9\u0645\u0650 \u062E\u0627\u0646\u0648\u0627\u062F\u0647 (z=\u06F4.\u06F0\u06F0). \u06A9\u0627\u0631\u062A\u0650 M15/H4 \u0628\u062F\u06CC\u0644\u0650 \u0647\u0645\u06CC\u0646\u200C\u0627\u0646\u062F."
+  },
   "XAUUSD-M30|S312": {
     code: "S312",
     name: "\u062F\u0631\u0641\u062A\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647 (M30)",
@@ -9372,6 +9685,13 @@ var LAYER_CATALOG = {
     verdict: "ACCEPT 88",
     side: "LONG",
     what: "\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u06F9\u06F0-\u06A9\u0646\u062F\u0644\u06CC \u06A9\u0647 \u062D\u062C\u0645\u0650 \u0646\u0633\u0628\u06CC \u0622\u0646 \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0646\u062F."
+  },
+  "XAUUSD-H4|S547": {
+    code: "S547",
+    name: "\u062F\u0631\u0641\u062A\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A (H4) \u2014 \u0628\u062F\u06CC\u0644\u0650 \u06A9\u0627\u0631\u062A\u0650 M30",
+    verdict: "ACCEPT 81.9",
+    side: "LONG",
+    what: "\u0647\u0645\u0627\u0646 \u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A \u0628\u0627 \u0628\u0631\u0627\u06A9\u062A\u0650 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 (\u0628\u06CC\u0634\u062A\u0631\u06CC\u0646 lift\u0650 \u062E\u0627\u0646\u0648\u0627\u062F\u0647 +\u06F1\u06F3.\u06F1pp). \u26A0\uFE0F \u0647\u0645\u200C\u0631\u0648\u06CC\u062F\u0627\u062F \u0628\u0627 M30\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644."
   },
   // ---------------------------- XAUUSD-H6 ----------------------------
   "XAUUSD-H6|S919": {
