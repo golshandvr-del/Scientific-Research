@@ -3,8 +3,8 @@
  "source_archive": "history.rar (158,438,429 bytes)",
  "source_url": "https://abrehamrahi.ir/o/public/y6n6FKpq/",
  "asset": "XAUUSD",
- "n_files": 19,
- "total_bytes": 600509345,
+ "n_files": 20,
+ "total_bytes": 601736846,
  "compat_check": {
   "method": "timestamp merge against pre-existing data/XAUUSD_M30.csv",
   "overlapping_bars": 181383,
@@ -57,6 +57,16 @@
    "first_utc": "2011-01-03 00:00:00",
    "last_utc": "2026-08-07 21:00:00",
    "span_years": 15.59
+  },
+  {
+   "file": "XAUUSD_H4.csv",
+   "bytes": 1227501,
+   "sha256": "c03f908edbf3df610b19bdf41bc8150d4ef711cc0aac6f160b23e9eab68f8273",
+   "bars": 24004,
+   "first_utc": "2011-01-03 00:00:00",
+   "last_utc": "2026-09-11 20:00:00",
+   "span_years": 15.69,
+   "provenance": "user re-export from MT5 (2026-09-21), same broker/feed; validated: bit-exact vs H1-derived H4 on 23,854 overlapping bars and H4->H8 aggregation bit-exact vs official H8 on 11,978 bars; the pre-existing derived file was replaced"
   },
   {
    "file": "XAUUSD_H6.csv",
