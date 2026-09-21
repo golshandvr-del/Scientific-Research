@@ -105,7 +105,7 @@ def member_A(df):
     g, dens = S605.regime_member(m, W_CALM, 'CALM')
     return dict(card='A_engle', tr=g['tr'], dt=m['dt'], lift=g['lift'], null=g['null'],
                 sl_pip=g['sl_pip'], tp_pip=g['tp_pip'], asset='XAUUSD',
-                desc=dict(n=g['n'], wr=g['wr'], lift=g['lift'], pass=dens))
+                desc=dict(n=g['n'], wr=g['wr'], lift=g['lift'], density=dens))
 
 
 def member_B(df):
@@ -134,9 +134,10 @@ def member_from_harness(df, mod, card, mh):
     null = null_for(df, lm, sm, sl, tp, mh, warm)
     st = stat(tr); lift = st['wr'] - (null['long']['perm_mean'] or 0.0)
     sl_med = float(np.median(tr['sl_pip']))
+    eb = tr['entry_bar'].to_numpy()
+    rr = float(np.median(np.asarray(tp)[eb] / np.asarray(sl)[eb]))       # RR منجمد عضو (1.618 یا 1.0)
     return dict(card=card, tr=tr, dt=df.attrs['dt'], lift=lift, null=null, sl_pip=sl_med,
-                tp_pip=float(np.median(tr['tp_pip'])) if 'tp_pip' in tr else sl_med * (tp[tr['entry_bar'].iloc[0]] / sl[tr['entry_bar'].iloc[0]]),
-                asset='XAUUSD', desc=dict(**st, lift=round(lift, 2)))
+                tp_pip=sl_med * rr, asset='XAUUSD', desc=dict(**st, lift=round(lift, 2), rr=round(rr, 3)))
 
 
 def save(name, obj):
