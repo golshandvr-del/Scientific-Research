@@ -1,0 +1,158 @@
+{
+ "tf": "H8",
+ "src": "/home/user/webapp/data/mt5_full/XAUUSD_H8.csv",
+ "bars_first_half": 5989,
+ "sl_pip": 148.5,
+ "tp_pip": 222.8,
+ "blind_wr": 38.85,
+ "gated_wr": 38.88,
+ "n_edge": 144,
+ "n_base": 134,
+ "touch_hist": {
+  "1": 12,
+  "2": 12,
+  "3": 10,
+  "4": 18,
+  "5": 16,
+  "6": 11,
+  "7": 13,
+  "8": 14,
+  "9": 4,
+  "10": 4,
+  "11": 1,
+  "12": 3,
+  "13": 5,
+  "14": 1,
+  "15": 1,
+  "16": 3,
+  "17": 1,
+  "18": 2,
+  "19": 1,
+  "25": 1,
+  "26": 1
+ },
+ "reg_split_time": "2014-12-04 08:00:00",
+ "cells": [
+  {
+   "arm": "base",
+   "n": 78,
+   "wr": 46.15,
+   "lift_blind": 7.3,
+   "lift_gated": 7.28,
+   "lift_vs_base": 0.0,
+   "exp_pip": 19.57,
+   "reg1": {
+    "n": 48,
+    "wr": 45.83,
+    "exp": 18.38
+   },
+   "reg2": {
+    "n": 30,
+    "wr": 46.67,
+    "exp": 21.47
+   },
+   "lsn_gated": 64.3
+  },
+  {
+   "arm": "tested>=1",
+   "n": 78,
+   "wr": 46.15,
+   "lift_blind": 7.3,
+   "lift_gated": 7.28,
+   "lift_vs_base": 0.0,
+   "exp_pip": 19.57,
+   "reg1": {
+    "n": 48,
+    "wr": 45.83,
+    "exp": 18.38
+   },
+   "reg2": {
+    "n": 30,
+    "wr": 46.67,
+    "exp": 21.47
+   },
+   "lsn_gated": 64.3
+  },
+  {
+   "arm": "tested>=2",
+   "n": 73,
+   "wr": 47.95,
+   "lift_blind": 9.1,
+   "lift_gated": 9.07,
+   "lift_vs_base": 1.79,
+   "exp_pip": 26.22,
+   "reg1": {
+    "n": 44,
+    "wr": 47.73,
+    "exp": 25.41
+   },
+   "reg2": {
+    "n": 29,
+    "wr": 48.28,
+    "exp": 27.45
+   },
+   "lsn_gated": 77.5
+  },
+  {
+   "arm": "tested>=3",
+   "n": 69,
+   "wr": 50.72,
+   "lift_blind": 11.88,
+   "lift_gated": 11.85,
+   "lift_vs_base": 4.57,
+   "exp_pip": 36.54,
+   "reg1": {
+    "n": 41,
+    "wr": 51.22,
+    "exp": 38.38
+   },
+   "reg2": {
+    "n": 28,
+    "wr": 50.0,
+    "exp": 33.85
+   },
+   "lsn_gated": 98.4
+  },
+  {
+   "arm": "untested0",
+   "n": 0,
+   "wr": 0.0,
+   "lift_blind": -38.85,
+   "lift_gated": -38.88,
+   "lift_vs_base": -46.15,
+   "exp_pip": 0.0,
+   "reg1": {
+    "n": 0,
+    "wr": 0.0,
+    "exp": 0.0
+   },
+   "reg2": {
+    "n": 0,
+    "wr": 0.0,
+    "exp": 0.0
+   },
+   "lsn_gated": -0.0
+  },
+  {
+   "arm": "untested<2",
+   "n": 12,
+   "wr": 41.67,
+   "lift_blind": 2.82,
+   "lift_gated": 2.79,
+   "lift_vs_base": -4.49,
+   "exp_pip": 2.91,
+   "reg1": {
+    "n": 9,
+    "wr": 44.44,
+    "exp": 13.22
+   },
+   "reg2": {
+    "n": 3,
+    "wr": 33.33,
+    "exp": -28.03
+   },
+   "lsn_gated": 9.7
+  }
+ ],
+ "sec": 0.0
+}
