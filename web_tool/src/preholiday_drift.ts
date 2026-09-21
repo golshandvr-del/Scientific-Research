@@ -114,10 +114,23 @@ export function holidaysOfYear(y: number): Set<string> {
   return out
 }
 
-/** آیا این تاریخِ UTC تعطیلِ بازارِ آمریکا است؟ */
+/**
+ * آیا این تاریخِ UTC تعطیلِ بازارِ آمریکا است؟
+ *
+ * ⚠️ چرا سالِ **بعد** هم پرس‌وجو می‌شود: تعطیلیِ «سالِ نو» وقتی ۱ ژانویه شنبه
+ * می‌افتد، طبقِ قاعدهٔ جابه‌جایی به **جمعهٔ ۳۱ دسامبرِ سالِ قبل** منتقل می‌شود.
+ * آن تاریخ در `holidaysOfYear(y+1)` تولید می‌شود، نه در `holidaysOfYear(y)`.
+ * اگر فقط سالِ خودِ تاریخ را می‌پرسیدیم، ۳۱ دسامبر «کاری» به‌نظر می‌رسید و در
+ * نتیجه روزِ P (پنجشنبه ۳۰ دسامبر) **گم** می‌شد.
+ *
+ * این را آزمونِ برابری با پایتون لو داد، نه بازخوانیِ کد: دو روزِ ۲۰۲۱-۱۲-۳۰ و
+ * ۲۰۲۷-۱۲-۳۰ در سمتِ سایت غایب بودند. دقیقاً همان دسته خرابی‌ای که بی‌صدا
+ * می‌ماند — لایه در آن روزها ساکت می‌شد و هیچ خطایی هم دیده نمی‌شد.
+ */
 function isHoliday(dt: Date): boolean {
-  const key = ymd(dt.getUTCFullYear(), dt.getUTCMonth() + 1, dt.getUTCDate())
-  return holidaysOfYear(dt.getUTCFullYear()).has(key)
+  const y = dt.getUTCFullYear()
+  const key = ymd(y, dt.getUTCMonth() + 1, dt.getUTCDate())
+  return holidaysOfYear(y).has(key) || holidaysOfYear(y + 1).has(key)
 }
 
 /** روزِ کاریِ قبلی (شنبه/یکشنبه رد می‌شوند) — معادلِ `pd.offsets.BDay(1)` رو به عقب. */
