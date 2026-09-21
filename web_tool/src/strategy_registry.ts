@@ -1952,5 +1952,18 @@ export function runCard(ctx: LayerContext): RouterDecision {
   // لایه‌ای که انتظارش را داشت در فهرست نیست — وگرنه «ناپدید شدنِ بی‌دلیل»
   // خودش به یک باگِ گزارش‌شدنی تبدیل می‌شود.
   if (fw.dropped.length > 0) (primary as any).falseWitness = fw.dropped
+  // 🛡️ قیدِ هم‌رویدادیِ بین‌کارتی: روی primary و روی همهٔ لایه‌های همزمانِ فعال.
+  // بدونِ این فراخوانی، جدولِ CROSS_CARD_ALTERNATES فقط یک آرایهٔ بی‌مصرف است.
+  markCrossCardAlternates(primary, ctx.cardId)
+  for (const d of others) markCrossCardAlternates(d, ctx.cardId)
+  if (primary.otherLayers) {
+    // نشانه باید به همان شکلی که UI می‌خواند هم منتقل شود (otherLayers یک کپیِ
+    // تخت است، پس نشانه‌گذاریِ شیءِ اصلی به‌تنهایی به کارت نمی‌رسد).
+    primary.otherLayers = primary.otherLayers.map((ol, i) => {
+      const src = others[i]
+      const fam = src ? (src as any).sameEventFamily : undefined
+      return fam ? { ...ol, sameEventFamily: fam } : ol
+    })
+  }
   return primary
 }
