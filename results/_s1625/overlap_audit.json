@@ -1,0 +1,5 @@
+{
+ "jaccard_S1520": 0.7837837837837838,
+ "jaccard_S1621": 0.759825327510917,
+ "note": "dual is subset of both by construction"
+}
