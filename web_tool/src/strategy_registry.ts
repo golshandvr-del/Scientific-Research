@@ -601,6 +601,67 @@ function s312Layer(slPip: number, tpPip: number, maxHold: number): LayerFn {
 }
 
 // ---------------------------------------------------------------------------
+// S547 — درفتِ پیش‌تعطیلات (Ariel 1990). سند:
+//   results/S547_PreHolidayDrift_Xauusd_MTF_rqs2_89_ACCEPT.md
+// ---------------------------------------------------------------------------
+// هندسه از خودِ سند می‌آید و **محاسبه** می‌شود، نه اینکه عددِ ثابت بنشیند:
+// SL = ۱.۵×median(ATR100) و TP = ۱.۵×SL. سند برای M30 حدودِ SL≈۴۱/TP≈۶۲ پیپ و
+// برای H4 حدودِ SL≈۱۲۳/TP≈۱۸۵ پیپ گزارش می‌کند — این‌ها **نتیجهٔ** همان فرمول
+// روی همان داده‌اند. اگر عددها را hardcode می‌کردم، لایه با تغییرِ رژیمِ نوسانِ
+// طلا از قاعدهٔ حکم جدا می‌شد؛ با فرمول، خودش مقیاس می‌گیرد. (اثباتِ TP>SL هم
+// ساختاری می‌شود: نسبت ثابتِ ۱.۵ است، پس گیتِ TP>SL هرگز نقض نمی‌شود.)
+//
+// maxHoldBars: سند «بدون max_hold» است و ورود در open روزِ P ⇒ افقِ طبیعی «تا
+// پایانِ همان روزِ معاملاتی». پس به‌ازای هر کارت، تعدادِ کندلِ یک روز داده می‌شود.
+function s547Layer(maxHoldBars: number): LayerFn {
+  return (ctx) => {
+    const sig = computePreHoliday(ctx.times, ctx.utcHour, ctx.candles)
+    const price = ctx.a.price
+    const active = sig.state === 'ENTRY'
+    const approaching = sig.state === 'APPROACHING'
+    const slPipShown = Number.isFinite(sig.slDist) ? Math.round(sig.slDist / GOLD_PIP) : NaN
+    const tpPipShown = Number.isFinite(sig.tpDist) ? Math.round(sig.tpDist / GOLD_PIP) : NaN
+    const raw: RawSignal = {
+      active, approaching, direction: 'LONG',
+      slDist: sig.slDist, tpDist: sig.tpDist, maxHoldBars,
+      reason: sig.reason,
+      approachReason: approaching ? 'روزِ پیش‌تعطیلات است؛ منتظرِ پنجرهٔ ورود (ابتدای روز)' : undefined,
+      indicators: [
+        {
+          name: 'روزِ پیش‌تعطیلات (آخرین روزِ کاری پیش از تعطیلی)',
+          value: sig.isPreHoliday ? `بله ✔ (${sig.holidayName})` : 'خیر',
+          status: sig.isPreHoliday ? 'ok' : 'neutral',
+        },
+        {
+          name: 'ساعتِ UTC',
+          value: `${sig.utcHour}:00`,
+          status: PRE_ENTRY_HOURS.includes(sig.utcHour) ? 'ok' : 'neutral',
+        },
+        {
+          name: 'براکتِ ۱.۵×ATR (SL) با RR ۱.۵',
+          value: Number.isFinite(slPipShown) ? `SL ${slPipShown} / TP ${tpPipShown} pip` : 'ATR گرم نشده',
+          status: Number.isFinite(slPipShown) ? 'ok' : 'warn',
+        },
+      ],
+      timeGate: {
+        layerCode: 'S547', label: 'درفتِ پیش‌تعطیلات',
+        entryHoursUtc: PRE_ENTRY_HOURS,
+        dayOfMonthNote: 'آخرین روزِ کاری پیش از تعطیلیِ بازارِ آمریکا',
+        windowOpen: sig.isPreHoliday && PRE_ENTRY_HOURS.includes(sig.utcHour),
+        endHourUtc: Math.max(...PRE_ENTRY_HOURS) + 1,
+      },
+    }
+    const reg = lightRegime(0, true, 's547_preholiday')
+    return rawToDecision(raw, {
+      code: 'S547', name: 'Pre-Holiday Drift', kind: 'time' as any,
+      manageStyle: 'fixed-tp-sl',
+      manageNote: 'هدف/حدِ ثابت بر پایهٔ ۱.۵×ATR با RR ۱.۵؛ تا پایانِ روزِ پیش‌تعطیلات یا برخورد نگه‌دار.',
+      filters: ['تقویمِ تعطیلاتِ بازارِ آمریکا', 'آخرین روزِ کاری پیش از تعطیلی', 'پنجرهٔ ابتدای روز'],
+    }, ctx.cardId, price, reg, ctx.capital, ctx.riskPct)
+  }
+}
+
+// ---------------------------------------------------------------------------
 // آداپترهای نازک برای ماژول‌های دارای decide* (فقط cfg را می‌بندند)
 // ---------------------------------------------------------------------------
 //
