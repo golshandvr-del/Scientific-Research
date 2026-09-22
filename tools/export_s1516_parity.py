@@ -134,6 +134,34 @@ def summarize(S, df: pd.DataFrame, L: int, tag: str) -> dict:
         [str(df['dt'].iloc[int(i)]) for i in ev[:5]]
         + [str(df['dt'].iloc[int(i)]) for i in ev[-5:]]
     )
+
+    # ── دنبالهٔ کاملِ سیگنال‌ها + سری‌های میانی، برای مقایسهٔ **بیت‌به‌بیت** ────
+    # نمونه‌گیری کافی نیست: پورت می‌تواند روی ۱۰ رویدادِ اول درست باشد و روی
+    # رویدادِ ۲۰۰اُم خطا کند (مثلاً جایی که ff دو کندلِ پیاپی true است). پس
+    # زمانِ **همهٔ** رویدادها صادر می‌شود و هارنسِ TS باید مجموعه را عیناً بسازد.
+    out['all_event_times'] = [int(df['time'].iloc[int(i)]) for i in ev]
+
+    # سری‌های میانی روی دنبالهٔ آخر — تا اگر مجموعه‌ها فرق کردند بدانیم کدام
+    # جزءِ قاعده (سدِ کف / لبهٔ تازه / گیتِ درفت) مقصر است، نه فقط «فرق دارد».
+    S.LOOKBACK = L
+    ff = S.ff_state(df).to_numpy()
+    fresh = (S.ff_state(df) & ~S.ff_state(df).shift(1, fill_value=False)).to_numpy()
+    drift = S.drift_mask(df).to_numpy()
+    lo = df['low'].to_numpy(float)
+    barrier = df['low'].rolling(L).max().shift(1).to_numpy()
+    TAIL = 400
+    s = max(0, len(df) - TAIL)
+    out['tail'] = {
+        'from_index': int(s),
+        'time': [int(t) for t in df['time'].to_numpy()[s:]],
+        'low': [round(float(x), 5) for x in lo[s:]],
+        'barrier': [None if not np.isfinite(x) else round(float(x), 5)
+                    for x in barrier[s:]],
+        'ff': [bool(x) for x in ff[s:]],
+        'fresh': [bool(x) for x in fresh[s:]],
+        'drift': [bool(x) for x in drift[s:]],
+        'sig': [bool(x) for x in sig.to_numpy()[s:]],
+    }
     return out
 
 
