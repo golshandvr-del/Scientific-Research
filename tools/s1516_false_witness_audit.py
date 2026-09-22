@@ -99,6 +99,33 @@ def load(card: str) -> pd.DataFrame:
     return df
 
 
+#: کامیتی که فایلِ H4 را عوض کرد؛ والدش = دادهٔ زمانِ صدورِ حکمِ S1516.
+DATA_SWAP_COMMIT = '922b56ac'
+
+
+def verdict_time_snapshot(card: str):
+    """نسخهٔ دادهٔ همان لحظه‌ای که حکم صادر شد، مستقیم از گیت.
+
+    برای کنترلِ اعتبارسنجی لازم است و نه برای خودِ ممیزی: ممیزی باید روی دادهٔ
+    **امروز** انجام شود، چون سایت هم با دادهٔ امروز کار می‌کند؛ ولی «آیا ابزار
+    درست است؟» فقط با بازتولیدِ عددِ منتشرشده پاسخ می‌گیرد، و آن عدد متعلق به
+    فایلِ آن‌روز است. برگرداندنِ None یعنی نتوانستیم snapshot را بگیریم — آن‌وقت
+    کنترل شکست می‌خورد و ابزار بی‌اعتبار اعلام می‌شود، نه اینکه بی‌صدا رد شود.
+    """
+    import subprocess
+    ref = f'{DATA_SWAP_COMMIT}~1:data/mt5_full/{card}.csv.gz'
+    try:
+        blob = subprocess.run(['git', 'show', ref], cwd=ROOT, check=True,
+                              stdout=subprocess.PIPE, stderr=subprocess.DEVNULL).stdout
+    except Exception:
+        return None
+    import io
+    with gzip.open(io.BytesIO(blob), 'rt') as f:
+        df = pd.read_csv(f)
+    df['dt'] = pd.to_datetime(df['time'], unit='s')
+    return df
+
+
 def _b(s) -> pd.Series:
     return s.astype('boolean').fillna(False).astype(bool)
 
@@ -321,9 +348,31 @@ def main() -> None:
     for card, published in (('XAUUSD_H6', 413), ('XAUUSD_H4', 508)):
         got = report['cards'][card]['n_events']['S1516']
         ctrl[f'{card}_n_event_published'] = published
-        ctrl[f'{card}_n_event_measured'] = got
-        ctrl[f'{card}_match'] = bool(got == published)
-        ok = ok and got == published
+        ctrl[f'{card}_n_event_measured_today'] = got
+        if got == published:
+            ctrl[f'{card}_match'] = True
+            ctrl[f'{card}_basis'] = 'current mt5_full file == verdict-time file'
+            continue
+        # عدم‌تطابق ⇒ پیش از آنکه ابزار را مقصر بدانیم، باید بررسی شود که آیا
+        # فایلِ داده **بعد از** صدورِ حکم عوض شده است. این دقیقاً برای H4 رخ داد:
+        # کامیت 922b56ac (۲۰۲۶-۰۹-۲۱ ۱۷:۲۷) فایلِ مشتق‌از-H1 با ۲۳٬۸۵۴ کندل را
+        # با re-exportِ رسمیِ ۲۴٬۰۰۴ کندلی جایگزین کرد، و اسکنِ S1516 (ae70733b،
+        # ۱۷:۴۷) با وجود اینکه بعد از آن کامیت شد، اعدادش را از فایلِ قدیمی دارد
+        # (span منتشرشده ۱۵.۵۹ در برابرِ ۱۵.۶۹ فایلِ امروز).
+        # پس کنترل روی همان snapshotِ زمانِ حکم بازاجرا می‌شود.
+        snap = verdict_time_snapshot(card)
+        if snap is None:
+            ctrl[f'{card}_match'] = False
+            ok = False
+            continue
+        got_snap = int(sig_s1516(snap, L_CAL[card]).sum())
+        ctrl[f'{card}_n_event_on_verdict_snapshot'] = got_snap
+        ctrl[f'{card}_snapshot_bars'] = int(len(snap))
+        ctrl[f'{card}_match'] = bool(got_snap == published)
+        ctrl[f'{card}_basis'] = (
+            'data file was REPLACED after the verdict (commit 922b56ac); control '
+            'reproduced on the verdict-time snapshot instead of the current file')
+        ok = ok and got_snap == published
     ctrl['tool_valid'] = bool(ok)
     report['control'] = ctrl
     print(f'\ncontrol: {json.dumps(ctrl, ensure_ascii=False)}', flush=True)
