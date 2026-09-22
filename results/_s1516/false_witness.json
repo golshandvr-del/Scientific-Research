@@ -1,0 +1,150 @@
+{
+ "thresholds": {
+  "jaccard_false_witness": 0.6,
+  "size_ratio_comparable": 0.75,
+  "precedent": "strategy_registry.ts:794-797 (S404/S408 jaccard 69.3% => one, not both)"
+ },
+ "cards": {
+  "XAUUSD_H6": {
+   "L": 120,
+   "bars": 15966,
+   "span_years": 15.59,
+   "n_events": {
+    "S1516": 413,
+    "S919": 106,
+    "S955": 155,
+    "S607": 172
+   },
+   "vs_live_incumbents": {
+    "S919": {
+     "a": "S1516",
+     "b": "S919",
+     "n_a": 413,
+     "n_b": 106,
+     "shared": 2,
+     "share_of_a": 0.5,
+     "share_of_b": 1.9,
+     "jaccard": 0.0039,
+     "size_ratio": 0.2567,
+     "false_witness": false,
+     "why_this_reference": "wired on H6 (top of CARD_LAYERS)"
+    },
+    "S955": {
+     "a": "S1516",
+     "b": "S955",
+     "n_a": 413,
+     "n_b": 155,
+     "shared": 7,
+     "share_of_a": 1.7,
+     "share_of_b": 4.5,
+     "jaccard": 0.0125,
+     "size_ratio": 0.3753,
+     "false_witness": false,
+     "why_this_reference": "wired on H6"
+    },
+    "S607": {
+     "a": "S1516",
+     "b": "S607",
+     "n_a": 413,
+     "n_b": 172,
+     "shared": 4,
+     "share_of_a": 1.0,
+     "share_of_b": 2.3,
+     "jaccard": 0.0069,
+     "size_ratio": 0.4165,
+     "false_witness": false,
+     "why_this_reference": "wired on H6 (H6-DUAL pool member)"
+    }
+   },
+   "vs_S1511_parent_unwired": {
+    "a": "S1516",
+    "b": "S1511",
+    "n_a": 413,
+    "n_b": 477,
+    "shared": 398,
+    "share_of_a": 96.4,
+    "share_of_b": 83.4,
+    "jaccard": 0.8089,
+    "size_ratio": 0.8658,
+    "false_witness": true
+   }
+  },
+  "XAUUSD_H4": {
+   "L": 180,
+   "bars": 24004,
+   "span_years": 15.69,
+   "n_events": {
+    "S1516": 518,
+    "S382": 1496,
+    "S589": 498,
+    "S547": 0
+   },
+   "vs_live_incumbents": {
+    "S382": {
+     "a": "S1516",
+     "b": "S382",
+     "n_a": 518,
+     "n_b": 1496,
+     "shared": 93,
+     "share_of_a": 18.0,
+     "share_of_b": 6.2,
+     "jaccard": 0.0484,
+     "size_ratio": 0.3463,
+     "false_witness": false,
+     "why_this_reference": "wired on H4 (top of CARD_LAYERS)"
+    },
+    "S589": {
+     "a": "S1516",
+     "b": "S589",
+     "n_a": 518,
+     "n_b": 498,
+     "shared": 87,
+     "share_of_a": 16.8,
+     "share_of_b": 17.5,
+     "jaccard": 0.0936,
+     "size_ratio": 0.9614,
+     "false_witness": false,
+     "why_this_reference": "wired on H4 — CONCEPTUAL SIBLING (fresh record, high side)"
+    },
+    "S547": {
+     "a": "S1516",
+     "b": "S547",
+     "n_a": 518,
+     "n_b": 0,
+     "shared": 0,
+     "share_of_a": 0.0,
+     "share_of_b": 0.0,
+     "jaccard": 0.0,
+     "size_ratio": 0.0,
+     "false_witness": false,
+     "why_this_reference": "wired on H4 (calendar layer)"
+    }
+   },
+   "vs_S1511_parent_unwired": {
+    "a": "S1516",
+    "b": "S1511",
+    "n_a": 518,
+    "n_b": 729,
+    "shared": 497,
+    "share_of_a": 95.9,
+    "share_of_b": 68.2,
+    "jaccard": 0.6627,
+    "size_ratio": 0.7106,
+    "false_witness": false
+   }
+  }
+ },
+ "control": {
+  "XAUUSD_H6_n_event_published": 413,
+  "XAUUSD_H6_n_event_measured_today": 413,
+  "XAUUSD_H6_match": true,
+  "XAUUSD_H6_basis": "current mt5_full file == verdict-time file",
+  "XAUUSD_H4_n_event_published": 508,
+  "XAUUSD_H4_n_event_measured_today": 518,
+  "XAUUSD_H4_n_event_on_verdict_snapshot": 508,
+  "XAUUSD_H4_snapshot_bars": 23854,
+  "XAUUSD_H4_match": true,
+  "XAUUSD_H4_basis": "data file was REPLACED after the verdict (commit 922b56ac); control reproduced on the verdict-time snapshot instead of the current file",
+  "tool_valid": true
+ }
+}
