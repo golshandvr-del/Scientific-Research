@@ -1,0 +1,114 @@
+{
+ "published": {
+  "rqs2": 87.1,
+  "n_trades": 244,
+  "n_signals": 413,
+  "wr": 54.51,
+  "lift": 13.64,
+  "sl_pip": 152.1,
+  "tp_pip": 228.1
+ },
+ "verdict_time_data": {
+  "tag": "verdict",
+  "bars": 15966,
+  "span_years": 15.59,
+  "L": 120,
+  "n_signals": 413,
+  "n_trades": 244,
+  "wr": 54.51,
+  "be": 40.87,
+  "lift": 13.64,
+  "sl_abs_price": 15.20958,
+  "sl_pip": 152.1,
+  "tp_pip": 228.14,
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "atr_period": 100,
+  "entry_price_field": "close[signal_bar]",
+  "side": "long",
+  "hold_bars": {
+   "min": 1,
+   "median": 4,
+   "p95": 26,
+   "max": 84
+  },
+  "sample_event_times": [
+   "2011-02-18 18:00:00",
+   "2011-02-23 18:00:00",
+   "2011-03-01 06:00:00",
+   "2011-03-02 12:00:00",
+   "2011-03-07 00:00:00",
+   "2026-01-23 18:00:00",
+   "2026-01-27 06:00:00",
+   "2026-01-27 18:00:00",
+   "2026-08-05 18:00:00",
+   "2026-08-07 06:00:00"
+  ]
+ },
+ "today_data": {
+  "tag": "today",
+  "bars": 15966,
+  "span_years": 15.59,
+  "L": 120,
+  "n_signals": 413,
+  "n_trades": 244,
+  "wr": 54.51,
+  "be": 40.87,
+  "lift": 13.64,
+  "sl_abs_price": 15.20958,
+  "sl_pip": 152.1,
+  "tp_pip": 228.14,
+  "sl_k": 1.5,
+  "rr": 1.5,
+  "atr_period": 100,
+  "entry_price_field": "close[signal_bar]",
+  "side": "long",
+  "hold_bars": {
+   "min": 1,
+   "median": 4,
+   "p95": 26,
+   "max": 84
+  },
+  "sample_event_times": [
+   "2011-02-18 18:00:00",
+   "2011-02-23 18:00:00",
+   "2011-03-01 06:00:00",
+   "2011-03-02 12:00:00",
+   "2011-03-07 00:00:00",
+   "2026-01-23 18:00:00",
+   "2026-01-27 06:00:00",
+   "2026-01-27 18:00:00",
+   "2026-08-05 18:00:00",
+   "2026-08-07 06:00:00"
+  ]
+ },
+ "parity_control": {
+  "n_signals": {
+   "measured": 413,
+   "published": 413,
+   "match": true
+  },
+  "n_trades": {
+   "measured": 244,
+   "published": 244,
+   "match": true
+  },
+  "wr": {
+   "measured": 54.51,
+   "published": 54.51,
+   "match": true
+  },
+  "lift": {
+   "measured": 13.64,
+   "published": 13.64,
+   "match": true
+  },
+  "sl_pip": {
+   "measured": 152.1,
+   "published": 152.1,
+   "match": true
+  }
+ },
+ "control_passed": true,
+ "note_for_port": "Port MUST read today_data geometry (the site trades today's feed), and is validated by verdict_time_data reproducing the published numbers."
+}
