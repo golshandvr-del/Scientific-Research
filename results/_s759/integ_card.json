@@ -1,0 +1,27 @@
+{
+ "card": "XAUUSD-H4",
+ "layer_count": 5,
+ "event": {
+  "utc": "2026-03-31T16:00:00.000Z",
+  "close": 4637.91,
+  "window_bars": 1500
+ },
+ "codes_on": [
+  "S759",
+  "S382"
+ ],
+ "state": "ENTRY",
+ "primary": "S759",
+ "sl_usd_out": 101.79003305278093,
+ "tp_usd_out": 164.69627347939877,
+ "sl_usd_ref": 101.790033,
+ "false_witness_dropped": [],
+ "incumbents": [
+  "S1516:NEUTRAL:—",
+  "S382:ENTRY:LONG",
+  "S547:NEUTRAL:—",
+  "S589:NEUTRAL:—"
+ ],
+ "status": "GREEN",
+ "fails": 0
+}
