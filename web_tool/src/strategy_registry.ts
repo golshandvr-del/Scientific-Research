@@ -904,6 +904,11 @@ const s1520Layer = (cfg: typeof S1520_CFG[string]): LayerFn => (ctx) => decideS1
 //    یا ۱۲۰ کندلِ H4)، پس کفِ ۱۹۰ حاکم است. گاردِ خودِ ماژول در صورتِ کمبود
 //    «دادهٔ ناکافی» برمی‌گرداند و هرگز سیگنالِ جعلی نمی‌سازد.
 const s589Layer = (cfg: typeof S589_CFG[string]): LayerFn => (ctx) => decideS589(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S1516 — کفِ تازهٔ تقویم‌همتا (H6 L=120 · H4 L=180) — فقط OHLC، همان مسیرِ
+//    کندلِ تجمیعیِ H1×6 / H1×4 که ساکنانِ این دو کارت از آن تغذیه می‌کنند.
+//    کفِ داده: max(L, atrP)+۲ ⇒ ۱۲۲ کندلِ H6 · ۱۸۲ کندلِ H4؛ در کمبود، گاردِ ماژول
+//    «دادهٔ ناکافی» می‌دهد و هرگز سیگنالِ جعلی نمی‌سازد.
+const s1516Layer = (cfg: typeof S1516_CFG[string]): LayerFn => (ctx) => decideS1516(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐ S560 — گپِ منفیِ بازگشایی (M5) — لایه به **زمانِ** کندل‌ها نیاز دارد (مرزِ روز)
 //    که در Candle.time موجود است؛ ctx.candles همان closedBars(...) است ⇒ کندلِ
 //    زندهٔ در حالِ شکل‌گیری (و کندلِ مصنوعیِ rebase با گپِ ذاتاً صفر) داخل نیست.
