@@ -932,6 +932,9 @@ const s1516Layer = (cfg: typeof S1516_CFG[string]): LayerFn => (ctx) => decideS1
 // ⭐ S759 — فقط OHLC؛ همان مسیرِ H1×4ِ ساکنانِ کارتِ H4 (پریتی همین تجمیع را با pandas
 //    resample('4h') بیت‌به‌بیت برابر نشان داد). کفِ داده warmup+2 = ۴۰۲ کندل (ATR89 وایلدر).
 const s759Layer = (cfg: typeof S759_CFG[string]): LayerFn => (ctx) => decideS759(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S798 — فقط OHLC + ساعتِ UTCِ شروعِ کندل؛ همان مسیرِ H1×8ِ ساکنانِ کارتِ H8 (پریتی ④ ثابت کرد
+//    aggregateCandles(H1, 8) دقیقاً همان ۷۹ رویدادِ H8ِ بومیِ MT5 را می‌دهد). کفِ داده ۲۴ کندل.
+const s798Layer = (cfg: typeof S798_CFG[string]): LayerFn => (ctx) => decideS798(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐ S560 — گپِ منفیِ بازگشایی (M5) — لایه به **زمانِ** کندل‌ها نیاز دارد (مرزِ روز)
 //    که در Candle.time موجود است؛ ctx.candles همان closedBars(...) است ⇒ کندلِ
 //    زندهٔ در حالِ شکل‌گیری (و کندلِ مصنوعیِ rebase با گپِ ذاتاً صفر) داخل نیست.
