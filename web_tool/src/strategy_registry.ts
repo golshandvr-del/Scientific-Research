@@ -312,6 +312,15 @@ import { decideS1516, S1516_CFG } from './cal_fresh_floor_s1516'
 //    پریتی GREEN ۱۰/۱۰ (web_tool/tools/_parity_s759.mts ⇒ results/_s759_parity/parity_result.json).
 //    سند: results/S759_InformedStructureBreak_Xauusd_H4_rqs2_85_ACCEPT.md
 import { decideS759, S759_CFG } from './informed_structure_s759'
+// ⭐ S798 ⭐نو — «ادامهٔ شوکِ نشستِ لندن» (کندلِ H8ِ ۰۸ UTC، شوکِ ≥ 2.618×ATR21، follow) · XAUUSD-H8 (تنها کارتِ پیش‌ثبت‌شده)
+//    RQS2=86.9 ACCEPT · n=79 · WR 74.68٪ · PF 3.10 · SL=TP=1.618×ATR21[i−1] · hold 12 · n_trials 149
+//    ممیزیِ شاهدِ کاذب پیش از سیم‌کشی (tools/s798_false_witness_audit.py ⇒ results/_s798/false_witness_h8.json):
+//      **CLEAR** در برابرِ هر ۸ ساکنِ H8 — jaccard S955 0.113 · S965 0.286 · S770 0.055 · S966 0.143 ·
+//      S1911 0.229 · S607 0.094 · S1520 0.010 · S589 0.006 · جهتِ مخالف صفر. قیدِ اندازه: ۶۳٪ رویدادها
+//      هم‌کندلِ S965 (هم‌جهت) ⇒ وقتی هر دو روشن‌اند یک پوزیشن، نه دو.
+//    پریتی GREEN ۱۰/۱۰ (web_tool/tools/_parity_s798.mts ⇒ results/_s798_parity/parity_result.json).
+//    سند: results/S798_LondonSessionShockContinuation_Xauusd_H8_rqs2_86.9_ACCEPT.md
+import { decideS798, S798_CFG } from './london_shock_s798'
 // ⭐ S966 ⭐نو — «ماندگاریِ کایل × هم‌راستاییِ درفت» · XAUUSD-H8 (تنها کارتِ ACCEPT؛
 //    H6 با RQS2=۷.۸ رد شد ⇒ قانونِ MTF: هیچ تعمیمی به کارتِ دیگر نمی‌شود)
 //    RQS2=85.8 · هر ۱۱ دروازه سبز · n=74 · WR=55.41% · lift=+11.99pp · z=3.21 · PF=1.87
