@@ -245,19 +245,19 @@ export function computeS1516(candles: Candle[], cfg: S1516Config): RawSignal {
   const ind: RouterDecision['indicators'] = [
     { name: `سدِ کف (بالاترین کفِ ${L} کندلِ اخیر)`,
       value: isFinite(barrier) ? barrier.toFixed(2) : '—',
-      ok: isFinite(barrier) },
+      status: (isFinite(barrier)) ? 'ok' : 'bad' },
     { name: 'کفِ کندلِ جاری',
       value: last.low.toFixed(2),
-      ok: f.ff[i] },
+      status: (f.ff[i]) ? 'ok' : 'bad' },
     { name: 'فاصله تا سد',
       value: isFinite(gapPct) ? `${gapPct >= 0 ? '+' : ''}${gapPct.toFixed(2)}٪` : '—',
-      ok: f.ff[i] },
+      status: (f.ff[i]) ? 'ok' : 'bad' },
     { name: 'لبهٔ تازه (کندلِ قبل رکورد نبوده)',
       value: f.fresh[i] ? 'بله' : 'خیر',
-      ok: f.fresh[i] },
+      status: (f.fresh[i]) ? 'ok' : 'bad' },
     { name: `گیتِ درفتِ علّی (close[−1] > close[−${L}])`,
       value: f.drift[i] ? 'مثبت' : 'منفی',
-      ok: f.drift[i] },
+      status: (f.drift[i]) ? 'ok' : 'bad' },
   ]
 
   // ── وضعیتِ ENTRY ─────────────────────────────────────────────────────────
