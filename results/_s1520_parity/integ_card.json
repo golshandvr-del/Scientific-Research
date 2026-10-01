@@ -1,5 +1,5 @@
 {
- "layer_count": 6,
+ "layer_count": 9,
  "negative_control": {
   "XAUUSD-H4": {
    "in_cfg": false
@@ -17,7 +17,7 @@
    "S1520"
   ],
   "codes_off": [
-   "S950"
+   "S955"
   ],
   "as_primary": true,
   "state": "ENTRY",
