@@ -1,0 +1,28 @@
+{
+  "thresholds": {
+    "jaccard_false_witness": 0.6,
+    "size_ratio_comparable": 0.75,
+    "unit": "UTC day"
+  },
+  "control": {
+    "H6_events": 413,
+    "H4_events": 518,
+    "passed": true
+  },
+  "days": {
+    "H6": 370,
+    "H4": 442,
+    "shared": 316,
+    "share_of_H6": 85.4,
+    "share_of_H4": 71.5,
+    "jaccard": 0.6371,
+    "size_ratio": 0.8371
+  },
+  "within_12h": {
+    "H6_with_H4_neighbor": 0.8959,
+    "H4_with_H6_neighbor": 0.7934
+  },
+  "false_witness": true,
+  "primary_card": "XAUUSD-H6",
+  "why_primary": "H6: RQS2 87.1, independent value (+11.5pp without same-card fresh high); H4: RQS2 84.1, ACCEPT doc §5.3 = portfolio value, not independent (+2.6pp, 3 negative years)"
+}
