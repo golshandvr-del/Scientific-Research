@@ -6201,6 +6201,211 @@ function decideS589(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
 }
 
+// ../web_tool/src/cal_fresh_floor_s1516.ts
+var S1516_CFG = {
+  "XAUUSD-H6": {
+    id: "XAUUSD-H6",
+    tfFa: "H6",
+    lookback: 120,
+    // ۳۰ روزِ معاملاتی روی H6 (قانونِ S1523)
+    atrP: 100,
+    slK: 1.5,
+    rr: 1.5,
+    // دادهٔ H6 هرگز عوض نشده ⇒ عددِ سند و عددِ امروز یکی است (۱۵۲.۱ پیپ).
+    slPip: 152.1,
+    tpPip: 228.14,
+    // دامِ ⑤ — از توزیعِ واقعی (results/_s1516_parity/XAUUSD_H6.json):
+    //   کمینه ۱ · میانه ۴ · p95 ۲۶ · **بیشینه ۸۴** کندلِ H6
+    // ⇒ سقفِ ۱۰۰ (=۲۵ روز) صد‌درصدِ معاملاتِ حکم را می‌پوشاند.
+    maxHold: 100,
+    approachFrac: 0.995,
+    rqs2: 87.1,
+    nTrades: 244,
+    wr: 54.51,
+    lift: 13.64,
+    z: 3.24,
+    independent: true
+    // §۵ بند ۲: بدون سقفِ تازه هم +11.5 (n=86)
+  },
+  "XAUUSD-H4": {
+    id: "XAUUSD-H4",
+    tfFa: "H4",
+    lookback: 180,
+    // ۳۰ روزِ معاملاتی روی H4
+    atrP: 100,
+    slK: 1.5,
+    rr: 1.5,
+    // ⚠️ عددِ **امروز** (۱۲۳.۳۲)، نه عددِ سند (۱۲۳.۰۱ روی فایلِ پیش از 922b56ac).
+    //    سایت با فیدِ امروز کار می‌کند، پس هندسه‌اش هم باید مالِ امروز باشد.
+    slPip: 123.32,
+    tpPip: 184.98,
+    // دامِ ⑤ روی این کارت — هندسهٔ زمانیِ H4 مالِ خودش است:
+    //   کمینه ۱ · میانه ۴ · p95 ۲۲ · **بیشینه ۸۱** کندلِ H4
+    maxHold: 96,
+    approachFrac: 0.995,
+    rqs2: 84.1,
+    nTrades: 316,
+    wr: 51.58,
+    lift: 10.51,
+    z: 3.27,
+    independent: false
+    // §۵ بند ۳: بدون سقفِ تازه فقط +2.6 · ۳ سالِ منفی
+  }
+};
+function s1516Features(candles, cfg) {
+  const n = candles.length;
+  const L = cfg.lookback;
+  const priorMinLow = new Array(n).fill(NaN);
+  for (let i = L; i < n; i++) {
+    let m = -Infinity;
+    for (let j = i - L; j <= i - 1; j++) if (candles[j].low > m) m = candles[j].low;
+    priorMinLow[i] = m;
+  }
+  const ff = new Array(n).fill(false);
+  for (let i = 0; i < n; i++) {
+    ff[i] = isFinite(priorMinLow[i]) && candles[i].low > priorMinLow[i];
+  }
+  const drift = new Array(n).fill(false);
+  for (let i = L; i < n; i++) {
+    drift[i] = candles[i - 1].close - candles[i - L].close > 0;
+  }
+  const fresh = new Array(n).fill(false);
+  const sig = new Array(n).fill(false);
+  for (let i = 0; i < n; i++) {
+    fresh[i] = ff[i] && !(i > 0 ? ff[i - 1] : false);
+    sig[i] = fresh[i] && drift[i];
+  }
+  return { priorMinLow, ff, fresh, drift, sig };
+}
+function computeS1516(candles, cfg) {
+  const n = candles.length;
+  const L = cfg.lookback;
+  const minBars = L + 2;
+  const pipSize = 0.01;
+  const slDist = cfg.slPip * pipSize;
+  const tpDist = cfg.tpPip * pipSize;
+  const baseInd = [];
+  if (n < minBars) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u0646\u0627\u06A9\u0627\u0641\u06CC: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u062F (\u0633\u062F\u0650 \u06A9\u0641\u0650 ${L}-\u06A9\u0646\u062F\u0644\u06CC + \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 ${L}-\u06A9\u0646\u062F\u0644\u06CC + \u06CC\u06A9 \u06A9\u0646\u062F\u0644 \u0628\u0631\u0627\u06CC \u062A\u0634\u062E\u06CC\u0635\u0650 \u0644\u0628\u0647\u0654 \u062A\u0627\u0632\u0647)\u060C \u0648\u0644\u06CC \u0641\u06CC\u062F\u0650 \u0641\u0639\u0644\u06CC ${n} \u06A9\u0646\u062F\u0644 \u062F\u0627\u0631\u062F \u21D2 \u0647\u06CC\u0686 \u062D\u06A9\u0645\u06CC \u0635\u0627\u062F\u0631 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F.`,
+      indicators: baseInd
+    };
+  }
+  const f = s1516Features(candles, cfg);
+  const i = n - 1;
+  const last2 = candles[i];
+  const barrier = f.priorMinLow[i];
+  const gapPct = isFinite(barrier) ? (last2.low - barrier) / barrier * 100 : NaN;
+  const ind = [
+    {
+      name: `\u0633\u062F\u0650 \u06A9\u0641 (\u0628\u0627\u0644\u0627\u062A\u0631\u06CC\u0646 \u06A9\u0641\u0650 ${L} \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631)`,
+      value: isFinite(barrier) ? barrier.toFixed(2) : "\u2014",
+      status: isFinite(barrier) ? "ok" : "bad"
+    },
+    {
+      name: "\u06A9\u0641\u0650 \u06A9\u0646\u062F\u0644\u0650 \u062C\u0627\u0631\u06CC",
+      value: last2.low.toFixed(2),
+      status: f.ff[i] ? "ok" : "bad"
+    },
+    {
+      name: "\u0641\u0627\u0635\u0644\u0647 \u062A\u0627 \u0633\u062F",
+      value: isFinite(gapPct) ? `${gapPct >= 0 ? "+" : ""}${gapPct.toFixed(2)}\u066A` : "\u2014",
+      status: f.ff[i] ? "ok" : "bad"
+    },
+    {
+      name: "\u0644\u0628\u0647\u0654 \u062A\u0627\u0632\u0647 (\u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0631\u06A9\u0648\u0631\u062F \u0646\u0628\u0648\u062F\u0647)",
+      value: f.fresh[i] ? "\u0628\u0644\u0647" : "\u062E\u06CC\u0631",
+      status: f.fresh[i] ? "ok" : "bad"
+    },
+    {
+      name: `\u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 \u0639\u0644\u0651\u06CC (close[\u22121] > close[\u2212${L}])`,
+      value: f.drift[i] ? "\u0645\u062B\u0628\u062A" : "\u0645\u0646\u0641\u06CC",
+      status: f.drift[i] ? "ok" : "bad"
+    }
+  ];
+  if (f.sig[i]) {
+    return {
+      active: true,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u06A9\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u062A\u0642\u0648\u06CC\u0645\u200C\u0647\u0645\u062A\u0627 \u0631\u0648\u06CC ${cfg.tfFa}: \u06A9\u0641\u0650 \u0627\u06CC\u0646 \u06A9\u0646\u062F\u0644 (${last2.low.toFixed(2)}) \u0628\u0627\u0644\u0627\u062A\u0631 \u0627\u0632 **\u0647\u0645\u0647\u0654** \u06A9\u0641\u200C\u0647\u0627\u06CC ${L} \u06A9\u0646\u062F\u0644\u0650 \u06AF\u0630\u0634\u062A\u0647 (=\u06F3\u06F0 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u060C \u0633\u062F ${barrier.toFixed(2)}) \u0627\u0633\u062A \u0648 \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0686\u0646\u06CC\u0646 \u0646\u0628\u0648\u062F \u21D2 \u0644\u0628\u0647\u0654 \u062A\u0627\u0632\u0647. \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 \u0639\u0644\u0651\u06CC \u0647\u0645 \u0645\u062B\u0628\u062A \u0627\u0633\u062A. \u0645\u0639\u0646\u0627\u06CC \u0627\u0642\u062A\u0635\u0627\u062F\u06CC: **\u063A\u06CC\u0627\u0628\u0650 \u0639\u0631\u0636\u0647** \u2014 \u062F\u0631 \u0645\u062D\u062F\u0648\u062F\u0647\u200C\u0627\u06CC \u06A9\u0647 \u06CC\u06A9 \u0645\u0627\u0647 \u0641\u0631\u0648\u0634\u0646\u062F\u0647 \u062F\u0627\u0634\u062A\u060C \u062F\u06CC\u06AF\u0631 \u0641\u0631\u0648\u0634\u0646\u062F\u0647\u200C\u0627\u06CC \u067E\u0627\u06CC\u06CC\u0646 \u0646\u0645\u06CC\u200C\u06A9\u0634\u062F.`,
+      indicators: ind
+    };
+  }
+  const nearBarrier = isFinite(barrier) && last2.low >= barrier * cfg.approachFrac && !f.ff[i];
+  if (nearBarrier && f.drift[i]) {
+    return {
+      active: false,
+      approaching: true,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u0646\u0632\u062F\u06CC\u06A9\u0650 \u06A9\u0641\u0650 \u062A\u0627\u0632\u0647 \u0631\u0648\u06CC ${cfg.tfFa}: \u06A9\u0641\u0650 \u06A9\u0646\u062F\u0644 (${last2.low.toFixed(2)}) \u062A\u0627 \u0633\u062F\u0650 ${L}-\u06A9\u0646\u062F\u0644\u06CC (${barrier.toFixed(2)}) \u0641\u0642\u0637 ${Math.abs(gapPct).toFixed(2)}\u066A \u0641\u0627\u0635\u0644\u0647 \u062F\u0627\u0631\u062F \u0648 \u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A \u0645\u062B\u0628\u062A \u0627\u0633\u062A \u2014 \u0648\u0644\u06CC \u0647\u0646\u0648\u0632 **\u0628\u0627\u0644\u0627\u06CC** \u0633\u062F \u0646\u06CC\u0633\u062A.`,
+      approachReason: `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0644\u0627\u0632\u0645: \u06A9\u0641\u0650 \u06A9\u0646\u062F\u0644 \u0628\u0627\u06CC\u062F \u0627\u0632 ${barrier.toFixed(2)} \u0628\u0627\u0644\u0627\u062A\u0631 \u0628\u0631\u0648\u062F (\u06A9\u0644\u0650 \u06A9\u0646\u062F\u0644 \u062F\u0631 \u0647\u0648\u0627\u06CC \u067E\u0627\u06A9). \u062A\u0627 \u0622\u0646 \u0644\u062D\u0638\u0647 \u0648\u0631\u0648\u062F \u0646\u062F\u0627\u0631\u06CC\u0645.`,
+      indicators: ind
+    };
+  }
+  let why;
+  if (f.ff[i] && !f.fresh[i]) {
+    why = `\u06A9\u0641\u0650 \u06A9\u0646\u062F\u0644 \u0628\u0627\u0644\u0627\u06CC \u0633\u062F \u0647\u0633\u062A\u060C \u0648\u0644\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0647\u0645 \u0686\u0646\u06CC\u0646 \u0628\u0648\u062F \u21D2 **\u0644\u0628\u0647\u0654 \u062A\u0627\u0632\u0647 \u0646\u06CC\u0633\u062A** (\u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u0631\u0648\u06CC\u062F\u0627\u062F \u0645\u06CC\u200C\u062E\u0631\u062F \u0646\u0647 \u062D\u0627\u0644\u062A\u061B \u0648\u06AF\u0631\u0646\u0647 \u06CC\u06A9 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u062F\u0647\u200C\u0647\u0627 \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u062A\u06A9\u0631\u0627\u0631\u06CC \u0645\u06CC\u200C\u062F\u0627\u062F).`;
+  } else if (f.fresh[i] && !f.drift[i]) {
+    why = `\u0644\u0628\u0647\u0654 \u06A9\u0641\u0650 \u062A\u0627\u0632\u0647 \u0647\u0633\u062A\u060C \u0648\u0644\u06CC **\u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 \u0639\u0644\u0651\u06CC \u0645\u0646\u0641\u06CC** \u0627\u0633\u062A (close[\u22121] \u067E\u0627\u06CC\u06CC\u0646\u200C\u062A\u0631 \u0627\u0632 close[\u2212${L}]) \u21D2 \u062E\u0627\u0631\u062C \u0627\u0632 \u0641\u0636\u0627\u06CC\u06CC \u06A9\u0647 \u062D\u06A9\u0645 \u062F\u0631 \u0622\u0646 \u0635\u0627\u062F\u0631 \u0634\u062F.`;
+  } else if (isFinite(barrier)) {
+    why = `\u06A9\u0641\u0650 \u06A9\u0646\u062F\u0644 (${last2.low.toFixed(2)}) \u0632\u06CC\u0631\u0650 \u0633\u062F\u0650 ${L}-\u06A9\u0646\u062F\u0644\u06CC (${barrier.toFixed(2)}) \u0627\u0633\u062A \u21D2 \u0647\u0646\u0648\u0632 \u062F\u0631 \u0645\u062D\u062F\u0648\u062F\u0647\u0654 \u06A9\u0641\u200C\u0647\u0627\u06CC \u06CC\u06A9 \u0645\u0627\u0647\u0650 \u06AF\u0630\u0634\u062A\u0647\u200C\u0627\u06CC\u0645.`;
+  } else {
+    why = "\u0633\u062F\u0650 \u06A9\u0641 \u0647\u0646\u0648\u0632 \u062A\u0639\u0631\u06CC\u0641 \u0646\u0634\u062F\u0647 (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 \u067E\u0646\u062C\u0631\u0647).";
+  }
+  return {
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason: `\u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0631\u0648\u06CC ${cfg.tfFa}. ${why}`,
+    indicators: ind
+  };
+}
+function decideS1516(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS1516(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s1516_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S1516",
+    name: `\u06A9\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u062A\u0642\u0648\u06CC\u0645\u200C\u0647\u0645\u062A\u0627 \u2014 ${cfg.lookback} \u06A9\u0646\u062F\u0644 \u2248 \u06F3\u06F0 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC (${cfg.tfFa})`,
+    kind: "cal_fresh_floor",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 **\u0645\u0646\u062C\u0645\u062F** (\u0646\u0647 \u0634\u0646\u0627\u0648\u0631): SL=${cfg.slPip} / TP=${cfg.tpPip} pip \u2014 \u0627\u0632 median(ATR(${cfg.atrP}))\xD7${cfg.slK} \u0631\u0648\u06CC \u06A9\u0644\u0650 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644\u0650 ${cfg.tfFa} \u06AF\u0631\u0641\u062A\u0647 \u0634\u062F\u0647 \u0648 \u062F\u0631 \u0633\u0627\u06CC\u062A \u0628\u0627\u0632\u062A\u0648\u0644\u06CC\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u062F (\u067E\u0646\u062C\u0631\u0647\u0654 \u0633\u0627\u06CC\u062A \u06A9\u0648\u062A\u0627\u0647 \u0627\u0633\u062A) \u21D2 \u0639\u062F\u062F \u0627\u0632 artifact\u0650 \u067E\u0631\u06CC\u062A\u06CC \u0645\u06CC\u200C\u0622\u06CC\u062F. \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP \u06CC\u0627 SL \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0628\u06A9\u200C\u062A\u0633\u062A **\u0647\u06CC\u0686 time-stop \u0646\u062F\u0627\u0634\u062A**\u061B \u0633\u0642\u0641\u0650 ${cfg.maxHold} \u06A9\u0646\u062F\u0644\u06CC\u0650 \u0633\u0627\u06CC\u062A \u0641\u0642\u0637 \u06CC\u06A9 \u0627\u06CC\u0645\u0646\u06CC\u0650 \u0627\u062C\u0631\u0627\u06CC\u06CC \u0627\u0633\u062A \u0648 \u0627\u0632 \u0628\u06CC\u0634\u06CC\u0646\u0647\u0654 \u0646\u06AF\u0647\u200C\u062F\u0627\u0631\u06CC\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u0650 \u062F\u0627\u0648\u0631\u06CC\u200C\u0634\u062F\u0647 (${cfg.tfFa === "H6" ? "\u06F8\u06F4" : "\u06F8\u06F1"} \u06A9\u0646\u062F\u0644) \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 \u0627\u0646\u062A\u062E\u0627\u0628 \u0634\u062F\u0647 \u062A\u0627 \u0647\u06CC\u0686 \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u0634\u0645\u0631\u062F\u0647\u200C\u0634\u062F\u0647\u200C\u0627\u06CC \u0628\u0631\u06CC\u062F\u0647 \u0646\u0634\u0648\u062F. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false): \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u06A9\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F \u2014 \u0648\u06AF\u0631\u0646\u0647 \u062D\u06A9\u0645\u0650 \u0627\u0646\u062F\u0627\u0632\u0647\u200C\u06AF\u06CC\u0631\u06CC\u200C\u0634\u062F\u0647 \u0645\u0639\u062A\u0628\u0631 \u0646\u06CC\u0633\u062A. \u26A0\uFE0F **\u0648\u0631\u0648\u062F \u0631\u0648\u06CC close \u06A9\u0646\u062F\u0644\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644** \u0627\u0633\u062A\u060C \u0646\u0647 open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F: \u0645\u062A\u0646\u0650 \xA7\u06F2 \u0633\u0646\u062F \xABopen \u0628\u0639\u062F\u06CC\xBB \u0645\u06CC\u200C\u06AF\u0648\u06CC\u062F \u0648\u0644\u06CC \u0647\u0627\u0631\u0646\u0633\u06CC \u06A9\u0647 \u062D\u06A9\u0645 \u0631\u0627 \u0633\u0627\u062E\u062A entry=close[e] \u062F\u0627\u0631\u062F\u061B \u062D\u06A9\u0645 \u0645\u062D\u0635\u0648\u0644\u0650 \u06A9\u062F \u0627\u0633\u062A. ` + (cfg.independent ? `\u2705 **\u0627\u0631\u0632\u0634\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u0627\u062B\u0628\u0627\u062A\u200C\u0634\u062F\u0647:** \u062D\u062A\u06CC \u0628\u062F\u0648\u0646\u0650 \xAB\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u0647\u0645\u0627\u0646 \u06A9\u0627\u0631\u062A \u062F\u0631 \u06F3 \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631\xBB \u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A +11.5pp lift \u062F\u0627\u0631\u062F (n=86) \u2014 \u0648\u0627\u0644\u062F\u0634 S1511 \u0628\u0627 \u0627\u0641\u0642\u0650 \u06F9\u06F0 \u0641\u0642\u0637 +3.96 \u062F\u0627\u0634\u062A. \u062A\u0646\u0647\u0627 \u0633\u0627\u0644\u0650 \u0645\u0646\u0641\u06CC: \u06F2\u06F0\u06F2\u06F3 (\u0628\u0627\u0632\u0627\u0631\u0650 \u0631\u0646\u062C\u0650 \u0641\u0634\u0631\u062F\u0647 \u067E\u06CC\u0634 \u0627\u0632 \u0634\u06A9\u0633\u062A\u0650 \u06F2\u06F0\u06F2\u06F4). ` : `\u26A0\uFE0F\u26A0\uFE0F **\u0627\u06CC\u0646 \u06A9\u0627\u0631\u062A \u0627\u0631\u0632\u0634\u0650 \u067E\u0631\u062A\u0641\u0648\u06CC \u0627\u0633\u062A\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644.** \u0633\u0646\u062F\u0650 ACCEPT \xA7\u06F5 \u0628\u0646\u062F \u06F3 \u0635\u0631\u06CC\u062D \u0627\u0633\u062A: \u0628\u062F\u0648\u0646\u0650 \xAB\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u0647\u0645\u0627\u0646 \u06A9\u0627\u0631\u062A \u062F\u0631 \u06F3 \u06A9\u0646\u062F\u0644\u0650 \u0627\u062E\u06CC\u0631\xBB \u0641\u0642\u0637 **+2.6pp** lift \u0645\u06CC\u200C\u0645\u0627\u0646\u062F (n=110)\u060C \u0646\u06CC\u0645\u0647\u0654 \u062F\u0648\u0645 \u0636\u0639\u06CC\u0641\u200C\u062A\u0631 ([52.5, 50.6]) \u0648 **\u0633\u0647 \u0633\u0627\u0644\u0650 \u0645\u0646\u0641\u06CC** \u062F\u0627\u0631\u062F (\u06F2\u06F0\u06F1\u06F2/\u06F2\u06F0\u06F1\u06F7/\u06F2\u06F0\u06F2\u06F3) \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u06CC\u06A9 \u0633\u0627\u0644\u0650 \u0645\u0646\u0641\u06CC\u0650 \u06A9\u0627\u0631\u062A\u0650 H6. \u0627\u06CC\u0646 \u0639\u0645\u062F\u062A\u0627\u064B \u067E\u0648\u0634\u0634\u0650 \u0631\u0632\u0648\u0644\u0648\u0634\u0646\u0650 \u0631\u06CC\u0632\u062A\u0631\u0650 \u0647\u0645\u0627\u0646 \u067E\u062F\u06CC\u062F\u0647\u0654 H6 \u0627\u0633\u062A \u21D2 \u0627\u06AF\u0631 \u06A9\u0627\u062F\u0631\u0650 H6 \u0647\u0645 \u0631\u0648\u0634\u0646 \u0627\u0633\u062A\u060C **\u06CC\u06A9** \u0641\u0631\u0635\u062A \u0627\u0633\u062A \u0646\u0647 \u062F\u0648\u060C \u0648 \u0633\u0627\u06CC\u0632\u0650 \u0645\u0634\u062A\u0631\u06A9 \u0628\u06AF\u06CC\u0631\u06CC\u062F. `) + `\u26A0\uFE0F **\u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 S1511 (\u0648\u0627\u0644\u062F\u060C L=90):** \u0645\u0645\u06CC\u0632\u06CC\u0650 \u0634\u0627\u0647\u062F\u0650 \u06A9\u0627\u0630\u0628 jaccard **\u06F0.\u06F8\u06F0\u06F9** \u062F\u0627\u062F (\u06F9\u06F6.\u06F4\u066A \u0627\u0632 \u0631\u0648\u06CC\u062F\u0627\u062F\u0647\u0627\u06CC S1516 \u062F\u0627\u062E\u0644\u0650 S1511) \u0648 \u0633\u0646\u062F \u0645\u06CC\u200C\u06AF\u0648\u06CC\u062F S1516 **\u062C\u0627\u0646\u0634\u06CC\u0646\u0650** S1511 \u0627\u0633\u062A. S1511 \u0631\u0648\u06CC \u0633\u0627\u06CC\u062A \u0648\u0635\u0644 **\u0646\u06CC\u0633\u062A** \u21D2 \u062A\u0639\u0627\u0631\u0636\u06CC \u0646\u06CC\u0633\u062A\u061B \u0627\u06AF\u0631 \u0631\u0648\u0632\u06CC \u0648\u0635\u0644 \u0634\u0648\u062F **\u0628\u0627\u06CC\u062F** \u06CC\u06A9\u06CC \u062D\u0630\u0641 \u06AF\u0631\u062F\u062F. \u26A0\uFE0F \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC (BE/trailing) \u0622\u0632\u0645\u0648\u062F\u0647 \u0648 \u062A\u0623\u06CC\u06CC\u062F \u0646\u0634\u062F\u0647 \u21D2 \u0641\u0642\u0637 TP/SL.`,
+    filters: [
+      `\u06A9\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 ${cfg.lookback}-\u06A9\u0646\u062F\u0644\u06CC: low[i] > max(low[i\u2212${cfg.lookback}..i\u22121]) \u2014 **\u06A9\u0644\u0650 \u06A9\u0646\u062F\u0644** \u062F\u0631 \u0647\u0648\u0627\u06CC \u067E\u0627\u06A9 \u0628\u0627\u0644\u0627\u06CC \u0647\u0645\u0647\u0654 \u06A9\u0641\u200C\u0647\u0627\u06CC \u06F3\u06F0 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC (\u0631\u0648\u06CC low \u0627\u0633\u062A \u0646\u0647 close\u061B \u0627\u0631\u062B\u06CC \u0627\u0632 S1511)`,
+      `\u0644\u0628\u0647\u0654 \u062A\u0627\u0632\u0647: \u06A9\u0646\u062F\u0644\u0650 \u0642\u0628\u0644 \u0646\u0628\u0627\u06CC\u062F \u062E\u0648\u062F\u0634 \u06A9\u0641\u200C\u0631\u06A9\u0648\u0631\u062F \u0628\u0648\u062F\u0647 \u0628\u0627\u0634\u062F (\u0631\u0648\u06CC\u062F\u0627\u062F\u060C \u0646\u0647 \u062D\u0627\u0644\u062A)`,
+      `\u06AF\u06CC\u062A\u0650 \u062F\u0631\u0641\u062A\u0650 \u0639\u0644\u0651\u06CC: close[i\u22121] \u2212 close[i\u2212${cfg.lookback}] > 0 \u2014 \u0627\u0632 i\u22121 \u06AF\u0631\u0641\u062A\u0647 \u0645\u06CC\u200C\u0634\u0648\u062F \u0646\u0647 i (\u0647\u0645 \u0636\u062F\u0650 look-ahead\u060C \u0647\u0645 \u062A\u0639\u0631\u06CC\u0641\u200C\u06A9\u0646\u0646\u062F\u0647\u0654 \u0641\u0636\u0627\u06CC \u0646\u0648\u0644\u0650 \u0645\u0634\u0631\u0648\u0637\u061B \u0627\u0631\u062B\u06CC \u0627\u0632 S523)`,
+      "\u062C\u0647\u062A = LONG-only (\u0642\u0627\u0646\u0648\u0646\u0650 S522/S528) \u2014 \u0647\u06CC\u0686 \u0628\u0627\u0632\u0648\u06CC SHORT\u06CC \u0622\u0632\u0645\u0648\u062F\u0647 \u0646\u0634\u062F",
+      `\u0647\u0646\u062F\u0633\u0647\u0654 \u0646\u0627\u0645\u062A\u0642\u0627\u0631\u0646\u0650 TP>SL (${cfg.slK}\xD7median(ATR${cfg.atrP}) \u0648 ${cfg.rr}\xD7) \u21D2 \u0635\u0641\u0631 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC \xB7 \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647`,
+      `\u0635\u0641\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u0622\u0632\u0627\u062F: \u0631\u0648\u06CC\u062F\u0627\u062F \u0627\u0632 S1511\u060C \u0627\u0641\u0642\u0650 ${cfg.lookback} \u0627\u0632 **\u0642\u0627\u0646\u0648\u0646\u0650 S1523** (\u06F3\u06F0 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC) \u0648\u0627\u0645 \u06AF\u0631\u0641\u062A\u0647 \u0634\u062F \u0646\u0647 \u0627\u0632 \u062C\u0633\u062A\u200C\u0648\u062C\u0648\u060C \u0647\u0646\u062F\u0633\u0647 \u0627\u0632 \u0647\u0627\u0631\u0646\u0633\u0650 S382 \u21D2 n_trials=10 \u0635\u0627\u062F\u0642\u0627\u0646\u0647 \u0634\u0645\u0631\u062F\u0647 \u0634\u062F`,
+      `\u0627\u0641\u0642 \u0627\u0647\u0631\u0645\u06CC \u0627\u0633\u062A \u06A9\u0647 \u062A\u0648\u0627\u0646 \u0646\u0645\u06CC\u200C\u0633\u0648\u0632\u0627\u0646\u062F: \u0647\u0645\u06CC\u0646 \u0631\u0648\u06CC\u062F\u0627\u062F \u0628\u0627 L=90 (\u0648\u0627\u0644\u062F S1511) \u0631\u0648\u06CC H6 \u0641\u0642\u0637 +10.03 lift \u0648 z=3.10 \u062F\u0627\u0634\u062A\u061B \u0628\u0627 L=120 \u0628\u0647 +13.64 \u0648 z=3.24 \u0631\u0633\u06CC\u062F **\u0628\u062F\u0648\u0646\u0650 \u06A9\u0627\u0633\u062A\u0646\u0650 n** \u2014 \u062F\u0631\u062D\u0627\u0644\u06CC\u200C\u06A9\u0647 S1512\u2013S1515 \u0628\u0627 \u0641\u06CC\u0644\u062A\u0631 \u0647\u0631 \u0628\u0627\u0631 n \u0631\u0627 \u0633\u0648\u0632\u0627\u0646\u062F\u0646\u062F`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
 // ../web_tool/src/kyle_permanence_drift_s966.ts
 var GOLD_PIP7 = 0.1;
 var S966_CFG = {
@@ -8580,6 +8785,7 @@ var s770Layer = (cfg) => (ctx) => decideS770(cfg, ctx.a, ctx.candles, ctx.capita
 var s607Layer = (cfg) => (ctx) => decideS607(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s1520Layer = (cfg) => (ctx) => decideS1520(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s589Layer = (cfg) => (ctx) => decideS589(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s1516Layer = (cfg) => (ctx) => decideS1516(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s560Layer = (cfg) => (ctx) => decideS560(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s562Layer = (cfg) => (ctx) => decideS562(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s408Layer = (cfg) => (ctx) => decideS408(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
@@ -8844,7 +9050,15 @@ var CARD_LAYERS = {
     //    براکتِ ۱۲۰–۱۸۰ پیپ هم حمل می‌شود، پس این کارت «نسخهٔ رقیق‌شدهٔ M30» نیست.
     //    با این حال **بدیلِ** M30 است (همان رویداد) نه شاهدِ مستقل ⇒ sameEventFamily.
     //    maxHold=۶ = یک روزِ کاملِ H4.
-    s547Layer(6)
+    s547Layer(6),
+    // ⭐ S1516 — کفِ تازهٔ تقویم‌همتا (L=180 = ۳۰ روزِ معاملاتی) · RQS2 ۸۴.۱ ·
+    //    n=۳۱۶ · WR ۵۱.۵۸٪ · lift +۱۰.۵۱pp · z=۳.۲۷ · ۱۱/۱۱ سبز.
+    //    چرا آخرِ آرایه: سندِ ACCEPT §۵ بند ۳ — H4 «ارزشِ پرتفوی است، نه لایهٔ
+    //    مستقل» (بدونِ سقفِ تازهٔ همان کارت فقط +۲.۶pp · ۳ سالِ منفی).
+    //    شاهدِ کاذبِ هم‌کارت: پاک (S382 0.048 · S589 0.094 · S547 0.009).
+    //    🔴 شاهدِ کاذبِ **بین‌کارتی** با S1516-H6: jaccard روزانه ۰.۶۳۷ ⇒
+    //       در CROSS_CARD_ALTERNATES بدیلِ H6 ثبت شده (results/_s1516/cross_card_h6_h4.json).
+    s1516Layer(S1516_CFG["XAUUSD-H4"])
     // ⚰️ حذف‌شده در S396: S374(Kennedy) · S340(RQS+92.6) · S332(RQS+92.1)
     //    و S327 که پیش‌تر با RQS2=18.8 حذف شده بود.
     //    S374 مهم‌ترین حذف است: با RQS+ «ACCEPTED» اعلام شده بود، ولی زیرِ RQS2
@@ -8962,7 +9176,15 @@ var CARD_LAYERS = {
     //    پریتی: web_tool/tools/_parity_s607.mts — سبز، صفر اختلاف روی سری‌ها،
     //       سیگنال‌ها و هندسه؛ n_dual=۱۷۲ برابرِ census.json رسمی.
     //    سند: results/S607_EngleShockDualGatePool_Xauusd_D1H8H6_rqs2_83.1_ACCEPT.md
-    s607Layer(S607_CFG["XAUUSD-H6"])
+    s607Layer(S607_CFG["XAUUSD-H6"]),
+    // ⭐ S1516 — کفِ تازهٔ تقویم‌همتا (L=120 = ۳۰ روزِ معاملاتی) · RQS2 **۸۷.۱** ·
+    //    n=۲۴۴ · WR ۵۴.۵۱٪ · lift +۱۳.۶۴pp · z=۳.۲۴ · PF ۱.۸۵ · ۱۱/۱۱ سبز.
+    //    ارزشِ مستقل دارد (بدونِ سقفِ تازهٔ همان کارت +۱۱.۵pp، n=۸۶).
+    //    شاهدِ کاذبِ هم‌کارت: پاک (S919 0.004 · S955 0.013 · S607 0.007) ⇒
+    //    پوششِ تقریباً کاملاً نو؛ جایگاهِ آخر فقط به‌خاطرِ RQS2ِ کمترِ ساکنان نیست
+    //    بلکه چون lift/z آن نزدیکِ سد است (z=۳.۲۴ در برابرِ S919).
+    //    کارتِ **مرجعِ** خانوادهٔ بین‌کارتیِ S1516 (H4 بدیلِ آن است).
+    s1516Layer(S1516_CFG["XAUUSD-H6"])
   ],
   "XAUUSD-H8": [
     // ⭐ S950 — «پس‌لرزهٔ جهش، هم‌راستا با رانش» (Jump-Aftermath Drift-Aligned)
@@ -9432,8 +9654,8 @@ var CARD_LAYER_CODES = {
   "XAUUSD-M15": ["S562", "S408", "S344", "S333", "S312", "S547"],
   "XAUUSD-M30": ["S547", "S312", "S333"],
   "XAUUSD-H1": ["S562", "S354", "S333", "S312"],
-  "XAUUSD-H4": ["S382", "S589", "S547"],
-  "XAUUSD-H6": ["S919", "S955", "S607"],
+  "XAUUSD-H4": ["S382", "S589", "S547", "S1516"],
+  "XAUUSD-H6": ["S919", "S955", "S607", "S1516"],
   "XAUUSD-H8": ["S955", "S965", "S770", "S966", "S1911", "S607", "S1520", "S589"],
   "XAUUSD-H12": ["S955", "S800"],
   "XAUUSD-D1": ["S800", "S770", "S607"]
@@ -9453,6 +9675,15 @@ var CROSS_CARD_ALTERNATES = [
     cards: ["XAUUSD-M15", "XAUUSD-M30", "XAUUSD-H4"],
     primaryCard: "XAUUSD-M30",
     sharedEventNote: "\u0647\u0631 \u0633\u0647 \u06A9\u0627\u0631\u062A \u0647\u0645\u0627\u0646 \u06F1\u06F4\u06F6 \u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A \u0631\u0627 \u0645\u0639\u0627\u0645\u0644\u0647 \u0645\u06CC\u200C\u06A9\u0646\u0646\u062F (n \u0645\u0633\u062A\u0642\u0644 \u0627\u0632 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645 \u0627\u0633\u062A). \u0642\u0644\u0647\u0654 \u062D\u06A9\u0645 M30 \u0627\u0633\u062A (RQS2 \u06F8\u06F9.\u06F3 \xB7 z=\u06F4.\u06F0\u06F0)\u061B M15 (\u06F8\u06F4.\u06F7) \u0648 H4 (\u06F8\u06F1.\u06F9) \u0628\u062F\u06CC\u0644\u200C\u0627\u0646\u062F\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u062F\u0648\u0645. \u0633\u0646\u062F\u0650 ACCEPT \xA7\u06F8 + \u0642\u0627\u0646\u0648\u0646\u0650 S605: \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0634\u0648\u0646\u062F."
+  },
+  {
+    // اندازه‌گیری‌شده پیش از سیم‌کشی: tools/s1516_cross_card_audit.py ⇒
+    // results/_s1516/cross_card_h6_h4.json — روزانه H6 ۳۷۰ / H4 ۴۴۲ / مشترک ۳۱۶ ·
+    // jaccard ۰.۶۳۷ · size_ratio ۰.۸۴ (هر دو بالای آستانهٔ ۰.۶۰/۰.۷۵) ⇒ شاهدِ کاذب.
+    code: "S1516",
+    cards: ["XAUUSD-H6", "XAUUSD-H4"],
+    primaryCard: "XAUUSD-H6",
+    sharedEventNote: "\u0627\u0641\u0642\u0650 S1516 \u062A\u0642\u0648\u06CC\u0645\u06CC \u0627\u0633\u062A (\u06F3\u06F0 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC) \u21D2 H6 \u0648 H4 \u0639\u0645\u062F\u062A\u0627\u064B \u0647\u0645\u0627\u0646 \u0631\u0648\u0632\u0647\u0627 \u0631\u0627 \u0645\u06CC\u200C\u0628\u06CC\u0646\u0646\u062F: \u06F8\u06F5\u066A\u0650 \u0631\u0648\u0632\u0647\u0627\u06CC H6 \u062F\u0631 H4 \u0647\u0645 \u0647\u0633\u062A (jaccard \u06F0.\u06F6\u06F3\u06F7). \u0645\u0631\u062C\u0639 H6 \u0627\u0633\u062A (RQS2 \u06F8\u06F7.\u06F1\u060C \u0627\u0631\u0632\u0634\u0650 \u0645\u0633\u062A\u0642\u0644)\u061B H4 (\u06F8\u06F4.\u06F1) \u0628\u062F\u06CC\u0644/\u067E\u0648\u0634\u0634\u0650 \u0631\u0632\u0648\u0644\u0648\u0634\u0646\u0650 \u0631\u06CC\u0632\u062A\u0631 \u0627\u0633\u062A\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u062F\u0648\u0645 \u2014 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0634\u0648\u0646\u062F."
   }
 ];
 function markCrossCardAlternates(d, cardId) {
@@ -9693,6 +9924,13 @@ var LAYER_CATALOG = {
     side: "LONG",
     what: "\u0647\u0645\u0627\u0646 \u0631\u0648\u0632\u0650 \u067E\u06CC\u0634\u200C\u062A\u0639\u0637\u06CC\u0644\u0627\u062A \u0628\u0627 \u0628\u0631\u0627\u06A9\u062A\u0650 \u0628\u0632\u0631\u06AF\u200C\u062A\u0631 (\u0628\u06CC\u0634\u062A\u0631\u06CC\u0646 lift\u0650 \u062E\u0627\u0646\u0648\u0627\u062F\u0647 +\u06F1\u06F3.\u06F1pp). \u26A0\uFE0F \u0647\u0645\u200C\u0631\u0648\u06CC\u062F\u0627\u062F \u0628\u0627 M30\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644."
   },
+  "XAUUSD-H4|S1516": {
+    code: "S1516",
+    name: "\u06A9\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u06F3\u06F0-\u0631\u0648\u0632\u0647 (H4) \u2014 \u0628\u062F\u06CC\u0644\u0650 \u06A9\u0627\u0631\u062A\u0650 H6",
+    verdict: "ACCEPT 84.1",
+    side: "LONG",
+    what: "\u06A9\u0644\u0650 \u06A9\u0646\u062F\u0644 \u0628\u0627\u0644\u0627\u06CC \u0647\u0645\u0647\u0654 \u06A9\u0641\u200C\u0647\u0627\u06CC \u06F3\u06F0 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0627\u062E\u06CC\u0631\u060C \u062F\u0631 \u0631\u0627\u0646\u0634\u0650 \u0645\u062B\u0628\u062A. \u26A0\uFE0F \u0647\u0645\u200C\u0631\u0648\u06CC\u062F\u0627\u062F \u0628\u0627 H6 (jaccard \u06F0.\u06F6\u06F4)\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644."
+  },
   // ---------------------------- XAUUSD-H6 ----------------------------
   "XAUUSD-H6|S919": {
     code: "S919",
@@ -9714,6 +9952,13 @@ var LAYER_CATALOG = {
     verdict: "ACCEPT 83.1",
     side: "\u062F\u0648\u0637\u0631\u0641\u0647",
     what: "\u0634\u0648\u06A9\u0650 \u0646\u0648\u0633\u0627\u0646\u06CC\u0650 \u0627\u0646\u06AF\u0644\u060C \u0645\u0634\u0631\u0648\u0637 \u0628\u0647 \u062F\u0648 \u06AF\u06CC\u062A\u0650 \u0645\u0633\u062A\u0642\u0644\u0650 \u0631\u0648\u0646\u062F \u0648 \u0646\u0648\u0633\u0627\u0646."
+  },
+  "XAUUSD-H6|S1516": {
+    code: "S1516",
+    name: "\u06A9\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u06F3\u06F0-\u0631\u0648\u0632\u0647 (\u062A\u0642\u0648\u06CC\u0645\u200C\u0647\u0645\u062A\u0627)",
+    verdict: "ACCEPT 87.1",
+    side: "LONG",
+    what: "\u06A9\u0644\u0650 \u06A9\u0646\u062F\u0644 \u0628\u0627\u0644\u0627\u06CC \u0647\u0645\u0647\u0654 \u06A9\u0641\u200C\u0647\u0627\u06CC \u06F3\u06F0 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC\u0650 \u0627\u062E\u06CC\u0631 (\u06F1\u06F2\u06F0 \u06A9\u0646\u062F\u0644)\u060C \u0641\u0642\u0637 \u062F\u0631 \u0631\u0627\u0646\u0634\u0650 \u0645\u062B\u0628\u062A \u2014 \u063A\u06CC\u0627\u0628\u0650 \u0639\u0631\u0636\u0647."
   },
   // ---------------------------- XAUUSD-H8 ----------------------------
   "XAUUSD-H8|S955": {
