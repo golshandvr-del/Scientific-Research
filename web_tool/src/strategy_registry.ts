@@ -302,6 +302,16 @@ import { decideS589, S589_CFG } from './volume_fresh_high_s589'
 //      تفکیکی، کنترلِ منفیِ گیت، شاهدِ منفیِ MTF): web_tool/tools/_parity_s1516.mts
 //    سند: results/S1516_CalendarMatchedFreshFloor_Xauusd_H6H4_rqs2_87_ACCEPT.md
 import { decideS1516, S1516_CFG } from './cal_fresh_floor_s1516'
+// ⭐ S759 ⭐نو — «شکستِ ساختاریِ داو × کندلِ مطلع (ρ ≥ 0.618)» · XAUUSD-H4 (تنها کارتِ ACCEPT)
+//    RQS2 = **85.2** (تنش ۱۰۰ ⇒ 83.5) · ۱۱/۱۱ · n=175 · WR 52.00٪ · lift +12.58 · z=3.40 · PF 1.78
+//    قانونِ MTF: H3 REJECT 30.3 (فقط DD) · H6/H8 REJECT · H12+ UNPROVEN ⇒ فقط H4.
+//    ممیزیِ شاهدِ کاذب پیش از سیم‌کشی (tools/s759_false_witness_audit.py ⇒
+//      results/_s759/false_witness_h4.json): **CLEAR** — jaccard S382 0.069 · S589 0.083 ·
+//      S547 0.0 · S1516 0.017 (روزانه همه < 0.14). ۵۴.۸٪ کندل‌های S759 هم‌کندلِ S382
+//      ولی S382 ۷.۵× بزرگ‌تر ⇒ شکلِ فیلترِ کیفیت، نه یک رویداد با دو نام ⇒ قیدِ سایز.
+//    پریتی GREEN ۱۰/۱۰ (web_tool/tools/_parity_s759.mts ⇒ results/_s759_parity/parity_result.json).
+//    سند: results/S759_InformedStructureBreak_Xauusd_H4_rqs2_85_ACCEPT.md
+import { decideS759, S759_CFG } from './informed_structure_s759'
 // ⭐ S966 ⭐نو — «ماندگاریِ کایل × هم‌راستاییِ درفت» · XAUUSD-H8 (تنها کارتِ ACCEPT؛
 //    H6 با RQS2=۷.۸ رد شد ⇒ قانونِ MTF: هیچ تعمیمی به کارتِ دیگر نمی‌شود)
 //    RQS2=85.8 · هر ۱۱ دروازه سبز · n=74 · WR=55.41% · lift=+11.99pp · z=3.21 · PF=1.87
