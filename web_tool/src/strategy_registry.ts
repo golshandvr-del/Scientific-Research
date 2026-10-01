@@ -906,7 +906,8 @@ const s1520Layer = (cfg: typeof S1520_CFG[string]): LayerFn => (ctx) => decideS1
 const s589Layer = (cfg: typeof S589_CFG[string]): LayerFn => (ctx) => decideS589(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐ S1516 — کفِ تازهٔ تقویم‌همتا (H6 L=120 · H4 L=180) — فقط OHLC، همان مسیرِ
 //    کندلِ تجمیعیِ H1×6 / H1×4 که ساکنانِ این دو کارت از آن تغذیه می‌کنند.
-//    کفِ داده: max(L, atrP)+۲ ⇒ ۱۲۲ کندلِ H6 · ۱۸۲ کندلِ H4؛ در کمبود، گاردِ ماژول
+//    کفِ داده: L+۲ (هندسه منجمد است، ATRِ زنده لازم نیست) ⇒ ۱۲۲ کندلِ H6 ·
+//    ۱۸۲ کندلِ H4؛ در کمبود، گاردِ ماژول
 //    «دادهٔ ناکافی» می‌دهد و هرگز سیگنالِ جعلی نمی‌سازد.
 const s1516Layer = (cfg: typeof S1516_CFG[string]): LayerFn => (ctx) => decideS1516(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐ S560 — گپِ منفیِ بازگشایی (M5) — لایه به **زمانِ** کندل‌ها نیاز دارد (مرزِ روز)
