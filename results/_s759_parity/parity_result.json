@@ -1,0 +1,15 @@
+{
+ "layer": "S759",
+ "card": "XAUUSD-H4",
+ "status": "GREEN",
+ "fails": 0,
+ "gated_ts": 199,
+ "gated_py": 199,
+ "ungated_ts": 350,
+ "ungated_py": 350,
+ "max_abs_atr": 4.955361072589426e-7,
+ "max_abs_sl": 4.938966071676987e-7,
+ "max_abs_atr_tail": 4.998078964035813e-7,
+ "last_signal_utc": "2026-03-31T16:00:00.000Z",
+ "last_signal_sl_usd": 101.79003255773975
+}
