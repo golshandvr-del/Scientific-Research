@@ -141,7 +141,13 @@ const ACCEPT_CONTRACT = {
   'XAUUSD-M15': { layers: 4, code: 'S344', rqs2: 89.0, note: 'S344 (SHORT) + S431 (LONG ساختاری) + S432 (LONG زمانی · RQS2 84.7) + S547 (پیش‌تعطیلات · ۸۴.۷ · بدیلِ M30)' },
   'XAUUSD-M30': { layers: 3, code: 'S312', rqs2: 87.7, note: 'S312 (زمان-محور · فیلترِ کیفیت اصلاح‌شد) + S431 (ساختار-محور) + S547 (پیش‌تعطیلات · ۸۹.۳ · کارتِ مرجع)' },
   'XAUUSD-H1':  { layers: 3, code: 'S356', rqs2: 79.6, note: 'S356 (هندسه‌محور) + S431 (دقت‌محور) + S432 (زمان-محور · RQS2 84.7)' },
-  'XAUUSD-H4':  { layers: 2, code: 'S382', rqs2: 79.2, note: 'Williams %R (صفر فیلتر) + S547 (پیش‌تعطیلات · ۸۱.۹ · بدیلِ M30)' },
+  // H4: 2 → 5 در استقرارِ S759. این ردیف پیش از S759 هم کهنه بود (S589 و S1516 بدونِ
+  // به‌روزرسانیِ آن وصل شدند). هر سه افزوده سندِ ACCEPTِ خودِ H4 را دارند ⇒ مجوزدار:
+  //   S589  results/S589_VolumeConfirmedFreshHigh_Xauusd_H8H4_rqs2_88_ACCEPT.md  (H4 86.3)
+  //   S759  results/S759_InformedStructureBreak_Xauusd_H4_rqs2_85_ACCEPT.md      (H4 85.2)
+  //   S1516 results/S1516_CalendarMatchedFreshFloor_Xauusd_H6H4_rqs2_87_ACCEPT.md (H4 84.1 · بدیلِ H6)
+  // فقط همین ردیف اصلاح شد؛ بدهیِ کارت‌های دیگر دست‌نخورده می‌ماند.
+  'XAUUSD-H4':  { layers: 5, code: 'S382', rqs2: 79.2, note: 'S382 (Williams %R) + S589 (سقفِ تازه × حجم · ۸۶.۳) + S759 (شکستِ ساختاری × کندلِ مطلع · ۸۵.۲) + S547 (پیش‌تعطیلات · ۸۱.۹ · بدیلِ M30) + S1516 (کفِ تازه · ۸۴.۱ · بدیلِ H6)' },
 }
 
 // نمادهای لایه‌های حذف‌شده در S396 (و حذف‌های پیشین). اگر هر یک در باندل پیدا
