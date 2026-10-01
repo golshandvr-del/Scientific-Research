@@ -1,7 +1,7 @@
 {
  "cards": {
   "XAUUSD-H8": {
-   "layer_count": 8,
+   "layer_count": 9,
    "geometry": {
     "sl": 179.67,
     "tp": 269.5
@@ -24,6 +24,7 @@
     "S1911:NEUTRAL:—",
     "S607:NEUTRAL:—",
     "S770:NEUTRAL:—",
+    "S798:NEUTRAL:—",
     "S955:NEUTRAL:—",
     "S965:NEUTRAL:—",
     "S966:NEUTRAL:—"
@@ -33,6 +34,7 @@
     "S1911:NEUTRAL:—",
     "S607:NEUTRAL:—",
     "S770:NEUTRAL:—",
+    "S798:NEUTRAL:—",
     "S955:NEUTRAL:—",
     "S965:NEUTRAL:—",
     "S966:NEUTRAL:—"
