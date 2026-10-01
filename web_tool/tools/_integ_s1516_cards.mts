@@ -49,7 +49,7 @@ ok(!('XAUUSD-H3' in CARD_LAYERS), 'کارتِ XAUUSD-H3 در CARD_LAYERS وجو�
 
 const CARDS = [
   { card: 'XAUUSD-H6', tf: 'H6', expectLayers: 4, slPip: 152.10, primary: true },
-  { card: 'XAUUSD-H4', tf: 'H4', expectLayers: 4, slPip: 123.32, primary: false },
+  { card: 'XAUUSD-H4', tf: 'H4', expectLayers: 5, slPip: 123.32, primary: false },
 ]
 
 for (const spec of CARDS) {
