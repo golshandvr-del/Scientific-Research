@@ -148,6 +148,19 @@ const ACCEPT_CONTRACT = {
   //   S1516 results/S1516_CalendarMatchedFreshFloor_Xauusd_H6H4_rqs2_87_ACCEPT.md (H4 84.1 · بدیلِ H6)
   // فقط همین ردیف اصلاح شد؛ بدهیِ کارت‌های دیگر دست‌نخورده می‌ماند.
   'XAUUSD-H4':  { layers: 5, code: 'S382', rqs2: 79.2, note: 'S382 (Williams %R) + S589 (سقفِ تازه × حجم · ۸۶.۳) + S759 (شکستِ ساختاری × کندلِ مطلع · ۸۵.۲) + S547 (پیش‌تعطیلات · ۸۱.۹ · بدیلِ M30) + S1516 (کفِ تازه · ۸۴.۱ · بدیلِ H6)' },
+  // H8: ردیف در استقرارِ S798 افزوده شد. کارت پیش از S798 با ۸ لایه «بی‌سند» گزارش می‌شد
+  // (هیچ‌یک از سیم‌کشی‌های H8 این جدول را به‌روز نکرده بود). هر ۹ لایه سندِ ACCEPTِ خودِ H8 را دارند:
+  //   S955 results/S955_JumpAftermathCalmRegime_Xauusd_H8H12H6_rqs2_88_ACCEPT.md (H8 87.7)
+  //   S965 results/S965_KyleIntrabarPermanence_Xauusd_H8_rqs2_82_ACCEPT.md
+  //   S770 results/S770_AdrExpansionPool_Xauusd_D1H8_rqs2_82_ACCEPT.md
+  //   S966 results/S966_KylePermanenceDriftAligned_Xauusd_H8_rqs2_86_ACCEPT.md
+  //   S1911 results/S1911_KyleShockCalmRegime_Xauusd_H8_rqs2_93.9_ACCEPT.md
+  //   S607 results/S607_EngleShockDualGatePool_Xauusd_D1H8H6_rqs2_83.1_ACCEPT.md
+  //   S1520 results/S1520_InformedFreshHigh_Xauusd_H8_rqs2_91_ACCEPT.md
+  //   S589 results/S589_VolumeConfirmedFreshHigh_Xauusd_H8H4_rqs2_88_ACCEPT.md
+  //   S798 results/S798_LondonSessionShockContinuation_Xauusd_H8_rqs2_86.9_ACCEPT.md
+  // فقط همین ردیف افزوده شد؛ بدهیِ کارت‌های دیگر (D1/H12/H6/H1/M15) دست‌نخورده می‌ماند.
+  'XAUUSD-H8':  { layers: 9, code: 'S955', rqs2: 87.7, note: 'S955 + S965 + S770 + S966 + S1911 + S607 + S1520 + S589 + S798 (شوکِ نشستِ لندن · ۸۶.۹ · هم‌کندلِ S965 در ۶۳٪ ⇒ یک پوزیشن)' },
 }
 
 // نمادهای لایه‌های حذف‌شده در S396 (و حذف‌های پیشین). اگر هر یک در باندل پیدا
