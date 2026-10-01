@@ -77,7 +77,7 @@
     "S1516": 518,
     "S382": 1496,
     "S589": 498,
-    "S547": 0
+    "S547": 147
    },
    "vs_live_incumbents": {
     "S382": {
@@ -110,12 +110,12 @@
      "a": "S1516",
      "b": "S547",
      "n_a": 518,
-     "n_b": 0,
-     "shared": 0,
-     "share_of_a": 0.0,
-     "share_of_b": 0.0,
-     "jaccard": 0.0,
-     "size_ratio": 0.0,
+     "n_b": 147,
+     "shared": 6,
+     "share_of_a": 1.2,
+     "share_of_b": 4.1,
+     "jaccard": 0.0091,
+     "size_ratio": 0.2838,
      "false_witness": false,
      "why_this_reference": "wired on H4 (calendar layer)"
     }
