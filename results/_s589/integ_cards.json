@@ -17,14 +17,14 @@
    "role": "primary",
    "cofire_with_s1520": false,
    "codes_off": [
-    "S950"
+    "S955"
    ],
    "incumbents_off": [
     "S1520:NEUTRAL:—",
     "S1911:NEUTRAL:—",
     "S607:NEUTRAL:—",
     "S770:NEUTRAL:—",
-    "S950:NEUTRAL:—",
+    "S955:NEUTRAL:—",
     "S965:NEUTRAL:—",
     "S966:NEUTRAL:—"
    ],
@@ -33,35 +33,41 @@
     "S1911:NEUTRAL:—",
     "S607:NEUTRAL:—",
     "S770:NEUTRAL:—",
-    "S950:NEUTRAL:—",
+    "S955:NEUTRAL:—",
     "S965:NEUTRAL:—",
     "S966:NEUTRAL:—"
    ]
   },
   "XAUUSD-H4": {
-   "layer_count": 2,
+   "layer_count": 4,
    "geometry": {
     "sl": 122.85,
     "tp": 184.28
    },
    "event": {
-    "bar": 23850,
-    "utc": "2026-08-07 08:00",
-    "close": 4305.86
+    "bar": 23920,
+    "utc": "2026-08-25 00:00",
+    "close": 4684.04
    },
    "codes_on": [
     "S589",
+    "S1516",
     "S382"
    ],
    "role": "primary",
    "codes_off": [
+    "S1516",
     "S382"
    ],
    "incumbents_off": [
-    "S382:ENTRY:LONG"
+    "S1516:ENTRY:LONG",
+    "S382:ENTRY:LONG",
+    "S547:NEUTRAL:—"
    ],
    "incumbents_on": [
-    "S382:ENTRY:LONG"
+    "S1516:ENTRY:LONG",
+    "S382:ENTRY:LONG",
+    "S547:NEUTRAL:—"
    ]
   }
  },
