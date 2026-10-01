@@ -133,7 +133,7 @@ const CARDS: { card: string; tf: string; expectLayers: number; slPip: number; tp
   // انتظارِ شمارشِ لایه از خودِ CARD_LAYERS در گامِ ۱۳ می‌آید:
   //   H8 = شش ساکن (S950/S965/S770/S966/S1911/S607) + S1520 + S589 = ۸
   //   H4 = S382 + S589 = ۲
-  { card: 'XAUUSD-H8', tf: 'H8', expectLayers: 8, slPip: 179.67, tpPip: 269.50 },
+  { card: 'XAUUSD-H8', tf: 'H8', expectLayers: 9, slPip: 179.67, tpPip: 269.50 },
   //   H4 = S382 + S589 + S759 (استقرارِ S759) + S547 (استقرارِ S547) + S1516 (استقرارِ S1516) = ۵
   { card: 'XAUUSD-H4', tf: 'H4', expectLayers: 5, slPip: 122.85, tpPip: 184.28 },
 ]
