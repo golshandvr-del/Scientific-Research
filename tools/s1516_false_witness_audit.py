@@ -252,17 +252,22 @@ def sig_s547(df: pd.DataFrame) -> np.ndarray:
     قاعده‌اش **تقویمی** است و از فایلِ منجمدِ خودِ پروژه خوانده می‌شود
     (`results/s547/p_days.json`) — بازسازیِ دستیِ تعطیلات دقیقاً همان کاری است
     که سندِ S547 گام ۲ از آن پرهیز داد."""
-    p = os.path.join(ROOT, 'results', 's547', 'p_days.json')
-    if not os.path.exists(p):
-        return np.zeros(len(df), bool)
-    with open(p) as f:
-        raw = json.load(f)
-    days = set(raw['p_days'] if isinstance(raw, dict) else raw)
-    d = df['dt'].dt.strftime('%Y-%m-%d')
-    isp = d.isin(days)
-    # اولین کندلِ آن روز (ورودِ سند = openِ روزِ P)
-    first = isp & (~isp.shift(1, fill_value=False) | (d != d.shift(1)))
-    return _b(first).to_numpy()
+    # 🔴 اصلاحِ نشستِ بعد: نسخهٔ قبلی از `results/s547/p_days.json` می‌خواند؛ آن
+    #    فایل **هرگز در ریپو وجود نداشت** و تابع بی‌صدا آرایهٔ صفر برمی‌گرداند ⇒
+    #    jaccard=0 با n_b=0 یک «پاک» کاذب بود، نه اندازه‌گیری. حالا سیگنال از
+    #    خودِ رانرِ منجمدِ حکم (tools/s547_preholiday_runner.make_signals) گرفته
+    #    می‌شود، و اگر صفر رویداد بدهد ممیزی **سخت شکست می‌خورد**.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        '_s547_runner', os.path.join(ROOT, 'tools', 's547_preholiday_runner.py'))
+    m = importlib.util.module_from_spec(spec)
+    cwd = os.getcwd()
+    spec.loader.exec_module(m)
+    os.chdir(cwd)
+    sig = np.asarray(m.make_signals(df), dtype=bool)
+    if not sig.any():
+        sys.exit('S547 reconstruction produced ZERO events — audit invalid')
+    return sig
 
 
 def compare(a: np.ndarray, b: np.ndarray, name_a: str, name_b: str) -> dict:
