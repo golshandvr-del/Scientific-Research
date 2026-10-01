@@ -39,7 +39,7 @@
    ]
   },
   "XAUUSD-H4": {
-   "layer_count": 4,
+   "layer_count": 5,
    "geometry": {
     "sl": 122.85,
     "tp": 184.28
@@ -62,12 +62,14 @@
    "incumbents_off": [
     "S1516:ENTRY:LONG",
     "S382:ENTRY:LONG",
-    "S547:NEUTRAL:—"
+    "S547:NEUTRAL:—",
+    "S759:NEUTRAL:—"
    ],
    "incumbents_on": [
     "S1516:ENTRY:LONG",
     "S382:ENTRY:LONG",
-    "S547:NEUTRAL:—"
+    "S547:NEUTRAL:—",
+    "S759:NEUTRAL:—"
    ]
   }
  },
