@@ -6406,6 +6406,206 @@ function decideS1516(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
 }
 
+// ../web_tool/src/informed_structure_s759.ts
+var S759_CFG = {
+  "XAUUSD-H4": {
+    id: "XAUUSD-H4",
+    tfFa: "H4",
+    L: 5,
+    legK: 1,
+    rhoMin: 0.618,
+    atrP: 89,
+    slK: 1.45,
+    rr: 1.618,
+    maxHold: 55,
+    warmup: 400,
+    approachAtr: 0.25,
+    rqs2: 85.2,
+    nTrades: 175,
+    wr: 52,
+    lift: 12.58,
+    z: 3.4,
+    pf: 1.78,
+    medSlPip: 118.9,
+    medTpPip: 192.3
+  }
+};
+function s759Features(c, cfg) {
+  const n = c.length;
+  const L = cfg.L;
+  const h = c.map((x) => x.high), l = c.map((x) => x.low), cl = c.map((x) => x.close);
+  const a = atr(c, cfg.atrP);
+  const ph = new Array(n).fill(false);
+  const pl = new Array(n).fill(false);
+  for (let i = L; i + L < n; i++) {
+    let mx = -Infinity, mn = Infinity;
+    for (let j = i - L; j <= i + L; j++) {
+      if (h[j] > mx) mx = h[j];
+      if (l[j] < mn) mn = l[j];
+    }
+    ph[i] = h[i] >= mx;
+    pl[i] = l[i] <= mn;
+  }
+  const structural = new Array(n).fill(false);
+  const hhArr = new Array(n).fill(NaN);
+  const l1Arr = new Array(n).fill(NaN);
+  const l2Arr = new Array(n).fill(NaN);
+  const legOk = new Array(n).fill(false);
+  const hsConf = [];
+  let l1 = -1, l2 = -1;
+  let midHH = NaN;
+  let hlValid = false;
+  const midHigh = (lo, hi) => {
+    let best = NaN;
+    for (let k = hsConf.length - 1; k >= 0; k--) {
+      const p = hsConf[k];
+      if (p <= lo) break;
+      if (p < hi) {
+        const v = h[p];
+        if (!isFinite(best) || v > best) best = v;
+      }
+    }
+    return best;
+  };
+  for (let t = 1; t < n; t++) {
+    let changed = false;
+    const p = t - L;
+    if (p >= 0 && ph[p]) {
+      hsConf.push(p);
+      changed = true;
+    }
+    if (p >= 0 && pl[p]) {
+      l1 = l2;
+      l2 = p;
+      changed = true;
+    }
+    if (changed) {
+      hlValid = l1 >= 0 && l2 >= 0 && l[l2] > l[l1];
+      midHH = hlValid ? midHigh(l1, l2) : NaN;
+      hlValid = hlValid && isFinite(midHH);
+    }
+    if (hlValid) {
+      hhArr[t] = midHH;
+      l1Arr[t] = l[l1];
+      l2Arr[t] = l[l2];
+    }
+    const atrPrev = a[t - 1];
+    if (!isFinite(atrPrev) || atrPrev <= 0) continue;
+    if (hlValid && midHH - l[l1] >= cfg.legK * atrPrev) {
+      legOk[t] = true;
+      if (cl[t] > midHH && cl[t - 1] <= midHH && cl[t] > l[l2]) structural[t] = true;
+    }
+  }
+  const rho = c.map((x) => {
+    const r = x.high - x.low;
+    return r > 0 ? (x.close - x.open) / r : 0;
+  });
+  const sig = structural.map((s, i) => s && rho[i] >= cfg.rhoMin);
+  return { atr: a, rho, structural, sig, hh: hhArr, l1Low: l1Arr, l2Low: l2Arr, legOk };
+}
+function computeS759(candles, cfg) {
+  const n = candles.length;
+  const minBars = cfg.warmup + 2;
+  if (n < minBars) {
+    return {
+      active: false,
+      approaching: false,
+      direction: "LONG",
+      slDist: 0,
+      tpDist: 0,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u062F\u0627\u062F\u0647\u0654 \u0646\u0627\u06A9\u0627\u0641\u06CC: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u062F (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 ATR${cfg.atrP}\u0650 \u0648\u0627\u06CC\u0644\u062F\u0631 = ${cfg.warmup} \u06A9\u0646\u062F\u0644\u060C \u0639\u06CC\u0646\u0650 warmup\u0650 \u062F\u0627\u0648\u0631\u06CC)\u060C \u0648\u0644\u06CC \u0641\u06CC\u062F ${n} \u06A9\u0646\u062F\u0644 \u062F\u0627\u0631\u062F.`,
+      indicators: []
+    };
+  }
+  const f = s759Features(candles, cfg);
+  const i = n - 1;
+  const last2 = candles[i];
+  const atrI = f.atr[i];
+  const slDist = cfg.slK * atrI;
+  const tpDist = cfg.rr * slDist;
+  const hh = f.hh[i];
+  const ind = [
+    {
+      name: "\u0633\u0627\u062E\u062A\u0627\u0631\u0650 HL (\u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631)",
+      value: isFinite(hh) ? `${f.l1Low[i].toFixed(2)} \u2192 ${f.l2Low[i].toFixed(2)}` : "\u0646\u062F\u0627\u0631\u062F",
+      status: isFinite(hh) ? "ok" : "bad"
+    },
+    { name: "\u0633\u0642\u0641\u0650 \u0645\u06CC\u0627\u0646\u06CC (hh)", value: isFinite(hh) ? hh.toFixed(2) : "\u2014", status: isFinite(hh) ? "ok" : "bad" },
+    { name: `\u06A9\u06CC\u0641\u06CC\u062A\u0650 \u067E\u0627 (hh \u2212 l\u2081 \u2265 ${cfg.legK}\xD7ATR${cfg.atrP})`, value: f.legOk[i] ? "\u0628\u0644\u0647" : "\u062E\u06CC\u0631", status: f.legOk[i] ? "ok" : "bad" },
+    { name: "\u0634\u06A9\u0633\u062A\u0650 \u0644\u0628\u0647\u0654 \u0627\u0648\u0644 (close > hh)", value: f.structural[i] ? "\u0628\u0644\u0647" : "\u062E\u06CC\u0631", status: f.structural[i] ? "ok" : "bad" },
+    { name: `\u03C1 \u06A9\u0646\u062F\u0644 (\u2265 ${cfg.rhoMin})`, value: f.rho[i].toFixed(3), status: f.rho[i] >= cfg.rhoMin ? "ok" : "bad" }
+  ];
+  if (f.sig[i]) {
+    return {
+      active: true,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u0634\u06A9\u0633\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u062F\u0627\u0648 \u0631\u0648\u06CC ${cfg.tfFa}: \u067E\u0633 \u0627\u0632 \u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631 (${f.l1Low[i].toFixed(2)} \u2192 ${f.l2Low[i].toFixed(2)})\u060C \u06A9\u0646\u062F\u0644 \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 \u0645\u06CC\u0627\u0646\u06CC ${hh.toFixed(2)} \u0628\u0633\u062A\u0647 \u0634\u062F (\u0644\u0628\u0647\u0654 \u0627\u0648\u0644) \u0648 \u0628\u062F\u0646\u0647\u200C\u0627\u0634 ${(f.rho[i] * 100).toFixed(0)}\u066A \u062F\u0627\u0645\u0646\u0647 \u0627\u0633\u062A (\u03C1 \u2265 ${cfg.rhoMin}) \u21D2 **\u06A9\u0646\u062F\u0644\u0650 \u0645\u0637\u0644\u0639**: \u062E\u0631\u06CC\u062F\u0627\u0631 \u062A\u0627 \u0627\u0646\u062A\u0647\u0627\u06CC \u06A9\u0646\u062F\u0644 \u067E\u0627\u06CC \u0634\u06A9\u0633\u062A \u0627\u06CC\u0633\u062A\u0627\u062F. \u0648\u0631\u0648\u062F = open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F.`,
+      indicators: ind
+    };
+  }
+  if (isFinite(hh) && f.legOk[i] && last2.close <= hh && last2.close >= hh - cfg.approachAtr * atrI && last2.close > f.l2Low[i]) {
+    return {
+      active: false,
+      approaching: true,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u0633\u0627\u062E\u062A\u0627\u0631\u0650 HL \u0631\u0648\u06CC ${cfg.tfFa} \u0645\u0633\u0644\u062D \u0627\u0633\u062A \u0648 close (${last2.close.toFixed(2)}) \u0641\u0642\u0637 ${((hh - last2.close) / atrI).toFixed(2)}\xD7ATR \u0632\u06CC\u0631\u0650 \u0633\u0642\u0641\u0650 \u0645\u06CC\u0627\u0646\u06CC ${hh.toFixed(2)} \u0627\u0633\u062A.`,
+      approachReason: `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0644\u0627\u0632\u0645: \u06A9\u0646\u062F\u0644\u06CC \u06A9\u0647 **\u0628\u0627\u0644\u0627\u06CC ${hh.toFixed(2)} \u0628\u0633\u062A\u0647 \u0634\u0648\u062F** \u0648 \u0628\u062F\u0646\u0647\u200C\u0627\u0634 \u2265 ${(cfg.rhoMin * 100).toFixed(1)}\u066A \u062F\u0627\u0645\u0646\u0647 \u0628\u0627\u0634\u062F. \u0634\u06A9\u0633\u062A\u0650 \u0628\u0627 \u06A9\u0646\u062F\u0644\u0650 \u0636\u0639\u06CC\u0641 (\u03C1 \u067E\u0627\u06CC\u06CC\u0646) \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F.`,
+      indicators: ind
+    };
+  }
+  let why;
+  if (f.structural[i]) why = `\u0634\u06A9\u0633\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC \u0631\u062E \u062F\u0627\u062F \u0648\u0644\u06CC \u03C1=${f.rho[i].toFixed(3)} < ${cfg.rhoMin} \u21D2 \u06A9\u0646\u062F\u0644\u0650 \u0645\u0637\u0644\u0639 \u0646\u06CC\u0633\u062A (\u0628\u0627\u0632\u0648\u06CC \u0645\u06A9\u0645\u0644\u0650 \u03C1 \u067E\u0627\u06CC\u06CC\u0646 WR 42.5\u066A \u0648 \u0632\u06CC\u0631\u0650 \u0633\u0631\u0628\u0647\u200C\u0633\u0631 \u0627\u0633\u062A).`;
+  else if (!isFinite(hh)) why = "\u0633\u0627\u062E\u062A\u0627\u0631\u0650 \xAB\u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631 + \u0633\u0642\u0641\u0650 \u0645\u06CC\u0627\u0646\u06CC\xBB \u0641\u0639\u0644\u0627\u064B \u0634\u06A9\u0644 \u0646\u06AF\u0631\u0641\u062A\u0647 \u0627\u0633\u062A.";
+  else if (!f.legOk[i]) why = `\u0633\u0627\u062E\u062A\u0627\u0631 \u0647\u0633\u062A \u0648\u0644\u06CC \u067E\u0627 \u06A9\u0648\u062A\u0627\u0647 \u0627\u0633\u062A (hh \u2212 l\u2081 < ${cfg.legK}\xD7ATR).`;
+  else if (last2.close > hh) why = "\u0642\u06CC\u0645\u062A \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 \u0645\u06CC\u0627\u0646\u06CC \u0627\u0633\u062A \u0648\u0644\u06CC \u0627\u06CC\u0646 \u0644\u0628\u0647\u0654 \u0627\u0648\u0644 \u0646\u06CC\u0633\u062A (\u0634\u06A9\u0633\u062A \u0642\u0628\u0644\u0627\u064B \u0631\u062E \u062F\u0627\u062F\u0647).";
+  else why = `close \u0632\u06CC\u0631\u0650 \u0633\u0642\u0641\u0650 \u0645\u06CC\u0627\u0646\u06CC ${hh.toFixed(2)} \u0627\u0633\u062A.`;
+  return {
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason: `\u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0631\u0648\u06CC ${cfg.tfFa}. ${why}`,
+    indicators: ind
+  };
+}
+function decideS759(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS759(candles, cfg);
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s759_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S759",
+    name: `\u0634\u06A9\u0633\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u062F\u0627\u0648 \xD7 \u06A9\u0646\u062F\u0644\u0650 \u0645\u0637\u0644\u0639 (${cfg.tfFa})`,
+    kind: "structure_break",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 \u062D\u06A9\u0645: SL = ${cfg.slK}\xD7ATR${cfg.atrP} (\u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644) \xB7 TP = ${cfg.rr}\xD7SL (\u0645\u06CC\u0627\u0646\u0647\u0654 \u06F1\u06F5.\u06F6 \u0633\u0627\u0644\u0647 ${cfg.medSlPip}/${cfg.medTpPip} pip \u0645\u0648\u062A\u0648\u0631 = ${(cfg.medSlPip / 10).toFixed(1)}$/${(cfg.medTpPip / 10).toFixed(1)}$). \u0627\u06AF\u0631 \u062A\u0627 **${cfg.maxHold} \u06A9\u0646\u062F\u0644\u0650 H4** \u0628\u0647 \u0647\u06CC\u0686\u200C\u06A9\u062F\u0627\u0645 \u0646\u062E\u0648\u0631\u062F\u060C \u0628\u0627 close \u0628\u0633\u062A\u0647 \u0634\u0648\u062F \u2014 \u0627\u06CC\u0646 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u062E\u0648\u062F\u0650 \u062D\u06A9\u0645 \u0627\u0633\u062A. \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false): \u062A\u0627 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646\u060C \u0634\u06A9\u0633\u062A\u0650 \u0628\u0639\u062F\u06CC \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062A\u0627\u0632\u0647 \u0646\u06CC\u0633\u062A. \u26A0\uFE0F **\u0642\u06CC\u062F\u0650 \u0633\u0627\u06CC\u0632 \u0628\u0627 S382 \u0631\u0648\u06CC \u0647\u0645\u06CC\u0646 \u06A9\u0627\u0631\u062A:** \u06F5\u06F4.\u06F8\u066A \u0627\u0632 \u0631\u0648\u06CC\u062F\u0627\u062F\u0647\u0627\u06CC S759 \u0647\u0645\u200C\u06A9\u0646\u062F\u0644\u0650 \u06AF\u0630\u0631\u0650 %R S382 \u0627\u0633\u062A (\u0645\u0645\u06CC\u0632\u06CC\u0650 \u0634\u0627\u0647\u062F\u0650 \u06A9\u0627\u0630\u0628: jaccard 0.069 \u21D2 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u0648\u0627\u062D\u062F \u0646\u06CC\u0633\u062A\u060C \u0648\u0644\u06CC \u0647\u0645\u200C\u0632\u0645\u0627\u0646\u06CC \u0632\u06CC\u0627\u062F \u0627\u0633\u062A) \u21D2 \u0627\u06AF\u0631 \u0647\u0631 \u062F\u0648 \u0631\u0648\u0634\u0646\u200C\u0627\u0646\u062F **\u06CC\u06A9** \u067E\u0648\u0632\u06CC\u0634\u0646 \u0628\u06AF\u06CC\u0631\u060C \u0646\u0647 \u062F\u0648. \u26A0\uFE0F \u0633\u0647\u0645\u0650 \u0628\u0632\u0631\u06AF\u06CC \u0627\u0632 \u0633\u0648\u062F \u062F\u0631 \u06F2\u06F0\u06F2\u06F5\u2013\u06F2\u06F0\u06F2\u06F6 (\u0631\u0698\u06CC\u0645\u0650 \u0631\u0648\u0646\u062F\u0650 \u0642\u0648\u06CC) \u0627\u0633\u062A \u2014 \u06F1\u06F1/\u06F1\u06F6 \u0633\u0627\u0644 \u0645\u062B\u0628\u062A. \u0647\u06CC\u0686 \u0645\u062F\u06CC\u0631\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC (BE/trailing) \u0622\u0632\u0645\u0648\u062F\u0647 \u0646\u0634\u062F\u0647 \u21D2 \u0641\u0642\u0637 TP/SL/\u0632\u0645\u0627\u0646.`,
+    filters: [
+      `\u067E\u06CC\u0648\u062A\u0650 \u0641\u0631\u0627\u06A9\u062A\u0627\u0644\u0650 L=${cfg.L} \u0628\u0627 \u062A\u0623\u06CC\u06CC\u062F\u0650 \u0639\u0644\u0651\u06CC \u062F\u0631 i+${cfg.L} (\u0628\u0631\u0646\u062F\u0647\u0654 \u06A9\u0634\u0641\u0650 \u0646\u06CC\u0645\u0647\u0654 \u0627\u0648\u0644 \u0627\u0632 {3,5,8})`,
+      "\u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u062F\u0627\u0648: \u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631 (l\u2082 > l\u2081) \u0648 \u0633\u0642\u0641\u0650 \u0645\u06CC\u0627\u0646\u06CC = \u0628\u0627\u0644\u0627\u062A\u0631\u06CC\u0646 \u067E\u06CC\u0648\u062A\u200C\u0633\u0642\u0641 \u0628\u06CC\u0646 \u0622\u0646\u200C\u062F\u0648",
+      `\u06A9\u06CC\u0641\u06CC\u062A\u0650 \u067E\u0627: hh \u2212 l\u2081 \u2265 ${cfg.legK}\xD7ATR${cfg.atrP}[t\u22121]`,
+      "\u0644\u0628\u0647\u0654 \u0627\u0648\u0644: close[t] > hh \u0648 close[t\u22121] \u2264 hh \u0648 close[t] > l\u2082",
+      `\u06AF\u06CC\u062A\u0650 \u0645\u0637\u0644\u0639: \u03C1 = (close\u2212open)/(high\u2212low) \u2265 ${cfg.rhoMin} (\u0645\u0646\u062C\u0645\u062F \u0627\u0632 S965/S1520)`,
+      "LONG-only \xB7 \u0648\u0631\u0648\u062F open\u0650 \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F \xB7 \u0641\u0642\u0637 H4 (H3 REJECT 30.3\u060C \u0628\u0642\u06CC\u0647 REJECT/UNPROVEN)"
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, a.price, reg, capital, riskPct);
+}
+
 // ../web_tool/src/kyle_permanence_drift_s966.ts
 var GOLD_PIP7 = 0.1;
 var S966_CFG = {
@@ -8786,6 +8986,7 @@ var s607Layer = (cfg) => (ctx) => decideS607(cfg, ctx.a, ctx.candles, ctx.capita
 var s1520Layer = (cfg) => (ctx) => decideS1520(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s589Layer = (cfg) => (ctx) => decideS589(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s1516Layer = (cfg) => (ctx) => decideS1516(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s759Layer = (cfg) => (ctx) => decideS759(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s560Layer = (cfg) => (ctx) => decideS560(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s562Layer = (cfg) => (ctx) => decideS562(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s408Layer = (cfg) => (ctx) => decideS408(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
@@ -9044,6 +9245,13 @@ var CARD_LAYERS = {
     //       بازتولید شد ⇒ اعدادِ بالا معتبرند.
     //    سند: results/S589_VolumeConfirmedFreshHigh_Xauusd_H8H4_rqs2_88_ACCEPT.md
     s589Layer(S589_CFG["XAUUSD-H4"]),
+    // ⭐ S759 ⭐نو — «شکستِ ساختاریِ داو × کندلِ مطلع» · RQS2 **85.2** · n=175 · WR 52.0٪ ·
+    //    lift +12.58pp · z=3.40 · PF 1.78 · H7 OOS WR 58.9٪/PF 2.38 · ۱۱/۱۱ سبز.
+    //    جایگاه: بعد از S589 (۸۶.۳) و پیش از دو لایهٔ «بدیل» (S547 بدیلِ M30، S1516 بدیلِ H6)،
+    //    چون S759 ارزشِ مستقلِ اندازه‌گیری‌شده دارد (nonOV با S382 ⇒ lift +10.6pp).
+    //    شاهدِ کاذب: CLEAR (jaccard ≤ 0.083 با هر چهار ساکن) — ولی ۵۴.۸٪ هم‌کندلی با S382
+    //    ⇒ اگر هر دو ENTRY: **یک** پوزیشن (قیدِ سایز، نه قیدِ ورود). maxHold=55 پارامترِ حکم است.
+    s759Layer(S759_CFG["XAUUSD-H4"]),
     // ⭐ S547 — پیش‌تعطیلات روی H4: RQS2 ۸۱.۹ · z=۳.۰۹ · n=۱۴۴ · WR ۵۴.۱۷٪ ·
     //    PF ۱.۷۴ · lift **+۱۳.۰۹pp** (بزرگ‌ترین liftِ خانواده) · ۱۱/۱۱ سبز.
     //    نکتهٔ علمیِ سند (ابطالگرِ F2 نیمه‌ابطال شد): درفتِ پیش‌تعطیلات در مقیاسِ
@@ -9654,7 +9862,7 @@ var CARD_LAYER_CODES = {
   "XAUUSD-M15": ["S562", "S408", "S344", "S333", "S312", "S547"],
   "XAUUSD-M30": ["S547", "S312", "S333"],
   "XAUUSD-H1": ["S562", "S354", "S333", "S312"],
-  "XAUUSD-H4": ["S382", "S589", "S547", "S1516"],
+  "XAUUSD-H4": ["S382", "S589", "S759", "S547", "S1516"],
   "XAUUSD-H6": ["S919", "S955", "S607", "S1516"],
   "XAUUSD-H8": ["S955", "S965", "S770", "S966", "S1911", "S607", "S1520", "S589"],
   "XAUUSD-H12": ["S955", "S800"],
@@ -9916,6 +10124,13 @@ var LAYER_CATALOG = {
     verdict: "ACCEPT 88",
     side: "LONG",
     what: "\u0633\u0642\u0641\u0650 \u062A\u0627\u0632\u0647\u0654 \u06F9\u06F0-\u06A9\u0646\u062F\u0644\u06CC \u06A9\u0647 \u062D\u062C\u0645\u0650 \u0646\u0633\u0628\u06CC \u0622\u0646 \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0646\u062F."
+  },
+  "XAUUSD-H4|S759": {
+    code: "S759",
+    name: "\u0634\u06A9\u0633\u062A\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC\u0650 \u062F\u0627\u0648 \xD7 \u06A9\u0646\u062F\u0644\u0650 \u0645\u0637\u0644\u0639",
+    verdict: "ACCEPT 85.2",
+    side: "LONG",
+    what: "\u06A9\u0641\u0650 \u0628\u0627\u0644\u0627\u062A\u0631\u060C \u0633\u067E\u0633 \u0628\u0633\u062A\u0647\u200C\u0634\u062F\u0646 \u0628\u0627\u0644\u0627\u06CC \u0633\u0642\u0641\u0650 \u0645\u06CC\u0627\u0646\u06CC \u0628\u0627 \u0628\u062F\u0646\u0647\u0654 \u2265 \u06F6\u06F1.\u06F8\u066A \u062F\u0627\u0645\u0646\u0647. \u26A0\uFE0F \u06F5\u06F5\u066A \u0647\u0645\u200C\u06A9\u0646\u062F\u0644 \u0628\u0627 S382 \u21D2 \u0627\u06AF\u0631 \u0647\u0631 \u062F\u0648 \u0631\u0648\u0634\u0646\u200C\u0627\u0646\u062F\u060C \u06CC\u06A9 \u067E\u0648\u0632\u06CC\u0634\u0646."
   },
   "XAUUSD-H4|S547": {
     code: "S547",
