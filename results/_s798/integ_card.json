@@ -1,0 +1,31 @@
+{
+ "card": "XAUUSD-H8",
+ "layer_count": 9,
+ "event": {
+  "utc": "2026-03-23T08:00:00.000Z",
+  "close": 4453.78,
+  "window_bars": 900
+ },
+ "codes_on": [
+  "S798"
+ ],
+ "state": "ENTRY",
+ "primary": "S798",
+ "sl_usd_out": 188.41313689536855,
+ "tp_usd_out": 188.41313689536855,
+ "sl_usd_ref": 188.4131368953682,
+ "false_witness_dropped": [],
+ "incumbents": [
+  "S1520:NEUTRAL:—",
+  "S1911:NEUTRAL:—",
+  "S589:NEUTRAL:—",
+  "S607:NEUTRAL:—",
+  "S770:NEUTRAL:—",
+  "S955:NEUTRAL:—",
+  "S965:NEUTRAL:—",
+  "S966:NEUTRAL:—"
+ ],
+ "primary_without_s798": "S955",
+ "status": "GREEN",
+ "fails": 0
+}
