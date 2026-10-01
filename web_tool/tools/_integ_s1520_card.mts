@@ -97,10 +97,10 @@ console.log('══ آزمونِ یکپارچگیِ S1520 در سطحِ کارت
 // ---------------------------------------------------------------------------
 console.log('── ① حضورِ لایه در CARD_LAYERS ──')
 const nLayers = (CARD_LAYERS[CARD] || []).length
-console.log(`   ${CARD}: ${nLayers} لایه در فهرست (انتظار: ۶ = پنج ساکن + S1520)`)
+console.log(`   ${CARD}: ${nLayers} لایه در فهرست (انتظار: ۹ = هشت ساکن + S1520؛ پس از S589/S798 به‌روز شد)`)
 report.layer_count = nLayers
-if (nLayers !== 6) {
-  console.log(`   ❌ انتظارِ ۶ لایه بود، ${nLayers} یافت شد`)
+if (nLayers !== 9) {
+  console.log(`   ❌ انتظارِ ۹ لایه بود، ${nLayers} یافت شد`)
   fail++
 } else {
   console.log('   ✓ شمارشِ لایه درست است')
@@ -195,8 +195,8 @@ if (hit < 0) {
   let dOff: any = null
   try { dOff = runCard(ctx as any) } finally { CARD_LAYERS[CARD] = backup }
 
-  console.log(`   فهرستِ فیلترشده: ${filtered.length} لایه (انتظار: ۵)`)
-  if (filtered.length !== 5) {
+  console.log(`   فهرستِ فیلترشده: ${filtered.length} لایه (انتظار: ۸)`)
+  if (filtered.length !== 8) {
     console.log('   ❌ فیلتر نتوانست دقیقاً یک لایه (S1520) را جدا کند')
     fail++
   }
