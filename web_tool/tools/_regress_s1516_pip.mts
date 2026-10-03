@@ -34,15 +34,15 @@ function loadCsv(tf: string) {
 const all = loadCsv('H6')
 let raw: any = null
 for (let i = all.length - 1; i >= Math.max(cfg.lookback + 5, all.length - 4000); i--) {
-  const d: any = computeS1516(all.slice(0, i + 1) as any, cfg, 10000, 1.0)
-  if (d && d.state === 'ENTRY' && d.sl != null && d.entry != null) { raw = d; break }
+  const d: any = computeS1516(all.slice(0, i + 1) as any, cfg)
+  if (d && d.active === true) { raw = d; break }
 }
 
-if (!raw) { console.log('❌ RED — هیچ رویدادِ ENTRYِ S1516 روی ۴۰۰۰ کندلِ اخیر پیدا نشد'); process.exit(1) }
+if (!raw) { console.log('❌ RED — هیچ رویدادِ فعالِ S1516 روی ۴۰۰۰ کندلِ اخیر پیدا نشد'); process.exit(1) }
 
-const slUsd = Math.abs(raw.entry - raw.sl)
+const slUsd = raw.slDist as number
 const slPip = slUsd / EXPECTED_PIP
-console.log(`رویدادِ S1516 · entry=${raw.entry} sl=${raw.sl}`)
+console.log(`رویدادِ S1516 · direction=${raw.direction} slDist=${slUsd} tpDist=${raw.tpDist}`)
 console.log(`  فاصلهٔ دلاریِ SL = ${slUsd.toFixed(5)}$  (منتظر ${EXPECTED_SL_USD.toFixed(5)}$)`)
 console.log(`  یعنی ${slPip.toFixed(2)} pip با pip=0.1`)
 
