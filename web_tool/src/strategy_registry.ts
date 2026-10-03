@@ -941,6 +941,12 @@ const s589Layer = (cfg: typeof S589_CFG[string]): LayerFn => (ctx) => decideS589
 //    ۱۸۲ کندلِ H4؛ در کمبود، گاردِ ماژول
 //    «دادهٔ ناکافی» می‌دهد و هرگز سیگنالِ جعلی نمی‌سازد.
 const s1516Layer = (cfg: typeof S1516_CFG[string]): LayerFn => (ctx) => decideS1516(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S1581 — کفِ تازهٔ ۹۰ × گیتِ حجمِ هم‌اسلات (فقط H6) — OHLC **و ستونِ volume**.
+//    مسیرِ کندل همان تجمیعِ H1×6ِ ساکنانِ کارت است؛ پریتی همین تجمیع را با
+//    mt5_full-H6ِ بومی بیت‌به‌بیت برابر نشان داد (۳۲۶ سیگنال، صفر اختلاف).
+//    گیتِ حجم برای گرم‌شدنِ اسلاتِ ۲۰ رخدادی به ~۸۰ کندل نیاز دارد؛ در کمبود،
+//    گاردِ ماژول صادقانه «دادهٔ ناکافی» می‌دهد و هرگز سیگنالِ جعلی نمی‌سازد.
+const s1581Layer = (cfg: typeof S1581_CFG[string]): LayerFn => (ctx) => decideS1581(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐ S759 — فقط OHLC؛ همان مسیرِ H1×4ِ ساکنانِ کارتِ H4 (پریتی همین تجمیع را با pandas
 //    resample('4h') بیت‌به‌بیت برابر نشان داد). کفِ داده warmup+2 = ۴۰۲ کندل (ATR89 وایلدر).
 const s759Layer = (cfg: typeof S759_CFG[string]): LayerFn => (ctx) => decideS759(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
