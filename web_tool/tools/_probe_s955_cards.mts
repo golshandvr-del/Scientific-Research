@@ -1,6 +1,7 @@
 // آزمونِ شمارشِ لایه‌ها روی سه کارتِ S955 — تأییدِ اینکه S955 واقعاً در آرایه است.
 import { CARD_LAYERS } from '../src/strategy_registry'
-const expect: Record<string, number> = { 'XAUUSD-H6': 3, 'XAUUSD-H8': 8, 'XAUUSD-H12': 2 }
+// H6 3→5 (S1516 و S1581 هر دو افزوده شدند) · H8 8→9 (S798 افزوده شد).
+const expect: Record<string, number> = { 'XAUUSD-H6': 5, 'XAUUSD-H8': 9, 'XAUUSD-H12': 2 }
 let bad = 0
 for (const [card, want] of Object.entries(expect)) {
   const got = (CARD_LAYERS[card] || []).length
