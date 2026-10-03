@@ -1917,7 +1917,7 @@ export const CARD_LAYER_CODES: Record<string, string[]> = {
   'XAUUSD-M30': ['S547', 'S312', 'S333'],
   'XAUUSD-H1':  ['S562', 'S354', 'S333', 'S312'],
   'XAUUSD-H4':  ['S382', 'S589', 'S759', 'S547', 'S1516'],
-  'XAUUSD-H6':  ['S919', 'S955', 'S607', 'S1516'],
+  'XAUUSD-H6':  ['S919', 'S955', 'S607', 'S1516', 'S1581'],
   'XAUUSD-H8':  ['S955', 'S965', 'S770', 'S966', 'S1911', 'S607', 'S1520', 'S589', 'S798'],
   'XAUUSD-H12': ['S955', 'S800'],
   'XAUUSD-D1':  ['S800', 'S770', 'S607'],
