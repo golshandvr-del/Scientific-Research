@@ -1,0 +1,27 @@
+{
+ "endpoint": "/api/assets",
+ "card": "XAUUSD-H6",
+ "served_layers": [
+  {
+   "code": "S919",
+   "verdict": "ACCEPT 88.9"
+  },
+  {
+   "code": "S955",
+   "verdict": "ACCEPT 84.9"
+  },
+  {
+   "code": "S607",
+   "verdict": "ACCEPT 83.1"
+  },
+  {
+   "code": "S1516",
+   "verdict": "ACCEPT 87.1"
+  },
+  {
+   "code": "S1581",
+   "verdict": "ACCEPT 88.0"
+  }
+ ],
+ "note": "live local-mobile bundle serves S1581 on H6 via SSR/local server"
+}
