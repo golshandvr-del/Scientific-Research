@@ -139,8 +139,17 @@ const { build } = await import(pathToFileURL(esbuildPath).href)
 const ACCEPT_CONTRACT = {
   'XAUUSD-M5':  { layers: 1, code: 'S355', rqs2: 83.9, note: 'بدهیِ بازِ برچسبِ کارت — بندِ ۳ سندِ S396' },
   'XAUUSD-M15': { layers: 4, code: 'S344', rqs2: 89.0, note: 'S344 (SHORT) + S431 (LONG ساختاری) + S432 (LONG زمانی · RQS2 84.7) + S547 (پیش‌تعطیلات · ۸۴.۷ · بدیلِ M30)' },
-  'XAUUSD-M30': { layers: 3, code: 'S312', rqs2: 87.7, note: 'S312 (زمان-محور · فیلترِ کیفیت اصلاح‌شد) + S431 (ساختار-محور) + S547 (پیش‌تعطیلات · ۸۹.۳ · کارتِ مرجع)' },
-  'XAUUSD-H1':  { layers: 3, code: 'S356', rqs2: 79.6, note: 'S356 (هندسه‌محور) + S431 (دقت‌محور) + S432 (زمان-محور · RQS2 84.7)' },
+  // M30: 3 → 4 در استقرارِ S572. افزودهٔ S572 سندِ ACCEPTِ خودش را دارد ⇒ مجوزدار:
+  //   S572 results/S572_SRPullbackGoldenMirrorPool_Xauusd_M30H1_rqs2_79_ACCEPT.md (M30 78.7 · استخرِ {M30,H1})
+  'XAUUSD-M30': { layers: 4, code: 'S312', rqs2: 87.7, note: 'S312 (زمان-محور · فیلترِ کیفیت اصلاح‌شد) + S431 (ساختار-محور) + S547 (پیش‌تعطیلات · ۸۹.۳ · کارتِ مرجع) + S572 (پولبکِ S/R آینه‌ای · ۷۸.۷ · استخرِ {M30,H1} ⇒ هم‌رویداد با H1)' },
+  // H1: این ردیف پیش از S572 هم کهنه بود (S562 که بعدتر وصل شد در آن نیامده بود؛
+  // واقعیت ۴ بود نه ۳). اکنون با S572 به ۵ می‌رسد و هر ۵ لایه سندِ ACCEPT دارند:
+  //   S562 results/S562_GapOpenVolFilter_Xauusd_M15H1_rqs2_96_ACCEPT.md   (H1 96.0)
+  //   S356 results/S356_BrooksTrendResumptionCausalXauusdH1_..._ACCEPT.md (H1 79.6)
+  //   S431 results/S431_LpsbMulticardPool_Xauusd_M5M15M30H1_rqs2_93_ACCEPT.md (H1 93.9)
+  //   S432 results/S432_MidMonthDriftCalendarPool_Xauusd_H1M15_rqs2_84_ACCEPT.md (H1 84.7)
+  //   S572 results/S572_SRPullbackGoldenMirrorPool_Xauusd_M30H1_rqs2_79_ACCEPT.md (H1 78.7 · استخرِ {M30,H1})
+  'XAUUSD-H1':  { layers: 5, code: 'S562', rqs2: 96.0, note: 'S562 (گپِ منفی · ۹۶.۰) + S356 (هندسه‌محور · ۷۹.۶) + S431 (دقت‌محور · ۹۳.۹) + S432 (زمان-محور · ۸۴.۷) + S572 (پولبکِ S/R آینه‌ای · ۷۸.۷ · بدیلِ M30)' },
   // H4: 2 → 5 در استقرارِ S759. این ردیف پیش از S759 هم کهنه بود (S589 و S1516 بدونِ
   // به‌روزرسانیِ آن وصل شدند). هر سه افزوده سندِ ACCEPTِ خودِ H4 را دارند ⇒ مجوزدار:
   //   S589  results/S589_VolumeConfirmedFreshHigh_Xauusd_H8H4_rqs2_88_ACCEPT.md  (H4 86.3)

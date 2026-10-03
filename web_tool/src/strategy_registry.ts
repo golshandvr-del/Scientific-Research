@@ -314,6 +314,20 @@ import { decideS1516, S1516_CFG } from './cal_fresh_floor_s1516'
 //    پریتی GREEN (web_tool/tools/_parity_s1581.mts ⇒ results/_s1581_parity/parity_result.json).
 //    سند: results/S1581_VolumeConfirmedFreshFloor_Xauusd_H6_rqs2_88_ACCEPT.md
 import { decideS1581, S1581_CFG } from './volume_fresh_floor_s1581'
+// ⭐ S572 ⭐نو — «پولبکِ S/R طلایی، هندسهٔ آینه‌ای (TP≥SL)» · XAUUSD-**M30** + **H1**
+//    استخرِ تقویمیِ {M30,H1} با هندسهٔ آینه‌ای (S323 منجمد، صفر پارامترِ آزاد).
+//    RQS2 = **78.7** (تنش 78.4 — پایدار) · n=181 (پس از FIFO) · WR 53.59٪ ·
+//    PF 1.398 · lift +14.22pp · z=3.92 · RR 1.45 · هر ۱۱ دروازه سبز · سه بذرِ یکسان.
+//    اعضا: M30 (n=156 · WR 49.36 · lift +12.68) · H1 (n=37 · WR 70.27 · lift +24.61).
+//    ⚠️ حکم **استخری** است (جمعیتِ تجمیعی)، نه تک‌کارتی ⇒ روی هر دو کارت وصل می‌شود
+//       (قانونِ MTF) و در CROSS_CARD_ALTERNATES به‌عنوانِ خانوادهٔ هم‌رویداد ثبت شد
+//       تا کاربر دو کارتِ سبز را «دو شاهدِ مستقل» نپندارد.
+//    پریتی: tools/_parity_s572.mts — ۵۱ آزمون، هر ۵۱ PASS، صفر اختلاف با مرجعِ
+//       پایتون روی کلِ ۱۵.۶ سال (tools/export_s572_parity.py · ۱۵۶/۳۷ معامله بازتولید شد).
+//    ممیزیِ شاهدِ کاذب: tools/_fwa_s572.mts ⇒ در برابرِ ساکنِ هم‌خانوادهٔ پولبک
+//       (S431) jaccard=۰ و share=۰ روی هر دو کارت ⇒ مستقل، نه شاهدِ کاذب.
+//    سند: results/S572_SRPullbackGoldenMirrorPool_Xauusd_M30H1_rqs2_79_ACCEPT.md
+import { decideS572, S572_CFG } from './sr_pullback_mirror_s572'
 // ⭐ S759 ⭐نو — «شکستِ ساختاریِ داو × کندلِ مطلع (ρ ≥ 0.618)» · XAUUSD-H4 (تنها کارتِ ACCEPT)
 //    RQS2 = **85.2** (تنش ۱۰۰ ⇒ 83.5) · ۱۱/۱۱ · n=175 · WR 52.00٪ · lift +12.58 · z=3.40 · PF 1.78
 //    قانونِ MTF: H3 REJECT 30.3 (فقط DD) · H6/H8 REJECT · H12+ UNPROVEN ⇒ فقط H4.
@@ -947,6 +961,9 @@ const s1516Layer = (cfg: typeof S1516_CFG[string]): LayerFn => (ctx) => decideS1
 //    گیتِ حجم برای گرم‌شدنِ اسلاتِ ۲۰ رخدادی به ~۸۰ کندل نیاز دارد؛ در کمبود،
 //    گاردِ ماژول صادقانه «دادهٔ ناکافی» می‌دهد و هرگز سیگنالِ جعلی نمی‌سازد.
 const s1581Layer = (cfg: typeof S1581_CFG[string]): LayerFn => (ctx) => decideS1581(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
+// ⭐ S572 — پولبکِ S/R طلایی (هندسهٔ آینه‌ای). روی M30 و H1 وصل می‌شود؛ ساعتِ UTCِ
+//    کندل داخلِ خودِ ماژول از Candle.time خوانده می‌شود ⇒ به ctx.utcHour نیازی نیست.
+const s572Layer = (cfg: typeof S572_CFG[string]): LayerFn => (ctx) => decideS572(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
 // ⭐ S759 — فقط OHLC؛ همان مسیرِ H1×4ِ ساکنانِ کارتِ H4 (پریتی همین تجمیع را با pandas
 //    resample('4h') بیت‌به‌بیت برابر نشان داد). کفِ داده warmup+2 = ۴۰۲ کندل (ATR89 وایلدر).
 const s759Layer = (cfg: typeof S759_CFG[string]): LayerFn => (ctx) => decideS759(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct)
@@ -1160,6 +1177,14 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     //    ساختار-محور ⇒ دو منبعِ اطلاعاتیِ **مستقل**، نه دو نسخه از یک ایده.
     //    سند: results/S431_LpsbMulticardPool_Xauusd_M5M15M30H1_rqs2_93_ACCEPT.md
     withLpsbGate(s333Layer(S333_CFG['XAUUSD-M30']), S431_CFG['XAUUSD-M30']),
+    // ⭐ S572 ⭐نو — «پولبکِ S/R طلایی، هندسهٔ آینه‌ای (TP≥SL)» · LONG · عضوِ استخرِ {M30,H1}
+    //    RQS2 = **78.7** (تنش 78.4 پایدار) روی جمعیتِ تجمیعیِ استخر · سهمِ این کارت: n=156
+    //    (۸۱.۸٪ استخر) · WR 49.36٪ · lift +12.68pp · SL=34.7 / TP=56.0 pip (RR 1.61).
+    //    مکمل بودن با ساکنان: S431/S333 پولبکِ EMA+RSI+Hurst است؛ S572 پولبک به **حمایتِ
+    //    خوشه‌ایِ S/R** (پیوتِ ۶/۶) در پنجرهٔ طلایی ⇒ منبعِ اطلاعاتیِ متفاوت (اندازه‌گیری شد:
+    //    jaccard=۰ با S431 روی همین کارت ⇒ صفر شاهدِ کاذب).
+    //    سند: results/S572_SRPullbackGoldenMirrorPool_Xauusd_M30H1_rqs2_79_ACCEPT.md
+    s572Layer(S572_CFG['XAUUSD-M30']),
     // ⚰️ حذف‌شده در S396: S333(RQS+91.1) · S313 · S324 · S321 · S326
     //    و S327/S323 که پیش‌تر با RQS2 حذف شده بودند.
   ],
@@ -1212,6 +1237,14 @@ export const CARD_LAYERS: Record<string, LayerFn[]> = {
     //    زمان-محورِ خالص است (تقویم × ساعت) ⇒ منبعِ اطلاعاتیِ **مستقل**.
     //    سند: results/S432_MidMonthDriftCalendarPool_Xauusd_H1M15_rqs2_84_ACCEPT.md
     s312Layer(395, 395, 24),
+    // ⭐ S572 ⭐نو — «پولبکِ S/R طلایی، هندسهٔ آینه‌ای (TP≥SL)» · LONG · عضوِ استخرِ {M30,H1}
+    //    RQS2 = **78.7** روی جمعیتِ تجمیعی · سهمِ این کارت: n=37 (۱۸.۲٪ استخر) ·
+    //    WR 70.27٪ · lift +24.61pp · SL=66.0 / TP=69.8 pip (RR 1.06).
+    //    ⚠️ حکم استخری است، نه تک‌کارتی؛ H1 کوچک‌ترین عضو است ولی lift‌اش بالاترین
+    //    (خانوادهٔ TF-lift یکنوا). در CROSS_CARD_ALTERNATES با M30 ثبت شد تا کاربر
+    //    دو کارتِ سبزِ هم‌رویداد را «دو شاهدِ مستقل» نپندارد (قانونِ MTF/استخر).
+    //    سند: results/S572_SRPullbackGoldenMirrorPool_Xauusd_M30H1_rqs2_79_ACCEPT.md
+    s572Layer(S572_CFG['XAUUSD-H1']),
     // ⚰️ حذف‌شده در S396: S333(RQS+89.8) · S313 · S328 · S335(RQS+89.7)
     //    و S327/S323/S341 که پیش‌تر حذف شده بودند.
     //    (S312(H1) دیگر در این فهرست نیست — در S432 احیا و بالاتر وصل شد.)
@@ -1914,8 +1947,8 @@ export const REGISTERED_CARDS = Object.keys(CARD_LAYERS)
 export const CARD_LAYER_CODES: Record<string, string[]> = {
   'XAUUSD-M5':  ['S560'],
   'XAUUSD-M15': ['S562', 'S408', 'S344', 'S333', 'S312', 'S547'],
-  'XAUUSD-M30': ['S547', 'S312', 'S333'],
-  'XAUUSD-H1':  ['S562', 'S354', 'S333', 'S312'],
+  'XAUUSD-M30': ['S547', 'S312', 'S333', 'S572'],
+  'XAUUSD-H1':  ['S562', 'S354', 'S333', 'S312', 'S572'],
   'XAUUSD-H4':  ['S382', 'S589', 'S759', 'S547', 'S1516'],
   'XAUUSD-H6':  ['S919', 'S955', 'S607', 'S1516', 'S1581'],
   'XAUUSD-H8':  ['S955', 'S965', 'S770', 'S966', 'S1911', 'S607', 'S1520', 'S589', 'S798'],
@@ -2026,7 +2059,22 @@ const CROSS_CARD_ALTERNATES: CrossCardAlternate[] = [
     sharedEventNote:
       'افقِ S1516 تقویمی است (۳۰ روزِ معاملاتی) ⇒ H6 و H4 عمدتاً همان روزها را می‌بینند: '
       + '۸۵٪ِ روزهای H6 در H4 هم هست (jaccard ۰.۶۳۷). مرجع H6 است (RQS2 ۸۷.۱، ارزشِ مستقل)؛ '
-      + 'H4 (۸۴.۱) بدیل/پوششِ رزولوشنِ ریزتر است، نه شاهدِ دوم — هم‌زمان معامله نشوند.',
+      +       'H4 (۸۴.۱) بدیل/پوششِ رزولوشنِ ریزتر است، نه شاهدِ دوم — هم‌زمان معامله نشوند.',
+  },
+  {
+    // S572 حکمِ **استخری** است: RQS2 روی جمعیتِ تجمیعیِ {M30,H1} با FIFO تقویمی
+    // اندازه‌گیری شد (n=181 · سهم M30 ۸۱.۸٪ / H1 ۱۸.۲٪). پس M30 و H1 دو کارتِ
+    // **هم‌رویداد**اند (یک پولبک، دو رزولوشن)، نه دو شاهدِ مستقل. مرجع M30 است
+    // (سهمِ بزرگ‌تر و مستقل‌تر). این لایه را نمی‌توان با `FALSE_WITNESS_PAIRS`
+    // پوشش داد چون آن جدول فقط **هم‌کارت** را می‌بیند و هر کارت جدا رندر می‌شود.
+    code: 'S572',
+    cards: ['XAUUSD-M30', 'XAUUSD-H1'],
+    primaryCard: 'XAUUSD-M30',
+    sharedEventNote:
+      'حکمِ S572 استخری است: یک استخرِ تقویمیِ {M30,H1} با FIFO ⇒ اگر هر دو کارت '
+      + 'هم‌زمان سبز شوند، **یک** رویدادِ پولبک است، نه دو شاهد. مرجع M30 (سهم ۸۱.۸٪)؛ '
+      + 'H1 (۱۸.۲٪ · lift بالاتر) بدیلِ رزولوشنِ ریزتر است — هم‌زمان معامله نشوند '
+      + '(قانونِ MTF/استخر: حکم روی جمعیتِ تجمیعی صادر شده، نه هر کارت تنها).',
   },
 ]
 

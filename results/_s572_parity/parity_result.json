@@ -1,0 +1,263 @@
+{
+ "layer": "S572",
+ "status": "GREEN",
+ "fails": 0,
+ "total": 51,
+ "checks": [
+  {
+   "ok": true,
+   "label": "مرجع خودش گاردِ سلامت را پاس کرده (۱۵۶/۳۷ معاملهٔ FIFO بازتولید شد)",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "label": "تعدادِ کندل با مرجع یکی است",
+   "detail": "TS=182145 ref=182145"
+  },
+  {
+   "ok": true,
+   "label": "nearMax = 0.85",
+   "detail": "cfg=0.85"
+  },
+  {
+   "ok": true,
+   "label": "roomMin = 1.3",
+   "detail": "cfg=1.3"
+  },
+  {
+   "ok": true,
+   "label": "rsiMax = 55",
+   "detail": "cfg=55"
+  },
+  {
+   "ok": true,
+   "label": "adxMin = 22",
+   "detail": "cfg=22"
+  },
+  {
+   "ok": true,
+   "label": "پنجرهٔ طلایی 19–23",
+   "detail": "cfg=19–23"
+  },
+  {
+   "ok": true,
+   "label": "پیوتِ ۶/۶",
+   "detail": "cfg=6/6"
+  },
+  {
+   "ok": true,
+   "label": "tolِ S/R = 0.0015",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "label": "SL = 34.7 pip",
+   "detail": "cfg=34.7"
+  },
+  {
+   "ok": true,
+   "label": "TP = 56 pip",
+   "detail": "cfg=56"
+  },
+  {
+   "ok": true,
+   "label": "maxHold = 48",
+   "detail": "cfg=48"
+  },
+  {
+   "ok": true,
+   "label": "هندسهٔ آینه‌ای TP≥SL",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "label": "تعدادِ سیگنال = 304",
+   "detail": "TS=304"
+  },
+  {
+   "ok": true,
+   "label": "مجموعهٔ سیگنال‌ها بیت‌به‌بیت برابرِ مرجع است",
+   "detail": "فقط در TS=0 · فقط در مرجع=0"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «support» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «resistance» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «atr14» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «ema50» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «ema200» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «rsi14» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «adx14» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «slope» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «sig» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "کنترلِ منفی: بدونِ پنجرهٔ طلایی سیگنال‌ها بیشتر می‌شوند (1707 > 304)",
+   "detail": "گیتِ طلایی در پورت بی‌اثر است"
+  },
+  {
+   "ok": true,
+   "label": "مرجع خودش گاردِ سلامت را پاس کرده (۱۵۶/۳۷ معاملهٔ FIFO بازتولید شد)",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "label": "تعدادِ کندل با مرجع یکی است",
+   "detail": "TS=91331 ref=91331"
+  },
+  {
+   "ok": true,
+   "label": "nearMax = 0.55",
+   "detail": "cfg=0.55"
+  },
+  {
+   "ok": true,
+   "label": "roomMin = 1.3",
+   "detail": "cfg=1.3"
+  },
+  {
+   "ok": true,
+   "label": "rsiMax = 55",
+   "detail": "cfg=55"
+  },
+  {
+   "ok": true,
+   "label": "adxMin = 30",
+   "detail": "cfg=30"
+  },
+  {
+   "ok": true,
+   "label": "پنجرهٔ طلایی 19–23",
+   "detail": "cfg=19–23"
+  },
+  {
+   "ok": true,
+   "label": "پیوتِ ۶/۶",
+   "detail": "cfg=6/6"
+  },
+  {
+   "ok": true,
+   "label": "tolِ S/R = 0.0015",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "label": "SL = 66 pip",
+   "detail": "cfg=66"
+  },
+  {
+   "ok": true,
+   "label": "TP = 69.8 pip",
+   "detail": "cfg=69.8"
+  },
+  {
+   "ok": true,
+   "label": "maxHold = 36",
+   "detail": "cfg=36"
+  },
+  {
+   "ok": true,
+   "label": "هندسهٔ آینه‌ای TP≥SL",
+   "detail": ""
+  },
+  {
+   "ok": true,
+   "label": "تعدادِ سیگنال = 53",
+   "detail": "TS=53"
+  },
+  {
+   "ok": true,
+   "label": "مجموعهٔ سیگنال‌ها بیت‌به‌بیت برابرِ مرجع است",
+   "detail": "فقط در TS=0 · فقط در مرجع=0"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «support» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «resistance» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «atr14» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «ema50» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «ema200» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «rsi14» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «adx14» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «slope» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "سریِ «sig» روی دنباله برابر است",
+   "detail": "0 اختلاف"
+  },
+  {
+   "ok": true,
+   "label": "کنترلِ منفی: بدونِ پنجرهٔ طلایی سیگنال‌ها بیشتر می‌شوند (194 > 53)",
+   "detail": "گیتِ طلایی در پورت بی‌اثر است"
+  },
+  {
+   "ok": true,
+   "label": "دقیقاً دو کارت (H1,M30) پیکربندی شده‌اند",
+   "detail": "XAUUSD-H1, XAUUSD-M30"
+  }
+ ]
+}

@@ -1,0 +1,49 @@
+{
+ "layer": "S572",
+ "cards": {
+  "XAUUSD-M30": {
+   "bars": 182145,
+   "n_S572": 304,
+   "n_S431": 31,
+   "control_ok": true,
+   "control_expected": 304,
+   "vs_S431": {
+    "a": "S572",
+    "b": "S431",
+    "n_a": 304,
+    "n_b": 31,
+    "shared": 0,
+    "share_of_a": 0,
+    "share_of_b": 0,
+    "jaccard": 0,
+    "size_ratio": 0.102,
+    "false_witness": false
+   }
+  },
+  "XAUUSD-H1": {
+   "bars": 91331,
+   "n_S572": 53,
+   "n_S431": 113,
+   "control_ok": true,
+   "control_expected": 53,
+   "vs_S431": {
+    "a": "S572",
+    "b": "S431",
+    "n_a": 53,
+    "n_b": 113,
+    "shared": 0,
+    "share_of_a": 0,
+    "share_of_b": 0,
+    "jaccard": 0,
+    "size_ratio": 0.469,
+    "false_witness": false
+   }
+  }
+ },
+ "rule": "sr-pullback mirror (S323 frozen) x {M30,H1} pool",
+ "thresholds": {
+  "jaccard_false_witness": 0.6,
+  "size_ratio_comparable": 0.75,
+  "precedent": "strategy_registry.ts FALSE_WITNESS_PAIRS (S404/S408 jaccard 69.3%)"
+ }
+}

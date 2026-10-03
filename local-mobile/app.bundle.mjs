@@ -6624,6 +6624,376 @@ function decideS1581(cfg, a, candles, capital = 1e4, riskPct = 1) {
   return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
 }
 
+// ../web_tool/src/sr_pullback_mirror_s572.ts
+var S572_CFG = {
+  "XAUUSD-M30": {
+    id: "XAUUSD-M30",
+    tfFa: "M30",
+    nearMax: 0.85,
+    roomMin: 1.3,
+    rsiMax: 55,
+    slopeMin: 0,
+    adxMin: 22,
+    golden: true,
+    hLo: 19,
+    hHi: 23,
+    // عددِ منجمد از results/_s572_mirror/members.json (SL=tpMult قدیم=1.3×ATR، TP=slMult قدیم=2.1×ATR)
+    slPip: 34.7,
+    tpPip: 56,
+    maxHold: 48,
+    pivotLeft: 6,
+    pivotRight: 6,
+    srTol: 15e-4,
+    srMaxLevels: 40,
+    srExpiry: 1500,
+    warmup: 300,
+    rqs2: 78.7,
+    nTrades: 156,
+    wr: 49.36,
+    lift: 12.68,
+    z: 3.92
+  },
+  "XAUUSD-H1": {
+    id: "XAUUSD-H1",
+    tfFa: "H1",
+    nearMax: 0.55,
+    roomMin: 1.3,
+    rsiMax: 55,
+    slopeMin: 0,
+    adxMin: 30,
+    golden: true,
+    hLo: 19,
+    hHi: 23,
+    slPip: 66,
+    tpPip: 69.8,
+    maxHold: 36,
+    pivotLeft: 6,
+    pivotRight: 6,
+    srTol: 15e-4,
+    srMaxLevels: 40,
+    srExpiry: 1500,
+    warmup: 300,
+    rqs2: 78.7,
+    nTrades: 37,
+    wr: 70.27,
+    lift: 24.61,
+    z: 3.92
+  }
+};
+function computePivots(c, left, right) {
+  const n = c.length;
+  const phPrice = new Array(n).fill(NaN);
+  const plPrice = new Array(n).fill(NaN);
+  for (let p = left; p < n - right; p++) {
+    const hv = c[p].high;
+    let isPh = true;
+    for (let k = p - left; k <= p + right; k++) {
+      if (k === p) continue;
+      if (c[k].high > hv) {
+        isPh = false;
+        break;
+      }
+    }
+    if (isPh) phPrice[p + right] = hv;
+    const lv = c[p].low;
+    let isPl = true;
+    for (let k = p - left; k <= p + right; k++) {
+      if (k === p) continue;
+      if (c[k].low < lv) {
+        isPl = false;
+        break;
+      }
+    }
+    if (isPl) plPrice[p + right] = lv;
+  }
+  return { phPrice, plPrice };
+}
+function computeSR(c, piv, tol, maxLevels, expiry) {
+  const n = c.length;
+  const close = c.map((k) => k.close);
+  const support = new Array(n).fill(NaN);
+  const resistance = new Array(n).fill(NaN);
+  const lvPrice = new Array(maxLevels).fill(0);
+  const lvLast = new Array(maxLevels).fill(0);
+  const lvActive = new Array(maxLevels).fill(0);
+  for (let i = 0; i < n; i++) {
+    const rp = piv.phPrice[i];
+    if (!Number.isNaN(rp)) {
+      let merged = false;
+      for (let s = 0; s < maxLevels; s++) {
+        if (lvActive[s] !== 0 && Math.abs(lvPrice[s] - rp) / rp < tol) {
+          lvPrice[s] = rp;
+          lvLast[s] = i;
+          lvActive[s] = 1;
+          merged = true;
+          break;
+        }
+      }
+      if (!merged) {
+        let slot = -1;
+        for (let s = 0; s < maxLevels; s++) if (lvActive[s] === 0) {
+          slot = s;
+          break;
+        }
+        if (slot === -1) {
+          let oldest = 0;
+          for (let s = 1; s < maxLevels; s++) if (lvLast[s] < lvLast[oldest]) oldest = s;
+          slot = oldest;
+        }
+        lvPrice[slot] = rp;
+        lvLast[slot] = i;
+        lvActive[slot] = 1;
+      }
+    }
+    const lp = piv.plPrice[i];
+    if (!Number.isNaN(lp)) {
+      let merged = false;
+      for (let s = 0; s < maxLevels; s++) {
+        if (lvActive[s] !== 0 && Math.abs(lvPrice[s] - lp) / lp < tol) {
+          lvPrice[s] = lp;
+          lvLast[s] = i;
+          lvActive[s] = -1;
+          merged = true;
+          break;
+        }
+      }
+      if (!merged) {
+        let slot = -1;
+        for (let s = 0; s < maxLevels; s++) if (lvActive[s] === 0) {
+          slot = s;
+          break;
+        }
+        if (slot === -1) {
+          let oldest = 0;
+          for (let s = 1; s < maxLevels; s++) if (lvLast[s] < lvLast[oldest]) oldest = s;
+          slot = oldest;
+        }
+        lvPrice[slot] = lp;
+        lvLast[slot] = i;
+        lvActive[slot] = -1;
+      }
+    }
+    for (let s = 0; s < maxLevels; s++) {
+      if (lvActive[s] !== 0 && i - lvLast[s] > expiry) lvActive[s] = 0;
+    }
+    const cpx = close[i];
+    let bestRes = NaN, bestSup = NaN;
+    for (let s = 0; s < maxLevels; s++) {
+      if (lvActive[s] === 0) continue;
+      const pxs = lvPrice[s];
+      if (pxs >= cpx) {
+        if (Number.isNaN(bestRes) || pxs < bestRes) bestRes = pxs;
+      } else {
+        if (Number.isNaN(bestSup) || pxs > bestSup) bestSup = pxs;
+      }
+    }
+    resistance[i] = bestRes;
+    support[i] = bestSup;
+  }
+  return { support, resistance };
+}
+var nanTo = (v, fill) => Number.isFinite(v) ? v : fill;
+function s572Features(candles, cfg) {
+  const n = candles.length;
+  const high = candles.map((c) => c.high);
+  const low = candles.map((c) => c.low);
+  const close = candles.map((c) => c.close);
+  const piv = computePivots(candles, cfg.pivotLeft, cfg.pivotRight);
+  const sr = computeSR(candles, piv, cfg.srTol, cfg.srMaxLevels, cfg.srExpiry);
+  const atr14 = atr(candles, 14);
+  const e50 = ema(close, 50);
+  const e200 = ema(close, 200);
+  const r14 = rsi(close, 14);
+  const { adx: adxArr } = adx(candles, 14);
+  const nearSupport = new Array(n).fill(Infinity);
+  const room = new Array(n).fill(-Infinity);
+  const slope = new Array(n).fill(0);
+  const sig = new Array(n).fill(false);
+  for (let i = 0; i < n; i++) {
+    const a = atr14[i] > 0 ? atr14[i] : NaN;
+    nearSupport[i] = nanTo((close[i] - sr.support[i]) / a, 99);
+    room[i] = nanTo((sr.resistance[i] - close[i]) / a, -99);
+    if (i >= 10 && Number.isFinite(a) && Number.isFinite(e50[i]) && Number.isFinite(e50[i - 10])) {
+      slope[i] = nanTo((e50[i] - e50[i - 10]) / a, 0);
+    } else {
+      slope[i] = 0;
+    }
+  }
+  for (let i = 0; i < n; i++) {
+    const hour = new Date(candles[i].time * 1e3).getUTCHours();
+    const adxV = Number.isFinite(adxArr[i]) ? adxArr[i] : 0;
+    const up = close[i] > e50[i] && e50[i] > e200[i];
+    const near = nearSupport[i] > 0 && nearSupport[i] < cfg.nearMax;
+    const roomOk = room[i] > cfg.roomMin;
+    const rsiOk = Number.isFinite(r14[i]) && r14[i] < cfg.rsiMax;
+    const slopeOk = slope[i] >= cfg.slopeMin;
+    const adxOk = adxV >= cfg.adxMin;
+    const gold = !cfg.golden || hour >= cfg.hLo && hour <= cfg.hHi;
+    sig[i] = up && near && roomOk && rsiOk && slopeOk && adxOk && gold;
+  }
+  for (let i = 0; i < Math.min(cfg.warmup, n); i++) sig[i] = false;
+  return {
+    support: sr.support,
+    resistance: sr.resistance,
+    atr14,
+    ema50: e50,
+    ema200: e200,
+    rsi14: r14,
+    adx14: adxArr,
+    slope,
+    nearSupport,
+    room,
+    sig
+  };
+}
+function computeS572(candles, cfg) {
+  const n = candles.length;
+  const slDist = cfg.slPip * GOLD_PIP;
+  const tpDist = cfg.tpPip * GOLD_PIP;
+  const minBars = cfg.warmup + 20;
+  const base = (reason, ind2) => ({
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason,
+    indicators: ind2
+  });
+  if (n < minBars) {
+    return base(
+      `\u062F\u0627\u062F\u0647\u0654 \u0646\u0627\u06A9\u0627\u0641\u06CC: \u0627\u06CC\u0646 \u0644\u0627\u06CC\u0647 \u062F\u0633\u062A\u0650\u200C\u06A9\u0645 ${minBars} \u06A9\u0646\u062F\u0644\u0650 ${cfg.tfFa} \u0645\u06CC\u200C\u062E\u0648\u0627\u0647\u062F (\u06AF\u0631\u0645\u200C\u0634\u062F\u0646\u0650 EMA200/ADX/RSI + \u0633\u0637\u0648\u062D\u0650 S/R \u0628\u0627 \u0639\u0645\u0631\u0650 ${cfg.srExpiry} \u06A9\u0646\u062F\u0644)\u060C \u0648\u0644\u06CC \u0641\u06CC\u062F\u0650 \u0641\u0639\u0644\u06CC ${n} \u06A9\u0646\u062F\u0644 \u062F\u0627\u0631\u062F \u21D2 \u0647\u06CC\u0686 \u062D\u06A9\u0645\u06CC \u0635\u0627\u062F\u0631 \u0646\u0645\u06CC\u200C\u0634\u0648\u062F.`,
+      []
+    );
+  }
+  const f = s572Features(candles, cfg);
+  const i = n - 1;
+  const last2 = candles[i];
+  const a = f.atr14[i];
+  const sup = f.support[i];
+  const res = f.resistance[i];
+  const hour = new Date(last2.time * 1e3).getUTCHours();
+  const up = last2.close > f.ema50[i] && f.ema50[i] > f.ema200[i];
+  const adxV = Number.isFinite(f.adx14[i]) ? f.adx14[i] : 0;
+  const adxOk = adxV >= cfg.adxMin;
+  const near = f.nearSupport[i] > 0 && f.nearSupport[i] < cfg.nearMax;
+  const roomOk = f.room[i] > cfg.roomMin;
+  const rsiOk = Number.isFinite(f.rsi14[i]) && f.rsi14[i] < cfg.rsiMax;
+  const slopeOk = f.slope[i] >= cfg.slopeMin;
+  const goldenOk = !cfg.golden || hour >= cfg.hLo && hour <= cfg.hHi;
+  const active = f.sig[i];
+  const trendCtx = up && adxOk;
+  const ind = [
+    {
+      name: `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC (close>EMA50>EMA200\u060C ADX\u2265${cfg.adxMin})`,
+      value: `${up ? "\u0635\u0639\u0648\u062F\u06CC" : "\u0646\u0632\u0648\u0644\u06CC"} / ADX ${Number.isFinite(f.adx14[i]) ? f.adx14[i].toFixed(0) : "\u2014"}`,
+      status: trendCtx ? "ok" : "bad"
+    },
+    {
+      name: `\u067E\u0648\u0644\u0628\u06A9 \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A\u0650 S/R (\u0641\u0627\u0635\u0644\u0647 \u2264 ${cfg.nearMax}\xD7ATR14)`,
+      value: Number.isFinite(sup) ? `${last2.close.toFixed(2)} \u2212 ${sup.toFixed(2)} = ${f.nearSupport[i].toFixed(2)}\xD7ATR` : "\u062D\u0645\u0627\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC \u0646\u06CC\u0633\u062A",
+      status: near ? "ok" : "neutral"
+    },
+    {
+      name: `\u0641\u0636\u0627 \u062A\u0627 \u0645\u0642\u0627\u0648\u0645\u062A\u0650 \u0628\u0639\u062F\u06CC (\u2265 ${cfg.roomMin}\xD7ATR14)`,
+      value: Number.isFinite(res) ? `${(res - last2.close).toFixed(2)} (${f.room[i].toFixed(2)}\xD7ATR)` : "\u2014",
+      status: roomOk ? "ok" : "warn"
+    },
+    {
+      name: `RSI-14 < ${cfg.rsiMax} (\u063A\u06CC\u0631\u0650 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F)`,
+      value: Number.isFinite(f.rsi14[i]) ? f.rsi14[i].toFixed(0) : "\u2014",
+      status: rsiOk ? "ok" : "warn"
+    },
+    {
+      name: `\u0634\u06CC\u0628\u0650 EMA50 (\u06F1\u06F0 \u06A9\u0646\u062F\u0644) \u2265 ${cfg.slopeMin}\xD7ATR`,
+      value: f.slope[i].toFixed(3),
+      status: slopeOk ? "ok" : "bad"
+    },
+    {
+      name: `\u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC (${cfg.hLo}:00\u2013${cfg.hHi}:00 UTC)`,
+      value: `${hour}:00 UTC${goldenOk ? "" : " \u2014 \u062E\u0627\u0631\u062C"}`,
+      status: goldenOk ? "ok" : "neutral"
+    },
+    {
+      name: "\u062D\u062F \u0636\u0631\u0631 / \u0647\u062F\u0641 (\u0647\u0646\u062F\u0633\u0647\u0654 \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC \u0645\u0646\u062C\u0645\u062F \u2014 \u0645\u062E\u0635\u0648\u0635\u0650 \u0647\u0645\u06CC\u0646 \u062A\u0627\u06CC\u0645\u200C\u0641\u0631\u06CC\u0645)",
+      value: `${cfg.slPip} / ${cfg.tpPip} pip (\u0646\u0633\u0628\u062A ${(cfg.tpPip / cfg.slPip).toFixed(2)} \u21D2 TP\u2265SL)`,
+      status: "ok"
+    }
+  ];
+  if (active) {
+    return {
+      active: true,
+      approaching: false,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u067E\u0648\u0644\u0628\u06A9\u0650 \u0637\u0644\u0627\u06CC\u06CC\u0650 S/R \u0631\u0648\u06CC ${cfg.tfFa}: \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u062A\u0623\u06CC\u06CC\u062F\u0634\u062F\u0647 (close>EMA50>EMA200 \u0648 ADX ${adxV.toFixed(0)}\u2265${cfg.adxMin})\u060C \u0642\u06CC\u0645\u062A \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A\u0650 \u062E\u0648\u0634\u0647\u200C\u0627\u06CC \u067E\u0648\u0644\u0628\u06A9 \u06A9\u0631\u062F\u0647 (${f.nearSupport[i].toFixed(2)}\xD7ATR)\u060C \u0641\u0636\u0627\u06CC \u06A9\u0627\u0641\u06CC \u062A\u0627 \u0645\u0642\u0627\u0648\u0645\u062A (${f.room[i].toFixed(2)}\xD7ATR)\u060C RSI ${f.rsi14[i].toFixed(0)}<${cfg.rsiMax}\u060C \u0634\u06CC\u0628\u0650 \u0645\u062B\u0628\u062A\u060C \u0648 \u062F\u0631 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC ${cfg.hLo}\u2013${cfg.hHi} UTC \u21D2 \u062E\u0631\u06CC\u062F.`,
+      indicators: ind
+    };
+  }
+  const approaching = trendCtx && roomOk && rsiOk && slopeOk && (goldenOk || near);
+  if (approaching) {
+    return {
+      active: false,
+      approaching: true,
+      direction: "LONG",
+      slDist,
+      tpDist,
+      maxHoldBars: cfg.maxHold,
+      reason: `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0628\u0631\u0642\u0631\u0627\u0631 \u0627\u0633\u062A \u0631\u0648\u06CC ${cfg.tfFa}\u061B \u0645\u0646\u062A\u0638\u0631\u0650 \u06A9\u0627\u0645\u0644\u200C\u0634\u062F\u0646\u0650 \u067E\u0648\u0644\u0628\u06A9 \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A (\u06CC\u0627 \u0648\u0631\u0648\u062F \u0628\u0647 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC) \u0628\u0631\u0627\u06CC \u0645\u0627\u0634\u0647\u0654 \u062E\u0631\u06CC\u062F.`,
+      approachReason: `\u062A\u0623\u06CC\u06CC\u062F\u0650 \u0644\u0627\u0632\u0645: \u0641\u0627\u0635\u0644\u0647 \u062A\u0627 \u062D\u0645\u0627\u06CC\u062A\u0650 S/R \u0628\u0627\u06CC\u062F \u2264 ${cfg.nearMax}\xD7ATR \u0634\u0648\u062F \u0648 \u0633\u0627\u0639\u062A\u0650 UTC \u062F\u0631 ${cfg.hLo}\u2013${cfg.hHi} \u0628\u0627\u0634\u062F.`,
+      indicators: ind
+    };
+  }
+  let why;
+  if (!trendCtx) why = "\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC\u0650 \u0644\u0627\u0632\u0645 (EMA50/EMA200/ADX) \u0628\u0631\u0642\u0631\u0627\u0631 \u0646\u06CC\u0633\u062A.";
+  else if (!near) why = Number.isFinite(sup) ? `\u0642\u06CC\u0645\u062A \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A\u0650 S/R \u0646\u0632\u062F\u06CC\u06A9 \u0646\u06CC\u0633\u062A (\u0641\u0627\u0635\u0644\u0647 ${f.nearSupport[i].toFixed(2)}\xD7ATR > ${cfg.nearMax}).` : "\u062D\u0645\u0627\u06CC\u062A\u0650 \u0641\u0639\u0627\u0644\u06CC \u0628\u0627\u0644\u0627\u06CC \u06A9\u0641\u0650 \u0642\u06CC\u0645\u062A \u062B\u0628\u062A \u0646\u0634\u062F\u0647 \u0627\u0633\u062A.";
+  else if (!roomOk) why = `\u0641\u0636\u0627 \u062A\u0627 \u0645\u0642\u0627\u0648\u0645\u062A\u0650 \u0628\u0639\u062F\u06CC \u06A9\u0627\u0641\u06CC \u0646\u06CC\u0633\u062A (${f.room[i].toFixed(2)}\xD7ATR \u2264 ${cfg.roomMin}).`;
+  else if (!rsiOk) why = `RSI-14 \u0627\u0634\u0628\u0627\u0639\u0650 \u062E\u0631\u06CC\u062F \u0627\u0633\u062A (${Number.isFinite(f.rsi14[i]) ? f.rsi14[i].toFixed(0) : "\u2014"} \u2265 ${cfg.rsiMax}).`;
+  else if (!goldenOk) why = `\u062E\u0627\u0631\u062C \u0627\u0632 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC (${cfg.hLo}\u2013${cfg.hHi} UTC).`;
+  else why = "\u0633\u062A\u0627\u067E\u0650 \u067E\u0648\u0644\u0628\u06A9\u0650 \u0637\u0644\u0627\u06CC\u06CC \u06A9\u0627\u0645\u0644 \u0646\u06CC\u0633\u062A.";
+  return {
+    active: false,
+    approaching: false,
+    direction: "LONG",
+    slDist,
+    tpDist,
+    maxHoldBars: cfg.maxHold,
+    reason: `\u0628\u062F\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0631\u0648\u06CC ${cfg.tfFa}. ${why}`,
+    indicators: ind
+  };
+}
+function decideS572(cfg, a, candles, capital = 1e4, riskPct = 1) {
+  const raw2 = computeS572(candles, cfg);
+  const price = a.price;
+  const reg = {
+    regime: "trend_up",
+    efficiencyRatio: 0,
+    trendy: true,
+    adx: 0,
+    activeStream: "bull",
+    bucket: `s572_${cfg.tfFa.toLowerCase()}`
+  };
+  const meta = {
+    code: "S572",
+    name: `\u067E\u0648\u0644\u0628\u06A9\u0650 \u0637\u0644\u0627\u06CC\u06CC\u0650 S/R \u2014 \u0647\u0646\u062F\u0633\u0647\u0654 \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC (${cfg.tfFa})`,
+    kind: "sr_pullback_mirror",
+    manageStyle: "fixed-tp-sl",
+    manageNote: `\u0647\u0646\u062F\u0633\u0647\u0654 **\u0645\u0646\u062C\u0645\u062F\u0650 \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC** (\u0646\u0647 \u0634\u0646\u0627\u0648\u0631): SL=${cfg.slPip} / TP=${cfg.tpPip} pip \u2014 \u062A\u0628\u062F\u06CC\u0644\u0650 \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC\u0650 slMult\u2194tpMult \u0631\u0648\u06CC \u067E\u06CC\u06A9\u0631\u0628\u0646\u062F\u06CC\u0650 \u0645\u0646\u062C\u0645\u062F\u0650 S323 (\u0635\u0641\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u0622\u0632\u0627\u062F)\u060C \u0627\u0632 artifact\u0650 \u062D\u06A9\u0645 (results/_s572_mirror) \u21D2 \u062F\u0631 \u0633\u0627\u06CC\u062A \u0628\u0627\u0632\u062A\u0648\u0644\u06CC\u062F \u0646\u0645\u06CC\u200C\u0634\u0648\u062F. \u062A\u0627 \u0628\u0631\u062E\u0648\u0631\u062F \u0628\u0647 TP \u06CC\u0627 SL \u0646\u06AF\u0647\u200C\u062F\u0627\u0631. \u26A0\uFE0F \u0642\u06CC\u062F\u0650 \u062A\u06A9\u200C\u0645\u0639\u0627\u0645\u0644\u0647 (allow_overlap=false): \u062D\u06A9\u0645\u0650 RQS2 \u0631\u0648\u06CC \u0635\u0641\u0650 FIFO \u0635\u0627\u062F\u0631 \u0634\u062F \u21D2 \u062A\u0627 \u0627\u06CC\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0628\u0633\u062A\u0647 \u0646\u0634\u062F\u0647\u060C \u0633\u06CC\u06AF\u0646\u0627\u0644\u0650 \u0628\u0639\u062F\u06CC \u0646\u0628\u0627\u06CC\u062F \u0645\u0639\u0627\u0645\u0644\u0647\u0654 \u062C\u062F\u06CC\u062F \u0628\u0627\u0632 \u06A9\u0646\u062F. \u26A0\uFE0F **\u0648\u0631\u0648\u062F \u0631\u0648\u06CC open \u06A9\u0646\u062F\u0644\u0650 \u0628\u0639\u062F** \u0627\u0633\u062A (simulate_trades)\u060C \u0646\u0647 close \u06A9\u0646\u062F\u0644\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644. \u26A0\uFE0F **\u0627\u0633\u062A\u062E\u0631\u0650 \u062F\u0648-\u06A9\u0627\u0631\u062A\u06CC:** \u062D\u06A9\u0645\u0650 S572 \u0631\u0648\u06CC \u062C\u0645\u0639\u06CC\u062A\u0650 \u062A\u062C\u0645\u06CC\u0639\u06CC\u0650 {M30, H1} \u0627\u0633\u062A (FIFO \u062A\u0642\u0648\u06CC\u0645\u06CC). \u0627\u06AF\u0631 \u0647\u0631 \u062F\u0648 \u06A9\u0627\u0631\u062A \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0631\u0648\u0634\u0646 \u0634\u0648\u0646\u062F\u060C **\u06CC\u06A9** \u067E\u0648\u0632\u06CC\u0634\u0646 \u06AF\u0631\u0641\u062A\u0647 \u0634\u0648\u062F (\u0647\u0645\u0627\u0646 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u067E\u0648\u0644\u0628\u06A9\u060C \u0646\u0647 \u062F\u0648 \u0634\u0627\u0647\u062F). \u0645\u06A9\u0627\u0646\u06CC\u0632\u0645\u0650 \xAB\u0634\u0627\u0647\u062F\u0650 \u06A9\u0627\u0630\u0628\u0650 \u0628\u06CC\u0646\u200C\u06A9\u0627\u0631\u062A\u06CC\xBB \u0633\u0627\u06CC\u062A \u0647\u0645\u06CC\u0646 \u0631\u0627 \u0627\u0639\u0645\u0627\u0644 \u0645\u06CC\u200C\u06A9\u0646\u062F. \u26A0\uFE0F \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u0633\u0627\u06A9\u0646\u0627\u0646\u0650 \u0632\u0646\u062F\u0647\u0654 M30/H1 (S547/S312/S431 \xB7 S562/S356/S431/S312) \u0645\u06A9\u0627\u0646\u06CC\u0632\u0645\u0650 \u0645\u062A\u0641\u0627\u0648\u062A\u06CC \u0627\u0633\u062A (\u067E\u0648\u0644\u0628\u06A9\u0650 \u0633\u0627\u062E\u062A\u0627\u0631\u06CC \u062F\u0631 \u0628\u0631\u0627\u0628\u0631\u0650 \u062A\u0642\u0648\u06CC\u0645/\u06AF\u067E/\u0634\u06A9\u0633\u062A) \u21D2 \u0627\u0631\u0632\u0634\u0650 \u0645\u0633\u062A\u0642\u0644 \u062F\u0627\u0631\u062F.`,
+    filters: [
+      `\u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC: close>EMA50 \u0648 EMA50>EMA200 \u0648 \u0634\u06CC\u0628\u0650 \u06F1\u06F0-\u06A9\u0646\u062F\u0644\u06CC\u0650 EMA50 \u2265 0 (\u0646\u0633\u0628\u062A \u0628\u0647 ATR)`,
+      `\u067E\u0648\u0644\u0628\u06A9 \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A\u0650 \u062E\u0648\u0634\u0647\u200C\u0627\u06CC\u0650 S/R (\u067E\u06CC\u0648\u062A\u0650 \u06F6/\u06F6\u060C \u0627\u062F\u063A\u0627\u0645 tol=${cfg.srTol}\u060C \u0639\u0645\u0631\u0650 ${cfg.srExpiry}) \u0628\u0627 \u0641\u0627\u0635\u0644\u0647 < ${cfg.nearMax}\xD7ATR14`,
+      `\u0641\u0636\u0627\u06CC \u06A9\u0627\u0641\u06CC \u062A\u0627 \u0645\u0642\u0627\u0648\u0645\u062A\u0650 \u0628\u0639\u062F\u06CC: room > ${cfg.roomMin}\xD7ATR14`,
+      `RSI-14 < ${cfg.rsiMax} \xB7 ADX-14 \u2265 ${cfg.adxMin} \xB7 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC ${cfg.hLo}\u2013${cfg.hHi} UTC`,
+      `\u062C\u0647\u062A = LONG-only (\u0642\u0627\u0646\u0648\u0646\u0650 S323) \xB7 \u0647\u0646\u062F\u0633\u0647\u0654 \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC\u0650 TP\u2265SL \u21D2 \u0635\u0641\u0631 \u062A\u0648\u0631\u0634\u0650 WR-\u0633\u0627\u0632\u06CC`,
+      `\u0635\u0641\u0631 \u067E\u0627\u0631\u0627\u0645\u062A\u0631\u0650 \u0622\u0632\u0627\u062F: \u0642\u0627\u0646\u0648\u0646\u0650 \u0633\u06CC\u06AF\u0646\u0627\u0644 \u0627\u0632 S323 \u0645\u0646\u062C\u0645\u062F\u060C \u062A\u0646\u0647\u0627 \u062A\u0635\u0645\u06CC\u0645\u0650 S572 \u062A\u0628\u062F\u06CC\u0644\u0650 \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC \u0628\u0648\u062F`
+    ]
+  };
+  return rawToDecision(raw2, meta, cfg.id, price, reg, capital, riskPct);
+}
+
 // ../web_tool/src/informed_structure_s759.ts
 var S759_CFG = {
   "XAUUSD-H4": {
@@ -9351,6 +9721,7 @@ var s1520Layer = (cfg) => (ctx) => decideS1520(cfg, ctx.a, ctx.candles, ctx.capi
 var s589Layer = (cfg) => (ctx) => decideS589(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s1516Layer = (cfg) => (ctx) => decideS1516(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s1581Layer = (cfg) => (ctx) => decideS1581(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
+var s572Layer = (cfg) => (ctx) => decideS572(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s759Layer = (cfg) => (ctx) => decideS759(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s798Layer = (cfg) => (ctx) => decideS798(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
 var s560Layer = (cfg) => (ctx) => decideS560(cfg, ctx.a, ctx.candles, ctx.capital, ctx.riskPct);
@@ -9514,7 +9885,15 @@ var CARD_LAYERS = {
     //    مکمل بودن با S312: آن زمان-محورِ خالص است (رانشِ میانِ ماه) و این
     //    ساختار-محور ⇒ دو منبعِ اطلاعاتیِ **مستقل**، نه دو نسخه از یک ایده.
     //    سند: results/S431_LpsbMulticardPool_Xauusd_M5M15M30H1_rqs2_93_ACCEPT.md
-    withLpsbGate(s333Layer(S333_CFG["XAUUSD-M30"]), S431_CFG["XAUUSD-M30"])
+    withLpsbGate(s333Layer(S333_CFG["XAUUSD-M30"]), S431_CFG["XAUUSD-M30"]),
+    // ⭐ S572 ⭐نو — «پولبکِ S/R طلایی، هندسهٔ آینه‌ای (TP≥SL)» · LONG · عضوِ استخرِ {M30,H1}
+    //    RQS2 = **78.7** (تنش 78.4 پایدار) روی جمعیتِ تجمیعیِ استخر · سهمِ این کارت: n=156
+    //    (۸۱.۸٪ استخر) · WR 49.36٪ · lift +12.68pp · SL=34.7 / TP=56.0 pip (RR 1.61).
+    //    مکمل بودن با ساکنان: S431/S333 پولبکِ EMA+RSI+Hurst است؛ S572 پولبک به **حمایتِ
+    //    خوشه‌ایِ S/R** (پیوتِ ۶/۶) در پنجرهٔ طلایی ⇒ منبعِ اطلاعاتیِ متفاوت (اندازه‌گیری شد:
+    //    jaccard=۰ با S431 روی همین کارت ⇒ صفر شاهدِ کاذب).
+    //    سند: results/S572_SRPullbackGoldenMirrorPool_Xauusd_M30H1_rqs2_79_ACCEPT.md
+    s572Layer(S572_CFG["XAUUSD-M30"])
     // ⚰️ حذف‌شده در S396: S333(RQS+91.1) · S313 · S324 · S321 · S326
     //    و S327/S323 که پیش‌تر با RQS2 حذف شده بودند.
   ],
@@ -9566,7 +9945,15 @@ var CARD_LAYERS = {
     //    مکمل بودن: `S356` و `S431` هر دو **قیمت/ساختار**-محورند؛ این لایه
     //    زمان-محورِ خالص است (تقویم × ساعت) ⇒ منبعِ اطلاعاتیِ **مستقل**.
     //    سند: results/S432_MidMonthDriftCalendarPool_Xauusd_H1M15_rqs2_84_ACCEPT.md
-    s312Layer(395, 395, 24)
+    s312Layer(395, 395, 24),
+    // ⭐ S572 ⭐نو — «پولبکِ S/R طلایی، هندسهٔ آینه‌ای (TP≥SL)» · LONG · عضوِ استخرِ {M30,H1}
+    //    RQS2 = **78.7** روی جمعیتِ تجمیعی · سهمِ این کارت: n=37 (۱۸.۲٪ استخر) ·
+    //    WR 70.27٪ · lift +24.61pp · SL=66.0 / TP=69.8 pip (RR 1.06).
+    //    ⚠️ حکم استخری است، نه تک‌کارتی؛ H1 کوچک‌ترین عضو است ولی lift‌اش بالاترین
+    //    (خانوادهٔ TF-lift یکنوا). در CROSS_CARD_ALTERNATES با M30 ثبت شد تا کاربر
+    //    دو کارتِ سبزِ هم‌رویداد را «دو شاهدِ مستقل» نپندارد (قانونِ MTF/استخر).
+    //    سند: results/S572_SRPullbackGoldenMirrorPool_Xauusd_M30H1_rqs2_79_ACCEPT.md
+    s572Layer(S572_CFG["XAUUSD-H1"])
     // ⚰️ حذف‌شده در S396: S333(RQS+89.8) · S313 · S328 · S335(RQS+89.7)
     //    و S327/S323/S341 که پیش‌تر حذف شده بودند.
     //    (S312(H1) دیگر در این فهرست نیست — در S432 احیا و بالاتر وصل شد.)
@@ -10246,8 +10633,8 @@ var REGISTERED_CARDS = Object.keys(CARD_LAYERS);
 var CARD_LAYER_CODES = {
   "XAUUSD-M5": ["S560"],
   "XAUUSD-M15": ["S562", "S408", "S344", "S333", "S312", "S547"],
-  "XAUUSD-M30": ["S547", "S312", "S333"],
-  "XAUUSD-H1": ["S562", "S354", "S333", "S312"],
+  "XAUUSD-M30": ["S547", "S312", "S333", "S572"],
+  "XAUUSD-H1": ["S562", "S354", "S333", "S312", "S572"],
   "XAUUSD-H4": ["S382", "S589", "S759", "S547", "S1516"],
   "XAUUSD-H6": ["S919", "S955", "S607", "S1516", "S1581"],
   "XAUUSD-H8": ["S955", "S965", "S770", "S966", "S1911", "S607", "S1520", "S589", "S798"],
@@ -10290,6 +10677,17 @@ var CROSS_CARD_ALTERNATES = [
     cards: ["XAUUSD-H6", "XAUUSD-H4"],
     primaryCard: "XAUUSD-H6",
     sharedEventNote: "\u0627\u0641\u0642\u0650 S1516 \u062A\u0642\u0648\u06CC\u0645\u06CC \u0627\u0633\u062A (\u06F3\u06F0 \u0631\u0648\u0632\u0650 \u0645\u0639\u0627\u0645\u0644\u0627\u062A\u06CC) \u21D2 H6 \u0648 H4 \u0639\u0645\u062F\u062A\u0627\u064B \u0647\u0645\u0627\u0646 \u0631\u0648\u0632\u0647\u0627 \u0631\u0627 \u0645\u06CC\u200C\u0628\u06CC\u0646\u0646\u062F: \u06F8\u06F5\u066A\u0650 \u0631\u0648\u0632\u0647\u0627\u06CC H6 \u062F\u0631 H4 \u0647\u0645 \u0647\u0633\u062A (jaccard \u06F0.\u06F6\u06F3\u06F7). \u0645\u0631\u062C\u0639 H6 \u0627\u0633\u062A (RQS2 \u06F8\u06F7.\u06F1\u060C \u0627\u0631\u0632\u0634\u0650 \u0645\u0633\u062A\u0642\u0644)\u061B H4 (\u06F8\u06F4.\u06F1) \u0628\u062F\u06CC\u0644/\u067E\u0648\u0634\u0634\u0650 \u0631\u0632\u0648\u0644\u0648\u0634\u0646\u0650 \u0631\u06CC\u0632\u062A\u0631 \u0627\u0633\u062A\u060C \u0646\u0647 \u0634\u0627\u0647\u062F\u0650 \u062F\u0648\u0645 \u2014 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0634\u0648\u0646\u062F."
+  },
+  {
+    // S572 حکمِ **استخری** است: RQS2 روی جمعیتِ تجمیعیِ {M30,H1} با FIFO تقویمی
+    // اندازه‌گیری شد (n=181 · سهم M30 ۸۱.۸٪ / H1 ۱۸.۲٪). پس M30 و H1 دو کارتِ
+    // **هم‌رویداد**اند (یک پولبک، دو رزولوشن)، نه دو شاهدِ مستقل. مرجع M30 است
+    // (سهمِ بزرگ‌تر و مستقل‌تر). این لایه را نمی‌توان با `FALSE_WITNESS_PAIRS`
+    // پوشش داد چون آن جدول فقط **هم‌کارت** را می‌بیند و هر کارت جدا رندر می‌شود.
+    code: "S572",
+    cards: ["XAUUSD-M30", "XAUUSD-H1"],
+    primaryCard: "XAUUSD-M30",
+    sharedEventNote: "\u062D\u06A9\u0645\u0650 S572 \u0627\u0633\u062A\u062E\u0631\u06CC \u0627\u0633\u062A: \u06CC\u06A9 \u0627\u0633\u062A\u062E\u0631\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 {M30,H1} \u0628\u0627 FIFO \u21D2 \u0627\u06AF\u0631 \u0647\u0631 \u062F\u0648 \u06A9\u0627\u0631\u062A \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0633\u0628\u0632 \u0634\u0648\u0646\u062F\u060C **\u06CC\u06A9** \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 \u067E\u0648\u0644\u0628\u06A9 \u0627\u0633\u062A\u060C \u0646\u0647 \u062F\u0648 \u0634\u0627\u0647\u062F. \u0645\u0631\u062C\u0639 M30 (\u0633\u0647\u0645 \u06F8\u06F1.\u06F8\u066A)\u061B H1 (\u06F1\u06F8.\u06F2\u066A \xB7 lift \u0628\u0627\u0644\u0627\u062A\u0631) \u0628\u062F\u06CC\u0644\u0650 \u0631\u0632\u0648\u0644\u0648\u0634\u0646\u0650 \u0631\u06CC\u0632\u062A\u0631 \u0627\u0633\u062A \u2014 \u0647\u0645\u200C\u0632\u0645\u0627\u0646 \u0645\u0639\u0627\u0645\u0644\u0647 \u0646\u0634\u0648\u0646\u062F (\u0642\u0627\u0646\u0648\u0646\u0650 MTF/\u0627\u0633\u062A\u062E\u0631: \u062D\u06A9\u0645 \u0631\u0648\u06CC \u062C\u0645\u0639\u06CC\u062A\u0650 \u062A\u062C\u0645\u06CC\u0639\u06CC \u0635\u0627\u062F\u0631 \u0634\u062F\u0647\u060C \u0646\u0647 \u0647\u0631 \u06A9\u0627\u0631\u062A \u062A\u0646\u0647\u0627)."
   }
 ];
 function markCrossCardAlternates(d, cardId) {
@@ -10479,6 +10877,13 @@ var LAYER_CATALOG = {
     side: "LONG",
     what: "\u067E\u0648\u0644\u0628\u06A9\u0650 \u0631\u0648\u0646\u062F\u060C \u0641\u0642\u0637 \u0648\u0642\u062A\u06CC \u0633\u0627\u062E\u062A\u0627\u0631\u0650 \u0628\u0627\u0632\u0627\u0631 \u062D\u0627\u0644\u062A\u0650 LPSB \u0631\u0627 \u062A\u0623\u06CC\u06CC\u062F \u06A9\u0646\u062F."
   },
+  "XAUUSD-M30|S572": {
+    code: "S572",
+    name: "\u067E\u0648\u0644\u0628\u06A9\u0650 S/R \u0637\u0644\u0627\u06CC\u06CC (\u0647\u0646\u062F\u0633\u0647\u0654 \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC)",
+    verdict: "ACCEPT 78.7",
+    side: "LONG",
+    what: "\u067E\u0648\u0644\u0628\u06A9 \u0628\u0647 \u062D\u0645\u0627\u06CC\u062A\u0650 \u062E\u0648\u0634\u0647\u200C\u0627\u06CC\u0650 S/R \u062F\u0631 \u0631\u0648\u0646\u062F\u0650 \u0635\u0639\u0648\u062F\u06CC \u0648 \u067E\u0646\u062C\u0631\u0647\u0654 \u0637\u0644\u0627\u06CC\u06CC\u060C \u0628\u0627 \u0647\u0646\u062F\u0633\u0647\u0654 TP\u2265SL. \u26A0\uFE0F \u062D\u06A9\u0645\u0650 \u0627\u0633\u062A\u062E\u0631\u06CC {M30,H1}: \u0627\u06AF\u0631 H1 \u0647\u0645 \u0633\u0628\u0632 \u0634\u062F\u060C \u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F \u0627\u0633\u062A \u0646\u0647 \u062F\u0648 \u0634\u0627\u0647\u062F."
+  },
   // ---------------------------- XAUUSD-H1 ----------------------------
   "XAUUSD-H1|S562": {
     code: "S562",
@@ -10507,6 +10912,13 @@ var LAYER_CATALOG = {
     verdict: "ACCEPT 88",
     side: "LONG",
     what: "\u0633\u0648\u06AF\u06CC\u0631\u06CC\u0650 \u062A\u0642\u0648\u06CC\u0645\u06CC\u0650 \u0645\u06CC\u0627\u0646\u0647\u0654 \u0645\u0627\u0647 \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647."
+  },
+  "XAUUSD-H1|S572": {
+    code: "S572",
+    name: "\u067E\u0648\u0644\u0628\u06A9\u0650 S/R \u0637\u0644\u0627\u06CC\u06CC (\u0647\u0646\u062F\u0633\u0647\u0654 \u0622\u06CC\u0646\u0647\u200C\u0627\u06CC)",
+    verdict: "ACCEPT 78.7",
+    side: "LONG",
+    what: "\u0647\u0645\u0627\u0646 \u067E\u0648\u0644\u0628\u06A9\u0650 S/R \u0637\u0644\u0627\u06CC\u06CC \u0631\u0648\u06CC \u06A9\u0646\u062F\u0644\u0650 \u06CC\u06A9\u200C\u0633\u0627\u0639\u062A\u0647 (\u0639\u0636\u0648\u0650 \u06A9\u0648\u0686\u06A9\u200C\u062A\u0631\u0650 \u0627\u0633\u062A\u062E\u0631\u060C lift \u0628\u0627\u0644\u0627\u062A\u0631). \u26A0\uFE0F \u062D\u06A9\u0645\u0650 \u0627\u0633\u062A\u062E\u0631\u06CC {M30,H1}: \u0627\u06AF\u0631 M30 \u0647\u0645 \u0633\u0628\u0632 \u0634\u062F\u060C \u06CC\u06A9 \u0631\u0648\u06CC\u062F\u0627\u062F \u0627\u0633\u062A \u0646\u0647 \u062F\u0648 \u0634\u0627\u0647\u062F."
   },
   // ---------------------------- XAUUSD-H4 ----------------------------
   "XAUUSD-H4|S382": {
