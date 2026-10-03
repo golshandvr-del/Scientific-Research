@@ -95,7 +95,9 @@ function loadToday(): Candle[] {
 }
 
 let failures = 0
+const checks: { ok: boolean; label: string; detail: string }[] = []
 function check(ok: boolean, label: string, detail = ''): void {
+  checks.push({ ok, label, detail })
   if (ok) console.log(`  ✅ ${label}`)
   else { failures++; console.log(`  ❌ ${label}${detail ? ` — ${detail}` : ''}`) }
 }
@@ -195,8 +197,18 @@ function main(): void {
   check(ids.length === 1 && ids[0] === 'XAUUSD-H6',
         'دقیقاً یک کارتِ ACCEPT پیکربندی شده است (H6)', ids.join(', '))
 
+  const res = {
+    layer: 'S1581', card: 'XAUUSD-H6',
+    status: failures === 0 ? 'GREEN' : 'RED',
+    fails: failures, total: checks.length,
+    checks,
+  }
+  const outPath = `${ROOT}results/_s1581_parity/parity_result.json`
+  fs.mkdirSync(`${ROOT}results/_s1581_parity`, { recursive: true })
+  fs.writeFileSync(outPath, JSON.stringify(res, null, 1))
+  console.log(`\nذخیره شد -> ${outPath}`)
   console.log(failures === 0
-    ? '\n✅ همهٔ آزمون‌ها سبز — پورت با مرجع برابر است'
+    ? `\n✅ همهٔ آزمون‌ها سبز (${checks.length - failures}/${checks.length}) — پورت با مرجع برابر است`
     : `\n❌ ${failures} آزمون شکست خورد`)
   if (failures) process.exit(1)
 }
