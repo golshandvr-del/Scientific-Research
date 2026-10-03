@@ -1,0 +1,20 @@
+{
+ "cards": {
+  "XAUUSD-H6": {
+   "layer_count": 5,
+   "event": {
+    "bar": 14991,
+    "utc": "2025-08-28 06:00",
+    "close": 3400.72
+   },
+   "codes_on": [
+    "S1581"
+   ],
+   "sl_pip_out": 152.1,
+   "both_codes": [
+    "S1516",
+    "S955"
+   ]
+  }
+ }
+}

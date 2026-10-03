@@ -161,6 +161,19 @@ const ACCEPT_CONTRACT = {
   //   S798 results/S798_LondonSessionShockContinuation_Xauusd_H8_rqs2_86.9_ACCEPT.md
   // فقط همین ردیف افزوده شد؛ بدهیِ کارت‌های دیگر (D1/H12/H6/H1/M15) دست‌نخورده می‌ماند.
   'XAUUSD-H8':  { layers: 9, code: 'S955', rqs2: 87.7, note: 'S955 + S965 + S770 + S966 + S1911 + S607 + S1520 + S589 + S798 (شوکِ نشستِ لندن · ۸۶.۹ · هم‌کندلِ S965 در ۶۳٪ ⇒ یک پوزیشن)' },
+  // H6: ردیف در استقرارِ S1581 افزوده شد (همان مسیرِ مجوزدارِ ردیفِ H8). کارت پیش
+  // از این نشست با ۴ لایه «بی‌سند» گزارش می‌شد (S919/S955/S607/S1516 وصل بودند ولی
+  // این جدول هرگز به‌روز نشده بود). هر ۵ لایه سندِ ACCEPTِ خودِ H6 را دارند:
+  //   S919  results/S919_ConventionAlignedInformedShock_Xauusd_H6_rqs2_88.9_ACCEPT.md (H6 88.9)
+  //   S955  results/S955_JumpAftermathCalmRegime_Xauusd_H8H12H6_rqs2_88_ACCEPT.md     (H6 84.9)
+  //   S607  results/S607_EngleShockDualGatePool_Xauusd_D1H8H6_rqs2_83.1_ACCEPT.md     (H6 83.1)
+  //   S1516 results/S1516_CalendarMatchedFreshFloor_Xauusd_H6H4_rqs2_87_ACCEPT.md      (H6 87.1)
+  //   S1581 results/S1581_VolumeConfirmedFreshFloor_Xauusd_H6_rqs2_88_ACCEPT.md         (H6 88.0)
+  // ⚠️ S1581 و S1516 روی H6 هم‌رویدادند (jaccard ۶۳.۵ · size_ratio ۰.۷۹ ⇒ شاهدِ کاذب)
+  //    و زوجشان در FALSE_WITNESS_PAIRS ثبت شده ⇒ سایت هرگز دوبار نمی‌شمارد.
+  //    «۵ لایه» یعنی ۵ تصمیمِ ممکن، ولی حداکثر یکی از {S1516,S1581} هم‌زمان می‌درخشد.
+  // فقط همین ردیف افزوده شد؛ بدهیِ کارت‌های دیگر (D1/H12/H1/M15) دست‌نخورده می‌ماند.
+  'XAUUSD-H6':  { layers: 5, code: 'S919', rqs2: 88.9, note: 'S919 (شوکِ مطلع · ۸۸.۹) + S955 (جهشِ آرام · ۸۴.۹) + S607 (شوکِ انگل · ۸۳.۱) + S1516 (کفِ تازهٔ تقویم‌همتا · ۸۷.۱) + S1581 (کفِ تازهٔ ۹۰ × حجم · ۸۸.۰ — هم‌رویداد با S1516 ⇒ قیدِ شاهدِ کاذب، یکی نه هر دو)' },
 }
 
 // نمادهای لایه‌های حذف‌شده در S396 (و حذف‌های پیشین). اگر هر یک در باندل پیدا
