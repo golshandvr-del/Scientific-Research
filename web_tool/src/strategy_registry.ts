@@ -302,6 +302,18 @@ import { decideS589, S589_CFG } from './volume_fresh_high_s589'
 //      تفکیکی، کنترلِ منفیِ گیت، شاهدِ منفیِ MTF): web_tool/tools/_parity_s1516.mts
 //    سند: results/S1516_CalendarMatchedFreshFloor_Xauusd_H6H4_rqs2_87_ACCEPT.md
 import { decideS1516, S1516_CFG } from './cal_fresh_floor_s1516'
+// ⭐ S1581 ⭐نو — «کفِ تازهٔ ۹۰ × تأییدِ حجمِ هم‌اسلات» · XAUUSD-**H6** (تنها کارتِ ACCEPT)
+//    RQS2=**88.0** (تنش ۵۰ ⇒ ۸۶.۶) · ۱۱/۱۱ · n=۲۱۹ · WR ۵۲.۹۷٪ · PF ۱.۷۷ · z=۳.۳۳ ·
+//    SL=۱۵۲.۱۰/TP=۲۲۸.۱۴ pip. H8 (POWER-LIMITED 26.2) و H4 (28.7) عامدانه وصل نمی‌شوند.
+//    ممیزیِ شاهدِ کاذب پیش از سیم‌کشی (tools/s1581_false_witness_audit.py ⇒
+//      results/_s1581/false_witness.json؛ کنترل ۳۲۶=۳۲۶):
+//      · شوک/جهشِ H6: CLEAR (S919 0.005 · S955 0.019 · S607 0.008).
+//      · ⚠️ S1516-H6: jaccard 0.635 · size_ratio 0.789 · share 88٪ ⇒ **شاهدِ کاذب**
+//        (یک رویدادِ کفِ تازه با دو اسم) ⇒ زوج در FALSE_WITNESS_PAIRS ثبت شد.
+//      🔒 والدِ وصل‌نشدهٔ S1511: share ۱۰۰٪ (ذاتی) ⇒ اگر وصل شود «یکی از سه».
+//    پریتی GREEN (web_tool/tools/_parity_s1581.mts ⇒ results/_s1581_parity/parity_result.json).
+//    سند: results/S1581_VolumeConfirmedFreshFloor_Xauusd_H6_rqs2_88_ACCEPT.md
+import { decideS1581, S1581_CFG } from './volume_fresh_floor_s1581'
 // ⭐ S759 ⭐نو — «شکستِ ساختاریِ داو × کندلِ مطلع (ρ ≥ 0.618)» · XAUUSD-H4 (تنها کارتِ ACCEPT)
 //    RQS2 = **85.2** (تنش ۱۰۰ ⇒ 83.5) · ۱۱/۱۱ · n=175 · WR 52.00٪ · lift +12.58 · z=3.40 · PF 1.78
 //    قانونِ MTF: H3 REJECT 30.3 (فقط DD) · H6/H8 REJECT · H12+ UNPROVEN ⇒ فقط H4.
