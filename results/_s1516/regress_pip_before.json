@@ -1,0 +1,10 @@
+{
+ "layer": "S1516",
+ "card": "XAUUSD-H6",
+ "bug": "pipSize hardcoded 0.01 vs project GOLD_PIP 0.1",
+ "observed_slDist_usd": 1.521,
+ "expected_slDist_usd": 15.21,
+ "ratio": 10.0,
+ "canonical_source": "revived_strategies.ts:42 GOLD_PIP=0.1; adr_expansion_s770.ts:60",
+ "note": "live S1516 SL/TP were 10x too tight; position size 10x too large"
+}
