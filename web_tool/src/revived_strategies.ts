@@ -39,7 +39,10 @@ export function toCandles(open: number[], high: number[], low: number[], close: 
 
 // pip طلا = ۰.۱$ ⇒ pip قیمت. برای طلا pipSize=0.1 (۱ pip = ۱۰ point). این‌جا فاصلهٔ
 // SL/TP بر حسبِ pip را به واحدِ قیمت (دلار) تبدیل می‌کنیم: priceDist = pip × 0.1.
-const GOLD_PIP = 0.1
+// 🔒 منبعِ حقیقتِ pip طلا — صادر می‌شود تا هیچ ماژولی مقدارِ ۰.۰۱ (۱۰× خطا) را
+//    دوباره hardcode نکند (باگِ S1516 ریشه‌اش همین بود). ماژول‌های دیگر باید
+//    این را import کنند، نه اینکه یک const موازی بسازند.
+export const GOLD_PIP = 0.1
 
 // سیگنالِ خامِ یک لایه پیش از تبدیل به RouterDecision
 export interface RawSignal {
