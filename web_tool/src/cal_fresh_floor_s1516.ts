@@ -107,7 +107,7 @@
 import type { Candle } from './indicators'
 import type { AnalysisResult } from './signal'
 import type { RouterDecision, RegimeInfo } from './router'
-import { type RawSignal, type DecideMeta, rawToDecision } from './revived_strategies'
+import { type RawSignal, type DecideMeta, rawToDecision, GOLD_PIP } from './revived_strategies'
 
 export interface S1516Config {
   id: string
@@ -218,7 +218,12 @@ export function computeS1516(candles: Candle[], cfg: S1516Config): RawSignal {
   // اضافه برای مقایسهٔ لبهٔ تازه (ff[i−1]). صادقانه گزارش می‌شود، نه سیگنالِ الکی.
   const minBars = L + 2
 
-  const pipSize = 0.01   // XAUUSD — عینِ pip_size() هارنس
+  // 🔴 اصلاحِ باگ (۱۰×): قراردادِ pip طلا در این پروژه **۰.۱$** است، نه ۰.۰۱$
+  //    (`revived_strategies.ts:42` و `adr_expansion_s770.ts:60` هر دو GOLD_PIP=0.1
+  //    دارند؛ حسابِ مرجع CONTRACT_SIZE=100 با spread=$0.33 = ۳.۳ pip ⇒ pip=0.1).
+  //    نسخهٔ قبلی ۰.۰۱ گذاشته بود ⇒ استاپِ زندهٔ H6/H4 **۱۰ برابر تنگ‌تر** ($1.52
+  //    به‌جای $15.21) و سایزِ پوزیشن ۱۰× بزرگ‌تر. رگرسیون: `_regress_s1516_pip.mts`.
+  const pipSize = GOLD_PIP
   const slDist = cfg.slPip * pipSize
   const tpDist = cfg.tpPip * pipSize
 
