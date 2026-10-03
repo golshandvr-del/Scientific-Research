@@ -1,0 +1,103 @@
+{
+ "layer": "S1581",
+ "card": "XAUUSD_H6",
+ "rule": "fresh-floor 90 (S1511) x slot-RVOL>=1.0 (S589)",
+ "thresholds": {
+  "jaccard_false_witness": 0.6,
+  "size_ratio_comparable": 0.75,
+  "precedent": "strategy_registry.ts:794-797 (S404/S408 jaccard 69.3% => one, not both)"
+ },
+ "cards": {
+  "XAUUSD_H6": {
+   "bars": 15966,
+   "span_years": 15.59,
+   "n_signals": 326,
+   "n_base_events_S1511_rule": 477,
+   "pass_rate_pct": 68.3,
+   "vs_live_incumbents": {
+    "S919": {
+     "a": "S1581",
+     "b": "S919",
+     "n_a": 326,
+     "n_b": 106,
+     "shared": 2,
+     "share_of_a": 0.6,
+     "share_of_b": 1.9,
+     "jaccard": 0.0047,
+     "size_ratio": 0.3252,
+     "false_witness": false,
+     "why_this_reference": "wired on H6 (top of CARD_LAYERS)"
+    },
+    "S955": {
+     "a": "S1581",
+     "b": "S955",
+     "n_a": 326,
+     "n_b": 155,
+     "shared": 9,
+     "share_of_a": 2.8,
+     "share_of_b": 5.8,
+     "jaccard": 0.0191,
+     "size_ratio": 0.4755,
+     "false_witness": false,
+     "why_this_reference": "wired on H6"
+    },
+    "S607": {
+     "a": "S1581",
+     "b": "S607",
+     "n_a": 326,
+     "n_b": 172,
+     "shared": 4,
+     "share_of_a": 1.2,
+     "share_of_b": 2.3,
+     "jaccard": 0.0081,
+     "size_ratio": 0.5276,
+     "false_witness": false,
+     "why_this_reference": "wired on H6 (H6-DUAL pool member)"
+    },
+    "S1516": {
+     "a": "S1581",
+     "b": "S1516",
+     "n_a": 326,
+     "n_b": 413,
+     "shared": 287,
+     "share_of_a": 88.0,
+     "share_of_b": 69.5,
+     "jaccard": 0.635,
+     "size_ratio": 0.7893,
+     "false_witness": true,
+     "why_this_reference": "wired on H6 — CONCEPTUAL SIBLING (fresh FLOOR, calendar L=120)"
+    }
+   },
+   "vs_S1511_parent_unwired": {
+    "a": "S1581",
+    "b": "S1511",
+    "n_a": 326,
+    "n_b": 477,
+    "shared": 326,
+    "share_of_a": 100.0,
+    "share_of_b": 68.3,
+    "jaccard": 0.6834,
+    "size_ratio": 0.6834,
+    "false_witness": false
+   },
+   "vs_S526_highside_event": {
+    "a": "S1581",
+    "b": "S526_event",
+    "n_a": 326,
+    "n_b": 491,
+    "shared": 79,
+    "share_of_a": 24.2,
+    "share_of_b": 16.1,
+    "jaccard": 0.107,
+    "size_ratio": 0.664,
+    "false_witness": false
+   }
+  }
+ },
+ "control": {
+  "published_n_signals": 326,
+  "measured_n_signals": 326,
+  "match": true,
+  "source": "results/_s1581/XAUUSD_H6_gated.json::n_signals"
+ }
+}
