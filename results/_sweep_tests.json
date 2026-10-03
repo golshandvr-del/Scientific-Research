@@ -1,0 +1,36 @@
+{
+ "sweep_date": "2026-10-03",
+ "green": [
+  "parity_s1516",
+  "parity_s1581",
+  "parity_s759",
+  "parity_s798",
+  "parity_s800",
+  "parity_s607",
+  "integ_s1581_card",
+  "integ_s1516_cards",
+  "integ_s547_cards",
+  "integ_s589_cards",
+  "integ_s1520_card",
+  "integ_s759_card",
+  "integ_s798_card",
+  "probe_layer_catalog",
+  "probe_s955_cards",
+  "regress_s1516_pip"
+ ],
+ "preexisting_red": [
+  {
+   "test": "parity_s589",
+   "reason": "shallow clone lacks full history for the python reference"
+  },
+  {
+   "test": "integ_s607_cards",
+   "reason": "reads missing uncompressed data/mt5_full/XAUUSD_D1.csv (only .csv.gz exists)"
+  },
+  {
+   "test": "parity_s1520",
+   "reason": "H4 negative-control bar count 24004 vs 23854 (resample boundary); S1520 lives on H8/H12, untouched this session"
+  }
+ ],
+ "note": "none of the red tests touch S1581 or the S1516 pip path; all were red before this session."
+}
