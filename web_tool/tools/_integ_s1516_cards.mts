@@ -48,7 +48,8 @@ ok(!Object.prototype.hasOwnProperty.call(S1516_CFG, 'XAUUSD-H3'), 'XAUUSD-H3 د�
 ok(!('XAUUSD-H3' in CARD_LAYERS), 'کارتِ XAUUSD-H3 در CARD_LAYERS وجود ندارد')
 
 const CARDS = [
-  { card: 'XAUUSD-H6', tf: 'H6', expectLayers: 4, slPip: 152.10, primary: true },
+  // H6: ۴ → ۵ پس از افزودنِ S1581 (کفِ تازهٔ ۹۰ × حجم) در همین نشست.
+  { card: 'XAUUSD-H6', tf: 'H6', expectLayers: 5, slPip: 152.10, primary: true },
   { card: 'XAUUSD-H4', tf: 'H4', expectLayers: 5, slPip: 123.32, primary: false },
 ]
 
@@ -91,7 +92,11 @@ for (const spec of CARDS) {
   // خروجیِ خامِ لایه (مستقل از رتبه‌بندی) برای سنجشِ هندسهٔ رسیده به تصمیم
   const raw = CARD_LAYERS[card].map(fn => fn(ctx)).find((d: any) => /S1516/.test(d?.sourceLayer?.code || '')) as any
   if (raw && raw.sl && raw.entry) {
-    const slPipOut = Math.round(Math.abs(raw.entry - raw.sl) / 0.01 * 100) / 100
+    // 🔴 اصلاحِ باگِ آزمون: این‌جا قبلاً `/ 0.01` بود، یعنی آزمون **همان باگِ
+    //    pip را تأیید می‌کرد** که ماژول داشت (استاپِ ۱۰× تنگ). قراردادِ پروژه
+    //    GOLD_PIP=0.1 است ⇒ با `/ 0.1` سنجیده می‌شود تا اگر کسی دوباره ۰.۰۱
+    //    بگذارد، این آزمون قرمز شود.
+    const slPipOut = Math.round(Math.abs(raw.entry - raw.sl) / 0.1 * 100) / 100
     rep.sl_pip_out = slPipOut
     ok(Math.abs(slPipOut - spec.slPip) < 0.05, `③ SLِ رسیده به تصمیم = ${slPipOut} pip`)
   }
