@@ -1,0 +1,22 @@
+{
+ "bundle_kb": 868.8,
+ "pre_s396_kb": 524.3,
+ "cards": 9,
+ "layer_connections": 38,
+ "empty_cards": 0,
+ "mismatches": [
+  "XAUUSD-D1 (unsigned, inherited)",
+  "XAUUSD-H1 (4 vs 3, inherited)",
+  "XAUUSD-H12 (unsigned, inherited)",
+  "XAUUSD-M15 (6 vs 4, inherited)"
+ ],
+ "h6": {
+  "layers": 5,
+  "code": "S919",
+  "rqs2": 88.9,
+  "status": "OK \u2014 row added this session with ACCEPT docs for S919/S1581/S1516/S955/S607"
+ },
+ "purged_symbol_refs": "0 of 15 (tree-shake OK)",
+ "ui": "single GET / (no legacy Pyodide)",
+ "note": "H6 mismatch resolved by adding its ACCEPT-contract row (the file instructs this for justified activations). Other 4 = inherited debt, deliberately untouched."
+}

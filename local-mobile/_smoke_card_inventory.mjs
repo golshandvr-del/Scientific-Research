@@ -161,6 +161,16 @@ const ACCEPT_CONTRACT = {
   //   S798 results/S798_LondonSessionShockContinuation_Xauusd_H8_rqs2_86.9_ACCEPT.md
   // فقط همین ردیف افزوده شد؛ بدهیِ کارت‌های دیگر (D1/H12/H6/H1/M15) دست‌نخورده می‌ماند.
   'XAUUSD-H8':  { layers: 9, code: 'S955', rqs2: 87.7, note: 'S955 + S965 + S770 + S966 + S1911 + S607 + S1520 + S589 + S798 (شوکِ نشستِ لندن · ۸۶.۹ · هم‌کندلِ S965 در ۶۳٪ ⇒ یک پوزیشن)' },
+  // H6: ردیف در استقرارِ S1581 افزوده شد. کارت پیش از این ۵ لایه «بی‌سند» بود
+  // (قرار در دورانِ «۵ کارت» منجمد شد و سیم‌کشی‌های بعدیِ H6 آن را به‌روز نکردند).
+  // هر ۵ لایه سندِ ACCEPTِ خودِ H6 را دارند ⇒ افزودنِ این ردیف مجاز است:
+  //   S919  results/S919_ConventionAlignedInformedShock_Xauusd_H6_rqs2_88.9_ACCEPT.md (H6 88.9)
+  //   S1581 results/S1581_VolumeConfirmedFreshFloor_Xauusd_H6_rqs2_88_ACCEPT.md      (H6 88.0)
+  //   S1516 results/S1516_CalendarMatchedFreshFloor_Xauusd_H6H4_rqs2_87_ACCEPT.md    (H6 87.1)
+  //   S955  results/S955_JumpAftermathCalmRegime_Xauusd_H8H12H6_rqs2_88_ACCEPT.md    (H6 84.9)
+  //   S607  results/S607_EngleShockDualGatePool_Xauusd_D1H8H6_rqs2_83.1_ACCEPT.md    (H6 83.1)
+  // فقط همین ردیف اصلاح شد؛ بدهیِ کارت‌های دیگر (D1/H12/H1/M15) دست‌نخورده می‌ماند.
+  'XAUUSD-H6':  { layers: 5, code: 'S919', rqs2: 88.9, note: 'S919 + S955 ( جهشِ رژیمِ آرام · ۸۴.۹) + S607 (شوکِ دوگیتِ انگل · ۸۳.۱) + S1516 (کفِ تازه · ۸۷.۱ · بدیلِ H4) + S1581 (کفِ تازه × حجم · ۸۸.۰ · هم‌رویدادِ S1516 در ۶۳.۵٪ ⇒ یک پوزیشن)' },
 }
 
 // نمادهای لایه‌های حذف‌شده در S396 (و حذف‌های پیشین). اگر هر یک در باندل پیدا
