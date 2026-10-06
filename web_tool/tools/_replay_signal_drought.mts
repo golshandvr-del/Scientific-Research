@@ -48,7 +48,8 @@ for (const card of CARDS) {
   if (candles.length && candles[candles.length - 1].time >= Math.floor(nowSec / card.gap) * card.gap) candles = candles.slice(0, -1)
   const KEY = card.key || card.id
   const layers = CARD_LAYERS[KEY] || []
-  const start = Math.max(60, candles.length - REPLAY)
+  // ⚠️ کفِ ۳۲۰ کندل: برش‌های کوتاه‌تر «دادهٔ ناکافیِ» مصنوعی می‌دهند (سایت همیشه کلِ پنجره را دارد).
+  const start = Math.max(320, candles.length - REPLAY)
   const perLayer: Record<string, { entry: number; approaching: number; insufficient: number; last?: string; lastDir?: string }> = {}
   const cardEvents: any[] = []
   for (let i = start; i < candles.length; i++) {
@@ -70,10 +71,20 @@ for (const card of CARDS) {
     const dec: any = runCard(ctx)
     if (dec.state === 'ENTRY') cardEvents.push({ bar: iso(last.time), dir: dec.direction, code: dec.sourceLayer?.code, entry: dec.entry, tp: dec.tp, sl: dec.sl })
   }
+  // اپیزود = رشتهٔ کندل‌های پیاپیِ ENTRY با همان لایه/جهت (یک «رویداد»، نه N کندل)
+  let episodes = 0, prevKey = '', prevIdx = -2
+  const entryIdx = new Set<string>(cardEvents.map(e => e.bar))
+  for (let i = start; i < candles.length; i++) {
+    const b = iso(candles[i].time); const e = cardEvents.find(x => x.bar === b)
+    const key = e ? `${e.code}|${e.dir}` : ''
+    if (e && !(key === prevKey && prevIdx === i - 1)) episodes++
+    if (e) { prevKey = key; prevIdx = i }
+  }
   const replayed = candles.length - start
+  const visibleFrac = replayed ? entryIdx.size / replayed : 0
   const spanDays = replayed ? (candles[candles.length - 1].time - candles[start].time) / 86400 : 0
-  report.cards[card.id] = { bars: candles.length, replayed, spanDays: +spanDays.toFixed(1), entries: cardEvents.length, events: cardEvents.slice(-10), perLayer }
-  console.log(`\n══ ${card.id} — ${candles.length} کندل، بازپخشِ ${replayed} (≈${spanDays.toFixed(1)} روز) ⇒ ENTRYِ کارت: ${cardEvents.length}`)
+  report.cards[card.id] = { bars: candles.length, replayed, spanDays: +spanDays.toFixed(1), entries: cardEvents.length, episodes, visibleFrac: +visibleFrac.toFixed(4), events: cardEvents.slice(-10), perLayer }
+  console.log(`\n══ ${card.id} — ${candles.length} کندل، بازپخشِ ${replayed} (≈${spanDays.toFixed(1)} روز) ⇒ کندلِ ENTRY: ${cardEvents.length} · اپیزود: ${episodes} · سهمِ زمانِ نمایش: ${(visibleFrac*100).toFixed(1)}٪`)
   for (const [code, p] of Object.entries(perLayer)) console.log(`   ${code.padEnd(8)} ENTRY=${p.entry} APPR=${p.approaching} ناکافی=${p.insufficient} آخرین=${p.last || '—'} ${p.lastDir || ''}`)
   for (const e of cardEvents.slice(-3)) console.log(`   ↳ ${e.bar} ${e.code} ${e.dir} @${e.entry?.toFixed?.(2)} TP=${e.tp?.toFixed?.(2)} SL=${e.sl?.toFixed?.(2)}`)
 }
