@@ -25,6 +25,7 @@ import { layersForCard } from './layer_catalog'
 import { runCardTyped as runCard } from './runtime/runtime'
 // --- لاگِ سیگنال (User Note): ثبتِ هر ENTRY/APPROACHING برای کشفِ سیگنال‌های متناقض ---
 import { logSignal, getLog, findConflicts, clearLog } from './signal_log'
+import { observeDecision, getJournal, journalStats, clearJournal } from './journal/signal_journal'
 // --- گرهِ قیمت P2 (webplan): ذخیره‌سازیِ تاریخچه (سایه‌ای) + Heartbeat ---
 //     افزودنی و بی‌خطر: ذخیره fire-and-forget است و هیچ تصمیمی را تغییر نمی‌دهد.
 import { getHistoryStore } from './price/history_provider'
@@ -726,6 +727,9 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     }
     const dec = runCard(ctx)
     logSignal(a.card, dec, result.price, lastClosed.time)   // 🔎 لاگِ سیگنال (User Note)
+    // 📒 دفترِ تاریخچه (User Note): ثبتِ ENTRY + حلِ TP/SL روی کندل‌های بسته. سایه‌ای.
+    void observeDecision({ card: a.card, asset: a.id, tf: tfLabelForGold(a.id), gapSec: sigGap,
+      dec, price: result.price, bars: sig }).catch(() => {})
     // 🛰️ P3.5 سایه‌ای: تشخیصِ رژیم (فقط گزارش؛ بی‌اثر بر dec/تصمیم).
     const regime = safeRegime('XAUUSD', tfLabelForGold(a.id), sig)
     // 🏛️ P4.5 سایه‌ای: حکمِ شورای لایه‌ها (فقط گزارش؛ تصمیمِ کارت هنوز از dec می‌آید).
