@@ -20,9 +20,9 @@ const ROOT = path.resolve(import.meta.dirname, '../..')
 const BASE = process.env.PROBE_BASE || 'http://localhost:3000'
 const REPLAY = parseInt(process.env.REPLAY_BARS || '400', 10)
 
-const CARDS: Array<{ id: string; interval: string; range: string; agg: number; gap: number }> = [
+const ALL_CARDS: Array<{ id: string; key?: string; interval: string; range: string; agg: number; gap: number }> = [
   { id: 'XAUUSD-M5', interval: '5m', range: '5d', agg: 1, gap: 300 },
-  { id: 'XAUUSD', interval: '15m', range: '1mo', agg: 1, gap: 900 },
+  { id: 'XAUUSD', key: 'XAUUSD-M15', interval: '15m', range: '1mo', agg: 1, gap: 900 },
   { id: 'XAUUSD-M30', interval: '30m', range: '1mo', agg: 1, gap: 1800 },
   { id: 'XAUUSD-H1', interval: '1h', range: '3mo', agg: 1, gap: 3600 },
   { id: 'XAUUSD-H4', interval: '1h', range: '1y', agg: 4, gap: 14400 },
@@ -31,6 +31,9 @@ const CARDS: Array<{ id: string; interval: string; range: string; agg: number; g
   { id: 'XAUUSD-H12', interval: '1h', range: '2y', agg: 12, gap: 43200 },
   { id: 'XAUUSD-D1', interval: '1h', range: '2y', agg: 24, gap: 86400 },
 ]
+// ⚠️ کارتِ M15 شناسهٔ تاریخیِ `XAUUSD` دارد ولی کلیدِ رجیستری‌اش `XAUUSD-M15` است.
+const ONLY = (process.env.CARDS || '').split(',').filter(Boolean)
+const CARDS = ONLY.length ? ALL_CARDS.filter(c => ONLY.includes(c.id)) : ALL_CARDS
 
 const iso = (t: number) => new Date(t * 1000).toISOString().slice(0, 16).replace('T', ' ')
 const report: any = { base: BASE, at: new Date().toISOString(), replayBars: REPLAY, cards: {} }
@@ -43,7 +46,8 @@ for (const card of CARDS) {
   // کندلِ آخر (در حالِ شکل‌گیری) حذف ⇒ فقط کندل‌های بسته (معادلِ closedBars)
   const nowSec = Math.floor(Date.now() / 1000)
   if (candles.length && candles[candles.length - 1].time >= Math.floor(nowSec / card.gap) * card.gap) candles = candles.slice(0, -1)
-  const layers = CARD_LAYERS[card.id] || []
+  const KEY = card.key || card.id
+  const layers = CARD_LAYERS[KEY] || []
   const start = Math.max(60, candles.length - REPLAY)
   const perLayer: Record<string, { entry: number; approaching: number; insufficient: number; last?: string; lastDir?: string }> = {}
   const cardEvents: any[] = []
@@ -52,7 +56,7 @@ for (const card of CARDS) {
     const last = slice[slice.length - 1]
     let a: any
     try { a = analyze(slice) } catch { continue }
-    const ctx: any = { cardId: card.id, a, candles: slice, utcHour: new Date(last.time * 1000).getUTCHours(), times: slice.map((k: any) => k.time), capital: 10000, riskPct: 1 }
+    const ctx: any = { cardId: KEY, a, candles: slice, utcHour: new Date(last.time * 1000).getUTCHours(), times: slice.map((k: any) => k.time), capital: 10000, riskPct: 1 }
     for (const fn of layers) {
       let d: any = null
       try { d = fn(ctx) } catch { /* */ }
