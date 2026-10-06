@@ -223,8 +223,9 @@ export async function journalStats() {
   const rows = Object.values(by).map((s: any) => {
     const closed = s.tp + s.sl + s.expired
     const wins = (records.filter(r => r.card === s.card && r.layer === s.layer && r.independent && r.status !== 'OPEN' && (r.pips || 0) > 0)).length
+    // PF بی‌زیان = بی‌نهایت ⇒ null (نمایش «—»)؛ با n کوچک هیچ عددی قابلِ اتکا نیست.
     return { ...s, closed, wins, winRate: closed ? +(wins / closed * 100).toFixed(1) : null,
-      pf: s.grossLoss > 0 ? +(s.grossWin / s.grossLoss).toFixed(2) : (s.grossWin > 0 ? null : null),
+      pf: s.grossLoss > 0 ? +(s.grossWin / s.grossLoss).toFixed(2) : null,
       avgR: closed ? +(s.sumR / closed).toFixed(2) : null, sumPips: +s.sumPips.toFixed(1) }
   })
   return { total: records.length, persisted: !!fsApi, file: fsApi?.file || null, rows }
