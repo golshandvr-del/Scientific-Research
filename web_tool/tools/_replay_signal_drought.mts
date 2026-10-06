@@ -80,12 +80,19 @@ for (const card of CARDS) {
     if (e && !(key === prevKey && prevIdx === i - 1)) episodes++
     if (e) { prevKey = key; prevIdx = i }
   }
+  // ساعتِ تهران (UTC+03:30، بدونِ DST از ۱۴۰۱) — ورودِ واقعی روی openِ کندلِ بعد = barTime+gap
+  const tehranHours: Record<string, number> = {}
+  for (const e of cardEvents) {
+    const t = Date.parse(e.bar.replace(' ', 'T') + ':00Z') / 1000 + card.gap + 12600
+    const h = new Date(t * 1000).getUTCHours().toString().padStart(2, '0'); tehranHours[h] = (tehranHours[h] || 0) + 1
+  }
   const replayed = candles.length - start
   const visibleFrac = replayed ? entryIdx.size / replayed : 0
   const spanDays = replayed ? (candles[candles.length - 1].time - candles[start].time) / 86400 : 0
-  report.cards[card.id] = { bars: candles.length, replayed, spanDays: +spanDays.toFixed(1), entries: cardEvents.length, episodes, visibleFrac: +visibleFrac.toFixed(4), events: cardEvents.slice(-10), perLayer }
+  report.cards[card.id] = { bars: candles.length, replayed, spanDays: +spanDays.toFixed(1), entries: cardEvents.length, episodes, visibleFrac: +visibleFrac.toFixed(4), tehranHours, events: cardEvents.slice(-10), perLayer }
   console.log(`\n══ ${card.id} — ${candles.length} کندل، بازپخشِ ${replayed} (≈${spanDays.toFixed(1)} روز) ⇒ کندلِ ENTRY: ${cardEvents.length} · اپیزود: ${episodes} · سهمِ زمانِ نمایش: ${(visibleFrac*100).toFixed(1)}٪`)
   for (const [code, p] of Object.entries(perLayer)) console.log(`   ${code.padEnd(8)} ENTRY=${p.entry} APPR=${p.approaching} ناکافی=${p.insufficient} آخرین=${p.last || '—'} ${p.lastDir || ''}`)
+  console.log(`   ساعتِ تهرانِ ظهورِ ENTRY: ${Object.entries(tehranHours).sort().map(([h, n]) => `${h}:${n}`).join(' ')}`)
   for (const e of cardEvents.slice(-3)) console.log(`   ↳ ${e.bar} ${e.code} ${e.dir} @${e.entry?.toFixed?.(2)} TP=${e.tp?.toFixed?.(2)} SL=${e.sl?.toFixed?.(2)}`)
 }
 
