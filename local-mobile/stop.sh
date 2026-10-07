@@ -13,6 +13,12 @@ echo "▶ در حالِ بستنِ سرور روی پورتِ ${PORT} ..."
 # بستنِ پروسهٔ سرور.
 # نکته: در اندروید/Termux دستورِ `fuser` مجاز نیست («Bad system call»)، پس مستقیماً
 # فرآیندِ node که server.mjs را اجرا می‌کند kill می‌کنیم.
+# اول حلقهٔ ری‌استارتِ start-bg.sh (وگرنه ۵ ثانیه بعد سرور را دوباره بالا می‌آورد).
+DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "$DIR/data/supervisor.pid" ]; then
+  kill "$(cat "$DIR/data/supervisor.pid")" >/dev/null 2>&1 || true
+  rm -f "$DIR/data/supervisor.pid"
+fi
 pkill -f "node .*server\.mjs" >/dev/null 2>&1 || true
 
 # آزادسازیِ wake-lock تا باتری بیهوده مصرف نشود
