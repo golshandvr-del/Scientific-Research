@@ -252,6 +252,7 @@ server.on('error', (err) => {
       // اجازه می‌دهیم رویدادِ error تمام شود، بعد دوباره listen می‌کنیم.
       setTimeout(() => server.listen(next, HOST, () => {
         printBanner(next)
+        void startWatcherOnce()
         setTimeout(() => { void prewarm(next) }, 500)   // پیش‌گرم‌سازی روی پورتِ واقعی
       }), 300)
       return
