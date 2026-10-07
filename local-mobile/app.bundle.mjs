@@ -11160,6 +11160,213 @@ function clearLog() {
   buf.length = 0;
 }
 
+// ../web_tool/src/journal/signal_journal.ts
+var PIP3 = 0.1;
+var MAX_RECORDS = 3e3;
+var HARD_MAX_HOLD = 500;
+var records = [];
+var seqCounter = 0;
+var loaded = null;
+var saveTimer = null;
+var fsApi = null;
+function isNode() {
+  return typeof process !== "undefined" && !!process.versions?.node;
+}
+async function ensureLoaded() {
+  if (loaded) return loaded;
+  loaded = (async () => {
+    if (!isNode()) return;
+    try {
+      const fsp = await import("node:fs/promises");
+      const pathMod = await import("node:path");
+      const dir = process.env?.JOURNAL_DIR || "./data/journal";
+      await fsp.mkdir(dir, { recursive: true });
+      const file = pathMod.join(dir, "signals.json");
+      fsApi = { file, fsp };
+      try {
+        const raw2 = JSON.parse(await fsp.readFile(file, "utf8"));
+        if (Array.isArray(raw2?.records)) {
+          records = raw2.records;
+          seqCounter = records.reduce((m, r) => Math.max(m, r.seq || 0), 0);
+        }
+      } catch {
+      }
+    } catch {
+      fsApi = null;
+    }
+  })();
+  return loaded;
+}
+function scheduleSave() {
+  if (!fsApi || saveTimer) return;
+  saveTimer = setTimeout(async () => {
+    saveTimer = null;
+    if (!fsApi) return;
+    try {
+      const tmp = fsApi.file + ".tmp";
+      await fsApi.fsp.writeFile(tmp, JSON.stringify({ version: 1, records }), "utf8");
+      await fsApi.fsp.rename(tmp, fsApi.file);
+    } catch {
+    }
+  }, 300);
+}
+function resolveRecord(r, bars) {
+  if (r.status !== "OPEN") return false;
+  const after = bars.filter((b) => b.time > r.barTime);
+  if (!after.length) return false;
+  const long = r.direction === "LONG";
+  const risk = Math.abs(r.entry - r.sl) || 1e-9;
+  const hold = r.maxHoldBars && r.maxHoldBars > 0 ? r.maxHoldBars : HARD_MAX_HOLD;
+  let mfe = r.mfePips || 0, mae = r.maePips || 0;
+  for (let i = 0; i < after.length; i++) {
+    const b = after[i];
+    const fav = long ? b.high - r.entry : r.entry - b.low;
+    const adv = long ? r.entry - b.low : b.high - r.entry;
+    mfe = Math.max(mfe, fav / PIP3);
+    mae = Math.max(mae, adv / PIP3);
+    const hitSl = long ? b.low <= r.sl : b.high >= r.sl;
+    const hitTp = long ? b.high >= r.tp : b.low <= r.tp;
+    let exit = null, st = null;
+    if (hitSl) {
+      exit = r.sl;
+      st = "SL";
+    } else if (hitTp) {
+      exit = r.tp;
+      st = "TP";
+    } else if (i + 1 >= hold) {
+      exit = b.close;
+      st = "EXPIRED";
+    }
+    if (st && exit != null) {
+      const move = long ? exit - r.entry : r.entry - exit;
+      r.status = st;
+      r.resolvedAt = b.time;
+      r.exitPrice = exit;
+      r.barsHeld = i + 1;
+      r.pips = +(move / PIP3).toFixed(1);
+      r.rMultiple = +(move / risk).toFixed(2);
+      r.mfePips = +mfe.toFixed(1);
+      r.maePips = +mae.toFixed(1);
+      return true;
+    }
+  }
+  r.mfePips = +mfe.toFixed(1);
+  r.maePips = +mae.toFixed(1);
+  r.barsHeld = after.length;
+  return false;
+}
+function mkRecord(card, asset, tf, gapSec, d, role, price, barTime, extraNotes) {
+  const dir = d?.direction;
+  if (dir !== "LONG" && dir !== "SHORT") return null;
+  const entry = Number(d.entry), tp = Number(d.tp), sl = Number(d.sl);
+  if (!isFinite(entry) || !isFinite(tp) || !isFinite(sl)) return null;
+  const code = (d.sourceLayer?.code || d.code || "\u2014").trim();
+  const fam = d.sameEventFamily;
+  const notes = [...extraNotes];
+  if (fam && !fam.isPrimary) notes.push(`\u0628\u062F\u06CC\u0644\u0650 \u0628\u06CC\u0646\u200C\u06A9\u0627\u0631\u062A\u06CC: \u0647\u0645\u0627\u0646 \u0631\u0648\u06CC\u062F\u0627\u062F\u0650 ${fam.code} \u0631\u0648\u06CC ${fam.primaryCard} (\u0634\u0627\u0647\u062F\u0650 \u0645\u0633\u062A\u0642\u0644 \u0646\u06CC\u0633\u062A)`);
+  return {
+    seq: 0,
+    id: `${card}|${code}|${dir}|${barTime}`,
+    createdAt: Date.now(),
+    card,
+    asset,
+    tf,
+    gapSec,
+    layer: code,
+    layerName: d.sourceLayer?.name || d.name || d.headline || code,
+    direction: dir,
+    barTime,
+    priceAtSignal: price,
+    entry,
+    tp,
+    sl,
+    rr: d.rr,
+    probability: d.probability,
+    // سقفِ hold در قراردادِ RouterDecision زیرِ sourceLayer.manage است؛ بقیه fallback.
+    maxHoldBars: d.sourceLayer?.manage?.maxHoldBars ?? d.slPlan?.maxHoldBars ?? d.maxHoldBars,
+    independent: !(fam && fam.isPrimary === false),
+    primaryCard: fam?.primaryCard,
+    notes,
+    role,
+    status: "OPEN"
+  };
+}
+async function observeDecision(args) {
+  await ensureLoaded();
+  const { card, asset, tf, gapSec, dec, price, bars } = args;
+  let changed = false;
+  for (const r of records) if (r.card === card && r.status === "OPEN" && resolveRecord(r, bars)) changed = true;
+  const added = [];
+  const lastBar = bars.length ? bars[bars.length - 1].time : 0;
+  const fwNotes = (dec?.falseWitness || []).map((f) => `\u0634\u0627\u0647\u062F\u0650 \u06A9\u0627\u0630\u0628\u0650 \u062D\u0630\u0641\u200C\u0634\u062F\u0647: ${f.code} (\u0647\u0645\u0627\u0646 \u0631\u0648\u06CC\u062F\u0627\u062F \u0628\u0627 ${f.inFavorOf}\u060C jaccard ${f.jaccard})`);
+  const cands = [];
+  if (dec?.state === "ENTRY") cands.push({ d: dec, role: "primary" });
+  for (const o of dec?.otherLayers || []) if (o.state === "ENTRY") cands.push({ d: o, role: "other" });
+  for (const { d, role } of cands) {
+    const rec = mkRecord(card, asset, tf, gapSec, d, role, price, lastBar, role === "primary" ? fwNotes : []);
+    if (!rec) continue;
+    const dup = records.some((r) => r.id === rec.id || r.card === card && r.layer === rec.layer && r.direction === rec.direction && (r.status === "OPEN" || r.resolvedAt != null && r.resolvedAt >= rec.barTime));
+    if (dup) continue;
+    rec.seq = ++seqCounter;
+    records.push(rec);
+    added.push(rec);
+    changed = true;
+  }
+  if (records.length > MAX_RECORDS) records = records.slice(-MAX_RECORDS);
+  if (changed) scheduleSave();
+  return added;
+}
+async function getJournal(opts = {}) {
+  await ensureLoaded();
+  let rows = records;
+  if (opts.sinceSeq) rows = rows.filter((r) => r.seq > opts.sinceSeq);
+  if (opts.card) rows = rows.filter((r) => r.card === opts.card || r.asset === opts.card);
+  return rows.slice(-(opts.limit || MAX_RECORDS));
+}
+async function journalStats() {
+  await ensureLoaded();
+  const by = {};
+  for (const r of records) {
+    const k = `${r.card}|${r.layer}`;
+    const s = by[k] ||= { card: r.card, tf: r.tf, layer: r.layer, signals: 0, open: 0, tp: 0, sl: 0, expired: 0, alternates: 0, sumPips: 0, sumR: 0, grossWin: 0, grossLoss: 0 };
+    s.signals++;
+    if (!r.independent) {
+      s.alternates++;
+      continue;
+    }
+    if (r.status === "OPEN") {
+      s.open++;
+      continue;
+    }
+    if (r.status === "TP") s.tp++;
+    else if (r.status === "SL") s.sl++;
+    else s.expired++;
+    s.sumPips += r.pips || 0;
+    s.sumR += r.rMultiple || 0;
+    if ((r.pips || 0) > 0) s.grossWin += r.pips;
+    else s.grossLoss += -(r.pips || 0);
+  }
+  const rows = Object.values(by).map((s) => {
+    const closed = s.tp + s.sl + s.expired;
+    const wins = records.filter((r) => r.card === s.card && r.layer === s.layer && r.independent && r.status !== "OPEN" && (r.pips || 0) > 0).length;
+    return {
+      ...s,
+      closed,
+      wins,
+      winRate: closed ? +(wins / closed * 100).toFixed(1) : null,
+      pf: s.grossLoss > 0 ? +(s.grossWin / s.grossLoss).toFixed(2) : null,
+      avgR: closed ? +(s.sumR / closed).toFixed(2) : null,
+      sumPips: +s.sumPips.toFixed(1)
+    };
+  });
+  return { total: records.length, persisted: !!fsApi, file: fsApi?.file || null, rows };
+}
+async function clearJournal() {
+  await ensureLoaded();
+  records = [];
+  scheduleSave();
+}
+
 // ../web_tool/src/price/memory_history_store.ts
 init_history_store();
 var MemoryHistoryStore = class {
@@ -14085,6 +14292,16 @@ async function decideAsset(a, capital = 1e4, riskPct = 1) {
     };
     const dec2 = runCardTyped(ctx2);
     logSignal(a.card, dec2, result2.price, lastClosed2.time);
+    void observeDecision({
+      card: a.card,
+      asset: a.id,
+      tf: tfLabelForGold(a.id),
+      gapSec: sigGap,
+      dec: dec2,
+      price: result2.price,
+      bars: sig2
+    }).catch(() => {
+    });
     const regime2 = safeRegime("XAUUSD", tfLabelForGold(a.id), sig2);
     const council2 = safeCouncil(a.card, dec2);
     return {
@@ -14240,6 +14457,19 @@ app.get("/api/signal-log/conflicts", (c) => {
 });
 app.get("/api/signal-log/clear", (c) => {
   clearLog();
+  return c.json({ ok: true, cleared: true });
+});
+app.get("/api/journal", async (c) => {
+  const since = parseInt(c.req.query("since") || "0", 10) || 0;
+  const limit = Math.max(1, Math.min(3e3, parseInt(c.req.query("limit") || "300", 10)));
+  const card = c.req.query("card") || void 0;
+  const rows = await getJournal({ sinceSeq: since, card, limit });
+  const lastSeq = rows.reduce((m, r) => Math.max(m, r.seq), since);
+  return c.json({ ok: true, count: rows.length, lastSeq, records: rows });
+});
+app.get("/api/journal/stats", async (c) => c.json({ ok: true, ...await journalStats() }));
+app.post("/api/journal/clear", async (c) => {
+  await clearJournal();
   return c.json({ ok: true, cleared: true });
 });
 app.get("/api/history/:asset", async (c) => {
@@ -14480,6 +14710,7 @@ var PAGE = `<!DOCTYPE html>
   <script type="module" src="/static/signal_latch.js"></script>
   <script type="module" src="/static/ui/badges.js"></script>
   <script src="/static/app.js"></script>
+  <script type="module" src="/static/ui/journal.js"></script>
 </body>
 </html>`;
 var index_default = app;
