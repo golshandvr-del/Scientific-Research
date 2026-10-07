@@ -156,7 +156,8 @@ function mkRecord(card: string, asset: string, tf: string, gapSec: number, d: an
     card, asset, tf, gapSec, layer: code, layerName: d.sourceLayer?.name || d.name || d.headline || code,
     direction: dir, barTime, priceAtSignal: price, entry, tp, sl,
     rr: d.rr, probability: d.probability,
-    maxHoldBars: d.slPlan?.maxHoldBars ?? d.maxHoldBars,
+    // سقفِ hold در قراردادِ RouterDecision زیرِ sourceLayer.manage است؛ بقیه fallback.
+    maxHoldBars: d.sourceLayer?.manage?.maxHoldBars ?? d.slPlan?.maxHoldBars ?? d.maxHoldBars,
     independent: !(fam && fam.isPrimary === false), primaryCard: fam?.primaryCard,
     notes, role, status: 'OPEN',
   }
