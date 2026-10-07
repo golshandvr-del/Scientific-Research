@@ -29,6 +29,9 @@ const HOST = process.env.HOST || '0.0.0.0' // 0.0.0.0 = قابل‌دسترس د
 // مسیرِ پوشهٔ public سایت را به shim می‌دهیم تا /static/* درست سرو شود.
 const PUBLIC = join(__dirname, '..', 'web_tool', 'public')
 process.env.WEBTOOL_PUBLIC = PUBLIC
+// 📒 دفترِ تاریخچهٔ سیگنال‌ها روی دیسکِ گوشی (gitignored ⇒ با git pull پاک نمی‌شود).
+const DATA_DIR = join(__dirname, 'data')
+if (!process.env.JOURNAL_DIR) process.env.JOURNAL_DIR = join(DATA_DIR, 'journal')
 
 // باندلِ آماده (کلِ منطقِ سایت). اگر نبود، راهنماییِ ساخت می‌دهیم.
 const BUNDLE = join(__dirname, 'app.bundle.mjs')
@@ -220,9 +223,21 @@ async function prewarm(port) {
   } catch { /* بی‌صدا: pre-warm اختیاری است */ }
 }
 
+// 👁 نگهبانِ پس‌زمینه (سیگنال‌ها بدونِ باز بودنِ صفحه ثبت و اعلام می‌شوند) — یک‌بار.
+let watcherStarted = false
+async function startWatcherOnce() {
+  if (watcherStarted) return
+  watcherStarted = true
+  try {
+    const { startWatcher } = await import('./watcher.mjs')
+    startWatcher({ app, dataDir: DATA_DIR })
+  } catch (e) { console.warn('  ⚠️  نگهبان بالا نیامد:', e?.message || e) }
+}
+
 function startListening(port, triesLeft) {
   server.listen(port, HOST, () => {
     printBanner(port)
+    void startWatcherOnce()
     // چند لحظه بعد از بالا آمدن، در پس‌زمینه کش را گرم کن (بلوکه‌کننده نیست).
     setTimeout(() => { void prewarm(port) }, 500)
   })
