@@ -1201,6 +1201,7 @@ const PAGE = `<!DOCTYPE html>
   <script type="module" src="/static/signal_latch.js"></script>
   <script type="module" src="/static/ui/badges.js"></script>
   <script src="/static/app.js"></script>
+  <script type="module" src="/static/ui/journal.js"></script>
 </body>
 </html>`
 
