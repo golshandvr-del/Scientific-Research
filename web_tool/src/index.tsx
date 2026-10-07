@@ -905,6 +905,23 @@ app.get('/api/signal-log/conflicts', (c) => {
 app.get('/api/signal-log/clear', (c) => { clearLog(); return c.json({ ok: true, cleared: true }) })
 
 // ---------------------------------------------------------------------------
+// 📒 دفترِ تاریخچهٔ سیگنال‌ها (User Note) — ثبتِ دائمِ هر ENTRY + نتیجهٔ واقعی.
+//   /api/journal?since=SEQ&card=XAUUSD-H4&limit=200 → رکوردها (جدیدترین آخر)
+//   /api/journal/stats                               → آمارِ زندهٔ هر لایه×کارت
+//   /api/journal/clear  (POST)                       → پاک‌کردن
+// ---------------------------------------------------------------------------
+app.get('/api/journal', async (c) => {
+  const since = parseInt(c.req.query('since') || '0', 10) || 0
+  const limit = Math.max(1, Math.min(3000, parseInt(c.req.query('limit') || '300', 10)))
+  const card = c.req.query('card') || undefined
+  const rows = await getJournal({ sinceSeq: since, card, limit })
+  const lastSeq = rows.reduce((m, r) => Math.max(m, r.seq), since)
+  return c.json({ ok: true, count: rows.length, lastSeq, records: rows })
+})
+app.get('/api/journal/stats', async (c) => c.json({ ok: true, ...(await journalStats()) }))
+app.post('/api/journal/clear', async (c) => { await clearJournal(); return c.json({ ok: true, cleared: true }) })
+
+// ---------------------------------------------------------------------------
 // 🟦 P2 (webplan) — endpointهای گرهِ قیمت: تاریخچهٔ ذخیره‌شده + Heartbeat.
 //   افزودنی‌اند و مسیرِ تصمیم را دست نمی‌زنند.
 // ---------------------------------------------------------------------------
