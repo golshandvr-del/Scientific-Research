@@ -675,7 +675,10 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     const aggFactor = a.id === 'XAUUSD-H4' ? 4 : a.id === 'XAUUSD-H6' ? 6
       : a.id === 'XAUUSD-H8' ? 8
       : a.id === 'XAUUSD-H12' ? 12 : a.id === 'XAUUSD-D1' ? 24 : 1
-    const candles = aggFactor > 1 ? aggregateCandles(rawCandles, aggFactor) : rawCandles
+    // 🔴 ردیفِ تیکِ Yahoo (زمانِ نا‌هم‌تراز) پیش از تجمیع حذف می‌شود تا قیمتِ لحظه‌ای
+    //    داخلِ high/low/closeِ کندلِ H4/D1 نیفتد (DIAGNOSIS.md، باگ ۱).
+    const cleanRaw = sanitizeBars(rawCandles, tfc.gap)
+    const candles = aggFactor > 1 ? aggregateCandles(cleanRaw, aggFactor) : cleanRaw
     // آستانهٔ حداقلِ کندل بسته به تایم‌فریم (H4 داده کمتری دارد، اما برای EMA200 کافی است).
     // H8: لایهٔ S950 خودش ۹۱+۲ کندل گرم‌شدن می‌خواهد ⇒ کفِ سخت‌گیرانه‌ترِ ۱۱۰.
     // H12/D1 (S800): لایه خودش ۱۰۲ کندلِ گرم‌شدن می‌خواهد (پنجرهٔ ۱۰۱ +
