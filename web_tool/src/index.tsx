@@ -14,7 +14,7 @@ import { fetchWithTimeout } from './fast_fetch'
 //     منطق بیت‌به‌بیت یکسان است؛ فقط مرزِ ماژول رسمی شد (Strangler Fig).
 import {
   _fetchGoldRaw, fetchGold, aggregateCandles,
-  rebaseFuturesToSpot, mergeLiveQuote, closedBars,
+  rebaseFuturesToSpot, mergeLiveQuote, closedBars, sanitizeBars, trulyClosedBars,
 } from './price/gold_source'
 // --- رجیستریِ ماژولارِ لایه‌های احیاشده (تنها مغزِ تصمیمِ سایت پس از حذفِ استراتژی‌های قدیمی) ---
 import { type LayerContext, CARD_LAYER_CODES } from './strategy_registry'
@@ -711,11 +711,20 @@ async function decideAsset(a: typeof ASSETS[number], capital = 10000, riskPct = 
     //   نیم‌ساخته «بسته» دیده شود، هر دو کمیت روی سطلِ ناقص محاسبه می‌شوند و
     //   لایه شوکی را می‌بیند که هنوز کامل نشده ⇒ دقیقاً همان look-aheadی که در
     //   H8 رفع شد. پس مرزِ «کندلِ بسته» = ۶h، نه gapِ منبع (۱h).
-    const sigGap = a.id === 'XAUUSD-H6' ? tfc.gap * 6
-      : a.id === 'XAUUSD-H8' ? tfc.gap * 8
-      : a.id === 'XAUUSD-H12' ? tfc.gap * 12
-      : a.id === 'XAUUSD-D1' ? tfc.gap * 24 : tfc.gap
-    const sig = closedBars(useCandles, sigGap)
+    // 🔴 ریشهٔ «سیگنال‌های غلطِ تاریخچه» (results/_signal_quality/DIAGNOSIS.md):
+    //   پیش‌تر `sig = closedBars(useCandles, sigGap)` بود — و useCandles خروجیِ rebase است
+    //   که (الف) ردیفِ تیکِ Yahoo (04:07:47) را نگه می‌داشت و (ب) برای کارت‌های تجمیعی
+    //   با gapِ ۱h یک ردیفِ ساعتی پشتِ کندلِ نیمه‌کاره می‌افزود ⇒ لایه کندلِ ناتمام یا
+    //   جعلی می‌دید. ممیزی: ۹/۹ سیگنالِ دفتر روی کندلِ ناتمام صادر شده بودند.
+    //   ⚠️ H4 هم آلوده بود: sigGap آن `tfc.gap` (۱h) بود، نه ۴h.
+    //   اکنون: سریِ سیگنال = rebaseِ **همان کندل‌های خام** (فقط جابه‌جاییِ قیمت، هیچ
+    //   ردیفی افزوده/به‌روز نمی‌شود) ⇒ sanitize (حذفِ ردیفِ نا‌هم‌تراز) ⇒ trulyClosed
+    //   (time + barSec ≤ now). این دقیقاً چیزی است که بک‌تستِ MT5 دید.
+    const sigGap = tfc.gap * aggFactor
+    const off = merged.offset || 0
+    const shifted = off ? candles.map(k => ({ ...k, open: k.open - off, high: k.high - off, low: k.low - off, close: k.close - off })) : candles
+    const sig = trulyClosedBars(sanitizeBars(shifted, sigGap), sigGap)
+    if (sig.length < minBars) throw new Error('داده کافی برای تحلیل نیست')
     const lastClosed = sig[sig.length - 1]
     const goldUtcHour = new Date(lastClosed.time * 1000).getUTCHours()
     // 🟦 P2 سایه‌ای: ذخیرهٔ تاریخچهٔ کندل‌های بسته‌شده (بی‌اثر بر تصمیم).
