@@ -174,8 +174,12 @@ export async function observeDecision(args: {
   dec: any; price: number; bars: Bar[]
 }): Promise<JournalRecord[]> {
   await ensureLoaded()
-  const { card, asset, tf, gapSec, dec, price, bars } = args
-  let changed = false
+  const { card, asset, tf, gapSec, dec, price } = args
+  // 🔴 دفاعِ دومِ مستقل (DIAGNOSIS.md): حتی اگر فراخواننده سریِ آلوده بدهد، دفتر فقط
+  //    کندلِ هم‌تراز و واقعاً بسته را می‌پذیرد — هم برای ثبت و هم برای حلِ نتیجه.
+  const nowSec = Math.floor(Date.now() / 1000)
+  const bars = args.bars.filter(b => gapSec > 0 && b.time % gapSec === 0 && b.time + gapSec <= nowSec)
+  let changed = quarantineLegacy()
   for (const r of records) if (r.card === card && r.status === 'OPEN' && resolveRecord(r, bars)) changed = true
   const added: JournalRecord[] = []
   const lastBar = bars.length ? bars[bars.length - 1].time : 0
