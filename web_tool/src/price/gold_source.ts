@@ -263,6 +263,35 @@ export function mergeLiveQuote(candles: Candle[], livePrice: number | null, inte
 // ⚠️ فقط برای منطقِ تصمیم/ماشه؛ نمایشِ قیمت و مدیریتِ معاملهٔ باز از کندلِ زنده
 //   استفاده می‌کنند (آن‌ها ذاتاً باید لحظه‌ای باشند).
 // ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
+// 🔴 sanitizeBars + trulyClosedBars — رفعِ ریشهٔ «سیگنال‌های غلطِ دفترِ تاریخچه»
+// ---------------------------------------------------------------------------
+// تشخیصِ اندازه‌گیری‌شده (results/_signal_quality/DIAGNOSIS.md): ۹ از ۹ سیگنالِ ثبت‌شده
+// روی کندلی صادر شده بودند که **هنوز بسته نشده بود**، و ۷ از ۹ هرگز روی کندلِ کامل
+// برقرار نمی‌شدند. دو مسیرِ آلودگی:
+//   ① Yahoo ردیفِ آخر را با **زمانِ تیکِ زنده** (مثلاً 04:07:47، OHLCِ تخت، vol=0)
+//      می‌دهد. `closedBars` آن را فقط وقتی در سطلِ جاری است حذف می‌کرد ⇒ با عوض‌شدنِ
+//      سطل، تیک به‌عنوانِ «کندلِ بسته» وارد می‌شد و لایه‌های گپ (S408/S562/S560) از
+//      حفرهٔ ≥۱۸۰۰s «مرزِ روزِ جعلی» می‌ساختند.
+//   ② کارت‌های تجمیعی: rebase با gapِ منبع (۱h) یک ردیفِ ساعتیِ تازه پشتِ کندلِ
+//      نیمه‌کارهٔ D1/H8/H6 می‌افزود؛ closedBars آن ردیف را برمی‌داشت و **کندلِ
+//      نیمه‌کاره** به‌عنوانِ «بسته» به لایه می‌رسید (look-ahead نسبت به بک‌تست).
+// قاعدهٔ داوری‌شده (MT5) فقط کندلِ هم‌تراز و کاملاً بسته دید ⇒ همین را تضمین می‌کنیم:
+//   sanitizeBars    : هر ردیفی که زمانش مضربِ طولِ کندل نیست حذف (تیک/تکه).
+//   trulyClosedBars : فقط کندل‌هایی که time + barSec ≤ now (معیارِ مطلق، نه «سطلِ جاری»).
+// هر دو خالص‌اند؛ `nowSec` برای آزمونِ قطعی قابلِ تزریق است.
+// ---------------------------------------------------------------------------
+export function sanitizeBars(candles: Candle[], barSec: number): Candle[] {
+  if (!(barSec > 0)) return candles
+  return candles.filter(k => k.time % barSec === 0)
+}
+
+export function trulyClosedBars(candles: Candle[], barSec: number, nowSec = Math.floor(Date.now() / 1000)): Candle[] {
+  let n = candles.length
+  while (n > 0 && candles[n - 1].time + barSec > nowSec) n--
+  return n === candles.length ? candles : candles.slice(0, n)
+}
+
 export function closedBars(candles: Candle[], intervalSec: number): Candle[] {
   if (candles.length < 2) return candles
   const nowSec = Math.floor(Date.now() / 1000)
